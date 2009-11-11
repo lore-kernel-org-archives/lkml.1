@@ -1,104 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZKKHnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZKKHn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbZKKHnI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:43:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZKKHnH
+	id S1755764AbZKKHn4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZKKHnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:43:07 -0500
-Received: from mx4.orcon.net.nz ([219.88.242.54]:41304 "EHLO mx4.orcon.net.nz"
+	Wed, 11 Nov 2009 02:43:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40876 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753761AbZKKHnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:43:05 -0500
-Date: Wed, 11 Nov 2009 20:43:03 +1300
-From: Michael Cree <mcree@orcon.net.nz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [alpha] Add minimal support for software performance
- events.
-Message-ID: <20091111074302.GA3728@omega>
-References: <1256545926-6972-1-git-send-email-mcree@orcon.net.nz>
- <20091026084854.GA26990@elte.hu>
- <4AE6AAD3.3000102@orcon.net.nz>
- <20091108122226.GC11372@elte.hu>
- <20091108122739.GD11372@elte.hu>
+	id S1755716AbZKKHnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:43:53 -0500
+Date: Wed, 11 Nov 2009 07:43:05 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1257911467-28276-2-git-send-email-fweisbec@gmail.com>
+References: <1257911467-28276-2-git-send-email-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Move the build-id storage operations to headers
+Message-ID: <tip-8671dab9d5b2f0b444b8d09792384dccbfd43d14@git.kernel.org>
+Git-Commit-ID: 8671dab9d5b2f0b444b8d09792384dccbfd43d14
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091108122739.GD11372@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-DSPAM-Check: by mx4.orcon.net.nz on Wed, 11 Nov 2009 20:43:09 +1300
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Wed Nov 11 20:43:09 2009
-X-DSPAM-Confidence: 0.8521
-X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  8671dab9d5b2f0b444b8d09792384dccbfd43d14
+Gitweb:     http://git.kernel.org/tip/8671dab9d5b2f0b444b8d09792384dccbfd43d14
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 11 Nov 2009 04:51:03 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 11 Nov 2009 07:30:17 +0100
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+perf tools: Move the build-id storage operations to headers
 
-On Sun, Nov 08, 2009 at 01:27:39PM +0100, Ingo Molnar wrote:
-> Mind resending the patch against latest -tip?
+So that it makes easier to control it. Especially because we
+plan to give it a feature section.
 
-Not a problem.  Attached.
-
-Cheers
-Michael.
-
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-Test-fstack-protector-all-compiler-option-for-inclus.patch"
-
->From df1a596909b30c9792e55acc731c2578b71d2670 Mon Sep 17 00:00:00 2001
-From: Michael Cree <mcree@orcon.net.nz>
-Date: Tue, 10 Nov 2009 22:20:37 +1300
-Subject: [PATCH] Test -fstack-protector-all compiler option for inclusion in CFLAGS
-
-Some architectures (e.g. Alpha) do not support the -fstack-protector-all
-compiler option and the use of the option with -Werror causes the compiler
-to abort.  Test that the compiler supports -fstack-protector-all before
-inclusion in CFLAGS.
-
-Signed-off-by: Michael Cree <mcree@orcon.net.nz>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+LKML-Reference: <1257911467-28276-2-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/Makefile |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ tools/perf/builtin-record.c |   32 ++------------------------------
+ tools/perf/util/header.c    |   41 ++++++++++++++++++++++++++++++++++++++---
+ tools/perf/util/header.h    |    2 +-
+ 3 files changed, 41 insertions(+), 34 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 64e5107..cd42c97 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -207,7 +207,7 @@ ifndef PERF_DEBUG
-   CFLAGS_OPTIMIZE = -O6
- endif
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 9f98b86..c35e61b 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -378,39 +378,11 @@ static void open_counters(int cpu, pid_t pid)
+ 	nr_cpu++;
+ }
  
--CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-+CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
- LDFLAGS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
-@@ -259,6 +259,9 @@ PTHREAD_LIBS = -lpthread
- # explicitly what architecture to check for. Fix this up for yours..
- SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
+-static bool write_buildid_table(void)
+-{
+-	struct dso *pos;
+-	bool have_buildid = false;
+-
+-	list_for_each_entry(pos, &dsos, node) {
+-		struct build_id_event b;
+-		size_t len;
+-
+-		if (filename__read_build_id(pos->long_name,
+-					    &b.build_id,
+-					    sizeof(b.build_id)) < 0)
+-			continue;
+-		have_buildid = true;
+-		memset(&b.header, 0, sizeof(b.header));
+-		len = strlen(pos->long_name) + 1;
+-		len = ALIGN(len, 64);
+-		b.header.size = sizeof(b) + len;
+-		write_output(&b, sizeof(b));
+-		write_output(pos->long_name, len);
+-	}
+-
+-	return have_buildid;
+-}
+-
+ static void atexit_header(void)
+ {
+ 	header->data_size += bytes_written;
  
-+ifeq ($(shell sh -c "echo 'int foo(void) {char X[2]; return 3;}' | $(CC) -x c -c -Werror -fstack-protector-all - -o /dev/null >/dev/null 2>&1 && echo y"), y)
-+  CFLAGS := $(CFLAGS) -fstack-protector-all
-+endif
+-	if (write_buildid_table())
+-		perf_header__set_feat(header, HEADER_BUILD_ID);
+-
+-	perf_header__write(header, output);
++	perf_header__write(header, output, true);
+ }
  
+ static int __cmd_record(int argc, const char **argv)
+@@ -487,7 +459,7 @@ static int __cmd_record(int argc, const char **argv)
+ 	}
  
- ### --- END CONFIGURATION SECTION ---
--- 
-1.6.3.3
-
-
---Nq2Wo0NMKNjxTN9z--
-
+ 	if (file_new)
+-		perf_header__write(header, output);
++		perf_header__write(header, output, false);
+ 
+ 	if (!system_wide)
+ 		event__synthesize_thread(pid, process_synthesized_event);
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 050f543..a4d0bbe 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -2,11 +2,13 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <linux/list.h>
+ 
+ #include "util.h"
+ #include "header.h"
+ #include "../perf.h"
+ #include "trace-event.h"
++#include "symbol.h"
+ 
+ /*
+  * Create new perf.data header attribute:
+@@ -172,7 +174,33 @@ static void do_write(int fd, void *buf, size_t size)
+ 	}
+ }
+ 
+-static void perf_header__adds_write(struct perf_header *self, int fd)
++static bool write_buildid_table(int fd)
++{
++	struct dso *pos;
++	bool have_buildid = false;
++
++	list_for_each_entry(pos, &dsos, node) {
++		struct build_id_event b;
++		size_t len;
++
++		if (filename__read_build_id(pos->long_name,
++					    &b.build_id,
++					    sizeof(b.build_id)) < 0)
++			continue;
++		have_buildid = true;
++		memset(&b.header, 0, sizeof(b.header));
++		len = strlen(pos->long_name) + 1;
++		len = ALIGN(len, 64);
++		b.header.size = sizeof(b) + len;
++		do_write(fd, &b, sizeof(b));
++		do_write(fd, pos->long_name, len);
++	}
++
++	return have_buildid;
++}
++
++static void
++perf_header__adds_write(struct perf_header *self, int fd, bool at_exit)
+ {
+ 	struct perf_file_section trace_sec;
+ 	u64 cur_offset = lseek(fd, 0, SEEK_CUR);
+@@ -196,9 +224,16 @@ static void perf_header__adds_write(struct perf_header *self, int fd)
+ 		 */
+ 		cur_offset = lseek(fd, trace_sec.offset + trace_sec.size, SEEK_SET);
+ 	}
++
++	if (at_exit) {
++		lseek(fd, self->data_offset + self->data_size, SEEK_SET);
++		if (write_buildid_table(fd))
++			perf_header__set_feat(self, HEADER_BUILD_ID);
++		lseek(fd, cur_offset, SEEK_SET);
++	}
+ };
+ 
+-void perf_header__write(struct perf_header *self, int fd)
++void perf_header__write(struct perf_header *self, int fd, bool at_exit)
+ {
+ 	struct perf_file_header f_header;
+ 	struct perf_file_attr   f_attr;
+@@ -236,7 +271,7 @@ void perf_header__write(struct perf_header *self, int fd)
+ 	if (events)
+ 		do_write(fd, events, self->event_size);
+ 
+-	perf_header__adds_write(self, fd);
++	perf_header__adds_write(self, fd, at_exit);
+ 
+ 	self->data_offset = lseek(fd, 0, SEEK_CUR);
+ 
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 2f233c5..77186c9 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -33,7 +33,7 @@ struct perf_header {
+ };
+ 
+ struct perf_header *perf_header__read(int fd);
+-void perf_header__write(struct perf_header *self, int fd);
++void perf_header__write(struct perf_header *self, int fd, bool at_exit);
+ 
+ void perf_header__add_attr(struct perf_header *self,
+ 			   struct perf_header_attr *attr);
