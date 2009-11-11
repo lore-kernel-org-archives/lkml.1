@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbZKKV6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZKKV7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbZKKV6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZKKV6p
+	id S1759463AbZKKV7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbZKKV7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:58:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37335 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759389AbZKKV6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:58:45 -0500
-X-Authenticated: #15668376
-X-Provags-ID: V01U2FsdGVkX1+2iqUcwbu2VpeT7P7+PiYvkMoqnluRxJ9bZOMGul
-	B+df3xNnpgEsW8
-From: Resul Cetin <Resul-Cetin@gmx.net>
-To: linux-kernel@vger.kernel.org
-Subject: Getting data from other process when running in kernel thread
-Date: Wed, 11 Nov 2009 22:58:57 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-1-amd64; KDE/4.3.2; x86_64; ; )
+	Wed, 11 Nov 2009 16:59:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22402 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759228AbZKKV7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:59:30 -0500
+Date: Wed, 11 Nov 2009 16:59:28 -0500
+From: Dave Jones <davej@redhat.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: kraxel@bytesex.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Fix argument order in memset call in
+ ./drivers/media/common/ir-functions.c
+Message-ID: <20091111215928.GA25154@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Mauro Carvalho Chehab <mchehab@redhat.com>, kraxel@bytesex.org,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911112258.57859.Resul-Cetin@gmx.net>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.78
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have following problem when running in a kernel thread. I know the pid of a 
-program which started some data processing. After I finished with it, it 
-should send the data to the user process and/or getting new data from it. This 
-means that I must use copy_from_user/copy_to_user, but with specifying the 
-pid/task.
+Size is the third argument, not the second.
 
-Is that somehow possible? I think most of the things are done in workqueues 
-and so I don't really know in which context I am.
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-Best regards,
-	Resul Cetin
+diff --git a/drivers/media/common/ir-functions.c b/drivers/media/common/ir-functions.c
+index 655474b..abd4791 100644
+--- a/drivers/media/common/ir-functions.c
++++ b/drivers/media/common/ir-functions.c
+@@ -64,7 +64,7 @@ void ir_input_init(struct input_dev *dev, struct ir_input_state *ir,
+ 
+ 	ir->ir_type = ir_type;
+ 
+-	memset(ir->ir_codes, sizeof(ir->ir_codes), 0);
++	memset(ir->ir_codes, 0, sizeof(ir->ir_codes));
+ 
+ 	/*
+ 	 * FIXME: This is a temporary workaround to use the new IR tables
