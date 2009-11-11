@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZKKN2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZKKN0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbZKKN2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 08:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZKKN2h
+	id S1753189AbZKKN0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 08:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbZKKN0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 08:28:37 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54284 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbZKKN2g convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 08:28:36 -0500
-Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Nathan Fontenot <nfont@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
-References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+	Wed, 11 Nov 2009 08:26:24 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:52693 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751730AbZKKN0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 08:26:23 -0500
+Subject: Re: [Qemu-devel] Re: virtio: Add memory statistics reporting to
+ the balloon driver
+From: Adam Litke <agl@us.ibm.com>
+To: "Daniel P. Berrange" <berrange@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Anthony Liguori <aliguori@us.ibm.com>,
+       agl@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       qemu-devel@nongnu.org, virtualization@lists.linux-foundation.org,
+       Avi Kivity <avi@redhat.com>
+In-Reply-To: <20091111101223.GA22937@redhat.com>
+References: <1257782838.2835.5.camel@aglitke>
+	 <1257784326.2835.16.camel@aglitke>
+	 <200911101312.02650.rusty@rustcorp.com.au> <4AF97A5E.1070801@codemonkey.ws>
+	 <4AF97C1A.2080609@redhat.com> <4AF97F93.2080707@us.ibm.com>
+	 <20091111092409.GA24646@shareable.org>  <20091111101223.GA22937@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 11 Nov 2009 14:25:35 +0100
-Message-ID: <1257945935.4372.36.camel@twins>
+Organization: IBM
+Date: Wed, 11 Nov 2009 07:26:24 -0600
+Message-ID: <1257945984.2876.1.camel@aglitke>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
+On Wed, 2009-11-11 at 10:12 +0000, Daniel P. Berrange wrote:
+> This all suggests that we should only update the stats from the guest
+> when something on the host actually asks for them by issuing the QEMU
+> monitor command. We don't want any kind of continuous polling of stats
+> at any frequency, if nothing is using these stats on the host.
 
-> Gautham R Shenoy (4):
->       pseries: Serialize cpu hotplug operations during deactivate Vs deallocate
->       pseries: Add code to online/offline CPUs of a DLPAR node.
->       pSeries: Add hooks to put the CPU into an appropriate offline state
->       pSeries: extended_cede_processor() helper function.
-> 
-> 
->  Documentation/cpu-hotplug.txt                   |    6 +
->  arch/powerpc/include/asm/lppaca.h               |    9 +
->  arch/powerpc/platforms/pseries/dlpar.c          |  129 ++++++++++++++++
->  arch/powerpc/platforms/pseries/hotplug-cpu.c    |  182 ++++++++++++++++++++++-
->  arch/powerpc/platforms/pseries/offline_states.h |   18 ++
->  arch/powerpc/platforms/pseries/plpar_wrappers.h |   22 +++
->  arch/powerpc/platforms/pseries/smp.c            |   19 ++
->  arch/powerpc/xmon/xmon.c                        |    3 
->  drivers/base/cpu.c                              |    2 
->  include/linux/cpu.h                             |   13 ++
->  10 files changed, 387 insertions(+), 16 deletions(-)
->  create mode 100644 arch/powerpc/platforms/pseries/offline_states.h
+Agreed.  The next version of the patch will remove the timer completely.
+We'll wake up in response to config change notifications only.
 
-Not quite sure how you solved the DLPAR communication but since pretty
-much everything is under arch/powerpc/ I really don't have much to say.
+-- 
+Thanks,
+Adam
+
