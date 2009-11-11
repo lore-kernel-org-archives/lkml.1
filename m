@@ -1,133 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbZKKC3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbZKKCbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758763AbZKKC3N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZKKC3M
+	id S1758779AbZKKCbx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZKKCbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:29:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51938 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbZKKC3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:29:11 -0500
-Message-ID: <4AFA210B.3020207@kernel.org>
-Date: Tue, 10 Nov 2009 18:27:23 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 10 Nov 2009 21:31:52 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:42043 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756128AbZKKCbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 21:31:51 -0500
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 22/23] sysctl arm: Remove binary sysctl support
+References: <m1pr7siqjz.fsf@fess.ebiederm.org>
+	<m1zl6vvpiv.fsf@fess.ebiederm.org>
+	<20091109132830.GF26740@basil.fritz.box>
+	<200911091628.47003.arnd@arndb.de>
+	<20091109154621.GG26740@basil.fritz.box>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 10 Nov 2009 18:31:51 -0800
+In-Reply-To: <20091109154621.GG26740@basil.fritz.box> (Andi Kleen's message of "Mon\, 9 Nov 2009 16\:46\:21 +0100")
+Message-ID: <m18wedeqqw.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-CC: Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH] x86: make sure wakeup code is below 1M -v2
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
-In-Reply-To: <200911091315.13151.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen <andi@firstfloor.org> writes:
 
-try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+>> Can you name one binary sysctl value that gets accessed more
+>> than a few times during the execution of a vaguely common
+>> application? We're talking about microseconds for typically
+>> write-once or read-once settings.
+>
+> For example shell scripts tend to execute programs quite a lot.
+>
+>> The question is just how many sysctl values you regard as both
+>> common and performance critical.
+>
+> Very little, I suspect in fact it's only one.
 
-to get area is below 1M
+I just took a second look, attempting to figure out how much startup
+overhead my sysctl used.  I failed because I don't have a user space
+old enough that it calls sysctl. I had to go back all of the way to
+glibc-2.4 to find a version of nptl that calls sysctl at startup.
+glibc-2.5 on i386 uses uname and all other architectures uses either
+assumes smp is true or false without performing a system call.
 
--v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+I don't believe an inuse version of glibc exists that uses sysctl
+except the ioperm implementation on arm.  So I can't see how being
+a little slower will impact anyone.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/acpi.h  |    2 +-
- arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
- arch/x86/kernel/setup.c      |   13 +++++++------
- 3 files changed, 17 insertions(+), 13 deletions(-)
-
-Index: linux-2.6/arch/x86/include/asm/acpi.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/acpi.h
-+++ linux-2.6/arch/x86/include/asm/acpi.h
-@@ -118,7 +118,7 @@ extern void acpi_restore_state_mem(void)
- extern unsigned long acpi_wakeup_address;
- 
- /* early initialization routine */
--extern void acpi_reserve_bootmem(void);
-+extern void acpi_reserve_wakeup_memory(void);
- 
- /*
-  * Check if the CPU can handle C2 and deeper
-Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
- 
- 
- /**
-- * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-+ * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
-  *
-  * We allocate a page from the first 1MB of memory for the wakeup
-  * routine for when we come back from a sleep state. The
-  * runtime allocator allows specification of <16MB pages, but not
-  * <1MB pages.
-  */
--void __init acpi_reserve_bootmem(void)
-+void __init acpi_reserve_wakeup_memory(void)
- {
-+	unsigned long mem;
-+
- 	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
- 		printk(KERN_ERR
- 		       "ACPI: Wakeup code way too big, S3 disabled.\n");
- 		return;
- 	}
- 
--	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
-+	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
- 
--	if (!acpi_realmode) {
-+	if (mem == -1L) {
- 		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
- 		return;
- 	}
--
--	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
-+	acpi_realmode = (unsigned long) phys_to_virt(mem);
-+	acpi_wakeup_address = mem;
-+	reserve_early(mem, mem + WAKEUP_SIZE, "ACPI WAKEUP");
- }
- 
- 
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -905,6 +905,13 @@ void __init setup_arch(char **cmdline_p)
- 
- 	reserve_brk();
- 
-+#ifdef CONFIG_ACPI_SLEEP
-+	/*
-+	 * Reserve low memory region for sleep support.
-+	 * even before init_memory_mapping
-+	 */
-+	acpi_reserve_wakeup_memory();
-+#endif
- 	init_gbpages();
- 
- 	/* max_pfn_mapped is updated here */
-@@ -956,12 +963,6 @@ void __init setup_arch(char **cmdline_p)
- 
- 	initmem_init(0, max_pfn, acpi, k8);
- 
--#ifdef CONFIG_ACPI_SLEEP
--	/*
--	 * Reserve low memory region for sleep support.
--	 */
--	acpi_reserve_bootmem();
--#endif
- 	/*
- 	 * Find and reserve possible boot-time SMP configuration:
- 	 */
+Eric
