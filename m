@@ -1,115 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751730AbZKKF6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbZKKF7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751730AbZKKF6i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 00:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZKKF6h
+	id S1751696AbZKKF7g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 00:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZKKF7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 00:58:37 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:63284 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZKKF6g (ORCPT
+	Wed, 11 Nov 2009 00:59:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45973 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbZKKF7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 00:58:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=lxjn3XhR5kl7XXZ95/KxQVMlVq49+kB/Dn7c673vFNVQQQX52+Np/T3ZSAjf9mFOX
-	Iba1FgWYUdP80MMx741xA==
-Date: Tue, 10 Nov 2009 21:58:31 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
- v4.1
-In-Reply-To: <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com> <20091110163419.361E.A69D9226@jp.fujitsu.com> <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com> <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
- <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com> <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com> <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 11 Nov 2009 00:59:35 -0500
+Date: Tue, 10 Nov 2009 22:01:06 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>, mingo@elte.hu,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] sched: Disable affine wakeups by default
+Message-ID: <20091110220106.615fa525@infradead.org>
+In-Reply-To: <1257890369.4108.490.camel@laptop>
+References: <20091024125853.35143117@infradead.org>
+	<20091024130432.0c46ef27@infradead.org>
+	<20091024130728.051c4d7c@infradead.org>
+	<1256453725.12138.40.camel@marge.simson.net>
+	<20091025095109.449bac9e@infradead.org>
+	<1256492289.14241.40.camel@marge.simson.net>
+	<20091025123319.2b76bf69@infradead.org>
+	<1256508287.17306.14.camel@marge.simson.net>
+	<1256522035.7356.19.camel@laptop>
+	<1256531907.7117.31.camel@marge.simson.net>
+	<20091025215225.05ac9ac9@infradead.org>
+	<1256533734.7117.45.camel@marge.simson.net>
+	<20091025223657.5ebc2857@infradead.org>
+	<1257890369.4108.490.camel@laptop>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009, KAMEZAWA Hiroyuki wrote:
+On Tue, 10 Nov 2009 22:59:29 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Index: mm-test-kernel/drivers/char/sysrq.c
-> ===================================================================
-> --- mm-test-kernel.orig/drivers/char/sysrq.c
-> +++ mm-test-kernel/drivers/char/sysrq.c
-> @@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
->  
->  static void moom_callback(struct work_struct *ignored)
->  {
-> -	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
-> +	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
->  }
->  
->  static DECLARE_WORK(moom_work, moom_callback);
-> Index: mm-test-kernel/mm/oom_kill.c
-> ===================================================================
-> --- mm-test-kernel.orig/mm/oom_kill.c
-> +++ mm-test-kernel/mm/oom_kill.c
-> @@ -196,27 +196,47 @@ unsigned long badness(struct task_struct
->  /*
->   * Determine the type of allocation constraint.
->   */
-> -static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> -						    gfp_t gfp_mask)
-> -{
->  #ifdef CONFIG_NUMA
-> +static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> +				    gfp_t gfp_mask, nodemask_t *nodemask)
-> +{
->  	struct zone *zone;
->  	struct zoneref *z;
->  	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-> -	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-> +	int ret = CONSTRAINT_NONE;
->  
-> -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> -		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
-> -			node_clear(zone_to_nid(zone), nodes);
-> -		else
-> -			return CONSTRAINT_CPUSET;
-> +	/*
-> +	 * Reach here only when __GFP_NOFAIL is used. So, we should avoid
-> + 	 * to kill current.We have to random task kill in this case.
-> + 	 * Hopefully, CONSTRAINT_THISNODE...but no way to handle it, now.
-> + 	 */
-> +	if (gfp_mask & __GPF_THISNODE)
-> +		return ret;
->  
+> On Sun, 2009-10-25 at 22:36 -0700, Arjan van de Ven wrote:
+> > 
+> > if you're a multicore domain you better have a shared cache.. that's
+> > what it should mean. If it does not we should fix that.
+> 
+> Fully agreed.. I've been dying to do the below for ages :-)
+> 
 
-That shouldn't compile.
+completely sane.
 
-> -	if (!nodes_empty(nodes))
-> +	/*
-> + 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
-> + 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
-> + 	 * feature. mempolicy is an only user of nodemask here.
-> +	 * check mempolicy's nodemask contains all N_HIGH_MEMORY
-> + 	 */
-> +	if (nodemask && !nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
->  		return CONSTRAINT_MEMORY_POLICY;
-> -#endif
->  
-> +	/* Check this allocation failure is caused by cpuset's wall function */
-> +	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-> +			high_zoneidx, nodemask)
-> +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
-> +			return CONSTRAINT_CPUSET;
-> +
-> +	return CONSTRAINT_NONE;
-> +}
-> +#else
-> +static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> +				gfp_t gfp_mask, nodemask_t *nodemask)
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-inline seems appropriate in this case, gcc will optimize it anyway.
