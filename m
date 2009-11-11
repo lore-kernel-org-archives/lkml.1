@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbZKKQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbZKKQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbZKKQuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 11:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZKKQuS
+	id S1758253AbZKKQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 11:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZKKQuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 11:50:18 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:38296 "EHLO
+	Wed, 11 Nov 2009 11:50:21 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:38347 "EHLO
 	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758150AbZKKQuN (ORCPT
+	with ESMTP id S1758150AbZKKQuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 11:50:13 -0500
+	Wed, 11 Nov 2009 11:50:18 -0500
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [PATCH 15/17] hpsa: Remove sendcmd,
-	in no case are we required to poll for completions.
+Subject: [PATCH 16/17] hpsa:  Make fill_cmd() return void
 To: akpm@linux-foundation.org, James.Bottomley@HansenPartnership.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        scameron@beardog.cce.hp.com, mikem@beardog.cce.hp.com
-Date: Wed, 11 Nov 2009 10:51:40 -0600
-Message-ID: <20091111165140.17754.58024.stgit@beardog.cce.hp.com>
+Date: Wed, 11 Nov 2009 10:51:45 -0600
+Message-ID: <20091111165145.17754.2859.stgit@beardog.cce.hp.com>
 In-Reply-To: <20091111164803.17754.11900.stgit@beardog.cce.hp.com>
 References: <20091111164803.17754.11900.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -28,195 +27,216 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hpsa: Remove sendcmd, there are no instances in which we must poll for
-command completion.  This means sendcmd_core() and pollcomplete()
-can be removed as well.
+hpsa:  Make fill_cmd() return void, and BUG() if it is asked to
+fill out an unknown command or command type, as that should simply
+not happen as all the commands and command types are fixed, and
+known ahead of time.
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- drivers/scsi/hpsa.c |  156 ---------------------------------------------------
- 1 files changed, 0 insertions(+), 156 deletions(-)
+ drivers/scsi/hpsa.c |   73 +++++++++++++++++----------------------------------
+ 1 files changed, 25 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index d171a55..6dc7ce6 100644
+index 6dc7ce6..5097995 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -117,8 +117,6 @@ static int number_of_controllers;
- static irqreturn_t do_hpsa_intr(int irq, void *dev_id);
- static int hpsa_ioctl(struct scsi_device *dev, int cmd, void *arg);
- static void start_io(struct ctlr_info *h);
--static int sendcmd(__u8 cmd, struct ctlr_info *h, void *buff, size_t size,
--		   __u8 page_code, unsigned char *scsi3addr, int cmd_type);
- 
- #ifdef CONFIG_COMPAT
- static int hpsa_compat_ioctl(struct scsi_device *dev, int cmd, void *arg);
-@@ -131,7 +129,6 @@ static struct CommandList *cmd_special_alloc(struct ctlr_info *h);
- static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+@@ -126,7 +126,7 @@ static void cmd_free(struct ctlr_info *h, struct CommandList *c);
+ static void cmd_special_free(struct ctlr_info *h, struct CommandList *c);
+ static struct CommandList *cmd_alloc(struct ctlr_info *h);
+ static struct CommandList *cmd_special_alloc(struct ctlr_info *h);
+-static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
++static void fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
  	void *buff, size_t size, __u8 page_code, unsigned char *scsi3addr,
  	int cmd_type);
--static int sendcmd_core(struct ctlr_info *h, struct CommandList *c);
  
- static int hpsa_scsi_queue_command(struct scsi_cmnd *cmd,
- 		void (*done)(struct scsi_cmnd *));
-@@ -2685,159 +2682,6 @@ static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+@@ -1258,7 +1258,7 @@ static int hpsa_scsi_do_inquiry(struct ctlr_info *h, unsigned char *scsi3addr,
+ 			unsigned char page, unsigned char *buf,
+ 			unsigned char bufsize)
+ {
+-	int rc;
++	int rc = IO_OK;
+ 	struct CommandList *c;
+ 	struct ErrorInfo *ei;
+ 
+@@ -1269,16 +1269,12 @@ static int hpsa_scsi_do_inquiry(struct ctlr_info *h, unsigned char *scsi3addr,
+ 		return -1;
+ 	}
+ 
+-	rc = fill_cmd(c, HPSA_INQUIRY, h, buf, bufsize, page, scsi3addr,
+-		TYPE_CMD);
+-	if (rc == 0) {
+-		hpsa_scsi_do_simple_cmd_with_retry(h, c, PCI_DMA_FROMDEVICE);
+-		ei = c->err_info;
+-		if (ei->CommandStatus != 0 &&
+-		    ei->CommandStatus != CMD_DATA_UNDERRUN) {
+-			hpsa_scsi_interpret_error(c);
+-			rc = -1;
+-		}
++	fill_cmd(c, HPSA_INQUIRY, h, buf, bufsize, page, scsi3addr, TYPE_CMD);
++	hpsa_scsi_do_simple_cmd_with_retry(h, c, PCI_DMA_FROMDEVICE);
++	ei = c->err_info;
++	if (ei->CommandStatus != 0 && ei->CommandStatus != CMD_DATA_UNDERRUN) {
++		hpsa_scsi_interpret_error(c);
++		rc = -1;
+ 	}
+ 	cmd_special_free(h, c);
+ 	return rc;
+@@ -1286,7 +1282,7 @@ static int hpsa_scsi_do_inquiry(struct ctlr_info *h, unsigned char *scsi3addr,
+ 
+ static int hpsa_send_reset(struct ctlr_info *h, unsigned char *scsi3addr)
+ {
+-	int rc;
++	int rc = IO_OK;
+ 	struct CommandList *c;
+ 	struct ErrorInfo *ei;
+ 
+@@ -1297,11 +1293,7 @@ static int hpsa_send_reset(struct ctlr_info *h, unsigned char *scsi3addr)
+ 		return -1;
+ 	}
+ 
+-	rc = fill_cmd(c, HPSA_DEVICE_RESET_MSG, h, NULL, 0, 0, scsi3addr,
+-		TYPE_MSG);
+-	if (rc != 0)
+-		goto out;
+-
++	fill_cmd(c, HPSA_DEVICE_RESET_MSG, h, NULL, 0, 0, scsi3addr, TYPE_MSG);
+ 	hpsa_scsi_do_simple_cmd_core(h, c);
+ 	/* no unmap needed here because no data xfer. */
+ 
+@@ -1310,7 +1302,6 @@ static int hpsa_send_reset(struct ctlr_info *h, unsigned char *scsi3addr)
+ 		hpsa_scsi_interpret_error(c);
+ 		rc = -1;
+ 	}
+-out:
+ 	cmd_special_free(h, c);
+ 	return rc;
+ }
+@@ -1357,7 +1348,7 @@ static int hpsa_scsi_do_report_luns(struct ctlr_info *h, int logical,
+ 		struct ReportLUNdata *buf, int bufsize,
+ 		int extended_response)
+ {
+-	int rc;
++	int rc = IO_OK;
+ 	struct CommandList *c;
+ 	unsigned char scsi3addr[8];
+ 	struct ErrorInfo *ei;
+@@ -1370,11 +1361,8 @@ static int hpsa_scsi_do_report_luns(struct ctlr_info *h, int logical,
+ 
+ 	memset(&scsi3addr[0], 0, 8); /* address the controller */
+ 
+-	rc = fill_cmd(c, logical ? HPSA_REPORT_LOG : HPSA_REPORT_PHYS, h,
++	fill_cmd(c, logical ? HPSA_REPORT_LOG : HPSA_REPORT_PHYS, h,
+ 		buf, bufsize, 0, scsi3addr, TYPE_CMD);
+-	if (rc != 0)
+-		goto out;
+-
+ 	if (extended_response)
+ 		c->Request.CDB[1] = extended_response;
+ 	hpsa_scsi_do_simple_cmd_with_retry(h, c, PCI_DMA_FROMDEVICE);
+@@ -1384,7 +1372,6 @@ static int hpsa_scsi_do_report_luns(struct ctlr_info *h, int logical,
+ 		hpsa_scsi_interpret_error(c);
+ 		rc = -1;
+ 	}
+-out:
+ 	cmd_special_free(h, c);
+ 	return rc;
+ }
+@@ -1944,7 +1931,7 @@ static int hpsa_register_scsi(struct ctlr_info *h)
+ static int wait_for_device_to_become_ready(struct ctlr_info *h,
+ 	unsigned char lunaddr[])
+ {
+-	int rc;
++	int rc = 0;
+ 	int count = 0;
+ 	int waittime = HZ;
+ 	struct CommandList *c;
+@@ -1971,15 +1958,7 @@ static int wait_for_device_to_become_ready(struct ctlr_info *h,
+ 			waittime = waittime * 2;
+ 
+ 		/* Send the Test Unit Ready */
+-		rc = fill_cmd(c, TEST_UNIT_READY, h, NULL, 0, 0,
+-			lunaddr, TYPE_CMD);
+-		if (rc != 0) {
+-			/* We don't expect to get in here */
+-			dev_warn(&h->pdev->dev, "fill_cmd failed at %s:%d\n",
+-				__FILE__, __LINE__);
+-			break;
+-		}
+-
++		fill_cmd(c, TEST_UNIT_READY, h, NULL, 0, 0, lunaddr, TYPE_CMD);
+ 		hpsa_scsi_do_simple_cmd_core(h, c);
+ 		/* no unmap needed here because no data xfer. */
+ 
+@@ -2558,7 +2537,7 @@ static int hpsa_ioctl(struct scsi_device *dev, int cmd, void *arg)
+ 	}
+ }
+ 
+-static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
++static void fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+ 	void *buff, size_t size, __u8 page_code, unsigned char *scsi3addr,
+ 	int cmd_type)
+ {
+@@ -2631,7 +2610,8 @@ static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+ 			break;
+ 		default:
+ 			dev_warn(&h->pdev->dev, "unknown command 0x%c\n", cmd);
+-			return IO_ERROR;
++			BUG();
++			return;
+ 		}
+ 	} else if (cmd_type == TYPE_MSG) {
+ 		switch (cmd) {
+@@ -2655,11 +2635,11 @@ static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+ 		default:
+ 			dev_warn(&h->pdev->dev, "unknown message type %d\n",
+ 				cmd);
+-			return IO_ERROR;
++			BUG();
+ 		}
+ 	} else {
+ 		dev_warn(&h->pdev->dev, "unknown command type %d\n", cmd_type);
+-		return IO_ERROR;
++		BUG();
+ 	}
+ 
+ 	switch (c->Request.Type.Direction) {
+@@ -2678,7 +2658,7 @@ static int fill_cmd(struct CommandList *c, __u8 cmd, struct ctlr_info *h,
+ 
+ 	hpsa_map_one(h->pdev, c, buff, size, pci_dir);
+ 
+-	return IO_OK;
++	return;
  }
  
  /*
-- *   Wait polling for a command to complete.
-- *   The memory mapped FIFO is polled for the completion.
-- *   Used only at init time, interrupts from the HBA are disabled.
-- */
--static unsigned long pollcomplete(struct ctlr_info *h)
--{
--	unsigned long done;
--	int i;
--
--	/* Wait (up to HPSA_MAX_POLL_TIME_SECS) for a command to complete */
--	for (i = HPSA_MAX_POLL_TIME_SECS * HZ; i > 0; i--) {
--		done = h->access.command_completed(h);
--		if (done == FIFO_EMPTY)
--			schedule_timeout_uninterruptible(1);
--		else
--			return done;
--	}
--	/* Invalid address to tell caller we ran out of time */
--	dev_warn(&h->pdev->dev, "pollcomplete(): returning 1\n");
--	return 1;
--}
--
--/* Send command c to controller h and poll for it to complete.
-- * Turns interrupts off on the board.  Used at driver init time
-- * and during SCSI error recovery.
-- */
--static int sendcmd_core(struct ctlr_info *h, struct CommandList *c)
--{
--	int i;
--	unsigned long complete;
--	int status = IO_ERROR;
--
--resend_cmd1:
--	/*
--	 * Disable interrupt
--	 */
--	h->access.set_intr_mask(h, HPSA_INTR_OFF);
--
--	/* Make sure there is room in the command FIFO
--	 * Actually it should be completely empty at this time
--	 * unless we are in here doing error handling for the scsi
--	 * side of the driver.
--	 */
--	for (i = 200000; i > 0; i--) {
--		/* if fifo isn't full go */
--		if (!(h->access.fifo_full(h)))
--			break;
--		udelay(10);
--		dev_warn(&h->pdev->dev, "sendcmd FIFO full, waiting!\n");
--	}
--	h->access.submit_command(h, c); /* Send the cmd */
--	do {
--		complete = pollcomplete(h);
--
--		if (complete == 1) {
+@@ -3429,7 +3409,6 @@ static void hpsa_flush_cache(struct ctlr_info *h)
+ {
+ 	char *flush_buf;
+ 	struct CommandList *c;
+-	int rc;
+ 
+ 	flush_buf = kzalloc(4, GFP_KERNEL);
+ 	if (!flush_buf)
+@@ -3440,14 +3419,12 @@ static void hpsa_flush_cache(struct ctlr_info *h)
+ 		dev_warn(&h->pdev->dev, "cmd_special_alloc returned NULL!\n");
+ 		goto out_of_memory;
+ 	}
+-	rc = fill_cmd(c, HPSA_CACHE_FLUSH, h, flush_buf, 4, 0,
++	fill_cmd(c, HPSA_CACHE_FLUSH, h, flush_buf, 4, 0,
+ 		RAID_CTLR_LUNID, TYPE_CMD);
+-	if (rc == 0) {
+-		hpsa_scsi_do_simple_cmd_with_retry(h, c, PCI_DMA_TODEVICE);
+-		if (c->err_info->CommandStatus != 0)
 -			dev_warn(&h->pdev->dev,
--			       "sendcmd timeout, no command list address "
--				"returned!\n");
--			status = IO_ERROR;
--			break;
--		}
--
--		/* If it's not the cmd we're looking for, save it for later */
--		if ((complete & ~HPSA_ERROR_BIT) != c->busaddr) {
--			dev_warn(&h->pdev->dev, "unexpected command "
--				"completion.\n");
--			continue;
--		}
--
--		/* It is our command.  If no error, we're done. */
--		if (!(complete & HPSA_ERROR_BIT)) {
--			status = IO_OK;
--			break;
--		}
--
--		/* There is an error... */
--
--		/* if data overrun or underun on Report command ignore it */
--		if (((c->Request.CDB[0] == HPSA_REPORT_LOG) ||
--			(c->Request.CDB[0] == HPSA_REPORT_PHYS) ||
--			(c->Request.CDB[0] == HPSA_INQUIRY)) &&
--			((c->err_info->CommandStatus == CMD_DATA_OVERRUN) ||
--			(c->err_info->CommandStatus == CMD_DATA_UNDERRUN))) {
--			complete = c->busaddr;
--			status = IO_OK;
--			break;
--		}
--		if (c->err_info->CommandStatus == CMD_UNSOLICITED_ABORT) {
--			dev_warn(&h->pdev->dev, "unsolicited abort %p\n", c);
--			if (c->retry_count < MAX_CMD_RETRIES) {
--				dev_warn(&h->pdev->dev, "retrying %p\n", c);
--				c->retry_count++;
--				/* erase the old error information */
--				memset(c->err_info, 0, sizeof(c->err_info));
--				goto resend_cmd1;
--			}
--			dev_warn(&h->pdev->dev,
--				"retried %p too many times\n", c);
--			status = IO_ERROR;
--			goto cleanup1;
--		}
--		if (c->err_info->CommandStatus == CMD_UNABORTABLE) {
--			dev_warn(&h->pdev->dev,
--				"command could not be aborted.\n");
--			status = IO_ERROR;
--			goto cleanup1;
--		}
--		dev_warn(&h->pdev->dev, "sendcmd error\n");
--		dev_warn(&h->pdev->dev,
--			"cmd = 0x%02x, CommandStatus = 0x%02x\n",
--			c->Request.CDB[0], c->err_info->CommandStatus);
--		if (c->err_info->CommandStatus == CMD_TARGET_STATUS) {
--			dev_warn(&h->pdev->dev, "target status = 0x%02x\n",
--				c->err_info->ScsiStatus);
--			if (c->err_info->ScsiStatus == 2) /* chk cond */
--				dev_warn(&h->pdev->dev, "sense key = 0x%02x\n",
--					0xf & c->err_info->SenseInfo[2]);
--		}
--
--		status = IO_ERROR;
--		goto cleanup1;
--
--	} while (1);
--
--cleanup1:
--	hpsa_pci_unmap(h->pdev, c, 1, PCI_DMA_BIDIRECTIONAL);
--	return status;
--}
--
--/*
-- * Send a command to the controller, and wait for it to complete.
-- * Used at init time, and during SCSI error recovery.
-- */
--static int sendcmd(__u8 cmd, struct ctlr_info *h, void *buff, size_t size,
--		   __u8 page_code, unsigned char *scsi3addr, int cmd_type)
--{
--	struct CommandList *c;
--	int status;
--
--	c = cmd_alloc(h);
--	if (c == NULL) {
--		dev_warn(&h->pdev->dev, "unable to get memory");
--		return IO_ERROR;
+-				"error flushing cache on controller\n");
 -	}
--	status = fill_cmd(c, cmd, h, buff, size, page_code,
--		scsi3addr, cmd_type);
--	if (status == IO_OK)
--		status = sendcmd_core(h, c);
--	cmd_free(h, c);
--	return status;
--}
--
--/*
-  * Map (physical) PCI mem into (virtual) kernel space
-  */
- static void __iomem *remap_pci_mem(ulong base, ulong size)
++	hpsa_scsi_do_simple_cmd_with_retry(h, c, PCI_DMA_TODEVICE);
++	if (c->err_info->CommandStatus != 0)
++		dev_warn(&h->pdev->dev,
++			"error flushing cache on controller\n");
+ 	cmd_special_free(h, c);
+ out_of_memory:
+ 	kfree(flush_buf);
 
