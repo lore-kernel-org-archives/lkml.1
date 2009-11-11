@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZKKPgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbZKKPni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZKKPgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 10:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZKKPgI
+	id S1757153AbZKKPni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 10:43:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZKKPnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 10:36:08 -0500
-Received: from stinky.trash.net ([213.144.137.162]:33572 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZKKPgH (ORCPT
+	Wed, 11 Nov 2009 10:43:37 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42189 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348AbZKKPnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 10:36:07 -0500
-Message-ID: <4AFAD9E6.2020109@trash.net>
-Date: Wed, 11 Nov 2009 16:36:06 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Patrick Mullaney <pmullaney@novell.com>
-CC: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, bridge@lists.linux-foundation.org, evb@yahoogroups.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 4/4] venet-macvlan: add new driver to connect a venet
- to a	macvlan netdevice
-References: <20091110222632.24100.14884.stgit@mimic.site> <20091110222812.24100.42756.stgit@mimic.site>
-In-Reply-To: <20091110222812.24100.42756.stgit@mimic.site>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 10:43:37 -0500
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+CC: ranma+kernel@tdiedrich.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-reply-to: <20091111151937.GC20655@yumi.tdiedrich.de> (message from Tobias
+	Diedrich on Wed, 11 Nov 2009 16:19:37 +0100)
+Subject: Re: posix_fadvise/WILLNEED synchronous on fuse/sshfs instead of async?
+References: <20091111151937.GC20655@yumi.tdiedrich.de>
+Message-Id: <E1N8FM6-0007GI-6o@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 11 Nov 2009 16:43:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Mullaney wrote:
-> This driver implements a macvlan device as a venet device that can
-> be connected to vbus. Since it is a macvlan device, it provides
-> a more direct path to the underlying adapter by avoiding the
-> bridge.
+On Wed, 11 Nov 2009, Tobias Diedrich wrote:
+> While trying to use posix_fadvise(...POSIX_FADVISE_WILLNEED) to
+> implement userspace read-ahead (with a bigger read-ahead window than
+> the kernel default) I found that if the underlying filesystem is
+> fuse/sshfs posix_fadvise is no longer doing asynchronous reads:
+> 
+> strace -tt with mnt/testfile on sshfs and server with very slow
+> upstream (ADSL):
+> 5345  00:00:17.334209 open("mnt/testfile", O_RDONLY|O_LARGEFILE) = 3
+> 5345  00:00:18.011383 _llseek(3, 0, [3544379], SEEK_END) = 0
+> 5345  00:00:18.011626 _llseek(3, 0, [0], SEEK_SET) = 0
+> 5345  00:00:18.012393 fadvise64_64(3, 0, 1048576, POSIX_FADV_WILLNEED) = 0
+> 5345  00:01:02.438097 write(1, "[file] File size is 3544379 byte"..., 34) = 34
+> 
+> Note that fadvise takes 40 seconds...
+> Is this expected behaviour?
 
-> --- /dev/null
-> +++ b/kernel/vbus/devices/venet/macvlan.c
-> ...
-> +struct venetmacv {
-> +	struct macvlan_dev mdev;
-> +	unsigned char ll_ifname[IFNAMSIZ];
-> +	struct venetdev dev;
-> +	const struct net_device_ops *macvlan_netdev_ops;
-> +};
+I think this is because fuse limits the number of outstanding
+requests.
 
-macvlan might destroy the device below you when the underlying
-device is unregistered. You need to handle this by releasing
-the venetmacv device. Check out the NETDEV_UNREGISTER case in
-macvlan_device_event().
+In 2.6.31 you can raise these limits in
+
+ /sys/fs/fuse/connections/N/congestion_threshold
+ /sys/fs/fuse/connections/N/max_background
+
+Thanks,
+Miklos
