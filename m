@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbZKKUGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZKKUGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbZKKUGr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:06:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbZKKUGr
+	id S1757373AbZKKUGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbZKKUGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:06:47 -0500
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:49553 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbZKKUGq (ORCPT
+	Wed, 11 Nov 2009 15:06:52 -0500
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52869 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757208AbZKKUGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:06:46 -0500
-Message-ID: <4AFB1958.30201@free.fr>
-Date: Wed, 11 Nov 2009 21:06:48 +0100
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: bblum@andrew.cmu.edu, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       serue@us.ibm.com, menage@google.com
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
- tgid at	once
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <4AF84C68.7010803@free.fr> <4AF8C20C.1070003@cn.fujitsu.com> <4AF93FE5.1080009@free.fr> <4AFA1C70.5070700@cn.fujitsu.com>
-In-Reply-To: <4AFA1C70.5070700@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 11 Nov 2009 15:06:50 -0500
+Subject: Re: [RFC] new -stable tag variant, Git workflow question
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <alpine.LFD.2.01.0911111153390.31845@localhost.localdomain>
+References: <20091110034831.GB26809@elte.hu>
+	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
+	 <20091110193747.GB12686@suse.de> <1257965424.11985.9.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0911111153390.31845@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Nov 2009 14:06:50 -0600
+Message-Id: <1257970010.11985.17.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->>>> Hi Ben,
->>>>
->>>> The current code (with or without your patch) may lead to an error
->>>> because the fork hook can fail and the exit hook is called in all the
->>>> cases making the fork / exit asymmetric.
->>>>
->>>>     
->>>>         
->>> The _current_ code won't lead to this error, because the fork hook
->>> can't fail.
->>>   
->>>       
->> Right, as no subsystem is using both hooks right now, the bug is never
->> triggered and the current code won't lead to an error.
->> But from my POV, there is a bug hidden in a corner waiting for a
->> subsystem to make use of the fail-able fork / exit :)
->>
->>     
->
-> Actually the freezer subsystem is using the fork hook, but it doesn't
-> need to be able to fail it.
->
-> I don't think we can claim this a bug. If there is a new subsystem
-> that needs fail-able fork hook, it has to extent the hook interface
-> and adjust the code to meet its needs.
->
-> We always adjust our code to meet new needs, don't we?
->   
-Sure.
+On Wed, 2009-11-11 at 12:00 -0800, Linus Torvalds wrote:
+> 
+> On Wed, 11 Nov 2009, James Bottomley wrote:
+> > 
+> > The slight problem is that further down, to generate the patch the
+> > script uses git format-patch -k --stdout commit^..commit.  For a merge
+> > commit, this will generate a patch equivalent to the entire branch that
+> > was merged, even though the commit message will only pick out some of
+> > these ... is this OK?
+> 
+> Don't do that.
+> 
+> Since you want to show a single commit, not a commit range, don't use 
+> format-patch, use something like
+> 
+> 	git show --pretty=email -M --cc --stat $commit
+> 
+> instead. That will not show the difference between a commit and its 
+> first parent (which for a merge diff is more than one commit, and can be 
+> absolutely _huge_), but will show just the named commit (which for a merge 
+> commit will usually be an empty diff, but will show how conflicts were 
+> resolved if they weren't just taken from one or the other side).
+> 
+> (Of course, maybe you'll want to change the exact flags in question. For 
+> example, '--stat' for merge commits is often useful, but only if the merge 
+> was done by an upper-level maintainer. Anybody who does reverse merges 
+> will just get totally meaningless diffstats, since the diffstat is always 
+> done against the first parent, so anybody who does back-merges will see 
+> the stat of everthing _I_ have merged in the meantime, which is generally 
+> not useful)
 
->>>> I will take the usual example with a cgroup with a counter of tasks, in
->>>> the fork hook it increments the counter, in the exit hook it decrements
->>>> the counter. There is one process in the cgroup, hence the counter value
->>>> is 1. Now this process forks and the fork hook fails before the task
->>>> counter is incremented to 2, this is not detected in copy process
->>>> function because the cgroup_fork_callbacks does not return an error, so
->>>> the process will be forked without error and when the process will exits
->>>> the counter will be decremented reaching 0 instead of 1.
->>>>
->>>> IMO, the correct fix should be to make the fork hook to return an error
->>>> and have the cgroup to call the exit method of the subsystem where the
->>>> fork hook was called. For example, there are 10 subsystems using the
->>>> fork / exit hooks, when the a process forks, the fork callbacks is
->>>> called for these subsystems but, let's say, the 3rd fails. So we undo,
->>>> by calling the exit hooks of the first two.
->>>>
->>>> I wrote a patchset to consolidate the hooks called in the cgroump for
->>>> fork and exit, and one of them does a rollback for the fork hook when an
->>>> error occurs. I added an attachment the patch as an example.
->>>>
->>>>     
->>>>         
->>> I'd like to see this patch sent with another patch that needs this
->>> fail-able fork() hook.
->>>
->>> Note this patch is not doing a _fix_, but does an extension. And
->>> for now, this extension is not needed.
->>>   
->>>       
->> I don't know, may be it could be interesting to implement that before
->> more subsystems make use of these hooks.
->> This is not critical, that can be sent later, separately from this
->> patchset of course.
->>
->>     
->
-> We tend to remove code that is not used. For example, we may remove
-> subsys->bind() interface, because no one is using it, though it has
-> been there for years.
->
-> So adding things that are not used is normally not good.
->   
-Makes sense.
+Right ... that's why I was wondering if Greg still needs the diff.  If
+not, I'll just send standard git log output with no diff.  If he does,
+I'll use something like the above.
 
-Thanks
-  -- Daniel
+So, now that you're showing an interest in all of this, how about I send
+you the final update hook to add to your tree?  It will produce less
+latency than the cron job I run on kernel.org to pull your tree into one
+I have here ever twenty minutes or so and run the hooks.
+
+James
+
 
