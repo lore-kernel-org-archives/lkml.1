@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZKKHs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZKKHt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbZKKHs7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZKKHs7
+	id S1756715AbZKKHt0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbZKKHtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:48:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47254 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Nov 2009 02:49:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48298 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755525AbZKKHs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:48:58 -0500
-Date: Wed, 11 Nov 2009 08:48:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Message-ID: <20091111074830.GA10310@elte.hu>
-References: <4AF7D820.5040503@kernel.org>
- <200911091315.13151.rjw@sisk.pl>
- <4AFA210B.3020207@kernel.org>
+	id S1753761AbZKKHtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:49:24 -0500
+Date: Wed, 11 Nov 2009 07:48:37 GMT
+From: tip-bot for Michael Cree <mcree@orcon.net.nz>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, ink@jurassic.park.msu.ru,
+       tglx@linutronix.de, rth@twiddle.net, mingo@elte.hu, mcree@orcon.net.nz
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       ink@jurassic.park.msu.ru, tglx@linutronix.de, rth@twiddle.net,
+       mingo@elte.hu, mcree@orcon.net.nz
+In-Reply-To: <20091111074302.GA3728@omega>
+References: <20091111074302.GA3728@omega>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Test -fstack-protector-all compiler option for inclusion in CFLAGS
+Message-ID: <tip-5d7bdab75cd56d2bdc0986ae5546be3b09fea70a@git.kernel.org>
+Git-Commit-ID: 5d7bdab75cd56d2bdc0986ae5546be3b09fea70a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AFA210B.3020207@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  5d7bdab75cd56d2bdc0986ae5546be3b09fea70a
+Gitweb:     http://git.kernel.org/tip/5d7bdab75cd56d2bdc0986ae5546be3b09fea70a
+Author:     Michael Cree <mcree@orcon.net.nz>
+AuthorDate: Wed, 11 Nov 2009 20:43:03 +1300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 11 Nov 2009 08:46:45 +0100
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+perf tools: Test -fstack-protector-all compiler option for inclusion in CFLAGS
 
-> 
-> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
-> 
-> to get area is below 1M
-> 
-> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/include/asm/acpi.h  |    2 +-
->  arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
->  arch/x86/kernel/setup.c      |   13 +++++++------
->  3 files changed, 17 insertions(+), 13 deletions(-)
+Some architectures (e.g. Alpha) do not support the
+-fstack-protector-all compiler option and the use of the option
+with -Werror causes the compiler to abort and the build fails.
 
-Looks good. Rafael, Peter, does it look good to you too?
+Test that the compiler supports -fstack-protector-all before
+inclusion in CFLAGS.
 
-	Ingo
+Signed-off-by: Michael Cree <mcree@orcon.net.nz>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <20091111074302.GA3728@omega>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/Makefile |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index b9509b1..e6d4272 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -207,7 +207,7 @@ ifndef PERF_DEBUG
+   CFLAGS_OPTIMIZE = -O6
+ endif
+ 
+-CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+@@ -259,6 +259,9 @@ PTHREAD_LIBS = -lpthread
+ # explicitly what architecture to check for. Fix this up for yours..
+ SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
+ 
++ifeq ($(shell sh -c "echo 'int foo(void) {char X[2]; return 3;}' | $(CC) -x c -c -Werror -fstack-protector-all - -o /dev/null >/dev/null 2>&1 && echo y"), y)
++  CFLAGS := $(CFLAGS) -fstack-protector-all
++endif
+ 
+ 
+ ### --- END CONFIGURATION SECTION ---
