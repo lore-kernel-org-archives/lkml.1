@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZKKJdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZKKJe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbZKKJdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZKKJdt
+	id S1755719AbZKKJe3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 04:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZKKJe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:33:49 -0500
-Received: from 1wt.eu ([62.212.114.60]:50997 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753308AbZKKJds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:33:48 -0500
-Date: Wed, 11 Nov 2009 10:32:58 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091111093258.GE560@1wt.eu>
-References: <4AF9D8E2.7050205@zytor.com> <20091110220652.GE26633@1wt.eu> <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu> <4AF9ED78.3000106@zytor.com> <20091111055220.GA560@1wt.eu> <4AFA569E.9040206@zytor.com> <20091111063617.GD560@1wt.eu> <4AFA6E50.7030808@zytor.com>
+	Wed, 11 Nov 2009 04:34:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55561 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZKKJe1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 04:34:27 -0500
+Subject: Re: Radeon KMS status (Re: [git pull] drm radeon kms.)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net, glisse@freedesktop.org
+In-Reply-To: <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie>
+References: <alpine.DEB.2.00.0911102313310.29664@skynet.skynet.ie>
+	 <1257926475.23203.24.camel@twins>
+	 <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 11 Nov 2009 10:33:48 +0100
+Message-ID: <1257932028.23203.74.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFA6E50.7030808@zytor.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 11:57:04PM -0800, H. Peter Anvin wrote:
-> On 11/10/2009 10:36 PM, Willy Tarreau wrote:
-> >>
-> >> Do you have *any* *evidence* *whatsoever* for that assertion?!
+On Wed, 2009-11-11 at 09:14 +0000, Dave Airlie wrote:
+> > Hi Dave,
 > > 
-> > No, just basic feeling based on implementation cost and difficulty
-> > vs gains as I explained.
+> > I was wondering about the current state of Radeon KMS, how far are we
+> > from having it removed from staging?
 > 
-> Quite on the contrary; in hardware it would be pretty hard to *not* do
-> the right thing.
-
-It just depends on how the instruction prefetcher is implemented.
-If the check is only performed on the first byte of the opcode,
-we can miss the tail. In my experience, intel processors have
-been doing instruction checks right, but I have no reason to be
-absolutely certain that all other vendors do that right, especially
-those targetting cheap embedded systems.
-
-Eventhough this one is not for this precise case, here's an example
-of such a missed boundary check :
-
-  http://download.intel.com/design/processor/specupdt/315593.pdf
-
-AK27: "general protection fault may not be signaled on data segment
-       limit violation above 4-G limit". Status: "no fix".
-
-Note that I don't find this can present a significant vulnerability
-risk. Maybe if someone comes with a concrete case where it is a real
-trouble, they will fix it.
-
-> >> I personally will consider something that doesn't implement proper
-> >> security check to be a potential security hole and will NAK the patch.
-> > 
-> > Even in the case of the NOPL instruction ? I clearly don't see
-> > the potential security hole !
-> > 
+> I'm sort of thinking the next merge window of moving the enable option 
+> into the kernel proper. We still have a metric shitload of work to get to 
+> feature parity with current userspace drivers and we've done no 
+> optimisation work on the rendering portion of the stack so I'm not sure 
+> freezing the API isn't a bit premature, however maybe the API we have is 
+> good enough to support and we can add new ioctls to make it go faster if 
+> we require.
 > 
-> You have it backwards.  Prove that there *isn't* one and we'll talk.
+> Jerome has proposed some API changes but we really haven't had time to 
+> validate them in any useful way.
 
-You're not helping. You're asking me to prove that something has no
-issue, all I can say is that it does not have any issue I can imagine.
-Proving the opposite with an example would be easier.
+I by no means intend to rush things along, so if you think you need more
+time, please take it ;-)
 
-All I can say is that executing a NOP results in no state change in
-the processor except the instruction pointer which points to the
-next instruction after execution. Since a NOP changes nothing, it
-cannot be used alone to provide any privilege, access to data or
-any such thing. Since it does not perform any jump, it cannot either
-be used to take back control of the execution flow. And it is certain
-that the next instruction after it will be executed, so if the NOP
-crosses a page boundary and completes on a non-executable one, the
-next instruction will trigger the PF.
+Just wanted to know where we stand... I'll try the Radeon KMS thing
+again once I get through this mountain of email that accumulated over
+the vacation and let you know how the current bits work.
 
-So I can't see how a NOP can be used to circumvent any protection.
-
-Willy
-
+Last time I tried KMS swapped the two DVI outputs wrt. the !KMS setup,
+which is rather annoying during the transition period, but nothing I
+can't live with once the stuff is stable enough to use all day.
