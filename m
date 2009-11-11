@@ -1,57 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbZKKEc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZKKEco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbZKKEc6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 23:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbZKKEc5
+	id S1756673AbZKKEco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 23:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZKKEcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 23:32:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42415 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756683AbZKKEc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 23:32:57 -0500
-Date: Wed, 11 Nov 2009 15:33:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Julia Lawall <julia@diku.dk>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: linux-next: manual merge of the pcmcia tree with the wireless tree
-Message-Id: <20091111153302.0f5074ef.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Tue, 10 Nov 2009 23:32:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49019
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752566AbZKKEcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 23:32:43 -0500
+Date: Tue, 10 Nov 2009 20:33:09 -0800 (PST)
+Message-Id: <20091110.203309.51882852.davem@davemloft.net>
+To: ben@decadent.org.uk
+Cc: samuel@sortiz.org, irda-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 41/75] irda-usb: declare MODULE_FIRMWARE
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1257630862.15927.441.camel@localhost>
+References: <1257630862.15927.441.camel@localhost>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dominik,
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Sat, 07 Nov 2009 21:54:22 +0000
 
-Today's linux-next merge of the pcmcia tree got a conflict in
-drivers/net/wireless/ray_cs.c between commit
-40cca2919c1994c01addfac2320ee77f4b9e12cf ("drivers/net/wireless: correct
-check on CCS_START_NETWORK") from the wireless tree and commit
-624dd66957e53e15cf40e937b50597c4d41f0e99 ("pcmcia: use dynamic debug
-infrastructure, deprecate CS_CHECK (ray-cs.c)") from the pcmcia tree.
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/net/wireless/ray_cs.c
-index 5ee9d2a,28db791..0000000
---- a/drivers/net/wireless/ray_cs.c
-+++ b/drivers/net/wireless/ray_cs.c
-@@@ -2074,8 -2065,8 +2065,8 @@@ static irqreturn_t ray_interrupt(int ir
-  				del_timer(&local->timer);
-  				local->timer.expires = jiffies + HZ * 5;
-  				local->timer.data = (long)local;
- -				if (status == CCS_START_NETWORK) {
- +				if (cmd == CCS_START_NETWORK) {
-- 					DEBUG(0,
-+ 					dev_dbg(&link->dev,
-  					      "ray_cs interrupt network \"%s\" start failed\n",
-  					      local->sparm.b4.a_current_ess_id);
-  					local->timer.function = &start_net;
+Applied to net-next-2.6
