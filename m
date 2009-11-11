@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZKKHvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZKKHvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbZKKHvE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZKKHvD
+	id S1756839AbZKKHvo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZKKHvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:51:03 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.31.27]:58231 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753761AbZKKHvC (ORCPT
+	Wed, 11 Nov 2009 02:51:43 -0500
+Received: from mga10.intel.com ([192.55.52.92]:48474 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755707AbZKKHvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:51:02 -0500
-Message-ID: <4AFA6CEB.6020202@ladisch.de>
-Date: Wed, 11 Nov 2009 08:51:07 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 11 Nov 2009 02:51:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,721,1249282800"; 
+   d="scan'208";a="745845982"
+Date: Wed, 11 Nov 2009 15:51:25 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Mark the thermal init functions __init
+Message-ID: <20091111075125.GA17900@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Andreas Herrmann <herrmann.der.user@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86, ucode-amd: Load ucode-patches once and not separately
- fo each CPU
-References: <20091110110601.GG30802@alberich.amd.com>	 <20091110110723.GH30802@alberich.amd.com> <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
-In-Reply-To: <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Adamushko wrote:
-> btw., if we could safely assume that all the cpus after the ucode
-> upgrade share the same version/patch-level of ucode, we would be able
-> to cache a single ucode instance once and use it for all. I don't
-> recall anyone clearly stating that such multi-cpu-type systems can't
-> really exist.
-> 
-> e.g. is it possible to have AMD systems with cpus which differ from
-> each other not only by their revisions (patch_level)?
+Mark the thermal init functions __init so that the init memory can be freed.
 
-The Revision Guide for AMD Family 10h Processors (#41322) says, in
-section "Mixed Silicon Support", that the Opteron B steppings can be
-used with each other (DR-BA, DR-B2, DR-B3; CPUID 00100F2xh).  Are
-different steppings considered equivalent?
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-Clemens
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 7f3cf36..8a73d5c 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -256,7 +256,7 @@ asmlinkage void smp_thermal_interrupt(struct pt_regs *regs)
+ 	ack_APIC_irq();
+ }
+ 
+-void mcheck_intel_therm_init(void)
++void __init mcheck_intel_therm_init(void)
+ {
+ 	/*
+ 	 * This function is only called on boot CPU. Save the init thermal
+@@ -268,7 +268,7 @@ void mcheck_intel_therm_init(void)
+ 		lvtthmr_init = apic_read(APIC_LVTTHMR);
+ }
+ 
+-void intel_init_thermal(struct cpuinfo_x86 *c)
++void __init intel_init_thermal(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 	int tm2 = 0;
