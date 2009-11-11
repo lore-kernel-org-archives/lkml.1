@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZKKUjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbZKKUnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758909AbZKKUjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZKKUjr
+	id S1758924AbZKKUnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbZKKUnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:39:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37485 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756898AbZKKUjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:39:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jens Axboe <jens.axboe@oracle.com>, Romit Dasgupta <romit@ti.com>
-Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before invoking kthread_stop on them
-Date: Wed, 11 Nov 2009 21:41:12 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <1257928216.15415.57.camel@boson> <200911111230.58479.rjw@sisk.pl> <20091111193719.GR8742@kernel.dk>
-In-Reply-To: <20091111193719.GR8742@kernel.dk>
+	Wed, 11 Nov 2009 15:43:20 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:58526 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755717AbZKKUnT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:43:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=qjcBohuVHMwdF4DjP/0KmCfkFg4Au9nXK0sHzGvzhU1Bvf+XjYKptLPHB2BwcZAE4J
+         fCFfKnu1ryBDEJ06iTtUh4YhZVKcZXQ3hhobC4Anf+s5usLRuW/70S8GFl6wcA5RV/2p
+         r8D3bvIhUIF0y89/TblHE5Fr5oFtudYZTmkig=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911112141.12437.rjw@sisk.pl>
+In-Reply-To: <1250617512-23567-1-git-send-email-jon-hunter@ti.com>
+References: <1250617512-23567-1-git-send-email-jon-hunter@ti.com>
+Date: Wed, 11 Nov 2009 12:43:23 -0800
+X-Google-Sender-Auth: 905a819beffbeebf
+Message-ID: <1f1b08da0911111243s2615c22ake73a3242becb7b70@mail.gmail.com>
+Subject: Re: [PATCH 0/2] Dynamic Tick: Enabling longer sleep times on 32-bit 
+	machines
+From: john stultz <johnstul@us.ibm.com>
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 November 2009, Jens Axboe wrote:
-> On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
-> > On Wednesday 11 November 2009, Pavel Machek wrote:
-> > > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
-> > > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
-> > > > needs to exit.
-> > > 
-> > > 
-> > > > Signed-off-by: Romit Dasgupta <romit@ti.com>
-> > > 
-> > > Ok, its slightly "interesting", but better than modifying common
-> > > code. Looks ok to me.
-> > > 
-> > > ACK.
-> > 
-> > Agreed.
-> > 
-> > Jens, any objections?
-> 
-> Nope, looks fine to me. Though I'd probably prefer just doing an
-> unconditional PF_FROZEN clear.
-> 
-> /*
->  * Force unfreeze of the bdi threads before stopping it, since otherwise
->  * it would never exit if it is stuck in the refrigerator.
->  */
-> list_for_each_entry(wb, &bdi->wb_list, list) {
-> 	wb->task->flags &= ~PF_FROZEN;
-> 	kthread_stop(wb->task);
-> }
-> 
-> And the comment too, it's not enough to stuff this into the commit.
+On Tue, Aug 18, 2009 at 9:45 AM, Jon Hunter <jon-hunter@ti.com> wrote:
+> From: Jon Hunter <jon-hunter@ti.com>
+>
+> This is a resend of the patch series shown here:
+> http://www.spinics.net/lists/kernel/msg891029.html
+>
+> This patch series has been rebase on the linux-2.6-tip timers/core branch per
+> request from Thomas Gleixner.
+>
+> This patch series ensures that the wrapping of the clocksource will not be
+> missed if the kernel sleeps for longer periods and allows 32-bit machines to
+> sleep for longer than 2.15 seconds.
+>
+> Jon Hunter (2):
+>  Dynamic Tick: Prevent clocksource wrapping during idle
+>  Dynamic Tick: Allow 32-bit machines to sleep for more than 2.15
+>    seconds
 
-The last version had the changelog fixed.
+I could have sworn this was in mainline by now, but I recently was
+looking for the code and can't find it there or in -tip either.
 
-Romit, please rework as suggested by Jens and resubmit.
+Thomas, are they just hiding somewhere I can't find?
 
-Thanks,
-Rafael
+Jon, you've been terribly patient and great about resubmitting these
+patches over and over. If I'm not just being crazy and missing these
+patches in front of my nose, are you still willing to submit them
+again? I think they'll be quite useful as folks start pushing the NOHZ
+idle times out.
+
+thanks
+-john
