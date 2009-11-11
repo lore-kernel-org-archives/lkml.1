@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbZKKAQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZKKASp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbZKKAQz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 19:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZKKAQz
+	id S1752836AbZKKASp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 19:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZKKASp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 19:16:55 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36324 "EHLO mx1.suse.de"
+	Tue, 10 Nov 2009 19:18:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:37157 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbZKKAQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 19:16:54 -0500
-Date: Tue, 10 Nov 2009 16:11:00 -0800
-From: Greg KH <gregkh@suse.de>
-To: Harik <harik.attar@gmail.com>
-Cc: Thiago Farina <tfransosi@gmail.com>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH] drivers/serial: remove BAUD_TABLE_SIZE macro.
-Message-ID: <20091111001100.GA14329@suse.de>
-References: <1257428794-9203-1-git-send-email-tfransosi@gmail.com>
- <c0c067900911101609v5ca52bb1h98a7bde2cf625ad@mail.gmail.com>
+	id S1751775AbZKKASo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 19:18:44 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: =?utf-8?q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Subject: Re: [PATCH v3 2/2] bsearch: prevent overflow when computing middle comparison element
+Date: Wed, 11 Nov 2009 10:48:46 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk,
+       linux-kernel@vger.kernel.org
+References: <cover.1257778258.git.andre.goddard@gmail.com> <d748022cff75d9c09afc93b77cb16a683136cd13.1257778258.git.andre.goddard@gmail.com>
+In-Reply-To: <d748022cff75d9c09afc93b77cb16a683136cd13.1257778258.git.andre.goddard@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c0c067900911101609v5ca52bb1h98a7bde2cf625ad@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911111048.46705.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 07:09:30PM -0500, Harik wrote:
-> On Thu, Nov 5, 2009 at 8:46 AM, Thiago Farina <tfransosi@gmail.com> wrote:
-> > This macro is a duplicated of ARRAY_SIZE defined in kernel api,
-> > so just use it instead.
-> 
-> > -       UBAUD = PUT_FIELD(UBAUD_DIVIDE,    hw_baud_table[i].divisor) |
-> > +       UBAUD = PUT_FIELD(UBAUD_DIVIDE,    hw_baud_table[i].divisor) |
-> 
-> Random bit of whitespace got in the patch
+On Tue, 10 Nov 2009 02:12:31 am AndrÃ© Goddard Rosa wrote:
+> It's really difficult to occur in practice because the sum of the lower
+> and higher limits must overflow an int variable, but it can occur when
+> working with large arrays. We'd better safe than sorry by avoiding this
+> overflow situation when computing the middle element for comparison.
 
-What patch?
+I always thought the obvious answer was:
 
-> Since nobody directly owns this file, CCing maintainers listed for serial_core
+	mid = start + (end - start)/2;
 
-Sure, care to point me at a correct one?
-
-thanks,
-
-greg k-h
+Your version does nothing for 32 bit platforms...
+Rusty.
