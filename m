@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbZKKVg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZKKVhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbZKKVg7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbZKKVg4
+	id S932068AbZKKVhI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbZKKVhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:36:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12474 "EHLO mx1.redhat.com"
+	Wed, 11 Nov 2009 16:37:05 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6457 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759240AbZKKVgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:36:55 -0500
-Date: Wed, 11 Nov 2009 22:31:58 +0100
+	id S1759324AbZKKVg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:36:58 -0500
+Date: Wed, 11 Nov 2009 22:32:01 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] ptrace: powerpc: implement user_single_step_siginfo()
-Message-ID: <20091111213158.GA10650@redhat.com>
+Subject: [PATCH 3/5] ptrace: change tracehook_report_syscall_exit() to
+	handle stepping
+Message-ID: <20091111213201.GA10653@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,43 +27,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Suggested by Roland.
 
-Implement user_single_step_siginfo() for powerpc.
+Change tracehook_report_syscall_exit() to look at step flag and send
+the trap signal if needed.
+
+This change affects ia64, microblaze, parisc, powerpc, sh.  They pass
+nonzero "step" argument to tracehook but since it was ignored the tracee
+reports via ptrace_notify(), this is not right and not consistent.
+
+	- PTRACE_SETSIGINFO doesn't work
+
+	- if the tracer resumes the tracee with signr != 0 the new signal
+	  is generated rather than delivering it
+
+	- If PT_TRACESYSGOOD is set the tracee reports the wrong exit_code
+
+I don't have a powerpc machine, but I think this test-case should
+see the difference:
+
+	#include <unistd.h>
+	#include <sys/ptrace.h>
+	#include <sys/wait.h>
+	#include <assert.h>
+	#include <stdio.h>
+
+	int main(void)
+	{
+		int pid, status;
+
+		if (!(pid = fork())) {
+			assert(ptrace(PTRACE_TRACEME) == 0);
+			kill(getpid(), SIGSTOP);
+
+			getppid();
+
+			return 0;
+		}
+
+		assert(pid == wait(&status));
+		assert(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD) == 0);
+
+		assert(ptrace(PTRACE_SYSCALL, pid, 0,0) == 0);
+		assert(pid == wait(&status));
+
+		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+		assert(pid == wait(&status));
+
+		if (status == 0x57F)
+			return 0;
+
+		printf("kernel bug: status=%X shouldn't have 0x80\n", status);
+		return 1;
+	}
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 Acked-by: Roland McGrath <roland@redhat.com>
 ---
 
- arch/powerpc/include/asm/ptrace.h |    2 ++
- arch/powerpc/kernel/traps.c       |    9 +++++++++
- 2 files changed, 11 insertions(+)
+ include/linux/tracehook.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- TH/arch/powerpc/include/asm/ptrace.h~2_PPC_HELPER	2009-11-10 01:03:23.000000000 +0100
-+++ TH/arch/powerpc/include/asm/ptrace.h	2009-11-10 21:48:53.000000000 +0100
-@@ -140,6 +140,8 @@ extern void user_enable_single_step(stru
- extern void user_enable_block_step(struct task_struct *);
- extern void user_disable_single_step(struct task_struct *);
- 
-+#define ARCH_HAS_USER_SINGLE_STEP_INFO
+--- TH/include/linux/tracehook.h~3_TRACEHOOK_HANDLE_STEPPING	2009-11-10 01:03:22.000000000 +0100
++++ TH/include/linux/tracehook.h	2009-11-10 22:00:37.000000000 +0100
+@@ -134,6 +134,13 @@ static inline __must_check int tracehook
+  */
+ static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
+ {
++	if (step) {
++		siginfo_t info;
++		user_single_step_siginfo(current, regs, &info);
++		force_sig_info(SIGTRAP, &info, current);
++		return;
++	}
 +
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __KERNEL__ */
---- TH/arch/powerpc/kernel/traps.c~2_PPC_HELPER	2009-11-10 01:06:41.000000000 +0100
-+++ TH/arch/powerpc/kernel/traps.c	2009-11-10 21:52:45.000000000 +0100
-@@ -174,6 +174,15 @@ int die(const char *str, struct pt_regs 
- 	return 0;
+ 	ptrace_report_syscall(regs);
  }
  
-+void user_single_step_siginfo(struct task_struct *tsk,
-+				struct pt_regs *regs, siginfo_t *info)
-+{
-+	memset(info, 0, sizeof(*info));
-+	info->si_signo = SIGTRAP;
-+	info->si_code = TRAP_TRACE;
-+	info->si_addr = (void __user *)regs->nip;
-+}
-+
- void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
- {
- 	siginfo_t info;
 
