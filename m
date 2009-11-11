@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZKKHpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZKKIHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbZKKHpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbZKKHpy
+	id S1756919AbZKKIHG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 03:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZKKIHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:45:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43997 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbZKKHpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:45:54 -0500
-Date: Wed, 11 Nov 2009 08:45:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091111074542.GB25132@elte.hu>
-References: <20091025225342.007138f5@infradead.org>
- <20091111020108.GA11423@localhost>
- <20091110223456.01ef355f@infradead.org>
- <4AFA6AEF.5060306@garzik.org>
+	Wed, 11 Nov 2009 03:07:05 -0500
+Received: from gesmail.globaledgesoft.com ([203.76.137.4]:37807 "EHLO
+	gesmail.globaledgesoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754835AbZKKIHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 03:07:03 -0500
+Message-ID: <4AFA6BEF.8040409@globaledgesoft.com>
+Date: Wed, 11 Nov 2009 13:16:55 +0530
+From: Naveen BN <naveen.bn@globaledgesoft.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFA6AEF.5060306@garzik.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ram <ramaswamy.bm@globaledgesoft.com>
+CC: linux-kernel@vger.kernel.org,
+       Chaitra Shankar <chaitra.shankar@globaledgesoft.com>,
+       timo.teras@gmail.com
+Subject: Re: Error while creating security association using ip xfrm command
+References: <4AE6D26D.7020607@globaledgesoft.com> <4AE6DC72.4010208@iki.fi> <4AE820B4.3070400@globaledgesoft.com> <20091028140923.GD101657@sun.com> <4AE9228D.1070107@globaledgesoft.com> <4AE938F8.9060008@iki.fi> <4AF7B4FE.5050801@globaledgesoft.com> <4AF7C346.7070105@globaledgesoft.com> <4AF7C7C5.6060204@globaledgesoft.com> <4AF84F22.4020500@iki.fi> <4AF97F5D.4060802@globaledgesoft.com> <4AF9A77D.2060302@iki.fi> <4AFA4A35.30203@globaledgesoft.com>
+In-Reply-To: <4AFA4A35.30203@globaledgesoft.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+Problem can be solved by using the below command 
 
-> On 11/11/2009 01:34 AM, Arjan van de Ven wrote:
-> >Wu Fengguang<fengguang.wu@intel.com>  wrote:
-> >>Maybe this is enough for POWERTOP, however for general use, the dirty
-> >>type(data/metadata) and inode number may be valuable to some users?
-> >
-> >what can a user do with an inode number????
-> 
-> Inode numbers have always been visible to userspace...  IIRC, tar(1) 
-> uses the st_ino member of struct stat to detect hard links in certain 
-> cases.  ls(1) displays inode numbers with -i, find(1) looks for them 
-> with -inum, ...
+ip xfrm state add src 172.16.8.36 dst 172.16.8.38 proto esp spi 0x800 
+mode tunnel reqid 0 replay-window 32 auth sha1 
+0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc aes 
+0x5c0cfa9672ce67ba545b593076dfb278 sel src 172.16.8.36 dst 172.16.8.38 
+proto udp  dport 300
+please refer http://man.he.net/man8/ip
 
-Without an inode->vfs-name lookup/matching service it's of limited 
-utility though to developers and users. So inode numbers are fine (as 
-nicely unique physical identifiers)- as long as corresponding vfs name 
-string is available too.
+Regards
+Naveen
+Ram wrote:
+> Directing the query to Linux kernel networking group :
+>
+> _*Query :*_
+> *I am trying to create a security association using ip xfrm command, 
+> but i get an error message saying
+> "*RTNETLINK answers: Function not implemented*" and ip xfrm state 
+> succeeds in displaying  sa  written using setkey .
+>
+> ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
+> 0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
+> 0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
+> 0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
+>
+> ERROR message => "RTNETLINK answers: Function not implemented" 
+> Please let me know what is the problem here .
+>
+>
+>
+> *Timo Teräs wrote:
+>> Naveen BN wrote:
+>>> *I am trying to create a security association using ip xfrm command, 
+>>> but i get an message saying
+>>> "*RTNETLINK answers: Function not implemented*" and ip xfrm state 
+>>> succeeds in displaying  sa  written using setkey .
+>>>
+>>> ip xfrm state add src 192.168.1.20 dst 192.168.1.5 proto esp spi 
+>>> 0x354cb04b mode tunnel reqid 16385 replay-window 32 auth hmac 
+>>> 0xecf02a5cf6568556e1bdcd961c7ec3f92afd01cc enc cbc 
+>>> 0x5c0cfa9672ce67ba545b593076dfb278 sel src 0.0.0.0/0 dst 0.0.0.0/0
+>>>
+>>> ERROR message => "RTNETLINK answers: Function not implemented" *
+>>
+>> Please, direct "ip xfrm" and Netlink questions to Linux kernel
+>> networking mailing list.
+>>
+>> - Timo
+>>
 
-	Ingo
