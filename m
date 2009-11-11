@@ -1,65 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbZKKWhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZKKWh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbZKKWhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 17:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbZKKWhk
+	id S1759552AbZKKWh4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 17:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbZKKWhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 17:37:40 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:44684 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759461AbZKKWhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 17:37:39 -0500
-Subject: Re: [PATCH 0/2] Dynamic Tick: Enabling longer sleep times on
- 32-bit machines
-From: john stultz <johnstul@us.ibm.com>
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4AFB2547.7080008@ti.com>
-References: <1250617512-23567-1-git-send-email-jon-hunter@ti.com>
-	 <1f1b08da0911111243s2615c22ake73a3242becb7b70@mail.gmail.com>
-	 <4AFB2547.7080008@ti.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 11 Nov 2009 14:37:21 -0800
-Message-ID: <1257979042.3100.88.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 17:37:55 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:46265 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759510AbZKKWhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 17:37:53 -0500
+Date: Wed, 11 Nov 2009 14:38:33 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, hpa@zytor.com,
+       Nathan Lynch <nathanl@austin.ibm.com>, matthltc@suka.localdomain,
+       arnd@arndb.de, roland@redhat.com, mtk.manpages@googlemail.com,
+       linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v12][PATCH 0/9] Implement eclone() syscall
+Message-ID: <20091111223833.GA24988@suka>
+References: <20091111043440.GA9377@suka>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111043440.GA9377@suka>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 14:57 -0600, Jon Hunter wrote:
-> john stultz wrote:
-> > I could have sworn this was in mainline by now, but I recently was
-> > looking for the code and can't find it there or in -tip either.
-> > 
-> > Thomas, are they just hiding somewhere I can't find?
-> > 
-> > Jon, you've been terribly patient and great about resubmitting these
-> > patches over and over. If I'm not just being crazy and missing these
-> > patches in front of my nose, are you still willing to submit them
-> > again? I think they'll be quite useful as folks start pushing the NOHZ
-> > idle times out.
-> 
-> Absolutely! It is still on my to-do list, but unfortunately, I got busy 
-> with a couple other things.
-> 
-> With regard to the last patch set I submitted for this, Thomas had an 
-> issue with one of the patches. I understand the concern, but I am not 
-> sure  which would be the preferred way to handle this. See the below thread:
-> 
-> http://marc.info/?l=linux-kernel&m=125062817124381&w=2
-> 
-> If you or Thomas have any feedback on this, I could re-work the patch 
-> against the latest kernel tree.
+Cc: LKML
 
-Ok. I think Thomas is right there, setting the expiration to
-max_time_delta makes the most sense. Honestly I suspect we don't ever
-hit that case in the current code (no timers for 12 days), so its
-probably an untested code path as it stands.
-
-thanks
--john
-
+Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
+| 
+| Based on discussions on containers mailing list and IRC, we settled on
+| the name eclone(). Please let me know of a better name or if there are
+| other comments on the patchset.
+| 
+| ---
+| 
+| Subject: [v12][PATCH 0/9] Implement eclone() syscall
+| 
+| To support application checkpoint/restart, a task must have the same pid it
+| had when it was checkpointed.  When containers are nested, the tasks within
+| the containers exist in multiple pid namespaces and hence have multiple pids
+| to specify during restart.
+| 
+| This patchset implements a new system call, eclone() that lets a process
+| specify the pids of the child process.
+| 
+| Patches 1 through 6 are helper patches needed for choosing a pid for the
+| child process.
+| 
+| PATCH 8 implements the eclone() system call on x86. The interface defined in
+| PATCH 8 has been ported to s390 and ppc64 architectures, but they will be
+| posted as a separate patchset if this patchset is accepted.
+| 
+| PATCH 9 adds some documentation on the new system call, some/all of which
+| will eventually go into a man page.
+| 
+| Changelog[v12]:
+| 	- Ignore ->child_stack_size when ->child_stack_base is NULL (PATCH 8)
+| 	- Cleanup/simplify example in Documentation/eclone (PATCH 9).
+| 	- Rename sys call to a shorter name, eclone()
+| 
+| Changelog[v11]:
+| 	- [Dave Hansen] Move clone_args validation checks to arch-indpeendent
+| 	  code.
+| 	- [Oren Laadan] Make args_size a parameter to system call and remove
+| 	  it from 'struct clone_args'
+| 
+| Changelog[v10]:
+| 	- [Linus Torvalds] Use PTREGSCALL() implementation for clone rather
+| 	  than the generic system call
+| 	- Rename clone3() to clone_with_pids()
+| 	- Update Documentation/clone_with_pids() to show example usage with
+| 	  the PTREGSCALL implementation.
+| 
+| Changelog[v9]:
+| 	- [Pavel Emelyanov] Drop the patch that made 'pid_max' a property
+| 	  of struct pid_namespace
+| 	- [Roland McGrath, H. Peter Anvin and earlier on, Serge Hallyn] To
+| 	  avoid inadvertent truncation clone_flags, preserve the first
+| 	  parameter of clone3() as 'u32 clone_flags' and specify newer
+| 	  flags in clone_args.flags_high (PATCH 8/9 and PATCH 9/9)
+| 	- [Eric Biederman] Generalize alloc_pidmap() code to simplify and
+| 	  remove duplication (see PATCH 3/9].
+| 	  
+| Changelog[v8]:
+| 	- [Oren Laadan, Louis Rilling, KOSAKI Motohiro]
+| 	  The name 'clone2()' is in use - renamed new syscall to clone3().
+| 	- [Oren Laadan] ->parent_tidptr and ->child_tidptr need to be 64bit.
+| 	- [Oren Laadan] Ensure that unused fields/flags in clone_struct are 0.
+| 	  (Added [PATCH 7/10] to the patchset).
+| 
+| Changelog[v7]:
+| 	- [Peter Zijlstra, Arnd Bergmann]
+| 	  Group the arguments to clone2() into a 'struct clone_arg' to
+| 	  workaround the issue of exceeding 6 arguments to the system call.
+| 	  Also define clone-flags as u64 to allow additional clone-flags.
+| 
+| Changelog[v6]:
+| 	- [Nathan Lynch, Arnd Bergmann, H. Peter Anvin, Linus Torvalds]
+| 	  Change 'pid_set.pids' to 'pid_t pids[]' so sizeof(struct pid_set) is
+| 	  constant across architectures (Patches 7, 8).
+| 	- (Nathan Lynch) Change pid_set.num_pids to unsigned and remove
+| 	  'unum_pids < 0' check (Patches 7,8)
+| 	- (Pavel Machek) New patch (Patch 9) to add some documentation.
+| 
+| Changelog[v5]:
+| 	- Make 'pid_max' a property of pid_ns (Integrated Serge Hallyn's patch
+| 	  into this set)
+| 	- (Eric Biederman): Avoid the new function, set_pidmap() - added
+| 	  couple of checks on 'target_pid' in alloc_pidmap() itself.
+| 
+| === IMPORTANT NOTE:
+| 
+| clone() system call has another limitation - all but one bits in clone-flags
+| are in use and if more new clone-flags are needed, we will need a variant of
+| the clone() system call. 
+| 
+| It appears to make sense to try and extend this new system call to address
+| this limitation as well. The requirements of a new clone system call could
+| then be summarized as:
+| 
+| 	- do everything clone() does today, and
+| 	- give application an ability to choose pids for the child process
+| 	  in all ancestor pid namespaces, and
+| 	- allow more clone_flags
+| 
+| Contstraints:
+| 
+| 	- system-calls are restricted to 6 parameters and clone() already
+| 	  takes 5 parameters, any extension to clone() interface would require
+| 	  one or more copy_from_user().  (Not sure if copy_from_user() of ~40
+| 	  bytes would have a significant impact on performance of clone()).
+| 
+| Based on these requirements and constraints, we explored a couple of system
+| call interfaces (in earlier versions of this patchset). Based on input from
+| Arnd Bergmann and others, the new interface of the system call is: 
+| 
+| 	struct clone_args {
+| 		u64 clone_flags_high;
+| 		u64 child_stack_base;
+| 		u64 child_stack_size;
+| 		u64 parent_tid_ptr;
+| 		u64 child_tid_ptr;
+| 		u32 nr_pids;
+| 		u32 reserved0;
+| 		u64 reserved1;
+| 	};
+| 
+| 	sys_eclone(u32 flags_low, struct clone_args *cargs, int args_size,
+| 			pid_t *pids)
+| 
+| Details of the struct clone_args and the usage are explained in the
+| documentation (PATCH 9/9).
+| 
+| NOTE:
+| 	While this patchset enables support for more clone-flags, actual
+| 	implementation for additional clone-flags is best implemented as
+| 	a separate patchset (PATCH 8/9 identifies some TODOs)
+| 
+| Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
