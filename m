@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZKKLPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZKKL1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbZKKLPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 06:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756342AbZKKLPo
+	id S1751964AbZKKL1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 06:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZKKL1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 06:15:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52741 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbZKKLPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 06:15:43 -0500
-Date: Wed, 11 Nov 2009 12:15:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091111111535.GA25325@elte.hu>
-References: <20091025225342.007138f5@infradead.org>
- <20091111020108.GA11423@localhost>
- <20091110223456.01ef355f@infradead.org>
- <4AFA6AEF.5060306@garzik.org>
- <20091111074542.GB25132@elte.hu>
- <4AFA6E2D.7010709@garzik.org>
+	Wed, 11 Nov 2009 06:27:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:25058 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbZKKL1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 06:27:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iEeFBmcCtLoH+W84fUAyg6VcKa/MSc0IHPHYuTeaI7CoVE329KO3KShd7EAzaezp/+
+         S2q/Rp7hxAxEhl+tvXpLJZEbE9Sdaqy+ozKqDBXb2AYesc6/U4VNOLmeefmZb4tjQzwX
+         eaV4skak86GQ/DdEZNeer3DneQXjtoXWLgyRU=
+Date: Wed, 11 Nov 2009 12:27:33 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, ucode-amd: Load ucode-patches once and not
+ separately fo each CPU
+Message-ID: <20091111112733.GE18592@alberich.amd.com>
+References: <20091110110601.GG30802@alberich.amd.com>
+ <20091110110723.GH30802@alberich.amd.com>
+ <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
+ <4AFA6CEB.6020202@ladisch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AFA6E2D.7010709@garzik.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4AFA6CEB.6020202@ladisch.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 11, 2009 at 08:51:07AM +0100, Clemens Ladisch wrote:
+> Dmitry Adamushko wrote:
+> > btw., if we could safely assume that all the cpus after the ucode
+> > upgrade share the same version/patch-level of ucode, we would be able
+> > to cache a single ucode instance once and use it for all.
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+Hmm, I think all ucode-versions needed in a mixed silicon system need
+to be cached. See below.
 
-> On 11/11/2009 02:45 AM, Ingo Molnar wrote:
-> >
-> >* Jeff Garzik<jeff@garzik.org>  wrote:
-> >
-> >>On 11/11/2009 01:34 AM, Arjan van de Ven wrote:
-> >>>Wu Fengguang<fengguang.wu@intel.com>   wrote:
-> >>>>Maybe this is enough for POWERTOP, however for general use, the dirty
-> >>>>type(data/metadata) and inode number may be valuable to some users?
-> >>>
-> >>>what can a user do with an inode number????
-> >>
-> >>Inode numbers have always been visible to userspace...  IIRC, tar(1)
-> >>uses the st_ino member of struct stat to detect hard links in certain
-> >>cases.  ls(1) displays inode numbers with -i, find(1) looks for them
-> >>with -inum, ...
-> >
-> >Without an inode->vfs-name lookup/matching service it's of limited
-> >utility
-> 
-> Look in the quoted text for one such service...  :)
+> > I don't recall anyone clearly stating that such multi-cpu-type
+> > systems can't really exist.
 
-I'm not sure i understand your point - do you really suggest using 
-find(1) to make traces readable?
+> > e.g. is it possible to have AMD systems with cpus which differ from
+> > each other not only by their revisions (patch_level)?
 
-	Ingo
+Mixed silicon is possible.
+
+So at least in theory this could result in different patch_levels
+because the required microcode is identified via processor revision
+consisting of family/model/stepping.
+
+> The Revision Guide for AMD Family 10h Processors (#41322) says, in
+> section "Mixed Silicon Support", that the Opteron B steppings can be
+> used with each other (DR-BA, DR-B2, DR-B3; CPUID 00100F2xh).  Are
+> different steppings considered equivalent?
+
+The microcode to be loaded is identified by an Equivalent Processor
+ID.  The Equivalent Processor ID is determined with an equivalence
+table which maps the processor revision IDs to Equivalent Processor
+IDs.
+
+Above revision B steppeings have different processor revision IDs:
+(because the stepping differs)
+
+  00100F2Ah (DR-BA)
+  00100F22h (DR-B2)
+  00100F23h (DR-B3)
+
+An example of an equivalence table is
+
+  0x00100F2A; 0x1020
+  0x00100F22; 0x1022
+  0x00100F23; 0x1022
+
+This means when combining DR-BA and DR-B2 (or DR-B3) different ucode
+gets installed for the two processors.
+
+
+Regards,
+Andreas
