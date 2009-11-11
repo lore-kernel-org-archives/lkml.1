@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbZKKIeC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751242AbZKKIjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbZKKIeC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 03:34:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756911AbZKKIeB
+	id S1751242AbZKKIjj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 03:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZKKIjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 03:34:01 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46658 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755719AbZKKIeA (ORCPT
+	Wed, 11 Nov 2009 03:39:39 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:45209 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbZKKIji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 03:34:00 -0500
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: miklos@szeredi.hu, jlayton@redhat.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       ebiederm@xmission.com, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
-       jamie@shareable.org
-In-reply-to: <1257927970.5138.24.camel@heimdal.trondhjem.org> (message from
-	Trond Myklebust on Wed, 11 Nov 2009 17:26:10 +0900)
-Subject: Re: [PATCH 0/2] vfs: ensure that dentries are revalidated on open
- (try #2)
-References: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
-	 <E1N884c-0006Br-Je@pomaz-ex.szeredi.hu> <1257927970.5138.24.camel@heimdal.trondhjem.org>
-Message-Id: <E1N88eK-0006Im-1F@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 11 Nov 2009 09:33:56 +0100
+	Wed, 11 Nov 2009 03:39:38 -0500
+Message-ID: <4AFA784D.1060001@natemccallum.com>
+Date: Wed, 11 Nov 2009 03:39:41 -0500
+From: Nathaniel McCallum <nathaniel@natemccallum.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Devices that ignore USB spec generate invalid modaliases
+References: <4AFA73C7.4070002@natemccallum.com>
+In-Reply-To: <4AFA73C7.4070002@natemccallum.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009, Trond Myklebust wrote:
-> > Having said that, doing revalidation for proc symlinks and bind mounts
-> > (and not just for opens) might make sense.  This is something similar
-> > to FS_REVAL_DOT, so perhaps make it conditional on this flag (or a
-> > new, appropriately named one).
-> 
-> Aren't both proc symlinks and bind mounts pretty much guaranteed to
-> point to a valid dentry?
+On 11/11/2009 03:20 AM, Nathaniel McCallum wrote:
+> Drivers for devices which have bcdDevice conforming to BCD will have no
+> change in modalias output.
 
-It could for example happen that client bind mounts a regular file,
-then the file is unlinked on the server.  Then the bind mounted dentry
-is no longer valid.
+One small clarification. Existing drivers which specify a non-zero lower 
+bound and an upper bound past the next character will have their upper 
+bound changed from 0x9 to 0xf (i.e.: d123[4-9] -> d123[4-9a-f]).  I 
+believe this is the only case where an existing (working) modalias will 
+change.
 
-Thanks,
-Miklos
+Nathaniel McCallum
+
