@@ -1,116 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbZKKSVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZKKS1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbZKKSVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 13:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758360AbZKKSVH
+	id S1758182AbZKKS1n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 13:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZKKS1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 13:21:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12411 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758294AbZKKSVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 13:21:05 -0500
-Date: Wed, 11 Nov 2009 19:13:49 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on
-	resume
-Message-ID: <20091111181349.GA30638@redhat.com>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl> <alpine.LFD.2.01.0911091339290.31845@localhost.localdomain> <200911100119.38019.rjw@sisk.pl> <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain> <4AFA70FB.60706@kernel.org>
+	Wed, 11 Nov 2009 13:27:43 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:58643 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757996AbZKKS1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 13:27:42 -0500
+Date: Wed, 11 Nov 2009 19:27:46 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pcmcia@lists.infradead.org,
+       Harald Welte <laforge@gnumonks.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] pcmcia: fix printk formats
+Message-ID: <20091111182746.GA10094@isilmar.linta.de>
+Mail-Followup-To: Randy Dunlap <randy.dunlap@oracle.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-pcmcia@lists.infradead.org,
+	Harald Welte <laforge@gnumonks.org>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+	akpm <akpm@linux-foundation.org>
+References: <20091111203159.a2a6eeeb.sfr@canb.auug.org.au> <20091111093107.9032f4bb.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AFA70FB.60706@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091111093107.9032f4bb.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11, Tejun Heo wrote:
->
-> One thing that I can think of which might cause this early release is
-> self-requeueing works which assume that only one instance of the
-> function will be executed at any given time.  While preparing to bring
-> down a cpu, worker threads are unbound from the cpu.  After cpu is
-> brought down, the workqueue for that cpu is flushed.  This means that
-> any work which was running or on queue at the time of cpu down will
-> run on a different cpu.  So, let's assume there's a work function
-> which looks like the following,
->
-> void my_work_fn(struct work_struct *work)
-> {
-> 	struct my_struct *me = container_of(work, something...);
->
-> 	DO SOMETHING;
->
-> 	if (--me->todo)
-> 		schedule_work(work);
-> 	else
-> 		free(me);
-> }
->
-> Which will work perfectly as long as all cpus stay alive as the work
-> will be pinned on a single cpu and cwq guarantees that a single work
-> is never executed in parallel.  However, if a cpu is brought down
-> while my_work_fn() was doing SOMETHING and me->todo was above 1,
-> schedule_work() will schedule itself to a different cpu which will
-> happily execute the work in parallel.
->
-> As worker threads become unbound, they may bounce among different cpus
-> while executing and create more than two instances
+Applied to the PCMCIA tree, thanks.
 
-Well, "more than two instances" is not possible in this particular
-case.
-
-But in general I agree. If a self-requeueing work assumes it stays on
-the same CPU or it assumes it can never race with itself, it should hook
-CPU_DOWN_PREPARE and cancel the work. Like slab.c does with reap_work.
-
-This is even documented, the comment above queue_work() says:
-
-	* We queue the work to the CPU on which it was submitted, but if the CPU dies
-	* it can be processed by another CPU.
-
-We can improve things, see http://marc.info/?l=linux-kernel&m=125562105103769
-
-But then we should also change workqueue_cpu_callback(CPU_POST_DEAD).
-Instead of flushing, we should carefully move the pending works to
-another CPU, otherwise the self-requeueing work can block cpu_down().
-
-> Another related issue is the behavior flush_work() when a work ends up
-> scheduled on a different cpu.  flush_work() will only look at a single
-> cpu workqueue on each flush attempt and if the work is not on the cpu
-> or there but also running on other cpus, it won't do nothing about it.
-> So, it's not too difficult to write code where the caller incorrectly
-> assumes the work is done after flush_work() is finished while the work
-> actually ended up being scheduled on a different cpu.
-
-Yes, flush_work() is not even supposed to work "correctly" in this case.
-Please note the changelog for db700897224b5ebdf852f2d38920ce428940d059
-In particular:
-
-	More precisely, it "flushes" the result of of the last
-	queue_work() which is visible to the caller.
-
-but we can add flush_work_sync().
-
-But flush_work() do not have too much callers. Instead people often
-use flush_workqueue() which just can't help if the work_struct is
-self-requeueing or if it is delayed_work.
-
-> One way to debug I can think of is to record work pointer -> function
-> mapping in a percpu ring buffer
-
-We can record work->func in work->entry.prev, which is either another
-work or cwq. Please see the debugging patch I sent.
-
-Not sure this patch will help, but I bet that the actual reason for
-this bug is much simpler than the subtle races above ;)
-
-Oleg.
-
+On Wed, Nov 11, 2009 at 09:31:07AM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix printk format warnings on sizeof() [size_t] arguments.
+> 
+> drivers/char/pcmcia/cm4040_cs.c:267: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'size_t'
+> drivers/char/pcmcia/cm4040_cs.c:272: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'size_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/char/pcmcia/cm4040_cs.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-next-20091110.orig/drivers/char/pcmcia/cm4040_cs.c
+> +++ linux-next-20091110/drivers/char/pcmcia/cm4040_cs.c
+> @@ -264,12 +264,12 @@ static ssize_t cm4040_read(struct file *
+>  
+>  	bytes_to_read = 5 + le32_to_cpu(*(__le32 *)&dev->r_buf[1]);
+>  
+> -	DEBUGP(6, dev, "BytesToRead=%lu\n", bytes_to_read);
+> +	DEBUGP(6, dev, "BytesToRead=%zu\n", bytes_to_read);
+>  
+>  	min_bytes_to_read = min(count, bytes_to_read + 5);
+>  	min_bytes_to_read = min_t(size_t, min_bytes_to_read, READ_WRITE_BUFFER_SIZE);
+>  
+> -	DEBUGP(6, dev, "Min=%lu\n", min_bytes_to_read);
+> +	DEBUGP(6, dev, "Min=%zu\n", min_bytes_to_read);
+>  
+>  	for (i = 0; i < (min_bytes_to_read-5); i++) {
+>  		rc = wait_for_bulk_in_ready(dev);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
