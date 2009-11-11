@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbZKKUlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZKKUjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbZKKUlG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbZKKUlF
+	id S1758909AbZKKUjt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZKKUjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:41:05 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:46401 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757261AbZKKUlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:41:04 -0500
-Message-ID: <4AFB2109.8010708@nortel.com>
-Date: Wed, 11 Nov 2009 14:39:37 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Wed, 11 Nov 2009 15:39:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37485 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756898AbZKKUjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:39:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>, Romit Dasgupta <romit@ti.com>
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before invoking kthread_stop on them
+Date: Wed, 11 Nov 2009 21:41:12 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-tst; KDE/4.3.1; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <1257928216.15415.57.camel@boson> <200911111230.58479.rjw@sisk.pl> <20091111193719.GR8742@kernel.dk>
+In-Reply-To: <20091111193719.GR8742@kernel.dk>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Yasunori Goto <y-goto@jp.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-References: <4AEF94E8.3030403@cn.fujitsu.com>	 <1257846518.4648.18.camel@twins>	 <20091111134910.5F42.E1E9C6FF@jp.fujitsu.com> <1257924007.23203.18.camel@twins>
-In-Reply-To: <1257924007.23203.18.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Nov 2009 20:41:05.0002 (UTC) FILETIME=[49F654A0:01CA630F]
+Message-Id: <200911112141.12437.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2009 01:20 AM, Peter Zijlstra wrote:
-> On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
+On Wednesday 11 November 2009, Jens Axboe wrote:
+> On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 11 November 2009, Pavel Machek wrote:
+> > > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
+> > > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
+> > > > needs to exit.
+> > > 
+> > > 
+> > > > Signed-off-by: Romit Dasgupta <romit@ti.com>
+> > > 
+> > > Ok, its slightly "interesting", but better than modifying common
+> > > code. Looks ok to me.
+> > > 
+> > > ACK.
+> > 
+> > Agreed.
+> > 
+> > Jens, any objections?
 > 
->> When users use cpuset/cpu affinity, then they would like to controll cpu affinity.
->> Not CPU time.
+> Nope, looks fine to me. Though I'd probably prefer just doing an
+> unconditional PF_FROZEN clear.
 > 
-> What are people using affinity for? The only use of affinity is to
-> restrict or disable the load-balancer. Don't complain the load-balancer
-> doesn't work when you're taking active steps to hinder its work.
+> /*
+>  * Force unfreeze of the bdi threads before stopping it, since otherwise
+>  * it would never exit if it is stuck in the refrigerator.
+>  */
+> list_for_each_entry(wb, &bdi->wb_list, list) {
+> 	wb->task->flags &= ~PF_FROZEN;
+> 	kthread_stop(wb->task);
+> }
+> 
+> And the comment too, it's not enough to stuff this into the commit.
 
-I have one active user of scheduler groups (using CKRM though, but they
-want to switch to a new kernel using CFS and sched groups in the near
-future).
+The last version had the changelog fixed.
 
-They want to run their app on one cpu by itself with as little
-interference as possible.  Pure cpu processing, not even any I/O except
-via shared memory buffers.  Everything else gets done on the other cpu,
-but they want to control how much of the other cpu is assigned to packet
-processing, how much to system maintenance, normal user shell commands, etc.
+Romit, please rework as suggested by Jens and resubmit.
 
-This would seem like a case where some sort of cpuset/affinity  and
-sched groups would be expected to play nice together.
-
-
-Chris
+Thanks,
+Rafael
