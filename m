@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbZKKREU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZKKRIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbZKKREU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 12:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755614AbZKKREU
+	id S1757950AbZKKRIM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 12:08:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbZKKRIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 12:04:20 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49228 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbZKKRET (ORCPT
+	Wed, 11 Nov 2009 12:08:11 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:42627 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757486AbZKKRIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 12:04:19 -0500
-Date: Wed, 11 Nov 2009 09:04:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lud <linux-usb@vger.kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 2 (usb/whci)
-Message-Id: <20091111090403.5fb0229e.randy.dunlap@oracle.com>
-In-Reply-To: <20091102091339.479a3ddb.randy.dunlap@oracle.com>
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>
-	<20091102091339.479a3ddb.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Nov 2009 12:08:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lbhfWTrYoKr0BYOgLQwFO41WrgJljSDzUDH7jd2Xtjfabw+OR3DVgEHVElmgPI5hAV
+         wcZcDc8sPvL1Tdlc6kOx8b68R9yP/SbDuwYOjPYwyUzYg1y+g2hz7owSGysPENKSqxgg
+         xb3uPjJglRQnCdVIXIVtUQ3Ghj/qXa0qLIRGM=
+Message-ID: <4AFAEF78.4080807@gmail.com>
+Date: Wed, 11 Nov 2009 12:08:08 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH resent] Documentation: rw_lock lessons learned
+References: <4AF9C540.5090403@gmail.com> <20091110180646.2e5859a8@nehalam>
+In-Reply-To: <20091110180646.2e5859a8@nehalam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4AFAEE91.016B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Nov 2009 09:13:39 -0800 Randy Dunlap wrote:
-
-> On Mon, 2 Nov 2009 17:38:45 +1100 Stephen Rothwell wrote:
+Stephen Hemminger wrote:
+> I would rather see the text in Documentation/spinlocks give an explaination
+> as to why reader/writer locks are normally not desirable. 
 > 
-> > Hi all,
-> > 
-> > Changes since 20091030: <<<<<<<<<<<<<<<<<<<<<<<<<<
+> The whole document needs work to make it a developer document, rather than
+> a historical mail thread..  A good document says what should be done today,
+> and does not have old junk or ask the reader to overly new context
+> on old information.
 > 
-> 
-> whci build fails on i386 due to 64-bit multiply & divide:
-> 
-> ERROR: "__udivdi3" [drivers/usb/host/whci/whci-hcd.ko] undefined!
-> ERROR: "__umoddi3" [drivers/usb/host/whci/whci-hcd.ko] undefined!
+You wish me to merge our patches?
 
-
-Still present in linux-next-20091111.
-
----
-~Randy
+Or this is a second patch in a proposed series?
