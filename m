@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZKKVOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbZKKV1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbZKKVOc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbZKKVOb
+	id S1759300AbZKKV1F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759288AbZKKV1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:14:31 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:5384 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758680AbZKKVOa (ORCPT
+	Wed, 11 Nov 2009 16:27:04 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:56809 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759283AbZKKV1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:14:30 -0500
+	Wed, 11 Nov 2009 16:27:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=gJSOOun4T35hZfF3pSSE9FK8/g9Ly5QZgxeE6oryeWe99Z9/alBGqtpefD0GY+fprL
-         ybiuaqKGR8ENpT2gmp3HEjwmM+dTZb0td4bC10ME+P1gHXBgNd4JyieAXEPC2TP2XWZH
-         UfzQFl36UnX1UTx5iVKHpGBEyhiw9U3ycQBYU=
-Message-ID: <4AFB2C0B.50605@gmail.com>
-Date: Wed, 11 Nov 2009 22:26:35 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=SJOzK1PnrxmL0Hq9c3Y67b0WwsB4UDf6QhU5dxa57mSWfuuPConkl7kNYIY43AJcsn
+         nnYQtspmEiBBe99T7ADMZICoAt2HNtdo5jd1ZQSE6eL3wyWGMhxb9VLFxhxgcKeMoUMc
+         ckvDouxCqoWziTGN70L47BlEEEHobPBVbGHdU=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, ingo <mingo@elte.hu>,
-       rostedt@goodmis.org
-Subject: [PATCH] ftrace: return error instead of 12 bytes read
+In-Reply-To: <20091111152306.GA29256@linux-os.sc.intel.com>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+	 <1257807747.25961.852.camel@macbook.infradead.org>
+	 <20091111152306.GA29256@linux-os.sc.intel.com>
+Date: Wed, 11 Nov 2009 13:27:07 -0800
+Message-ID: <86802c440911111327o49bb2b09xc8ab801ce281d04@mail.gmail.com>
+Subject: Re: [stable][PATCH] PCIe hot-plug for Intel IOMMU
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Fenghua Yu <fenghua.yu@intel.com>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       jbarnes@virtuousgeek.org, stable@kernel.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A negative error value is required: now we cannot
-distinguish ENOMEM from a valid read of 12 bytes.
+On Wed, Nov 11, 2009 at 7:23 AM, Fenghua Yu <fenghua.yu@intel.com> wrote:
+> To support PCIe hot plug in IOMMU, we register a notifier to respond to device
+> change action.
+>
+> When the notifier gets BUS_NOTIFY_UNBOUND_DRIVER, it removes the device from its
+> DMAR domain.
+>
+> A hot added device will be added into an IOMMU domain when it first does IOMMU
+> op. So there is no need to add more code for hot add.
+>
+> Without the patch, after a hot-remove, a hot-added device on the same slot will
+> not work.
+>
+> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- kernel/trace/trace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Tested-by: Yinghai Lu <yinghai@kernel.org>
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index b20d3ec..03c7fd5 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3730,7 +3730,7 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
- 
- 	s = kmalloc(sizeof(*s), GFP_KERNEL);
- 	if (!s)
--		return ENOMEM;
-+		return -ENOMEM;
- 
- 	trace_seq_init(s);
- 
+>
+> ---
+>
+> The patch missed 2.6.32 release. Could it be in 2.6.32 stable?
+
+Jesse,
+can you push to Linus?
+
+looks like David is too busy.
+
+YH
