@@ -1,113 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbZKKTyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZKKT6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbZKKTyB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 14:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbZKKTyA
+	id S1754556AbZKKT6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 14:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZKKT6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 14:54:00 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:52329 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758584AbZKKTyA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 14:54:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fEvKVdhBz5wnrjsgQW3ndI5wneXkUZVJtB0G7AhX7GcDlhWkMLL20SRQaZXx6oOuZu
-         X273/yh5E+xp2lOhjGw2Ol+2NymycmXurHjxaNnZg5pAjF3BTgWwozPqdbLyfzjGoYeT
-         X81bZnN9pcW3Gm4czw6CYxUBT8X009tEtwE34=
+	Wed, 11 Nov 2009 14:58:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46151 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbZKKT57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 14:57:59 -0500
+Date: Wed, 11 Nov 2009 20:57:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+Message-ID: <20091111195751.GA13574@elte.hu>
+References: <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain>
+ <4AF9B1FD.1010408@kernel.org>
+ <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain>
+ <4AF9BE3A.40409@kernel.org>
+ <20091110193705.GA9011@elte.hu>
+ <4AF9C402.9040800@kernel.org>
+ <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain>
+ <4AFA35CB.5030801@kernel.org>
+ <20091111113147.GB7487@elte.hu>
+ <4AFAAC32.4020104@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <4AFB11C1.9070105@lwfinger.net>
-References: <4AFB11C1.9070105@lwfinger.net>
-Date: Wed, 11 Nov 2009 21:54:04 +0200
-X-Google-Sender-Auth: cea7fc4b4b396e15
-Message-ID: <84144f020911111154i1d96ac9bsd5bb0c7f62bdba00@mail.gmail.com>
-Subject: Re: Question regarding BUG in mm/slub.c
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Michael Buesch <mbuesch@freenet.de>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFAAC32.4020104@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 9:34 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> One of the users of a BCM4312 device hit the BUG in the mm/slub.c version of
-> kfree in the following code fragment:
->
->        page = virt_to_head_page(x);
->        if (unlikely(!PageSlab(page))) {
->                BUG_ON(!PageCompound(page));
->                kmemleak_free(x);
->                put_page(page);
->                return;
->        }
->
-> What is the meaning of PageCompound(page) being zero?
 
-You're passing a pointer to kfree() that did not come from kmalloc().
-If a page is not PageSlab(), it needs to be a compound page if it came
-from the page allocator pass-through.
+* Tejun Heo <tj@kernel.org> wrote:
 
-> For completeness, the system log output is:
->
-> Nov 11 14:31:31 doughnut ntpd[398]: kernel time sync status change 2001
-> Nov 11 14:36:57 doughnut ntpd[398]: synchronized to 130.88.200.4, stratum 2
-> Nov 11 14:37:31 doughnut kernel: ------------[ cut here ]------------
-> Nov 11 14:37:31 doughnut kernel: kernel BUG at mm/slub.c:2969!
-> Nov 11 14:37:31 doughnut kernel: invalid opcode: 0000 [#1] SMP
-> Nov 11 14:37:31 doughnut kernel: last sysfs file:
-> /sys/devices/pci0000:00/0000:00:02.1/resource
-> Nov 11 14:37:31 doughnut kernel: Modules linked in:
-> Nov 11 14:37:31 doughnut kernel:
-> Nov 11 14:37:31 doughnut kernel: Pid: 343, comm: irq/17-b43 Not tainted
-> (2.6.32-rc6-wl #1) Inspiron 910
-> Nov 11 14:37:31 doughnut kernel: EIP: 0060:[<c107a5b9>] EFLAGS: 00010246 CPU: 0
-> Nov 11 14:37:31 doughnut kernel: EIP is at kfree+0xa9/0xb0
-> Nov 11 14:37:31 doughnut kernel: EAX: dededede EBX: f68f8200 ECX: 40000000 EDX:
-> c19b9da0
-> Nov 11 14:37:31 doughnut kernel: ESI: ef000000 EDI: 00000400 EBP: f72c5400 ESP:
-> f6a3ded0
-> Nov 11 14:37:31 doughnut kernel:  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-> Nov 11 14:37:31 doughnut kernel: Process irq/17-b43 (pid: 343, ti=f6a3c000
-> task=f73fa380 task.ti=f6a3c000)
-> Nov 11 14:37:31 doughnut kernel: Stack:
-> Nov 11 14:37:31 doughnut kernel:  000e7ef0 c1021c31 f68f8200 ef000000 00000400
-> c12d47ce c13ee7c0 f73fa380
-> Nov 11 14:37:31 doughnut kernel: <0> 7fff7fff dededede 00000000 c141c934
-> f7093458 f6a3df64 f73b7000 f72c5400
-> Nov 11 14:37:31 doughnut kernel: <0> f72c5400 f6a3df64 00000000 c12d0556
-> 00000000 c12c0b77 00000046 00000046
-> Nov 11 14:37:31 doughnut kernel: Call Trace:
-> Nov 11 14:37:31 doughnut kernel:  [<c1021c31>] ? update_curr_rt+0x251/0x2c0
-> Nov 11 14:37:31 doughnut kernel:  [<c12d47ce>] ? b43_dma_handle_txstatus+0xbe/0x270
-> Nov 11 14:37:31 doughnut kernel:  [<c12d0556>] ? b43_handle_txstatus+0x36/0x60
-> Nov 11 14:37:31 doughnut kernel:  [<c12c0b77>] ? b43_do_interrupt_thread+0x1d7/0x5d0
-> Nov 11 14:37:31 doughnut kernel:  [<c12c0f85>] ?
-> b43_interrupt_thread_handler+0x15/0x30
-> Nov 11 14:37:31 doughnut kernel:  [<c1050a94>] ? irq_thread+0x104/0x1d0
-> Nov 11 14:37:31 doughnut kernel:  [<c101d320>] ? complete+0x40/0x60
-> Nov 11 14:37:31 doughnut kernel:  [<c1050990>] ? irq_thread+0x0/0x1d0
-> Nov 11 14:37:31 doughnut kernel:  [<c1039c64>] ? kthread+0x74/0x80
-> Nov 11 14:37:31 doughnut kernel:  [<c1039bf0>] ? kthread+0x0/0x80
-> Nov 11 14:37:31 doughnut kernel:  [<c10038cf>] ? kernel_thread_helper+0x7/0x18
-> Nov 11 14:37:31 doughnut kernel: Code: e8 1d fc ff ff eb d9 66 f7 c1 00 c0 74 1d
-> 8b 5c 24 08 89 d0 8b 74 24 0c 8b 7c 24 10 83 c4 14 e9 8e 24 fe ff 8b 52 0c 8b 0a
-> eb 84 <0f> 0b eb fe 8d 76 00 83 e8 60 e9 48 ff ff ff 90 8d b4 26 00 00
-> Nov 11 14:37:31 doughnut kernel: EIP: [<c107a5b9>] kfree+0xa9/0xb0 SS:ESP
-> 0068:f6a3ded0
-> Nov 11 14:37:31 doughnut kernel: ---[ end trace 021257f2296ca88f ]---
-> Nov 11 14:37:31 doughnut kernel: exiting task "irq/17-b43" (343) is an active
-> IRQ thread (irq 17)
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+> Hello, Ingo.
+> 
+> Ingo Molnar wrote:
+> >> I was mostly worrying about introducing unrelated bug while changing. 
+> >> Anyways, one patch it is.  I'll route it through tip as suggested by 
+> >> Ingo in a few hours.
+> > 
+> > Btw., i'd suggest you keep it in your percpu tree as usual and send it 
+> > to Linus directly - i offered testing for the cleanup patch (and can 
+> > pull your patch for such a purpose), it doesnt 'have' to go via -tip.
+> 
+> Can you please then pull from the following tree for testing?  I'll 
+> push it to Linus after a couple of days if nothing explodes.
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
+> 
+> Thanks.
+
+Sure - pulled it into tip:master for testing earlier today and after a 
+few hours of it's looking good so far in x86 runtime tests. I also did 
+cross-build testing to a dozen non-x86 architectures and it was fine 
+there too.
+
+btw., there's some 80-cols checkpatch warning artifacts in the commit:
+
++                       if (pcpu_extend_area_map(chunk, new_alloc) < 0) {
++                               err = "failed to extend area map of "
++                                       "reserved chunk";
+
+which suggest that the logic here is perhaps nested a bit too deep. It 
+could be improved by moving the reserved allocation branch of 
+pcpu_alloc():
+
+        if (reserved && pcpu_reserved_chunk) {
+
+into a helper inline function, something like __pcpu_alloc_reserved().
+
+It's a rare special case anyway. It could be changed to return with the 
+pcpu_lock always taken, so the above branch would look like this:
+
+	if (unlikely(reserved)) {
+		off = __pcpu_alloc_reserved(&chunk, size, align, &err);
+		if (off < 0)
+			goto fail_unlock;
+		goto area_found;
+	}
+
+Which is a cleaner flow IMO, and which simplifes pcpu_alloc().
+
+And the error string should be:
+
+		err = "failed to extend area map of reserved chunk";
+
+(Ignore the checkpatch complaint.)
+
+What do you think?
+
+	Ingo
