@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZKKGXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZKKGRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZKKGXM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 01:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZKKGXL
+	id S1751940AbZKKGRd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 01:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZKKGRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 01:23:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41067 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbZKKGXL (ORCPT
+	Wed, 11 Nov 2009 01:17:33 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52124 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbZKKGRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 01:23:11 -0500
-Message-ID: <4AFA569E.9040206@zytor.com>
-Date: Tue, 10 Nov 2009 22:15:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 11 Nov 2009 01:17:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=QqZyBQvmvpttgoorjkkQELte4HTWroOUsECneTOb4IHTsfeVYNrl3GQHzKa6k8lgsX
+         Ku9zZcWdhmEkCrR2e2P2NuXRW2z+Hmh7lhhQs2t+EqJXeShemqtZKwInm7iZPjZa5xYj
+         HCqxqHArns2Q/zT2OJLmlm1k3MpdOzrYGqkL0=
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Avi Kivity <avi@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <4AF9D8E2.7050205@zytor.com> <20091110220652.GE26633@1wt.eu> <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu> <4AF9ED78.3000106@zytor.com> <20091111055220.GA560@1wt.eu>
-In-Reply-To: <20091111055220.GA560@1wt.eu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1257842597.29038.162.camel@dax.rpnet.com>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+	 <1257809705.29038.82.camel@dax.rpnet.com>
+	 <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com>
+	 <1257842597.29038.162.camel@dax.rpnet.com>
+Date: Wed, 11 Nov 2009 15:17:36 +0900
+Message-ID: <90b950fc0911102217o41aea871u3a5d9e44c947fe3c@mail.gmail.com>
+Subject: Re: [patch] added brightness feature to lcd class.
+From: InKi Dae <daeinki@gmail.com>
+To: Richard Purdie <rpurdie@linux.intel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Kyungmin Park <kmpark@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 09:52 PM, Willy Tarreau wrote:
-> 
->   - last, the probability of having an NX page just after an
->     executable one seems too tight to me to even constitute
->     an attack vector ! BTW, I'm not even certain that all CPUs
->     correctly implement this check !
-> 
+it's my comment below.
 
-Do you have *any* *evidence* *whatsoever* for that assertion?!
+thank you.
 
-I personally will consider something that doesn't implement proper
-security check to be a potential security hole and will NAK the patch.
+2009/11/10 Richard Purdie <rpurdie@linux.intel.com>:
+> On Tue, 2009-11-10 at 12:26 +0900, InKi Dae wrote:
+>> Thank you for your comments.
+>>
+>> it is a good idea that lcd driver registers interfaces to lcd class
+>> and backlight class.
+>> but I think for AMOLED LCD Panel, backlight couldn't be real device so
+>> power on/off
+>> for backlight device doesn't make sense.
+>
+> The backlight power control can just turn the backlight level down to
+> its lowest setting (off)?
 
-	-hpa
+>> I had tried lcd driver registers interfaces to lcd class and backlight
+>> class as you said.
+>> and also backlight fake driver as Pavel said.
+>
+> So you've tried this, what was the problem? Perhaps post this driver
+> code to illustrate your problem?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+all the cases worked fine.
+it's not whether lcd driver has a problem or not.
+I mean it's design issue of lcd class. AMOLED LCD Panel DOESN'T NEED
+backlight device.
+and I should have added brightness control feature to AMOLED LCD Panel
+driver not using backlight class
+because they have no BACKLIGHT DEVICE.
 
+in point of view AMOLED LCD Panel, brightness control is perfomed by
+gamma setting, not backlight power controlling.
