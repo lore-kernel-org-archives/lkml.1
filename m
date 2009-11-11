@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZKKJg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZKKJoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZKKJg6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbZKKJg5
+	id S1752468AbZKKJoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 04:44:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZKKJoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:36:57 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:56624 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbZKKJgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:36:55 -0500
-Date: Wed, 11 Nov 2009 09:36:59 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Peter Zijlstra <peterz@infradead.org>
-cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net, glisse@freedesktop.org
-Subject: Re: Radeon KMS status (Re: [git pull] drm radeon kms.)
-In-Reply-To: <1257932028.23203.74.camel@twins>
-Message-ID: <alpine.DEB.2.00.0911110935460.4943@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0911102313310.29664@skynet.skynet.ie>  <1257926475.23203.24.camel@twins>  <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie> <1257932028.23203.74.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Nov 2009 04:44:23 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:65185 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752468AbZKKJoV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 04:44:21 -0500
+Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       ext Tony Lindgren <tony@atomide.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "dedekind1@gmail.com" <dedekind1@gmail.com>
+In-Reply-To: <1257929140.20378.51.camel@tubuntu.research.nokia.com>
+References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <1257856848.21596.753.camel@localhost>
+	 <1257929140.20378.51.camel@tubuntu.research.nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Nov 2009 11:44:01 +0200
+Message-ID: <1257932641.20378.77.camel@tubuntu.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Nov 2009 09:44:03.0362 (UTC) FILETIME=[80D57020:01CA62B3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > I'm sort of thinking the next merge window of moving the enable option 
-> > into the kernel proper. We still have a metric shitload of work to get to 
-> > feature parity with current userspace drivers and we've done no 
-> > optimisation work on the rendering portion of the stack so I'm not sure 
-> > freezing the API isn't a bit premature, however maybe the API we have is 
-> > good enough to support and we can add new ioctls to make it go faster if 
-> > we require.
+On Wed, 2009-11-11 at 09:45 +0100, Valkeinen Tomi (Nokia-D/Helsinki)
+wrote:
+> On Tue, 2009-11-10 at 13:40 +0100, Artem Bityutskiy wrote:
+> > Tomi,
 > > 
-> > Jerome has proposed some API changes but we really haven't had time to 
-> > validate them in any useful way.
+> > could you please kindly ask Stephen (CCed) to include the DSS2 tree into
+> > linux-next, because you are going to merge it the next merge window, and
+> > there does not seem to be any blocker for this.
+> > 
+> > Being in linux-next for a while is really important.
 > 
-> I by no means intend to rush things along, so if you think you need more
-> time, please take it ;-)
+> Stephen, would this be possible? DSS2 driver is rather big piece of
+> code, even if it's quite isolated, so it would be nice to have it in
+> linux-next.
 > 
-> Just wanted to know where we stand... I'll try the Radeon KMS thing
-> again once I get through this mountain of email that accumulated over
-> the vacation and let you know how the current bits work.
-> 
-> Last time I tried KMS swapped the two DVI outputs wrt. the !KMS setup,
-> which is rather annoying during the transition period, but nothing I
-> can't live with once the stuff is stable enough to use all day.
+> What does it require from me? A git tree, obviously, but what should it
+> be based on?
 
-The easiest way to test it jsut grab an F12 LiveCD
+Ah, I just realized that DSS2 patches depend on patches from Tony's
+tree. I guess I should base my tree on top of some Tony's tree that is
+going to linux-next?
 
-http://alt.fedoraproject.org/pub/alt/nightly-composes/desktop/
+ Tomi
 
-Its pretty much got what I've just asked Linus to pull, and won't ruin 
-your already installed system, handy for testing s/r if ppl use it.
 
-Dave.
