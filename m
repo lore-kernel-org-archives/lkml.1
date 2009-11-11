@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZKKUTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbZKKUU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbZKKUTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 15:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbZKKUTu
+	id S1758432AbZKKUU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbZKKUUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 15:19:50 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:62707 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZKKUTt (ORCPT
+	Wed, 11 Nov 2009 15:20:25 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:50186 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755682AbZKKUUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 15:19:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=uNRXiIVGBrdmqTeWHtvJKZG+uluedYWgFuzSWcj9bQeGfBntktJpO5zKewOXDCMFZg
-         yitgDOarVXQL3/1OwQzxz4NxP/qAr/8SUGSUciZRNrhnrWCuCbvs9Akeeg95G+4WUJlK
-         LXdZvOgrJjBPVedNfQD6j0nLfAat+8kgBG1CU=
-MIME-Version: 1.0
-In-Reply-To: <200910311944.35922.elendil@planet.nl>
-References: <81bfc67a0910310721p21046931o9b512cfd0a8a7acb@mail.gmail.com>
-	 <200910311944.35922.elendil@planet.nl>
-Date: Wed, 11 Nov 2009 15:19:54 -0500
-Message-ID: <81bfc67a0911111219m1efff30cr3186987f9dbb3d4d@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 11 Nov 2009 15:20:24 -0500
+Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on
+ resume (was: Re: Help needed: Resume problems in 2.6.32-rc, perhaps related
+ to preempt_count leakage in keventd)
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
+       linux-bluetooth@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.01.0911111202490.31845@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl>
+	 <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
+	 <20091111161348.GA27394@redhat.com> <200911112100.16561.rjw@sisk.pl>
+	 <alpine.LFD.2.01.0911111202490.31845@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Nov 2009 21:20:28 +0100
+Message-ID: <1257970828.21467.6.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-not to be impatient or ungrateful, but has anyone had time to look at
-this? will I be able to upgrade to 31.6? will 32.0 work?
+Hi Linus,
 
-On Sat, Oct 31, 2009 at 1:44 PM, Frans Pop <elendil@planet.nl> wrote:
-> Adding netdev in CC. Original message + attachments follow.
->
-> =========
-> so ever since arch rolled out 2.6.31.x I've been having problems with
-> my network (again) where I've been losing a large amount of packets
-> (just testing with mtr somewhere between 30/50%). first I figured it
-> was the same problem as I had in 2.6.30.x (and maybe it is?) but that
-> appeared to get fixed. when I started bisecting the bug wasn't
-> apparent in 2.6.31.0 but I knew for sure it was in .5 (I couldn't
-> remember if I had noticed it again in .3)
->
-> I'm attaching the bisection log and a 'good' dmesg output.
->
-> c9fb3ded7a8a6769f3bcb3ef3d9aed61d3e376a9 is the first bad commit
->
-> I'm not going to pretend to understand why this patch is breaking my
-> networking but between bisection and testing it appears to be... I've
-> never bisected before and I'm definitely not a kernel hacker (I can
-> barely read C).
->
-> I should also note that the wireshark dump here
-> http://bugzilla.kernel.org/show_bug.cgi?id=13835 is related to this.
-> and if it's not the same bug then possibly a new one should be opened.
->
-> P.S. I'm not subscribed to the list please CC me
->
-> Caleb Cushing
-> http://xenoterracide.blogspot.com
->
->
+> > I applied the patch and this is the result of 'dmesg | grep ERR' after 10-or-so
+> > consecutive suspend-resume and hibernate-resume cycles:
+> > 
+> > [  129.008689] ERR!! btusb_waker+0x0/0x27 [btusb]
+> > [  166.477373] ERR!! btusb_waker+0x0/0x27 [btusb]
+> > [  203.983665] ERR!! btusb_waker+0x0/0x27 [btusb]
+> > [  241.636547] ERR!! btusb_waker+0x0/0x27 [btusb]
+> > 
+> > which kind of confirms my previous observation that the problem was not
+> > reproducible without Bluetooth.
+> 
+> .. and that btusb thing matches my observation that only a few BT drivers 
+> seem to use workqueues, and btusb_disconnect() isn't doing any work 
+> cancel.
+> 
+> > I'm going to test the appended patch, then.
+> 
+> Hmm. the USB disconnect doesn't call hci_dev_put(), it calls 
+> hci_free_dev() and doesn't seem to call the ->destruct thing. 
+> 
+> Although again, maybe that gets called indirectly.
+> 
+> So I'd put the cancel work in the actual disconnect routine. But maybe 
+> thar's just me.
+
+see my other email, I think we have to cancel the waker in btusb_close()
+to fix this. However the suspend/resume and auto-suspend has been done
+mostly by Oliver and I like to see what he thinks about this.
+
+Regards
+
+Marcel
 
 
-
--- 
-Caleb Cushing
-
-http://xenoterracide.blogspot.com
