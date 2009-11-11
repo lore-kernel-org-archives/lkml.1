@@ -1,73 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZKKAnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZKKApx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbZKKAnv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 19:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZKKAnu
+	id S1755069AbZKKApx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 19:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZKKApw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 19:43:50 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47155 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753947AbZKKAnu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 19:43:50 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Timo Sirainen <tss@iki.fi>
-Subject: Re: + prctl-add-pr_set_proctitle_area-option.patch added to -mm tree
-Cc: kosaki.motohiro@jp.fujitsu.com, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bryan Donlan <bdonlan@gmail.com>, Ulrich Drepper <drepper@redhat.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1257876016.3022.277.camel@timo-desktop>
-References: <2f11576a0911100948o79970e44t197cd2978428de1a@mail.gmail.com> <1257876016.3022.277.camel@timo-desktop>
-Message-Id: <20091111090704.FD2D.A69D9226@jp.fujitsu.com>
+	Tue, 10 Nov 2009 19:45:52 -0500
+Received: from mga03.intel.com ([143.182.124.21]:26871 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753681AbZKKApv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 19:45:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,719,1249282800"; 
+   d="scan'208";a="210051253"
+Date: Wed, 11 Nov 2009 08:45:54 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Martin Knoblauch <spamtrap@knobisoft.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Myklebust, Trond" <Trond.Myklebust@netapp.com>,
+       Peter Staubach <staubach@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: Likley stupid question on "throttle_vm_writeout"
+Message-ID: <20091111004554.GA7739@localhost>
+References: <799070.68490.qm@web32608.mail.mud.yahoo.com> <1257780393.4108.343.camel@laptop> <20091110020858.GA5749@localhost> <707547.6272.qm@web32605.mail.mud.yahoo.com> <20091110130818.GA6229@localhost> <200993.75556.qm@web32606.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 11 Nov 2009 09:43:52 +0900 (JST)
+Content-Type: multipart/mixed; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <200993.75556.qm@web32606.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2009-11-11 at 02:48 +0900, KOSAKI Motohiro wrote:
-> > There is unwritten reason. I hope to add /proc/[pid]/cmdline cache. It
-> > help to avoid
-> > ps getting stuck by mmap_sem.
+
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Nov 11, 2009 at 12:11:37AM +0800, Martin Knoblauch wrote:
+> > This is why I want to limit NR_WRITEBACK for NFS:
+> > 
+> >         [PATCH] NFS: introduce writeback wait queue
+> >         http://lkml.org/lkml/2009/10/3/198
+> > 
 > 
-> Can you explain this further? When would it cache the value and when
-> would it be returned? I was at least hoping to avoid calling prctl()
-> every time when I want process title changed.
+>  Thanks. I will have a look. Is 2.6.32.x OK for testing?
 
-Hmm...
-I'm not intent it.
+I have a more recent patch (attached) based on 2.6.32.
 
-The setter's prctl() performance is not critical. Plus, current code
-isn't so slow.
+This on/off threshold based approach may not be good for producing
+fluent network flow. So I'm experimenting to do more fine grained
+waits (ie. instead of wait for 10 jiffies at one time, we do 10
+1-jiffy spread sleeps).
 
-I mean ps -elf (or ps aux) read the /proc/pid/cmdline of all task.
-It mean grabbing mmap_sem and read another task's mem for all task.
-Then, A stress workload can kill ps performance easily.
+Thanks,
+Fengguang
 
-Essentially, reading another process's memory is costly operation. but
-it can be cached.
+--+QahgC5+KEYLbs62
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="writeback-nfs-request-queue.patch"
 
-Some *BSD has similar mechanism.
+Subject: NFS: introduce writeback wait queue
+
+The generic writeback routines are departing from congestion_wait()
+in preferance of get_request_wait(), aka. waiting on the block queues.
+
+Introduce the missing writeback wait queue for NFS, otherwise its
+writeback pages may grow out of control.
+
+In perticular, balance_dirty_pages() will exit after it pushes
+write_chunk pages into the PG_writeback page pool, _OR_ when the
+background writeback work quits. The latter is new behavior, and could
+not only quit (normally) after below background threshold, but also
+quit when it finds _zero_ dirty pages to write. The latter case gives
+rise to the number of PG_writeback pages if it is not explicitly limited.
+
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Peter Staubach <staubach@redhat.com>
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+
+The wait time and network throughput varies a lot! this is a major problem.
+This means nfs_end_page_writeback() is not called smoothly over time,
+even when there are plenty of PG_writeback pages on the client side.
+
+[  397.828509] write_bandwidth: comm=nfsiod pages=192 time=16ms
+[  397.850976] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  403.065244] write_bandwidth: comm=nfsiod pages=192 time=5212ms
+[  403.549134] write_bandwidth: comm=nfsiod pages=1536 time=144ms
+[  403.570717] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  403.595749] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  403.622171] write_bandwidth: comm=nfsiod pages=192 time=24ms
+[  403.651779] write_bandwidth: comm=nfsiod pages=192 time=28ms
+[  403.680543] write_bandwidth: comm=nfsiod pages=192 time=24ms
+[  403.712572] write_bandwidth: comm=nfsiod pages=192 time=28ms
+[  403.751552] write_bandwidth: comm=nfsiod pages=192 time=36ms
+[  403.785979] write_bandwidth: comm=nfsiod pages=192 time=28ms
+[  403.823995] write_bandwidth: comm=nfsiod pages=192 time=36ms
+[  403.858970] write_bandwidth: comm=nfsiod pages=192 time=32ms
+[  403.880786] write_bandwidth: comm=nfsiod pages=192 time=16ms
+[  403.902732] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  403.925925] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  403.952044] write_bandwidth: comm=nfsiod pages=258 time=24ms
+[  403.974006] write_bandwidth: comm=nfsiod pages=192 time=16ms
+[  403.995989] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  405.031049] write_bandwidth: comm=nfsiod pages=192 time=1032ms
+[  405.257635] write_bandwidth: comm=nfsiod pages=1536 time=192ms
+[  405.279069] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  405.300843] write_bandwidth: comm=nfsiod pages=192 time=16ms
+[  405.326031] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  405.350843] write_bandwidth: comm=nfsiod pages=192 time=24ms
+[  405.375160] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  409.331015] write_bandwidth: comm=nfsiod pages=192 time=3952ms
+[  409.587928] write_bandwidth: comm=nfsiod pages=1536 time=152ms
+[  409.610068] write_bandwidth: comm=nfsiod pages=192 time=20ms
+[  409.635736] write_bandwidth: comm=nfsiod pages=192 time=24ms
+
+# vmmon -d 1 nr_writeback nr_dirty nr_unstable
+
+     nr_writeback         nr_dirty      nr_unstable
+            11227            41463            38044
+            11227            41463            38044
+            11227            41463            38044
+            11227            41463            38044
+            11045            53987             6490
+            11033            53120             8145
+            11195            52143            10886
+            11211            52144            10913
+            11211            52144            10913
+            11211            52144            10913
+            11056            56887             3876
+            11062            55298             8155
+            11214            54485             9838
+            11225            54461             9852
+            11225            54461             9852
+            11225            54461             4582
+            22342            35535             7823
+
+----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--
+usr sys idl wai hiq siq| read  writ| recv  send|  in   out | int   csw 
+  0   0   9  92   0   0|   0     0 |  66B  306B|   0     0 |1003   377 
+  0   1  39  60   0   1|   0     0 |  90k 1361k|   0     0 |1765  1599 
+  0  15  12  43   0  31|   0     0 |2292k   34M|   0     0 |  12k   16k
+  0   0  16  84   0   0|   0     0 | 132B  306B|   0     0 |1003   376 
+  0   0  43  57   0   0|   0     0 |  66B  306B|   0     0 |1004   376 
+  0   7  25  55   0  13|   0     0 |1202k   18M|   0     0 |7331  8921 
+  0   8  21  55   0  15|   0     0 |1195k   18M|   0     0 |5382  6579 
+  0   0  38  62   0   0|   0     0 |  66B  306B|   0     0 |1002   371 
+  0   0  33  67   0   0|   0     0 |  66B  306B|   0     0 |1003   376 
+  0  14  20  41   0  24|   0     0 |1621k   24M|   0     0 |8549    10k
+  0   5  31  55   0   9|   0     0 | 769k   11M|   0     0 |4444  5180 
+  0   0  18  82   0   0|   0     0 |  66B  568B|   0     0 |1004   377 
+  0   1  41  54   0   3|   0     0 | 184k 2777k|   0     0 |2609  2619 
+  1  13  22  43   0  22|   0     0 |1572k   23M|   0     0 |8138    10k
+  0  11   9  59   0  20|   0     0 |1861k   27M|   0     0 |9576    13k
+  0   5  23  66   0   5|   0     0 | 540k 8122k|   0     0 |2816  2885 
 
 
-Caution: This feature break SPT_ARGV style process title changing.
-then, it should be optional feature and sould be able to enable by
-admin's explicit operation.
-2years after, probably this issue will disappear automatically. because
-all setproctitle() using software try to use libc's setproctitle().
-IOW, if libc has setproctitle(), nobody try to change own stack argv
-string brutally.
+ fs/nfs/client.c           |    2 
+ fs/nfs/write.c            |   92 +++++++++++++++++++++++++++++++-----
+ include/linux/nfs_fs_sb.h |    1 
+ 3 files changed, 84 insertions(+), 11 deletions(-)
 
+--- linux.orig/fs/nfs/write.c	2009-11-06 09:52:23.000000000 +0800
++++ linux/fs/nfs/write.c	2009-11-06 09:52:27.000000000 +0800
+@@ -187,11 +187,65 @@ static int wb_priority(struct writeback_
+  * NFS congestion control
+  */
+ 
++#define NFS_WAIT_PAGES	(1024L >> (PAGE_CACHE_SHIFT - 10))
+ int nfs_congestion_kb;
+ 
+-#define NFS_CONGESTION_ON_THRESH 	(nfs_congestion_kb >> (PAGE_SHIFT-10))
+-#define NFS_CONGESTION_OFF_THRESH	\
+-	(NFS_CONGESTION_ON_THRESH - (NFS_CONGESTION_ON_THRESH >> 2))
++/*
++ * SYNC requests will block on (2*limit) and wakeup on (2*limit-NFS_WAIT_PAGES)
++ * ASYNC requests will block on (limit) and wakeup on (limit - NFS_WAIT_PAGES)
++ * In this way SYNC writes will never be blocked by ASYNC ones.
++ */
++
++static void nfs_set_congested(long nr, long limit,
++			      struct backing_dev_info *bdi)
++{
++	if (nr > limit && !test_bit(BDI_async_congested, &bdi->state))
++		set_bdi_congested(bdi, BLK_RW_ASYNC);
++	else if (nr > 2 * limit && !test_bit(BDI_sync_congested, &bdi->state))
++		set_bdi_congested(bdi, BLK_RW_SYNC);
++}
++
++static void nfs_wait_contested(int is_sync,
++			       struct backing_dev_info *bdi,
++			       wait_queue_head_t *wqh)
++{
++	int waitbit = is_sync ? BDI_sync_congested : BDI_async_congested;
++ 	DEFINE_WAIT(wait);
++
++	if (!test_bit(waitbit, &bdi->state))
++		return;
++
++	for (;;) {
++		prepare_to_wait(&wqh[is_sync], &wait, TASK_UNINTERRUPTIBLE);
++		if (!test_bit(waitbit, &bdi->state))
++			break;
++
++		io_schedule();
++	}
++	finish_wait(&wqh[is_sync], &wait);
++}
++
++static void nfs_wakeup_congested(long nr, long limit,
++				 struct backing_dev_info *bdi,
++				 wait_queue_head_t *wqh)
++{
++	if (nr < 2*limit - min(limit/8, NFS_WAIT_PAGES)) {
++		if (test_bit(BDI_sync_congested, &bdi->state)) {
++			clear_bdi_congested(bdi, BLK_RW_SYNC);
++			smp_mb__after_clear_bit();
++		}
++		if (waitqueue_active(&wqh[BLK_RW_SYNC]))
++			wake_up(&wqh[BLK_RW_SYNC]);
++	}
++	if (nr < limit - min(limit/8, NFS_WAIT_PAGES)) {
++		if (test_bit(BDI_async_congested, &bdi->state)) {
++			clear_bdi_congested(bdi, BLK_RW_ASYNC);
++			smp_mb__after_clear_bit();
++		}
++		if (waitqueue_active(&wqh[BLK_RW_ASYNC]))
++			wake_up(&wqh[BLK_RW_ASYNC]);
++	}
++}
+ 
+ static int nfs_set_page_writeback(struct page *page)
+ {
+@@ -201,11 +255,9 @@ static int nfs_set_page_writeback(struct
+ 		struct inode *inode = page->mapping->host;
+ 		struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+-		if (atomic_long_inc_return(&nfss->writeback) >
+-				NFS_CONGESTION_ON_THRESH) {
+-			set_bdi_congested(&nfss->backing_dev_info,
+-						BLK_RW_ASYNC);
+-		}
++		nfs_set_congested(atomic_long_inc_return(&nfss->writeback),
++				  nfs_congestion_kb >> (PAGE_SHIFT-10),
++				  &nfss->backing_dev_info);
+ 	}
+ 	return ret;
+ }
+@@ -216,8 +268,11 @@ static void nfs_end_page_writeback(struc
+ 	struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+ 	end_page_writeback(page);
+-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+-		clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
++
++	nfs_wakeup_congested(atomic_long_dec_return(&nfss->writeback),
++			     nfs_congestion_kb >> (PAGE_SHIFT-10),
++			     &nfss->backing_dev_info,
++			     nfss->writeback_wait);
+ }
+ 
+ static struct nfs_page *nfs_find_and_lock_request(struct page *page)
+@@ -309,19 +364,34 @@ static int nfs_writepage_locked(struct p
+ 
+ int nfs_writepage(struct page *page, struct writeback_control *wbc)
+ {
++	struct inode *inode = page->mapping->host;
++	struct nfs_server *nfss = NFS_SERVER(inode);
+ 	int ret;
+ 
+ 	ret = nfs_writepage_locked(page, wbc);
+ 	unlock_page(page);
++
++	nfs_wait_contested(wbc->sync_mode == WB_SYNC_ALL,
++			   &nfss->backing_dev_info,
++			   nfss->writeback_wait);
++
+ 	return ret;
+ }
+ 
+-static int nfs_writepages_callback(struct page *page, struct writeback_control *wbc, void *data)
++static int nfs_writepages_callback(struct page *page,
++				   struct writeback_control *wbc, void *data)
+ {
++	struct inode *inode = page->mapping->host;
++	struct nfs_server *nfss = NFS_SERVER(inode);
+ 	int ret;
+ 
+ 	ret = nfs_do_writepage(page, wbc, data);
+ 	unlock_page(page);
++
++	nfs_wait_contested(wbc->sync_mode == WB_SYNC_ALL,
++			   &nfss->backing_dev_info,
++			   nfss->writeback_wait);
++
+ 	return ret;
+ }
+ 
+--- linux.orig/include/linux/nfs_fs_sb.h	2009-11-06 09:22:30.000000000 +0800
++++ linux/include/linux/nfs_fs_sb.h	2009-11-06 09:52:27.000000000 +0800
+@@ -108,6 +108,7 @@ struct nfs_server {
+ 	struct nfs_iostats *	io_stats;	/* I/O statistics */
+ 	struct backing_dev_info	backing_dev_info;
+ 	atomic_long_t		writeback;	/* number of writeback pages */
++	wait_queue_head_t	writeback_wait[2];
+ 	int			flags;		/* various flags */
+ 	unsigned int		caps;		/* server capabilities */
+ 	unsigned int		rsize;		/* read size */
+--- linux.orig/fs/nfs/client.c	2009-11-06 09:22:30.000000000 +0800
++++ linux/fs/nfs/client.c	2009-11-06 09:52:27.000000000 +0800
+@@ -991,6 +991,8 @@ static struct nfs_server *nfs_alloc_serv
+ 	INIT_LIST_HEAD(&server->master_link);
+ 
+ 	atomic_set(&server->active, 0);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_SYNC]);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_ASYNC]);
+ 
+ 	server->io_stats = nfs_alloc_iostats();
+ 	if (!server->io_stats) {
 
-> I think Solaris saves the first 80 chars of the initial cmdline to
-> kernel memory and gives that to ps. I guess doing something similar and
-> returning it only when userspace memory can't be accessed would be ok.
-
-Linux does it too. but 16 chars.
-
-
+--+QahgC5+KEYLbs62--
