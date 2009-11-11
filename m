@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbZKKVeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZKKVfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbZKKVeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbZKKVeU
+	id S1759292AbZKKVfV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 16:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759228AbZKKVfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:34:20 -0500
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:52633 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759055AbZKKVeU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:34:20 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: Mount -o sync regression in 2.6.31
-Date: Wed, 11 Nov 2009 22:34:22 +0100
-User-Agent: KMail/1.9.9
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-References: <20091111123340.703f5c86@nehalam>
-In-reply-To: <20091111123340.703f5c86@nehalam>
+	Wed, 11 Nov 2009 16:35:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51782 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758823AbZKKVfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 16:35:20 -0500
+Message-ID: <4AFB2E17.6060000@garzik.org>
+Date: Wed, 11 Nov 2009 16:35:19 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+References: <200911112134.34261.bzolnier@gmail.com>
+In-Reply-To: <200911112134.34261.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911112234.24180.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Nov 2009 21:34:24.0571 (UTC) FILETIME=[BD0DD0B0:01CA6316]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> I tried the obvious bisection, but git bisect seems to wonder off into
-> the weeds now. There is no reason that bisecting between v2.6.30 and
-> v2.6.31-rc1 should go off into v2.6.30-rc2
+On 11/11/2009 03:34 PM, Bartlomiej Zolnierkiewicz wrote:
+>
+> "ht" flag indicates only ability to detect siblings not HT presence itself.
+>
+> Inspired by:
+> http://www.codemonkey.org.uk/2009/11/10/common-hyperthreading-misconception/
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+> It could be that there are some user-space programs depending on "ht"
+> flag so the patch is marked as RFC..
 
-AFAIK that can happen if some branch was merged after 2.6.30 that happened 
-to be based on a commit from v2.6.30-rc2. Did you check in what branch you 
-were when that happened?
+I think that is the only problem with this patch -- it is an ABI change. 
+  See as it's been this way for years, a comment is probably the best 
+you can do...
 
-If you look at 'gitk v2.6.30..v2.6.31-rc1' and scroll to the bottom, you 
-will see quite a few merges of branches that were based on commits from 
-(early) v2.6.30-rcX releases.
+	Jeff
 
-Cheers.
-FJP
+
+
+
