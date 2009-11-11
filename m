@@ -1,220 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZKKCHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZKKCIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZKKCHF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZKKCHE
+	id S1756939AbZKKCIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZKKCIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:07:04 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:46220 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756722AbZKKCHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:07:03 -0500
-Date: Tue, 10 Nov 2009 18:06:46 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: William Allen Simpson <william.allen.simpson@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH resent] Documentation: rw_lock lessons learned
-Message-ID: <20091110180646.2e5859a8@nehalam>
-In-Reply-To: <4AF9C540.5090403@gmail.com>
-References: <4AF9C540.5090403@gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Nov 2009 21:08:37 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50189 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756642AbZKKCIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 21:08:37 -0500
+Message-ID: <4AFA1C70.5070700@cn.fujitsu.com>
+Date: Wed, 11 Nov 2009 10:07:44 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+CC: bblum@andrew.cmu.edu, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       serue@us.ibm.com, menage@google.com
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
+ tgid at	once
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <4AF84C68.7010803@free.fr> <4AF8C20C.1070003@cn.fujitsu.com> <4AF93FE5.1080009@free.fr>
+In-Reply-To: <4AF93FE5.1080009@free.fr>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 14:55:44 -0500
-William Allen Simpson <william.allen.simpson@gmail.com> wrote:
-
-> In recent weeks, two different network projects erroneously
-> strayed down the rw_lock path.  Update the Documentation
-> based upon comments in those threads.
+>>> Hi Ben,
+>>>
+>>> The current code (with or without your patch) may lead to an error
+>>> because the fork hook can fail and the exit hook is called in all the
+>>> cases making the fork / exit asymmetric.
+>>>
+>>>     
+>>
+>> The _current_ code won't lead to this error, because the fork hook
+>> can't fail.
+>>   
+> Right, as no subsystem is using both hooks right now, the bug is never
+> triggered and the current code won't lead to an error.
+> But from my POV, there is a bug hidden in a corner waiting for a
+> subsystem to make use of the fail-able fork / exit :)
 > 
-> Signed-off-by: William.Allen.Simpson@gmail.com
-> ---
->    Documentation/spinlocks.txt |   14 ++++++++++++++
->    1 files changed, 14 insertions(+), 0 deletions(-)
+
+Actually the freezer subsystem is using the fork hook, but it doesn't
+need to be able to fail it.
+
+I don't think we can claim this a bug. If there is a new subsystem
+that needs fail-able fork hook, it has to extent the hook interface
+and adjust the code to meet its needs.
+
+We always adjust our code to meet new needs, don't we?
+
+>>> I will take the usual example with a cgroup with a counter of tasks, in
+>>> the fork hook it increments the counter, in the exit hook it decrements
+>>> the counter. There is one process in the cgroup, hence the counter value
+>>> is 1. Now this process forks and the fork hook fails before the task
+>>> counter is incremented to 2, this is not detected in copy process
+>>> function because the cgroup_fork_callbacks does not return an error, so
+>>> the process will be forked without error and when the process will exits
+>>> the counter will be decremented reaching 0 instead of 1.
+>>>
+>>> IMO, the correct fix should be to make the fork hook to return an error
+>>> and have the cgroup to call the exit method of the subsystem where the
+>>> fork hook was called. For example, there are 10 subsystems using the
+>>> fork / exit hooks, when the a process forks, the fork callbacks is
+>>> called for these subsystems but, let's say, the 3rd fails. So we undo,
+>>> by calling the exit hooks of the first two.
+>>>
+>>> I wrote a patchset to consolidate the hooks called in the cgroup for
+>>> fork and exit, and one of them does a rollback for the fork hook when an
+>>> error occurs. I added an attachment the patch as an example.
+>>>
+>>>     
+>>
+>> I'd like to see this patch sent with another patch that needs this
+>> fail-able fork() hook.
+>>
+>> Note this patch is not doing a _fix_, but does an extension. And
+>> for now, this extension is not needed.
+>>   
+> I don't know, may be it could be interesting to implement that before
+> more subsystems make use of these hooks.
+> This is not critical, that can be sent later, separately from this
+> patchset of course.
 > 
 
-I would rather see the text in Documentation/spinlocks give an explaination
-as to why reader/writer locks are normally not desirable. 
+We tend to remove code that is not used. For example, we may remove
+subsys->bind() interface, because no one is using it, though it has
+been there for years.
 
-The whole document needs work to make it a developer document, rather than
-a historical mail thread..  A good document says what should be done today,
-and does not have old junk or ask the reader to overly new context
-on old information.
+So adding things that are not used is normally not good.
 
-
-
---- a/Documentation/spinlocks.txt	2009-11-10 17:47:03.801984416 -0800
-+++ b/Documentation/spinlocks.txt	2009-11-10 18:01:00.779749888 -0800
-@@ -1,73 +1,8 @@
--SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED defeat lockdep state tracking and
--are hence deprecated.
-+Lesson 1: Spin locks
- 
--Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
--__SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
--initialization.
--
--Most of the time, you can simply turn:
--
--	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
--
--into:
--
--	static DEFINE_SPINLOCK(xxx_lock);
--
--Static structure member variables go from:
--
--	struct foo bar {
--		.lock	=	SPIN_LOCK_UNLOCKED;
--	};
--
--to:
--
--	struct foo bar {
--		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
--	};
--
--Declaration of static rw_locks undergo a similar transformation.
--
--Dynamic initialization, when necessary, may be performed as
--demonstrated below.
--
--   spinlock_t xxx_lock;
--   rwlock_t xxx_rw_lock;
--
--   static int __init xxx_init(void)
--   {
--   	spin_lock_init(&xxx_lock);
--	rwlock_init(&xxx_rw_lock);
--	...
--   }
--
--   module_init(xxx_init);
--
--The following discussion is still valid, however, with the dynamic
--initialization of spinlocks or with DEFINE_SPINLOCK, etc., used
--instead of SPIN_LOCK_UNLOCKED.
--
-------------------------
--
--On Fri, 2 Jan 1998, Doug Ledford wrote:
--> 
--> I'm working on making the aic7xxx driver more SMP friendly (as well as
--> importing the latest FreeBSD sequencer code to have 7895 support) and wanted
--> to get some info from you.  The goal here is to make the various routines
--> SMP safe as well as UP safe during interrupts and other manipulating
--> routines.  So far, I've added a spin_lock variable to things like my queue
--> structs.  Now, from what I recall, there are some spin lock functions I can
--> use to lock these spin locks from other use as opposed to a (nasty)
--> save_flags(); cli(); stuff; restore_flags(); construct.  Where do I find
--> these routines and go about making use of them?  Do they only lock on a
--> per-processor basis or can they also lock say an interrupt routine from
--> mucking with a queue if the queue routine was manipulating it when the
--> interrupt occurred, or should I still use a cli(); based construct on that
--> one?
--
--See <asm/spinlock.h>. The basic version is:
--
--   spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
-+The most basic primitive for locking is spinlock.
- 
-+static DEFINE_SPINLOCK(xxx_lock);
- 
- 	unsigned long flags;
- 
-@@ -141,13 +76,17 @@ Lesson 2: reader-writer spinlocks.
- 
- If your data accesses have a very natural pattern where you usually tend
- to mostly read from the shared variables, the reader-writer locks
--(rw_lock) versions of the spinlocks are often nicer. They allow multiple
-+(rw_lock) versions of the spinlocks are sometimes useful. They allow multiple
- readers to be in the same critical region at once, but if somebody wants
--to change the variables it has to get an exclusive write lock. The
--routines look the same as above:
-+to change the variables it has to get an exclusive write lock.
-+
-+NOTE! reader-writer locks require more atomic memory operations than
-+simple spinlocks, so unless the reader critical secition is long you
-+are better off just using spinlocks.
- 
--   rwlock_t xxx_lock = RW_LOCK_UNLOCKED;
-+The routines look the same as above:
- 
-+static DEFINE_RWLOCK(xxx_lock);
- 
- 	unsigned long flags;
- 
-@@ -159,12 +98,15 @@ routines look the same as above:
- 	.. read and write exclusive access to the info ...
- 	write_unlock_irqrestore(&xxx_lock, flags);
- 
--The above kind of lock is useful for complex data structures like linked
-+The above kind of lock might useful for complex data structures like linked
- lists etc, especially when you know that most of the work is to just
- traverse the list searching for entries without changing the list itself,
- for example. Then you can use the read lock for that kind of list
- traversal, which allows many concurrent readers. Anything that _changes_
--the list will have to get the write lock. 
-+the list will have to get the write lock.
-+
-+NOTE! RCU is better for that most read only access, but requires
-+correct operations (see Documentation/RCU/listRCU.txt)
- 
- Note: you cannot "upgrade" a read-lock to a write-lock, so if you at _any_
- time need to do any changes (even if you don't do it every time), you have
-@@ -233,4 +175,45 @@ indeed), while write-locks need to prote
- 
- 		Linus
- 
-+Reference information:
-+
-+* Older code used SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED to initialize
-+  locks, but this is now deprecated because it interferes with the
-+  lockdep state tracking. Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
-+  __SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
-+  initialization.
-+
-+  Most of the time, you can simply turn:
-+	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
-+  into:
-+	static DEFINE_SPINLOCK(xxx_lock);
-+
-+  Static structure member variables go from:
-+
-+	struct foo bar {
-+		.lock	=	SPIN_LOCK_UNLOCKED;
-+	};
-+
-+  to:
-+
-+	struct foo bar {
-+		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
-+	};
-+
-+  Declaration of static rw_locks undergo a similar transformation.
-+
-+  Dynamic initialization, when necessary, may be performed as
-+  demonstrated below.
-+
-+   spinlock_t xxx_lock;
-+   rwlock_t xxx_rw_lock;
-+
-+   static int __init xxx_init(void)
-+   {
-+   	spin_lock_init(&xxx_lock);
-+	rwlock_init(&xxx_rw_lock);
-+	...
-+   }
-+
-+   module_init(xxx_init);
- 
