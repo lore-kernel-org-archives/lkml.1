@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZKKDCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZKKDGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755710AbZKKDCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 22:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZKKDCJ
+	id S1756136AbZKKDGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 22:06:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZKKDGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 22:02:09 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52704 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910AbZKKDCI (ORCPT
+	Tue, 10 Nov 2009 22:06:53 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52428 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754063AbZKKDGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 22:02:08 -0500
+	Tue, 10 Nov 2009 22:06:53 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Wed, 11 Nov 2009 12:04:15 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: David Rientjes <rientjes@google.com>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v3
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with
+ nodemask v3
+Message-Id: <20091111120415.b3047772.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <alpine.DEB.2.00.0911101841480.11083@chino.kir.corp.google.com>
-References: <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911101841480.11083@chino.kir.corp.google.com>
-Message-Id: <20091111115217.FD56.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
+	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110163419.361E.A69D9226@jp.fujitsu.com>
+	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0911101841480.11083@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 11 Nov 2009 12:02:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Tue, 10 Nov 2009 18:49:51 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
 > On Wed, 11 Nov 2009, KAMEZAWA Hiroyuki wrote:
 > 
@@ -64,8 +73,8 @@ Hi
 > We should probably remove the inline specifier, there's only one caller 
 > currently and if additional ones were added in the future this function 
 > should probably not be replicated.
-
-Good catch.
+> 
+Hmm, ok, remove.
 
 
 > >  {
@@ -96,19 +105,107 @@ Good catch.
 > Although a nodemask_t was previously allocated on the stack, we should 
 > probably change this to use NODEMASK_ALLOC() for kernels with higher 
 > CONFIG_NODES_SHIFT since allocations can happen very deep into the stack.
-
-No. NODEMASK_ALLOC() is crap. we should remove it. 
-btw, CPUMASK_ALLOC was already removed.
-
-
+> 
 > There should be a way around that, however.  Shouldn't
 > 
 > 	if (nodes_subset(node_states[N_HIGH_MEMORY], *nodemask))
 > 		return CONSTRAINT_MEMORY_POLICY;
 > 
 > be sufficient?
+> 
 
-Is this safe on memory hotplug case?
+Ah, I didn't notice nodes_subset(). Thank you, I'll use it.
+
+
+> > +
+> > +	/* Check this allocation failure is caused by cpuset's wall function */
+> > +	for_each_zone_zonelist_nodemask(zone, z, zonelist,
+> > +			high_zoneidx, nodemask)
+> > +		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
+> >  			return CONSTRAINT_CPUSET;
+> >  
+> > -	if (!nodes_empty(nodes))
+> > -		return CONSTRAINT_MEMORY_POLICY;
+> > -#endif
+> > +	/* __GFP_THISNODE never calls OOM.*/
+> >  
+> >  	return CONSTRAINT_NONE;
+> >  }
+> > +#else
+> > +static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+> > +				gfp_t gfp_mask, nodemask_t *nodemask)
+> > +{
+> > +	return CONSTRAINT_NONE;
+> > +}
+> > +#endif
+> >  
+> >  /*
+> >   * Simple selection loop. We chose the process with the highest
+> > @@ -603,7 +621,8 @@ rest_and_return:
+> >   * OR try to be smart about which process to kill. Note that we
+> >   * don't have to be perfect here, we just have to be good.
+> >   */
+> > -void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+> > +void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+> > +		int order, nodemask_t *nodemask)
+> >  {
+> >  	unsigned long freed = 0;
+> >  	enum oom_constraint constraint;
+> > @@ -622,11 +641,12 @@ void out_of_memory(struct zonelist *zone
+> >  	 * Check if there were limitations on the allocation (only relevant for
+> >  	 * NUMA) that may require different handling.
+> >  	 */
+> > -	constraint = constrained_alloc(zonelist, gfp_mask);
+> > +	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+> >  	read_lock(&tasklist_lock);
+> >  
+> >  	switch (constraint) {
+> >  	case CONSTRAINT_MEMORY_POLICY:
+> > +		/* kill by process's its own memory alloc limitation */
+> 
+> I don't understand this comment.
+> 
+remove this. But it seems not to be well known that current is always killed if
+CONSTRAINT_MEMPOLICY. 
+
+> >  		oom_kill_process(current, gfp_mask, order, 0, NULL,
+> >  				"No available memory (MPOL_BIND)");
+> >  		break;
+> > Index: mm-test-kernel/mm/page_alloc.c
+> > ===================================================================
+> > --- mm-test-kernel.orig/mm/page_alloc.c
+> > +++ mm-test-kernel/mm/page_alloc.c
+> > @@ -1667,9 +1667,15 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
+> >  	/* The OOM killer will not help higher order allocs */
+> >  	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+> >  		goto out;
+> > -
+> > +	/*
+> > +	 * In usual, GFP_THISNODE contains __GFP_NORETRY and we never hit this.
+> > +	 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
+> > +	 * Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
+> > +	 */
+> > +	if (gfp_mask & __GFP_THISNODE)
+> > +		goto out;
+> >  	/* Exhausted what can be done so it's blamo time */
+> > -	out_of_memory(zonelist, gfp_mask, order);
+> > +	out_of_memory(zonelist, gfp_mask, order, nodemask);
+> >  
+> >  out:
+> >  	clear_zonelist_oom(zonelist, gfp_mask);
+> 
+> This doesn't seem like the right place for this check; should we even try 
+> direct reclaim for bare users of __GFP_THISNODE?
+No, hugepage has to do reclaim.
+
+> If we're adding it for  sanity even though no callers would currently hit it,
+> it also is a potential escape route for __GFP_NOFAIL.
+
+will add __GFP_NOFAIL check.
+
+Thanks,
+-Kame
+
 
 
 
