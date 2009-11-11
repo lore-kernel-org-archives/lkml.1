@@ -1,59 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZKKCEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZKKCHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZKKCEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbZKKCEV
+	id S1756971AbZKKCHF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZKKCHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:04:21 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50329 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756537AbZKKCEU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:04:20 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5][nit fix] vmscan Make consistent of reclaim bale out between do_try_to_free_page and shrink_zone
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20091111104744.FD3B.A69D9226@jp.fujitsu.com>
-References: <20091111104744.FD3B.A69D9226@jp.fujitsu.com>
-Message-Id: <20091111110343.FD4A.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 10 Nov 2009 21:07:04 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:46220 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756722AbZKKCHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Nov 2009 21:07:03 -0500
+Date: Tue, 10 Nov 2009 18:06:46 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: William Allen Simpson <william.allen.simpson@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH resent] Documentation: rw_lock lessons learned
+Message-ID: <20091110180646.2e5859a8@nehalam>
+In-Reply-To: <4AF9C540.5090403@gmail.com>
+References: <4AF9C540.5090403@gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 11 Nov 2009 11:04:23 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix small inconsistent of ">" and ">=".
+On Tue, 10 Nov 2009 14:55:44 -0500
+William Allen Simpson <william.allen.simpson@gmail.com> wrote:
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
----
- mm/vmscan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> In recent weeks, two different network projects erroneously
+> strayed down the rw_lock path.  Update the Documentation
+> based upon comments in those threads.
+> 
+> Signed-off-by: William.Allen.Simpson@gmail.com
+> ---
+>    Documentation/spinlocks.txt |   14 ++++++++++++++
+>    1 files changed, 14 insertions(+), 0 deletions(-)
+> 
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index d53a934..0d0a948 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1632,7 +1632,7 @@ static void shrink_zone(int priority, struct zone *zone,
- 		 * with multiple processes reclaiming pages, the total
- 		 * freeing target can get unreasonably large.
- 		 */
--		if (nr_reclaimed > nr_to_reclaim && priority < DEF_PRIORITY)
-+		if (nr_reclaimed >= nr_to_reclaim && priority < DEF_PRIORITY)
- 			break;
- 	}
+I would rather see the text in Documentation/spinlocks give an explaination
+as to why reader/writer locks are normally not desirable. 
+
+The whole document needs work to make it a developer document, rather than
+a historical mail thread..  A good document says what should be done today,
+and does not have old junk or ask the reader to overly new context
+on old information.
+
+
+
+--- a/Documentation/spinlocks.txt	2009-11-10 17:47:03.801984416 -0800
++++ b/Documentation/spinlocks.txt	2009-11-10 18:01:00.779749888 -0800
+@@ -1,73 +1,8 @@
+-SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED defeat lockdep state tracking and
+-are hence deprecated.
++Lesson 1: Spin locks
  
--- 
-1.6.2.5
-
-
-
+-Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
+-__SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
+-initialization.
+-
+-Most of the time, you can simply turn:
+-
+-	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
+-
+-into:
+-
+-	static DEFINE_SPINLOCK(xxx_lock);
+-
+-Static structure member variables go from:
+-
+-	struct foo bar {
+-		.lock	=	SPIN_LOCK_UNLOCKED;
+-	};
+-
+-to:
+-
+-	struct foo bar {
+-		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
+-	};
+-
+-Declaration of static rw_locks undergo a similar transformation.
+-
+-Dynamic initialization, when necessary, may be performed as
+-demonstrated below.
+-
+-   spinlock_t xxx_lock;
+-   rwlock_t xxx_rw_lock;
+-
+-   static int __init xxx_init(void)
+-   {
+-   	spin_lock_init(&xxx_lock);
+-	rwlock_init(&xxx_rw_lock);
+-	...
+-   }
+-
+-   module_init(xxx_init);
+-
+-The following discussion is still valid, however, with the dynamic
+-initialization of spinlocks or with DEFINE_SPINLOCK, etc., used
+-instead of SPIN_LOCK_UNLOCKED.
+-
+------------------------
+-
+-On Fri, 2 Jan 1998, Doug Ledford wrote:
+-> 
+-> I'm working on making the aic7xxx driver more SMP friendly (as well as
+-> importing the latest FreeBSD sequencer code to have 7895 support) and wanted
+-> to get some info from you.  The goal here is to make the various routines
+-> SMP safe as well as UP safe during interrupts and other manipulating
+-> routines.  So far, I've added a spin_lock variable to things like my queue
+-> structs.  Now, from what I recall, there are some spin lock functions I can
+-> use to lock these spin locks from other use as opposed to a (nasty)
+-> save_flags(); cli(); stuff; restore_flags(); construct.  Where do I find
+-> these routines and go about making use of them?  Do they only lock on a
+-> per-processor basis or can they also lock say an interrupt routine from
+-> mucking with a queue if the queue routine was manipulating it when the
+-> interrupt occurred, or should I still use a cli(); based construct on that
+-> one?
+-
+-See <asm/spinlock.h>. The basic version is:
+-
+-   spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
++The most basic primitive for locking is spinlock.
+ 
++static DEFINE_SPINLOCK(xxx_lock);
+ 
+ 	unsigned long flags;
+ 
+@@ -141,13 +76,17 @@ Lesson 2: reader-writer spinlocks.
+ 
+ If your data accesses have a very natural pattern where you usually tend
+ to mostly read from the shared variables, the reader-writer locks
+-(rw_lock) versions of the spinlocks are often nicer. They allow multiple
++(rw_lock) versions of the spinlocks are sometimes useful. They allow multiple
+ readers to be in the same critical region at once, but if somebody wants
+-to change the variables it has to get an exclusive write lock. The
+-routines look the same as above:
++to change the variables it has to get an exclusive write lock.
++
++NOTE! reader-writer locks require more atomic memory operations than
++simple spinlocks, so unless the reader critical secition is long you
++are better off just using spinlocks.
+ 
+-   rwlock_t xxx_lock = RW_LOCK_UNLOCKED;
++The routines look the same as above:
+ 
++static DEFINE_RWLOCK(xxx_lock);
+ 
+ 	unsigned long flags;
+ 
+@@ -159,12 +98,15 @@ routines look the same as above:
+ 	.. read and write exclusive access to the info ...
+ 	write_unlock_irqrestore(&xxx_lock, flags);
+ 
+-The above kind of lock is useful for complex data structures like linked
++The above kind of lock might useful for complex data structures like linked
+ lists etc, especially when you know that most of the work is to just
+ traverse the list searching for entries without changing the list itself,
+ for example. Then you can use the read lock for that kind of list
+ traversal, which allows many concurrent readers. Anything that _changes_
+-the list will have to get the write lock. 
++the list will have to get the write lock.
++
++NOTE! RCU is better for that most read only access, but requires
++correct operations (see Documentation/RCU/listRCU.txt)
+ 
+ Note: you cannot "upgrade" a read-lock to a write-lock, so if you at _any_
+ time need to do any changes (even if you don't do it every time), you have
+@@ -233,4 +175,45 @@ indeed), while write-locks need to prote
+ 
+ 		Linus
+ 
++Reference information:
++
++* Older code used SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED to initialize
++  locks, but this is now deprecated because it interferes with the
++  lockdep state tracking. Please use DEFINE_SPINLOCK()/DEFINE_RWLOCK() or
++  __SPIN_LOCK_UNLOCKED()/__RW_LOCK_UNLOCKED() as appropriate for static
++  initialization.
++
++  Most of the time, you can simply turn:
++	static spinlock_t xxx_lock = SPIN_LOCK_UNLOCKED;
++  into:
++	static DEFINE_SPINLOCK(xxx_lock);
++
++  Static structure member variables go from:
++
++	struct foo bar {
++		.lock	=	SPIN_LOCK_UNLOCKED;
++	};
++
++  to:
++
++	struct foo bar {
++		.lock	=	__SPIN_LOCK_UNLOCKED(bar.lock);
++	};
++
++  Declaration of static rw_locks undergo a similar transformation.
++
++  Dynamic initialization, when necessary, may be performed as
++  demonstrated below.
++
++   spinlock_t xxx_lock;
++   rwlock_t xxx_rw_lock;
++
++   static int __init xxx_init(void)
++   {
++   	spin_lock_init(&xxx_lock);
++	rwlock_init(&xxx_rw_lock);
++	...
++   }
++
++   module_init(xxx_init);
+ 
