@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZKKJe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZKKJf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbZKKJe3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 04:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZKKJe2
+	id S1756039AbZKKJf6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 04:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZKKJf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 04:34:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55561 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbZKKJe1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 04:34:27 -0500
-Subject: Re: Radeon KMS status (Re: [git pull] drm radeon kms.)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net, glisse@freedesktop.org
-In-Reply-To: <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie>
-References: <alpine.DEB.2.00.0911102313310.29664@skynet.skynet.ie>
-	 <1257926475.23203.24.camel@twins>
-	 <alpine.DEB.2.00.0911110910170.4943@skynet.skynet.ie>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 11 Nov 2009 10:33:48 +0100
-Message-ID: <1257932028.23203.74.camel@twins>
+	Wed, 11 Nov 2009 04:35:57 -0500
+Received: from 1wt.eu ([62.212.114.60]:51006 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751883AbZKKJf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 04:35:56 -0500
+Date: Wed, 11 Nov 2009 10:35:24 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Avi Kivity <avi@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091111093524.GF560@1wt.eu>
+References: <20091110105642.215804e0@lxorguk.ukuu.org.uk> <4AF99E04.8080704@zytor.com> <20091110172454.3c4481f2@lxorguk.ukuu.org.uk> <4AF9B5AB.5010800@zytor.com> <4AF9C3EF.6000705@redhat.com> <4AF9C6AB.8080006@zytor.com> <20091110201602.GA26633@1wt.eu> <20091110205445.GB1407@ucw.cz> <20091110211259.GD26633@1wt.eu> <20091111080313.GB24569@elf.ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111080313.GB24569@elf.ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 09:14 +0000, Dave Airlie wrote:
-> > Hi Dave,
+On Wed, Nov 11, 2009 at 09:03:13AM +0100, Pavel Machek wrote:
+> 
+> > (...)
+> > > > CMOV/NOPL are rarely used, thus have no reason to cause a massive
+> > > > performance drop, but are frequent enough (at least cmov) for almost
+> > > 
+> > > *One* CMOV in the inner loop will make your performance go down 20x.
 > > 
-> > I was wondering about the current state of Radeon KMS, how far are we
-> > from having it removed from staging?
+> > yes, just like with emulated FPU or trapped unaligned accesses. It's
+> > just like flying fishes. They exist but they aren't the most common
+> > ones. If people encounter these cases on a specific program, then
+> > they just have to recompile it if it is a problem. At least they
+> > don't rebuild the whole distro. And once again, I've been using
+> > cmpxchg/bswap emulation for years on my i386 without feeling any
+> > need for a rebuild, and CMOV emulation for years now on my mini-itx 
 > 
-> I'm sort of thinking the next merge window of moving the enable option 
-> into the kernel proper. We still have a metric shitload of work to get to 
-> feature parity with current userspace drivers and we've done no 
-> optimisation work on the rendering portion of the stack so I'm not sure 
-> freezing the API isn't a bit premature, however maybe the API we have is 
-> good enough to support and we can add new ioctls to make it go faster if 
-> we require.
-> 
-> Jerome has proposed some API changes but we really haven't had time to 
-> validate them in any useful way.
+> And did you set cpu family to 6 for your 386?
 
-I by no means intend to rush things along, so if you think you need more
-time, please take it ;-)
+No, not at all !
 
-Just wanted to know where we stand... I'll try the Radeon KMS thing
-again once I get through this mountain of email that accumulated over
-the vacation and let you know how the current bits work.
+> That's the part I was objecting most. Yes, you can emulate, but
+> emulation is very bad for performance... so don't lie about cpu
+> family.
 
-Last time I tried KMS swapped the two DVI outputs wrt. the !KMS setup,
-which is rather annoying during the transition period, but nothing I
-can't live with once the stuff is stable enough to use all day.
+That's the point I agree with you, I don't like this setting either.
+I don't want to incite applications to use features that are emulated.
+However I think that allowing applications run when they don't/can't
+perform the check is useful.
+
+> (Imagine application that has NOPL in inner loop, for performance
+> reasons. You want to use version _without_ the NOPL on processors that
+> lack it.)
+
+Exactly. Same for MMX, 3DNOW, SSE* and such.
+
+> So... I don't like instruction emulation, but can live with it. But
+> don't lie about supported instructions in /proc as original patch did.
+
+100% agreed !
+
+Regards,
+Willy
+
