@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZKKL1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbZKKLaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbZKKL1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 06:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZKKL1c
+	id S1752547AbZKKLaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 06:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZKKLaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 06:27:32 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:25058 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZKKL1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 06:27:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iEeFBmcCtLoH+W84fUAyg6VcKa/MSc0IHPHYuTeaI7CoVE329KO3KShd7EAzaezp/+
-         S2q/Rp7hxAxEhl+tvXpLJZEbE9Sdaqy+ozKqDBXb2AYesc6/U4VNOLmeefmZb4tjQzwX
-         eaV4skak86GQ/DdEZNeer3DneQXjtoXWLgyRU=
-Date: Wed, 11 Nov 2009 12:27:33 +0100
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86, ucode-amd: Load ucode-patches once and not
- separately fo each CPU
-Message-ID: <20091111112733.GE18592@alberich.amd.com>
-References: <20091110110601.GG30802@alberich.amd.com>
- <20091110110723.GH30802@alberich.amd.com>
- <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
- <4AFA6CEB.6020202@ladisch.de>
+	Wed, 11 Nov 2009 06:30:16 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:50596 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbZKKLaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 06:30:15 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] intermittent suspend problem again
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910281956.44791.rjw@sisk.pl>
+	<87d447m52t.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
+Date: Wed, 11 Nov 2009 12:29:33 +0100
+In-Reply-To: <200910291936.14082.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Thu, 29 Oct 2009 19:36:14 +0100")
+Message-ID: <87my2tnvtu.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFA6CEB.6020202@ladisch.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 08:51:07AM +0100, Clemens Ladisch wrote:
-> Dmitry Adamushko wrote:
-> > btw., if we could safely assume that all the cpus after the ucode
-> > upgrade share the same version/patch-level of ucode, we would be able
-> > to cache a single ucode instance once and use it for all.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Hmm, I think all ucode-versions needed in a mixed silicon system need
-to be cached. See below.
+> On Thursday 29 October 2009, Ferenc Wagner wrote:
+>
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
+>>> 
+>>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
+>>>> off the machine after "S|" or freezes after "Snapshotting system".
+>>>> The former does not cause much trouble in itself, as the machine can
+>>>> be switched off and resumed all right, but the latter is nasty.
+>>>> Suspend to RAM works all the time.  The issue is not reproducible,
+>>>> unfortunately, and the kernel change happened almost together with a
+>>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
+>>>> still works stably with the new BIOS.  I'll report back my findings in
+>>>> a couple of days.
+>>>
+>>> OK, thanks.
+>>>
+>>> Still, I'm really afraid we won't be able to debug it any further without a
+>>> reproducible test case.
+>>
+>> Can't you perhaps suggest a way forward there?  Or some tricks to create a
+>> reproducible test case here?
+>
+> Well, you can test if the problem is reproducible in the "shutdown" mode of
+> hibernation.
 
-> > I don't recall anyone clearly stating that such multi-cpu-type
-> > systems can't really exist.
+Well, both failure modes happen with "shutdown" mode as well (the S|
+freeze with yesterday's git, too), but still not reproducibly.  When
+s2disk is stuck in "Snapshotting system", the system is not completely
+dead, it echoes line feeds and Ctrl-C at least (as added to #14504).
 
-> > e.g. is it possible to have AMD systems with cpus which differ from
-> > each other not only by their revisions (patch_level)?
-
-Mixed silicon is possible.
-
-So at least in theory this could result in different patch_levels
-because the required microcode is identified via processor revision
-consisting of family/model/stepping.
-
-> The Revision Guide for AMD Family 10h Processors (#41322) says, in
-> section "Mixed Silicon Support", that the Opteron B steppings can be
-> used with each other (DR-BA, DR-B2, DR-B3; CPUID 00100F2xh).  Are
-> different steppings considered equivalent?
-
-The microcode to be loaded is identified by an Equivalent Processor
-ID.  The Equivalent Processor ID is determined with an equivalence
-table which maps the processor revision IDs to Equivalent Processor
-IDs.
-
-Above revision B steppeings have different processor revision IDs:
-(because the stepping differs)
-
-  00100F2Ah (DR-BA)
-  00100F22h (DR-B2)
-  00100F23h (DR-B3)
-
-An example of an equivalence table is
-
-  0x00100F2A; 0x1020
-  0x00100F22; 0x1022
-  0x00100F23; 0x1022
-
-This means when combining DR-BA and DR-B2 (or DR-B3) different ucode
-gets installed for the two processors.
-
-
-Regards,
-Andreas
+I wonder what you did if the issue was reproducible...  Is that totally
+unapplicable if the problem happens with 10% probability only?  Slow,
+sure, but until I manage to set up an automated testing bench...
+-- 
+Thanks,
+Feri.
