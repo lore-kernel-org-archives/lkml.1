@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZKKS1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZKKSbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbZKKS1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 13:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZKKS1n
+	id S1758406AbZKKSbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 13:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbZKKSbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 13:27:43 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:58643 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757996AbZKKS1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 13:27:42 -0500
-Date: Wed, 11 Nov 2009 19:27:46 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pcmcia@lists.infradead.org,
-       Harald Welte <laforge@gnumonks.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] pcmcia: fix printk formats
-Message-ID: <20091111182746.GA10094@isilmar.linta.de>
-Mail-Followup-To: Randy Dunlap <randy.dunlap@oracle.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-pcmcia@lists.infradead.org,
-	Harald Welte <laforge@gnumonks.org>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
-	akpm <akpm@linux-foundation.org>
-References: <20091111203159.a2a6eeeb.sfr@canb.auug.org.au> <20091111093107.9032f4bb.randy.dunlap@oracle.com>
+	Wed, 11 Nov 2009 13:31:11 -0500
+Received: from THUNK.ORG ([69.25.196.29]:48600 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758238AbZKKSbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 13:31:10 -0500
+Date: Wed, 11 Nov 2009 13:29:25 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091111182925.GH13262@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Jeff Garzik <jeff@garzik.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>,
+	Al Viro <viro@ZenIV.linux.org.uk>,
+	Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
+References: <20091025225342.007138f5@infradead.org> <20091111020108.GA11423@localhost> <20091110223456.01ef355f@infradead.org> <4AFA6AEF.5060306@garzik.org> <20091111074542.GB25132@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091111093107.9032f4bb.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20091111074542.GB25132@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied to the PCMCIA tree, thanks.
+On Wed, Nov 11, 2009 at 08:45:42AM +0100, Ingo Molnar wrote:
+> Without an inode->vfs-name lookup/matching service it's of limited 
+> utility though to developers and users. So inode numbers are fine (as 
+> nicely unique physical identifiers)- as long as corresponding vfs name 
+> string is available too.
 
-On Wed, Nov 11, 2009 at 09:31:07AM -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix printk format warnings on sizeof() [size_t] arguments.
-> 
-> drivers/char/pcmcia/cm4040_cs.c:267: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'size_t'
-> drivers/char/pcmcia/cm4040_cs.c:272: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'size_t'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/char/pcmcia/cm4040_cs.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux-next-20091110.orig/drivers/char/pcmcia/cm4040_cs.c
-> +++ linux-next-20091110/drivers/char/pcmcia/cm4040_cs.c
-> @@ -264,12 +264,12 @@ static ssize_t cm4040_read(struct file *
->  
->  	bytes_to_read = 5 + le32_to_cpu(*(__le32 *)&dev->r_buf[1]);
->  
-> -	DEBUGP(6, dev, "BytesToRead=%lu\n", bytes_to_read);
-> +	DEBUGP(6, dev, "BytesToRead=%zu\n", bytes_to_read);
->  
->  	min_bytes_to_read = min(count, bytes_to_read + 5);
->  	min_bytes_to_read = min_t(size_t, min_bytes_to_read, READ_WRITE_BUFFER_SIZE);
->  
-> -	DEBUGP(6, dev, "Min=%lu\n", min_bytes_to_read);
-> +	DEBUGP(6, dev, "Min=%zu\n", min_bytes_to_read);
->  
->  	for (i = 0; i < (min_bytes_to_read-5); i++) {
->  		rc = wait_for_bulk_in_ready(dev);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Inode numbers are quite usable for me; but I'm not afraid to do
+
+      debugfs /dev/sdb -R "ncheck 12345"
+
+:-)
+
+If you really want to avoid that, one relatively lightweight thing we
+could do, which would avoid needing to dump the entire pathname out,
+would be to print out the triple (devno, dir_ino, file_ino), and then
+provide a privileged syscall which translates this to a user-visible
+pathname.  It won't be necessarily the pathname which the user used to
+open the file (since there might be links, and bind mounts, et. al),
+but if the goal is to give one of the user-friendly names of the inode
+(as opposed to _the_ pathname used to open the file), it's quite sufficient.
+
+    	       	     	      	      - Ted
