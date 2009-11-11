@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbZKKH6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZKKH70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbZKKH6i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 02:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZKKH6h
+	id S1756967AbZKKH70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 02:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbZKKH7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 02:58:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34219 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755726AbZKKH6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 02:58:36 -0500
-Message-ID: <4AFA6E71.70108@zytor.com>
-Date: Tue, 10 Nov 2009 23:57:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl> <4AFA210B.3020207@kernel.org> <20091111074830.GA10310@elte.hu>
-In-Reply-To: <20091111074830.GA10310@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Nov 2009 02:59:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41860 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755700AbZKKH7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 02:59:25 -0500
+Date: Wed, 11 Nov 2009 18:59:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: manual merge of the percpu tree with the tip tree
+Message-Id: <20091111185919.a442804d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__11_Nov_2009_18_59_19_+1100_d9+yh=mstGzlpuga"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2009 11:48 PM, Ingo Molnar wrote:
-> 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->>
->> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
->>
->> to get area is below 1M
->>
->> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  arch/x86/include/asm/acpi.h  |    2 +-
->>  arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
->>  arch/x86/kernel/setup.c      |   13 +++++++------
->>  3 files changed, 17 insertions(+), 13 deletions(-)
-> 
-> Looks good. Rafael, Peter, does it look good to you too?
-> 
+--Signature=_Wed__11_Nov_2009_18_59_19_+1100_d9+yh=mstGzlpuga
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Looks sane to me.
+Hi all,
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+Today's linux-next merge of the percpu tree got a conflict in
+arch/powerpc/platforms/pseries/hvCall.S between commit
+c8cd093a6e9f96ea6b871576fd4e46d7c818bb89 ("powerpc: tracing: Add
+hypervisor call tracepoints") from the tip tree and commit
+dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu: remove per_cpu__
+prefix") from the percpu tree.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+The former removed the code changed by the latter, so I just used the tip
+tree version.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__11_Nov_2009_18_59_19_+1100_d9+yh=mstGzlpuga
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr6btcACgkQjjKRsyhoI8yC5gCgg5gEn80a4+SUExELdsG2utyF
+fZAAoLfWbsb+1ih49RSHAMh2RgOUEZNJ
+=wjge
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Nov_2009_18_59_19_+1100_d9+yh=mstGzlpuga--
