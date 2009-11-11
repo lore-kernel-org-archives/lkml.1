@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZKKIdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbZKKIeC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbZKKIdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 03:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbZKKIdT
+	id S1757310AbZKKIeC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 03:34:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756911AbZKKIeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 03:33:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:49884 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757038AbZKKIdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 03:33:18 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: rr tree build failure
-Date: Wed, 11 Nov 2009 19:03:21 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan-jenkins@tuffmail.co.uk, x86@kernel.org
-References: <20091111140126.044be7d2.sfr@canb.auug.org.au>
-In-Reply-To: <20091111140126.044be7d2.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911111903.21923.rusty@rustcorp.com.au>
+	Wed, 11 Nov 2009 03:34:01 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46658 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755719AbZKKIeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 03:34:00 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: miklos@szeredi.hu, jlayton@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       ebiederm@xmission.com, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
+       jamie@shareable.org
+In-reply-to: <1257927970.5138.24.camel@heimdal.trondhjem.org> (message from
+	Trond Myklebust on Wed, 11 Nov 2009 17:26:10 +0900)
+Subject: Re: [PATCH 0/2] vfs: ensure that dentries are revalidated on open
+ (try #2)
+References: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
+	 <E1N884c-0006Br-Je@pomaz-ex.szeredi.hu> <1257927970.5138.24.camel@heimdal.trondhjem.org>
+Message-Id: <E1N88eK-0006Im-1F@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 11 Nov 2009 09:33:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 01:31:26 pm Stephen Rothwell wrote:
-> Hi Rusty,
+On Wed, 11 Nov 2009, Trond Myklebust wrote:
+> > Having said that, doing revalidation for proc symlinks and bind mounts
+> > (and not just for opens) might make sense.  This is something similar
+> > to FS_REVAL_DOT, so perhaps make it conditional on this flag (or a
+> > new, appropriately named one).
 > 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> .tmp_exports-asm.o: In function `__ksymtab_load_gs_index':
-> (__ksymtab_sorted+0x5b40): undefined reference to `load_gs_index'
-> 
-> I have used the version of the rr tree from next-20091110 for today.
+> Aren't both proc symlinks and bind mounts pretty much guaranteed to
+> point to a valid dentry?
 
-It's inline and exported when CONFIG_PARAVIRT=y.  Which is wrong.
+It could for example happen that client bind mounts a regular file,
+then the file is unlinked on the server.  Then the bind mounted dentry
+is no longer valid.
 
-Here's the patch I've put in my series for tomorrow's linux-next:
-
-Subject: x86: don't export inline function
-
-For CONFIG_PARAVIRT, load_gs_index is an inline function (it's #defined
-to native_load_gs_index otherwise).
-
-Exporting an inline function breaks the new assembler-based alphabetical
-sorted symbol list:
-
-Today's linux-next build (x86_64 allmodconfig) failed like this:
-
-	.tmp_exports-asm.o: In function `__ksymtab_load_gs_index':
-	(__ksymtab_sorted+0x5b40): undefined reference to `load_gs_index'
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: x86@kernel.org
-Cc: alan-jenkins@tuffmail.co.uk
-
-diff --git a/arch/x86/kernel/x8664_ksyms_64.c b/arch/x86/kernel/x8664_ksyms_64.c
---- a/arch/x86/kernel/x8664_ksyms_64.c
-+++ b/arch/x86/kernel/x8664_ksyms_64.c
-@@ -57,4 +57,6 @@ EXPORT_SYMBOL(__memcpy);
- 
- EXPORT_SYMBOL(empty_zero_page);
- EXPORT_SYMBOL(init_level4_pgt);
--EXPORT_SYMBOL(load_gs_index);
-+#ifndef CONFIG_PARAVIRT
-+EXPORT_SYMBOL(native_load_gs_index);
-+#endif
-
+Thanks,
+Miklos
