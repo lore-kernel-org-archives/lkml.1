@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbZKKRhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbZKKRoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758415AbZKKRhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 12:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbZKKRhk
+	id S1758310AbZKKRoF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 12:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758217AbZKKRoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 12:37:40 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:56736 "EHLO mail.vyatta.com"
+	Wed, 11 Nov 2009 12:44:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28092 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758018AbZKKRhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 12:37:39 -0500
-Date: Wed, 11 Nov 2009 09:37:24 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH resent] Documentation: rw_lock lessons learned
-Message-ID: <20091111093724.4f40a48d@nehalam>
-In-Reply-To: <4AFAEF78.4080807@gmail.com>
-References: <4AF9C540.5090403@gmail.com>
-	<20091110180646.2e5859a8@nehalam>
-	<4AFAEF78.4080807@gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757947AbZKKRoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 12:44:03 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: Performance regression in IO scheduler still there
+References: <20091026172012.GC7233@duck.suse.cz>
+	<x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
+	<20091111141031.GA21511@duck.suse.cz>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 11 Nov 2009 12:43:30 -0500
+In-Reply-To: <20091111141031.GA21511@duck.suse.cz> (Jan Kara's message of
+	"Wed, 11 Nov 2009 15:10:31 +0100")
+Message-ID: <x493a4lot31.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 12:08:08 -0500
-William Allen Simpson <william.allen.simpson@gmail.com> wrote:
+Jan Kara <jack@suse.cz> writes:
 
-> Stephen Hemminger wrote:
-> > I would rather see the text in Documentation/spinlocks give an explaination
-> > as to why reader/writer locks are normally not desirable. 
-> > 
-> > The whole document needs work to make it a developer document, rather than
-> > a historical mail thread..  A good document says what should be done today,
-> > and does not have old junk or ask the reader to overly new context
-> > on old information.
-> > 
-> You wish me to merge our patches?
+>   Sadly, I don't see the improvement you can see :(. The numbers are the
+> same regardless low_latency set to 0:
+> 2.6.32-rc5 low_latency = 0:
+> 37.39 36.43 36.51 -> 36.776667 0.434920
+>   But my testing environment is a plain SATA drive so that probably
+> explains the difference...
 
-Sure, I am more concerned about document structure being readable than
-preserving my sloppy prose.
+I just retested (10 runs for each kernel) on a SATA disk with no NCQ
+support and I could not see a difference.  I'll try to dig up a disk
+that support NCQ.  Is that what you're using for testing?
 
+Cheers,
+Jeff
 
-> Or this is a second patch in a proposed series?
-
-No. But taking more input from others (maybe Randy will help he is a good
-editor) would get this back in shape.
-
--- 
+              2.6.29    2.6.32-rc6,low_latency=0
+----------------------------------
+Average:      34.6648   34.4475
+Pop.Std.Dev.: 0.55523   0.21981
