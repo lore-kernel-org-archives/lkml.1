@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbZKKVAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZKKU6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbZKKVAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 16:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbZKKVAR
+	id S1758870AbZKKU6E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 15:58:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757931AbZKKU6C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 16:00:17 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:46629 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759022AbZKKVAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 16:00:15 -0500
-Date: Wed, 11 Nov 2009 15:51:42 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-11-11
-Message-ID: <20091111205141.GK4392@tuxdriver.com>
-References: <20091111172255.GH4392@tuxdriver.com> <20091111.112031.184370997.davem@davemloft.net> <20091111.114114.228545645.davem@davemloft.net>
+	Wed, 11 Nov 2009 15:58:02 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:57929 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756940AbZKKU6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 15:58:01 -0500
+Message-ID: <4AFB2547.7080008@ti.com>
+Date: Wed, 11 Nov 2009 14:57:43 -0600
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091111.114114.228545645.davem@davemloft.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: john stultz <johnstul@us.ibm.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/2] Dynamic Tick: Enabling longer sleep times on 32-bit
+ 	machines
+References: <1250617512-23567-1-git-send-email-jon-hunter@ti.com> <1f1b08da0911111243s2615c22ake73a3242becb7b70@mail.gmail.com>
+In-Reply-To: <1f1b08da0911111243s2615c22ake73a3242becb7b70@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 11:41:14AM -0800, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 11 Nov 2009 11:20:31 -0800 (PST)
+
+john stultz wrote:
+> I could have sworn this was in mainline by now, but I recently was
+> looking for the code and can't find it there or in -tip either.
 > 
-> > From: "John W. Linville" <linville@tuxdriver.com>
-> > Date: Wed, 11 Nov 2009 12:22:55 -0500
-> > 
-> >> P.S.  Due to the aformentioned iwlwifi fix, this will cause -next
-> >> conflicts for sfr.  You may want to pull net-2.6 into net-next-2.6 after
-> >> pulling this.  The iwlwifi conflicts can be resolved by taking the bigger
-> >> hunks...
-> > 
-> > Yep, I noticed this, I'll sort it out, thanks.
+> Thomas, are they just hiding somewhere I can't find?
 > 
-> I just pushed out the merge to net-next-2.6, please double
-> check my work.
+> Jon, you've been terribly patient and great about resubmitting these
+> patches over and over. If I'm not just being crazy and missing these
+> patches in front of my nose, are you still willing to submit them
+> again? I think they'll be quite useful as folks start pushing the NOHZ
+> idle times out.
 
-Found a little merge damage, sent a fixup patch to netdev@vger.kernel.org...
+Absolutely! It is still on my to-do list, but unfortunately, I got busy 
+with a couple other things.
 
-Thanks!  Sorry if I gave bad merge conflict fixup advice...
+With regard to the last patch set I submitted for this, Thomas had an 
+issue with one of the patches. I understand the concern, but I am not 
+sure  which would be the preferred way to handle this. See the below thread:
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+http://marc.info/?l=linux-kernel&m=125062817124381&w=2
+
+If you or Thomas have any feedback on this, I could re-work the patch 
+against the latest kernel tree.
+
+Cheers
+Jon
