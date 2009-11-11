@@ -1,102 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZKKRcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbZKKRcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbZKKRcO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 12:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758087AbZKKRcM
+	id S1758319AbZKKRcq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 12:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758245AbZKKRcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 12:32:12 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:43031 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758150AbZKKRcJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 12:32:09 -0500
-Date: Wed, 11 Nov 2009 09:31:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       gregkh@suse.de
-Subject: [PATCH -next] staging/vt665*: fix printk formats
-Message-Id: <20091111093142.30ad84d0.randy.dunlap@oracle.com>
-In-Reply-To: <20091111203159.a2a6eeeb.sfr@canb.auug.org.au>
-References: <20091111203159.a2a6eeeb.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AFAF516.00BD:SCFMA4539814,ss=1,fgs=0
+	Wed, 11 Nov 2009 12:32:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3053 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758087AbZKKRco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 12:32:44 -0500
+Date: Wed, 11 Nov 2009 15:32:28 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Subject: Re: [PATCH 6/6] perf tools: Bring linear set of section headers
+	for features
+Message-ID: <20091111173228.GB27237@ghostprotocols.net>
+References: <1257911467-28276-1-git-send-email-fweisbec@gmail.com> <1257911467-28276-6-git-send-email-fweisbec@gmail.com> <1257920404.23203.0.camel@twins> <20091111164933.GB5255@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091111164933.GB5255@nowhere>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Em Wed, Nov 11, 2009 at 05:49:37PM +0100, Frederic Weisbecker escreveu:
+> On Wed, Nov 11, 2009 at 07:20:04AM +0100, Peter Zijlstra wrote:
+> > On Wed, 2009-11-11 at 04:51 +0100, Frederic Weisbecker wrote:
+> > > Build a set of section headers for features right after the datas.
+> > > Each implemented feature will have one of such section header that
+> > > provides the offset and the size of the data manipulated by the feature.
+> > > 
+> > > The trace informations have moved after the data and are recorded
+> > > on exit time.
+> > > 
+> > > The new layout is as follows:
+> > > 
+> > >  -----------------------
+> > >                              ___
+> > >  [ magic               ]      |
+> > >  [ header size         ]      |
+> > >  [ attr size           ]      |
+> > >  [ attr content offset ]      |
+> > >  [ attr content size   ]      |
+> > >  [ data offset         ]  File Headers
+> > >  [ data size           ]      |
+> > >  [ event_types offset  ]      |
+> > >  [ event_types size    ]      |
+> > >  [ feature bitmap      ]      v 
+> > > 
+> > >  [ attr section        ]
+> > >  [ events section      ]
+> > > 
+> > >                              ___
+> > >  [         X           ]      |
+> > >  [         X           ]      |
+> > >  [         X           ]    Datas
+> > >  [         X           ]      |
+> > >  [         X           ]      v
+> > > 
+> > >                              ___
+> > >  [ Feature 1 offset    ]      |
+> > >  [ Feature 1 size      ] Features headers
+> > >  [ Feature 2 offset    ]      |
+> > >  [ Feature 2 size      ]      v
+> > > 
+> > >  [ Feature 1 content   ]
+> > >  [ Feature 2 content   ]
+> > >  -----------------------
+> > > 
+> > > We have as many feature's section headers as we have features in use for
+> > > the current file.
+> > > 
+> > > Say Feat 1 and Feat 3 are used by the file, but not Feat 2. Then the
+> > > feature headers will be like follows:
+> > > 
+> > > [ Feature 1 offset    ]      |
+> > > [ Feature 1 size      ] Features headers
+> > > [ Feature 3 offset    ]      |
+> > > [ Feature 3 size      ]      v
+> > > 
+> > > There is no hole to cover Feature 2 that is not in use here. We only
+> > > need to cover the needed headers in order, from the lowest feature bit
+> > > to the highest.
+> > > 
+> > > Currently we have two features: HEADER_TRACE_INFO and HEADER_BUILD_ID.
+> > > Both have their contents that follow the feature headers. Putting the
+> > > contents right after the feature headers is not mandatory though.
+> > > While we keep the feature headers right after the data and in order,
+> > > their offsets can point everywhere. We have just put the two above
+> > > feature contents in the end of the file for convenience.
+> > > 
+> > > The purpose of this layout change is to have a file format that scales
+> > > while keeping it simple: having such linear feature headers is less
+> > > error prone wrt forward/backward compatibility as the content of a
+> > > feature can be put anywhere, its location can even change by the
+> > > time, it's fine because its headers will tell where it is. And we know
+> > > how to find these headers, following the above rules.
+> > 
+> > Does do mess up append though... be sure to add some magic for that.
+> 
+> Yep. It seems to work. What happens is that trace information are
+> re-computed. The same goes for build id I guess.
 
-Fix printk format warnings in vt665[56]:
-
-drivers/staging/vt6655/wpa.c:150: warning: format '%ld' expects type 'long int', but argument 3 has type 'unsigned int'
-drivers/staging/vt6655/wpa.c:181: warning: format '%ld' expects type 'long int', but argument 3 has type 'unsigned int'
-
-drivers/staging/vt6656/wpa.c:150: warning: format '%ld' expects type 'long int', but argument 3 has type 'unsigned int'
-drivers/staging/vt6656/wpa.c:181: warning: format '%ld' expects type 'long int', but argument 3 has type 'unsigned int'
-drivers/staging/vt6656/firmware.c:804: warning: format '%ld' expects type 'long int', but argument 3 has type 'unsigned int'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/vt6655/wpa.c      |    4 ++--
- drivers/staging/vt6656/firmware.c |    2 +-
- drivers/staging/vt6656/wpa.c      |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
-
---- linux-next-20091110.orig/drivers/staging/vt6656/firmware.c
-+++ linux-next-20091110/drivers/staging/vt6656/firmware.c
-@@ -801,7 +801,7 @@ FIRMWAREbDownload(
-                                             &(pBuffer[ii])
-                                             );
+Well, we would need to get the existing buildids, insert them into the
+dsos list, and as we use dsos__findnew DSOs already in the list wouldn't
+be added, and at the end we would, as you say, recompute the buildid
+table.
  
--            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"Download firmware...%d %ld\n", ii, sizeof(abyFirmware));
-+            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"Download firmware...%d %zu\n", ii, sizeof(abyFirmware));
-             if (NdisStatus != STATUS_SUCCESS) {
-                 if (pBuffer)
-                     kfree(pBuffer);
---- linux-next-20091110.orig/drivers/staging/vt6656/wpa.c
-+++ linux-next-20091110/drivers/staging/vt6656/wpa.c
-@@ -147,7 +147,7 @@ WPA_ParseRSN (
-         if (pRSN->len >= 12) //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)
-         {
-             j = 0;
--            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wPKCount: %d, sizeof(pBSSList->abyPKType): %ld\n", pRSN->wPKCount, sizeof(pBSSList->abyPKType));
-+            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wPKCount: %d, sizeof(pBSSList->abyPKType): %zu\n", pRSN->wPKCount, sizeof(pBSSList->abyPKType));
-             for(i = 0; (i < pRSN->wPKCount) && (j < sizeof(pBSSList->abyPKType)/sizeof(BYTE)); i++) {
-                 if(pRSN->len >= 12+i*4+4) { //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)+PKS(4*i)
-                     if ( !memcmp(pRSN->PKSList[i].abyOUI, abyOUI00, 4))
-@@ -178,7 +178,7 @@ WPA_ParseRSN (
-             // overlay IE_RSN_Auth structure into correct place
-             pIE_RSN_Auth = (PWLAN_IE_RSN_AUTH) pRSN->PKSList[m].abyOUI;
-             j = 0;
--            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wAuthCount: %d, sizeof(pBSSList->abyAuthType): %ld\n",
-+            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wAuthCount: %d, sizeof(pBSSList->abyAuthType): %zu\n",
-                           pIE_RSN_Auth->wAuthCount, sizeof(pBSSList->abyAuthType));
-             for(i = 0; (i < pIE_RSN_Auth->wAuthCount) && (j < sizeof(pBSSList->abyAuthType)/sizeof(BYTE)); i++) {
-                 if(pRSN->len >= 14+4+(m+i)*4) { //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)+PKS(4*m)+AKC(2)+AKS(4*i)
---- linux-next-20091110.orig/drivers/staging/vt6655/wpa.c
-+++ linux-next-20091110/drivers/staging/vt6655/wpa.c
-@@ -147,7 +147,7 @@ WPA_ParseRSN (
-         if (pRSN->len >= 12) //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)
-         {
-             j = 0;
--            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wPKCount: %d, sizeof(pBSSList->abyPKType): %ld\n", pRSN->wPKCount, sizeof(pBSSList->abyPKType));
-+            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wPKCount: %d, sizeof(pBSSList->abyPKType): %zu\n", pRSN->wPKCount, sizeof(pBSSList->abyPKType));
-             for(i = 0; (i < pRSN->wPKCount) && (j < sizeof(pBSSList->abyPKType)/sizeof(BYTE)); i++) {
-                 if(pRSN->len >= 12+i*4+4) { //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)+PKS(4*i)
-                     if ( !memcmp(pRSN->PKSList[i].abyOUI, abyOUI00, 4))
-@@ -178,7 +178,7 @@ WPA_ParseRSN (
-             // overlay IE_RSN_Auth structure into correct place
-             pIE_RSN_Auth = (PWLAN_IE_RSN_AUTH) pRSN->PKSList[m].abyOUI;
-             j = 0;
--            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wAuthCount: %d, sizeof(pBSSList->abyAuthType): %ld\n",
-+            DBG_PRT(MSG_LEVEL_DEBUG, KERN_INFO"wAuthCount: %d, sizeof(pBSSList->abyAuthType): %zu\n",
-                           pIE_RSN_Auth->wAuthCount, sizeof(pBSSList->abyAuthType));
-             for(i = 0; (i < pIE_RSN_Auth->wAuthCount) && (j < sizeof(pBSSList->abyAuthType)/sizeof(BYTE)); i++) {
-                 if(pRSN->len >= 14+4+(m+i)*4) { //oui1(4)+ver(2)+GKS(4)+PKSCnt(2)+PKS(4*m)+AKC(2)+AKS(4*i)
+> What happens is that the appended datas override the features sections
+> and headers, but this is fine because we rewrite them in the end.
+> 
+> But these both need to support appending mode internally (ie: append
+> the new informtions on top of exisiting ones instead of redo the whole)
+> and then rewrite the whole at exit like it's done currently.
+
+yeah.
+
+- Arnado
