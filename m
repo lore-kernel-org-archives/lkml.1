@@ -1,95 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZKKOK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZKKOL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZKKOK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 09:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbZKKOK2
+	id S1756856AbZKKOL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 09:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZKKOLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 09:10:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34607 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbZKKOK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 09:10:27 -0500
-Date: Wed, 11 Nov 2009 15:10:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Jan Kara <jack@suse.cz>, jens.axboe@oracle.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: Performance regression in IO scheduler still there
-Message-ID: <20091111141031.GA21511@duck.suse.cz>
-References: <20091026172012.GC7233@duck.suse.cz> <x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 11 Nov 2009 09:11:55 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:54765 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756661AbZKKOLw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 09:11:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=wlWIP2uyznC9bIACbr8Jg/uBskQdOF2O/pEU1S8CYIaNtywimyYMSRHILYnAxgT1CM
+         xoFRin2UL72fl/kJXXdkS+Ia4QQnX+HIyX3RjifKjzgy2jdbRdLOx0KgLWMJ2O72WMfd
+         +YpYTO01yFc04Oa/HZweKi5Qcs574MS0keSH8=
+Subject: Re: [PATCH v3 1/4] Add support for LZO-compressed kernels
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: akpm@linux-foundation.org, hpa@zytor.com, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       linux-mips@linux-mips.org
+In-Reply-To: <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+	 <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 11 Nov 2009 22:11:47 +0800
+Message-ID: <1257948707.7308.16.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 05-11-09 15:10:52, Jeff Moyer wrote:
-> Jan Kara <jack@suse.cz> writes:
-> 
-> >   Hi,
-> >
-> >   I took time and remeasured tiobench results on recent kernel. A short
-> > conclusion is that there is still a performance regression which I reported
-> > few months ago. The machine is Intel 2 CPU with 2 GB RAM and plain SATA
-> > drive. tiobench sequential write performance numbers with 16 threads:
-> > 2.6.29:              AVG       STDERR
-> > 37.80 38.54 39.48 -> 38.606667 0.687475
-> >
-> > 2.6.32-rc5:
-> > 37.36 36.41 36.61 -> 36.793333 0.408928 
-> >
-> > So about 5% regression. The regression happened sometime between 2.6.29 and
-> > 2.6.30 and stays the same since then... With deadline scheduler, there's
-> > no regression. Shouldn't we do something about it?
-> 
-> Sorry it took so long, but I've been flat out lately.  I ran some
-> numbers against 2.6.29 and 2.6.32-rc5, both with low_latency set to 0
-> and to 1.  Here are the results (average of two runs):
-> 
->                                                             rlat      |     rrlat       |     wlat       |  rwlat
-> kernel     | Thr | read  | randr  | write  | randw  |    avg, max     |    avg, max     |   avg, max     | avg,max
-> ------------------------------------------------------------------------------------------------------------------------
-> 2.6.29     |  8  | 72.95 |  20.06 | 269.66 | 231.59 |  6.625, 1683.66 | 23.241, 1547.97 | 1.761,  698.10 | 0.720, 443.64
->            | 16  | 72.33 |  20.03 | 278.85 | 228.81 | 13.643, 2499.77 | 46.575, 1717.10 | 3.304, 1149.29 | 1.011, 140.30
-> ------------------------------------------------------------------------------------------------------------------------
-> 2.6.32-rc5 |  8  | 86.58 |  19.80 | 198.82 | 205.06 |  5.694, 977.26  | 22.559,  870.16 | 2.359,  693.88 | 0.530,  24.32
->            | 16  | 86.82 |  21.10 | 199.00 | 212.02 | 11.010, 1958.78 | 40.195, 1662.35 | 4.679, 1351.27 | 1.007,  25.36
-> ------------------------------------------------------------------------------------------------------------------------
-> 2.6.32-rc5 |  8  | 87.65 | 117.65 | 298.27 | 212.35 |  5.615,  984.89 |  4.060,   97.39 | 1.535,  311.14 | 0.534,  24.29
-> low_lat=0  | 16  | 95.60 | 119.95*| 302.48 | 213.27 | 10.263, 1750.19 | 13.899, 1006.21 | 3.221,  734.22 | 1.062,  40.40
-> ------------------------------------------------------------------------------------------------------------------------
-> 
-> Legend:
-> rlat - read latency
-> rrlat - random read latency
-> wlat - write lancy
-> rwlat - random write latency
-> * - the two runs reported vastly different numbers: 67.53 and 172.46
-> 
-> So, as you can see, if we turn off the low_latency tunable, we get
-> better numbers across the board with the exception of random writes.
-> It's also interesting to note that the latencies reported by tiobench
-> are more favorable with low_latency set to 0, which is
-> counter-intuitive.
-> 
-> So, now it seems we don't have a regression in sequential read
-> bandwidth, but we do have a regression in random read bandwidth (though
-> the random write latencies look better).  So, I'll look into that, as it
-> is almost 10%, which is significant.
-  Sadly, I don't see the improvement you can see :(. The numbers are the
-same regardless low_latency set to 0:
-2.6.32-rc5 low_latency = 0:
-37.39 36.43 36.51 -> 36.776667 0.434920
-  But my testing environment is a plain SATA drive so that probably
-explains the difference...
+Hi Albin,
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Just tested it with the Compressed kernel support of MIPS in Ralf's
+linux-queue git repository and with an extra patch for this LZO support
+of MIPS on a YeeLoong2F netbook:
+
+http://www.linux-mips.org/archives/linux-mips/2009-10/msg00143.html
+
+It works well.
+
+Thanks & Regards,
+	Wu Zhangjin
+
+On Wed, 2009-11-11 at 13:27 +0100, Albin Tonnerre wrote:
+> This is the first part of the lzo patch
+> The lzo compressor is worse than gzip at compression, but faster at
+> extraction. Here are some figures for an ARM board I'm working on:
+> 
+> Uncompressed size: 3.24Mo
+> gzip  1.61Mo 0.72s
+> lzo   1.75Mo 0.48s
+> 
+> So for a compression ratio that is still relatively close to gzip, it's
+> much faster to extract, at least in that case.
+> 
+> This version applies to kernel 2.6.31-rc3
+> 
+> This part contains:
+>  - Makefile routine to support lzo compression
+>  - Fixes to the existing lzo compressor so that it can be used in
+>    compressed kernels
+>  - wrapper around the existing lzo1x_decompress, as it only extracts one
+>    block at a time, while we need to extract a whole file here
+>  - config dialog for kernel compression
+> 
+> Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+> ---
+>  include/linux/decompress/unlzo.h |   10 ++
+>  init/Kconfig                     |   18 +++-
+>  lib/decompress_unlzo.c           |  208 ++++++++++++++++++++++++++++++++++++++
+>  lib/lzo/lzo1x_decompress.c       |    9 +-
+>  scripts/Makefile.lib             |    5 +
+>  5 files changed, 243 insertions(+), 7 deletions(-)
+>  create mode 100644 include/linux/decompress/unlzo.h
+>  create mode 100644 lib/decompress_unlzo.c
+> 
+> diff --git a/include/linux/decompress/unlzo.h b/include/linux/decompress/unlzo.h
+> new file mode 100644
+> index 0000000..9872297
+> --- /dev/null
+> +++ b/include/linux/decompress/unlzo.h
+> @@ -0,0 +1,10 @@
+> +#ifndef DECOMPRESS_UNLZO_H
+> +#define DECOMPRESS_UNLZO_H
+> +
+> +int unlzo(unsigned char *inbuf, int len,
+> +	int(*fill)(void*, unsigned int),
+> +	int(*flush)(void*, unsigned int),
+> +	unsigned char *output,
+> +	int *pos,
+> +	void(*error)(char *x));
+> +#endif
+> diff --git a/init/Kconfig b/init/Kconfig
+> index f515864..eb65318 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -115,10 +115,13 @@ config HAVE_KERNEL_BZIP2
+>  config HAVE_KERNEL_LZMA
+>  	bool
+>  
+> +config HAVE_KERNEL_LZO
+> +	bool
+> +
+>  choice
+>  	prompt "Kernel compression mode"
+>  	default KERNEL_GZIP
+> -	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
+> +	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA || HAVE_KERNEL_LZO
+>  	help
+>  	  The linux kernel is a kind of self-extracting executable.
+>  	  Several compression algorithms are available, which differ
+> @@ -141,9 +144,8 @@ config KERNEL_GZIP
+>  	bool "Gzip"
+>  	depends on HAVE_KERNEL_GZIP
+>  	help
+> -	  The old and tried gzip compression. Its compression ratio is
+> -	  the poorest among the 3 choices; however its speed (both
+> -	  compression and decompression) is the fastest.
+> +	  The old and tried gzip compression. It provides a good balance
+> +	  between compression ratio and decompression speed.
+>  
+>  config KERNEL_BZIP2
+>  	bool "Bzip2"
+> @@ -164,6 +166,14 @@ config KERNEL_LZMA
+>  	  two. Compression is slowest.	The kernel size is about 33%
+>  	  smaller with LZMA in comparison to gzip.
+>  
+> +config KERNEL_LZO
+> +	bool "LZO"
+> +	depends on HAVE_KERNEL_LZO
+> +	help
+> +	  Its compression ratio is the poorest among the 4. The kernel
+> +	  size is about about 10% bigger than gzip; however its speed
+> +	  (both compression and decompression) is the fastest.
+> +
+>  endchoice
+>  
+>  config SWAP
+> diff --git a/lib/decompress_unlzo.c b/lib/decompress_unlzo.c
+> new file mode 100644
+> index 0000000..2bb736f
+> --- /dev/null
+> +++ b/lib/decompress_unlzo.c
+> @@ -0,0 +1,208 @@
+> +/*
+> + * LZO decompressor for the Linux kernel. Code borrowed from the lzo
+> + * implementation by Markus Franz Xaver Johannes Oberhumer.
+> + *
+> + * Linux kernel adaptation:
+> + * Copyright (C) 2009
+> + * Albin Tonnerre, Free Electrons <albin.tonnerre@free-electrons.com>
+> + *
+> + * Original code:
+> + * Copyright (C) 1996-2005 Markus Franz Xaver Johannes Oberhumer
+> + * All Rights Reserved.
+> + *
+> + * lzop and the LZO library are free software; you can redistribute them
+> + * and/or modify them under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation; either version 2 of
+> + * the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; see the file COPYING.
+> + * If not, write to the Free Software Foundation, Inc.,
+> + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + * Markus F.X.J. Oberhumer
+> + * <markus@oberhumer.com>
+> + * http://www.oberhumer.com/opensource/lzop/
+> + */
+> +
+> +#ifdef STATIC
+> +#include "lzo/lzo1x_decompress.c"
+> +#else
+> +#include <linux/slab.h>
+> +#include <linux/decompress/unlzo.h>
+> +#endif
+> +
+> +#include <linux/types.h>
+> +#include <linux/lzo.h>
+> +#include <linux/decompress/mm.h>
+> +
+> +#include <linux/compiler.h>
+> +#include <asm/unaligned.h>
+> +
+> +static const unsigned char lzop_magic[] =
+> +	{ 0x89, 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a };
+> +
+> +#define LZO_BLOCK_SIZE        (256*1024l)
+> +#define HEADER_HAS_FILTER      0x00000800L
+> +
+> +STATIC inline int INIT parse_header(u8 *input, u8 *skip)
+> +{
+> +	int l;
+> +	u8 *parse = input;
+> +	u8 level = 0;
+> +	u16 version;
+> +
+> +	/* read magic: 9 first bits */
+> +	for (l = 0; l < 9; l++) {
+> +		if (*parse++ != lzop_magic[l])
+> +			return 0;
+> +	}
+> +	/* get version (2bytes), skip library version (2),
+> +	 * 'need to be extracted' version (2) and
+> +	 * method (1) */
+> +	version = get_unaligned_be16(parse);
+> +	parse += 7;
+> +	if (version >= 0x0940)
+> +		level = *parse++;
+> +	if (get_unaligned_be32(parse) & HEADER_HAS_FILTER)
+> +		parse += 8; /* flags + filter info */
+> +	else
+> +		parse += 4; /* flags */
+> +
+> +	/* skip mode and mtime_low */
+> +	parse += 8;
+> +	if (version >= 0x0940)
+> +		parse += 4;	/* skip mtime_high */
+> +
+> +	l = *parse++;
+> +	/* don't care about the file name, and skip checksum */
+> +	parse += l + 4;
+> +
+> +	*skip = parse - input;
+> +	return 1;
+> +}
+> +
+> +STATIC inline int INIT unlzo(u8 *input, int in_len,
+> +				int (*fill) (void *, unsigned int),
+> +				int (*flush) (void *, unsigned int),
+> +				u8 *output, int *posp,
+> +				void (*error_fn) (char *x))
+> +{
+> +	u8 skip = 0, r = 0;
+> +	u32 src_len, dst_len;
+> +	size_t tmp;
+> +	u8 *in_buf, *in_buf_save, *out_buf;
+> +	int obytes_processed = 0;
+> +
+> +	set_error_fn(error_fn);
+> +
+> +	if (output)
+> +		out_buf = output;
+> +	else if (!flush) {
+> +		error("NULL output pointer and no flush function provided");
+> +		goto exit;
+> +	} else {
+> +		out_buf = malloc(LZO_BLOCK_SIZE);
+> +		if (!out_buf) {
+> +			error("Could not allocate output buffer");
+> +			goto exit;
+> +		}
+> +	}
+> +
+> +	if (input && fill) {
+> +		error("Both input pointer and fill function provided, don't know what to do");
+> +		goto exit_1;
+> +	} else if (input)
+> +		in_buf = input;
+> +	else if (!fill || !posp) {
+> +		error("NULL input pointer and missing position pointer or fill function");
+> +		goto exit_1;
+> +	} else {
+> +		in_buf = malloc(lzo1x_worst_compress(LZO_BLOCK_SIZE));
+> +		if (!in_buf) {
+> +			error("Could not allocate input buffer");
+> +			goto exit_1;
+> +		}
+> +	}
+> +	in_buf_save = in_buf;
+> +
+> +	if (posp)
+> +		*posp = 0;
+> +
+> +	if (fill)
+> +		fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
+> +
+> +	if (!parse_header(input, &skip)) {
+> +		error("invalid header");
+> +		goto exit_2;
+> +	}
+> +	in_buf += skip;
+> +
+> +	if (posp)
+> +		*posp = skip;
+> +
+> +	for (;;) {
+> +		/* read uncompressed block size */
+> +		dst_len = get_unaligned_be32(in_buf);
+> +		in_buf += 4;
+> +
+> +		/* exit if last block */
+> +		if (dst_len == 0) {
+> +			if (posp)
+> +				*posp += 4;
+> +			break;
+> +		}
+> +
+> +		if (dst_len > LZO_BLOCK_SIZE) {
+> +			error("dest len longer than block size");
+> +			goto exit_2;
+> +		}
+> +
+> +		/* read compressed block size, and skip block checksum info */
+> +		src_len = get_unaligned_be32(in_buf);
+> +		in_buf += 8;
+> +
+> +		if (src_len <= 0 || src_len > dst_len) {
+> +			error("file corrupted");
+> +			goto exit_2;
+> +		}
+> +
+> +		/* decompress */
+> +		tmp = dst_len;
+> +		r = lzo1x_decompress_safe((u8 *) in_buf, src_len, out_buf, &tmp);
+> +
+> +		if (r != LZO_E_OK || dst_len != tmp) {
+> +			error("Compressed data violation");
+> +			goto exit_2;
+> +		}
+> +
+> +		obytes_processed += dst_len;
+> +		if (flush)
+> +			flush(out_buf, dst_len);
+> +		if (output)
+> +			out_buf += dst_len;
+> +		if (posp)
+> +			*posp += src_len + 12;
+> +		if (fill) {
+> +			in_buf = in_buf_save;
+> +			fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
+> +		} else
+> +			in_buf += src_len;
+> +	}
+> +
+> +exit_2:
+> +	if (!input)
+> +		free(in_buf);
+> +exit_1:
+> +	if (!output)
+> +		free(out_buf);
+> +exit:
+> +	return obytes_processed;
+> +}
+> +
+> +#define decompress unlzo
+> diff --git a/lib/lzo/lzo1x_decompress.c b/lib/lzo/lzo1x_decompress.c
+> index 5dc6b29..f2fd098 100644
+> --- a/lib/lzo/lzo1x_decompress.c
+> +++ b/lib/lzo/lzo1x_decompress.c
+> @@ -11,11 +11,13 @@
+>   *  Richard Purdie <rpurdie@openedhand.com>
+>   */
+>  
+> +#ifndef STATIC
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+> -#include <linux/lzo.h>
+> -#include <asm/byteorder.h>
+> +#endif
+> +
+>  #include <asm/unaligned.h>
+> +#include <linux/lzo.h>
+>  #include "lzodefs.h"
+>  
+>  #define HAVE_IP(x, ip_end, ip) ((size_t)(ip_end - ip) < (x))
+> @@ -244,9 +246,10 @@ lookbehind_overrun:
+>  	*out_len = op - out;
+>  	return LZO_E_LOOKBEHIND_OVERRUN;
+>  }
+> -
+> +#ifndef STATIC
+>  EXPORT_SYMBOL_GPL(lzo1x_decompress_safe);
+>  
+>  MODULE_LICENSE("GPL");
+>  MODULE_DESCRIPTION("LZO1X Decompressor");
+>  
+> +#endif
+> diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+> index ffdafb2..39c3483 100644
+> --- a/scripts/Makefile.lib
+> +++ b/scripts/Makefile.lib
+> @@ -230,3 +230,8 @@ quiet_cmd_lzma = LZMA    $@
+>  cmd_lzma = (cat $(filter-out FORCE,$^) | \
+>  	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+>  	(rm -f $@ ; false)
+> +
+> +quiet_cmd_lzo = LZO    $@
+> +cmd_lzo = (cat $(filter-out FORCE,$^) | \
+> +	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+> +	(rm -f $@ ; false)
+
+
