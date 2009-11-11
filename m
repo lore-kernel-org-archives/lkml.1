@@ -1,220 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbZKKC0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZKKCZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbZKKC0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Nov 2009 21:26:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZKKC0n
+	id S1756856AbZKKCZl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Nov 2009 21:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZKKCZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Nov 2009 21:26:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51340 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756333AbZKKC0m (ORCPT
+	Tue, 10 Nov 2009 21:25:40 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:58688 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756128AbZKKCZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Nov 2009 21:26:42 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 11 Nov 2009 11:24:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       cl@linux-foundation.org, rientjes@google.com
-Subject: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask v3
-Message-Id: <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com>
-	<20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110163419.361E.A69D9226@jp.fujitsu.com>
-	<20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
-	<20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Nov 2009 21:25:39 -0500
+Message-ID: <4AFA20A1.3060208@blueyonder.co.uk>
+Date: Wed, 11 Nov 2009 02:25:37 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4 ThunderBrowse/3.2.6.5
+MIME-Version: 1.0
+To: LKML Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.32-rc6 - 2.6.32-rc6-git3 misinterpreting fstype on boot
+References: <4AF7431D.9080002@blueyonder.co.uk>
+In-Reply-To: <4AF7431D.9080002@blueyonder.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
+Now I have found the cause, the wonder is why it booted for the last
+many months the new motherboard was installed with earlier kernels up to
+2.6.32-rc5-git4.
+Problem was my INITRD script gave / as -part1 instead of -part2, having
+corrected it, 2.6-32-rc6-git4 boots.
+I obviously had not been paying close attention to what mkinitrd was
+telling me, mainly because it always worked - then .....
+Regards
+Sid.
 
-Fixing node-oriented allocation handling in oom-kill.c
-I myself think this as bugfix not as ehnancement.
+On 08/11/09 22:15, Sid Boyce wrote:
+> 2.6.32-rc5-git4 kernel boots normally, but 2.6.32-rc6 and later exhibit
+> strangeness - misinterpreting the xfs partition as reiserfs.
+> The .config is the same.
+> Under 2.6.32-rc5-git4
+> ======================
+> # mount
+> /dev/sda2 on / type xfs (rw) <<======
+> proc on /proc type proc (rw)
+> sysfs on /sys type sysfs (rw)
+> debugfs on /sys/kernel/debug type debugfs (rw)
+> udev on /dev type tmpfs (rw)
+> devpts on /dev/pts type devpts (rw,mode=0620,gid=5)
+> /dev/sda1 on /boot type reiserfs (rw,acl,user_xattr) <<====
+> /dev/sdb1 on /home/lancelot/ftp type reiserfs (rw)
+> none on /tmp type tmpfs (rw)
+> fusectl on /sys/fs/fuse/connections type fusectl (rw)
+> none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
+> nfsd on /proc/fs/nfsd type nfsd (rw)
+> rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
+> /proc on /var/lib/ntp/proc type none (ro,bind)
+> gvfs-fuse-daemon on /home/lancelot/.gvfs type fuse.gvfs-fuse-daemon
+> (rw,nosuid,nodev,user=lancelot)
+> 
+>  system.firmware.version = 'ASUS CROSSHAIR II FORMULA ACPI BIOS Revision
+> 1802'
+>   system.firmware.release_date = '05/06/2009'
+>   system.hardware.vendor = 'System manufacturer'
+>   system.hardware.product = 'System Product Name'
+>   system.hardware.version = 'System Version'
+>   system.chassis.manufacturer = 'Chassis Manufacture'
+>   system.board.product = 'CROSSHAIR II FORMULA'
+>   system.board.version = '1.XX'
+>   system.board.vendor = 'ASUSTeK Computer INC.'
+>   system.chassis.type = 'Desktop'
+>   system.formfactor = 'desktop'
+> CPU is AMD quad core.
+> 
+> 
+> When I try to boot 2.6.32-rc6 and 2.6.32-rc6-git, it thinks /dev/sda2
+> is a reiserfs partition it needs to mount as "/root"????.
+> Boot up messages
+> ==================
+> fsck from util-linux-ng 2.16
+> [/sbin/fsck.reiserfs (1) -- /] fsck.reiserfs -a /dev/sda2
+> reiserfs_open: the reiserfs superblock cannot be found on /dev/sda2.
+> REISERFS: warning (device sda2): sh-2021 reiserfs_fill_super: can not
+> find reiserfs on sda2.
+> Failed to open the filesystem
+>   If the partition table has not been changed, the partition is valid
+>   and really contains a reiserfs  partition, then the superblock is
+>   corrupted and you need to run this utility with --rebuild-sb.
+> fsck failed. Mounting root device read-only.
+> Mounting root /dev/disk/by-id/scsi-SATA_SAMSUNG_HD103UJS13PJDWS258743-part2
+> mount -o ro -t reiserfs
+> /dev/disk/by-id/scsi-SATA_SAMSUNG_HD103UJS13PJDWS258743-part2 /root
+> mount: wrong fstype, bad option, bad superblock on /dev/sda2
+> could not mount root filesystem - exiting to /bin/sh
+> 
+> 
+> No problem on this other box with AMD dual-core and 2.6.32-rc6-git3 running.
+> system.firmware.vendor = 'Phoenix Technologies, LTD'
+>   system.firmware.version = 'ASUS M2N32-SLI DELUXE ACPI BIOS Revision 1802'
+>   system.firmware.release_date = '01/31/2008'
+>   system.hardware.vendor = 'System manufacturer'
+>   system.hardware.product = 'System Product Name'
+>   system.hardware.version = 'System Version'
+>   system.chassis.manufacturer = 'Chassis Manufacture'
+>   system.board.product = 'M2N32-SLI DELUXE'
+>   system.board.version = '1.XX'
+>   system.board.vendor = 'ASUSTeK Computer INC.'
+>   system.chassis.type = 'Desktop'
+> /dev/sda1 on / type xfs (rw)
+> /dev/sdb1 on /data1 type btrfs (rw)
+> Regards
+> Sid.
 
-In these days, things are changed as
-  - alloc_pages() eats nodemask as its arguments, __alloc_pages_nodemask().
-  - mempolicy don't maintain its own private zonelists.
-  (And cpuset doesn't use nodemask for __alloc_pages_nodemask())
 
-But, current oom-killer's doesn't handle nodemask and it's wrong.
-
-This patch does
-  - check nodemask, if nodemask && nodemask doesn't cover all
-    node_states[N_HIGH_MEMORY], this is CONSTRAINT_MEMORY_POLICY.
-  - Scan all zonelist under nodemask, if it hits cpuset's wall
-    this faiulre is from cpuset.
-And
-  - modifies the caller of out_of_memory not to call oom if __GFP_THISNODE.
-    This doesn't change "current" behavior.
-    If callers use __GFP_THISNODE, it should handle "page allocation failure"
-    by itself.
-
-Changelog: 2009/11/11
- - fixed nodes_equal() calculation.
- - return CONSTRAINT_MEMPOLICY always if given nodemask is not enough big.
-
-Changelog: 2009/11/06
- - fixed lack of oom.h
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hioryu@jp.fujitsu.com>
----
- drivers/char/sysrq.c |    2 +-
- include/linux/oom.h  |    4 +++-
- mm/oom_kill.c        |   44 ++++++++++++++++++++++++++++++++------------
- mm/page_alloc.c      |   10 ++++++++--
- 4 files changed, 44 insertions(+), 16 deletions(-)
-
-Index: mm-test-kernel/drivers/char/sysrq.c
-===================================================================
---- mm-test-kernel.orig/drivers/char/sysrq.c
-+++ mm-test-kernel/drivers/char/sysrq.c
-@@ -339,7 +339,7 @@ static struct sysrq_key_op sysrq_term_op
- 
- static void moom_callback(struct work_struct *ignored)
- {
--	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0);
-+	out_of_memory(node_zonelist(0, GFP_KERNEL), GFP_KERNEL, 0, NULL);
- }
- 
- static DECLARE_WORK(moom_work, moom_callback);
-Index: mm-test-kernel/mm/oom_kill.c
-===================================================================
---- mm-test-kernel.orig/mm/oom_kill.c
-+++ mm-test-kernel/mm/oom_kill.c
-@@ -196,27 +196,45 @@ unsigned long badness(struct task_struct
- /*
-  * Determine the type of allocation constraint.
-  */
-+#ifdef CONFIG_NUMA
- static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
--						    gfp_t gfp_mask)
-+				    gfp_t gfp_mask, nodemask_t *nodemask)
- {
--#ifdef CONFIG_NUMA
- 	struct zone *zone;
- 	struct zoneref *z;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-+	int ret = CONSTRAINT_NONE;
- 
--	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
--		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
--			node_clear(zone_to_nid(zone), nodes);
--		else
-+	/*
-+ 	 * The nodemask here is a nodemask passed to alloc_pages(). Now,
-+ 	 * cpuset doesn't use this nodemask for its hardwall/softwall/hierarchy
-+ 	 * feature. mempolicy is an only user of nodemask here.
-+ 	 */
-+	if (nodemask) {
-+		nodemask_t mask;
-+		/* check mempolicy's nodemask contains all N_HIGH_MEMORY */
-+		nodes_and(mask, *nodemask, node_states[N_HIGH_MEMORY]);
-+		if (!nodes_equal(mask, node_states[N_HIGH_MEMORY]))
-+			return CONSTRAINT_MEMORY_POLICY;
-+	}
-+
-+	/* Check this allocation failure is caused by cpuset's wall function */
-+	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-+			high_zoneidx, nodemask)
-+		if (!cpuset_zone_allowed_softwall(zone, gfp_mask))
- 			return CONSTRAINT_CPUSET;
- 
--	if (!nodes_empty(nodes))
--		return CONSTRAINT_MEMORY_POLICY;
--#endif
-+	/* __GFP_THISNODE never calls OOM.*/
- 
- 	return CONSTRAINT_NONE;
- }
-+#else
-+static inline enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-+				gfp_t gfp_mask, nodemask_t *nodemask)
-+{
-+	return CONSTRAINT_NONE;
-+}
-+#endif
- 
- /*
-  * Simple selection loop. We chose the process with the highest
-@@ -603,7 +621,8 @@ rest_and_return:
-  * OR try to be smart about which process to kill. Note that we
-  * don't have to be perfect here, we just have to be good.
-  */
--void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
-+void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-+		int order, nodemask_t *nodemask)
- {
- 	unsigned long freed = 0;
- 	enum oom_constraint constraint;
-@@ -622,11 +641,12 @@ void out_of_memory(struct zonelist *zone
- 	 * Check if there were limitations on the allocation (only relevant for
- 	 * NUMA) that may require different handling.
- 	 */
--	constraint = constrained_alloc(zonelist, gfp_mask);
-+	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
- 	read_lock(&tasklist_lock);
- 
- 	switch (constraint) {
- 	case CONSTRAINT_MEMORY_POLICY:
-+		/* kill by process's its own memory alloc limitation */
- 		oom_kill_process(current, gfp_mask, order, 0, NULL,
- 				"No available memory (MPOL_BIND)");
- 		break;
-Index: mm-test-kernel/mm/page_alloc.c
-===================================================================
---- mm-test-kernel.orig/mm/page_alloc.c
-+++ mm-test-kernel/mm/page_alloc.c
-@@ -1667,9 +1667,15 @@ __alloc_pages_may_oom(gfp_t gfp_mask, un
- 	/* The OOM killer will not help higher order allocs */
- 	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
- 		goto out;
--
-+	/*
-+	 * In usual, GFP_THISNODE contains __GFP_NORETRY and we never hit this.
-+	 * Sanity check for bare calls of __GFP_THISNODE, not real OOM.
-+	 * Note: Hugepage uses it but will hit PAGE_ALLOC_COSTLY_ORDER.
-+	 */
-+	if (gfp_mask & __GFP_THISNODE)
-+		goto out;
- 	/* Exhausted what can be done so it's blamo time */
--	out_of_memory(zonelist, gfp_mask, order);
-+	out_of_memory(zonelist, gfp_mask, order, nodemask);
- 
- out:
- 	clear_zonelist_oom(zonelist, gfp_mask);
-Index: mm-test-kernel/include/linux/oom.h
-===================================================================
---- mm-test-kernel.orig/include/linux/oom.h
-+++ mm-test-kernel/include/linux/oom.h
-@@ -10,6 +10,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/types.h>
-+#include <linux/nodemask.h>
- 
- struct zonelist;
- struct notifier_block;
-@@ -26,7 +27,8 @@ enum oom_constraint {
- extern int try_set_zone_oom(struct zonelist *zonelist, gfp_t gfp_flags);
- extern void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_flags);
- 
--extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order);
-+extern void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-+		int order, nodemask_t *mask);
- extern int register_oom_notifier(struct notifier_block *nb);
- extern int unregister_oom_notifier(struct notifier_block *nb);
- 
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
