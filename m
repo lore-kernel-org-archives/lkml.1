@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZKLQof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZKLQlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbZKLQof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 11:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZKLQoc
+	id S1753355AbZKLQlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 11:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZKLQlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 11:44:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33797 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbZKLQoc (ORCPT
+	Thu, 12 Nov 2009 11:41:18 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:54164 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbZKLQlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 11:44:32 -0500
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Robert Hancock <hancockrwd@gmail.com>, "Anton D. Kachalov" <mouse@mayc.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Reading /dev/mem by dd
-From: Andi Kleen <andi@firstfloor.org>
-References: <4AFACC03.7080209@mayc.ru> <4AFB2822.30906@gmail.com>
-	<20091112021209.GA21625@khazad-dum.debian.net>
-Date: Thu, 12 Nov 2009 17:44:32 +0100
-In-Reply-To: <20091112021209.GA21625@khazad-dum.debian.net> (Henrique de Moraes Holschuh's message of "Thu, 12 Nov 2009 00:12:09 -0200")
-Message-ID: <878web7kwf.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 12 Nov 2009 11:41:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=i8suwjux/bditDqICM96QzBuY4LOW5JNQnf7FV0TTufBM6VgqnrAFXLygfPbIGvsU0
+         eA6hjdD4i1Lg6k1Tei9zY4JRPDqERHUfwAwQIBKW0mUc0r8do5TxKD4N0ErqhyJeSbOo
+         V7LA79i/jf0J+1Vrbz/UNA9HRcKuyerj3PF1s=
+Message-ID: <4AFC3D85.6070904@gmail.com>
+Date: Thu, 12 Nov 2009 17:53:25 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mISDN: fix error return in HFCmulti_init()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> writes:
->
-> We should.  Imaging /dev/mem is one of the oldest tricks in the book of the
-> forensics people, they do it to live systems to help track down WTF happened
-> to a compromised host.  This kind of crap bites them hard.
+The returned error should stay negative
 
-It seems more like a case of hurting themselves.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/isdn/hardware/mISDN/hfcmulti.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->
-> IMO: if you're going to provide /dev/mem, make it as safe as possible.
-
-That would also make it useless for people who want to access MMIO using
-/dev/mem. Which is a lot of programs.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index faed794..a6624ad 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -5481,7 +5481,7 @@ HFCmulti_init(void)
+ 		if (err) {
+ 			printk(KERN_ERR "error registering embedded driver: "
+ 				"%x\n", err);
+-			return -err;
++			return err;
+ 		}
+ 		HFC_cnt++;
+ 		printk(KERN_INFO "%d devices registered\n", HFC_cnt);
