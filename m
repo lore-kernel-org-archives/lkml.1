@@ -1,96 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbZKLNGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbZKLNK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbZKLNGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 08:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZKLNGN
+	id S1752329AbZKLNK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 08:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZKLNK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 08:06:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:40276 "EHLO ozlabs.org"
+	Thu, 12 Nov 2009 08:10:26 -0500
+Received: from ozlabs.org ([203.10.76.45]:40362 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbZKLNGM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 08:06:12 -0500
+	id S1751552AbZKLNKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 08:10:25 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: =?utf-8?q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Subject: Re: [PATCH v4 2/2] bsearch: prevent overflow when computing middle comparison element
-Date: Thu, 12 Nov 2009 23:36:10 +1030
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: i7core_edac tree build failure
+Date: Thu, 12 Nov 2009 23:40:25 +1030
 User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org
-References: <cover.1257864802.git.andre.goddard@gmail.com> <2bd27b061789ed14dd80816fd987273ae33ffbd1.1257864802.git.andre.goddard@gmail.com>
-In-Reply-To: <2bd27b061789ed14dd80816fd987273ae33ffbd1.1257864802.git.andre.goddard@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Aristeu Rozanski <aris@redhat.com>
+References: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
+In-Reply-To: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911122336.11033.rusty@rustcorp.com.au>
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911122340.26317.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 01:30:25 am André Goddard Rosa wrote:
-> It's really difficult to occur in practice because the sum of the lower
-> and higher limits must overflow an int variable, but it can occur when
-> working with large arrays. We'd better safe than sorry by avoiding this
-> overflow situation when computing the middle element for comparison.
+On Thu, 12 Nov 2009 04:28:52 pm Stephen Rothwell wrote:
+> Hi Mauro,
+> 
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> tmp_exports-asm.o: In function `__ksymtab_pci_legacy_init':
+> (__ksymtab_gpl_sorted+0x3120): undefined reference to `pci_legacy_init'
+> 
+> Caused by commit a120a84ebbc4cbc9c1addddd2b491e3683b842a6 ("pci: Add a
+> probing code that seeks for an specific bus") (which applies
+> EXPORT_SYMBOL_GPL() to a static function) interacting with the rr tree's
+> changes.
 
-I applied all these, after testing.  In future would have been nice for you
-to have posted a test patch so I didn't have make my own...
+Yep, thanks Stephen.  I can't apply this fix to my tree since that function
+isn't exported in Linus' tree.  I've pulled in the ppc and sparc fixes to my
+tree though, but assume they'll go into their proper homes soon.
 
 Thanks,
 Rusty.
-
-diff --git a/lib/bsearch.c b/lib/bsearch.c
---- a/lib/bsearch.c
-+++ b/lib/bsearch.c
-@@ -51,3 +51,50 @@ void *bsearch(const void *key, const voi
- 	return NULL;
- }
- EXPORT_SYMBOL(bsearch);
-+
-+#if 1
-+static int test_cmp(const void *_key, const void *_elt)
-+{
-+	int key = *(int *)_key, elt = *(int *)_elt;
-+
-+	if (key < elt)
-+		return -1;
-+	else if (key > elt)
-+		return 1;
-+	return 0;
-+}
-+
-+static int test_bsearch(void)
-+{
-+	const int arr[] = { INT_MIN, 0, 1, 2, 3, 4, 5, 6, INT_MAX };
-+	unsigned int start, num, i, total = 0;
-+	int key;
-+
-+	for (start = 0; start < ARRAY_SIZE(arr); start++) {
-+		for (num = 0; num < ARRAY_SIZE(arr) - start; num++) {
-+			key = 7;
-+			BUG_ON(bsearch(&key, &arr[start], num, sizeof(arr[0]),
-+				       test_cmp));
-+			total++;
-+			for (i = start; i < start+num; i++) {
-+				int *ret;
-+				key = arr[i];
-+				ret = bsearch(&key, &arr[start], num,
-+					      sizeof(arr[0]), test_cmp);
-+				if (!ret) {
-+					printk("Could not find %i in %u-%u"
-+					       "(between %i and %i)\n",
-+					       key, start, start+num,
-+					       arr[start], arr[start+num]);
-+				}
-+				BUG_ON(!ret);
-+				BUG_ON(*ret != key);
-+				total++;
-+			}
-+		}
-+	}
-+	printk("Tested %u bsearches\n", total);
-+	return 0;
-+}
-+module_init(test_bsearch);
-+#endif
