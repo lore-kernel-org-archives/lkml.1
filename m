@@ -1,90 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZKLE2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbZKLEd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbZKLE2A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 23:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbZKLE2A
+	id S932169AbZKLEd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 23:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760073AbZKLEd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 23:28:00 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:22749 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755828AbZKLE17 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Nov 2009 23:33:57 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40198 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760070AbZKLEd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 23:27:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nAYrtxXs2h74FhFEjvgBQ5yt58YaRm1HDK/2wV8RSOg8YLBO2RKn0Ve21w8iSXS+wJ
-         BItSV1ZqPS8rSvbL8xmF1EH0O2GOxE8eDom06dDOz7SoIDDrAmM3NX/jagHvMXnFsOpj
-         T/71liKdhIa8CW7tg34R8db1e5dfjS8he7K8s=
+	Wed, 11 Nov 2009 23:33:57 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AFB9029.9000208@jp.fujitsu.com>
+Date: Thu, 12 Nov 2009 13:33:45 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4AFB3D31.6070901@zytor.com>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
-	 <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
-	 <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-	 <20091111203425.GA25401@lenovo> <4AFB3D31.6070901@zytor.com>
-Date: Thu, 12 Nov 2009 07:28:03 +0300
-Message-ID: <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by fast 
-	string.
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ma, Ling" <ling.ma@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PATCH] fix granularity of task_u/stime(), v2
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com>	 <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop>	 <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com>	 <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>	 <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com>
+In-Reply-To: <4AFB8C21.6080404@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 1:39 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 11/11/2009 12:34 PM, Cyrill Gorcunov wrote:
->>                                               memcpy_orig     memcpy_new
->> TPT: Len 1024, alignment  8/ 0:               490             570
->> TPT: Len 2048, alignment  8/ 0:               826             329
->> TPT: Len 3072, alignment  8/ 0:               441             464
->> TPT: Len 4096, alignment  8/ 0:               579             596
->> TPT: Len 5120, alignment  8/ 0:               723             729
->> TPT: Len 6144, alignment  8/ 0:               859             861
->> TPT: Len 7168, alignment  8/ 0:               996             994
->> TPT: Len 8192, alignment  8/ 0:               1165            1127
->> TPT: Len 9216, alignment  8/ 0:               1273            1260
->> TPT: Len 10240, alignment  8/ 0:      1402            1395
->> TPT: Len 11264, alignment  8/ 0:      1543            1525
->> TPT: Len 12288, alignment  8/ 0:      1682            1659
->> TPT: Len 13312, alignment  8/ 0:      1869            1815
->> TPT: Len 14336, alignment  8/ 0:      1982            1951
->> TPT: Len 15360, alignment  8/ 0:      2185            2110
->>
->> I've run this test a few times and results almost the same,
->> with alignment 1024, 3072, 4096, 5120, 6144, new version a bit slowly.
->>
->
-> Was the result for 2048 consistent (it seems odd in the extreme)... the
-> discrepancy between this result and Ling's results bothers me; perhaps
-> the right answer is to leave the current code for Core2 and use new code
-> (with a lower than 1024 threshold?) for NHM and K8?
->
->        -hpa
->
+Originally task_s/utime() were designed to return clock_t but later
+changed to return cputime_t by following commit:
 
-Hi Peter,
+  commit efe567fc8281661524ffa75477a7c4ca9b466c63
+  Author: Christian Borntraeger <borntraeger@de.ibm.com>
+  Date:   Thu Aug 23 15:18:02 2007 +0200
 
-no, results for 2048 is not repeatable (that is why I didn't mention this number
-in a former report).
+It only changed the type of return value, but not the implementation.
+As the result the granularity of task_s/utime() is still that of
+clock_t, not that of cputime_t.
 
-Test1:
-TPT: Len 2048, alignment  8/ 0:	826	329
-Test2:
-TPT: Len 2048, alignment  8/ 0:	359	329
-Test3:
-TPT: Len 2048, alignment  8/ 0:	306	331
-Test4:
-TPT: Len 2048, alignment  8/ 0:	415	329
+So using task_s/utime() in __exit_signal() makes values accumulated
+to the signal struct to be rounded and coarse grained.
 
-I guess this was due to cpu frequency change from 800 to 2.1Ghz since
-I did tests manually
-not using any kind of bash cycle to run the test program.
+This patch removes casts to clock_t in task_u/stime(), to keep
+granularity of cputime_t over the calculation.
+
+v2:
+  Use div_u64() to avoid error "undefined reference to `__udivdi3`"
+  on some 32bit systems.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ kernel/sched.c |   22 +++++++++++++---------
+ 1 files changed, 13 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c11ae0..1f8d028 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5172,41 +5172,45 @@ cputime_t task_stime(struct task_struct *p)
+ 	return p->stime;
+ }
+ #else
++
++#ifndef nsecs_to_cputime
++# define nsecs_to_cputime(__nsecs) \
++	msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
++#endif
++
+ cputime_t task_utime(struct task_struct *p)
+ {
+-	clock_t utime = cputime_to_clock_t(p->utime),
+-		total = utime + cputime_to_clock_t(p->stime);
++	cputime_t utime = p->utime, total = utime + p->stime;
+ 	u64 temp;
+ 
+ 	/*
+ 	 * Use CFS's precise accounting:
+ 	 */
+-	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
++	temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
+ 
+ 	if (total) {
+ 		temp *= utime;
+ 		do_div(temp, total);
+ 	}
+-	utime = (clock_t)temp;
++	utime = (cputime_t)temp;
+ 
+-	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
++	p->prev_utime = max(p->prev_utime, utime);
+ 	return p->prev_utime;
+ }
+ 
+ cputime_t task_stime(struct task_struct *p)
+ {
+-	clock_t stime;
++	cputime_t stime;
+ 
+ 	/*
+ 	 * Use CFS's precise accounting. (we subtract utime from
+ 	 * the total, to make sure the total observed by userspace
+ 	 * grows monotonically - apps rely on that):
+ 	 */
+-	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
+-			cputime_to_clock_t(task_utime(p));
++	stime = nsecs_to_cputime(p->se.sum_exec_runtime) - task_utime(p);
+ 
+ 	if (stime >= 0)
+-		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
++		p->prev_stime = max(p->prev_stime, stime);
+ 
+ 	return p->prev_stime;
+ }
+-- 
+1.6.5.2
+
+
