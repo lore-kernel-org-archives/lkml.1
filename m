@@ -1,126 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZKLD6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbZKLEQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760044AbZKLD6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 22:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759978AbZKLD6c
+	id S1760012AbZKLEQq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 23:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZKLEQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 22:58:32 -0500
-Received: from mga09.intel.com ([134.134.136.24]:30742 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759950AbZKLD6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 22:58:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
-   d="scan'208";a="568771324"
-Subject: [PATCH resend] iop13xx: workaround errata that causes uart interrupts
-	to be missed
-To: alan@lxorguk.ukuu.org.uk
-From: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Date: Wed, 11 Nov 2009 20:58:36 -0700
-Message-ID: <20091112035728.18068.39520.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGit/0.14.3.289.g7daff
+	Wed, 11 Nov 2009 23:16:45 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33953 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755431AbZKLEQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 23:16:45 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AFB8C21.6080404@jp.fujitsu.com>
+Date: Thu, 12 Nov 2009 13:16:33 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
+CC: Stanislaw Gruszka <sgruszka@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime()
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com>	 <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop>	 <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com>	 <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>	 <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com>
+In-Reply-To: <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reading the uart iir register sometimes results in the interrupt being
-cleared without being reported.  Use the the system interrupt pending
-register as a fallback.
+Américo Wang wrote:
+>>>> kernel/built-in.o: In function `task_utime':
+>>>> /usr/src/rhel5/linux-2.6/kernel/sched.c:5187: undefined reference to
+>>>> `__udivdi3'
+>>>> kernel/built-in.o: In function `task_stime':
+>>>> /usr/src/rhel5/linux-2.6/kernel/sched.c:5208: undefined reference to
+>>>> `__udivdi3'
+>>>> make: *** [.tmp_vmlinux1] Error 1
 
-This converts locations in the code that only care about the interrupt
-pending bit to use the iir_int_status() macro.
+>> Oh, I found I can hit this error on x86_32 (but not on x86_64).
+>> Maybe something on dividing u64...
+>>
+>> I'll try to find fix/workaround for this, but would appreciate if someone
+>> could tell me what is happening here.
+> 
+> Yeah, this is because on 32-bit gcc tries to use libgcc to do 64-bit
+> integer computing. You can insert inline asm to force gcc not to
+> optimize this code. ;)
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+Thank you for the information.
 
-Hi Alan,
+According to the following commit which I found that is against "__udivdi3"
+error, use of div_u64() will fix this problem, right?
 
-Looking for an acked-by or advice on how to get this hack upstream.  I
-have been carrying it for a while out of tree [1], but that is getting
-tiresome.  Russell pointed me at you as the gatekeeper of 8250.c, but
-feel free to redirect me if someone else is looking after this file
-these days.
+ commit 956dba3caaf66b84fe5f6180e0e4dd03902c7980
+ Author: Andy Whitcroft <apw@canonical.com>
+ Date:   Wed Jul 1 15:20:59 2009 +0100
+
+I'm now testing modified patch...
+
 
 Thanks,
-Dan
-
-[1]: http://git.kernel.org/?p=linux/kernel/git/djbw/xscaleiop.git;a=commitdiff;h=a7d124f5 
-
- drivers/serial/8250.c |   38 +++++++++++++++++++++++++++++++++++---
- 1 files changed, 35 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index b1ae774..2c440d1 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -547,6 +547,38 @@ serial_out_sync(struct uart_8250_port *up, int offset, int value)
- 	(up->port.serial_in(&(up)->port, (offset)))
- #define serial_out(up, offset, value)	\
- 	(up->port.serial_out(&(up)->port, (offset), (value)))
-+
-+#ifndef CONFIG_ARCH_IOP13XX
-+#define iir_int_status(up) serial_in((up), UART_IIR)
-+#else
-+/* A silicon issue on IOP13XX causes IIR reads to return UART_IIR_NO_INT
-+ * even if an interrupt is pending. Use the system interrupt pending
-+ * register to check for servicing as a workaround.
-+ */
-+#include <mach/irqs.h>
-+static unsigned int iir_int_status(struct uart_8250_port *up)
-+{
-+	unsigned long membase = (unsigned long) up->port.membase;
-+	unsigned long ipnd, iir;
-+
-+	ipnd = read_intpnd_1();
-+	iir = UART_IIR_NO_INT;
-+
-+	if (membase == IOP13XX_UART0_VIRT) {
-+		if (ipnd & (1 << (IRQ_IOP13XX_UART0 - 32)))
-+			iir &= ~UART_IIR_NO_INT;
-+	} else if (membase == IOP13XX_UART1_VIRT) {
-+		if (ipnd & (1 << (IRQ_IOP13XX_UART1 - 32)))
-+			iir &= ~UART_IIR_NO_INT;
-+	} else
-+		BUG();
-+
-+	/* clear the interrupt via the LSR */
-+	mem_serial_in(&up->port, UART_LSR);
-+	return iir;
-+}
-+#endif
-+
- /*
-  * We used to support using pause I/O for certain machines.  We
-  * haven't supported this for a while, but just in case it's badly
-@@ -1572,7 +1604,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 
- 		up = list_entry(l, struct uart_8250_port, list);
- 
--		iir = serial_in(up, UART_IIR);
-+		iir = iir_int_status(up);
- 		if (!(iir & UART_IIR_NO_INT)) {
- 			serial8250_handle_port(up);
- 
-@@ -1732,7 +1764,7 @@ static void serial8250_timeout(unsigned long data)
- 	struct uart_8250_port *up = (struct uart_8250_port *)data;
- 	unsigned int iir;
- 
--	iir = serial_in(up, UART_IIR);
-+	iir = iir_int_status(up);
- 	if (!(iir & UART_IIR_NO_INT))
- 		serial8250_handle_port(up);
- 	mod_timer(&up->timer, jiffies + poll_timeout(up->port.timeout));
-@@ -1753,7 +1785,7 @@ static void serial8250_backup_timeout(unsigned long data)
- 		serial_out(up, UART_IER, 0);
- 	}
- 
--	iir = serial_in(up, UART_IIR);
-+	iir = iir_int_status(up);
- 
- 	/*
- 	 * This should be a safe test for anyone who doesn't trust the
+H.Seto
 
