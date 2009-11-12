@@ -1,97 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZKLL2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbZKLLeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZKLL2w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 06:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZKLL2v
+	id S1752806AbZKLLeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 06:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZKLLeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 06:28:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48894 "EHLO hera.kernel.org"
+	Thu, 12 Nov 2009 06:34:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51954 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbZKLL2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 06:28:51 -0500
-Message-ID: <4AFBF1B0.8010906@kernel.org>
-Date: Thu, 12 Nov 2009 20:29:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1752343AbZKLLeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 06:34:07 -0500
+Date: Thu, 12 Nov 2009 11:33:42 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <1258020464.6491.2.camel@marge.simson.net>,
+	<new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Fix/add missing update_rq_clock() calls
+Message-ID: <tip-055a00865dcfc8e61f3cbefbb879c9577bd36ae5@git.kernel.org>
+Git-Commit-ID: 055a00865dcfc8e61f3cbefbb879c9577bd36ae5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-References: <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu> <4AF9C402.9040800@kernel.org> <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain> <4AFA35CB.5030801@kernel.org> <20091111113147.GB7487@elte.hu> <4AFAAC32.4020104@kernel.org> <20091111195751.GA13574@elte.hu> <4AFBDF43.3010703@kernel.org> <20091112110741.GC24684@elte.hu>
-In-Reply-To: <20091112110741.GC24684@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
+Commit-ID:  055a00865dcfc8e61f3cbefbb879c9577bd36ae5
+Gitweb:     http://git.kernel.org/tip/055a00865dcfc8e61f3cbefbb879c9577bd36ae5
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Thu, 12 Nov 2009 11:07:44 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 12 Nov 2009 12:28:29 +0100
 
-11/12/2009 08:07 PM, Ingo Molnar wrote:
-> Well, the pcpu_alloc() function is 115 lines which is a bit long. It 
-> does 2-3 things while a function should try to do one thing.
+sched: Fix/add missing update_rq_clock() calls
 
-I agree for low level / utility functions but for top level functions
-which direct the flow of the whole logic, I usually prefer to put them
-flat.  To me, that way things seem less obfuscated.
+kthread_bind(), migrate_task() and sched_fork were missing
+updates, and try_to_wake_up() was updating after having already
+used the stale clock.
 
-> Putting the reserved allocation into a separate function also makes the 
-> 'main' path of logic more visible and obstructed less by rare details.
-> 
-> The indentation i pinpointed is 4 levels deep:
-> 
->                                 err = "failed to extend area map of "
->                                         "reserved chunk";
-> 
-> which is a bit too much IMO - the code starts in the middle of the 
-> screen, there's barely any space to do anything meaningful.
+Aside from preventing potential latency hits, there' a side
+benefit in that early boot printk time stamps become monotonic.
 
-Well, all that's there is error exit.  Surrounding code segment is,
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1258020464.6491.2.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+LKML-Reference: <new-submission>
+---
+ kernel/sched.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
 
-			if (pcpu_extend_area_map(chunk, new_alloc) < 0) {
-				err = "failed to extend area map of "
-					"reserved chunk";
-				goto fail_unlock_mutex;
-			}
-
-So, we might as well just do
-
-			err = "failed to extend area map of reserved chunk";
-			if (pcpu_extend_area_map(chunk, new_alloc) < 0)
-				goto fail_unlock_mutex;
-
-> But there's other line wrap artifacts as well further down:
-> 
->                                 if (pcpu_extend_area_map(chunk,
->                                                          new_alloc) < 0) {
-
-This one is uglier and one level deeper than the previous one.  The
-resulting nesting was one of the reasons why I factored out
-pcpu_extend_area_map() as a whole and switched on the return value but
-that obfuscated locking.  Although it nests quite a bit, I don't think
-the loop there is too bad.  It shows what it does pretty well.
-
-> But ... there's no hard rules here and i've seen functions where 4 
-> levels of indentation were just ok. Anyway, i just gave you my opinion, 
-> and i'm definitely more on the nitpicky side of the code quality 
-> equilibrium, YMMV.
-
-Indentation and code style are actually something I end up spending
-quite some time on and I did think about the second one.  Factoring
-out without hiding locking is a bit difficult but if I rename
-new_alloc to new_len, I can fit that thing onto a single line but that
-would probably require renaming matching local variable in
-pcpu_extend_area_map() which will end up generating unnecessary amount
-of diff obfuscating the real change.  At that point, I just thought we
-could live with one slightly ugly line break.
-
-So, I don't know.  Pros and cons on these things depend too much on
-personal tastes (and even mood at the time of writing) to form uniform
-standard to follow.
-
-Thanks.
-
--- 
-tejun
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c11ae0..701eca4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2017,6 +2017,7 @@ void kthread_bind(struct task_struct *p, unsigned int cpu)
+ 	}
+ 
+ 	spin_lock_irqsave(&rq->lock, flags);
++	update_rq_clock(rq);
+ 	set_task_cpu(p, cpu);
+ 	p->cpus_allowed = cpumask_of_cpu(cpu);
+ 	p->rt.nr_cpus_allowed = 1;
+@@ -2115,6 +2116,7 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
+ 	 * it is sufficient to simply update the task's cpu field.
+ 	 */
+ 	if (!p->se.on_rq && !task_running(rq, p)) {
++		update_rq_clock(rq);
+ 		set_task_cpu(p, dest_cpu);
+ 		return 0;
+ 	}
+@@ -2376,14 +2378,15 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 	task_rq_unlock(rq, &flags);
+ 
+ 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
+-	if (cpu != orig_cpu)
++	if (cpu != orig_cpu) {
++		local_irq_save(flags);
++		rq = cpu_rq(cpu);
++		update_rq_clock(rq);
+ 		set_task_cpu(p, cpu);
+-
++		local_irq_restore(flags);
++	}
+ 	rq = task_rq_lock(p, &flags);
+ 
+-	if (rq != orig_rq)
+-		update_rq_clock(rq);
+-
+ 	WARN_ON(p->state != TASK_WAKING);
+ 	cpu = task_cpu(p);
+ 
+@@ -2545,6 +2548,7 @@ static void __sched_fork(struct task_struct *p)
+ void sched_fork(struct task_struct *p, int clone_flags)
+ {
+ 	int cpu = get_cpu();
++	unsigned long flags;
+ 
+ 	__sched_fork(p);
+ 
+@@ -2581,7 +2585,10 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ #ifdef CONFIG_SMP
+ 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+ #endif
++	local_irq_save(flags);
++	update_rq_clock(cpu_rq(cpu));
+ 	set_task_cpu(p, cpu);
++	local_irq_restore(flags);
+ 
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+ 	if (likely(sched_info_on()))
