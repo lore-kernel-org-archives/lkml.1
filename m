@@ -1,136 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZKLSNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZKLSMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbZKLSNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZKLSNI
+	id S1754132AbZKLSMJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 13:12:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZKLSMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:13:08 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49933 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753319AbZKLSNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:13:06 -0500
-Date: Thu, 12 Nov 2009 18:12:41 GMT
-From: tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, spencer@bluehost.com, hpa@zytor.com,
-       mingo@redhat.com, seto.hidetoshi@jp.fujitsu.com, peterz@infradead.org,
-       tglx@linutronix.de, oleg@redhat.com, sgruszka@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, spencer@bluehost.com,
-       linux-kernel@vger.kernel.org, seto.hidetoshi@jp.fujitsu.com,
-       peterz@infradead.org, tglx@linutronix.de, oleg@redhat.com,
-       sgruszka@redhat.com, mingo@elte.hu
-In-Reply-To: <4AFB9029.9000208@jp.fujitsu.com>
-References: <4AFB9029.9000208@jp.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Fix granularity of task_u/stime()
-Message-ID: <tip-761b1d26df542fd5eb348837351e4d2f3bc7bffe@git.kernel.org>
-Git-Commit-ID: 761b1d26df542fd5eb348837351e4d2f3bc7bffe
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Thu, 12 Nov 2009 13:12:05 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43806 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754030AbZKLSME (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 13:12:04 -0500
+Date: Thu, 12 Nov 2009 18:13:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Robert Hancock" <hancockrwd@gmail.com>,
+       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Reading /dev/mem by dd
+Message-ID: <20091112181350.68c866e7@lxorguk.ukuu.org.uk>
+In-Reply-To: <1258048669.20754.1344916801@webmail.messagingengine.com>
+References: <4AFACC03.7080209@mayc.ru>
+	<4AFB2822.30906@gmail.com>
+	<20091112021209.GA21625@khazad-dum.debian.net>
+	<878web7kwf.fsf@basil.nowhere.org>
+	<1258047454.16197.1344913359@webmail.messagingengine.com>
+	<20091112174916.59fe7805@lxorguk.ukuu.org.uk>
+	<1258048669.20754.1344916801@webmail.messagingengine.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  761b1d26df542fd5eb348837351e4d2f3bc7bffe
-Gitweb:     http://git.kernel.org/tip/761b1d26df542fd5eb348837351e4d2f3bc7bffe
-Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-AuthorDate: Thu, 12 Nov 2009 13:33:45 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 12 Nov 2009 15:23:47 +0100
+On Thu, 12 Nov 2009 15:57:49 -0200
+"Henrique de Moraes Holschuh" <hmh@hmh.eng.br> wrote:
 
-sched: Fix granularity of task_u/stime()
+> On Thu, 12 Nov 2009 17:49 +0000, "Alan Cox" <alan@lxorguk.ukuu.org.uk> wrote:
+> > > In this case, the problem seems to be access over /dev/mem to stuff the
+> > > kernel is already taking care of.  Certainly "as safe as possible" does
+> > 
+> > Which is often what is desired - eg debugging driver stuff.
+> > 
+> > > not have to mean making /dev/mem useless for whatever good uses it has.
+> > 
+> > It does. Plain and simple.
+> 
+> Is that the only valid use of /dev/mem, or even its main use?
 
-Originally task_s/utime() were designed to return clock_t but
-later changed to return cputime_t by following commit:
+These days it is the primary use. Things like X11 were historically
+probably the biggest user of it, and things like LRMI sometimes need that
+sort of stuff.
 
-  commit efe567fc8281661524ffa75477a7c4ca9b466c63
-  Author: Christian Borntraeger <borntraeger@de.ibm.com>
-  Date:   Thu Aug 23 15:18:02 2007 +0200
+The X case also involves X and the kernel both working with the same
+resource and in many cases that resource having registers that can crash
+a system if mis-accessed.
 
-It only changed the type of return value, but not the
-implementation. As the result the granularity of task_s/utime()
-is still that of clock_t, not that of cputime_t.
-
-So using task_s/utime() in __exit_signal() makes values
-accumulated to the signal struct to be rounded and coarse
-grained.
-
-This patch removes casts to clock_t in task_u/stime(), to keep
-granularity of cputime_t over the calculation.
-
-v2:
-  Use div_u64() to avoid error "undefined reference to `__udivdi3`"
-  on some 32bit systems.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: xiyou.wangcong@gmail.com
-Cc: Spencer Candland <spencer@bluehost.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Stanislaw Gruszka <sgruszka@redhat.com>
-LKML-Reference: <4AFB9029.9000208@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   22 +++++++++++++---------
- 1 files changed, 13 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 43e61fa..ab9a034 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5156,41 +5156,45 @@ cputime_t task_stime(struct task_struct *p)
- 	return p->stime;
- }
- #else
-+
-+#ifndef nsecs_to_cputime
-+# define nsecs_to_cputime(__nsecs) \
-+	msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
-+#endif
-+
- cputime_t task_utime(struct task_struct *p)
- {
--	clock_t utime = cputime_to_clock_t(p->utime),
--		total = utime + cputime_to_clock_t(p->stime);
-+	cputime_t utime = p->utime, total = utime + p->stime;
- 	u64 temp;
- 
- 	/*
- 	 * Use CFS's precise accounting:
- 	 */
--	temp = (u64)nsec_to_clock_t(p->se.sum_exec_runtime);
-+	temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
- 
- 	if (total) {
- 		temp *= utime;
- 		do_div(temp, total);
- 	}
--	utime = (clock_t)temp;
-+	utime = (cputime_t)temp;
- 
--	p->prev_utime = max(p->prev_utime, clock_t_to_cputime(utime));
-+	p->prev_utime = max(p->prev_utime, utime);
- 	return p->prev_utime;
- }
- 
- cputime_t task_stime(struct task_struct *p)
- {
--	clock_t stime;
-+	cputime_t stime;
- 
- 	/*
- 	 * Use CFS's precise accounting. (we subtract utime from
- 	 * the total, to make sure the total observed by userspace
- 	 * grows monotonically - apps rely on that):
- 	 */
--	stime = nsec_to_clock_t(p->se.sum_exec_runtime) -
--			cputime_to_clock_t(task_utime(p));
-+	stime = nsecs_to_cputime(p->se.sum_exec_runtime) - task_utime(p);
- 
- 	if (stime >= 0)
--		p->prev_stime = max(p->prev_stime, clock_t_to_cputime(stime));
-+		p->prev_stime = max(p->prev_stime, stime);
- 
- 	return p->prev_stime;
- }
+Alan
