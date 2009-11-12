@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbZKLPdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZKLPkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbZKLPdw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 10:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZKLPdt
+	id S1753269AbZKLPkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 10:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKLPkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 10:33:49 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:46982 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752426AbZKLPds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 10:33:48 -0500
-Date: Thu, 12 Nov 2009 16:33:52 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: al@alarsen.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: sizeof vs strlen (was Re: [PATCH 4/4] fs/qnx4: decrement sizeof
- size in strncmp)
-In-Reply-To: <1258021335.3689.41.camel@tara.firmix.at>
-Message-ID: <Pine.LNX.4.64.0911121632540.19779@ask.diku.dk>
-References: <Pine.LNX.4.64.0911120849260.16627@ask.diku.dk>
- <1258021335.3689.41.camel@tara.firmix.at>
+	Thu, 12 Nov 2009 10:40:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52752 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753145AbZKLPki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 10:40:38 -0500
+Date: Thu, 12 Nov 2009 07:40:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+cc: Stephen Hemminger <shemminger@vyatta.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH v2] Documentation: rw_lock lessons learned
+In-Reply-To: <4AFBEC44.9030409@gmail.com>
+Message-ID: <alpine.LFD.2.01.0911120726430.31845@localhost.localdomain>
+References: <4AF9C540.5090403@gmail.com> <20091110180646.2e5859a8@nehalam> <4AFAEF78.4080807@gmail.com> <20091111093724.4f40a48d@nehalam> <4AFBEC44.9030409@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009, Bernd Petrovitsch wrote:
 
-> On Thu, 2009-11-12 at 08:49 +0100, Julia Lawall wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > As observed by Joe Perches, sizeof of a constant string includes the
-> > trailing 0.  If what is wanted is to check the initial characters of
-> > another string, this trailing 0 should not be taken into account.  If an
-> > exact match is wanted, strcmp should be used instead.
-> [...]
-> > strncmp(foo, abc, 
-> > - sizeof(abc)
-> > + sizeof(abc)-1
-> >  )
-> > // </smpl>
-> Am I the only one who find "strlen()" instead of "sizeof()-1" here much
-> more readable (and to the point).
-> 
-> As for run-time, it shouldn't make a difference for static/constant
-> strings as gcc should be able calculate the length at compile time. And
-> if the string is not constant, sizeof() is probably wrong anyways.
 
-Does gcc have access to the definition of strlen?  It does not seem to be 
-an inlined function, eg in lib/string.c.
+On Thu, 12 Nov 2009, William Allen Simpson wrote:
+>
+> In recent weeks, two different network projects erroneously
+> strayed down the rw_lock path.  Update the Documentation
+> based upon comments by Eric Dumazet and Paul E. McKenney in
+> those threads.
 
-julia
+This still retains some pretty old and bogus language. For example, that 
+file still talks about spinlocks being "faster than a global interrupt 
+lock", which is kind of amusing - because we've not done that global 
+interrupt lock thing for the last ten years or so. 
+
+So I certainly agree with discouraging rwlocks - I don't think we've ever 
+really found a situation where they are useful except for some really 
+special cases - but I suspect the thing needs a bigger overhaul.
+
+I also suspect somebody should actually take a look at our _users_ of 
+rwlocks. We have a few fairly central ones like 'tasklist_lock', and it 
+may be an example of a _good_ case of rwlocks, but for a very non-obvious 
+reason.
+
+In the case of 'tasklist_lock', the magic subtle reason that makes it a 
+good idea is that that lock is commonly taken for reading in _interrupts_. 
+And the way rwlocks are defined, that means that you can take it for 
+reading without doing the *_irq() or *_irqsave() versions, because rwlocks 
+are not fair, so an active reader will never block a new reader even if 
+there is a blocked writer pending.
+
+So for tasklist_lock, raw rwlocks are still slower than raw spinlocks, but 
+because of the rwlock semantics the common case doesn't need to disable 
+and enable interrupts, so for the common case the comparison is not "raw 
+rwlock vs raw spinlock", but "raw rwlock vs interrupt-disabling spinlock", 
+and then it turns out rwlocks tend to win again.
+
+(Of course, lock_write() needs to disable interrupts for tasklist_lock, 
+but that tends to be the uncommon case).
+
+Ho humm..
+
+		Linus
