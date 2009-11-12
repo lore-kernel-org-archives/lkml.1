@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753051AbZKLMKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZKLXC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051AbZKLMKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 07:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZKLMKi
+	id S1754960AbZKLXC4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZKLXCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 07:10:38 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:58882 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbZKLMKg (ORCPT
+	Thu, 12 Nov 2009 18:02:52 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:45893 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbZKLXCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 07:10:36 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sysctl tree build failure
-References: <20091112184805.1c0720cb.sfr@canb.auug.org.au>
-	<m1ljicp3l0.fsf@fess.ebiederm.org>
-	<20091112191451.d21250f2.sfr@canb.auug.org.au>
-	<m1fx8kp0op.fsf@fess.ebiederm.org>
-	<20091112214706.7c7b3168.sfr@canb.auug.org.au>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 12 Nov 2009 04:10:38 -0800
-In-Reply-To: <20091112214706.7c7b3168.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 12 Nov 2009 21\:47\:06 +1100")
-Message-ID: <m1skckaqpt.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 12 Nov 2009 18:02:51 -0500
+Date: Thu, 12 Nov 2009 13:14:55 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jose Marino <braket@hotmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: Help needed, Re: [Bug #14334] pcmcia suspend regression from
+	2.6.31.1 to 2.6.31.2 - Dell Inspiron 600m
+Message-ID: <20091112121455.GA1394@ucw.cz>
+References: <Sj-rRjx6TwF.A.djE.vqe5KB@chimera> <200911010936.10409.rjw@sisk.pl> <alpine.LFD.2.01.0911010914100.31845@localhost.localdomain> <200911021439.28266.rjw@sisk.pl> <1257200523.7907.53.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <1257200523.7907.53.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+Hi!
 
-> Hi Eric,
->
-> On Thu, 12 Nov 2009 01:11:34 -0800 ebiederm@xmission.com (Eric W. Biederman) wrote:
->>
->> Any clue how all_noconfig happened to have CONFIG_SYSCTL_SYSCALL set?
->
-> CONFIG_SYSCTL_SYSCALL defaults to y and only depends on
-> CONFIG_PROC_SYSCTL which also defaults to y and depends on CONFIG_PROC_FS
-> which also defaults to y.  All three are only selectable if
-> CONFIG_EMBEDDED is y (which it obviously isn't).
+> (Bug was simple but took a while to track down: machine was left in
+> storage for a while, battery ran out, RTC went back to Jan 1, 1904,
+> which means a negative xtime, and the new timekeeping code will do
+> horrible things including hanging at resume when that happens. Fix is to
+> make powerpc read_persistent_clock() to ignore the RTC when it contains
+> a date older than epoch).
 
-Ah so.  An interesting twist of fate.  Thank you for satisfying my
-curiosity.
+Additionaly, it would be nice if the machine would not hang, no matter
+what RTC says...
+									Pavel
 
-Eric
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
