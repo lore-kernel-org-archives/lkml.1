@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZKLRrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZKLRvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831AbZKLRrl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbZKLRrl
+	id S1753916AbZKLRvL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZKLRvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:47:41 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42166 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753532AbZKLRrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:47:40 -0500
-Date: Thu, 12 Nov 2009 17:49:16 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Robert Hancock" <hancockrwd@gmail.com>,
-       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
-Subject: Re: Reading /dev/mem by dd
-Message-ID: <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
-In-Reply-To: <1258047454.16197.1344913359@webmail.messagingengine.com>
-References: <4AFACC03.7080209@mayc.ru>
-	<4AFB2822.30906@gmail.com>
-	<20091112021209.GA21625@khazad-dum.debian.net>
-	<878web7kwf.fsf@basil.nowhere.org>
-	<1258047454.16197.1344913359@webmail.messagingengine.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 12:51:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48716 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbZKLRvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 12:51:06 -0500
+Date: Thu, 12 Nov 2009 18:50:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegardno@ifi.uio.no>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] MAINTAINERS: KMEMTRACE - Add file patterns, correct
+ Pekka's entry to single line M:
+Message-ID: <20091112175056.GA20542@elte.hu>
+References: <1258047606.1988.15.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258047606.1988.15.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In this case, the problem seems to be access over /dev/mem to stuff the
-> kernel is already taking care of.  Certainly "as safe as possible" does
 
-Which is often what is desired - eg debugging driver stuff.
+* Joe Perches <joe@perches.com> wrote:
 
-> not have to mean making /dev/mem useless for whatever good uses it has.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 8264e6b..b7dbdd9 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3086,9 +3086,13 @@ F:	kernel/kgdb.c
+>  
+>  KMEMCHECK
+>  M:	Vegard Nossum <vegardno@ifi.uio.no>
+> -P	Pekka Enberg
+> -M:	penberg@cs.helsinki.fi
+> +M:	Pekka Enberg <penberg@cs.helsinki.fi>
+>  S:	Maintained
+> +F:	Documentation/kmemcheck.txt
+> +F:	arch/x86/include/asm/kmemcheck.h
+> +F:	arch/x86/mm/kmemcheck/
+> +F:	include/linux/kmemcheck.h
+> +F:	mm/kmemcheck.c
 
-It does. Plain and simple.
+Note, subject says kmemtrace - while this is about kmemcheck.
 
+	Ingo
