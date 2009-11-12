@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbZKLHtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbZKLHtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752025AbZKLHtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZKLHtW
+	id S1752067AbZKLHtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKLHtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:49:22 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51216 "EHLO mgw2.diku.dk"
+	Thu, 12 Nov 2009 02:49:41 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:56089 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbZKLHtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:49:21 -0500
-Date: Thu, 12 Nov 2009 08:49:24 +0100 (CET)
+	id S1751428AbZKLHtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:49:40 -0500
+Date: Thu, 12 Nov 2009 08:49:44 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-Message-ID: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>
+To: al@alarsen.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/4] fs/qnx4: decrement sizeof size in strncmp
+Message-ID: <Pine.LNX.4.64.0911120849260.16627@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,18 +46,21 @@ strncmp(foo, abc,
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- security/selinux/hooks.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/qnx4/inode.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff -u -p a/security/selinux/hooks.c b/security/selinux/hooks.c
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -448,7 +448,7 @@ static int sb_finish_set_opts(struct sup
- 		sbsec->flags &= ~SE_SBLABELSUPP;
- 
- 	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
--	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
-+	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs") - 1) == 0)
- 		sbsec->flags |= SE_SBLABELSUPP;
- 
- 	/* Initialize the root inode. */
+diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
+index 449f5a6..0614b00 100644
+--- a/fs/qnx4/inode.c
++++ b/fs/qnx4/inode.c
+@@ -221,7 +221,9 @@ static const char *qnx4_checkroot(struct super_block *sb)
+ 				rootdir = (struct qnx4_inode_entry *) (bh->b_data + i * QNX4_DIR_ENTRY_SIZE);
+ 				if (rootdir->di_fname != NULL) {
+ 					QNX4DEBUG((KERN_INFO "rootdir entry found : [%s]\n", rootdir->di_fname));
+-					if (!strncmp(rootdir->di_fname, QNX4_BMNAME, sizeof QNX4_BMNAME)) {
++					if (!strncmp(rootdir->di_fname,
++						     QNX4_BMNAME,
++						     sizeof QNX4_BMNAME - 1)) {
+ 						found = 1;
+ 						qnx4_sb(sb)->BitMap = kmalloc( sizeof( struct qnx4_inode_entry ), GFP_KERNEL );
+ 						if (!qnx4_sb(sb)->BitMap) {
