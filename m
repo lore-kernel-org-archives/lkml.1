@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751491AbZKLH1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZKLH3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751491AbZKLH1e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZKLH1d
+	id S1751528AbZKLH3F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZKLH3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:27:33 -0500
-Received: from gw1.transmode.se ([213.115.205.20]:42908 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbZKLH1d convert rfc822-to-8bit (ORCPT
+	Thu, 12 Nov 2009 02:29:05 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:10115 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbZKLH3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:27:33 -0500
-In-Reply-To: <25e057c00911111546w414cbebbx5e7142866b925f65@mail.gmail.com>
-References: <1257762136-17593-1-git-send-email-Joakim.Tjernlund@transmode.se> <25e057c00911111546w414cbebbx5e7142866b925f65@mail.gmail.com>
-Subject: Re: [PATCH] zlib: Optimize inffast even more
-X-KeepSent: B722E663:C2FD29AD-C125766C:002805EE;
- type=4; name=$KeepSent
-To: roel kluin <roel.kluin@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>
-X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
-Message-ID: <OFB722E663.C2FD29AD-ONC125766C.002805EE-C125766C.00289A56@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.com>
-Date: Thu, 12 Nov 2009 08:23:29 +0100
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
- 2009-11-12 08:27:37
+	Thu, 12 Nov 2009 02:29:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=cXkjPZp5zZUdoK6mAmGlqCC5G8/QJ1fNmjf8Vt/DA5bm7KEig9YWQiXuvkJbTwvcDn
+         8ppJ8wWGt+cgq5f2yuBhPAgw5n7aGFFW9obj40RhWNWFnEn/WK5k4drSmGNJs11izqTj
+         LUxEdznoAPPA7p/Oqz2bvI2yzS9SX9wnPROAI=
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Content-transfer-encoding: 8BIT
+Date: Thu, 12 Nov 2009 08:29:06 +0100
+Message-ID: <195c7a900911112329v7df8e718s5c0a5babdea39b99@mail.gmail.com>
+Subject: warn on lookup_one_length/vfs_quota_on_mount
+From: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-roel kluin <roel.kluin@gmail.com> wrote on 12/11/2009 00:46:41:
->
-> On Mon, Nov 9, 2009 at 11:22 AM, Joakim Tjernlund
-> <Joakim.Tjernlund@transmode.se> wrote:
-> > This improves zlib: Optimize inffast when copying direct from output
-> > and gives another 3-4% improvement for my MPC8321 target.
-> > Does not need CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS,
-> > uses get_unaligned() but only in one place.
-> > The copy loop just above this one can also use this
-> > optimization, but I havn't done so as I have not tested if it
-> > is a win there too.
-> >
-> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > ---
->
->
-> > @@ -240,52 +243,49 @@ void inflate_fast(z_streamp strm, unsigned start)
-> >                 }
-> >                 else {
-> >                     from = out - dist;          /* copy direct from output */
-> > -#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-> >                     /* minimum length is three */
-> >                    if (dist > 2 ) {
-> > -                       unsigned short *sout = (unsigned short *)(out - OFF);
-> > -                       unsigned short *sfrom = (unsigned short *)(from - OFF);
-> > -                       unsigned long loops = len >> 1;
-> > +                       unsigned short *sout;
-> > +                       unsigned short *sfrom;
-> > +                       unsigned long loops;
-> >
-> > +                       /* Align out addr, only sfrom might be unaligned */
-> > +                       if (!((long)(out - 1 + OFF)) & 1) {
->
-> I think this is wrong
->
-> did you mean
->
-> if (!((long)(out - 1 + OFF) & 1))
+Dear developer,
 
-Yes, will fix and send out a new patch with
-cleanups and fixes for CPUs that cannot do unaligned
-accesses. Thanks
+I get the following warm on my reiserfs disk with quota enabled at
+boot (each boot) see
+http://www.kerneloops.org/raw.php?rawid=937752&msgid=
+*lookup_one_len
+? lookup_one_len
+? lookup_one_len
+? warn_slowpath_common
+? lookup_one_len
+? vfs_quota_on_mount
+? finish_unfinished
+? reiserfs_remount
+? __filemap_fdatawrite_range
+? do_remount_sb
+? do_mount
+? sys_mount
+? system_call_fastpath
 
-      Jocke
+But it seems a generic bug in the quota layer due to:
+http://www.kerneloops.org/oops.php?number=799645
+http://www.kerneloops.org/oops.php?number=700122
 
+Thank you
+
+Bastien
