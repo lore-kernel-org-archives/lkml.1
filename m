@@ -1,19 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZKLHtC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbZKLHtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbZKLHtC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:49:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZKLHtB
+	id S1752025AbZKLHtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZKLHtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:49:01 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:51204 "EHLO mgw2.diku.dk"
+	Thu, 12 Nov 2009 02:49:22 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:51216 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbZKLHtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:49:00 -0500
-Date: Thu, 12 Nov 2009 08:49:04 +0100 (CET)
+	id S1751310AbZKLHtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:49:21 -0500
+Date: Thu, 12 Nov 2009 08:49:24 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/4] drivers/thermal: decrement sizeof size in strncmp
-Message-ID: <Pine.LNX.4.64.0911120848390.16627@ask.diku.dk>
+To: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+Message-ID: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,21 +47,18 @@ strncmp(foo, abc,
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/thermal/thermal_sys.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ security/selinux/hooks.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -147,9 +147,9 @@ mode_store(struct device *dev, struct de
- 	if (!tz->ops->set_mode)
- 		return -EPERM;
+diff -u -p a/security/selinux/hooks.c b/security/selinux/hooks.c
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -448,7 +448,7 @@ static int sb_finish_set_opts(struct sup
+ 		sbsec->flags &= ~SE_SBLABELSUPP;
  
--	if (!strncmp(buf, "enabled", sizeof("enabled")))
-+	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
- 		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
--	else if (!strncmp(buf, "disabled", sizeof("disabled")))
-+	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
- 		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
- 	else
- 		result = -EINVAL;
+ 	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
+-	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
++	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs") - 1) == 0)
+ 		sbsec->flags |= SE_SBLABELSUPP;
+ 
+ 	/* Initialize the root inode. */
