@@ -1,310 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZKLIvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbZKLIwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbZKLIvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKLIvP
+	id S1752377AbZKLIwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZKLIwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:51:15 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34385 "EHLO smtps.tip.net.au"
+	Thu, 12 Nov 2009 03:52:43 -0500
+Received: from gw1.transmode.se ([213.115.205.20]:57227 "EHLO gw1.transmode.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbZKLIvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:51:14 -0500
-Date: Thu, 12 Nov 2009 19:51:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 12
-Message-Id: <20091112195101.63263490.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m"
+	id S1751993AbZKLIwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 03:52:43 -0500
+In-Reply-To: <20091111152445.7d2f8643.akpm@linux-foundation.org>
+References: <1257762136-17593-1-git-send-email-Joakim.Tjernlund@transmode.se> <20091111152445.7d2f8643.akpm@linux-foundation.org>
+Subject: Re: [PATCH] zlib: Optimize inffast even more
+X-KeepSent: 7CD0497E:D92BC1B1-C125766C:0028EF03;
+ type=4; name=$KeepSent
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
+Message-ID: <OF7CD0497E.D92BC1B1-ONC125766C.0028EF03-C125766C.0030A731@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.com>
+Date: Thu, 12 Nov 2009 09:51:25 +0100
+X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
+ 2009-11-12 09:52:47
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Andrew Morton <akpm@linux-foundation.org> wrote on 12/11/2009 00:24:45:
+>
+> On Mon, 9 Nov 2009 11:22:16 +0100
+> Joakim Tjernlund <Joakim.Tjernlund@transmode.se> wrote:
+>
+> > This improves zlib: Optimize inffast when copying direct from output
+> > and gives another 3-4% improvement for my MPC8321 target.
+> > Does not need CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS,
+> > uses get_unaligned() but only in one place.
+> > The copy loop just above this one can also use this
+> > optimization, but I havn't done so as I have not tested if it
+> > is a win there too.
+> >
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > ---
+> >
+> >  Someone with a little endian target should test too.
+>
+> eh?  That requires a PC.  Can't you test it??
 
-Hi all,
+It needs something that actually uses the inflate too on that PC and
+I don't have that handy.
+Anyhow, I downloaded zip and made the changes and tested a little, found
+a problem. Will resend a new patch with everything in it soon.
 
-Changes since 20091111:
-
-Linus' tree gained a build failure for which I applied a patch.
-
-The net tree lost 3 conflicts.
-
-The cpufreq tree gained a conflict against the acpi tree.
-
-The rr tree lost its build failure but exposed build failures in the
-powerpc and sparc trees for which I applied patches.  It also had another
-build failure due to an interaction with the kbuild tree for which I
-applied another patch.
-
-The i7core_edac tree gained a build failure for which I have applied a
-patch.
-
-The tip tree lost its build failure.
-
-The sysctl tree gained a build failure for which I applied a patch.
-
-The usb tree lost its conflicts.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 148 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Applying: jbd: export log_start_commit for ext3
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
-pu.h
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/common/tuners/tda18271-=
-fe.c
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/powerpc/kvm/timing.h
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
-nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
-$ git rm -f drivers/net/sfc/sfe4001.c
-Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3evm.c
-Merging cpufreq/next
-CONFLICT (content): Merge conflict in include/acpi/processor.h
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/ray_cs.c
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in drivers/net/Kconfig
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Applying: i7core_edac: do not export static functions
-Merging devicetree/next-devicetree
-Merging limits/writable_limits
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
-CONFLICT (content): Merge conflict in kernel/irq/chip.c
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
-.S
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in kernel/softlockup.c
-CONFLICT (content): Merge conflict in mm/percpu.c
-Applying: percpu: merge fixup for variable renaming
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/cb_das=
-16_cs.c
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
-pc_cs.c
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
-_cs.c
-Merging scsi-post-merge/master
-Applying: modpost: autoconf.h has moved to include/generated
-Applying: sysctl: fix build dependency on CONFIG_NET
-Applying: powerpc: do not export pci_alloc/free_consistent
-Applying: sparc64: don't export static inline pci_ functions
-
---Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr7zHUACgkQjjKRsyhoI8xuDQCfQWYb6PopXDdOmQ9+VSSXszR4
-g0cAmweAEvFCY+Gr/RCb1xjKMzJJAvMo
-=1KP7
------END PGP SIGNATURE-----
-
---Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m--
