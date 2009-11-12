@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZKLWGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZKLWmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZKLWGc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 17:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbZKLWG1
+	id S1754790AbZKLWmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 17:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZKLWmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 17:06:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60360 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754751AbZKLWG1 (ORCPT
+	Thu, 12 Nov 2009 17:42:12 -0500
+Received: from de01.mail.all-tld.net ([195.140.232.8]:61456 "EHLO
+	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632AbZKLWmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 17:06:27 -0500
-Date: Thu, 12 Nov 2009 14:05:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Daniel Mack <daniel@caiaq.de>, Pavel Machek <pavel@ucw.cz>,
-       David Newall <davidn@davidnewall.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: make the default cursor shape configurable
-Message-Id: <20091112140546.303e7dd6.akpm@linux-foundation.org>
-In-Reply-To: <4AFA603B.6000102@ladisch.de>
-References: <4AF7D439.4030305@ladisch.de>
-	<20091109091044.GX29442@buzzloop.caiaq.de>
-	<4AF7DDC1.4090006@ladisch.de>
-	<20091109095316.6283fbd6@lxorguk.ukuu.org.uk>
-	<4AF7FC64.6030904@ladisch.de>
-	<20091109114600.4d91b90e@lxorguk.ukuu.org.uk>
-	<20091109145056.GB14091@buzzloop.caiaq.de>
-	<4AF8582B.2000403@davidnewall.com>
-	<20091109220944.GH14091@buzzloop.caiaq.de>
-	<20091110210940.GA1590@ucw.cz>
-	<20091110152605.fc8e760e.akpm@linux-foundation.org>
-	<4AFA603B.6000102@ladisch.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 17:42:11 -0500
+X-Greylist: delayed 2014 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Nov 2009 17:42:11 EST
+Date: Thu, 12 Nov 2009 23:08:36 +0100
+From: Anders Larsen <al@alarsen.net>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, trivial@kernel.org
+Subject: Re: [PATCH 4/4] fs/qnx4: decrement sizeof size in strncmp
+Message-ID: <20091112220836.GA3893@alarsen.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
+X-ALL-TLD-GmbH-VirusScanner: Found to be clean
+X-ALL-TLD-GmbH-SpamCheck: 
+X-MailScanner-From: anders@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 07:56:59 +0100
-Clemens Ladisch <clemens@ladisch.de> wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> [PATCH] vt: make the default cursor shape configurable
-> 
-> Make the default console cursor type configurable rather than
-> hard-coding it.
-> 
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+As an identical match is wanted in this case, strcmp can be used instead.
 
-The changelog omitted the most important piece of information: the
-reason why we're making this change to the kernel.
+The semantic match that lead to detecting this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-I could type that in myself, but writing people's changelog for them
-gets a bit dull after the first few thousand.  Please send a new,
-complete changelog for this patch.
+// <smpl>
+@@
+expression foo;
+constant char *abc;
+@@
+
+*strncmp(foo, abc, sizeof(abc))
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Anders Larsen <al@alarsen.net>
+
+---
+ fs/qnx4/inode.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
+index 449f5a6..150f4af 100644
+--- a/fs/qnx4/inode.c
++++ b/fs/qnx4/inode.c
+@@ -221,7 +221,8 @@ static const char *qnx4_checkroot(struct super_block *sb)
+ 				rootdir = (struct qnx4_inode_entry *) (bh->b_data + i * QNX4_DIR_ENTRY_SIZE);
+ 				if (rootdir->di_fname != NULL) {
+ 					QNX4DEBUG((KERN_INFO "rootdir entry found : [%s]\n", rootdir->di_fname));
+-					if (!strncmp(rootdir->di_fname, QNX4_BMNAME, sizeof QNX4_BMNAME)) {
++					if (!strcmp(rootdir->di_fname,
++						    QNX4_BMNAME)) {
+ 						found = 1;
+ 						qnx4_sb(sb)->BitMap = kmalloc( sizeof( struct qnx4_inode_entry ), GFP_KERNEL );
+ 						if (!qnx4_sb(sb)->BitMap) {
+
 
