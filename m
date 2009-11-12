@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZKLQzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZKLHjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbZKLQzW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 11:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZKLQzU
+	id S1751508AbZKLHjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZKLHjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 11:55:20 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:54497 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753471AbZKLQzO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 11:55:14 -0500
-X-Greylist: delayed 1549 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Nov 2009 11:55:14 EST
-Date: Thu, 12 Nov 2009 08:36:17 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Message-ID: <20091112073616.GA11365@elf.ucw.cz>
-References: <4AF7D820.5040503@kernel.org>
- <200911091315.13151.rjw@sisk.pl>
- <4AFA210B.3020207@kernel.org>
+	Thu, 12 Nov 2009 02:39:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55939 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbZKLHjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:39:18 -0500
+Date: Thu, 12 Nov 2009 08:39:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       =?unknown-8bit?B?RnLDqWTDqXJpYw==?= Weisbecker 
+	<fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Measuring term of acquiring spinlock
+Message-ID: <20091112073909.GB31719@elte.hu>
+References: <20091112.154353.680961628170545165.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AFA210B.3020207@kernel.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091112.154353.680961628170545165.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-11-10 18:27:23, Yinghai Lu wrote:
+
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+
+> * Description
 > 
-> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
-> 
-> to get area is below 1M
+> This patch makes the file spinlock_stats on top of the debugfs.
+> When user reads this file, some statistical data related to
+> spinlocks are printed.
 
-Does it fix anything? I can't tell from the changelog...
+hm, are you aware of the lockstat tracepoints? They do something like 
+this - and it utilizes perf events to report these events. See 
+include/trace/events/lockdep.h. Needs CONFIG_LOCK_STAT enabled.
 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Might make sense to put it into 'perf lock' kind of tool. I think 
+Frederic had such plans.
 
-Please CC me on suspend patches.
->  /*
->   * Check if the CPU can handle C2 and deeper
-> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-> @@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
->  
->  
->  /**
-> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> + * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
->   *
->   * We allocate a page from the first 1MB of memory for the wakeup
->   * routine for when we come back from a sleep state. The
->   * runtime allocator allows specification of <16MB pages, but not
->   * <1MB pages.
->   */
-> -void __init acpi_reserve_bootmem(void)
-> +void __init acpi_reserve_wakeup_memory(void)
->  {
-> +	unsigned long mem;
-> +
->  	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
->  		printk(KERN_ERR
->  		       "ACPI: Wakeup code way too big, S3 disabled.\n");
->  		return;
->  	}
->  
-> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
-> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
->  
-> -	if (!acpi_realmode) {
-> +	if (mem == -1L) {
->  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
->  		return;
->  	}
-
-How is it better then old code?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
