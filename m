@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZKLJkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZKLJrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbZKLJkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 04:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZKLJkk
+	id S1752701AbZKLJrG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 04:47:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZKLJrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 04:40:40 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45081 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752554AbZKLJki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 04:40:38 -0500
-Date: Thu, 12 Nov 2009 10:40:42 +0100
-From: Jan Kara <jack@suse.cz>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ext3 build failure: "log_start_commit" [fs/ext3/ext3.ko]
-	undefined
-Message-ID: <20091112094042.GC14528@duck.suse.cz>
-References: <4AFB5529.2010302@s5r6.in-berlin.de>
+	Thu, 12 Nov 2009 04:47:05 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:45891 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbZKLJrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 04:47:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=AI0Leg4V7Lq0GNUDcIDOjcwffU61vMJu+UtAkLscenXlMG3G6jWMGqtyK4mYPhrWS3
+         TcPkIj83gWm99Dfj/ZkJLmq3FfP7wdQ0DleVteWDIUFFVNIn+A2QTNIZ3SPZOHBOgdMJ
+         5XY4cMnzXBs2McNyzsJtflym0CWrYxDuijsRs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFB5529.2010302@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091112081043.GA25345@elte.hu>
+References: <4AFB2C0B.50605@gmail.com>
+	 <20091111134730.a0da9e38.akpm@linux-foundation.org>
+	 <20091112081043.GA25345@elte.hu>
+Date: Thu, 12 Nov 2009 12:47:09 +0300
+Message-ID: <b6fcc0a0911120147p7d23dc14q81a27e9742888c57@mail.gmail.com>
+Subject: Re: [patch] Fix: 'return -ENOMEM' instead of 'return ENOMEM'
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 12-11-09 01:22:01, Stefan Richter wrote:
-> Hi Jan,
-> 
-> I just pulled linux-2.6.git and got this:
-> ERROR: "log_start_commit" [fs/ext3/ext3.ko] undefined!
-> 
-> I guess it is due to "ext3: Wait for proper transaction commit on fsync".
-> 
-> Is this log_start_commit() of fs/jbd/journal.c?
-> 
-> $ grep -e JBD -e EXT3 .config
-> CONFIG_EXT3_FS=m
-> # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-> # CONFIG_EXT3_FS_XATTR is not set
-> CONFIG_JBD=m
-> CONFIG_JBD2=m
-  Yes, thanks. I've already merged the fix.
+On 11/12/09, Ingo Molnar <mingo@elte.hu> wrote:
+>  drivers/scsi/aic7xxx/aic7xxx_osm.c:             return ENOMEM;         # works but weird
 
-								Honza
-
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+"weirdness" comes from BSD where E codes are negative,
+so they do not have this problem at all.
