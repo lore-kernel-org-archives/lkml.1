@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZKLCzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbZKLDKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbZKLCzz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 21:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760039AbZKLCzy
+	id S1760061AbZKLDKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 22:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbZKLDKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 21:55:54 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:36664 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759999AbZKLCzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 21:55:54 -0500
-Message-ID: <4AFB7935.8010204@gmail.com>
-Date: Thu, 12 Nov 2009 03:55:49 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
+	Wed, 11 Nov 2009 22:10:19 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53487 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760040AbZKLDKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 22:10:19 -0500
+Date: Thu, 12 Nov 2009 14:10:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: David Miller <davem@davemloft.net>
-CC: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       eric.dumazet@gmail.com
 Subject: Re: linux-next: net tree build warning
-References: <20091112132424.e010e3c5.sfr@canb.auug.org.au> <20091111.185338.253345558.davem@davemloft.net>
+Message-Id: <20091112141018.8d997f9a.sfr@canb.auug.org.au>
 In-Reply-To: <20091111.185338.253345558.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 12 Nov 2009 03:55:52 +0100 (CET)
+References: <20091112132424.e010e3c5.sfr@canb.auug.org.au>
+	<20091111.185338.253345558.davem@davemloft.net>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Nov_2009_14_10_18_+1100_xKq2DIY+.VrexOIt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 12 Nov 2009 13:24:24 +1100
-> 
->> Hi Dave,
->>
->> Today's linux-next build (x86_64 allmodconfig) produced this warning:
->>
->> net/ipv6/addrconf.c: In function 'inet6_dump_ifinfo':
->> net/ipv6/addrconf.c:3833: warning: unused variable 'err'
->>
->> Introduced by commit 84d2697d9649339215675551eae28ba04068dea1 ("ipv6:
->> speedup inet6_dump_ifinfo()").
-> 
+--Signature=_Thu__12_Nov_2009_14_10_18_+1100_xKq2DIY+.VrexOIt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Dave,
+
+On Wed, 11 Nov 2009 18:53:38 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
 > I just pushed a fix for this into net-next-2.6, thanks!
 
-You beat me :)
+Thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks
+--Signature=_Thu__12_Nov_2009_14_10_18_+1100_xKq2DIY+.VrexOIt
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr7fJoACgkQjjKRsyhoI8xP/gCdENa8wZKkMc+70BrY9QG1KsWQ
+h74AmwdV8P3zU6/kmKyoUU/4qkSxD9o5
+=w5XP
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Nov_2009_14_10_18_+1100_xKq2DIY+.VrexOIt--
