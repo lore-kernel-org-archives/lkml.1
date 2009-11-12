@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZKLNXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZKLNbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbZKLNXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 08:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZKLNXr
+	id S1752263AbZKLNbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 08:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZKLNba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 08:23:47 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:53580 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbZKLNXq convert rfc822-to-8bit (ORCPT
+	Thu, 12 Nov 2009 08:31:30 -0500
+Received: from gv-out-0910.google.com ([216.239.58.189]:33367 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbZKLNb3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 08:23:46 -0500
+	Thu, 12 Nov 2009 08:31:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=wMZSsrpfwtb9A5imbinLOcJ/JZcd6kwb2a7YkDZBoFagydJgTUj481Zn1Xeqke3Ios
-         YePnshQ1jN2AMtSRB54EiKlTfuRlYlbGQHKMmuLE/OgsMWaxtCFJJiZLfDB333VHTzyr
-         vnIjHLy/9D0N/TJXbWqQPWQQhsoHd4O41ODD0=
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RiBG9A09VZWhutZ2OjtPBIwOY8jjyZxbUlHXVYC3YZTOJRXqHA+8kZGVRMu5m9NT5L
+         /mcHg8MYsZyBfDRcCkqFCxupBArGDlg8ArFB+Vq+UY/RCDSmySgcin8UWtcPPE3fiXDK
+         J/nYjrVjoyebWj7UI65OXeZSr/F1NWW2a++mQ=
 MIME-Version: 1.0
-In-Reply-To: <200911122336.11033.rusty@rustcorp.com.au>
-References: <cover.1257864802.git.andre.goddard@gmail.com> 
-	<2bd27b061789ed14dd80816fd987273ae33ffbd1.1257864802.git.andre.goddard@gmail.com> 
-	<200911122336.11033.rusty@rustcorp.com.au>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Thu, 12 Nov 2009 11:23:32 -0200
-Message-ID: <b8bf37780911120523q79222fcdu6cb45997ab4b4e62@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] bsearch: prevent overflow when computing middle 
-	comparison element
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <20091111134730.a0da9e38.akpm@linux-foundation.org>
+References: <4AFB2C0B.50605@gmail.com>
+	 <20091111134730.a0da9e38.akpm@linux-foundation.org>
+Date: Thu, 12 Nov 2009 13:31:34 +0000
+X-Google-Sender-Auth: 0ffd994d68f2072d
+Message-ID: <25d66d860911120531u6a9cd40dmf3056fd99bd97f4e@mail.gmail.com>
+Subject: Re: [PATCH] ftrace: return error instead of 12 bytes read
+From: Andy Whitcroft <apw@canonical.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roel Kluin <roel.kluin@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       ingo <mingo@elte.hu>, rostedt@goodmis.org, apw@canonical.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 11:06 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Wed, 11 Nov 2009 01:30:25 am André Goddard Rosa wrote:
->> It's really difficult to occur in practice because the sum of the lower
->> and higher limits must overflow an int variable, but it can occur when
->> working with large arrays. We'd better safe than sorry by avoiding this
->> overflow situation when computing the middle element for comparison.
+>>       s = kmalloc(sizeof(*s), GFP_KERNEL);
+>>       if (!s)
+>> -             return ENOMEM;
+>> +             return -ENOMEM;
+>>
+>>       trace_seq_init(s);
+>>
 >
-> I applied all these, after testing.  In future would have been nice for you
-> to have posted a test patch so I didn't have make my own...
+> lol, there we go again.
 >
+> Andy, can we have a checkpatch rule please?
 
-Sure, no problem, thanks!
+Thats a tricky one.  Not only do we not really have a sensible way to
+know if ENOMEM is an errno, we also find a bunch of places that we
+appear to use positive errno's as return values where we would falsly
+complain about.  Its particularly common in scsi and filesystems.
+Admittedly the vast majority are return -EXXX form, so we could add
+this as a non-default check perhaps.
 
-Kind regards,
-André
+Thoughts?
+
+-apw
