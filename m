@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZKLJha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZKLJkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZKLJha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 04:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZKLJha
+	id S1752713AbZKLJkl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 04:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZKLJkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 04:37:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44618 "EHLO mx2.suse.de"
+	Thu, 12 Nov 2009 04:40:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45081 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZKLJh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 04:37:29 -0500
-Date: Thu, 12 Nov 2009 10:37:33 +0100
+	id S1752554AbZKLJki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 04:40:38 -0500
+Date: Thu, 12 Nov 2009 10:40:42 +0100
 From: Jan Kara <jack@suse.cz>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, Jan Kara <jack@suse.cz>
-Subject: Re: [BUILD FAILURE][PATCH] Export symbol log_start_commit. ext3
-	needs it.
-Message-ID: <20091112093733.GB14528@duck.suse.cz>
-References: <200911121106.52555.knikanth@suse.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ext3 build failure: "log_start_commit" [fs/ext3/ext3.ko]
+	undefined
+Message-ID: <20091112094042.GC14528@duck.suse.cz>
+References: <4AFB5529.2010302@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911121106.52555.knikanth@suse.de>
+In-Reply-To: <4AFB5529.2010302@s5r6.in-berlin.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 12-11-09 11:06:52, Nikanth Karthikesan wrote:
-> The linus git fails to build with the message
+On Thu 12-11-09 01:22:01, Stefan Richter wrote:
+> Hi Jan,
+> 
+> I just pulled linux-2.6.git and got this:
 > ERROR: "log_start_commit" [fs/ext3/ext3.ko] undefined!
-> Top commit id: aa021baa3295fa6e3f367d80f8955dd5176656eb
 > 
-> Export log_start_commit to modules. ext3 needs it to be built
-> as a module.
+> I guess it is due to "ext3: Wait for proper transaction commit on fsync".
 > 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-  Thanks! I've already merged a fix.
+> Is this log_start_commit() of fs/jbd/journal.c?
+> 
+> $ grep -e JBD -e EXT3 .config
+> CONFIG_EXT3_FS=m
+> # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+> # CONFIG_EXT3_FS_XATTR is not set
+> CONFIG_JBD=m
+> CONFIG_JBD2=m
+  Yes, thanks. I've already merged the fix.
 
-							Honza
-> 
-> ---
-> 
-> diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-> index 49d5cd6..2e13cf3 100644
-> --- a/fs/jbd/journal.c
-> +++ b/fs/jbd/journal.c
-> @@ -72,6 +72,7 @@ EXPORT_SYMBOL(journal_abort);
->  EXPORT_SYMBOL(journal_errno);
->  EXPORT_SYMBOL(journal_ack_err);
->  EXPORT_SYMBOL(journal_clear_err);
-> +EXPORT_SYMBOL(log_start_commit);
->  EXPORT_SYMBOL(log_wait_commit);
->  EXPORT_SYMBOL(journal_start_commit);
->  EXPORT_SYMBOL(journal_force_commit_nested);
+								Honza
+
 -- 
 Jan Kara <jack@suse.cz>
 SUSE Labs, CR
