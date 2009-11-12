@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZKMBlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZKLXeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbZKMBlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 20:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZKMBlr
+	id S1755481AbZKLXeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbZKLXeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 20:41:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13585 "EHLO mx1.redhat.com"
+	Thu, 12 Nov 2009 18:34:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39930 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067AbZKMBlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 20:41:46 -0500
+	id S1755604AbZKLXeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:34:11 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -17,127 +17,358 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
        riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: [PATCH 01/16] blkio: Documentation
-Date: Thu, 12 Nov 2009 18:32:21 -0500
-Message-Id: <1258068756-10766-2-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 02/16] blkio: Introduce the notion of cfq groups
+Date: Thu, 12 Nov 2009 18:32:22 -0500
+Message-Id: <1258068756-10766-3-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1258068756-10766-1-git-send-email-vgoyal@redhat.com>
 References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+o This patch introduce the notion of cfq groups. Soon we will can have multiple
+  groups of different weights in the system.
+
+o Various service trees (prioclass and workload type trees), will become per
+  cfq group. So hierarchy looks as follows.
+
+			cfq_groups
+			   |
+			workload type
+			   |
+		        cfq queue
+
+o When an scheduling decision has to be taken, first we select the cfq group
+  then workload with-in the group and then cfq queue with-in the workload
+  type.
+
+o This patch just makes various workload service tree per cfq group and
+  introduce the function to be able to choose a group for scheduling.
+
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- Documentation/cgroups/blkio-controller.txt |  100 ++++++++++++++++++++++++++++
- 1 files changed, 100 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/cgroups/blkio-controller.txt
+ block/cfq-iosched.c |  114 +++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 79 insertions(+), 35 deletions(-)
 
-diff --git a/Documentation/cgroups/blkio-controller.txt b/Documentation/cgroups/blkio-controller.txt
-new file mode 100644
-index 0000000..6fb772f
---- /dev/null
-+++ b/Documentation/cgroups/blkio-controller.txt
-@@ -0,0 +1,100 @@
-+				Block IO Controller
-+				===================
-+Overview
-+========
-+cgroup subsys "blkio" implements the block io controller. There seems to be
-+a need of various kind of IO control policies (like proportional BW, max BW)
-+both at leaf nodes as well as at intermediate nodes in storage hierarchy. Plan
-+is to use same cgroup based management interface for blkio controller and
-+based on user options switch IO policies in the background.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 1bcbd8c..aebb205 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -132,6 +132,7 @@ struct cfq_queue {
+ 
+ 	struct cfq_rb_root *service_tree;
+ 	struct cfq_queue *new_cfqq;
++	struct cfq_group *cfqg;
+ };
+ 
+ /*
+@@ -153,6 +154,15 @@ enum wl_type_t {
+ 	SYNC_WORKLOAD = 2
+ };
+ 
++/* This is per cgroup per device grouping structure */
++struct cfq_group {
++	/*
++	 * rr lists of queues with requests, onle rr for each priority class.
++	 * Counts are embedded in the cfq_rb_root
++	 */
++	struct cfq_rb_root service_trees[2][3];
++	struct cfq_rb_root service_tree_idle;
++};
+ 
+ /*
+  * Per block device queue structure
+@@ -160,18 +170,15 @@ enum wl_type_t {
+ struct cfq_data {
+ 	struct request_queue *queue;
+ 
+-	/*
+-	 * rr lists of queues with requests, onle rr for each priority class.
+-	 * Counts are embedded in the cfq_rb_root
+-	 */
+-	struct cfq_rb_root service_trees[2][3];
+-	struct cfq_rb_root service_tree_idle;
++	struct cfq_group root_group;
 +
-+In the first phase, this patchset implements proportional weight time based
-+division of disk policy. It is implemented in CFQ. Hence this policy takes
-+effect only on leaf nodes when CFQ is being used.
+ 	/*
+ 	 * The priority currently being served
+ 	 */
+ 	enum wl_prio_t serving_prio;
+ 	enum wl_type_t serving_type;
+ 	unsigned long workload_expires;
++	struct cfq_group *serving_group;
+ 
+ 	/*
+ 	 * Each priority tree is sorted by next_request position.  These
+@@ -233,14 +240,15 @@ struct cfq_data {
+ 	unsigned long last_end_sync_rq;
+ };
+ 
+-static struct cfq_rb_root *service_tree_for(enum wl_prio_t prio,
++static struct cfq_rb_root *service_tree_for(struct cfq_group *cfqg,
++					    enum wl_prio_t prio,
+ 					    enum wl_type_t type,
+ 					    struct cfq_data *cfqd)
+ {
+ 	if (prio == IDLE_WORKLOAD)
+-		return &cfqd->service_tree_idle;
++		return &cfqg->service_tree_idle;
+ 
+-	return &cfqd->service_trees[prio][type];
++	return &cfqg->service_trees[prio][type];
+ }
+ 
+ enum cfqq_state_flags {
+@@ -308,12 +316,14 @@ static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
+ 
+ static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
+ {
++	struct cfq_group *cfqg = &cfqd->root_group;
 +
-+HOWTO
-+=====
-+You can do a very simple testing of running two dd threads in two different
-+cgroups. Here is what you can do.
+ 	if (wl == IDLE_WORKLOAD)
+-		return cfqd->service_tree_idle.count;
++		return cfqg->service_tree_idle.count;
+ 
+-	return cfqd->service_trees[wl][ASYNC_WORKLOAD].count
+-		+ cfqd->service_trees[wl][SYNC_NOIDLE_WORKLOAD].count
+-		+ cfqd->service_trees[wl][SYNC_WORKLOAD].count;
++	return cfqg->service_trees[wl][ASYNC_WORKLOAD].count
++		+ cfqg->service_trees[wl][SYNC_NOIDLE_WORKLOAD].count
++		+ cfqg->service_trees[wl][SYNC_WORKLOAD].count;
+ }
+ 
+ static void cfq_dispatch_insert(struct request_queue *, struct request *);
+@@ -621,7 +631,8 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	struct cfq_rb_root *service_tree;
+ 	int left;
+ 
+-	service_tree = service_tree_for(cfqq_prio(cfqq), cfqq_type(cfqq), cfqd);
++	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
++						cfqq_type(cfqq), cfqd);
+ 	if (cfq_class_idle(cfqq)) {
+ 		rb_key = CFQ_IDLE_DELAY;
+ 		parent = rb_last(&service_tree->rb);
+@@ -1057,7 +1068,8 @@ static inline void cfq_slice_expired(struct cfq_data *cfqd, bool timed_out)
+ static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
+ {
+ 	struct cfq_rb_root *service_tree =
+-		service_tree_for(cfqd->serving_prio, cfqd->serving_type, cfqd);
++		service_tree_for(cfqd->serving_group, cfqd->serving_prio,
++					cfqd->serving_type, cfqd);
+ 
+ 	if (RB_EMPTY_ROOT(&service_tree->rb))
+ 		return NULL;
+@@ -1209,7 +1221,8 @@ static bool cfq_should_idle(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	 * in their service tree.
+ 	 */
+ 	if (!service_tree)
+-		service_tree = service_tree_for(prio, cfqq_type(cfqq), cfqd);
++		service_tree = service_tree_for(cfqq->cfqg, prio,
++						cfqq_type(cfqq), cfqd);
+ 
+ 	if (service_tree->count == 0)
+ 		return true;
+@@ -1222,6 +1235,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+ 	struct cfq_queue *cfqq = cfqd->active_queue;
+ 	struct cfq_io_context *cic;
+ 	unsigned long sl;
++	struct cfq_rb_root *st;
+ 
+ 	/*
+ 	 * SSD device without seek penalty, disable idling. But only do so
+@@ -1271,9 +1285,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+ 	 *     fair distribution of slice time for a process doing back-to-back
+ 	 *     seeks.
+ 	 */
+-	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD &&
+-	    service_tree_for(cfqd->serving_prio, SYNC_NOIDLE_WORKLOAD, cfqd)
+-		->count > 0) {
++	st = service_tree_for(cfqq->cfqg, cfqd->serving_prio,
++				SYNC_NOIDLE_WORKLOAD, cfqd);
++	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD && st->count > 0) {
+ 		if (blk_queue_nonrot(cfqd->queue) || cfqd->hw_tag)
+ 			return;
+ 		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
+@@ -1381,8 +1395,9 @@ static void cfq_setup_merge(struct cfq_queue *cfqq, struct cfq_queue *new_cfqq)
+ 	}
+ }
+ 
+-static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd, enum wl_prio_t prio,
+-				    bool prio_changed)
++static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
++				struct cfq_group *cfqg, enum wl_prio_t prio,
++				bool prio_changed)
+ {
+ 	struct cfq_queue *queue;
+ 	int i;
+@@ -1396,10 +1411,10 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd, enum wl_prio_t prio,
+ 		 * from SYNC_NOIDLE (first choice), or just SYNC
+ 		 * over ASYNC
+ 		 */
+-		if (service_tree_for(prio, cur_best, cfqd)->count)
++		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
+ 			return cur_best;
+ 		cur_best = SYNC_WORKLOAD;
+-		if (service_tree_for(prio, cur_best, cfqd)->count)
++		if (service_tree_for(cfqg, prio, cur_best, cfqd)->count)
+ 			return cur_best;
+ 
+ 		return ASYNC_WORKLOAD;
+@@ -1407,7 +1422,7 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd, enum wl_prio_t prio,
+ 
+ 	for (i = 0; i < 3; ++i) {
+ 		/* otherwise, select the one with lowest rb_key */
+-		queue = cfq_rb_first(service_tree_for(prio, i, cfqd));
++		queue = cfq_rb_first(service_tree_for(cfqg, prio, i, cfqd));
+ 		if (queue &&
+ 		    (!key_valid || time_before(queue->rb_key, lowest_key))) {
+ 			lowest_key = queue->rb_key;
+@@ -1419,12 +1434,13 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd, enum wl_prio_t prio,
+ 	return cur_best;
+ }
+ 
+-static void choose_service_tree(struct cfq_data *cfqd)
++static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ {
+ 	enum wl_prio_t previous_prio = cfqd->serving_prio;
+ 	bool prio_changed;
+ 	unsigned slice;
+ 	unsigned count;
++	struct cfq_rb_root *st;
+ 
+ 	/* Choose next priority. RT > BE > IDLE */
+ 	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
+@@ -1443,8 +1459,9 @@ static void choose_service_tree(struct cfq_data *cfqd)
+ 	 * expiration time
+ 	 */
+ 	prio_changed = (cfqd->serving_prio != previous_prio);
+-	count = service_tree_for(cfqd->serving_prio, cfqd->serving_type, cfqd)
+-		->count;
++	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
++				cfqd);
++	count = st->count;
+ 
+ 	/*
+ 	 * If priority didn't change, check workload expiration,
+@@ -1456,9 +1473,10 @@ static void choose_service_tree(struct cfq_data *cfqd)
+ 
+ 	/* otherwise select new workload type */
+ 	cfqd->serving_type =
+-		cfq_choose_wl(cfqd, cfqd->serving_prio, prio_changed);
+-	count = service_tree_for(cfqd->serving_prio, cfqd->serving_type, cfqd)
+-		->count;
++		cfq_choose_wl(cfqd, cfqg, cfqd->serving_prio, prio_changed);
++	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type,
++				cfqd);
++	count = st->count;
+ 
+ 	/*
+ 	 * the workload slice is computed as a fraction of target latency
+@@ -1481,6 +1499,12 @@ static void choose_service_tree(struct cfq_data *cfqd)
+ 	cfqd->workload_expires = jiffies + slice;
+ }
+ 
++static void cfq_choose_cfqg(struct cfq_data *cfqd)
++{
++	cfqd->serving_group = &cfqd->root_group;
++	choose_service_tree(cfqd, &cfqd->root_group);
++}
 +
-+- Enable group scheduling in CFQ
-+	CONFIG_CFQ_GROUP_IOSCHED=y
+ /*
+  * Select a queue for service. If we have a current active queue,
+  * check whether to continue servicing it, or retrieve and set a new one.
+@@ -1538,7 +1562,7 @@ new_queue:
+ 	 * service tree
+ 	 */
+ 	if (!new_cfqq)
+-		choose_service_tree(cfqd);
++		cfq_choose_cfqg(cfqd);
+ 
+ 	cfqq = cfq_set_active_queue(cfqd, new_cfqq);
+ keep_queue:
+@@ -1567,13 +1591,15 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
+ 	struct cfq_queue *cfqq;
+ 	int dispatched = 0;
+ 	int i, j;
++	struct cfq_group *cfqg = &cfqd->root_group;
 +
-+- Compile and boot into kernel and mount IO controller (blkio).
+ 	for (i = 0; i < 2; ++i)
+ 		for (j = 0; j < 3; ++j)
+-			while ((cfqq = cfq_rb_first(&cfqd->service_trees[i][j]))
++			while ((cfqq = cfq_rb_first(&cfqg->service_trees[i][j]))
+ 				!= NULL)
+ 				dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+ 
+-	while ((cfqq = cfq_rb_first(&cfqd->service_tree_idle)) != NULL)
++	while ((cfqq = cfq_rb_first(&cfqg->service_tree_idle)) != NULL)
+ 		dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+ 
+ 	cfq_slice_expired(cfqd, 0);
+@@ -2044,14 +2070,26 @@ static void cfq_init_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	cfqq->pid = pid;
+ }
+ 
++static void cfq_link_cfqq_cfqg(struct cfq_queue *cfqq, struct cfq_group *cfqg)
++{
++	cfqq->cfqg = cfqg;
++}
 +
-+	mount -t cgroup -o blkio none /cgroup
++static struct cfq_group *cfq_get_cfqg(struct cfq_data *cfqd, int create)
++{
++	return &cfqd->root_group;
++}
 +
-+- Create two cgroups
-+	mkdir -p /cgroup/test1/ /cgroup/test2
+ static struct cfq_queue *
+ cfq_find_alloc_queue(struct cfq_data *cfqd, bool is_sync,
+ 		     struct io_context *ioc, gfp_t gfp_mask)
+ {
+ 	struct cfq_queue *cfqq, *new_cfqq = NULL;
+ 	struct cfq_io_context *cic;
++	struct cfq_group *cfqg;
+ 
+ retry:
++	cfqg = cfq_get_cfqg(cfqd, 1);
+ 	cic = cfq_cic_lookup(cfqd, ioc);
+ 	/* cic always exists here */
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+@@ -2082,6 +2120,7 @@ retry:
+ 		if (cfqq) {
+ 			cfq_init_cfqq(cfqd, cfqq, current->pid, is_sync);
+ 			cfq_init_prio_data(cfqq, ioc);
++			cfq_link_cfqq_cfqg(cfqq, cfqg);
+ 			cfq_log_cfqq(cfqd, cfqq, "alloced");
+ 		} else
+ 			cfqq = &cfqd->oom_cfqq;
+@@ -2914,15 +2953,19 @@ static void *cfq_init_queue(struct request_queue *q)
+ {
+ 	struct cfq_data *cfqd;
+ 	int i, j;
++	struct cfq_group *cfqg;
+ 
+ 	cfqd = kmalloc_node(sizeof(*cfqd), GFP_KERNEL | __GFP_ZERO, q->node);
+ 	if (!cfqd)
+ 		return NULL;
+ 
++	/* Init root group */
++	cfqg = &cfqd->root_group;
 +
-+- Set weights of group test1 and test2
-+	echo 1000 > /cgroup/test1/blkio.weight
-+	echo 500 > /cgroup/test2/blkio.weight
-+
-+- Create two same size files (say 512MB each) on same disk (file1, file2) and
-+  launch two dd threads in different cgroup to read those files.
-+
-+	sync
-+	echo 3 > /proc/sys/vm/drop_caches
-+
-+	dd if=/mnt/sdb/zerofile1 of=/dev/null &
-+	echo $! > /cgroup/test1/tasks
-+	cat /cgroup/test1/tasks
-+
-+	dd if=/mnt/sdb/zerofile2 of=/dev/null &
-+	echo $! > /cgroup/test2/tasks
-+	cat /cgroup/test2/tasks
-+
-+- At macro level, first dd should finish first. To get more precise data, keep
-+  on looking at (with the help of script), at blkio.disk_time and
-+  blkio.disk_sectors files of both test1 and test2 groups. This will tell how
-+  much disk time (in milli seconds), each group got and how many secotors each
-+  group dispatched to the disk. We provide fairness in terms of disk time, so
-+  ideally io.disk_time of cgroups should be in proportion to the weight.
-+
-+Various user visible config options
-+===================================
-+CONFIG_CFQ_GROUP_IOSCHED
-+	- Enables group scheduling in CFQ. Currently only 1 level of group
-+	  creation is allowed.
-+
-+CONFIG_DEBUG_CFQ_IOSCHED
-+	- Enables some debugging messages in blktrace. Also creates extra
-+	  cgroup file blkio.dequeue.
-+
-+Config options selected automatically
-+=====================================
-+These config options are not user visible and are selected/deselected
-+automatically based on IO scheduler configuration.
-+
-+CONFIG_BLK_CGROUP
-+	- Block IO controller. Selected by CONFIG_CFQ_GROUP_IOSCHED.
-+
-+CONFIG_DEBUG_BLK_CGROUP
-+	- Debug help. Selected by CONFIG_DEBUG_CFQ_IOSCHED.
-+
-+Details of cgroup files
-+=======================
-+- blkio.weight
-+	- Specifies per cgroup weight.
-+
-+	  Currently allowed range of weights is from 100 to 1000.
-+
-+- blkio.time
-+	- disk time allocated to cgroup per device in milliseconds. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the disk time allocated to group in
-+	  milliseconds.
-+
-+- blkio.sectors
-+	- number of sectors transferred to/from disk by the group. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the number of sectors transferred by the
-+	  group to/from the device.
-+
-+- blkio.dequeue
-+	- Debugging aid only enabled if CONFIG_DEBUG_CFQ_IOSCHED=y. This
-+	  gives the statistics about how many a times a group was dequeued
-+	  from service tree of the device. First two fields specify the major
-+	  and minor number of the device and third field specifies the number
-+	  of times a group was dequeued from a particular device.
+ 	for (i = 0; i < 2; ++i)
+ 		for (j = 0; j < 3; ++j)
+-			cfqd->service_trees[i][j] = CFQ_RB_ROOT;
+-	cfqd->service_tree_idle = CFQ_RB_ROOT;
++			cfqg->service_trees[i][j] = CFQ_RB_ROOT;
++	cfqg->service_tree_idle = CFQ_RB_ROOT;
+ 
+ 	/*
+ 	 * Not strictly needed (since RB_ROOT just clears the node and we
+@@ -2939,6 +2982,7 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	 */
+ 	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+ 	atomic_inc(&cfqd->oom_cfqq.ref);
++	cfq_link_cfqq_cfqg(&cfqd->oom_cfqq, &cfqd->root_group);
+ 
+ 	INIT_LIST_HEAD(&cfqd->cic_list);
+ 
 -- 
 1.6.2.5
 
