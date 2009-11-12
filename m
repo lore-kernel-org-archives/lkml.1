@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZKLSgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZKLTJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbZKLSgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZKLSgb
+	id S1753230AbZKLTJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 14:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZKLTJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:36:31 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:64277 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbZKLSga (ORCPT
+	Thu, 12 Nov 2009 14:09:18 -0500
+Received: from testure.choralone.org ([194.9.77.134]:56140 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbZKLTJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:36:30 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/dmEeYnNZO39dPpm0m2Puc
-Date: Thu, 12 Nov 2009 10:36:26 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+	Thu, 12 Nov 2009 14:09:17 -0500
+X-Greylist: delayed 1890 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Nov 2009 14:09:17 EST
+Date: Thu, 12 Nov 2009 13:37:18 -0500
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT PULL] omap-fixes for v2.6.32-rc6
-Message-ID: <20091112183626.GY24837@atomide.com>
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+Message-ID: <20091112183718.GA1925@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org
+References: <200911112134.34261.bzolnier@gmail.com> <20091112065930.GA9279@elte.hu> <4AFBB45A.9000606@zytor.com> <20091112081317.GB25345@elte.hu> <4AFC274C.2020209@zytor.com> <20091112175908.GB20542@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091112175908.GB20542@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, Nov 12, 2009 at 06:59:08PM +0100, Ingo Molnar wrote:
+ > > It's an ABI.  Keep it stable, please.
+ > 
+ > That's generally true, but i'm not suggesting that: i'm suggesting to 
+ > _clear_ the HT flag from the cpufeatures if there's only one sibling. 
+ > It's meaningless in that case and as the link quoted by the original 
+ > patch shows many people are confused by that.
+ > 
+ > I have such a box so i can test it. (but i dont expect any problems)
 
-Please pull omap fixes from:
+I agree that it's an ABI change, but any software depending on its current
+state has to implement a fallback for the case where 'ht' isn't present anyway
+unless there's some program that only runs on ht capable hardware, which
+sounds just crazy.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
+The only potential for breakage that I can see is that code that is tuned
+to be run in the HT case will stop running in cases where it shouldn't.
+Which sounds like a positive thing to me.
 
-Regards,
+	Dave
 
-Tony
-
-
-The following changes since commit b419148e567728f6af0c3b01965c1cc141e3e13a:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
-
-Grazvydas Ignotas (2):
-      omap3: pandora: Fix keypad keymap
-      omap3: update Pandora defconfig
-
-Janusz Krzysztofik (2):
-      omap: Fix omapfb/lcdc on OMAP1510 broken when PM set
-      omap1: Amstrad Delta defconfig fixes
-
-Jarkko Nikula (1):
-      omap3: beagle: Fix USB host port power control
-
-Mike Turquette (1):
-      omap3: Decrease cpufreq transition latency
-
-Sergio Aguirre (1):
-      omap3: 3430sdp: Enable Linux Regulator framework
-
-Tao Hu (1):
-      omap: Fix race condition in omap dma driver
-
-Tobias Klauser (1):
-      omap: Use resource_size
-
- arch/arm/configs/ams_delta_defconfig     |   24 +++++++---
- arch/arm/configs/omap3_pandora_defconfig |   49 +++++++++++++++++--
- arch/arm/configs/omap_3430sdp_defconfig  |    9 +++-
- arch/arm/mach-omap2/board-omap3beagle.c  |    2 +-
- arch/arm/mach-omap2/board-omap3pandora.c |   78 +++++++++++++++---------------
- arch/arm/mach-omap2/gpmc.c               |    2 +-
- arch/arm/mach-omap2/mailbox.c            |    2 +-
- arch/arm/plat-omap/cpu-omap.c            |    2 +-
- arch/arm/plat-omap/dma.c                 |   14 +++++
- 9 files changed, 126 insertions(+), 56 deletions(-)
+-- 
+http://www.codemonkey.org.uk
