@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZKLUyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZKLUzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZKLUyl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 15:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZKLUyk
+	id S1754265AbZKLUzE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 15:55:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZKLUy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 15:54:40 -0500
-Received: from www.tglx.de ([62.245.132.106]:38006 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbZKLUyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 15:54:40 -0500
-Date: Thu, 12 Nov 2009 21:53:15 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Tejun Heo <tj@kernel.org>
-cc: Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on
- resume
-In-Reply-To: <4AFC5F2E.9040709@kernel.org>
-Message-ID: <alpine.LFD.2.00.0911122152080.24119@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl> <alpine.LFD.2.01.0911091339290.31845@localhost.localdomain> <200911100119.38019.rjw@sisk.pl> <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain> <20091111171703.GA28506@redhat.com>
- <alpine.LFD.2.00.0911121821370.24119@localhost.localdomain> <4AFC5F2E.9040709@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 12 Nov 2009 15:54:59 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:16392 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753019AbZKLUy6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 15:54:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ylt8sG3TZHMY+ZbKVRw0B4YqqQOaVxJ6pzhFvqYDJi1j4gqn0uFvNipxSnm5I1yKhy
+         ykqOhPYpgADZaaF8Nw8PceX5FMLLRWjXukj3nSYQtjo5H9or3iIZnnEaVjDvOQx9CQR4
+         kalqpzb5EmXKYBWVY3Rpcnjf+/DUpez05HHto=
+Date: Thu, 12 Nov 2009 23:54:59 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Yinghai Lu <yinghai@kernel.org>, x86team <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86,io-apic: Do not map IO-APIC direct registers
+	twice
+Message-ID: <20091112205459.GC5728@lenovo>
+References: <20091112204852.GB5728@lenovo>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091112204852.GB5728@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Nov 2009, Tejun Heo wrote:
-> 11/13/2009 02:33 AM, Thomas Gleixner wrote:
-> > Subject: workqueue: Add debugobjects support
-> > From: Thomas Gleixner <tglx@linutronix.de>
-> > Date: Thu, 12 Nov 2009 16:25:34 +0100
-> > 
-> > Add debugobject support to track the life time of work_structs.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+On Thu, Nov 12, 2009 at 11:48:52PM +0300, Cyrill Gorcunov wrote:
+> Please review, I didn't manage to test (emulate actually since I don't
+> have such a hardware) it yet (going to do so this weekend).
 > 
-> This looks great.  I'm about to create a wq tree for concurrency
-> managed workqueue patches.  Do you mind if I route this patch through
-> there?
+> Meanwhile I would like to heard comments, complains and etc...
+> Perhaps I miss something obvious so don't hesitate to poke me.
+> 
+> 	-- Cyrill
+> ---
+> x86,io-apic: Do not map IO-APIC direct registers twice
+> 
+...
+I know that I've occasionally removed
 
-Not at all. That patch is barely tested and when you are anyway
-fooling around with the workqueue code it's the best place to go.
+	apic_printk(APIC_VERBOSE, "mapped IOAPIC
+		to %08lx (%08lx)\n",
 
-Thanks,
+already fixed in v2, just do not post updated version here.
 
-	tglx
+	-- Cyrill
