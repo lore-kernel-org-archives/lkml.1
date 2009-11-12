@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbZKLHJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbZKLHP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388AbZKLHJN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZKLHJN
+	id S1751429AbZKLHP7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZKLHP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:09:13 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:13806 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbZKLHJL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:09:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=hhL71Xc77slZJL7xlEhkXw/zspgoaP9TMrcZkHSNCC/RfJRoTeMajDDuqE7s3rvKRH
-         L1GLdfbzpAHknRK/uXR/ey433IR66H9Kws9zzkQyiWRbmG3J1Elrp4UnLftGWAVWgoH6
-         0ehjz6akvSJJnFvca1L8tDJOAT8hp5gWBVWgY=
-MIME-Version: 1.0
-In-Reply-To: <20091111215928.GA25154@redhat.com>
-References: <20091111215928.GA25154@redhat.com>
-Date: Thu, 12 Nov 2009 15:09:17 +0800
-Message-ID: <2375c9f90911112309xcf76517kb5976cb4b0394102@mail.gmail.com>
-Subject: Re: Fix argument order in memset call in ./drivers/media/common/ir-functions.c
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Dave Jones <davej@redhat.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       kraxel@bytesex.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Nov 2009 02:15:57 -0500
+Received: from mga11.intel.com ([192.55.52.93]:65035 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbZKLHP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:15:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
+   d="scan'208";a="746203334"
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+From: ykzhao <yakui.zhao@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <4AFB9B60.7010009@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
+	 <4AFA210B.3020207@kernel.org>
+	 <1257930767.31183.113.camel@localhost.localdomain>
+	 <4AFB0B02.4050306@kernel.org>
+	 <1257988632.31183.134.camel@localhost.localdomain>
+	 <4AFB7D21.6050004@kernel.org>
+	 <1257997072.3888.4.camel@localhost.localdomain>
+	 <4AFB9B60.7010009@kernel.org>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Thu, 12 Nov 2009 15:14:27 +0800
+Message-Id: <1258010067.3802.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 5:59 AM, Dave Jones <davej@redhat.com> wrote:
-> Size is the third argument, not the second.
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
+On Thu, 2009-11-12 at 13:21 +0800, Yinghai Lu wrote:
+> ykzhao wrote:
+> > On Thu, 2009-11-12 at 11:12 +0800, Yinghai Lu wrote:
+> >> ykzhao wrote:
+> >>> On Thu, 2009-11-12 at 03:05 +0800, Yinghai Lu wrote:
+> >>>> ykzhao wrote:
+> >>>>> On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
+> >>>>>> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+> >>>>>>
+> >>>>>> to get area is below 1M
+> >>>>>>
+> >>>>>> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+> >>>>> It seems that the function of find_e820_area is called in several
+> >>>>> places.
+> >>>>>    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
+> >>>>> bootmap_size, PAGE_SIZE);
+> >>>>>    
+> >>>>> If we also call it in the acpi_reserve_wakeup_memory, do we get the same
+> >>>>> base address as that obtained in initmem_init?
+> >>>> no. find_e820_area will check the reserve res array that could be updated by reserve_early.
+> >>> It will check the reserved region array when calling the function of
+> >>> find_e820_area. 
+> >>> But it seems that the array is not updated when the find_e820_area is
+> >>> called in the function of initmem_init.
+> >> right after that will use reserve_bootmem for those range in initmem_init.
+> > Yes. The reserve_bootmem is called for the range in initmem_init.
+> > But the reserved_early array is not updated.
+> 
+> it is not needed anymore because bootmem for that node is ready at that point, could use 
+> reserve_bootmem_node directly. and before that early_res_to_bootmem will convert that early resource that 
+> fall into that node range to bootmem reserved too.
+After the bootmem allocator is initialized, the early_res_to_bootmem
+will convert the resource in reserved_early array and reserve them in
+the bootmem. 
 
+In this patch the find_e820_area is used in the
+acpi_reserve_wakeup_memory, which is called after initializing the
+bootmem allocator.
+Can we still use the find_e820_area after the bootmem allocator is
+initialized? 
+It seems that the bootmem bitmap is also found by using the
+find_e820_area. But we don't update the reserved_early array any more.
+Maybe we will get the overlap address with the bootmem bitmap for the
+wakeup code.
 
-Definitely yes.
+thanks.
+> 
+> please check code setup_node_bootmem/early_node_mem/early_res_to_bootmem ...and reserve_bootmem_node...
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
+> YH
 
->
-> diff --git a/drivers/media/common/ir-functions.c b/drivers/media/common/ir-functions.c
-> index 655474b..abd4791 100644
-> --- a/drivers/media/common/ir-functions.c
-> +++ b/drivers/media/common/ir-functions.c
-> @@ -64,7 +64,7 @@ void ir_input_init(struct input_dev *dev, struct ir_input_state *ir,
->
->        ir->ir_type = ir_type;
->
-> -       memset(ir->ir_codes, sizeof(ir->ir_codes), 0);
-> +       memset(ir->ir_codes, 0, sizeof(ir->ir_codes));
->
->        /*
->         * FIXME: This is a temporary workaround to use the new IR tables
