@@ -1,149 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZKLXdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZKLXcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbZKLXdD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbZKLXdA
+	id S1755271AbZKLXcJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbZKLXcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:33:00 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55255 "EHLO smtps.tip.net.au"
+	Thu, 12 Nov 2009 18:32:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44328 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755034AbZKLXc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 18:32:59 -0500
-Date: Fri, 13 Nov 2009 10:32:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Joseph S. Myers" <joseph@codesourcery.com>, linux-api@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
-Message-Id: <20091113103257.1f4f6e12.sfr@canb.auug.org.au>
-In-Reply-To: <20091030162906.fbc1c40b.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
-	<1254691822.21044.9.camel@laptop>
-	<20091030161320.17d07dc9.sfr@canb.auug.org.au>
-	<20091030162906.fbc1c40b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755226AbZKLXcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:32:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: using highmem for atomic copy of lowmem was Re: [PATCHv2 2/5] vmscan: Kill hibernation specific reclaim logic and unify it
+Date: Fri, 13 Nov 2009 00:33:29 +0100
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       "linux-mm" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20091102000855.F404.A69D9226@jp.fujitsu.com> <200911032300.14790.rjw@sisk.pl> <20091112123339.GA1546@ucw.cz>
+In-Reply-To: <20091112123339.GA1546@ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911130033.29786.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-On Fri, 30 Oct 2009 16:29:06 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Fri, 30 Oct 2009 16:13:20 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > This is why we have F_LINUX_SPECIFIC_BASE and use it in
-> > include/linux/fcntl.h ... it should be used as a base for any new fcntl
-> > types since they don't require backward compatibility.
+On Thursday 12 November 2009, Pavel Machek wrote:
+> Hi!
 > 
-> Something like this (not even built, but pretty obvious):
-
-So I provide an alternative patch (which IMHO is a better one), I get no
-comments, and 2 weeks later the original is now in Linus' tree ...
-
-The new fcntl numbers that are being fixed here were only introduced
-after v2.6.31, so there is no ABI breakage by changing them.
-
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 30 Oct 2009 16:25:51 +1100
-> Subject: [PATCH] fcntl: use consistent valuse for F_SETOWN_EX/F_GETOWN_EX
+> > > >> (Disclaimer: I don't think about highmem a lot any more, and might have
+> > > >> forgotten some of the details, or swsusp's algorithms might have
+> > > >> changed. Rafael might need to correct some of this...)
+> > > >>
+> > > >> Imagine that you have a system with 1000 pages of lowmem and 5000 pages
+> > > >> of highmem. Of these, 950 lowmem pages are in use and 500 highmem pages
+> > > >> are in use.
+> > > >>
+> > > >> In order to to be able to save an image, we need to be able to do an
+> > > >> atomic copy of those lowmem pages.
+> > > >>
+> > > >> You might think that we could just copy everything into the spare
+> > > >> highmem pages, but we can't because mapping and unmapping the highmem
+> > > >> pages as we copy the data will leave us with an inconsistent copy.
+> > > > 
+> > > > This isn't the case any more for the mainline hibernate code.  We use highmem
+> > > > for storing image data as well as lowmem.
+> > > 
+> > > Highmem for storing copies of lowmem pages?
+> > 
+> > It is possible in theory, but I don't think it happens in practice given the
+> > way in which the memory is freed.  Still copy_data_page() takes this
+> > possibility into account.
 > 
-> This is what F_LINUX_SPECIFIC_BASE was meant for.
+> Yes, it does, but I wonder if it can ever work...?
 > 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/alpha/include/asm/fcntl.h  |    2 --
->  arch/parisc/include/asm/fcntl.h |    2 --
->  include/asm-generic/fcntl.h     |   14 --------------
->  include/linux/fcntl.h           |   12 ++++++++++++
->  4 files changed, 12 insertions(+), 18 deletions(-)
+> copy_data_page() takes great care not to modify any memory -- like
+> using handmade loop instead of memcpy() -- yet it uses kmap_atomic()
+> and friends.
 > 
-> diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
-> index e42823e..25da001 100644
-> --- a/arch/alpha/include/asm/fcntl.h
-> +++ b/arch/alpha/include/asm/fcntl.h
-> @@ -26,8 +26,6 @@
->  #define F_GETOWN	6	/*  for sockets. */
->  #define F_SETSIG	10	/*  for sockets. */
->  #define F_GETSIG	11	/*  for sockets. */
-> -#define F_SETOWN_EX	12
-> -#define F_GETOWN_EX	13
->  
->  /* for posix fcntl() and lockf() */
->  #define F_RDLCK		1
-> diff --git a/arch/parisc/include/asm/fcntl.h b/arch/parisc/include/asm/fcntl.h
-> index 5f39d55..1e1c824 100644
-> --- a/arch/parisc/include/asm/fcntl.h
-> +++ b/arch/parisc/include/asm/fcntl.h
-> @@ -28,8 +28,6 @@
->  #define F_SETOWN	12	/*  for sockets. */
->  #define F_SETSIG	13	/*  for sockets. */
->  #define F_GETSIG	14	/*  for sockets. */
-> -#define F_GETOWN_EX	15
-> -#define F_SETOWN_EX	16
->  
->  /* for posix fcntl() and lockf() */
->  #define F_RDLCK		01
-> diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-> index 0c3dd86..980d6b5 100644
-> --- a/include/asm-generic/fcntl.h
-> +++ b/include/asm-generic/fcntl.h
-> @@ -73,20 +73,6 @@
->  #define F_SETSIG	10	/* for sockets. */
->  #define F_GETSIG	11	/* for sockets. */
->  #endif
-> -#ifndef F_SETOWN_EX
-> -#define F_SETOWN_EX	12
-> -#define F_GETOWN_EX	13
-> -#endif
-> -
-> -#define F_OWNER_TID	0
-> -#define F_OWNER_PID	1
-> -#define F_OWNER_GID	2
-> -
-> -struct f_owner_ex {
-> -	int	type;
-> -	pid_t	pid;
-> -};
-> -
->  /* for F_[GET|SET]FL */
->  #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
->  
-> diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
-> index 8603740..b34c41d 100644
-> --- a/include/linux/fcntl.h
-> +++ b/include/linux/fcntl.h
-> @@ -40,6 +40,18 @@
->                                             unlinking file.  */
->  #define AT_SYMLINK_FOLLOW	0x400   /* Follow symbolic links.  */
->  
-> +#define F_SETOWN_EX	(F_LINUX_SPECIFIC_BASE + 7)
-> +#define F_GETOWN_EX	(F_LINUX_SPECIFIC_BASE + 8)
-> +
-> +#define F_OWNER_TID	0
-> +#define F_OWNER_PID	1
-> +#define F_OWNER_GID	2
-> +
-> +struct f_owner_ex {
-> +	int	type;
-> +	pid_t	pid;
-> +};
-> +
->  #ifdef __KERNEL__
->  
->  #ifndef force_o_largefile
+> If kmap_atomic()+kunmap_atomic() pair is guaranteed not to change any
+> memory, thats probably safe, but...
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+It only would be unsafe if the page being copied was changed at the same time,
+but the code is designed to avoid that.
+
+Thanks,
+Rafael
