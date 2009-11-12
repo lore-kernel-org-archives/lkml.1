@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbZKLPSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZKLPTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246AbZKLPSY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 10:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZKLPSV
+	id S1753254AbZKLPTK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 10:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZKLPTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 10:18:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52312 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753024AbZKLPSV (ORCPT
+	Thu, 12 Nov 2009 10:19:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53914 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151AbZKLPTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 10:18:21 -0500
-Date: Thu, 12 Nov 2009 07:17:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Tejun Heo <tj@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
-In-Reply-To: <4AFBEA4B.4070100@kernel.org>
-Message-ID: <alpine.LFD.2.01.0911120714260.31845@localhost.localdomain>
-References: <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu> <4AF9C402.9040800@kernel.org> <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain> <4AFA35CB.5030801@kernel.org>
- <20091111113147.GB7487@elte.hu> <4AFAAC32.4020104@kernel.org> <20091111195751.GA13574@elte.hu> <4AFBDF43.3010703@kernel.org> <20091112103639.GB24684@elte.hu> <4AFBEA4B.4070100@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 12 Nov 2009 10:19:04 -0500
+Message-ID: <4AFC274C.2020209@zytor.com>
+Date: Thu, 12 Nov 2009 07:18:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+References: <200911112134.34261.bzolnier@gmail.com> <20091112065930.GA9279@elte.hu> <4AFBB45A.9000606@zytor.com> <20091112081317.GB25345@elte.hu>
+In-Reply-To: <20091112081317.GB25345@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 12 Nov 2009, Tejun Heo wrote:
+On 11/12/2009 12:13 AM, Ingo Molnar wrote:
+>>
+>> /proc/cpuinfo is a user-space visible ABI.  Changing it is bad 
+>> chicken.
 > 
-> 11/12/2009 07:36 PM, Ingo Molnar wrote:
-> > 
-> > Breaking strings mid-sentence is something we try not to do. (If you 
-> > know about places that do it 'quite often' then those places need fixing 
-> > too.)
+> Almost ... something is only an ABI if an actual application relies on 
+> the 'ht' flag being there on non-hyperthreading CPUs. We dont know 
+> whether there's any, but the likelyhood looks pretty low. Could park it 
+> a branch for some time to see whether anything trips up.
 > 
-> Oh... I do that all the time and I see a lot of them around too.
 
-I hate them. I do greps for error messages, and it's annoying as hell if 
-it's hard to find.
+No, please.  We have had people who have "helpfully" tried to change
+/proc/cpuinfo in the past, and what we find is that application
+developers don't tell us -- they grumble among themselves and put out a
+new release saying "fixes breakage introduced by Linux ..."
 
-'checkpatch' is the major reason for them, but I think we've fixed 
-checkpath long ago to not warn about long lines if they are due to a long 
-string.
+It's an ABI.  Keep it stable, please.
 
-Strings should basically be broken up only at '\n' characters, so
+	-hpa
 
-	printk("This is a made-up example.\n"
-		"Ok like this\n");
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-is fine, because you can expect to grep for "made-up example", but not 
-over the newline.
-
-				Linus
