@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZKLH3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZKLQzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528AbZKLH3F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:29:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZKLH3F
+	id S1753503AbZKLQzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 11:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZKLQzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:29:05 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:10115 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbZKLH3D (ORCPT
+	Thu, 12 Nov 2009 11:55:20 -0500
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:54497 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbZKLQzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:29:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=cXkjPZp5zZUdoK6mAmGlqCC5G8/QJ1fNmjf8Vt/DA5bm7KEig9YWQiXuvkJbTwvcDn
-         8ppJ8wWGt+cgq5f2yuBhPAgw5n7aGFFW9obj40RhWNWFnEn/WK5k4drSmGNJs11izqTj
-         LUxEdznoAPPA7p/Oqz2bvI2yzS9SX9wnPROAI=
+	Thu, 12 Nov 2009 11:55:14 -0500
+X-Greylist: delayed 1549 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Nov 2009 11:55:14 EST
+Date: Thu, 12 Nov 2009 08:36:17 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+Message-ID: <20091112073616.GA11365@elf.ucw.cz>
+References: <4AF7D820.5040503@kernel.org>
+ <200911091315.13151.rjw@sisk.pl>
+ <4AFA210B.3020207@kernel.org>
 MIME-Version: 1.0
-Date: Thu, 12 Nov 2009 08:29:06 +0100
-Message-ID: <195c7a900911112329v7df8e718s5c0a5babdea39b99@mail.gmail.com>
-Subject: warn on lookup_one_length/vfs_quota_on_mount
-From: Bastien ROUCARIES <roucaries.bastien@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFA210B.3020207@kernel.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear developer,
+On Tue 2009-11-10 18:27:23, Yinghai Lu wrote:
+> 
+> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+> 
+> to get area is below 1M
 
-I get the following warm on my reiserfs disk with quota enabled at
-boot (each boot) see
-http://www.kerneloops.org/raw.php?rawid=937752&msgid=
-*lookup_one_len
-? lookup_one_len
-? lookup_one_len
-? warn_slowpath_common
-? lookup_one_len
-? vfs_quota_on_mount
-? finish_unfinished
-? reiserfs_remount
-? __filemap_fdatawrite_range
-? do_remount_sb
-? do_mount
-? sys_mount
-? system_call_fastpath
+Does it fix anything? I can't tell from the changelog...
 
-But it seems a generic bug in the quota layer due to:
-http://www.kerneloops.org/oops.php?number=799645
-http://www.kerneloops.org/oops.php?number=700122
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Thank you
+Please CC me on suspend patches.
+>  /*
+>   * Check if the CPU can handle C2 and deeper
+> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
+> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
+> @@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
+>  
+>  
+>  /**
+> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
+> + * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
+>   *
+>   * We allocate a page from the first 1MB of memory for the wakeup
+>   * routine for when we come back from a sleep state. The
+>   * runtime allocator allows specification of <16MB pages, but not
+>   * <1MB pages.
+>   */
+> -void __init acpi_reserve_bootmem(void)
+> +void __init acpi_reserve_wakeup_memory(void)
+>  {
+> +	unsigned long mem;
+> +
+>  	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
+>  		printk(KERN_ERR
+>  		       "ACPI: Wakeup code way too big, S3 disabled.\n");
+>  		return;
+>  	}
+>  
+> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
+> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
+>  
+> -	if (!acpi_realmode) {
+> +	if (mem == -1L) {
+>  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
+>  		return;
+>  	}
 
-Bastien
+How is it better then old code?
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
