@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZKLWBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbZKLWDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZKLWBh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 17:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbZKLWBb
+	id S1754581AbZKLWDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 17:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbZKLWD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 17:01:31 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:23900 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZKLWBa (ORCPT
+	Thu, 12 Nov 2009 17:03:28 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:53930 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbZKLWD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 17:01:30 -0500
-Date: Thu, 12 Nov 2009 17:00:05 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/7] Reduce GFP_ATOMIC allocation failures, candidate
- fix V3
-Message-ID: <20091112220005.GD2811@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Mel Gorman <mel@csn.ul.ie>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-	Sven Geggus <lists@fuchsschwanzdomain.de>,
-	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-	Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Rik van Riel <riel@redhat.com>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	Stephan von Krawczynski <skraw@ithnet.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie>
- <20091112202748.GC2811@think>
+	Thu, 12 Nov 2009 17:03:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=lf+6jytEDIcpP4n7oWdJ4b0O+UBIkSuuGGEHUIM8NvgB83sr/QVK1yWMXtUvwrzJ8l
+         1nGhPHUUStGl2ZNceRZQkbbhf8em6CdfUBCot40jIT6BbiZfy3xOYuoX0/UFzp3Ab6fV
+         bF679/iPT7nDogW6EgBDg0rTjehTpbVe5SYiI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091112202748.GC2811@think>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AFC8572.0089:SCFMA4539814,ss=1,fgs=0
+From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date: Thu, 12 Nov 2009 20:03:11 -0200
+Message-ID: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
+Subject: perf stat output
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 03:27:48PM -0500, Chris Mason wrote:
-> On Thu, Nov 12, 2009 at 07:30:06PM +0000, Mel Gorman wrote:
-> > Sorry for the long delay in posting another version. Testing is extremely
-> > time-consuming and I wasn't getting to work on this as much as I'd have liked.
-> > 
-> > Changelog since V2
-> >   o Dropped the kswapd-quickly-notice-high-order patch. In more detailed
-> >     testing, it made latencies even worse as kswapd slept more on high-order
-> >     congestion causing order-0 direct reclaims.
-> >   o Added changes to how congestion_wait() works
-> >   o Added a number of new patches altering the behaviour of reclaim
-> > 
-> > Since 2.6.31-rc1, there have been an increasing number of GFP_ATOMIC
-> > failures. A significant number of these have been high-order GFP_ATOMIC
-> > failures and while they are generally brushed away, there has been a large
-> > increase in them recently and there are a number of possible areas the
-> > problem could be in - core vm, page writeback and a specific driver. The
-> > bugs affected by this that I am aware of are;
-> 
-> Thanks for all the time you've spent on this one.  Let me start with
-> some more questions about the workload ;)
-> 
-> So the workload is gitk reading a git repo and a program reading data
-> over the network.  Which part of the workload writes to disk?
+Hi all!
 
-Sorry for the self reply, I started digging through your data (man,
-that's a lot of data ;).  I took another tour through dm-crypt and
-things make more sense now.
+Some questions about perf stat output. See example:
 
-dm-crypt has two different single threaded workqueues for each dm-crypt
-device.  The first one is meant to deal with the actual encryption and
-decryption, and the second one is meant to do the IO.
 
-So the path for a write looks something like this:
+lucas@LMS-linux:~/programming/testprograms> perf stat -e
+L1-dcache-loads -e L1-dcache-load-misses -- make -j
+gcc test_schedchanges.c -o test_schedchanges
+gcc -pthread test_taskaff1.c -o test_taskaff1
+gcc -pthread test_taskaff2.c -o test_taskaff2
+gcc -pthread test_taskaff3.c -o test_taskaff3
 
-filesystem -> crypt thread -> encrypt the data -> io thread -> disk
+ Performance counter stats for 'make -j':
 
-And the path for read looks something like this:
+       161384667  L1-dcache-loads          #      0.000 M/sec
+              24853791  L1-dcache-load-misses    #      0.000 M/sec
 
-filesystem -> io thread -> disk -> crypt thread -> decrypt data -> FS
+	          0.066893389  seconds time elapsed
 
-One thread does encryption and one thread does IO, and these threads are
-shared for reads and writes.  The end result is that all of the sync
-reads get stuck behind any async write congestion and all of the async
-writes get stuck behind any sync read congestion.
+Why do we have both L1-dcache-loads and  L1-dcache-load-misses with
+0.000 M/sec? Also, why do we have 0 M/s when running "perf stat -a -e
+cache-misses -e cache-references" but values different than 0 when
+running "perf stat -a" without selecting the events?
 
-It's almost like you need to check for both sync and async congestion
-before you have any hopes of a new IO making progress.
+The last question: what does the  "scaled from X%" mean? Is it related
+to the maximum number of performance registers a processor can count
+at a time?
 
-The confusing part is that dm hasn't gotten any worse in this regard
-since 2.6.30 but the workload here is generating more sync reads
-(hopefully from gitk and swapin) than async writes (from the low
-bandwidth rsync).  So in general if you were to change mm/*.c wait
-for sync congestion instead of async, things should appear better.
 
-The punch line is that the btrfs guy thinks we can solve all of this with
-just one more thread.  If we change dm-crypt to have a thread dedicated
-to sync IO and a thread dedicated to async IO the system should smooth
-out.
+Thanks
 
--chris
-
+Lucas De Marchi
