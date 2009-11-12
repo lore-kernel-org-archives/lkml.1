@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZKLVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZKLVQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZKLVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZKLVOU
+	id S1754556AbZKLVQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZKLVQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:14:20 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:43044 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754518AbZKLVOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:14:19 -0500
-Message-ID: <4AFC7AAC.2040607@sgi.com>
-Date: Thu, 12 Nov 2009 13:14:20 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 12 Nov 2009 16:16:48 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:54152 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbZKLVQr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 16:16:47 -0500
+Date: Thu, 12 Nov 2009 22:16:37 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
+       rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Nicholas Mc Guire <der.herr@hofr.at>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
+	for MIPS
+Message-ID: <20091112211637.GA27465@linux-mips.org>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com> <4AF8B31C.5030802@caviumnetworks.com> <1257814817.2822.3.camel@falcon.domain.org> <4AF99848.9090000@caviumnetworks.com> <1257907351.2922.37.camel@falcon.domain.org> <20091111031325.GA20716@linux-mips.org> <alpine.LFD.2.00.0911111327450.10184@eddie.linux-mips.org>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-References: <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box> <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com> <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com> <20091110213312.GE23196@elte.hu> <alpine.DEB.2.00.0911121250140.9544@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0911121250140.9544@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911111327450.10184@eddie.linux-mips.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 11, 2009 at 01:30:40PM +0000, Maciej W. Rozycki wrote:
 
-
-David Rientjes wrote:
-> On Tue, 10 Nov 2009, Ingo Molnar wrote:
 > 
->> I'm waiting for Mike to test them (and other patches) and send a new 
->> series out with bits to pick up.
->>
+> On Wed, 11 Nov 2009, Ralf Baechle wrote:
 > 
-> Mike posted his series today without including my patch, so I've replied 
-> to it.
-
-Sorry, I wasn't aware I should have.
+> > 64-bit with -mlong-call:
+> > 
+> > 	lui	$25, %highest(foo)
+> > 	lui	$2, %hi(foo)
+> > 	daddiu	$25, %higher(foo)
+> > 	daddiu	$2, %lo(foo)
+> > 	dsll	$25, 32
+> > 	daddu	$25, $2
+> > 	jalr	$25
 > 
->> But i really dont like such type of buffering - in the past they tended 
->> to be problematic.
-> 
-> I'm not sure that I'd call it buffering when iterating through all apic 
-> id's and setting appropriate bits in a bitmap when they map to a node id.  
-> It's apparently not been problematic either on my machines, Mike's 
-> machines, or his merge with ACPI 4.0 code.  I think the code is pretty 
-> straight forward.
-> 
->> Why print this info at all in the default bootup?  
->> It's not needed on a correctly functioning system.
->>
-> 
-> We have no other export of the apic id to to node mappings in the kernel.  
-> We already show each pxm's address range, each node's address range, and 
-> the pxm to node map.  The only other way to map apic ids to nodes is by 
-> looking for the lines "CPU 0/0 -> Node 0," which I believe are being 
-> removed.
+>  Don't we use -msym32 these days for this very reason?
 
-The bootup messages in my patch 1/7 list nodes and their processors as each
-boots.  And this is easily found under /sysfs.
+We do - where we can.  Not all systems can use -msym32.
 
-Also, I think in general that all the apic messages, unless they represent
-"system boot progress" should be displayed only when asked for, like with
-apic=debug or verbose?   Something more like:
-
-BIOS-provided physical RAM map processed.
-EFI: memory allocated.
-SRAT: table interpreted.
-Bootmem setups complete.
-ACPI: APIC's enabled.
-PM: Registered all nosave memory.
-
-Removing the above tables remove about 3400 lines of console output on a 1k
-thread machine.  There are 20,000+ lines of output before you get to the
-login prompt (even with the removal of cpu bootup messages).
-
-But you are right, the apic info should be available via /sysfs or /procfs.
-
-The next BIG output is from devices.  Listing all the pci busses available
-is an overkill as that info is also readily available when the system is
-running.
+  Ralf
