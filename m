@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZKLVle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZKLVtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZKLVle (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZKLVl3
+	id S1754595AbZKLVtj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbZKLVtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:41:29 -0500
-Received: from tundra.namei.org ([65.99.196.166]:56688 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbZKLVl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:41:28 -0500
-Date: Fri, 13 Nov 2009 08:41:26 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Julia Lawall <julia@diku.dk>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-In-Reply-To: <4AFC3620.2020809@schaufler-ca.com>
-Message-ID: <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 12 Nov 2009 16:49:33 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:57708 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbZKLVtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 16:49:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NwBzXkGyDi+qZsw8S/bHamlVzfVO/LGoRiuq+S/kyWbVs/ti2r6Z3FhPiyvsMlpSyb
+         wWGuTt6StUW0Rtc+I4sS8h1n3dgdNvit7/THj/pJhSxlMdDpFArfq3tWPYxbbiz7kdPd
+         SIWp7EvEylSWr5DzS15YKQzRZ1l3KSFoeYocI=
+Message-ID: <4AFC8285.2040804@gmail.com>
+Date: Thu, 12 Nov 2009 22:47:49 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Caleb Cushing <xenoterracide@gmail.com>
+CC: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: large packet loss take2 2.6.31.x
+References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>	 <20091112113836.GA7963@ff.dom.local> <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com> <4AFC5C58.9030207@gmail.com>
+In-Reply-To: <4AFC5C58.9030207@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009, Casey Schaufler wrote:
+Jarek Poplawski wrote, On 11/12/2009 08:04 PM:
 
-> I strongly suggest that this is not what is wanted.
->     strcmp(x,y)
-> and
->     strncmp(x,y,sizeof(y))
-> 
-> are functionally equivalent and strcmp has a bad reputation in
-> the security community because it is associated with potential
-> buffer overrun issues.
+> Caleb Cushing wrote, On 11/12/2009 02:46 PM:
+...
+>>> Btw, you didn't send the stats you compared, and your wireshark dump
+>>> doesn't show anything wrong either.
 
-Do you see potential for a buffer overrun in this case?
+...
 
-The strings being compared are "sysfs" and the name field of 'struct 
-file_system_type'.  The kernel code elsewhere assumes the latter string to 
-be a valid zero-terminated string, and we should, too.
+>> I didn't see that sorry. I wasn't sure if the dump would or not (I'm
+>> not a networking expert, just know more than the average joe).
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+Hmm... I didn't see that either, sorry! After re-checking I can see
+unanswered requests in this dump. Anyway, the main thing to test now is
+the first hop to 192.168.1.1 (some info about it?), as I wrote before.
+
+Jarek P.
