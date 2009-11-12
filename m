@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZKLR5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbZKLR7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbZKLR5q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZKLR5o
+	id S1753886AbZKLR7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZKLR7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:57:44 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34178 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753642AbZKLR5o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:57:44 -0500
-Message-Id: <1258048669.20754.1344916801@webmail.messagingengine.com>
-X-Sasl-Enc: 63ImrenbeZJTP1d4go7N4EJnlXw0YNC04s6TkuZP+6Es 1258048669
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "Andi Kleen" <andi@firstfloor.org>,
-       "Robert Hancock" <hancockrwd@gmail.com>,
-       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+	Thu, 12 Nov 2009 12:59:21 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47779 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753668AbZKLR7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 12:59:20 -0500
+Date: Thu, 12 Nov 2009 18:59:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+Message-ID: <20091112175908.GB20542@elte.hu>
+References: <200911112134.34261.bzolnier@gmail.com>
+ <20091112065930.GA9279@elte.hu>
+ <4AFBB45A.9000606@zytor.com>
+ <20091112081317.GB25345@elte.hu>
+ <4AFC274C.2020209@zytor.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
-References: <4AFACC03.7080209@mayc.ru><4AFB2822.30906@gmail.com><20091112021209.GA21625@khazad-dum.debian.net><878web7kwf.fsf@basil.nowhere.org><1258047454.16197.1344913359@webmail.messagingengine.com>
- <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
-Subject: Re: Reading /dev/mem by dd
-Date: Thu, 12 Nov 2009 15:57:49 -0200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFC274C.2020209@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009 17:49 +0000, "Alan Cox" <alan@lxorguk.ukuu.org.uk> wrote:
-> > In this case, the problem seems to be access over /dev/mem to stuff the
-> > kernel is already taking care of.  Certainly "as safe as possible" does
-> 
-> Which is often what is desired - eg debugging driver stuff.
-> 
-> > not have to mean making /dev/mem useless for whatever good uses it has.
-> 
-> It does. Plain and simple.
 
-Is that the only valid use of /dev/mem, or even its main use?
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> On 11/12/2009 12:13 AM, Ingo Molnar wrote:
+> >>
+> >> /proc/cpuinfo is a user-space visible ABI.  Changing it is bad 
+> >> chicken.
+> > 
+> > Almost ... something is only an ABI if an actual application relies on 
+> > the 'ht' flag being there on non-hyperthreading CPUs. We dont know 
+> > whether there's any, but the likelyhood looks pretty low. Could park it 
+> > a branch for some time to see whether anything trips up.
+> > 
+> 
+> No, please.  We have had people who have "helpfully" tried to change 
+> /proc/cpuinfo in the past, and what we find is that application 
+> developers don't tell us -- they grumble among themselves and put out 
+> a new release saying "fixes breakage introduced by Linux ..."
+> 
+> It's an ABI.  Keep it stable, please.
 
+That's generally true, but i'm not suggesting that: i'm suggesting to 
+_clear_ the HT flag from the cpufeatures if there's only one sibling. 
+It's meaningless in that case and as the link quoted by the original 
+patch shows many people are confused by that.
+
+I have such a box so i can test it. (but i dont expect any problems)
+
+	Ingo
