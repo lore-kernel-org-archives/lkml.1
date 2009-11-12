@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbZKLA2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbZKLAaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759790AbZKLA2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 19:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbZKLA2S
+	id S1759780AbZKLAaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 19:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759743AbZKLAau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 19:28:18 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:43907 "EHLO
+	Wed, 11 Nov 2009 19:30:50 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:38617 "EHLO
 	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759619AbZKLA2R (ORCPT
+	with ESMTP id S1759739AbZKLAau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 19:28:17 -0500
+	Wed, 11 Nov 2009 19:30:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type;
-        b=WC5P3Fo/JuvgtIWuqXk7agFV18rvsDf/PQpuOThnYVB7lMISibYsmGr/Ph6JmZewkG
-         yRi2xpjIMNMoD5VvOLBpBml2CbPFQX8SpnYSz9XfwO8jhrkYqkFQ0gR4P7Lhtn/gBaOB
-         ljYnglpml5c9Gft0pd0D3cq6hm3jV1gOB/eVA=
+        b=xup15dZKa/aEukDUgaaSYulGTmK1HoXBFz5iqADhfG66XRlAVvuJOF1MsEiHtQ5hIg
+         a5nRx2umv0vJTNmtbuvqsgMd6PnLj/4ZEmXVmwn5Eky12UKl3hrIIVOfbCyTqGfv26zx
+         fEZdevy1xcNppqUNwNBqScyVIpT06t2H36Lic=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0910200047200.8582@wotan.suse.de>
+In-Reply-To: <alpine.LSU.2.00.0911041427400.9988@wotan.suse.de>
 References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
-	 <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>
-	 <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>
-	 <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com>
-	 <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>
-	 <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>
-	 <alpine.LSU.2.00.0910191716580.8582@wotan.suse.de>
-	 <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>
-	 <alpine.LSU.2.00.0910200047200.8582@wotan.suse.de>
-Date: Thu, 12 Nov 2009 02:28:23 +0200
-Message-ID: <94a0d4530911111628p3edad1a0me3bb9f312491c637@mail.gmail.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
+	 <1255906474-25091-5-git-send-email-felipe.contreras@gmail.com>
+	 <alpine.LSU.2.00.0911041427400.9988@wotan.suse.de>
+Date: Thu, 12 Nov 2009 02:30:55 +0200
+Message-ID: <94a0d4530911111630x7dfb0c5erbbbfa54e4a385d42@mail.gmail.com>
+Subject: Re: [PATCH 4/7] acpi: processor: fix section mismatch
 From: Felipe Contreras <felipe.contreras@gmail.com>
 To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Myron Stowe <myron.stowe@hp.com>,
+       linux-acpi@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 20, 2009 at 12:50 AM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Mon, 19 Oct 2009, Felipe Contreras wrote:
->> Yes, but it's used by ipcctl_pre_down, which from what I can see is
->> only using those arguments when cmd == IPC_SET, so everything is ok.
->> But still, I don't think the compiler _should_ know what
->> ipcctl_pre_down is going to do, if you look _only_ at msgctl_down,
->> then uninitialized_var is OK.
->
-> Well at least older compilers were able to see this, only 4.4 seems to be
-> warning here ... I have applied the patch for now, but I am really not
-> fully convinced about it yet, we should probably report it to gcc folks
-> anyway.
+On Wed, Nov 4, 2009 at 3:28 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> I don't see this patch in today's linux-next ... ACPI guys, are you going
+> to merge it?
 
-I have in my to-do list to report this to the gcc guys, but in the
-meantime I don't see this patch applied.
+How critical are these section mismatch issues? Should this go into 2.6.32?
 
 -- 
 Felipe Contreras
