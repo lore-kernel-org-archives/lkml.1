@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbZKLRO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZKLRTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbZKLRO0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbZKLROY
+	id S1753478AbZKLRTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZKLRTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:14:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28370 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753314AbZKLROX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:14:23 -0500
-Date: Thu, 12 Nov 2009 12:13:56 -0500
-From: Dave Jones <davej@redhat.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Zhao Yakui <yakui.zhao@intel.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: manual merge of the cpufreq tree with the acpi tree
-Message-ID: <20091112171356.GC2447@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Thomas Renninger <trenn@suse.de>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Zhao Yakui <yakui.zhao@intel.com>,
-	Len Brown <lenb@kernel.org>
-References: <20091112134524.d9854379.sfr@canb.auug.org.au>
- <200911120615.38067.trenn@suse.de>
+	Thu, 12 Nov 2009 12:19:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36692 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752280AbZKLRTP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 12:19:15 -0500
+Date: Thu, 12 Nov 2009 09:18:40 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andres Baldrich <andresbaldrich@ymail.com>
+cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+In-Reply-To: <661913.35266.qm@web113707.mail.gq1.yahoo.com>
+Message-ID: <alpine.LFD.2.01.0911120912160.31845@localhost.localdomain>
+References: <661913.35266.qm@web113707.mail.gq1.yahoo.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911120615.38067.trenn@suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 06:15:37AM -0600, Thomas Renninger wrote:
- 
- > > evaluation status to the platform") from the acpi tree and commit
- > > b02d803d0fa3a395ba32bc5e5e3e7a3385ca7237 ("[CPUFREQ] Introduce bios_limit
- > > per cpu cpufreq sysfs interface") from the cpufreq tree.
- > First, thanks everybody for picking this up.
- 
-np, apologies for the delay.
 
- > > By the way, Dave, Thomas, shouldn't the second version of
- > > acpi_processor_get_bios_limit() in include/acpi/processor.h introduced by
- > > the above cpufreq tree patch be "static inline"?
- > Yes, good catch.
- > Shall I send an on top fix somewhere?
 
-Yeah, an incremental will be fine. I'll fold it into the original.
+On Thu, 12 Nov 2009, Andres Baldrich wrote:
+> 
+> (Kernel)/Documentation/CodingStyle
+> line 83:
 
-thanks,
+A lot of people have added code to CodingStyle. That doesn't make it 
+final. For example, that 80-column thing never existed in my original 
+coding style, for a reason.
 
-	Dave
+I'm really inclined to just remove the stupid thing entirely both from 
+coding-style and from checkpatch.
 
+80 columns do not matter. What matters is:
+ - indentation
+ - complex expressions and statements
+
+and those two issues _together_ means that 80+ columns should be damn 
+rare, but the 80 columns itself is not at all that important.
+
+Much more important than 80 columns should be the general guideline that a 
+"terminal window" may be as small as 80x24. But notice how 80 is just a 
+small part of that limitation - the 24 is as important as the 80. We have 
+a guideline that functions should fit on a screenful or two, ie we should 
+generally aim for functions to be <50 lines long.
+
+And the 80-column thing is EXACTLY THE SAME THING. We should remember that 
+people may read the code using a roughly 80x24 screen size, but the same 
+way that nobody sane thinks that "24" is some hard limit on number of 
+lines, why do people suddenly think that "80" is a hard limit on the 
+number of columns?
+
+		Linus
