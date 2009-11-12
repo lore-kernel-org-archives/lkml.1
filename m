@@ -1,46 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbZKLF0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZKLF0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbZKLF0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 00:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZKLF0s
+	id S1752731AbZKLF0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 00:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZKLF0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 00:26:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37976 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbZKLF0q (ORCPT
+	Thu, 12 Nov 2009 00:26:40 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:39392 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZKLF0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 00:26:46 -0500
-Message-ID: <4AFB9C8D.9000800@zytor.com>
-Date: Wed, 11 Nov 2009 21:26:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 12 Nov 2009 00:26:38 -0500
 MIME-Version: 1.0
-To: "Ma, Ling" <ling.ma@intel.com>
-CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast 	string.
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>	 <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>	 <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>	 <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>	 <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>	 <20091111203425.GA25401@lenovo> <4AFB3D31.6070901@zytor.com> <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com> <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
-In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <878weco4r9.fsf@openvz.org>
+References: <bd36f99e0911110118v6dc7f87ao98968ba234fad7fc@mail.gmail.com>
+	 <4AFA835B.9000904@garzik.org>
+	 <bd36f99e0911110412hf2c7920gf06bd29ed43e240c@mail.gmail.com>
+	 <bd36f99e0911111309ie8166a9h8f926948bf15d350@mail.gmail.com>
+	 <4AFB2F2A.7080900@garzik.org>
+	 <bd36f99e0911111419w55346c8ct18b57c787401b8b7@mail.gmail.com>
+	 <878weco4r9.fsf@openvz.org>
+Date: Thu, 12 Nov 2009 00:26:44 -0500
+Message-ID: <bd36f99e0911112126j6e1fcfc9j283c4233e6550181@mail.gmail.com>
+Subject: Re: Crash during SATA reads
+From: Glenn Maynard <glenn@zewt.org>
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2009 08:49 PM, Ma, Ling wrote:
-> Hi All
-> The attachment is latest memcpy.c, please update by 
-> "cc -o memcpy memcpy.c -O2 -m64".
+On Wed, Nov 11, 2009 at 9:28 PM, Dmitry Monakhov <dmonakhov@openvz.org> wrote:
+> Seems what you have use-after-free here.
+> You probably have to add some debug info in to bio->end_io method
+> May be something like this.
 
-OK... given that there seems to be no point since the actual code we're
-talking about modifying doesn't ever actually get executed on the real
-kernel, we can just drop this, right?
+That's what it looks like, but won't these checks trigger on the use
+(and give the same trace), when we need to know where the free is
+happening?  The problem is manifesting in several places (bogus or
+NULL bh->b_end_io in end_bio_bh_io_sync(); bh->b_this_page == NULL--I
+think, havn't reproduced that again to confirm--in
+block_invalidatepage()).  I'm not sure how to figure out where the
+free might be happening; it's tricky enough in userspace with Valgrind
+available.
 
-	-hpa
+I tried logging alloc_buffer_head and free_buffer_head, but it was too
+much output (if it's not masking the problem entirely by changing the
+timing too much, it would take ages to repro).
+
+I just repro'd it (took several hours this time), on the
+BUG_ON(!bh->b_page); assertion.  This one happened while doing a
+partition copy (/dev/sdb2) rather than /dev/sdb.  Trace follows
+(though I doubt it offers any new information).  Hopefully somebody
+has an idea of where to look next...
+
+
+kernel BUG at fs/buffer.c:2934!
+invalid opcode: 0000 [#1] PREEMPT
+last sysfs file:
+/sys/devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/model
+Modules linked in: netconsole atl1c rtc
+
+Pid: 0, comm: swapper Not tainted (2.6.31.6 #16) G31M-ES2L
+EIP: 0060:[<c107cce3>] EFLAGS: 00010282 CPU: 0
+EIP is at end_bio_bh_io_sync+0x20/0x63
+EAX: c1ae78c0 EBX: c107cce3 ECX: c1ae78c0 EDX: 00000000
+ESI: c1ae78c0 EDI: d9e5c450 EBP: c1351eac ESP: c1351e74
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process swapper (pid: 0, ti=c1350000 task=c1356260 task.ti=c1350000)
+Stack:
+ c107e5b5 00000400 c1158828 00000000 df8a62c0 df8ef5a4 00000000 00000000
+<0> 00012c00 0000d400 00000000 d9e5c450 00000000 d9e5c450 df8ef168 c11589a2
+<0> df8a6500 00000000 c1158a59 00000000 df8a6500 00000000 d9e5c450 c1158ac8
+Call Trace:
+ [<c107e5b5>] ? bio_endio+0x24/0x26
+ [<c1158828>] ? blk_update_request+0xdf/0x24e
+ [<c11589a2>] ? blk_update_bidi_request+0xb/0x41
+ [<c1158a59>] ? blk_end_bidi_request+0x10/0x4f
+ [<c1158ac8>] ? blk_end_request+0x7/0xc
+ [<c11abd12>] ? scsi_end_request+0x17/0x69
+ [<c11ac023>] ? scsi_io_completion+0x173/0x335
+ [<c11a8390>] ? scsi_finish_command+0x70/0x86
+ [<c11ac706>] ? scsi_softirq_done+0xd7/0xdc
+ [<c115b45d>] ? blk_done_softirq+0x51/0x5d
+ [<c101bde0>] ? __do_softirq+0x5f/0xc8
+ [<c101be6b>] ? do_softirq+0x22/0x26
+ [<c101becd>] ? irq_exit+0x29/0x34
+ [<c1004097>] ? do_IRQ+0x53/0x63
+ [<c1002ea9>] ? common_interrupt+0x29/0x30
+ [<c100716e>] ? mwait_idle+0x3c/0x44
+ [<c1001423>] ? cpu_idle+0x19/0x3a
+ [<c13885aa>] ? start_kernel+0x1a4/0x1a6
+Code: 54 24 18 83 c4 48 5b 5e 5f 5d c3 56 53 89 c3 8b 48 40 8b 40 34
+85 c0 75 04 0f 0b eb fe 85 c9 75 04 0f 0b eb fe 83 79 08 00 75 04 <0f>
+0b eb fe 83 79 04 00 75 04 0f 0b eb fe 83 fa a1 75 08 80 4b
+EIP: [<c107cce3>] end_bio_bh_io_sync+0x20/0x63 SS:ESP 0068:c1351e74
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Glenn Maynard
