@@ -1,57 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZKLXdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZKLXdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbZKLXdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZKLXdN
+	id S1755308AbZKLXdD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:33:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbZKLXdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:33:13 -0500
-Received: from mga09.intel.com ([134.134.136.24]:28837 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755228AbZKLXdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Nov 2009 18:33:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,732,1249282800"; 
-   d="scan'208";a="466853755"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 12 Nov 2009 15:32:46 -0800
-Subject: RE: [stable][PATCH] PCIe hot-plug for Intel IOMMU
-Thread-Topic: [stable][PATCH] PCIe hot-plug for Intel IOMMU
-Thread-Index: AcpjQRKWit8peVcgTxm8zMO1o/iQVQArqGzA
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8BD5830B3@orsmsx505.amr.corp.intel.com>
-References: <20091104225359.2720.91502.stgit@nehalem.aw>
-	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
-	 <1257807747.25961.852.camel@macbook.infradead.org>
-	 <20091111152306.GA29256@linux-os.sc.intel.com>
- <1257993435.3907.86.camel@macbook.infradead.org>
-In-Reply-To: <1257993435.3907.86.camel@macbook.infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+Received: from chilli.pcug.org.au ([203.10.76.44]:55255 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755034AbZKLXc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:32:59 -0500
+Date: Fri, 13 Nov 2009 10:32:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Joseph S. Myers" <joseph@codesourcery.com>, linux-api@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
+Message-Id: <20091113103257.1f4f6e12.sfr@canb.auug.org.au>
+In-Reply-To: <20091030162906.fbc1c40b.sfr@canb.auug.org.au>
+References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
+	<1254691822.21044.9.camel@laptop>
+	<20091030161320.17d07dc9.sfr@canb.auug.org.au>
+	<20091030162906.fbc1c40b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nACNXa16028134
 
->Fenghua, please could you test what's in
->git://git.infradead.org/~dwmw2/iommu-2.6.32.git on IA64 before I send it
->to Linus? There are a couple of other fixes for HP brain damage there.
+Hi Andrew,
 
-The iommu-2.6.32.git tree doesn't have problem for building, booting, and simple IOMMU testing on ia64. Since there is no environment, I don't test iommu hot-plug on ia64 (which you may not care any way).
+On Fri, 30 Oct 2009 16:29:06 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> On Fri, 30 Oct 2009 16:13:20 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > This is why we have F_LINUX_SPECIFIC_BASE and use it in
+> > include/linux/fcntl.h ... it should be used as a base for any new fcntl
+> > types since they don't require backward compatibility.
+> 
+> Something like this (not even built, but pretty obvious):
 
-Thanks.
+So I provide an alternative patch (which IMHO is a better one), I get no
+comments, and 2 weeks later the original is now in Linus' tree ...
 
--Fenghua
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+The new fcntl numbers that are being fixed here were only introduced
+after v2.6.31, so there is no ABI breakage by changing them.
+
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 30 Oct 2009 16:25:51 +1100
+> Subject: [PATCH] fcntl: use consistent valuse for F_SETOWN_EX/F_GETOWN_EX
+> 
+> This is what F_LINUX_SPECIFIC_BASE was meant for.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/alpha/include/asm/fcntl.h  |    2 --
+>  arch/parisc/include/asm/fcntl.h |    2 --
+>  include/asm-generic/fcntl.h     |   14 --------------
+>  include/linux/fcntl.h           |   12 ++++++++++++
+>  4 files changed, 12 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
+> index e42823e..25da001 100644
+> --- a/arch/alpha/include/asm/fcntl.h
+> +++ b/arch/alpha/include/asm/fcntl.h
+> @@ -26,8 +26,6 @@
+>  #define F_GETOWN	6	/*  for sockets. */
+>  #define F_SETSIG	10	/*  for sockets. */
+>  #define F_GETSIG	11	/*  for sockets. */
+> -#define F_SETOWN_EX	12
+> -#define F_GETOWN_EX	13
+>  
+>  /* for posix fcntl() and lockf() */
+>  #define F_RDLCK		1
+> diff --git a/arch/parisc/include/asm/fcntl.h b/arch/parisc/include/asm/fcntl.h
+> index 5f39d55..1e1c824 100644
+> --- a/arch/parisc/include/asm/fcntl.h
+> +++ b/arch/parisc/include/asm/fcntl.h
+> @@ -28,8 +28,6 @@
+>  #define F_SETOWN	12	/*  for sockets. */
+>  #define F_SETSIG	13	/*  for sockets. */
+>  #define F_GETSIG	14	/*  for sockets. */
+> -#define F_GETOWN_EX	15
+> -#define F_SETOWN_EX	16
+>  
+>  /* for posix fcntl() and lockf() */
+>  #define F_RDLCK		01
+> diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
+> index 0c3dd86..980d6b5 100644
+> --- a/include/asm-generic/fcntl.h
+> +++ b/include/asm-generic/fcntl.h
+> @@ -73,20 +73,6 @@
+>  #define F_SETSIG	10	/* for sockets. */
+>  #define F_GETSIG	11	/* for sockets. */
+>  #endif
+> -#ifndef F_SETOWN_EX
+> -#define F_SETOWN_EX	12
+> -#define F_GETOWN_EX	13
+> -#endif
+> -
+> -#define F_OWNER_TID	0
+> -#define F_OWNER_PID	1
+> -#define F_OWNER_GID	2
+> -
+> -struct f_owner_ex {
+> -	int	type;
+> -	pid_t	pid;
+> -};
+> -
+>  /* for F_[GET|SET]FL */
+>  #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
+>  
+> diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
+> index 8603740..b34c41d 100644
+> --- a/include/linux/fcntl.h
+> +++ b/include/linux/fcntl.h
+> @@ -40,6 +40,18 @@
+>                                             unlinking file.  */
+>  #define AT_SYMLINK_FOLLOW	0x400   /* Follow symbolic links.  */
+>  
+> +#define F_SETOWN_EX	(F_LINUX_SPECIFIC_BASE + 7)
+> +#define F_GETOWN_EX	(F_LINUX_SPECIFIC_BASE + 8)
+> +
+> +#define F_OWNER_TID	0
+> +#define F_OWNER_PID	1
+> +#define F_OWNER_GID	2
+> +
+> +struct f_owner_ex {
+> +	int	type;
+> +	pid_t	pid;
+> +};
+> +
+>  #ifdef __KERNEL__
+>  
+>  #ifndef force_o_largefile
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
