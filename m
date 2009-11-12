@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZKLCdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbZKLChy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbZKLCdn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 21:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbZKLCdm
+	id S1760015AbZKLChy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 21:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbZKLChy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 21:33:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52962 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759967AbZKLCdm (ORCPT
+	Wed, 11 Nov 2009 21:37:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56177 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759989AbZKLChx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 21:33:42 -0500
-Subject: [PATCH][GIT PULL][v2.6.32] tracing: Fix return value of
- tracing_stats_read()
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Roel Kluin <roel.kluin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4AFB2C0B.50605@gmail.com>
-References: <4AFB2C0B.50605@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 11 Nov 2009 21:33:45 -0500
-Message-Id: <1257993225.22249.24.camel@gandalf.stny.rr.com>
+	Wed, 11 Nov 2009 21:37:53 -0500
+Subject: Re: [stable][PATCH] PCIe hot-plug for Intel IOMMU
+From: David Woodhouse <dwmw2@infradead.org>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, jbarnes@virtuousgeek.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>, stable@kernel.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091111152306.GA29256@linux-os.sc.intel.com>
+References: <20091104225359.2720.91502.stgit@nehalem.aw>
+	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
+	 <1257807747.25961.852.camel@macbook.infradead.org>
+	 <20091111152306.GA29256@linux-os.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 12 Nov 2009 02:37:15 +0000
+Message-ID: <1257993435.3907.86.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-11-11 at 07:23 -0800, Fenghua Yu wrote:
+> To support PCIe hot plug in IOMMU, we register a notifier to respond to device
+> change action.
+> 
+> When the notifier gets BUS_NOTIFY_UNBOUND_DRIVER, it removes the device from its
+> DMAR domain.
+> 
+> A hot added device will be added into an IOMMU domain when it first does IOMMU
+> op. So there is no need to add more code for hot add.
+> 
+> Without the patch, after a hot-remove, a hot-added device on the same slot will
+> not work.
+> 
+> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+> 
+> ---
+> 
+> The patch missed 2.6.32 release. Could it be in 2.6.32 stable?
 
-Ingo,
+Not strictly a regression, but it would make a lot of sense.
 
-I know this is late in the rc's, but this is a very minor fix. Do you
-think we can slip this in before 33.
-
-Please pull the latest tip/tracing/urgent tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/urgent
+Fenghua, please could you test what's in
+git://git.infradead.org/~dwmw2/iommu-2.6.32.git on IA64 before I send it
+to Linus? There are a couple of other fixes for HP brain damage there.
 
 
-Roel Kluin (1):
-      tracing: Fix return value of tracing_stats_read()
-
-----
- kernel/trace/trace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
----------------------------
-commit a646365cc330b5aaf4452c91f61b1e0d1acf68d0
-Author: Roel Kluin <roel.kluin@gmail.com>
-Date:   Wed Nov 11 22:26:35 2009 +0100
-
-    tracing: Fix return value of tracing_stats_read()
-    
-    The function tracing_stats_read() mistakenly returns ENOMEM instead
-    of the negative value -ENOMEM.
-    
-    Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-    LKML-Reference: <4AFB2C0B.50605@gmail.com>
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index b20d3ec..03c7fd5 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3730,7 +3730,7 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
- 
- 	s = kmalloc(sizeof(*s), GFP_KERNEL);
- 	if (!s)
--		return ENOMEM;
-+		return -ENOMEM;
- 
- 	trace_seq_init(s);
- 
-
+-- 
+dwmw2
 
