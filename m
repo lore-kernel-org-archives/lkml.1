@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZKLSBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZKLSFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbZKLSBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZKLSBj
+	id S1753765AbZKLSFN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 13:05:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZKLSFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:01:39 -0500
-Received: from snt0-omc1-s25.snt0.hotmail.com ([65.55.90.36]:40658 "EHLO
-	snt0-omc1-s25.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753695AbZKLSBi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:01:38 -0500
-Message-ID: <SNT125-W33733E48300A2E2D156865C3A90@phx.gbl>
-X-Originating-IP: [164.116.126.146]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: <kees.cook@canonical.com>
-CC: <arjan@infradead.org>, <tglx@linutronix.de>, <mingo@redhat.com>,
-       <x86@kernel.org>, <penberg@cs.helsinki.fi>, <jbeulich@novell.com>,
-       <vegardno@ifi.uio.no>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: RE: [PATCH v4] [x86] detect and report lack of NX protections
-Date: Thu, 12 Nov 2009 10:01:44 -0800
-Importance: Normal
-In-Reply-To: <20091110205544.GZ5129@outflux.net>
-References: <20091109221015.GB5129@outflux.net> <4AF8A2C0.5080700@zytor.com>
- <20091110154956.GF5129@outflux.net> <4AF9991B.20400@zytor.com>
- <20091110165738.GH5129@outflux.net> <4AF99F0C.2050806@zytor.com>
- <20091110174622.GK5129@outflux.net>
- <4AF9B6AD.8020505@zytor.c,<20091110205544.GZ5129@outflux.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Nov 2009 13:05:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43372 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752784AbZKLSFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 13:05:10 -0500
+Date: Thu, 12 Nov 2009 19:04:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andres Baldrich <andresbaldrich@ymail.com>, Tejun Heo <tj@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+Message-ID: <20091112180439.GC20542@elte.hu>
+References: <661913.35266.qm@web113707.mail.gq1.yahoo.com>
+ <alpine.LFD.2.01.0911120912160.31845@localhost.localdomain>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 12 Nov 2009 18:01:44.0246 (UTC) FILETIME=[31B87D60:01CA63C2]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0911120912160.31845@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
->> The last column should actually be "no message", "impossible", "impossible".
->
-> Ah, yes, very true.
-Nope, not only can it be disabled in the BIOS, but also don't forget Intel's first D0 stepping Nocona Xeon x86-64 CPUs, which do not have NX.
-> (the class of machines without PAE being
-> larger than those without NX and with PAE).Nope also. Clue: Most post-Pentium Pro Intel CPUs and all AMD CPUs since the K7 has PAE available as a CPU feature.
-Yuhong Bao 		 	   		  
-_________________________________________________________________
-Hotmail: Powerful Free email with security by Microsoft.
-http://clk.atdmt.com/GBL/go/171222986/direct/01/
+> I'm really inclined to just remove the stupid thing entirely both from 
+> coding-style and from checkpatch.
+> 
+> 80 columns do not matter. What matters is:
+>  - indentation
+>  - complex expressions and statements
+> 
+> and those two issues _together_ means that 80+ columns should be damn 
+> rare, but the 80 columns itself is not at all that important.
+
+i'd love to have that coupled with some check for too deep indentation. 
+About half of the col-80 warnings i see are due to genuinely 
+over-complex (and to-be-fixed) code.
+
+Too bad that _those_ get ignored (because it's hard to fix) - while 
+strings get broken up (because it's easy to 'fix') ;-)
+
+So i'd very very much love to see some common-sense check for excessive 
+indentation, and drop the col-80 warning altogether.
+
+	Ingo
