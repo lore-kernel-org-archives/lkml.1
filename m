@@ -1,123 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZKLJyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZKLJzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbZKLJyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 04:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZKLJyI
+	id S1752861AbZKLJzl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 04:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZKLJzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 04:54:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:12641 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbZKLJyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 04:54:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=UM63GAXMayosHCtztWXpf0uUJFn0t4No/jUUztEYrdJjKOjETZMAi2wemC3RNePVx2
-         B8545tegrXdn1A1DDzgP4rywuX+M47OjgowCwxLpt+LpdfAv+EbrDtYpJeVHIwYOKnYz
-         nOofSj2n/HkTkWfwtUANOCXQoc/hhqo8PzeH0=
+	Thu, 12 Nov 2009 04:55:40 -0500
+Received: from [95.166.99.235] ([95.166.99.235]:50561 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752413AbZKLJzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 04:55:40 -0500
+Date: Thu, 12 Nov 2009 10:55:45 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Glenn Maynard <glenn@zewt.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: Crash during SATA reads
+Message-ID: <20091112095544.GF8742@kernel.dk>
+References: <bd36f99e0911110118v6dc7f87ao98968ba234fad7fc@mail.gmail.com> <4AFA835B.9000904@garzik.org> <bd36f99e0911110412hf2c7920gf06bd29ed43e240c@mail.gmail.com> <bd36f99e0911111309ie8166a9h8f926948bf15d350@mail.gmail.com> <4AFB2F2A.7080900@garzik.org> <20091112091602.GC8742@kernel.dk> <bd36f99e0911120148t43a267cbwd1899d3e68468cc@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
-	 <4AF4784C.5090800@zytor.com>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
-	 <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-	 <20091111203425.GA25401@lenovo> <4AFB3D31.6070901@zytor.com>
-	 <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
-Date: Thu, 12 Nov 2009 12:54:11 +0300
-Message-ID: <aa79d98a0911120154uedca1caj6d971f1df01e8010@mail.gmail.com>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by fast 
-	string.
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Ma, Ling" <ling.ma@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bd36f99e0911120148t43a267cbwd1899d3e68468cc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 7:49 AM, Ma, Ling <ling.ma@intel.com> wrote:
-> Hi All
-> The attachment is latest memcpy.c, please update by
-> "cc -o memcpy memcpy.c -O2 -m64".
->
-> Thanks
-> Ling
->
->
+On Thu, Nov 12 2009, Glenn Maynard wrote:
+> On Thu, Nov 12, 2009 at 4:16 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > So the device isn't mounted, which means that we'll default to 1k
+> > blocks. I think that's a big clue here, as you'll have 4 buffer_heads
+> > pointing to the same page. And one of your oopses is indeed in the
+> > ->b_this_page unroll.
+> >
+> > Can you trigger this if you mount/umount the device first?
+> 
+> Yeah.  I've reproduced it reading from /dev/sda (the drive the root
+> partition is mounted on) with no second drive attached, too.
+> 
+> I'm currently reproducing it with "dd if=/dev/sda of=/dev/sdb", since
+> that reproduces faster and more reproducably than just reading.
+> Here's a trace from one of these:
+> 
+> BUG: unable to handle kernel NULL pointer dereference at 000000c0
+> IP: [<c1097067>] bdevname+0x8/0x13
+> *pde = 00000000
+> Oops: 0000 [#1] PREEMPT
+> last sysfs file:
+> /sys/devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/model
+> Modules linked in: netconsole atl1c rtc
 
-Here is goes
+To rule out any potential hardware problems, have you run any extensive
+memory checks on this machine?
 
-                       	memcpy_orig	memcpy_new	memcpy_c
-TPT: Len    0, alignment  0/ 0:	34482	31920	123564
-TPT: Len    1, alignment  0/ 0:	31815	31710	123564
-TPT: Len    2, alignment  0/ 0:	39606	31773	123522
-TPT: Len    3, alignment  0/ 0:	175329	37212	123522
-TPT: Len    4, alignment  0/ 0:	55440	42357	297129
-TPT: Len    5, alignment  0/ 0:	63294	47607	296898
-TPT: Len    6, alignment  0/ 0:	71148	52794	296856
-TPT: Len    7, alignment  0/ 0:	79023	58044	296877
-TPT: Len    8, alignment  0/ 0:	32403	32424	123564
-TPT: Len    9, alignment  0/ 0:	31752	31815	123522
-TPT: Len   10, alignment  0/ 0:	34482	34545	123522
-TPT: Len   11, alignment  0/ 0:	42294	39732	123522
-TPT: Len   12, alignment  0/ 0:	50211	42378	296856
-TPT: Len   13, alignment  0/ 0:	58107	48279	329007
-TPT: Len   14, alignment  0/ 0:	65898	53781	296877
-TPT: Len   15, alignment  0/ 0:	73773	58065	296877
-TPT: Len   16, alignment  0/ 0:	34482	37107	123522
-TPT: Len   17, alignment  0/ 0:	31836	31815	123543
-TPT: Len   18, alignment  0/ 0:	39627	37044	123522
-TPT: Len   19, alignment  0/ 0:	47565	42294	123522
-TPT: Len   20, alignment  0/ 0:	55566	47754	296898
-TPT: Len   21, alignment  0/ 0:	63273	52773	296877
-TPT: Len   22, alignment  0/ 0:	71148	58149	296856
-TPT: Len   23, alignment  0/ 0:	79086	63273	296856
-TPT: Len   24, alignment  0/ 0:	39816	45024	123522
-TPT: Len   25, alignment  0/ 0:	37086	39753	123522
-TPT: Len   26, alignment  0/ 0:	44877	44919	123522
-TPT: Len   27, alignment  0/ 0:	52773	50253	123522
-TPT: Len   28, alignment  0/ 0:	60690	55545	296898
-TPT: Len   29, alignment  0/ 0:	68544	60690	296877
-TPT: Len   30, alignment  0/ 0:	76398	65961	296877
-TPT: Len   31, alignment  0/ 0:	84273	71211	296856
-TPT: Len   32, alignment  0/ 0:	45045	52899	123522
-TPT: Len   33, alignment  0/ 0:	42315	47628	123522
-TPT: Len   34, alignment  0/ 0:	50127	52773	123522
-TPT: Len   35, alignment  0/ 0:	58044	58107	123522
-TPT: Len   36, alignment  0/ 0:	129612	63462	297129
-TPT: Len   37, alignment  0/ 0:	257607	68733	902034
-TPT: Len   38, alignment  0/ 0:	81879	73857	296919
-TPT: Len   39, alignment  0/ 0:	89460	79023	296856
-TPT: Len   40, alignment  0/ 0:	50253	60753	123543
-TPT: Len   41, alignment  0/ 0:	47607	55545	123564
-TPT: Len   42, alignment  0/ 0:	55356	60627	123522
-TPT: Len   43, alignment  0/ 0:	63357	822843	123585
-TPT: Len   44, alignment  0/ 0:	71337	71169	297087
-TPT: Len   45, alignment  0/ 0:	79023	353388	297129
-TPT: Len   46, alignment  0/ 0:	87024	81690	296856
-TPT: Len   47, alignment  0/ 0:	94689	86940	296877
-TPT: Len   48, alignment  0/ 0:	55482	68523	123522
-TPT: Len   49, alignment  0/ 0:	52857	63336	123564
-TPT: Len   50, alignment  0/ 0:	60690	68607	123522
-TPT: Len   51, alignment  0/ 0:	68502	73731	123522
-TPT: Len   52, alignment  0/ 0:	76419	79086	296856
-TPT: Len   53, alignment  0/ 0:	84336	126147	296877
-TPT: Len   54, alignment  0/ 0:	92190	89607	296877
-TPT: Len   55, alignment  0/ 0:	100023	94668	296856
-TPT: Len   56, alignment  0/ 0:	60690	76440	123522
-TPT: Len   57, alignment  0/ 0:	58065	71211	123522
-TPT: Len   58, alignment  0/ 0:	65877	76356	123522
-TPT: Len   59, alignment  0/ 0:	73773	81606	196224
-TPT: Len   60, alignment  0/ 0:	81732	86961	297129
-TPT: Len   61, alignment  0/ 0:	89523	136689	296877
-TPT: Len   62, alignment  0/ 0:	97377	97440	296877
-TPT: Len   63, alignment  0/ 0:	105210	102564	296877
-TPT: Len 1023, alignment  0/ 0:	457569	457107	719502
-TPT: Len 1024, alignment  0/ 0:	422856	542535	575526
-TPT: Len 2048, alignment  0/ 0:	819651	8217489	982779
+> Pid: 151, comm: pdflush Not tainted (2.6.31.6 #17) G31M-ES2L
+> EIP: 0060:[<c1097067>] EFLAGS: 00010246 CPU: 0
+> EIP is at bdevname+0x8/0x13
+> EAX: df4ddcf0 EBX: 00000000 ECX: df87fd54 EDX: 00000000
+> ESI: d5cfa0c0 EDI: 00000000 EBP: 00000001 ESP: df87fd38
+>  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> Process pdflush (pid: 151, ti=df87e000 task=df8caae0 task.ti=df87e000)
+> Stack:
+>  c11582ff 0006d250 00000000 fffffffb 00000002 00000246 c1ae7e80 00011200
+> <0> 00011210 df83a9e0 c1043b26 df87fd60 00000004 00000101 c101be1c 00000000
+> <0> 00000000 d5cfa0c0 00000001 c11583e4 00000001 df83aa00 df83aa00 c107d6db
+> Call Trace:
+>  [<c11582ff>] ? generic_make_request+0x1cc/0x209
+>  [<c1043b26>] ? mempool_alloc+0x1e/0xd6
+>  [<c101be1c>] ? __do_softirq+0x9b/0xc8
+>  [<c11583e4>] ? submit_bio+0xa8/0xb0
+>  [<c107d6db>] ? bio_alloc_bioset+0x3e/0xa4
+>  [<c107ce92>] ? submit_bh+0x127/0x152
+>  [<c107b117>] ? __block_write_full_page+0x1ff/0x2d8
+>  [<c107eafd>] ? blkdev_get_block+0x0/0x46
+>  [<c107cc5e>] ? block_write_full_page_endio+0xe2/0xec
+>  [<c1079ef7>] ? end_buffer_async_write+0x0/0xd4
+>  [<c107eafd>] ? blkdev_get_block+0x0/0x46
+>  [<c107cc72>] ? block_write_full_page+0xa/0xc
+>  [<c1079ef7>] ? end_buffer_async_write+0x0/0xd4
+>  [<c104750c>] ? __writepage+0x8/0x1d
+>  [<c1047407>] ? write_cache_pages+0x1bf/0x2bc
+>  [<c1047504>] ? __writepage+0x0/0x1d
+>  [<c1047521>] ? generic_writepages+0x0/0x1f
+>  [<c104753d>] ? generic_writepages+0x1c/0x1f
+>  [<c1047562>] ? do_writepages+0x22/0x32
+>  [<c1076444>] ? writeback_single_inode+0xad/0x1b2
+>  [<c1076672>] ? generic_sync_sb_inodes+0x129/0x26e
+>  [<c1047c80>] ? pdflush+0x0/0x2d
+>  [<c1076820>] ? writeback_inodes+0x64/0xb4
+>  [<c1047040>] ? background_writeout+0x5f/0x91
+>  [<c1047bab>] ? __pdflush+0xcf/0x1a4
+>  [<c1047ca9>] ? pdflush+0x29/0x2d
+>  [<c1046fe1>] ? background_writeout+0x0/0x91
+>  [<c1047c80>] ? pdflush+0x0/0x2d
+>  [<c1026d72>] ? kthread+0x6b/0x70
+>  [<c1026d07>] ? kthread+0x0/0x70
+>  [<c1002f93>] ? kernel_thread_helper+0x7/0x10
+> Code: 09 56 53 68 f7 09 2e c1 eb 07 56 53 68 90 0a 2e c1 6a 20 55 e8
+> f0 01 0d 00 83 c4 14 5b 89 e8 5e 5f 5d c3 89 d1 8b 50 48 8b 40 54 <8b>
+> 92 c0 00 00 00 e9 92 ff ff ff 53 89 d3 89 c2 81 e2 ff ff 0f
+> EIP: [<c1097067>] bdevname+0x8/0x13 SS:ESP 0068:df87fd38
+> CR2: 00000000000000c0
+
+This one is different, it's on the submit path.
+
+-- 
+Jens Axboe
+
