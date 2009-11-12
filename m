@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZKLIIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbZKLIIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbZKLIIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZKLIIe
+	id S1752192AbZKLIIv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZKLIIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:08:34 -0500
-Received: from web58403.mail.re3.yahoo.com ([68.142.236.171]:33529 "HELO
-	web58403.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751673AbZKLIId (ORCPT
+	Thu, 12 Nov 2009 03:08:50 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49288 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbZKLIIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:08:33 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=qJVe6tgBrpXkXClOq1G0SU5DvBXBq0IItHDlMdzoyH1Do8sC1Xw2/7sqpVAUTJVuUUJZcuwTtDKomFWmHX6BufzOKS/WF1oE2QiBSW04KGvEHmhxC63GuY8VQ/Wl9bH6T9ysX9Q5TDzgMH9cr502+WJ43a872KJBUWgHTvq3SEI=;
-Message-ID: <282630.26689.qm@web58403.mail.re3.yahoo.com>
-X-YMail-OSG: edc8ZEgVM1nr7AaVeLhWNyVtm8EINAy9sEo0i7RWkQj8zxWA2esQRldU6.X6U3UAPiRN4QT8VxAtmKDbvJDOQgMQVhqP9SyM_gzBr1MgN1DhTZ8idj6Rzpd_Qi.o9H6_rGfD46XmfwovPczdE3ULXAxvebBtY_E54Y._SHJA3drrGw0NEJLsTd4.mliYWfY4cF9Ko9.xe0n2_FWiX547TH_aEUxCYmXk4cUN_v.NKAwP2U0GkqpJVpxLj.bEcGXAi_vcw4mZCMctlSu..Bm7bhwpHXUCc6VmEkzu
-X-Mailer: YahooMailRC/211.6 YahooMailWebService/0.7.361.4
-References: <761296.29412.qm@web58402.mail.re3.yahoo.com> <20091111095218.GA3654@core.coreip.homeip.net> <800885.42568.qm@web58401.mail.re3.yahoo.com> <20091111215029.GA13390@core.coreip.homeip.net>
-Date: Thu, 12 Nov 2009 00:08:39 -0800 (PST)
-From: Mikko Vinni <mmvinni@yahoo.com>
-Subject: Re: keyboard leds not restored after s2ram in 2.6.32-rc6-00166-g799dd75
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091111215029.GA13390@core.coreip.homeip.net>
+	Thu, 12 Nov 2009 03:08:50 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: mmotm 2009-11-01-10-01 uploaded
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Emmanuel Benisty <benisty.e@gmail.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
+References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
+Message-Id: <20091112170027.33AA.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 12 Nov 2009 17:08:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-> > I did some tests suspending with the caps lock actually on, and it seems that
-> > in that case the user might still be confused (caps lock is on but led is 
-> off).
-> > At least on this machine this patch doesn't affect this theoretical problem
-> > either way (2.6.31 behaves similarly), so it is ok.
+> On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
+> 
+> > The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
 > > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
 > 
-> Umm... so you are saying that even with .31 if you suspend with capslock
-> on it is off when you resume? Does it happen only in X or in console as
-> well?
-
-It seems I judged a bit too early.
-In console, both 2.6.31 and .32-rc6+your patch:
-- suspending both with capslock on and off works as expected (same state in mode
-and led after resume)
-
-In X, both  2.6.31 and .32-rc6+your patch:
-- suspending both with capslock on and off works; after resume same state
-(typing procudes capital letters if capslock was on) and led shows the caplock
-state
-- if the capslock is on after resume, and I press shift before capslock key, the led
-turns off but typing still produces capital letters. This, I think, is strange. This did
-not happen in console, neither does pressing shift usually turn off the led.
-
-So, apart from the minor nuisance of the shift key turning off the capslock led in X
-even if typing still produces capital letters, everything seems to work as expected.
-
-
-Mikko
-
-
+> Does "soon" mean within this century ?
 > 
-> -- 
-> Dmitry
+> >    git://git.zen-sources.org/zen/mmotm.git
+> 
+> # git pull git://git.zen-sources.org/zen/mmotm.git master
+> git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
+> git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
+> fatal: unable to connect a socket (Connection refused)
+> 
+> Thanks,
+
+I asked the same question to mmotm git tree maintainer last month.
+Currently mmotm git was gone by unhappy thing. and akpm stoped his recovery.
+because akpm plan to get -mm into linux-next. He said please wait few weeks.
+
+I guess akpm is pretty busy now. (guessing because recent mmotm commit mail
+was not so active). then, I'd like to answer you instead. I hope this mail help you.
+
+Thanks.
 
 
 
-      
