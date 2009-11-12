@@ -1,133 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbZKLXPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZKLXSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbZKLXPF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZKLXO7
+	id S1755163AbZKLXSv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZKLXSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:14:59 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:63019 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754674AbZKLXO7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 18:14:59 -0500
-X-Trace: 285402113/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ag4BAIcl/EpPRTgw/2dsb2JhbAAI1XSEPASBbQ
-X-IronPort-AV: E=Sophos;i="4.44,731,1249254000"; 
-   d="scan'208";a="285402113"
-Date: Thu, 12 Nov 2009 23:15:01 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 2/6] ksm: remove redundancies when merging page
-In-Reply-To: <Pine.LNX.4.64.0911122303450.3378@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0911122314040.4050@sister.anvils>
-References: <Pine.LNX.4.64.0911122303450.3378@sister.anvils>
+	Thu, 12 Nov 2009 18:18:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21606 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755023AbZKLXSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:18:45 -0500
+Date: Thu, 12 Nov 2009 18:15:43 -0500
+From: Dave Jones <davej@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mike Travis <travis@sgi.com>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Yinghai Lu <yinghai@kernel.org>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
+Message-ID: <20091112231542.GA7129@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+	Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Roland Dreier <rdreier@cisco.com>,
+	Randy Dunlap <rdunlap@xenotime.net>, Tejun Heo <tj@kernel.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Yinghai Lu <yinghai@kernel.org>,
+	David Rientjes <rientjes@google.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+	Jack Steiner <steiner@sgi.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20091023233743.439628000@alcatraz.americas.sgi.com>
+ <20091023233746.128967000@alcatraz.americas.sgi.com>
+ <87tyxmy6x6.fsf@basil.nowhere.org>
+ <4AE5E48F.6020408@sgi.com>
+ <20091026215544.GA3355@basil.fritz.box>
+ <4AEB3D95.50300@sgi.com>
+ <4AEEBE65.3070202@linux.intel.com>
+ <4AEF3143.2030701@sgi.com>
+ <20091112222200.GA19109@redhat.com>
+ <4AFC92DD.3020105@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFC92DD.3020105@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no need for replace_page() to calculate a write-protected prot
-vm_page_prot must already be write-protected for an anonymous page (see
-mm/memory.c do_anonymous_page() for similar reliance on vm_page_prot).
+On Thu, Nov 12, 2009 at 02:57:33PM -0800, H. Peter Anvin wrote:
+ > On 11/12/2009 02:22 PM, Dave Jones wrote:
+ > > 
+ > > But I don't disagree with Andi either, that it's not particularly useful,
+ > > and we can get all this from userspace in /proc/cpuinfo, or x86info.
+ > > 
+ > 
+ > I personally don't think it's useful at all.  It gives information about
+ > the processor which can be obtained from other sources.  What we want is
+ > enough information that the CPU can be unambiguously identified, so that
+ > when someone posts dmesg we can tell what machine they came from.
 
-There is no need for try_to_merge_one_page() to get_page and put_page
-on newpage and oldpage: in every case we already hold a reference to
-each of them.
+In which case..
 
-But some instinct makes me move try_to_merge_one_page()'s unlock_page
-of oldpage down after replace_page(): that doesn't increase contention
-on the ksm page, and makes thinking about the transition easier.
+	Dave
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+--- 
 
- mm/ksm.c |   26 ++++++--------------------
- 1 file changed, 6 insertions(+), 20 deletions(-)
 
---- ksm1/mm/ksm.c	2009-11-12 15:28:36.000000000 +0000
-+++ ksm2/mm/ksm.c	2009-11-12 15:28:42.000000000 +0000
-@@ -647,7 +647,7 @@ static int write_protect_page(struct vm_
- 		 * Check that no O_DIRECT or similar I/O is in progress on the
- 		 * page
- 		 */
--		if ((page_mapcount(page) + 2 + swapped) != page_count(page)) {
-+		if (page_mapcount(page) + 1 + swapped != page_count(page)) {
- 			set_pte_at_notify(mm, addr, ptep, entry);
- 			goto out_unlock;
- 		}
-@@ -682,11 +682,8 @@ static int replace_page(struct vm_area_s
- 	pte_t *ptep;
- 	spinlock_t *ptl;
- 	unsigned long addr;
--	pgprot_t prot;
- 	int err = -EFAULT;
+Remove the CPU cache size printk's.
+
+They aren't useful, and pollute the dmesg output a lot (especially on machines with many cores).
+Also the same information can be trivially found out from userspace.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 804c40e..868fcdd 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -488,22 +493,6 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
+ #endif
+ 	}
  
--	prot = vm_get_page_prot(vma->vm_flags & ~VM_WRITE);
+-	if (trace)
+-		printk(KERN_INFO "CPU: Trace cache: %dK uops", trace);
+-	else if (l1i)
+-		printk(KERN_INFO "CPU: L1 I cache: %dK", l1i);
 -
- 	addr = page_address_in_vma(oldpage, vma);
- 	if (addr == -EFAULT)
- 		goto out;
-@@ -714,7 +711,7 @@ static int replace_page(struct vm_area_s
- 
- 	flush_cache_page(vma, addr, pte_pfn(*ptep));
- 	ptep_clear_flush(vma, addr, ptep);
--	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, prot));
-+	set_pte_at_notify(mm, addr, ptep, mk_pte(newpage, vma->vm_page_prot));
- 
- 	page_remove_rmap(oldpage);
- 	put_page(oldpage);
-@@ -746,13 +743,9 @@ static int try_to_merge_one_page(struct
- 
- 	if (!(vma->vm_flags & VM_MERGEABLE))
- 		goto out;
+-	if (l1d)
+-		printk(KERN_CONT ", L1 D cache: %dK\n", l1d);
+-	else
+-		printk(KERN_CONT "\n");
 -
- 	if (!PageAnon(oldpage))
- 		goto out;
- 
--	get_page(newpage);
--	get_page(oldpage);
+-	if (l2)
+-		printk(KERN_INFO "CPU: L2 cache: %dK\n", l2);
 -
- 	/*
- 	 * We need the page lock to read a stable PageSwapCache in
- 	 * write_protect_page().  We use trylock_page() instead of
-@@ -761,25 +754,18 @@ static int try_to_merge_one_page(struct
- 	 * then come back to this page when it is unlocked.
- 	 */
- 	if (!trylock_page(oldpage))
--		goto out_putpage;
-+		goto out;
- 	/*
- 	 * If this anonymous page is mapped only here, its pte may need
- 	 * to be write-protected.  If it's mapped elsewhere, all of its
- 	 * ptes are necessarily already write-protected.  But in either
- 	 * case, we need to lock and check page_count is not raised.
- 	 */
--	if (write_protect_page(vma, oldpage, &orig_pte)) {
--		unlock_page(oldpage);
--		goto out_putpage;
--	}
--	unlock_page(oldpage);
+-	if (l3)
+-		printk(KERN_INFO "CPU: L3 cache: %dK\n", l3);
 -
--	if (pages_identical(oldpage, newpage))
-+	if (write_protect_page(vma, oldpage, &orig_pte) == 0 &&
-+	    pages_identical(oldpage, newpage))
- 		err = replace_page(vma, oldpage, newpage, orig_pte);
+ 	c->x86_cache_size = l3 ? l3 : (l2 ? l2 : (l1i+l1d));
  
--out_putpage:
--	put_page(oldpage);
--	put_page(newpage);
-+	unlock_page(oldpage);
- out:
- 	return err;
- }
+ 	return l2;
