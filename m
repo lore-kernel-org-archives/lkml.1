@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZKLW1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZKLWdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZKLW1x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 17:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZKLW1r
+	id S1754691AbZKLWdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 17:33:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZKLWda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 17:27:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51244 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbZKLW1r (ORCPT
+	Thu, 12 Nov 2009 17:33:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38380 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754547AbZKLWd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 17:27:47 -0500
-Date: Thu, 12 Nov 2009 22:25:41 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Thu, 12 Nov 2009 17:33:29 -0500
+Date: Thu, 12 Nov 2009 14:33:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Cc: akpm@linux-foundation.org, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 0/4] Add support for LZO-compressed kernel images
-Message-ID: <20091112222541.GA9926@flint.arm.linux.org.uk>
+Cc: hpa@zytor.com, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/4] Add support for LZO-compressed kernels
+Message-Id: <20091112143323.6b80ca4e.akpm@linux-foundation.org>
+In-Reply-To: <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
 References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	<1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 01:27:54PM +0100, Albin Tonnerre wrote:
-> Russell: since I believe your initial concerns regarding the ARM part of the
-> patch got fixed, do I have your approval?
+On Wed, 11 Nov 2009 13:27:55 +0100
+Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
 
-I was going to run some tests on it to compare this with the existing
-stuff, but I haven't managed to get around to it (due to the platforms
-I was going to run the tests on breaking - twice.)
+> +STATIC inline int INIT unlzo(u8 *input, int in_len,
 
-I hope I'll be able to run tests tomorrow/this weekend.
+I assume the macro gunk is to support testing of the code in a
+userspace test haress?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Where does INIT get defined?
