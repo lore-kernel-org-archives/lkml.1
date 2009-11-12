@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZKLWZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZKLW1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbZKLWZf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 17:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZKLWZb
+	id S1754713AbZKLW1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 17:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZKLW1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 17:25:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55678 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754826AbZKLWZa (ORCPT
+	Thu, 12 Nov 2009 17:27:47 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51244 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752847AbZKLW1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 17:25:30 -0500
-Date: Thu, 12 Nov 2009 14:24:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 12 Nov 2009 17:27:47 -0500
+Date: Thu, 12 Nov 2009 22:25:41 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Cc: avictor.za@gmail.com, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, nicolas.ferre@atmel.com
-Subject: Re: [PATCH v2] Add poll_get_char and poll_put_char uart_ops to
- atmel_serial.
-Message-Id: <20091112142450.d3c2dc90.akpm@linux-foundation.org>
-In-Reply-To: <1252317170-9782-1-git-send-email-albin.tonnerre@free-electrons.com>
-References: <cd73a99e0909062322j683952e6m803dd6b703bf758d@mail.gmail.com>
-	<1252317170-9782-1-git-send-email-albin.tonnerre@free-electrons.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: akpm@linux-foundation.org, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/4] Add support for LZO-compressed kernel images
+Message-ID: <20091112222541.GA9926@flint.arm.linux.org.uk>
+References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  7 Sep 2009 11:52:50 +0200
-Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
+On Wed, Nov 11, 2009 at 01:27:54PM +0100, Albin Tonnerre wrote:
+> Russell: since I believe your initial concerns regarding the ARM part of the
+> patch got fixed, do I have your approval?
 
-> +#ifdef CONFIG_CONSOLE_POLL
-> +static int atmel_poll_get_char(struct uart_port *port)
-> +{
-> +	while (!(UART_GET_CSR(port) & ATMEL_US_RXRDY))
-> +		barrier();
-> +
-> +	return UART_GET_CHAR(port);
-> +}
-> +
-> +static void atmel_poll_put_char(struct uart_port *port, unsigned char ch)
-> +{
-> +	while (!(UART_GET_CSR(port) & ATMEL_US_TXRDY))
-> +		barrier();
-> +
-> +	UART_PUT_CHAR(port, ch);
-> +}
-> +#endif
+I was going to run some tests on it to compare this with the existing
+stuff, but I haven't managed to get around to it (due to the platforms
+I was going to run the tests on breaking - twice.)
 
-The use of barrier() is not appropriate here - it's purely a compiler
-concept.
+I hope I'll be able to run tests tomorrow/this weekend.
 
-I'll switch it to cpu_relax().  Even that's probably unneeded, as the
-IO operation is usually slow and should be an opportunity for the CPU
-to take a little nap.
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
