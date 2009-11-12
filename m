@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZKLF2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbZKLFid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbZKLF2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 00:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZKLF2j
+	id S1753138AbZKLFid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 00:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZKLFid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 00:28:39 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42274 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbZKLF2i (ORCPT
+	Thu, 12 Nov 2009 00:38:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46383 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbZKLFic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 00:28:38 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AFB9CFE.6010207@jp.fujitsu.com>
-Date: Thu, 12 Nov 2009 14:28:30 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 12 Nov 2009 00:38:32 -0500
+Message-ID: <4AFB9DAE.4080601@zytor.com>
+Date: Wed, 11 Nov 2009 21:31:26 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Yong Wang <yong.y.wang@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Mark the thermal init functions __init
-References: <20091111075125.GA17900@ywang-moblin2.bj.intel.com>
-In-Reply-To: <20091111075125.GA17900@ywang-moblin2.bj.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Willy Tarreau <w@1wt.eu>
+CC: Matt Thrailkill <matt.thrailkill@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+References: <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu> <4AF9ED78.3000106@zytor.com> <20091111055220.GA560@1wt.eu> <4AFA569E.9040206@zytor.com> <20091111063617.GD560@1wt.eu> <4AFA6E50.7030808@zytor.com> <20091111093258.GE560@1wt.eu> <a91053ef0911111823v52669d18p7e5812076a63f03e@mail.gmail.com> <20091112052754.GB15679@1wt.eu>
+In-Reply-To: <20091112052754.GB15679@1wt.eu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yong Wang wrote:
-> Mark the thermal init functions __init so that the init memory can be freed.
+On 11/11/2009 09:27 PM, Willy Tarreau wrote:
 > 
-> Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-> ---
->  arch/x86/kernel/cpu/mcheck/therm_throt.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Right. However we just noticed that with the KVM emulator, you
+> can make it loop for a long time if you feed it with prefixes
+> only. For instance, write a function which does zillions of 0x66
+> (data size prefix) then return (0xC3) : 66 66 66 ... 66 C3.
 > 
-> diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> index 7f3cf36..8a73d5c 100644
-> --- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> +++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> @@ -256,7 +256,7 @@ asmlinkage void smp_thermal_interrupt(struct pt_regs *regs)
->  	ack_APIC_irq();
->  }
->  
-> -void mcheck_intel_therm_init(void)
-> +void __init mcheck_intel_therm_init(void)
->  {
->  	/*
->  	 * This function is only called on boot CPU. Save the init thermal
+> This is typically the sort of things we must be very careful about
+> in emulators, because we don't want users to steal large amounts
+> of system CPU time doing nothing.
+> 
 
-It's OK because it is called only on BP.
+That is a (serious) bug in the KVM interpreter, and indeed the exact
+kind of issues interpreters tend to have... which is why I'd like one
+piece of code with one set of bugs, and more eyeballs on that one piece
+of code so they can be fixed.
 
-> @@ -268,7 +268,7 @@ void mcheck_intel_therm_init(void)
->  		lvtthmr_init = apic_read(APIC_LVTTHMR);
->  }
->  
-> -void intel_init_thermal(struct cpuinfo_x86 *c)
-> +void __init intel_init_thermal(struct cpuinfo_x86 *c)
->  {
->  	unsigned int cpu = smp_processor_id();
->  	int tm2 = 0;
+	-hpa
 
-But I think this could be called on hot-plugged AP.
-Should be __cpuinit ?
-
-void __cpuinit mcheck_cpu_init(struct cpuinfo_x86 *c)
- ->  static void __mcheck_cpu_init_vendor(struct cpuinfo_x86 *c)
-  ->  void mce_intel_feature_init(struct cpuinfo_x86 *c)
-   ->  void intel_init_thermal(struct cpuinfo_x86 *c)
-
-Thanks,
-H.Seto
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
