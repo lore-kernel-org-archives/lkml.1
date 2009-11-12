@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZKLRyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZKLRzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbZKLRyv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZKLRyu
+	id S1753711AbZKLRzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZKLRzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:54:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34016 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbZKLRyt (ORCPT
+	Thu, 12 Nov 2009 12:55:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40951 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753439AbZKLRzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:54:49 -0500
-Date: Thu, 12 Nov 2009 12:54:55 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: XFS status update for October 2009
-Message-ID: <20091112175455.GA32539@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 12 Nov 2009 12:55:40 -0500
+Date: Thu, 12 Nov 2009 17:56:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eran Liberty <liberty@extricom.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] serial_core: avoid Break bouncing
+Message-ID: <20091112175649.145cbf18@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091112140504.6daf3824@pedra.chehab.org>
+References: <20091112140504.6daf3824@pedra.chehab.org>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In October we saw the Linux 2.6.32 merge window with a major XFS update.
-This update includes a refactoring of the inode allocator which also
-allows for speedups for very large filesystems, major sync fixes, updates
-to the fsync and O_SYNC handling which merge the two code paths into a single
-and more efficient one, a workaround for the VFS time stamp behavior,
-and of course various smaller fixes.  A couple of additional fixes have been
-queued up for the next merge window.
+On Thu, 12 Nov 2009 14:05:04 -0200
+Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
 
-On the userspace side there has been a healthy activity on xfsprogs:  mkfs can
-now discard unused sectors on SSDs and thinly provisioned storage devices and
-use the more generic libblkid for topology information and filesystems detection
-instead of the older libdisk, and the build system gained some updates to
-make the source package generation simpler and shared for different package
-types.  A patch has been out to the list but yet committed to add symbol
-versioning to the libhandle library to make future ABI additions easier.
-The xfstests package only saw some minor activity with a new test case
-and small build system fixes.
+> From: Eran Liberty <liberty@extricom.com>
+> 
+> On some boxes, Break signal bounces, causing sysrq code to fail with some
+> serial interfaces.
+> 
+> A solution were posted on LKML in 2008:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0809.2/0730.html
+> 
+> However, the fix weren't applied upstream.
 
-New minor releases of xfsprogs and xfsdump were tagged but not formally
-released after additional discussion.  Instead a new major xfsprogs release
-is planned for next month.
+Because it was NAKked at the time as it seemed to be a bug in Eran's
+hardware platform not a generic problem and also because it breaks
+autobauding on break as used by some (particularly older) software.
+
+It's still NAKked and it would be helpful if people resubmitting old
+stuff also looked through the thread attached the original submission.
+
+You seem to have a single case of a user with some kind of buggy uart or
+possibly other weirdness going on. That's probably worth investigating
+more deeply but the patch NAKked before is not the solution due to its
+side effects
+
+(also btw it'll upset other people who script their sysrq stuff including
+breaks and don't expect strange timing limits)
+
+NAK again
