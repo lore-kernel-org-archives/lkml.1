@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZKLIQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZKLIVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752354AbZKLIQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZKLIQO
+	id S1752407AbZKLIVO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:21:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZKLIVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:16:14 -0500
-Received: from tundra.namei.org ([65.99.196.166]:56986 "EHLO tundra.namei.org"
+	Thu, 12 Nov 2009 03:21:14 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36794 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbZKLIQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:16:13 -0500
-Date: Thu, 12 Nov 2009 19:16:14 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Julia Lawall <julia@diku.dk>
-cc: Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-In-Reply-To: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>
-Message-ID: <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org>
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751595AbZKLIVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 03:21:13 -0500
+Date: Thu, 12 Nov 2009 19:21:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: linux-next: rr tree build warning
+Message-Id: <20091112192114.dcf32d16.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Nov_2009_19_21_14_+1100_cJWyQ+6=qBawfFOx"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009, Julia Lawall wrote:
+--Signature=_Thu__12_Nov_2009_19_21_14_+1100_cJWyQ+6=qBawfFOx
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> As observed by Joe Perches, sizeof of a constant string includes the
-> trailing 0.  If what is wanted is to check the initial characters of
-> another string, this trailing 0 should not be taken into account.  If an
-> exact match is wanted, strcmp should be used instead.
+Hi Rusty,
 
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -448,7 +448,7 @@ static int sb_finish_set_opts(struct sup
->  		sbsec->flags &= ~SE_SBLABELSUPP;
->  
->  	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
-> -	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
-> +	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs") - 1) == 0)
->  		sbsec->flags |= SE_SBLABELSUPP;
+Today's linux-next build (i386 defconfig) produced this warning:
 
-Shouldn't this be a simple strcmp() ?
+kernel/module.c:1953: warning: 'crc_section_names' defined but not used
 
+Introduced by commit 67260d90118a2394df528fe4e37e814d950ca5b5 ("module:
+refactor symbol tables and try to reduce code size of each_symbol()").
+This build has CONFIG_MODVERSIONS disabled.
 
--- 
-James Morris
-<jmorris@namei.org>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__12_Nov_2009_19_21_14_+1100_cJWyQ+6=qBawfFOx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr7xXoACgkQjjKRsyhoI8ymqQCgp+5annnFeJ9gCEtcu5O5jBLI
+lk0AnRW9Gr295P3OtXqEsWsWmXEloAov
+=oFjH
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Nov_2009_19_21_14_+1100_cJWyQ+6=qBawfFOx--
