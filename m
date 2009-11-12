@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZKLU3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZKLUop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZKLU3n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 15:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZKLU3h
+	id S1754324AbZKLUop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 15:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZKLUol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 15:29:37 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:22304 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbZKLU3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 15:29:36 -0500
-Date: Thu, 12 Nov 2009 15:27:48 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/7] Reduce GFP_ATOMIC allocation failures, candidate
- fix V3
-Message-ID: <20091112202748.GC2811@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Mel Gorman <mel@csn.ul.ie>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-	Sven Geggus <lists@fuchsschwanzdomain.de>,
-	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-	Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Rik van Riel <riel@redhat.com>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	Stephan von Krawczynski <skraw@ithnet.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie>
+	Thu, 12 Nov 2009 15:44:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56657 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754281AbZKLUoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 15:44:39 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, mszeredi@suse.de
+Subject: Re: Performance regression in IO scheduler still there
+References: <20091026172012.GC7233@duck.suse.cz>
+	<x49zl7020mr.fsf@segfault.boston.devel.redhat.com>
+	<20091111141031.GA21511@duck.suse.cz>
+	<x493a4lot31.fsf@segfault.boston.devel.redhat.com>
+	<20091112172941.GK14528@duck.suse.cz>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 12 Nov 2009 15:44:02 -0500
+In-Reply-To: <20091112172941.GK14528@duck.suse.cz> (Jan Kara's message of
+	"Thu, 12 Nov 2009 18:29:41 +0100")
+Message-ID: <x49pr7npj71.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258054211-2854-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AFC6FCE.0095:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 07:30:06PM +0000, Mel Gorman wrote:
-> Sorry for the long delay in posting another version. Testing is extremely
-> time-consuming and I wasn't getting to work on this as much as I'd have liked.
-> 
-> Changelog since V2
->   o Dropped the kswapd-quickly-notice-high-order patch. In more detailed
->     testing, it made latencies even worse as kswapd slept more on high-order
->     congestion causing order-0 direct reclaims.
->   o Added changes to how congestion_wait() works
->   o Added a number of new patches altering the behaviour of reclaim
-> 
-> Since 2.6.31-rc1, there have been an increasing number of GFP_ATOMIC
-> failures. A significant number of these have been high-order GFP_ATOMIC
-> failures and while they are generally brushed away, there has been a large
-> increase in them recently and there are a number of possible areas the
-> problem could be in - core vm, page writeback and a specific driver. The
-> bugs affected by this that I am aware of are;
+Jan Kara <jack@suse.cz> writes:
 
-Thanks for all the time you've spent on this one.  Let me start with
-some more questions about the workload ;)
+> On Wed 11-11-09 12:43:30, Jeff Moyer wrote:
+>> Jan Kara <jack@suse.cz> writes:
+>> 
+>> >   Sadly, I don't see the improvement you can see :(. The numbers are the
+>> > same regardless low_latency set to 0:
+>> > 2.6.32-rc5 low_latency = 0:
+>> > 37.39 36.43 36.51 -> 36.776667 0.434920
+>> >   But my testing environment is a plain SATA drive so that probably
+>> > explains the difference...
+>> 
+>> I just retested (10 runs for each kernel) on a SATA disk with no NCQ
+>> support and I could not see a difference.  I'll try to dig up a disk
+>> that support NCQ.  Is that what you're using for testing?
+>   I don't think I am. How do I find out?
 
-> 2. A crypted work partition and swap partition was created. On my
->    own setup, I gave no passphrase so it'd be easier to activate without
->    interaction but there are multiple options. I should have taken better
->    notes but the setup goes something like this;
-> 
-> 	cryptsetup create -y crypt-partition /dev/sda5
-> 	pvcreate /dev/mapper/crypt-partition
-> 	vgcreate crypt-volume /dev/mapper/crypt-partition
-> 	lvcreate -L 5G -n crypt-logical crypt-volume
-> 	lvcreate -L 2G -n crypt-swap crypt-volume
-> 	mkfs -t ext3 /dev/crypt-volume/crypt-logical
-> 	mkswap /dev/crypt-volume/crypt-swap
-> 
-> 3. With the partition mounted on /scratch, I
-> 	cd /scratch
-> 	mkdir music
-> 	git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
-> 
-> 4. On a normal partition, I expand a tarball containing test scripts available at
-> 	http://www.csn.ul.ie/~mel/postings/latency-20091112/latency-tests-with-results.tar.gz
-> 
-> 	There are two helper programs that run as part of the test - a fake
-> 	music player and a fake gitk.
-> 
-> 	The fake music player uses rsync with bandwidth limits to start
-> 	downloading a music folder from another machine. It's bandwidth
-> 	limited to simulate playing music over NFS.
+Good question.  ;-)  I grep for NCQ in dmesg output and make sure it's
+greater than 0/32.  There may be a better way, though.
 
-So the workload is gitk reading a git repo and a program reading data
-over the network.  Which part of the workload writes to disk?
+>>               2.6.29    2.6.32-rc6,low_latency=0
+>> ----------------------------------
+>> Average:      34.6648   34.4475
+>> Pop.Std.Dev.: 0.55523   0.21981
+>   Hmm, strange. Miklos Szeredi tried tiobench on his machine and he also
+> saw the regression. I'll try to think what could make the difference.
 
--chris
+OK, I'll try again.
 
+Cheers,
+Jeff
