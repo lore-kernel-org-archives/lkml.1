@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZKLXxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZKLXyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbZKLXxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZKLXxU
+	id S1755984AbZKLXyp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZKLXyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:53:20 -0500
-Received: from rtr.ca ([76.10.145.34]:38947 "EHLO mail.rtr.ca"
+	Thu, 12 Nov 2009 18:54:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51640 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755762AbZKLXxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 18:53:13 -0500
-Message-ID: <4AFC9FEC.8030304@rtr.ca>
-Date: Thu, 12 Nov 2009 18:53:16 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, jgarzik@pobox.com,
-       mlord@pobox.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
-References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com>	 <4AF8F363.3010806@rtr.ca> <200911101651.24912.bzolnier@gmail.com>	 <84144f020911100808y55f5bfa2v5c203b356583a7b5@mail.gmail.com>	 <4AFB3C9D.4020609@rtr.ca> <a4c8a6d00911111450y7e451071h3f0ede0a1003678b@mail.gmail.com>
-In-Reply-To: <a4c8a6d00911111450y7e451071h3f0ede0a1003678b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755401AbZKLXyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:54:40 -0500
+Date: Fri, 13 Nov 2009 10:54:35 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Aristeu Rozanski <aris@redhat.com>
+Subject: Re: linux-next: i7core_edac tree build failure
+Message-Id: <20091113105435.1b9b0060.sfr@canb.auug.org.au>
+In-Reply-To: <200911122340.26317.rusty@rustcorp.com.au>
+References: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
+	<200911122340.26317.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__13_Nov_2009_10_54_35_+1100_v.4AMIyzpkgDa6oU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thiago Farina wrote:
-> On Wed, Nov 11, 2009 at 8:37 PM, Mark Lord <liml@rtr.ca> wrote:
->> Looks like unnecessary churn and obfuscation to me.
-> 
-> Obfuscation? Are you saying that just because you wrote this code?  So
-> what is the usage of a macro? I think you are having a defensive
-> position here.
-..
+--Signature=_Fri__13_Nov_2009_10_54_35_+1100_v.4AMIyzpkgDa6oU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, actually I believe Jeff wrote that particular line of code.
+Hi Rusty, Mauro,
 
-Cheers
+On Thu, 12 Nov 2009 23:40:25 +1030 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+> Yep, thanks Stephen.  I can't apply this fix to my tree since that functi=
+on
+> isn't exported in Linus' tree.  I've pulled in the ppc and sparc fixes to=
+ my
+> tree though, but assume they'll go into their proper homes soon.
+
+Yeah, the i7core_edac fix needs to stay in my tree as it is an
+interaction between two trees in linux-next.  The others should be
+applied to the powerpc and sparc trees, as you say, since they fix the
+current code in those trees.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__13_Nov_2009_10_54_35_+1100_v.4AMIyzpkgDa6oU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr8oDsACgkQjjKRsyhoI8zlOACfU/+JSC3PTtIeBN5f1zqqm5Nd
+4DYAn3EjSbObWgCLZ0AnhBvbxEKru6wb
+=B3tR
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__13_Nov_2009_10_54_35_+1100_v.4AMIyzpkgDa6oU--
