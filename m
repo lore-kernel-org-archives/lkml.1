@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbZKLPAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbZKLPFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbZKLPAn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 10:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZKLPAj
+	id S1753154AbZKLPFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 10:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZKLPFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 10:00:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44124 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbZKLPAj (ORCPT
+	Thu, 12 Nov 2009 10:05:42 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:45714 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbZKLPFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 10:00:39 -0500
-Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com>
-References: <4AF26176.4080307@jp.fujitsu.com>
-	 <1257778154.4108.341.camel@laptop> <4AF8FD3C.2090008@jp.fujitsu.com>
-	 <4AF8FE76.406@jp.fujitsu.com>
-	 <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
-	 <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com>
-	 <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com>
-	 <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com>
-	 <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 Nov 2009 16:00:38 +0100
-Message-ID: <1258038038.4039.467.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 10:05:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WsLihd0+6pZ4Kh2DRdcaOjvTvdLl5H5i0HyhqvP5SHVAZzbrOJZzkEqKoew1ioh9cS
+         ecE1JO1MXR4jGroO2eMqV3qC4fygE65q3WVZAvpfg1ghKJVsaGFsrQig2ehUZTxysHOi
+         P4CN5DEof6hNFYnYWcXMsegS+VQ3AOW8s/AW0=
+Date: Thu, 12 Nov 2009 16:05:43 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, ucode-amd: Load ucode-patches once and not
+ separately fo each CPU
+Message-ID: <20091112150543.GH18592@alberich.amd.com>
+References: <20091110110601.GG30802@alberich.amd.com>
+ <20091110110723.GH30802@alberich.amd.com>
+ <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0911100402k4f8648b8ref712f4c60fb8a7b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-12 at 15:49 +0100, Stanislaw Gruszka wrote:
->  I can not reproduce
-> the bug with below patch:
+On Tue, Nov 10, 2009 at 01:02:39PM +0100, Dmitry Adamushko wrote:
+> 2009/11/10 Andreas Herrmann <herrmann.der.user@googlemail.com>:
+> > This also implies that corresponding log messages, e.g.
+> >
+> >  platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+> >
+> > show up only once on module load and not when ucode is updated for
+> > each CPU.
 > 
-> diff --git a/kernel/exit.c b/kernel/exit.c
-> index f7864ac..b85e384 100644
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -110,8 +110,8 @@ static void __exit_signal(struct task_struct *tsk)
->  		 * We won't ever get here for the group leader, since it
->  		 * will have been the last reference on the signal_struct.
->  		 */
-> -		sig->utime = cputime_add(sig->utime, task_utime(tsk));
-> -		sig->stime = cputime_add(sig->stime, task_stime(tsk));
-> +		sig->utime = cputime_add(sig->utime, tsk->utime); //task_utime(tsk));
-> +		sig->stime = cputime_add(sig->stime, tsk->stime); //task_stime(tsk));
->  		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
->  		sig->min_flt += tsk->min_flt;
->  		sig->maj_flt += tsk->maj_flt;
-
-Yes, this is the thing I suggested and makes sense.
-
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index ce17760..8be5b75 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -914,8 +914,8 @@ void do_sys_times(struct tms *tms)
->  	struct task_cputime cputime;
->  	cputime_t cutime, cstime;
->  
-> -	thread_group_cputime(current, &cputime);
->  	spin_lock_irq(&current->sighand->siglock);
-> +	thread_group_cputime(current, &cputime);
->  	cutime = current->signal->cutime;
->  	cstime = current->signal->cstime;
->  	spin_unlock_irq(&current->sighand->siglock);
+> I like it.
 > 
-> Perhaps we can remove task_{u,s}time() in some places or maybe at whole ?
+> One remark : should we perhaps provide a means of reloading the cached
+> firmware?
 
-I think task_[us]time() still has value for getrusage() since it avoids
-the task hiding from top by never running during the tick crap.
+I'll think about this.
 
+> Or is the standard procedure to reload microcode.ko in case
+> a new firmware file has been installed?
+
+module reload will do so far.
+
+(And I should ensure that microcode_amd is only provided if ucode
+loader is compiled as module.)
+
+
+Regards,
+Andreas
