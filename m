@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZKLAAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbZKLATG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbZKLAAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 19:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbZKLAAm
+	id S1759634AbZKLATG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 19:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbZKLATF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 19:00:42 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51937 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759486AbZKLAAl (ORCPT
+	Wed, 11 Nov 2009 19:19:05 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:39558 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757511AbZKLATE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 19:00:41 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AFB5019.7030901@jp.fujitsu.com>
-Date: Thu, 12 Nov 2009 09:00:25 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 11 Nov 2009 19:19:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=PM3m2AIJ2EALYbbu+mgz5f26jn5RgcV34lflArRI+6LN/lYCrcmv9bQqQURp4JUoCC
+         Nz4ALcHPxOpNDD6o7k8LM+Xr+RPPCVcPFgpSvJ7LR+bQ33n49Y6BCi5ZiEFEZOai4+16
+         GTmbCBQDJBcOMrldEgNi09oD7p7dMWDjLn2zM=
 MIME-Version: 1.0
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] fix granularity of task_u/stime()
-References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com> <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
-In-Reply-To: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
+Date: Thu, 12 Nov 2009 11:13:27 +1100
+Message-ID: <d45a3acc0911111613v38fa9df4jed21876ce6309097@mail.gmail.com>
+Subject: [PATCH] X25: Enable setting of cause and diagnostic fields
+From: andrew hendry <andrew.hendry@gmail.com>
+To: netdev@vger.kernel.org, linux-x25@vger.kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislaw Gruszka wrote:
-> On Tue, Nov 10, 2009 at 02:47:34PM +0900, Hidetoshi Seto wrote:
->> Remove casting to clock_t from task_u/stime(), and keep granularity of
->> cputime_t over the calculation.
->>
->> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
->> ---
->>  kernel/sched.c |   21 ++++++++++++---------
->>  1 files changed, 12 insertions(+), 9 deletions(-)
->>
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index 28dd4f4..1632e82 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -5171,41 +5171,44 @@ cputime_t task_stime(struct task_struct *p)
->>  	return p->stime;
->>  }
->>  #else
->> +
->> +#ifndef nsecs_to_cputime
->> +# define nsecs_to_cputime(__nsecs) msecs_to_cputime((__nsecs) / NSEC_PER_MSEC)
->> +#endif
->> +
-> 
-> I would like to test, but unfortunately with the patch kernel not build
-> on my system:
-> 
-> kernel/built-in.o: In function `task_utime':
-> /usr/src/rhel5/linux-2.6/kernel/sched.c:5187: undefined reference to
-> `__udivdi3'
-> kernel/built-in.o: In function `task_stime':
-> /usr/src/rhel5/linux-2.6/kernel/sched.c:5208: undefined reference to
-> `__udivdi3'
-> make: *** [.tmp_vmlinux1] Error 1
+Adds SIOCX25SCAUSEDIAG, allowing X.25 programs to set the cause and
+diagnostic fields.
+Normally used to indicate status upon closing connections.
 
-Wow, what arch?
-Could you provide your .config?
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
 
-Thanks,
-H.Seto
+diff -uprN -X a/Documentation/dontdiff a/include/linux/x25.h
+b/include/linux/x25.h
+--- a/include/linux/x25.h	2009-11-11 14:03:26.659663301 +1100
++++ b/include/linux/x25.h	2009-11-11 16:05:06.625958557 +1100
+@@ -25,6 +25,7 @@
+ #define SIOCX25SENDCALLACCPT    (SIOCPROTOPRIVATE + 9)
+ #define SIOCX25GDTEFACILITIES (SIOCPROTOPRIVATE + 10)
+ #define SIOCX25SDTEFACILITIES (SIOCPROTOPRIVATE + 11)
++#define SIOCX25SCAUSEDIAG     (SIOCPROTOPRIVATE + 12)
 
+ /*
+  *	Values for {get,set}sockopt.
+diff -uprN -X a/Documentation/dontdiff a/net/x25/af_x25.c b/net/x25/af_x25.c
+--- a/net/x25/af_x25.c	2009-11-11 14:02:44.027061001 +1100
++++ b/net/x25/af_x25.c	2009-11-11 16:22:51.374077963 +1100
+@@ -1430,6 +1430,17 @@ static int x25_ioctl(struct socket *sock
+ 			break;
+ 		}
+
++		case SIOCX25SCAUSEDIAG: {
++			struct x25_causediag causediag;
++			rc = -EFAULT;
++			if (copy_from_user(&causediag, argp, sizeof(causediag)))
++				break;
++			x25->causediag = causediag;
++			rc = 0;
++			break;
++
++		}
++
+ 		case SIOCX25SCUDMATCHLEN: {
+ 			struct x25_subaddr sub_addr;
+ 			rc = -EINVAL;
+diff -uprN -X a/Documentation/dontdiff a/net/x25/x25_subr.c b/net/x25/x25_subr.c
+--- a/net/x25/x25_subr.c	2009-11-11 14:02:44.026061128 +1100
++++ b/net/x25/x25_subr.c	2009-11-11 16:28:30.316150252 +1100
+@@ -225,6 +225,12 @@ void x25_write_internal(struct sock *sk,
+ 			break;
+
+ 		case X25_CLEAR_REQUEST:
++			dptr    = skb_put(skb, 3);
++			*dptr++ = frametype;
++			*dptr++ = x25->causediag.cause;
++			*dptr++ = x25->causediag.diagnostic;
++			break;
++
+ 		case X25_RESET_REQUEST:
+ 			dptr    = skb_put(skb, 3);
+ 			*dptr++ = frametype;
