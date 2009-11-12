@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZKLSr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbZKLSsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbZKLSr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:47:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZKLSru
+	id S1753542AbZKLSsA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 13:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZKLSr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:47:50 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:26649 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753235AbZKLSrr (ORCPT
+	Thu, 12 Nov 2009 13:47:57 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:33277 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbZKLSrw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:47:47 -0500
-Subject: [PATCH 01/11] cciss: Make device attributes static
+	Thu, 12 Nov 2009 13:47:52 -0500
+Subject: [PATCH 02/11] cciss: Fix problem with remove_from_scan_list on driver
+	unload
 To: axboe@kernel.dk, akpm@linux-foundation.org
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: linux-kernel@vger.kernel.org, mikem@beardog.cce.hp.com, achiang@hp.com,
        brace@beardog.cce.hp.com
-Date: Thu, 12 Nov 2009 12:49:14 -0600
-Message-ID: <20091112184914.23389.57000.stgit@beardog.cce.hp.com>
+Date: Thu, 12 Nov 2009 12:49:19 -0600
+Message-ID: <20091112184919.23389.52861.stgit@beardog.cce.hp.com>
 In-Reply-To: <20091112184542.23389.36220.stgit@beardog.cce.hp.com>
 References: <20091112184542.23389.36220.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
@@ -27,91 +28,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Chiang <achiang@hp.com>
+From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-cciss: Make device attributes static
+cciss: Fix problem with remove_from_scan_list that on driver unload
+it doesn't remove the controller from the scan list correctly if
+the controller is currently being scanned for new devices.
 
-Cc: Stephen M. Cameron <scameron@beardog.cce.hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Acked-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- drivers/block/cciss.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/block/cciss.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 6399e50..92b1263 100644
+index 92b1263..81c2187 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -482,7 +482,7 @@ static ssize_t host_store_rescan(struct device *dev,
+@@ -3513,28 +3513,33 @@ static int add_to_scan_list(struct ctlr_info *h)
+  * @h:			   Pointer to the controller.
+  *
+  * Removes the controller from the rescan queue if present. Blocks if
+- * the controller is currently conducting a rescan.
++ * the controller is currently conducting a rescan.  The controller
++ * can be in one of three states:
++ * 1. Doesn't need a scan
++ * 2. On the scan list, but not scanning yet (we remove it)
++ * 3. Busy scanning (and not on the list). In this case we want to wait for
++ *    the scan to complete to make sure the scanning thread for this
++ *    controller is completely idle.
+  **/
+ static void remove_from_scan_list(struct ctlr_info *h)
+ {
+ 	struct ctlr_info *test_h, *tmp_h;
+-	int scanning = 0;
  
- 	return count;
+ 	mutex_lock(&scan_mutex);
+ 	list_for_each_entry_safe(test_h, tmp_h, &scan_q, scan_list) {
+-		if (test_h == h) {
++		if (test_h == h) { /* state 2. */
+ 			list_del(&h->scan_list);
+ 			complete_all(&h->scan_wait);
+ 			mutex_unlock(&scan_mutex);
+ 			return;
+ 		}
+ 	}
+-	if (&h->busy_scanning)
+-		scanning = 0;
+-	mutex_unlock(&scan_mutex);
+-
+-	if (scanning)
++	if (h->busy_scanning) { /* state 3. */
++		mutex_unlock(&scan_mutex);
+ 		wait_for_completion(&h->scan_wait);
++	} else { /* state 1, nothing to do. */
++		mutex_unlock(&scan_mutex);
++	}
  }
--DEVICE_ATTR(rescan, S_IWUSR, NULL, host_store_rescan);
-+static DEVICE_ATTR(rescan, S_IWUSR, NULL, host_store_rescan);
  
- static ssize_t dev_show_unique_id(struct device *dev,
- 				 struct device_attribute *attr,
-@@ -512,7 +512,7 @@ static ssize_t dev_show_unique_id(struct device *dev,
- 				sn[8], sn[9], sn[10], sn[11],
- 				sn[12], sn[13], sn[14], sn[15]);
- }
--DEVICE_ATTR(unique_id, S_IRUGO, dev_show_unique_id, NULL);
-+static DEVICE_ATTR(unique_id, S_IRUGO, dev_show_unique_id, NULL);
- 
- static ssize_t dev_show_vendor(struct device *dev,
- 			       struct device_attribute *attr,
-@@ -536,7 +536,7 @@ static ssize_t dev_show_vendor(struct device *dev,
- 	else
- 		return snprintf(buf, sizeof(vendor) + 1, "%s\n", drv->vendor);
- }
--DEVICE_ATTR(vendor, S_IRUGO, dev_show_vendor, NULL);
-+static DEVICE_ATTR(vendor, S_IRUGO, dev_show_vendor, NULL);
- 
- static ssize_t dev_show_model(struct device *dev,
- 			      struct device_attribute *attr,
-@@ -560,7 +560,7 @@ static ssize_t dev_show_model(struct device *dev,
- 	else
- 		return snprintf(buf, sizeof(model) + 1, "%s\n", drv->model);
- }
--DEVICE_ATTR(model, S_IRUGO, dev_show_model, NULL);
-+static DEVICE_ATTR(model, S_IRUGO, dev_show_model, NULL);
- 
- static ssize_t dev_show_rev(struct device *dev,
- 			    struct device_attribute *attr,
-@@ -584,7 +584,7 @@ static ssize_t dev_show_rev(struct device *dev,
- 	else
- 		return snprintf(buf, sizeof(rev) + 1, "%s\n", drv->rev);
- }
--DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
-+static DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
- 
- static ssize_t cciss_show_lunid(struct device *dev,
- 				struct device_attribute *attr, char *buf)
-@@ -609,7 +609,7 @@ static ssize_t cciss_show_lunid(struct device *dev,
- 		lunid[0], lunid[1], lunid[2], lunid[3],
- 		lunid[4], lunid[5], lunid[6], lunid[7]);
- }
--DEVICE_ATTR(lunid, S_IRUGO, cciss_show_lunid, NULL);
-+static DEVICE_ATTR(lunid, S_IRUGO, cciss_show_lunid, NULL);
- 
- static ssize_t cciss_show_raid_level(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
-@@ -632,7 +632,7 @@ static ssize_t cciss_show_raid_level(struct device *dev,
- 	return snprintf(buf, strlen(raid_label[raid]) + 7, "RAID %s\n",
- 			raid_label[raid]);
- }
--DEVICE_ATTR(raid_level, S_IRUGO, cciss_show_raid_level, NULL);
-+static DEVICE_ATTR(raid_level, S_IRUGO, cciss_show_raid_level, NULL);
- 
- static ssize_t cciss_show_usage_count(struct device *dev,
- 				      struct device_attribute *attr, char *buf)
-@@ -651,7 +651,7 @@ static ssize_t cciss_show_usage_count(struct device *dev,
- 	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
- 	return snprintf(buf, 20, "%d\n", count);
- }
--DEVICE_ATTR(usage_count, S_IRUGO, cciss_show_usage_count, NULL);
-+static DEVICE_ATTR(usage_count, S_IRUGO, cciss_show_usage_count, NULL);
- 
- static struct attribute *cciss_host_attrs[] = {
- 	&dev_attr_rescan.attr,
+ /**
 
