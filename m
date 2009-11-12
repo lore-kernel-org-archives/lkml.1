@@ -1,145 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZKLIoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZKLIvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752241AbZKLIoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZKLIoA
+	id S1752468AbZKLIvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZKLIvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:44:00 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:38161 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbZKLIn7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:43:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oiW4LLRpDWwcfKf8dY4b3pKuxfJuvSCoSsgYtSjaZjm7XlS2HC1vNa5YpTjMWk98AF
-         NTNNu0XGClWec/ynuANuDW8NG0e2ZIvwSJqd2Uy1HeYN2h8/D0pvNZzGUrwY1zqG3Y+g
-         e/5FRlqO9lQ8+BqgsKkvgnJhVIhMe7JL4fnAM=
-MIME-Version: 1.0
-In-Reply-To: <40e92d5b0911111625sf692589u8678b03264c1b31d@mail.gmail.com>
-References: <40e92d5b0911101608t4baf75bo83c5780f24761781@mail.gmail.com>
-	 <4e5e476b0911110300nb25785eqf7998ad1fe3ed537@mail.gmail.com>
-	 <40e92d5b0911111625sf692589u8678b03264c1b31d@mail.gmail.com>
-Date: Thu, 12 Nov 2009 09:44:04 +0100
-Message-ID: <4e5e476b0911120044j1c944b51me3b4d4a3653b7c5@mail.gmail.com>
-Subject: Re: SATA NCQ - blessing for throughput, curse for latency?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: =?UTF-8?Q?Przemys=C5=82aw_Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Nov 2009 03:51:15 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34385 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbZKLIvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 03:51:14 -0500
+Date: Thu, 12 Nov 2009 19:51:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 12
+Message-Id: <20091112195101.63263490.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/12 Przemysław Pawełczyk <przemyslaw@pawelczyk.it>:
-> 2009/11/11 Corrado Zoccolo <czoccolo@gmail.com>:
->> 2009/11/11 Przemysław Pawełczyk <przemyslaw@pawelczyk.it>:
->>> [snip] I wrote a script (that is pasted
->>> at the end), which using zcav from bonnie++ (and unbuffer from expect
->>> to work properly if output is redirected to a file) reads up to 64 GB
->>> of the disk, but after a first few gigabytes (depending on how many GB
->>> of memory you have) cats kernel sources with binary files up to the
->>> second level of directory depth. What is measured? The real time of
->>> the cat to /dev/null operation. Why not the kernel sources alone?
->>> Because if we build kernel, especially with -jX (where X > 1), then
->>> both inodes and contents of the corresponding files within these
->>> directories generally won't be consecutive. Time for the results with
->>> some background information. In my tests I have used 2.6.31.5 built
->>> with debuginfo (using debian's make-kpkg).
->>>
->>>[summarized the relevant numbers]
->>> *** NCQ turned on ***
->>> real 752.30
->>> user 0.20
->>> sys 1.83
->>>
->>>
->>> *** NCQ turned off *** (kernel booted with noncq parameter)
->>> real 62.30
->>> user 0.27
->>> sys 1.59
->>>
->>> [snip]
->>>
->>> Can anyone confirm analogous NCQ-dependant behavior with other
->>> disk/controller variants? Any suggestions for improvements other than
->>> turning off NCQ or switching to anticipatory (in typical cases cfq is
->>> better, so it's not the best option)?
->>
->> The NCQ latency problem is well known, and should be fixed in 2.6.32.
->> You can try building the latest rc.
->
-> Thank you for this information. Could you provide fixing commit's sha?
-> Just for the record.
-It's a set of changes:
-1d2235152dc745c6d94bedb550fea84cffdbf768 ..
-61f0c1dcaaac71faabac6ef7c839b29f20204bea
+--Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> Bunch of numbers from my laptop, to show how it improved in my case:
->
-> model name: Intel(R) Core(TM)2 Duo CPU     T7100  @ 1.80GHz
-> mem total:  3087012 kB
->
-> [    8.656966] scsi 0:0:0:0: Direct-Access     ATA      WDC
-> WD3200BJKT-0 11.0 PQ: 0 ANSI: 5
-> [    8.657771] sd 0:0:0:0: [sda] 625142448 512-byte logical blocks:
-> (320 GB/298 GiB)
->
-> 00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM
-> (ICH8M/ICH8M-E) SATA AHCI Controller (rev 03) (prog-if 01 [AHCI 1.0])
->        Kernel driver in use: ahci
->
-> ** 2.6.31.5 NCQ **
->
-> Did not end while was reading first 64 GB of the disk. Result:
-> real 807.06
-> user 0.14
-> sys 2.06
->
-> ** 2.6.32-rc6 NCQ **
->
-> 0.00 82.33 12.437
-> 1.00 82.47 12.417
-> 2.00 82.51 12.411
-> 3.00 82.31 12.441
-> Concurrent read will start in 1 second...
-> 4.00 57.30 17.870
-> 5.00 41.49 24.680
-> 6.00 38.76 26.421
-> real 79.48
-> user 0.24
-> sys 1.43
-> 7.00 53.64 19.092
-> 8.00 82.51 12.411
->
-> ** 2.6.32-rc6 noncq **
->
-> 0.00 82.33 12.437
-> 1.00 82.47 12.417
-> 2.00 82.40 12.427
-> 3.00 81.87 12.508
-> Concurrent read will start in 1 second...
-> 4.00 42.17 24.285
-> 5.00 37.91 27.010
-> real 62.94
-> user 0.18
-> sys 1.64
-> 6.00 52.70 19.431
-> 7.00 82.51 12.410
->
-> With noncq second read is faster, but the difference is now acceptable I think.
+Hi all,
 
-Thanks for confirming.
+Changes since 20091111:
 
-Corrado
->
-> Thanks.
->
-> --
-> Przemysław Pawełczyk
->
+Linus' tree gained a build failure for which I applied a patch.
+
+The net tree lost 3 conflicts.
+
+The cpufreq tree gained a conflict against the acpi tree.
+
+The rr tree lost its build failure but exposed build failures in the
+powerpc and sparc trees for which I applied patches.  It also had another
+build failure due to an interaction with the kbuild tree for which I
+applied another patch.
+
+The i7core_edac tree gained a build failure for which I have applied a
+patch.
+
+The tip tree lost its build failure.
+
+The sysctl tree gained a build failure for which I applied a patch.
+
+The usb tree lost its conflicts.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 148 trees (counting Linus' and 22 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Applying: jbd: export log_start_commit for ext3
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/common/tuners/tda18271-=
+fe.c
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+CONFLICT (content): Merge conflict in arch/powerpc/kvm/timing.h
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
+nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
+CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
+$ git rm -f drivers/net/sfc/sfe4001.c
+Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3evm.c
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ray_cs.c
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+CONFLICT (content): Merge conflict in Documentation/dontdiff
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in drivers/net/Kconfig
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Applying: i7core_edac: do not export static functions
+Merging devicetree/next-devicetree
+Merging limits/writable_limits
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
+CONFLICT (content): Merge conflict in kernel/irq/chip.c
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
+.S
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in kernel/softlockup.c
+CONFLICT (content): Merge conflict in mm/percpu.c
+Applying: percpu: merge fixup for variable renaming
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/cb_das=
+16_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
+pc_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
+_cs.c
+Merging scsi-post-merge/master
+Applying: modpost: autoconf.h has moved to include/generated
+Applying: sysctl: fix build dependency on CONFIG_NET
+Applying: powerpc: do not export pci_alloc/free_consistent
+Applying: sparc64: don't export static inline pci_ functions
+
+--Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr7zHUACgkQjjKRsyhoI8xuDQCfQWYb6PopXDdOmQ9+VSSXszR4
+g0cAmweAEvFCY+Gr/RCb1xjKMzJJAvMo
+=1KP7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Nov_2009_19_51_01_+1100_4KHrmh7JpXw/aH4m--
