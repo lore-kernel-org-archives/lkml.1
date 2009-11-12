@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751411AbZKLHVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZKLHW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751411AbZKLHVJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZKLHVG
+	id S1751461AbZKLHW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZKLHW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:21:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49009 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbZKLHVF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:21:05 -0500
-Message-ID: <4AFBB72F.6070907@zytor.com>
-Date: Wed, 11 Nov 2009 23:20:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: ykzhao <yakui.zhao@intel.com>
-CC: Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>,
+	Thu, 12 Nov 2009 02:22:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43949 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751126AbZKLHW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:22:27 -0500
+Date: Thu, 12 Nov 2009 08:22:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>	 <4AFA210B.3020207@kernel.org>	 <1257930767.31183.113.camel@localhost.localdomain>	 <4AFB0B02.4050306@kernel.org>	 <1257988632.31183.134.camel@localhost.localdomain>	 <4AFB7D21.6050004@kernel.org>	 <1257997072.3888.4.camel@localhost.localdomain>	 <4AFB9B60.7010009@kernel.org> <1258010067.3802.11.camel@localhost.localdomain>
-In-Reply-To: <1258010067.3802.11.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091112072217.GA31719@elte.hu>
+References: <20091025225342.007138f5@infradead.org>
+ <20091111020108.GA11423@localhost>
+ <20091110223456.01ef355f@infradead.org>
+ <4AFA6AEF.5060306@garzik.org>
+ <20091111081905.270a4e55@infradead.org>
+ <y0m3a4kpsiw.fsf@fche.csb>
+ <4AFB4AC7.1090405@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFB4AC7.1090405@intel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/2009 11:14 PM, ykzhao wrote:
-> 
-> In this patch the find_e820_area is used in the
-> acpi_reserve_wakeup_memory, which is called after initializing the
-> bootmem allocator.
-> Can we still use the find_e820_area after the bootmem allocator is
-> initialized? 
 
-Obviously not: the bootmem allocator now thinks it owns memory, and it
-wouldn't know not to allocate something that is later claimed by
-find_e820_area.  Problem.
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 
-> It seems that the bootmem bitmap is also found by using the
-> find_e820_area. But we don't update the reserved_early array any more.
-> Maybe we will get the overlap address with the bootmem bitmap for the
-> wakeup code.
+> If you already know what the file object is, sure. We're interested in 
+> the case where we have no clue what the file object actually is to 
+> begin with. Having a trace with a random inode number pop up and then 
+> disappear into thin air won't help much at all, especially if we can't 
+> map it back to something "real" on disk. in time.
 
-Not just the bitmap, but any bootmem allocation could conflict...
+Yep.
 
-	-hpa
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+It's similar to PID/comm tracing, which we already do consistently for 
+all major task events such as fork/exit, sleep/wakeup/context-switch, 
+etc.
 
+By the 'use inode numbers' argument it should be perfectly fine to only 
+trace the physical PID itself, and look up the comm later in /proc, or 
+to add a syscall to do it.
+
+In reality it's not fine. Not just the unnecessary overhead (you have to 
+look up something you already had) - but also that tasks will exit in 
+high-freq workloads (so the comm is lost), the PID might not match up 
+anymore, tasks can change their comm, etc.
+
+The most important principle with event logging is that we want the most 
+high quality information and we want to a trustable and simple data 
+source: so for tasks we want the PID and the comm, and for files we want 
+the top name component and perhaps also the inode number (plus a 
+filesystem id), captured when the event happened.
+
+	Ingo
