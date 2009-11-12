@@ -1,63 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZKLIJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZKLIMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbZKLIJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZKLIJA
+	id S1752177AbZKLIMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZKLIMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:09:00 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:40681 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbZKLII6 (ORCPT
+	Thu, 12 Nov 2009 03:12:42 -0500
+Received: from mga12.intel.com ([143.182.124.36]:43916 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751865AbZKLIMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:08:58 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sysctl tree build failure
-References: <20091112184805.1c0720cb.sfr@canb.auug.org.au>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 12 Nov 2009 00:08:59 -0800
-In-Reply-To: <20091112184805.1c0720cb.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 12 Nov 2009 18\:48\:05 +1100")
-Message-ID: <m1ljicp3l0.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 12 Nov 2009 03:12:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
+   d="scan'208";a="210610303"
+Date: Thu, 12 Nov 2009 16:12:22 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86, mce: fix __init annotations
+Message-ID: <20091112081222.GA23705@ywang-moblin2.bj.intel.com>
+References: <20091111075125.GA17900@ywang-moblin2.bj.intel.com> <4AFB9CFE.6010207@jp.fujitsu.com> <4AFBB0B8.2070501@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <4AFBB0B8.2070501@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+On Thu, Nov 12, 2009 at 03:52:40PM +0900, Hidetoshi Seto wrote:
+> Hidetoshi Seto wrote:
+> > Yong Wang wrote:
+> >> @@ -268,7 +268,7 @@ void mcheck_intel_therm_init(void)
+> >>  		lvtthmr_init = apic_read(APIC_LVTTHMR);
+> >>  }
+> >>  
+> >> -void intel_init_thermal(struct cpuinfo_x86 *c)
+> >> +void __init intel_init_thermal(struct cpuinfo_x86 *c)
+> >>  {
+> >>  	unsigned int cpu = smp_processor_id();
+> >>  	int tm2 = 0;
+> > 
+> > But I think this could be called on hot-plugged AP.
+> > Should be __cpuinit ?
+> > 
+> > void __cpuinit mcheck_cpu_init(struct cpuinfo_x86 *c)
+> >  ->  static void __mcheck_cpu_init_vendor(struct cpuinfo_x86 *c)
+> >   ->  void mce_intel_feature_init(struct cpuinfo_x86 *c)
+> >    ->  void intel_init_thermal(struct cpuinfo_x86 *c)
+> 
+> I found it is called from resume path, so neither __init nor __cpuinit
+> will be applicable...
+> 
+> static int mce_resume(struct sys_device *dev)
+>  -> static void __mcheck_cpu_init_vendor(struct cpuinfo_x86 *c)
+>   ->  void mce_intel_feature_init(struct cpuinfo_x86 *c)
+>    ->  void intel_init_thermal(struct cpuinfo_x86 *c)
+> 
+> Following patch is based on tip:perf/mce.
+> 
+> 
+> Thanks,
+> H.Seto
+> 
+> ===
+> 
+> Subject: [PATCH] x86, mce: fix __init annotations
+> 
+> The intel_init_thermal() is called from resume path, so it cannot be
+> marked as __init.
+> 
+> OTOH mce_banks_init() is only called from __mcheck_cpu_cap_init()
+> which is marked as __cpuinit, so it can be also marked as __cpuinit.
+> 
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce.c         |    4 ++--
+>  arch/x86/kernel/cpu/mcheck/therm_throt.c |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+> index 0d41020..5f277ca 100644
+> --- a/arch/x86/kernel/cpu/mcheck/mce.c
+> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
+> @@ -1201,7 +1201,7 @@ int mce_notify_irq(void)
+>  }
+>  EXPORT_SYMBOL_GPL(mce_notify_irq);
+>  
+> -static int mce_banks_init(void)
+> +static int __cpuinit __mcheck_cpu_mce_banks_init(void)
+>  {
+>  	int i;
+>  
+> @@ -1242,7 +1242,7 @@ static int __cpuinit __mcheck_cpu_cap_init(void)
+>  	WARN_ON(banks != 0 && b != banks);
+>  	banks = b;
+>  	if (!mce_banks) {
+> -		int err = mce_banks_init();
+> +		int err = __mcheck_cpu_mce_banks_init();
+>  
+>  		if (err)
+>  			return err;
+> diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> index 8a73d5c..4fef985 100644
+> --- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> +++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> @@ -268,7 +268,7 @@ void __init mcheck_intel_therm_init(void)
+>  		lvtthmr_init = apic_read(APIC_LVTTHMR);
+>  }
+>  
+> -void __init intel_init_thermal(struct cpuinfo_x86 *c)
+> +void intel_init_thermal(struct cpuinfo_x86 *c)
+>  {
+>  	unsigned int cpu = smp_processor_id();
+>  	int tm2 = 0;
+> 
 
-> Hi Eric,
->
-> Today's linux-next build (powerpc allnoconfig) failed like this:
->
-> kernel/built-in.o: In function `get_sysctl':
-> sysctl_binary.c:(.text+0x100d4): undefined reference to `dev_get_by_index'
->
-> Caused by commit 26a7034b40ba80f82f64fa251a2cbf49f9971c6a ("sysctl:
-> Reduce sys_sysctl to a compatibility wrapper around /proc/sys").
->
-> CONFIG_NET is not set for this build.
->
-> I have used this patch for today:
-> (It does produce this warning, though:
->
-> kernel/sysctl_binary.c:1253: warning: unused variable 'net'
->
-> so needs more work.)
-
-Thank you, and my apologies.  I thought I had tried it with every
-applicable compile option but apparently not.
-
-Ugh.  It looks like I have a small refcount leak in that case as
-well.  Blind I was.
-
-Thank you very I will have this fixed shortly.
-
-Eric
+Oh, yeah. We should only mark mcheck_intel_therm_init as __init for the
+thermal part. Thanks for spotting.
 
