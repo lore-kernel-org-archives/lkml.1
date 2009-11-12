@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbZKLCXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbZKLCYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759971AbZKLCXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 21:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759928AbZKLCXa
+	id S1759980AbZKLCYZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 21:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759907AbZKLCYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 21:23:30 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:48865 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759915AbZKLCXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 21:23:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=Z4v5Wpgue3EOVVxClfVN1nUQirMAO7OSJEhWXX/E10lpYFOq9PNMn4hswh5nntYaYu
-         Oa6rXP1D0W+cMXkjqBnVFqTU7RZb9YQa1XraRoMmOEkhnHeZApU42ZpZGyG78ppoJIJz
-         w5wXAR9Argc0+jLscAOjjkJaV3WQmy0Crnu80=
-MIME-Version: 1.0
-In-Reply-To: <20091111093258.GE560@1wt.eu>
-References: <4AF9D8E2.7050205@zytor.com> <4AF9E61B.5090407@zytor.com> 
-	<20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu> 
-	<4AF9ED78.3000106@zytor.com> <20091111055220.GA560@1wt.eu> 
-	<4AFA569E.9040206@zytor.com> <20091111063617.GD560@1wt.eu> 
-	<4AFA6E50.7030808@zytor.com> <20091111093258.GE560@1wt.eu>
-From: Matt Thrailkill <matt.thrailkill@gmail.com>
-Date: Wed, 11 Nov 2009 18:23:14 -0800
-Message-ID: <a91053ef0911111823v52669d18p7e5812076a63f03e@mail.gmail.com>
-Subject: Re: i686 quirk for AMD Geode
-To: Willy Tarreau <w@1wt.eu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matteo Croce <technoboy85@gmail.com>,
-       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Nov 2009 21:24:24 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48047 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759588AbZKLCYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 21:24:24 -0500
+Date: Thu, 12 Nov 2009 13:24:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: linux-next: net tree build warning
+Message-Id: <20091112132424.e010e3c5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Nov_2009_13_24_24_+1100_WYWE=aQftocoSL.Z"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 1:32 AM, Willy Tarreau <w@1wt.eu> wrote:
-> All I can say is that executing a NOP results in no state change in
-> the processor except the instruction pointer which points to the
-> next instruction after execution. Since a NOP changes nothing, it
-> cannot be used alone to provide any privilege, access to data or
-> any such thing. Since it does not perform any jump, it cannot either
-> be used to take back control of the execution flow. And it is certain
-> that the next instruction after it will be executed, so if the NOP
-> crosses a page boundary and completes on a non-executable one, the
-> next instruction will trigger the PF.
->
-> So I can't see how a NOP can be used to circumvent any protection.
+--Signature=_Thu__12_Nov_2009_13_24_24_+1100_WYWE=aQftocoSL.Z
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So a nop(l) sled won't be a problem, right?
+Hi Dave,
+
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
+
+net/ipv6/addrconf.c: In function 'inet6_dump_ifinfo':
+net/ipv6/addrconf.c:3833: warning: unused variable 'err'
+
+Introduced by commit 84d2697d9649339215675551eae28ba04068dea1 ("ipv6:
+speedup inet6_dump_ifinfo()").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__12_Nov_2009_13_24_24_+1100_WYWE=aQftocoSL.Z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkr7cdgACgkQjjKRsyhoI8wwNACgsRc782JJ82TAiBcJZmKLaEZV
+/qoAn3IT+QhRV6AHlHLqNP6sCKIo3iTi
+=CSew
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Nov_2009_13_24_24_+1100_WYWE=aQftocoSL.Z--
