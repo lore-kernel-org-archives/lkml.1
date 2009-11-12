@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZKLVQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZKLVQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbZKLVQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZKLVQs
+	id S1754540AbZKLVQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZKLVQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:16:48 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:54152 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbZKLVQr (ORCPT
+	Thu, 12 Nov 2009 16:16:52 -0500
+Received: from trinity.develer.com ([83.149.158.210]:57752 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbZKLVQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:16:47 -0500
-Date: Thu, 12 Nov 2009 22:16:37 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
-       rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nicholas Mc Guire <der.herr@hofr.at>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH v7 04/17] tracing: add static function tracer support
-	for MIPS
-Message-ID: <20091112211637.GA27465@linux-mips.org>
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1257779502.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1257779502.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1257779502.git.wuzhangjin@gmail.com> <cefe074f5eb3cfbc2e0bb41b0c1f61fcd0190d90.1257779502.git.wuzhangjin@gmail.com> <4AF8B31C.5030802@caviumnetworks.com> <1257814817.2822.3.camel@falcon.domain.org> <4AF99848.9090000@caviumnetworks.com> <1257907351.2922.37.camel@falcon.domain.org> <20091111031325.GA20716@linux-mips.org> <alpine.LFD.2.00.0911111327450.10184@eddie.linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911111327450.10184@eddie.linux-mips.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 12 Nov 2009 16:16:48 -0500
+Subject: ath9k: DMA failed to stop in 10 ms AR_CR=0x00000024
+ AR_DIAG_SW=0x40000020
+From: Bernie Innocenti <bernie@codewiz.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: ath9k-devel@venema.h4ckr.net, lkml <linux-kernel@vger.kernel.org>,
+       Danny Clark <dclark@fsf.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Sugar Labs - http://www.sugarlabs.org/
+Date: Thu, 12 Nov 2009 16:16:45 -0500
+Message-ID: <1258060605.2953.1029.camel@giskard>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 01:30:40PM +0000, Maciej W. Rozycki wrote:
+I've recently replaced the built-in Intel 5300 AGN of my Lenovo X200s
+with an Atheros AR5008 express card. The operation requires a hacked
+BIOS with no hw whitelist check--Thanks for the DRM, Lenovo).
 
-> 
-> On Wed, 11 Nov 2009, Ralf Baechle wrote:
-> 
-> > 64-bit with -mlong-call:
-> > 
-> > 	lui	$25, %highest(foo)
-> > 	lui	$2, %hi(foo)
-> > 	daddiu	$25, %higher(foo)
-> > 	daddiu	$2, %lo(foo)
-> > 	dsll	$25, 32
-> > 	daddu	$25, $2
-> > 	jalr	$25
-> 
->  Don't we use -msym32 these days for this very reason?
+The ath9k driver works great, but occasionally the interface
+disassociates spontaneously and won't get back to work until I manually
+unload and reload the ath9k module. It's hard to reproduce, but seems to
+happen more frequently with some access points.
 
-We do - where we can.  Not all systems can use -msym32.
+I'm seeing it both in Ubuntu Karmic (linux-image_2.6.31.14.48) and
+Fedora Rawhide (kernel-2.6.31.5-127).
 
-  Ralf
+Dmesg contains:
+
+[46623.757586] wlan1: associated
+[47222.920159] wlan1: no probe response from AP 00:14:a8:53:3c:80 - disassociating
+[47223.063855] ath9k: DMA failed to stop in 10 ms AR_CR=0x00000024 AR_DIAG_SW=0x40000020
+[47224.042616] ath9k: DMA failed to stop in 10 ms AR_CR=0x00000024 AR_DIAG_SW=0x40000020
+
+lspci -vv says:
+
+03:00.0 Network controller: Atheros Communications Inc. AR5008 Wireless Network Adapter (rev 01)
+	Subsystem: Atheros Communications Inc. Device 0032
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 64 bytes
+	Interrupt: pin A routed to IRQ 17
+	Region 0: Memory at f2500000 (64-bit, non-prefetchable) [size=64K]
+	Capabilities: <access denied>
+	Kernel driver in use: ath9k
+	Kernel modules: ath9k
+
+Best regards,
+
+-- 
+   // Bernie Innocenti - http://codewiz.org/
+ \X/  Sugar Labs       - http://sugarlabs.org/
+
