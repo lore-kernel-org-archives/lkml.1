@@ -1,68 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbZKLEtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932220AbZKLEtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932208AbZKLEtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 23:49:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbZKLEtd
+	id S932220AbZKLEtg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 23:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbZKLEte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 23:49:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37737 "EHLO
+	Wed, 11 Nov 2009 23:49:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:32854 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932162AbZKLEtc (ORCPT
+	with ESMTP id S932179AbZKLEtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Nov 2009 23:49:32 -0500
-Message-Id: <20091112044937.632312570@goodmis.org>
+Message-Id: <20091112044937.833563306@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 11 Nov 2009 23:41:43 -0500
+Date: Wed, 11 Nov 2009 23:41:44 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 1/2] [PATCH 1/2] ring-buffer: Add multiple iterations between benchmark timestamps
+Subject: [PATCH 2/2] [PATCH 2/2] tracing: do not disable interrupts for trace_clock_local
 References: <20091112044142.741419929@goodmis.org>
-Content-Disposition: inline; filename=0001-ring-buffer-Add-multiple-iterations-between-benchmar.patch
+Content-Disposition: inline; filename=0002-tracing-do-not-disable-interrupts-for-trace_clock_lo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The ring_buffer_benchmark does a gettimeofday after every write to the
-ring buffer in its measurements. This adds the overhead of the call
-to gettimeofday to the measurements and does not give an accurate picture
-of the length of time it takes to record a trace.
-
-This was first noticed with perf top:
-
-------------------------------------------------------------------------------
-   PerfTop:     679 irqs/sec  kernel:99.9% [1000Hz cpu-clock-msecs],  (all, 4 CPUs)
-------------------------------------------------------------------------------
-
-             samples    pcnt   kernel function
-             _______   _____   _______________
-
-             1673.00 - 27.8% : trace_clock_local
-              806.00 - 13.4% : do_gettimeofday
-              590.00 -  9.8% : rb_reserve_next_event
-              554.00 -  9.2% : native_read_tsc
-              431.00 -  7.2% : ring_buffer_lock_reserve
-              365.00 -  6.1% : __rb_reserve_next
-              355.00 -  5.9% : rb_end_commit
-              322.00 -  5.4% : getnstimeofday
-              268.00 -  4.5% : ring_buffer_unlock_commit
-              262.00 -  4.4% : ring_buffer_producer_thread 	[ring_buffer_benchmark]
-              113.00 -  1.9% : read_tsc
-               91.00 -  1.5% : debug_smp_processor_id
-               69.00 -  1.1% : trace_recursive_unlock
-               66.00 -  1.1% : ring_buffer_event_data
-               25.00 -  0.4% : _spin_unlock_irq
-
-And the length of each write to the ring buffer measured at 310ns.
-
-This patch adds a new module parameter called "write_interval" which is
-defaulted to 50. This is the number of writes performed between
-timestamps. After this patch perf top shows:
+Disabling interrupts in trace_clock_local takes quite a performance
+hit to the recording of traces. Using perf top we see:
 
 ------------------------------------------------------------------------------
    PerfTop:     244 irqs/sec  kernel:100.0% [1000Hz cpu-clock-msecs],  (all, 4 CPUs)
@@ -86,58 +53,83 @@ timestamps. After this patch perf top shows:
                14.00 -  0.2% : native_read_tsc
                11.00 -  0.2% : getnstimeofday
 
-do_gettimeofday dropped from 13% usage to a mere 0.4%! (using the default
-50 interval)  The measurement for each timestamp went from 310ns to 210ns.
-That's 100ns (1/3rd) overhead that the gettimeofday call was introducing.
+Where trace_clock_local is 40% of the tracing, and the time for recording
+a trace according to ring_buffer_benchmark is 210ns. After converting
+the interrupts to preemption disabling we have from perf top:
 
+------------------------------------------------------------------------------
+   PerfTop:    1084 irqs/sec  kernel:99.9% [1000Hz cpu-clock-msecs],  (all, 4 CPUs)
+------------------------------------------------------------------------------
+
+             samples    pcnt   kernel function
+             _______   _____   _______________
+
+             1277.00 - 16.8% : native_read_tsc
+             1148.00 - 15.1% : rb_reserve_next_event
+              896.00 - 11.8% : ring_buffer_lock_reserve
+              688.00 -  9.1% : __rb_reserve_next
+              664.00 -  8.8% : rb_end_commit
+              563.00 -  7.4% : ring_buffer_unlock_commit
+              508.00 -  6.7% : _spin_unlock_irq
+              365.00 -  4.8% : debug_smp_processor_id
+              321.00 -  4.2% : trace_clock_local
+              303.00 -  4.0% : ring_buffer_producer_thread 	[ring_buffer_benchmark]
+              273.00 -  3.6% : native_sched_clock
+              122.00 -  1.6% : trace_recursive_unlock
+              113.00 -  1.5% : sched_clock
+              101.00 -  1.3% : ring_buffer_event_data
+               53.00 -  0.7% : tick_nohz_stop_sched_tick
+
+Where trace_clock_local drops from 40% to only taking 4% of the total time.
+The trace time also goes from 210ns down to 179ns (31ns).
+
+I talked with Peter Zijlstra about the impact that sched_clock may have
+without having interrupts disabled, and he told me that if a timer interrupt
+comes in, sched_clock may report a wrong time.
+
+Balancing a seldom incorrect timestamp with a 15% performance boost, I'll
+take the performance boost.
+
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer_benchmark.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ kernel/trace/trace_clock.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
-index 573d3cc..70df73e 100644
---- a/kernel/trace/ring_buffer_benchmark.c
-+++ b/kernel/trace/ring_buffer_benchmark.c
-@@ -35,6 +35,10 @@ static int disable_reader;
- module_param(disable_reader, uint, 0644);
- MODULE_PARM_DESC(disable_reader, "only run producer");
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index 20c5f92..878c03f 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -20,6 +20,8 @@
+ #include <linux/ktime.h>
+ #include <linux/trace_clock.h>
  
-+static int write_iteration = 50;
-+module_param(write_iteration, uint, 0644);
-+MODULE_PARM_DESC(write_iteration, "# of writes between timestamp readings");
++#include "trace.h"
 +
- static int read_events;
+ /*
+  * trace_clock_local(): the simplest and least coherent tracing clock.
+  *
+@@ -28,17 +30,17 @@
+  */
+ u64 notrace trace_clock_local(void)
+ {
+-	unsigned long flags;
+ 	u64 clock;
++	int resched;
  
- static int kill_test;
-@@ -208,15 +212,18 @@ static void ring_buffer_producer(void)
- 	do {
- 		struct ring_buffer_event *event;
- 		int *entry;
--
--		event = ring_buffer_lock_reserve(buffer, 10);
--		if (!event) {
--			missed++;
--		} else {
--			hit++;
--			entry = ring_buffer_event_data(event);
--			*entry = smp_processor_id();
--			ring_buffer_unlock_commit(buffer, event);
-+		int i;
-+
-+		for (i = 0; i < write_iteration; i++) {
-+			event = ring_buffer_lock_reserve(buffer, 10);
-+			if (!event) {
-+				missed++;
-+			} else {
-+				hit++;
-+				entry = ring_buffer_event_data(event);
-+				*entry = smp_processor_id();
-+				ring_buffer_unlock_commit(buffer, event);
-+			}
- 		}
- 		do_gettimeofday(&end_tv);
+ 	/*
+ 	 * sched_clock() is an architecture implemented, fast, scalable,
+ 	 * lockless clock. It is not guaranteed to be coherent across
+ 	 * CPUs, nor across CPU idle events.
+ 	 */
+-	raw_local_irq_save(flags);
++	resched = ftrace_preempt_disable();
+ 	clock = sched_clock();
+-	raw_local_irq_restore(flags);
++	ftrace_preempt_enable(resched);
  
+ 	return clock;
+ }
 -- 
 1.6.5
 
