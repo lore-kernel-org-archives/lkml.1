@@ -1,136 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932220AbZKLEtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbZKLEt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932220AbZKLEtg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 23:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932162AbZKLEte
+	id S932237AbZKLEt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 23:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZKLEt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 23:49:34 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:32854 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932179AbZKLEtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 23:49:32 -0500
-Message-Id: <20091112044937.833563306@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 11 Nov 2009 23:41:44 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 2/2] [PATCH 2/2] tracing: do not disable interrupts for trace_clock_local
-References: <20091112044142.741419929@goodmis.org>
-Content-Disposition: inline; filename=0002-tracing-do-not-disable-interrupts-for-trace_clock_lo.patch
+	Wed, 11 Nov 2009 23:49:56 -0500
+Received: from mga11.intel.com ([192.55.52.93]:6578 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932224AbZKLEty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 23:49:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
+   d="c'?scan'208";a="513020318"
+From: "Ma, Ling" <ling.ma@intel.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 12 Nov 2009 12:49:04 +0800
+Subject: RE: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast 	string.
+Thread-Topic: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast 	string.
+Thread-Index: AcpjUJBXvX7GzItISp6FZnAIxAvVewAAibUw
+Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
+	 <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
+	 <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
+	 <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>
+	 <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
+	 <20091111203425.GA25401@lenovo> <4AFB3D31.6070901@zytor.com>
+ <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
+In-Reply-To: <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: multipart/mixed;
+	boundary="_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 
-Disabling interrupts in trace_clock_local takes quite a performance
-hit to the recording of traces. Using perf top we see:
+SGkgQWxsDQpUaGUgYXR0YWNobWVudCBpcyBsYXRlc3QgbWVtY3B5LmMsIHBsZWFzZSB1cGRhdGUg
+YnkgDQoiY2MgLW8gbWVtY3B5IG1lbWNweS5jIC1PMiAtbTY0Ii4NCg0KVGhhbmtzDQpMaW5nDQoN
+Cg0KPi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogQ3lyaWxsIEdvcmN1bm92IFtt
+YWlsdG86Z29yY3Vub3ZAZ21haWwuY29tXQ0KPlNlbnQ6IDIwMDnlubQxMeaciDEy5pelIDEyOjI4
+DQo+VG86IEguIFBldGVyIEFudmluDQo+Q2M6IE1hLCBMaW5nOyBJbmdvIE1vbG5hcjsgSW5nbyBN
+b2xuYXI7IFRob21hcyBHbGVpeG5lcjsgbGludXgta2VybmVsDQo+U3ViamVjdDogUmU6IFtQQVRD
+SCBSRkNdIFtYODZdIHBlcmZvcm1hbmNlIGltcHJvdmVtZW50IGZvciBtZW1jcHlfNjQuUyBieSBm
+YXN0DQo+c3RyaW5nLg0KPg0KPk9uIFRodSwgTm92IDEyLCAyMDA5IGF0IDE6MzkgQU0sIEguIFBl
+dGVyIEFudmluIDxocGFAenl0b3IuY29tPiB3cm90ZToNCj4+IE9uIDExLzExLzIwMDkgMTI6MzQg
+UE0sIEN5cmlsbCBHb3JjdW5vdiB3cm90ZToNCj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBtZW1jcHlfb3JpZyDC
+oCDCoCBtZW1jDQo+cHlfbmV3DQo+Pj4gVFBUOiBMZW4gMTAyNCwgYWxpZ25tZW50IMKgOC8gMDog
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgNDkwIMKgIMKgIMKgIMKgIMKgIMKgIDU3MA0KPj4+IFRQVDog
+TGVuIDIwNDgsIGFsaWdubWVudCDCoDgvIDA6IMKgIMKgIMKgIMKgIMKgIMKgIMKgIDgyNiDCoCDC
+oCDCoCDCoCDCoCDCoCAzMjkNCj4+PiBUUFQ6IExlbiAzMDcyLCBhbGlnbm1lbnQgwqA4LyAwOiDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCA0NDEgwqAgwqAgwqAgwqAgwqAgwqAgNDY0DQo+Pj4gVFBUOiBM
+ZW4gNDA5NiwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAgwqAgwqAgwqAgwqAgNTc5IMKgIMKg
+IMKgIMKgIMKgIMKgIDU5Ng0KPj4+IFRQVDogTGVuIDUxMjAsIGFsaWdubWVudCDCoDgvIDA6IMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIDcyMyDCoCDCoCDCoCDCoCDCoCDCoCA3MjkNCj4+PiBUUFQ6IExl
+biA2MTQ0LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoCDCoCDCoCDCoCDCoCA4NTkgwqAgwqAg
+wqAgwqAgwqAgwqAgODYxDQo+Pj4gVFBUOiBMZW4gNzE2OCwgYWxpZ25tZW50IMKgOC8gMDogwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgOTk2IMKgIMKgIMKgIMKgIMKgIMKgIDk5NA0KPj4+IFRQVDogTGVu
+IDgxOTIsIGFsaWdubWVudCDCoDgvIDA6IMKgIMKgIMKgIMKgIMKgIMKgIMKgIDExNjUgwqAgwqAg
+wqAgwqAgwqAgwqAxMTI3DQo+Pj4gVFBUOiBMZW4gOTIxNiwgYWxpZ25tZW50IMKgOC8gMDogwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgMTI3MyDCoCDCoCDCoCDCoCDCoCDCoDEyNjANCj4+PiBUUFQ6IExl
+biAxMDI0MCwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAxNDAyIMKgIMKgIMKgIMKgIMKgIMKg
+MTM5NQ0KPj4+IFRQVDogTGVuIDExMjY0LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoDE1NDMg
+wqAgwqAgwqAgwqAgwqAgwqAxNTI1DQo+Pj4gVFBUOiBMZW4gMTIyODgsIGFsaWdubWVudCDCoDgv
+IDA6IMKgIMKgIMKgMTY4MiDCoCDCoCDCoCDCoCDCoCDCoDE2NTkNCj4+PiBUUFQ6IExlbiAxMzMx
+MiwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAxODY5IMKgIMKgIMKgIMKgIMKgIMKgMTgxNQ0K
+Pj4+IFRQVDogTGVuIDE0MzM2LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoDE5ODIgwqAgwqAg
+wqAgwqAgwqAgwqAxOTUxDQo+Pj4gVFBUOiBMZW4gMTUzNjAsIGFsaWdubWVudCDCoDgvIDA6IMKg
+IMKgIMKgMjE4NSDCoCDCoCDCoCDCoCDCoCDCoDIxMTANCj4+Pg0KPj4+IEkndmUgcnVuIHRoaXMg
+dGVzdCBhIGZldyB0aW1lcyBhbmQgcmVzdWx0cyBhbG1vc3QgdGhlIHNhbWUsDQo+Pj4gd2l0aCBh
+bGlnbm1lbnQgMTAyNCwgMzA3MiwgNDA5NiwgNTEyMCwgNjE0NCwgbmV3IHZlcnNpb24gYSBiaXQg
+c2xvd2x5Lg0KPj4+DQo+Pg0KPj4gV2FzIHRoZSByZXN1bHQgZm9yIDIwNDggY29uc2lzdGVudCAo
+aXQgc2VlbXMgb2RkIGluIHRoZSBleHRyZW1lKS4uLiB0aGUNCj4+IGRpc2NyZXBhbmN5IGJldHdl
+ZW4gdGhpcyByZXN1bHQgYW5kIExpbmcncyByZXN1bHRzIGJvdGhlcnMgbWU7IHBlcmhhcHMNCj4+
+IHRoZSByaWdodCBhbnN3ZXIgaXMgdG8gbGVhdmUgdGhlIGN1cnJlbnQgY29kZSBmb3IgQ29yZTIg
+YW5kIHVzZSBuZXcgY29kZQ0KPj4gKHdpdGggYSBsb3dlciB0aGFuIDEwMjQgdGhyZXNob2xkPykg
+Zm9yIE5ITSBhbmQgSzg/DQo+Pg0KPj4gwqAgwqAgwqAgwqAtaHBhDQo+Pg0KPg0KPkhpIFBldGVy
+LA0KPg0KPm5vLCByZXN1bHRzIGZvciAyMDQ4IGlzIG5vdCByZXBlYXRhYmxlICh0aGF0IGlzIHdo
+eSBJIGRpZG4ndCBtZW50aW9uIHRoaXMgbnVtYmVyDQo+aW4gYSBmb3JtZXIgcmVwb3J0KS4NCj4N
+Cj5UZXN0MToNCj5UUFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTgyNgkzMjkNCj5UZXN0
+MjoNCj5UUFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTM1OQkzMjkNCj5UZXN0MzoNCj5U
+UFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTMwNgkzMzENCj5UZXN0NDoNCj5UUFQ6IExl
+biAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTQxNQkzMjkNCj4NCj5JIGd1ZXNzIHRoaXMgd2FzIGR1
+ZSB0byBjcHUgZnJlcXVlbmN5IGNoYW5nZSBmcm9tIDgwMCB0byAyLjFHaHogc2luY2UNCj5JIGRp
+ZCB0ZXN0cyBtYW51YWxseQ0KPm5vdCB1c2luZyBhbnkga2luZCBvZiBiYXNoIGN5Y2xlIHRvIHJ1
+biB0aGUgdGVzdCBwcm9ncmFtLg0K
 
-------------------------------------------------------------------------------
-   PerfTop:     244 irqs/sec  kernel:100.0% [1000Hz cpu-clock-msecs],  (all, 4 CPUs)
-------------------------------------------------------------------------------
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_
+Content-Type: text/plain; name="memcpy.c"
+Content-Description: memcpy.c
+Content-Disposition: attachment; filename="memcpy.c"; size=5495;
+	creation-date="Wed, 11 Nov 2009 15:46:11 GMT";
+	modification-date="Thu, 12 Nov 2009 12:42:50 GMT"
+Content-Transfer-Encoding: base64
 
-             samples    pcnt   kernel function
-             _______   _____   _______________
+I2luY2x1ZGU8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGxpYi5oPgoKCnR5cGVkZWYgdW5zaWduZWQg
+bG9uZyBsb25nIGludCBocF90aW1pbmdfdDsKI2RlZmluZSAgTUFYU0FNUExFU1RQVCAgICAgICAg
+MTAwMDAwCiNkZWZpbmUgIE1BWENPUFlTSVpFICAgICAgICAgICgxMDI0ICogMzIpCiNkZWZpbmUg
+IE9SSUcgIDAKI2RlZmluZSAgTkVXICAgMQpzdGF0aWMgY2hhciogYnVmMSA9IE5VTEw7CnN0YXRp
+YyBjaGFyKiBidWYyID0gTlVMTDsKCmhwX3RpbWluZ190IF9kbF9ocF90aW1pbmdfb3ZlcmhlYWQ7
+CiMgZGVmaW5lIEhQX1RJTUlOR19OT1coVmFyKSBcCiAgKHsgdW5zaWduZWQgbG9uZyBsb25nIF9o
+aSwgX2xvOyBcCiAgICAgYXNtIHZvbGF0aWxlICgicmR0c2MiIDogIj1hIiAoX2xvKSwgIj1kIiAo
+X2hpKSk7IFwKICAgICAoVmFyKSA9IF9oaSA8PCAzMiB8IF9sbzsgfSkKCiNkZWZpbmUgSFBfVElN
+SU5HX0RJRkYoRGlmZiwgU3RhcnQsIEVuZCkJKERpZmYpID0gKChFbmQpIC0gKFN0YXJ0KSkKI2Rl
+ZmluZSBIUF9USU1JTkdfVE9UQUwodG90YWxfdGltZSwgc3RhcnQsIGVuZCkJXAogIGRvCQkJCQkJ
+CQkJXAogICAgewkJCQkJCQkJCVwKICAgICAgaHBfdGltaW5nX3QgdG1wdGltZTsJCQkJCQlcCiAg
+ICAgIEhQX1RJTUlOR19ESUZGICh0bXB0aW1lLCBzdGFydCArIF9kbF9ocF90aW1pbmdfb3Zlcmhl
+YWQsIGVuZCk7CVwKCXRvdGFsX3RpbWUgKz0gdG1wdGltZTsJCQkJCQlcCiAgICB9CQkJCQkJCQkJ
+XAogIHdoaWxlICgwKQoKdm9pZCBtZW1jcHlfb3JpZyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50
+IGxlbik7CnZvaWQgbWVtY3B5X25ldyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbik7CnZv
+aWQgbWVtY3B5X2MoY2hhciAqZHN0LCBjaGFyICpzcmMsIGludCBsZW4pOwp2b2lkICgqZG9fbWVt
+Y3B5KShjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbik7CgpzdGF0aWMgdm9pZApkb19vbmVf
+dGhyb3VnaHB1dCAoIGNoYXIgKmRzdCwgY2hhciAqc3JjLAoJICAgICBzaXplX3QgbGVuKQp7CiAg
+ICAgIF9fYXNtX18oImNwdWlkIiA6IDogOiAiZWF4IiwgImVieCIsICJlY3giLCAiZWR4Iik7CiAg
+ICAgIHNpemVfdCBpOwogICAgICBocF90aW1pbmdfdCBzdGFydCBfX2F0dHJpYnV0ZSAoKHVudXNl
+ZCkpOwogICAgICBocF90aW1pbmdfdCBzdG9wIF9fYXR0cmlidXRlICgodW51c2VkKSk7CiAgICAg
+IGhwX3RpbWluZ190IHRvdGFsX3RpbWUgPSAgKGhwX3RpbWluZ190KSAwOwoKICAgICAgX19hc21f
+XygiY3B1aWQiIDogOiA6ICJlYXgiLCAiZWJ4IiwgImVjeCIsICJlZHgiKTsKICAgICAgZm9yIChp
+ID0gMDsgaSA8IE1BWFNBTVBMRVNUUFQ7ICsraSkgIHsKICAgICAgICAgIEhQX1RJTUlOR19OT1cg
+KHN0YXJ0KTsKCQlkb19tZW1jcHkoYnVmMSwgYnVmMiwgbGVuKTsKCSAgSFBfVElNSU5HX05PVyAo
+c3RvcCk7CgkgIEhQX1RJTUlOR19UT1RBTCAodG90YWxfdGltZSwgc3RhcnQsIHN0b3ApOwogICAg
+ICB9CgogICAgICBwcmludGYgKCJcdCV6ZCIsIChzaXplX3QpIHRvdGFsX3RpbWUvTUFYU0FNUExF
+U1RQVCk7Cgp9CgpzdGF0aWMgdm9pZApkb190cHRfdGVzdCAoc2l6ZV90IGFsaWduMSwgc2l6ZV90
+IGFsaWduMiwgc2l6ZV90IGxlbikKewogIHNpemVfdCBpLCBqOwogIGNoYXIgKnMxLCAqczI7Cgog
+IHMxID0gKGNoYXIgKikgKGJ1ZjEgKyBhbGlnbjEpOwogIHMyID0gKGNoYXIgKikgKGJ1ZjIgKyBh
+bGlnbjIpOwoKCiAgIHByaW50ZiAoIlRQVDogTGVuICU0emQsIGFsaWdubWVudCAlMnpkLyUyemQ6
+IiwgbGVuLCBhbGlnbjEsIGFsaWduMik7CiAgIGRvX21lbWNweSA9IG1lbWNweV9vcmlnOwogICBk
+b19vbmVfdGhyb3VnaHB1dCAoczIsIHMxLCBsZW4pOwogICBkb19tZW1jcHkgPSBtZW1jcHlfbmV3
+OwogICBkb19vbmVfdGhyb3VnaHB1dCAoczIsIHMxLCBsZW4pOwoKICAgIHB1dGNoYXIgKCdcbicp
+Owp9CgpzdGF0aWMgdGVzdF9pbml0KHZvaWQpCnsKICBpbnQgaTsKICBidWYxID0gdmFsbG9jKE1B
+WENPUFlTSVpFKTsKICBidWYyID0gdmFsbG9jKE1BWENPUFlTSVpFKTsKCiAgZm9yIChpID0gMDsg
+aSA8IE1BWENPUFlTSVpFIDsgaSA9IGkgKyA2NCkgewogICAgICAgIGJ1ZjFbaV0gPSBidWYyW2ld
+ID0gaSAmIDB4ZmY7CiAgfQoKfQoKdm9pZCBtZW1jcHlfbmV3KGNoYXIgKmRzdCwgY2hhciAqc3Jj
+LCBpbnQgbGVuKQp7CglfX2FzbV9fKCJtb3ZxICVyZGksICVyYXgiKTsKCV9fYXNtX18oIm1vdmwg
+JWVkeCwgJWVjeCIpOwoJX19hc21fXygic2hybCAgICQ2LCAlZWN4Iik7CglfX2FzbV9fKCJqeiAy
+ZiIpOwoKCV9fYXNtX18oImNtcCAkMHg0MDAsICVlZHgiKTsKCV9fYXNtX18oImphZSA3ZiIpOwoK
+CV9fYXNtX18oIjE6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCglfX2FzbV9fKCJtb3ZxIDAq
+OCglcnNpKSwgJXIxMSIpOwoJX19hc21fXygibW92cSAxKjgoJXJkaSksICVyOCIpOwoJX19hc21f
+XygibW92cSAlcjExLAkwKjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAkxKjgoJXJkaSki
+KTsKCglfX2FzbV9fKCJtb3ZxIDIqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDMqOCgl
+cmRpKSwgJXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTIqOCglcmRpKSIpOwoJX19hc21fXygi
+bW92cSAlcjEwLAkzKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDQqOCglcnNpKSwgJXIxMSIp
+OwoJX19hc21fXygibW92cSA1KjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92cSAlcjExLAk0
+KjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAk1KjgoJXJkaSkiKTsKCglfX2FzbV9fKCJt
+b3ZxIDYqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDcqOCglcmRpKSwgJXIxMCIpOwoJ
+X19hc21fXygibW92cSAlcjksCTYqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAlcjEwLAk3Kjgo
+JXJkaSkiKTsKCglfX2FzbV9fKCJsZWFxIDY0KCVyc2kpLCAlcnNpIik7CglfX2FzbV9fKCJsZWFx
+IDY0KCVyZGkpLCAlcmRpIik7CgoJX19hc21fXygiam56ICAxYiIpOwoKCV9fYXNtX18oIjI6Iik7
+CglfX2FzbV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oImFuZGwgJDYzLCAlZWN4Iik7
+CglfX2FzbV9fKCJzaGwgICAkMywgJWVjeCIpOwoJX19hc21fXygianogNGYiKTsKCgoJX19hc21f
+XygiMzoiKTsKCV9fYXNtX18oImRlY2wgJWVjeCIpOwoJX19hc21fXygibW92cSAoJXJzaSksCSVy
+OCIpOwoJX19hc21fXygibW92cSAlcjgsCSglcmRpKSIpOwoJX19hc21fXygibGVhcSA4KCVyZGkp
+LAklcmRpIik7CglfX2FzbV9fKCJsZWFxIDgoJXJzaSksCSVyc2kiKTsKCV9fYXNtX18oImpueiAz
+YiIpOwoKCV9fYXNtX18oIjQ6Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsCSVlY3giKTsKCV9fYXNt
+X18oImFuZGwgJDcsCSVlY3giKTsKCV9fYXNtX18oImp6IDZmIik7CgoJX19hc21fXygiNToiKTsK
+CV9fYXNtX18oIm1vdmIgKCVyc2kpLAklcjhiIik7CglfX2FzbV9fKCJtb3ZiICVyOGIsICglcmRp
+KSIpOwoJX19hc21fXygiaW5jcSAlcmRpIik7CglfX2FzbV9fKCJpbmNxICVyc2kiKTsKCV9fYXNt
+X18oImRlY2wgJWVjeCIpOwoJX19hc21fXygiam56IDViIik7CgoJX19hc21fXygiNjoiKTsKCV9f
+YXNtX18oInJldHEiKTsKCglfX2FzbV9fKCI3OiIpOwoJX19hc21fXygibW92bCAlZWR4LCAlZWN4
+Iik7CglfX2FzbV9fICgic2hyICQzLCAlZWN4Iik7CglfX2FzbV9fICgiYW5kbCAkNywgJWVkeCIp
+OwoJX19hc21fXygicmVwIG1vdnNxICIpOwoJX19hc21fXyAoImp6IDhmIik7CglfX2FzbV9fKCJt
+b3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oInJlcCBtb3ZzYiIpOwoKCV9fYXNtX18oIjg6Iik7
+Cn0Kdm9pZCBtZW1jcHlfb3JpZyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbikKewoJX19h
+c21fXygibW92cSAlcmRpLCAlcmF4Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9f
+YXNtX18oInNocmwgICAkNiwgJWVjeCIpOwoJX19hc21fXygianogMmYiKTsKCglfX2FzbV9fKCJt
+b3YgJDB4ODAsICVyOGQgICIpOyAgLyphbGlnbmVkIGNhc2UgZm9yIGxvb3AgMSAqLwoKCV9fYXNt
+X18oIjE6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCglfX2FzbV9fKCJtb3ZxIDAqOCglcnNp
+KSwgJXIxMSIpOwoJX19hc21fXygibW92cSAxKjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92
+cSAlcjExLAkwKjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAkxKjgoJXJkaSkiKTsKCglf
+X2FzbV9fKCJtb3ZxIDIqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDMqOCglcmRpKSwg
+JXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTIqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAl
+cjEwLAkzKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDQqOCglcnNpKSwgJXIxMSIpOwoJX19h
+c21fXygibW92cSA1KjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92cSAlcjExLAk0KjgoJXJk
+aSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAk1KjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDYq
+OCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDcqOCglcmRpKSwgJXIxMCIpOwoJX19hc21f
+XygibW92cSAlcjksCTYqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAlcjEwLAk3KjgoJXJkaSki
+KTsKCglfX2FzbV9fKCJsZWFxIDY0KCVyc2kpLCAlcnNpIik7CglfX2FzbV9fKCJsZWFxIDY0KCVy
+ZGkpLCAlcmRpIik7CgoJX19hc21fXygiam56ICAxYiIpOwoKCV9fYXNtX18oIjI6Iik7CglfX2Fz
+bV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oImFuZGwgJDYzLCAlZWN4Iik7CglfX2Fz
+bV9fKCJzaGwgICAkMywgJWVjeCIpOwoJX19hc21fXygianogNGYiKTsKCgoJX19hc21fXygiMzoi
+KTsKCV9fYXNtX18oImRlY2wgJWVjeCIpOwoJX19hc21fXygibW92cSAoJXJzaSksCSVyOCIpOwoJ
+X19hc21fXygibW92cSAlcjgsCSglcmRpKSIpOwoJX19hc21fXygibGVhcSA4KCVyZGkpLAklcmRp
+Iik7CglfX2FzbV9fKCJsZWFxIDgoJXJzaSksCSVyc2kiKTsKCV9fYXNtX18oImpueiAzYiIpOwoK
+CV9fYXNtX18oIjQ6Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsCSVlY3giKTsKCV9fYXNtX18oImFu
+ZGwgJDcsCSVlY3giKTsKCV9fYXNtX18oImp6IDZmIik7CgoJX19hc21fXygiNToiKTsKCV9fYXNt
+X18oIm1vdmIgKCVyc2kpLAklcjhiIik7CglfX2FzbV9fKCJtb3ZiICVyOGIsICglcmRpKSIpOwoJ
+X19hc21fXygiaW5jcSAlcmRpIik7CglfX2FzbV9fKCJpbmNxICVyc2kiKTsKCV9fYXNtX18oImRl
+Y2wgJWVjeCIpOwoJX19hc21fXygiam56IDViIik7CgoJX19hc21fXygiNjoiKTsKfQoKCnZvaWQg
+bWFpbih2b2lkKQp7CiAgaW50IGk7CiAgdGVzdF9pbml0KCk7CiAgcHJpbnRmICgiJTIzcyIsICIi
+KTsKICBwcmludGYgKCJcdCVzXHQlc1x0JXNcbiIsICJtZW1jcHlfb3JpZyIsICJtZW1jcHlfbmV3
+Iik7CgogIGZvciAoaSA9IDEwMjQ7IGkgPCAxMDI0ICogMTY7IGkgPSBpKyAxMDI0KQogICAgIGRv
+X3RwdF90ZXN0KDAsIDAsIGkpOwoKfQo=
 
-             2842.00 - 40.4% : trace_clock_local
-             1043.00 - 14.8% : rb_reserve_next_event
-              784.00 - 11.1% : ring_buffer_lock_reserve
-              600.00 -  8.5% : __rb_reserve_next
-              579.00 -  8.2% : rb_end_commit
-              440.00 -  6.3% : ring_buffer_unlock_commit
-              290.00 -  4.1% : ring_buffer_producer_thread 	[ring_buffer_benchmark]
-              155.00 -  2.2% : debug_smp_processor_id
-              117.00 -  1.7% : trace_recursive_unlock
-              103.00 -  1.5% : ring_buffer_event_data
-               28.00 -  0.4% : do_gettimeofday
-               22.00 -  0.3% : _spin_unlock_irq
-               14.00 -  0.2% : native_read_tsc
-               11.00 -  0.2% : getnstimeofday
-
-Where trace_clock_local is 40% of the tracing, and the time for recording
-a trace according to ring_buffer_benchmark is 210ns. After converting
-the interrupts to preemption disabling we have from perf top:
-
-------------------------------------------------------------------------------
-   PerfTop:    1084 irqs/sec  kernel:99.9% [1000Hz cpu-clock-msecs],  (all, 4 CPUs)
-------------------------------------------------------------------------------
-
-             samples    pcnt   kernel function
-             _______   _____   _______________
-
-             1277.00 - 16.8% : native_read_tsc
-             1148.00 - 15.1% : rb_reserve_next_event
-              896.00 - 11.8% : ring_buffer_lock_reserve
-              688.00 -  9.1% : __rb_reserve_next
-              664.00 -  8.8% : rb_end_commit
-              563.00 -  7.4% : ring_buffer_unlock_commit
-              508.00 -  6.7% : _spin_unlock_irq
-              365.00 -  4.8% : debug_smp_processor_id
-              321.00 -  4.2% : trace_clock_local
-              303.00 -  4.0% : ring_buffer_producer_thread 	[ring_buffer_benchmark]
-              273.00 -  3.6% : native_sched_clock
-              122.00 -  1.6% : trace_recursive_unlock
-              113.00 -  1.5% : sched_clock
-              101.00 -  1.3% : ring_buffer_event_data
-               53.00 -  0.7% : tick_nohz_stop_sched_tick
-
-Where trace_clock_local drops from 40% to only taking 4% of the total time.
-The trace time also goes from 210ns down to 179ns (31ns).
-
-I talked with Peter Zijlstra about the impact that sched_clock may have
-without having interrupts disabled, and he told me that if a timer interrupt
-comes in, sched_clock may report a wrong time.
-
-Balancing a seldom incorrect timestamp with a 15% performance boost, I'll
-take the performance boost.
-
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_clock.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
-index 20c5f92..878c03f 100644
---- a/kernel/trace/trace_clock.c
-+++ b/kernel/trace/trace_clock.c
-@@ -20,6 +20,8 @@
- #include <linux/ktime.h>
- #include <linux/trace_clock.h>
- 
-+#include "trace.h"
-+
- /*
-  * trace_clock_local(): the simplest and least coherent tracing clock.
-  *
-@@ -28,17 +30,17 @@
-  */
- u64 notrace trace_clock_local(void)
- {
--	unsigned long flags;
- 	u64 clock;
-+	int resched;
- 
- 	/*
- 	 * sched_clock() is an architecture implemented, fast, scalable,
- 	 * lockless clock. It is not guaranteed to be coherent across
- 	 * CPUs, nor across CPU idle events.
- 	 */
--	raw_local_irq_save(flags);
-+	resched = ftrace_preempt_disable();
- 	clock = sched_clock();
--	raw_local_irq_restore(flags);
-+	ftrace_preempt_enable(resched);
- 
- 	return clock;
- }
--- 
-1.6.5
-
-
+--_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_--
