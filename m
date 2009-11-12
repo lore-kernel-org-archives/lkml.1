@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbZKLKMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZKLKOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752256AbZKLKMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 05:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZKLKMx
+	id S1752701AbZKLKOA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 05:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZKLKN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 05:12:53 -0500
-Received: from [95.166.99.235] ([95.166.99.235]:54015 "EHLO kernel.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbZKLKMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 05:12:53 -0500
-Date: Thu, 12 Nov 2009 11:12:58 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Glenn Maynard <glenn@zewt.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: Crash during SATA reads
-Message-ID: <20091112101257.GG8742@kernel.dk>
-References: <bd36f99e0911110118v6dc7f87ao98968ba234fad7fc@mail.gmail.com> <4AFA835B.9000904@garzik.org> <bd36f99e0911110412hf2c7920gf06bd29ed43e240c@mail.gmail.com> <bd36f99e0911111309ie8166a9h8f926948bf15d350@mail.gmail.com> <4AFB2F2A.7080900@garzik.org> <20091112091602.GC8742@kernel.dk> <bd36f99e0911120148t43a267cbwd1899d3e68468cc@mail.gmail.com> <20091112095544.GF8742@kernel.dk> <bd36f99e0911120211h2bda5062qe90d7be56203523@mail.gmail.com>
+	Thu, 12 Nov 2009 05:13:59 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:60670 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751498AbZKLKN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 05:13:58 -0500
+Date: Thu, 12 Nov 2009 11:14:02 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Anders Larsen <al@alarsen.net>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/4] fs/qnx4: decrement sizeof size in strncmp
+In-Reply-To: <1258017918l.26867l.0l@i-dmzi_al.realan.de>
+Message-ID: <Pine.LNX.4.64.0911121113190.19166@ask.diku.dk>
+References: <Pine.LNX.4.64.0911120849260.16627@ask.diku.dk>
+ <1258017918l.26867l.0l@i-dmzi_al.realan.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd36f99e0911120211h2bda5062qe90d7be56203523@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12 2009, Glenn Maynard wrote:
-> On Thu, Nov 12, 2009 at 4:55 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > To rule out any potential hardware problems, have you run any extensive
-> > memory checks on this machine?
-> 
-> God damn it.  I ran memtest+ just a week or so ago and it was fine
-> through several passes; now it's failing badly.  I'm inclined to send
-> Kingston a bill for a day and a half of wasted time.
+From: Julia Lawall <julia@diku.dk>
 
-Auch, perhaps it's just seated badly? Power problems? Or yes, you just
-got crap RAM :/
+As an identical match is wanted in this case, strcmp can be used instead.
 
-> I didn't think back to memory since I'm used to memory problems in
-> userspace, where they cause wildly variable crashes.  Of course, the
-> kernel's far more likely to stick data in the same spot, so it makes
-> sense that it doesn't cause as much volatility, leading to a bunch of
-> related-looking crashes.
+The semantic match that lead to detecting this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-Well, at least it's a relief that it isn't a kernel issue :-)
+// <smpl>
+@@
+expression foo;
+constant char *abc;
+@@
 
--- 
-Jens Axboe
+*strncmp(foo, abc, sizeof(abc))
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ fs/qnx4/inode.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
+index 449f5a6..150f4af 100644
+--- a/fs/qnx4/inode.c
++++ b/fs/qnx4/inode.c
+@@ -221,7 +221,8 @@ static const char *qnx4_checkroot(struct super_block *sb)
+ 				rootdir = (struct qnx4_inode_entry *) (bh->b_data + i * QNX4_DIR_ENTRY_SIZE);
+ 				if (rootdir->di_fname != NULL) {
+ 					QNX4DEBUG((KERN_INFO "rootdir entry found : [%s]\n", rootdir->di_fname));
+-					if (!strncmp(rootdir->di_fname, QNX4_BMNAME, sizeof QNX4_BMNAME)) {
++					if (!strcmp(rootdir->di_fname,
++						    QNX4_BMNAME)) {
+ 						found = 1;
+ 						qnx4_sb(sb)->BitMap = kmalloc( sizeof( struct qnx4_inode_entry ), GFP_KERNEL );
+ 						if (!qnx4_sb(sb)->BitMap) {
