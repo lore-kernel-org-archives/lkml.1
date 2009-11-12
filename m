@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZKLV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZKLVle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbZKLV3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbZKLV3c
+	id S1754445AbZKLVle (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZKLVl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:29:32 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:42310 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754229AbZKLV3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:29:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ctv/rQvre6plbzRp8UIisVsF4y5D+i7nPnS0akk5ij5qFy9UwQLlnEJ3CfXGe5LMjF
-         2+xxx6Sr8D9SO3a2V2uur82+RF9UdDYfz1trzMmh28JiHu33245wpyFIB2ecHOtlXOT5
-         bo0ge6Re9Gzr13V3WmYWXHB1LTpzXh9re/aGY=
-Date: Fri, 13 Nov 2009 00:29:35 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andi Kleen <andi@firstfloor.org>, Robert Hancock <hancockrwd@gmail.com>,
-       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
-Subject: Re: Reading /dev/mem by dd
-Message-ID: <20091112212935.GE5728@lenovo>
-References: <4AFACC03.7080209@mayc.ru> <4AFB2822.30906@gmail.com> <20091112021209.GA21625@khazad-dum.debian.net> <878web7kwf.fsf@basil.nowhere.org> <1258047454.16197.1344913359@webmail.messagingengine.com> <m3639flaet.fsf@intrepid.localdomain>
+	Thu, 12 Nov 2009 16:41:29 -0500
+Received: from tundra.namei.org ([65.99.196.166]:56688 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754289AbZKLVl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 16:41:28 -0500
+Date: Fri, 13 Nov 2009 08:41:26 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: Julia Lawall <julia@diku.dk>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+In-Reply-To: <4AFC3620.2020809@schaufler-ca.com>
+Message-ID: <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3639flaet.fsf@intrepid.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 10:07:22PM +0100, Krzysztof Halasa wrote:
-> "Henrique de Moraes Holschuh" <hmh@hmh.eng.br> writes:
-> 
-> > In this case, the problem seems to be access over /dev/mem to stuff the
-> > kernel is already taking care of.
-> 
-> Not sure if local APIC counts as "PCI space and the BIOS code and data
-> regions" but:
-> 
-> $ grep STRICT_DEVMEM -A 15 arch/x86/Kconfig.debug
-> config STRICT_DEVMEM
->         bool "Filter access to /dev/mem"
->         ---help---
-> 
+On Thu, 12 Nov 2009, Casey Schaufler wrote:
 
-Yes, having this option turned on an access to LAPIC/IO_APIC
-space will be forbidden.
+> I strongly suggest that this is not what is wanted.
+>     strcmp(x,y)
+> and
+>     strncmp(x,y,sizeof(y))
+> 
+> are functionally equivalent and strcmp has a bad reputation in
+> the security community because it is associated with potential
+> buffer overrun issues.
 
-	-- Cyrill
+Do you see potential for a buffer overrun in this case?
+
+The strings being compared are "sysfs" and the name field of 'struct 
+file_system_type'.  The kernel code elsewhere assumes the latter string to 
+be a valid zero-terminated string, and we should, too.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
