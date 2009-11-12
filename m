@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZKLSAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZKLSBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZKLSAt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZKLSAr
+	id S1754050AbZKLSBj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 13:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZKLSBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:00:47 -0500
-Received: from mail.perches.com ([173.55.12.10]:1358 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753668AbZKLSAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:00:47 -0500
-Subject: [PATCH V2] MAINTAINERS: KMEMCHECK - Add file patterns, use M: for
- Pekka's name and address
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Vegard Nossum <vegardno@ifi.uio.no>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 Nov 2009 10:00:52 -0800
-Message-ID: <1258048852.1988.20.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 13:01:39 -0500
+Received: from snt0-omc1-s25.snt0.hotmail.com ([65.55.90.36]:40658 "EHLO
+	snt0-omc1-s25.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753695AbZKLSBi convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 13:01:38 -0500
+Message-ID: <SNT125-W33733E48300A2E2D156865C3A90@phx.gbl>
+X-Originating-IP: [164.116.126.146]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <kees.cook@canonical.com>
+CC: <arjan@infradead.org>, <tglx@linutronix.de>, <mingo@redhat.com>,
+       <x86@kernel.org>, <penberg@cs.helsinki.fi>, <jbeulich@novell.com>,
+       <vegardno@ifi.uio.no>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: RE: [PATCH v4] [x86] detect and report lack of NX protections
+Date: Thu, 12 Nov 2009 10:01:44 -0800
+Importance: Normal
+In-Reply-To: <20091110205544.GZ5129@outflux.net>
+References: <20091109221015.GB5129@outflux.net> <4AF8A2C0.5080700@zytor.com>
+ <20091110154956.GF5129@outflux.net> <4AF9991B.20400@zytor.com>
+ <20091110165738.GH5129@outflux.net> <4AF99F0C.2050806@zytor.com>
+ <20091110174622.GK5129@outflux.net>
+ <4AF9B6AD.8020505@zytor.c,<20091110205544.GZ5129@outflux.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 12 Nov 2009 18:01:44.0246 (UTC) FILETIME=[31B87D60:01CA63C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8264e6b..b7dbdd9 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3086,9 +3086,13 @@ F:	kernel/kgdb.c
- 
- KMEMCHECK
- M:	Vegard Nossum <vegardno@ifi.uio.no>
--P	Pekka Enberg
--M:	penberg@cs.helsinki.fi
-+M:	Pekka Enberg <penberg@cs.helsinki.fi>
- S:	Maintained
-+F:	Documentation/kmemcheck.txt
-+F:	arch/x86/include/asm/kmemcheck.h
-+F:	arch/x86/mm/kmemcheck/
-+F:	include/linux/kmemcheck.h
-+F:	mm/kmemcheck.c
- 
- KMEMLEAK
- M:	Catalin Marinas <catalin.marinas@arm.com>
 
 
-
+>> The last column should actually be "no message", "impossible", "impossible".
+>
+> Ah, yes, very true.
+Nope, not only can it be disabled in the BIOS, but also don't forget Intel's first D0 stepping Nocona Xeon x86-64 CPUs, which do not have NX.
+> (the class of machines without PAE being
+> larger than those without NX and with PAE).Nope also. Clue: Most post-Pentium Pro Intel CPUs and all AMD CPUs since the K7 has PAE available as a CPU feature.
+Yuhong Bao 		 	   		  
+_________________________________________________________________
+Hotmail: Powerful Free email with security by Microsoft.
+http://clk.atdmt.com/GBL/go/171222986/direct/01/
