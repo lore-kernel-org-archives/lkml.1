@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZKLJJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZKLJLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbZKLJJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 04:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZKLJJm
+	id S1752075AbZKLJLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 04:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZKLJLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 04:09:42 -0500
-Received: from nox.protox.org ([88.191.38.29]:45094 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751074AbZKLJJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 04:09:40 -0500
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH] drm/radeon/kms: Add default 800x600 mode when getting bad EDID
-Date: Thu, 12 Nov 2009 10:09:39 +0100
-Message-Id: <1258016979-2083-1-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.5.2
+	Thu, 12 Nov 2009 04:11:34 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:53397 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbZKLJLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 04:11:33 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sysctl tree build failure
+References: <20091112184805.1c0720cb.sfr@canb.auug.org.au>
+	<m1ljicp3l0.fsf@fess.ebiederm.org>
+	<20091112191451.d21250f2.sfr@canb.auug.org.au>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 12 Nov 2009 01:11:34 -0800
+In-Reply-To: <20091112191451.d21250f2.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 12 Nov 2009 19\:14\:51 +1100")
+Message-ID: <m1fx8kp0op.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding default 800x600 mode should be a safe fail solution in front
-of broken EDID, user can then add new mode to fit its needs.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_connectors.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+> Hi Eric,
+>
+> On Thu, 12 Nov 2009 00:08:59 -0800 ebiederm@xmission.com (Eric W. Biederman) wrote:
+>>
+>> Thank you, and my apologies.  I thought I had tried it with every
+>> applicable compile option but apparently not.
+>> 
+>> Ugh.  It looks like I have a small refcount leak in that case as
+>> well.  Blind I was.
+>> 
+>> Thank you very I will have this fixed shortly.
+>
+> Thanks.
 
-diff --git a/drivers/gpu/drm/radeon/radeon_connectors.c b/drivers/gpu/drm/radeon/radeon_connectors.c
-index 292b170..4dec82e 100644
---- a/drivers/gpu/drm/radeon/radeon_connectors.c
-+++ b/drivers/gpu/drm/radeon/radeon_connectors.c
-@@ -566,8 +566,10 @@ static enum drm_connector_status radeon_vga_detect(struct drm_connector *connect
- 		radeon_i2c_do_lock(radeon_connector, 0);
- 
- 		if (!radeon_connector->edid) {
--			DRM_ERROR("DDC responded but not EDID found for %s\n",
-+			DRM_ERROR("DDC responded but not EDID found for %s, adding default mode\n",
- 				  drm_get_connector_name(connector));
-+			if (!drm_add_modes_noedid(&radeon_connector->base, 800, 600))
-+				ret = connector_status_connected;
- 		} else {
- 			radeon_connector->use_digital = !!(radeon_connector->edid->input & DRM_EDID_INPUT_DIGITAL);
- 
-@@ -720,8 +722,10 @@ static enum drm_connector_status radeon_dvi_detect(struct drm_connector *connect
- 		radeon_i2c_do_lock(radeon_connector, 0);
- 
- 		if (!radeon_connector->edid) {
--			DRM_ERROR("DDC responded but not EDID found for %s\n",
-+			DRM_ERROR("DDC responded but not EDID found for %s, adding default mode\n",
- 				  drm_get_connector_name(connector));
-+			if (!drm_add_modes_noedid(&radeon_connector->base, 800, 600))
-+				ret = connector_status_connected;
- 		} else {
- 			radeon_connector->use_digital = !!(radeon_connector->edid->input & DRM_EDID_INPUT_DIGITAL);
- 
--- 
-1.6.5.2
+Any clue how all_noconfig happened to have CONFIG_SYSCTL_SYSCALL set?
 
+Eric
