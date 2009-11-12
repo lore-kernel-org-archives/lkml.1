@@ -1,105 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZKLIa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZKLIoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZKLIa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZKLIaz
+	id S1752241AbZKLIoA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZKLIoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:30:55 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45705 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbZKLIay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:30:54 -0500
-Date: Thu, 12 Nov 2009 19:30:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: rr/sparc tree build failure
-Message-Id: <20091112193058.73942a58.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 03:44:00 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:38161 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbZKLIn7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 03:43:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oiW4LLRpDWwcfKf8dY4b3pKuxfJuvSCoSsgYtSjaZjm7XlS2HC1vNa5YpTjMWk98AF
+         NTNNu0XGClWec/ynuANuDW8NG0e2ZIvwSJqd2Uy1HeYN2h8/D0pvNZzGUrwY1zqG3Y+g
+         e/5FRlqO9lQ8+BqgsKkvgnJhVIhMe7JL4fnAM=
+MIME-Version: 1.0
+In-Reply-To: <40e92d5b0911111625sf692589u8678b03264c1b31d@mail.gmail.com>
+References: <40e92d5b0911101608t4baf75bo83c5780f24761781@mail.gmail.com>
+	 <4e5e476b0911110300nb25785eqf7998ad1fe3ed537@mail.gmail.com>
+	 <40e92d5b0911111625sf692589u8678b03264c1b31d@mail.gmail.com>
+Date: Thu, 12 Nov 2009 09:44:04 +0100
+Message-ID: <4e5e476b0911120044j1c944b51me3b4d4a3653b7c5@mail.gmail.com>
+Subject: Re: SATA NCQ - blessing for throughput, curse for latency?
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: =?UTF-8?Q?Przemys=C5=82aw_Pawe=C5=82czyk?= 
+	<przemyslaw@pawelczyk.it>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty, Dave,
+2009/11/12 Przemysław Pawełczyk <przemyslaw@pawelczyk.it>:
+> 2009/11/11 Corrado Zoccolo <czoccolo@gmail.com>:
+>> 2009/11/11 Przemysław Pawełczyk <przemyslaw@pawelczyk.it>:
+>>> [snip] I wrote a script (that is pasted
+>>> at the end), which using zcav from bonnie++ (and unbuffer from expect
+>>> to work properly if output is redirected to a file) reads up to 64 GB
+>>> of the disk, but after a first few gigabytes (depending on how many GB
+>>> of memory you have) cats kernel sources with binary files up to the
+>>> second level of directory depth. What is measured? The real time of
+>>> the cat to /dev/null operation. Why not the kernel sources alone?
+>>> Because if we build kernel, especially with -jX (where X > 1), then
+>>> both inodes and contents of the corresponding files within these
+>>> directories generally won't be consecutive. Time for the results with
+>>> some background information. In my tests I have used 2.6.31.5 built
+>>> with debuginfo (using debian's make-kpkg).
+>>>
+>>>[summarized the relevant numbers]
+>>> *** NCQ turned on ***
+>>> real 752.30
+>>> user 0.20
+>>> sys 1.83
+>>>
+>>>
+>>> *** NCQ turned off *** (kernel booted with noncq parameter)
+>>> real 62.30
+>>> user 0.27
+>>> sys 1.59
+>>>
+>>> [snip]
+>>>
+>>> Can anyone confirm analogous NCQ-dependant behavior with other
+>>> disk/controller variants? Any suggestions for improvements other than
+>>> turning off NCQ or switching to anticipatory (in typical cases cfq is
+>>> better, so it's not the best option)?
+>>
+>> The NCQ latency problem is well known, and should be fixed in 2.6.32.
+>> You can try building the latest rc.
+>
+> Thank you for this information. Could you provide fixing commit's sha?
+> Just for the record.
+It's a set of changes:
+1d2235152dc745c6d94bedb550fea84cffdbf768 ..
+61f0c1dcaaac71faabac6ef7c839b29f20204bea
 
-Today's linux-next build (sparc64 defconfig) failed like this:
+>
+> Bunch of numbers from my laptop, to show how it improved in my case:
+>
+> model name: Intel(R) Core(TM)2 Duo CPU     T7100  @ 1.80GHz
+> mem total:  3087012 kB
+>
+> [    8.656966] scsi 0:0:0:0: Direct-Access     ATA      WDC
+> WD3200BJKT-0 11.0 PQ: 0 ANSI: 5
+> [    8.657771] sd 0:0:0:0: [sda] 625142448 512-byte logical blocks:
+> (320 GB/298 GiB)
+>
+> 00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM
+> (ICH8M/ICH8M-E) SATA AHCI Controller (rev 03) (prog-if 01 [AHCI 1.0])
+>        Kernel driver in use: ahci
+>
+> ** 2.6.31.5 NCQ **
+>
+> Did not end while was reading first 64 GB of the disk. Result:
+> real 807.06
+> user 0.14
+> sys 2.06
+>
+> ** 2.6.32-rc6 NCQ **
+>
+> 0.00 82.33 12.437
+> 1.00 82.47 12.417
+> 2.00 82.51 12.411
+> 3.00 82.31 12.441
+> Concurrent read will start in 1 second...
+> 4.00 57.30 17.870
+> 5.00 41.49 24.680
+> 6.00 38.76 26.421
+> real 79.48
+> user 0.24
+> sys 1.43
+> 7.00 53.64 19.092
+> 8.00 82.51 12.411
+>
+> ** 2.6.32-rc6 noncq **
+>
+> 0.00 82.33 12.437
+> 1.00 82.47 12.417
+> 2.00 82.40 12.427
+> 3.00 81.87 12.508
+> Concurrent read will start in 1 second...
+> 4.00 42.17 24.285
+> 5.00 37.91 27.010
+> real 62.94
+> user 0.18
+> sys 1.64
+> 6.00 52.70 19.431
+> 7.00 82.51 12.410
+>
+> With noncq second read is faster, but the difference is now acceptable I think.
 
-.tmp_exports-asm.o: In function `__ksymtab_pci_alloc_consistent':
-(__ksymtab_sorted+0x6650): undefined reference to `pci_alloc_consistent'
-.tmp_exports-asm.o: In function `__ksymtab_pci_dma_supported':
-(__ksymtab_sorted+0x6810): undefined reference to `pci_dma_supported'
-.tmp_exports-asm.o: In function `__ksymtab_pci_dma_sync_sg_for_cpu':
-(__ksymtab_sorted+0x6820): undefined reference to `pci_dma_sync_sg_for_cpu'
-.tmp_exports-asm.o: In function `__ksymtab_pci_dma_sync_single_for_cpu':
-(__ksymtab_sorted+0x6830): undefined reference to `pci_dma_sync_single_for_cpu'
-.tmp_exports-asm.o: In function `__ksymtab_pci_free_consistent':
-(__ksymtab_sorted+0x6910): undefined reference to `pci_free_consistent'
-.tmp_exports-asm.o: In function `__ksymtab_pci_map_sg':
-(__ksymtab_sorted+0x69b0): undefined reference to `pci_map_sg'
-.tmp_exports-asm.o: In function `__ksymtab_pci_map_single':
-(__ksymtab_sorted+0x69c0): undefined reference to `pci_map_single'
-.tmp_exports-asm.o: In function `__ksymtab_pci_unmap_sg':
-(__ksymtab_sorted+0x6c40): undefined reference to `pci_unmap_sg'
-.tmp_exports-asm.o: In function `__ksymtab_pci_unmap_single':
-(__ksymtab_sorted+0x6c50): undefined reference to `pci_unmap_single'
+Thanks for confirming.
 
-Caused by sparc64 exporting static inline functions.  This has interacted
-with changes in the rr tree to produce these errors.
-
-I have applied this patch for today:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 12 Nov 2009 19:26:14 +1100
-Subject: [PATCH] sparc64: don't export static inline pci_ functions
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/sparc/kernel/pci.c            |    1 -
- arch/sparc/kernel/sparc_ksyms_64.c |   12 ------------
- 2 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index b85374f..539e83f 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -1064,7 +1064,6 @@ int pci64_dma_supported(struct pci_dev *pdev, u64 device_mask)
- 
- 	return (device_mask & dma_addr_mask) == dma_addr_mask;
- }
--EXPORT_SYMBOL(pci_dma_supported);
- 
- void pci_resource_to_user(const struct pci_dev *pdev, int bar,
- 			  const struct resource *rp, resource_size_t *start,
-diff --git a/arch/sparc/kernel/sparc_ksyms_64.c b/arch/sparc/kernel/sparc_ksyms_64.c
-index 0f26066..372ad59 100644
---- a/arch/sparc/kernel/sparc_ksyms_64.c
-+++ b/arch/sparc/kernel/sparc_ksyms_64.c
-@@ -38,17 +38,5 @@ EXPORT_SYMBOL(sun4v_niagara_setperf);
- EXPORT_SYMBOL(sun4v_niagara2_getperf);
- EXPORT_SYMBOL(sun4v_niagara2_setperf);
- 
--#ifdef CONFIG_PCI
--/* inline functions in asm/pci_64.h */
--EXPORT_SYMBOL(pci_alloc_consistent);
--EXPORT_SYMBOL(pci_free_consistent);
--EXPORT_SYMBOL(pci_map_single);
--EXPORT_SYMBOL(pci_unmap_single);
--EXPORT_SYMBOL(pci_map_sg);
--EXPORT_SYMBOL(pci_unmap_sg);
--EXPORT_SYMBOL(pci_dma_sync_single_for_cpu);
--EXPORT_SYMBOL(pci_dma_sync_sg_for_cpu);
--#endif
--
- /* Exporting a symbol from /init/main.c */
- EXPORT_SYMBOL(saved_command_line);
--- 
-1.6.5.2
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Corrado
+>
+> Thanks.
+>
+> --
+> Przemysław Pawełczyk
+>
