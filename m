@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZKLSWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZKLS17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbZKLSWj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 13:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZKLSWg
+	id S1753913AbZKLS17 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 13:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZKLS15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 13:22:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42664 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753593AbZKLSWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 13:22:35 -0500
-Date: Thu, 12 Nov 2009 16:21:20 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eran Liberty <liberty@extricom.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial_core: avoid Break bouncing
-Message-ID: <20091112162120.45b33ecf@pedra.chehab.org>
-In-Reply-To: <20091112175649.145cbf18@lxorguk.ukuu.org.uk>
-References: <20091112140504.6daf3824@pedra.chehab.org>
-	<20091112175649.145cbf18@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 13:27:57 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:49651 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbZKLS15 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 13:27:57 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+Date: Thu, 12 Nov 2009 18:28:03 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hdhk3j$9hl$1@taverner.cs.berkeley.edu>
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1258050483 9781 128.32.168.222 (12 Nov 2009 18:28:03 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Thu, 12 Nov 2009 18:28:03 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, 12 Nov 2009 17:56:49 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> escreveu:
+Casey Schaufler  wrote:
+> I strongly suggest that this is not what is wanted.
+>     strcmp(x,y)
+> and
+>     strncmp(x,y,sizeof(y))
+>
+> are functionally equivalent and strcmp has a bad reputation in
+> the security community because it is associated with potential
+> buffer overrun issues.
 
-> On Thu, 12 Nov 2009 14:05:04 -0200
-> Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-> 
-> > From: Eran Liberty <liberty@extricom.com>
-> > 
-> > On some boxes, Break signal bounces, causing sysrq code to fail with some
-> > serial interfaces.
-> > 
-> > A solution were posted on LKML in 2008:
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0809.2/0730.html
-> > 
-> > However, the fix weren't applied upstream.
-> 
-> Because it was NAKked at the time as it seemed to be a bug in Eran's
-> hardware platform not a generic problem and also because it breaks
-> autobauding on break as used by some (particularly older) software.
-> 
-> It's still NAKked and it would be helpful if people resubmitting old
-> stuff also looked through the thread attached the original submission.
-
-I did, but I haven't find any nack at the public archives I've checked. My
-fault. Sorry about that.
-
-> You seem to have a single case of a user with some kind of buggy uart or
-> possibly other weirdness going on. That's probably worth investigating
-> more deeply but the patch NAKked before is not the solution due to its
-> side effects
-
-I'll do a deeper analysis and come back with a patch only if I discover
-something new about this issue.
-> 
-> (also btw it'll upset other people who script their sysrq stuff including
-> breaks and don't expect strange timing limits)
-> 
-> NAK again
-
-
--- 
-
-Cheers,
-Mauro
+It does?  Hmm, I don't recall hearing of this bad reputation for strcmp().
+Is there a justification for why such a reputation would be deserved?
+We're not talking strcpy() here.  strcmp() is fine as long as its
+arguments are properly '\0'-terminated; given that, it doesn't introduce
+any new buffer overrun risks.
