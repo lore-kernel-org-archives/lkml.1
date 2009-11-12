@@ -1,110 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbZKLKHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZKLKKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751610AbZKLKHs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 05:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZKLKHr
+	id S1751920AbZKLKKN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 05:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZKLKKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 05:07:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33091 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751321AbZKLKHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 05:07:47 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18Vpp4ETRkVQll67rs/vgwYO/zAhGTJDnuq1nIXZT
-	kfNMeP5pZhsymt
-Subject: [patch] sched: fix/add missing update_rq_clock() calls
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 12 Nov 2009 11:07:44 +0100
-Message-Id: <1258020464.6491.2.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 12 Nov 2009 05:10:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42611 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751389AbZKLKKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 05:10:11 -0500
+Message-ID: <4AFBDF43.3010703@kernel.org>
+Date: Thu, 12 Nov 2009 19:11:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [GIT PULL] percpu fixes for 2.6.32-rc6
+References: <alpine.LFD.2.01.0911100903370.31845@localhost.localdomain> <4AF9B1FD.1010408@kernel.org> <alpine.LFD.2.01.0911101042140.31845@localhost.localdomain> <4AF9BE3A.40409@kernel.org> <20091110193705.GA9011@elte.hu> <4AF9C402.9040800@kernel.org> <alpine.LFD.2.01.0911101338190.31845@localhost.localdomain> <4AFA35CB.5030801@kernel.org> <20091111113147.GB7487@elte.hu> <4AFAAC32.4020104@kernel.org> <20091111195751.GA13574@elte.hu>
+In-Reply-To: <20091111195751.GA13574@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Ingo.
 
-sched: fix/add missing update_rq_clock() calls.
+11/12/2009 04:57 AM, Ingo Molnar wrote:
+> Sure - pulled it into tip:master for testing earlier today and after a 
+> few hours of it's looking good so far in x86 runtime tests. I also did 
+> cross-build testing to a dozen non-x86 architectures and it was fine 
+> there too.
 
-kthread_bind(), migrate_task() and sched_fork were missing updates, and
-try_to_wake_up() was updating after having already used the stale clock.
+Great.
 
-Aside from preventing potential latency hits, there' a side benefit in that
-early boot printk time stamps become monotonic.
+> btw., there's some 80-cols checkpatch warning artifacts in the commit:
+> 
+> +                       if (pcpu_extend_area_map(chunk, new_alloc) < 0) {
+> +                               err = "failed to extend area map of "
+> +                                       "reserved chunk";
+> 
+> which suggest that the logic here is perhaps nested a bit too deep. It 
+> could be improved by moving the reserved allocation branch of 
+> pcpu_alloc():
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+Strange, although the line break isn't the prettiest thing, the only
+checkpatch problem I can see is the following.
 
----
- kernel/sched.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+  > scripts/checkpatch.pl 0001-percpu-restructure-pcpu_extend_area_map-to-fix-bugs-.patch 
+  ERROR: trailing whitespace
+  #80: FILE: mm/percpu.c:382:
+  +^Ireturn new_alloc;^I$
 
-Index: linux-2.6.32.git/kernel/sched.c
-===================================================================
---- linux-2.6.32.git.orig/kernel/sched.c
-+++ linux-2.6.32.git/kernel/sched.c
-@@ -2019,6 +2019,7 @@ void kthread_bind(struct task_struct *p,
- 	}
- 
- 	spin_lock_irqsave(&rq->lock, flags);
-+	update_rq_clock(rq);
- 	set_task_cpu(p, cpu);
- 	p->cpus_allowed = cpumask_of_cpu(cpu);
- 	p->rt.nr_cpus_allowed = 1;
-@@ -2117,6 +2118,7 @@ migrate_task(struct task_struct *p, int
- 	 * it is sufficient to simply update the task's cpu field.
- 	 */
- 	if (!p->se.on_rq && !task_running(rq, p)) {
-+		update_rq_clock(rq);
- 		set_task_cpu(p, dest_cpu);
- 		return 0;
- 	}
-@@ -2378,14 +2380,15 @@ static int try_to_wake_up(struct task_st
- 	task_rq_unlock(rq, &flags);
- 
- 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
--	if (cpu != orig_cpu)
-+	if (cpu != orig_cpu) {
-+		local_irq_save(flags);
-+		rq = cpu_rq(cpu);
-+		update_rq_clock(rq);
- 		set_task_cpu(p, cpu);
--
-+		local_irq_restore(flags);
-+	}
- 	rq = task_rq_lock(p, &flags);
- 
--	if (rq != orig_rq)
--		update_rq_clock(rq);
--
- 	WARN_ON(p->state != TASK_WAKING);
- 	cpu = task_cpu(p);
- 
-@@ -2558,6 +2561,7 @@ static void __sched_fork(struct task_str
- void sched_fork(struct task_struct *p, int clone_flags)
- {
- 	int cpu = get_cpu();
-+	unsigned long flags;
- 
- 	__sched_fork(p);
- 
-@@ -2594,7 +2598,10 @@ void sched_fork(struct task_struct *p, i
- #ifdef CONFIG_SMP
- 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
- #endif
-+	local_irq_save(flags);
-+	update_rq_clock(cpu_rq(cpu));
- 	set_task_cpu(p, cpu);
-+	local_irq_restore(flags);
- 
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	if (likely(sched_info_on()))
+  total: 1 errors, 0 warnings, 179 lines checked
 
+  0001-percpu-restructure-pcpu_extend_area_map-to-fix-bugs-.patch has style problems, please review.  If any of these errors
+  are false positives report them to the maintainer, see
+  CHECKPATCH in MAINTAINERS.
 
+The patch adds a trailing tab.  I'll fix that up (I usually catch
+these while using quilt but this one didn't go through quilt and I
+forgot to run checkpatch).
+
+>         if (reserved && pcpu_reserved_chunk) {
+> 
+> into a helper inline function, something like __pcpu_alloc_reserved().
+> 
+> It's a rare special case anyway. It could be changed to return with the 
+> pcpu_lock always taken, so the above branch would look like this:
+> 
+> 	if (unlikely(reserved)) {
+> 		off = __pcpu_alloc_reserved(&chunk, size, align, &err);
+> 		if (off < 0)
+> 			goto fail_unlock;
+> 		goto area_found;
+> 	}
+> 
+> Which is a cleaner flow IMO, and which simplifes pcpu_alloc().
+
+Hmmm... The thing is that the nesting isn't that deep there and
+breaking string in the middle is something we do quite often.  What
+checkpatch warning did you see?
+
+Thanks.
+
+-- 
+tejun
