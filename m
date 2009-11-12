@@ -1,80 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZKLXb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZKLXn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZKLXb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZKLXbY
+	id S1755392AbZKLXn7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 18:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZKLXn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:31:24 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51838 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218AbZKLXbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 18:31:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ikABUANBd8w5M0xT+coeohk/LsmZYvCJ323l+RPjO4oPMoHH7vd+Y7SqCdQjkqD6RA
-         JNmSDwM5e1hfq0DA3f3+ft/DpzLyHhpeJcqC5AB7N9n4/R2z4+y+nVU/5wGWNOIi9BCv
-         5Ar5F1XLNI55RFckpbbbpPQMNzY2T6A7iHcYc=
-MIME-Version: 1.0
-In-Reply-To: <1258067006-2205-1-git-send-email-lrodriguez@atheros.com>
-References: <1258067006-2205-1-git-send-email-lrodriguez@atheros.com>
-Date: Thu, 12 Nov 2009 23:31:28 +0000
-Message-ID: <9b2b86520911121531y70e05d4rcd361ec33799bc0a@mail.gmail.com>
-Subject: Re: [RFC] scripts: add gen-linux-conf for remote kernel configuration
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, greg@kroah.com,
-       akpm@linux-foundation.org, mcgrof@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Nov 2009 18:43:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755237AbZKLXn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 18:43:57 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
+       riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: [RFC] Block IO Controller V2
+Date: Thu, 12 Nov 2009 18:32:20 -0500
+Message-Id: <1258068756-10766-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/12/09, Luis R. Rodriguez <lrodriguez@atheros.com> wrote:
-> The new 'make localmodconfig' proves very useful but on low end
-> systems we do not want to 'git clone' an entire kernel tree or
-> download a whole kernel but just cross compile the kernel on a
-> bigger machine. The .config generated with 'make localmodconfig'
-> is still very helpfup though so to aid users and developers
-> with that add a script which builds a tarball with only the
-> necessary kernel glue stuff to be able to generate a local
-> minimum kernel configuration with 'make localmodconfig'.
->
-> With this you can copy to your target device a relatively
-> small tarball (1.2 MB currenty) and, allows you to modify
-> the kernel config for your tree (mconf, conf, etc) and
-> finally run 'make localmodconfig'.
->
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> ---
->
-> I had an itch to scratch and that was to use 'localmodconfig'
-> on a small netbook but I didn't want to clone a whole tree
-> or even compile an entire kernel on it. This did the trick,
-> thought others might find it useful.
->
-> A little grimy the bash script, but hey it works and its simple
-> enough. I tried to reduce the Makefile count to only arch/ but
-> found that that didn't do the trick. Perhaps this can be optimized
-> more, suggestions welcomed. Maybe it should be written in Go :)
->
-> What would be *real* nice is to give an IP address of a box and
-> have it build and fetch a localmodconfig .config for you.
->
->   Luis
+Hi Jens,
 
-Thanks for posting this.
+This is V2 of the Block IO controller patches on top of "for-2.6.33" branch
+of block tree.
 
-When I tried this for my netbook, my approach was to copy
-/proc/modules and /boot/config from the netbook.  As a shameless hack,
-I temporarily bind mounted /proc/modules on the build system.  I guess
-the cleaner way would be to copy the result of "lsmod", and have
-localmodconfig accept "LSMOD_FILE=file".
+A consolidated patch can be found here:
 
-Naturally I think my approach is simpler, despite not having actually
-implemented it properly :).  What do you think about it?
+http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v2.patch
 
-Regards
-Alan
+Changes from V1:
+
+- Rebased the patches for "for-2.6.33" branch. 
+- Currently dropped the support for priority class of groups. For the time
+  being only BE class groups are supported.
+ 
+After the discussions at IO minisummit at Tokyo, Japan, it was agreed that
+one single IO control policy at either leaf nodes or at higher level nodes
+does not meet all the requirements and we need something so that we have
+the capability to support more than one IO control policy (like proportional
+weight division and max bandwidth control) and also have capability to
+implement some of these policies at higher level logical devices.
+
+It was agreed that CFQ is the right place to implement time based proportional
+weight division policy. Other policies like max bandwidth control/throttling
+will make more sense at higher level logical devices.
+
+This patch introduces blkio cgroup controller. It provides the management
+interface for the block IO control. The idea is that keep the interface
+common and in the background we should be able to switch policies based on
+user options. Hence user can control the IO throughout the IO stack with
+a single cgroup interface.
+
+Apart from blkio cgroup interface, this patchset also modifies CFQ to implement
+time based proportional weight division of disk. CFQ already does it in flat
+mode. It has been modified to do group IO scheduling also.
+
+IO control is a huge problem and the moment we start addressing all the
+issues in one patchset, it bloats to unmanageable proportions and then nothing
+gets inside the kernel. So at io mini summit we agreed that lets take small
+steps and once a piece of code is inside the kernel and stablized, take the
+next step. So this is the first step.
+
+Some parts of the code are based on BFQ patches posted by Paolo and Fabio.
+
+Your feedback is welcome.
+
+TODO
+====
+- Support async IO control (buffered writes).
+
+ Buffered writes is a beast and requires changes at many a places to solve the
+ problem and patchset becomes huge. Hence first we plan to support only sync
+ IO in control then work on async IO too.
+
+ Some of the work items identified are.
+
+	- Per memory cgroup dirty ratio
+	- Possibly modification of writeback to force writeback from a
+	  particular cgroup.
+	- Implement IO tracking support so that a bio can be mapped to a cgroup.
+	- Per group request descriptor infrastructure in block layer.
+	- At CFQ level, implement per cfq_group async queues.	
+
+  In this patchset, all the async IO goes in system wide queues and there are
+  no per group async queues. That means we will see service differentiation
+  only for sync IO only. Async IO willl be handled later.
+
+- Support for higher level policies like max BW controller.
+- Support groups of RT class also.
+
+Thanks
+Vivek
+
+ Documentation/cgroups/blkio-controller.txt |  100 +++
+ block/Kconfig                              |   22 +
+ block/Kconfig.iosched                      |   17 +
+ block/Makefile                             |    1 +
+ block/blk-cgroup.c                         |  312 ++++++++++
+ block/blk-cgroup.h                         |   90 +++
+ block/cfq-iosched.c                        |  901 ++++++++++++++++++++++++----
+ include/linux/cgroup_subsys.h              |    6 +
+ include/linux/iocontext.h                  |    4 +
+ 9 files changed, 1346 insertions(+), 107 deletions(-)
