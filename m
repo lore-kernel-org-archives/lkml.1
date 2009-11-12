@@ -1,161 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZKLVAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbZKLVC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbZKLVAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZKLVAL
+	id S1754430AbZKLVC6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZKLVCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:00:11 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:52401 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754415AbZKLVAJ (ORCPT
+	Thu, 12 Nov 2009 16:02:54 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:56907 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754411AbZKLVCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:00:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=jbE443p5p+ycuGShSUaO3ZwoxDe7MczPwPY4sci09Ht4TIyeV8sb93hu+qxsXDjDwb
-         5aUViIztgEz44ZPXJCgnc7TNGuNngCPWZvOOGWllUjPOakby0xHTf8XTyoA+jNMBXJ3g
-         OAxJnKhPpkz1ImdGuJw9/RgsiHa6/emCvUOiQ=
+	Thu, 12 Nov 2009 16:02:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=hkhuaZi23MHVJ/DEFJ0PcwKFxlFh43HxHlrSe4F+eHsnqxXUNrzPsoK47Tm5Ed6JA
+	KBh6SYn7RZ9AGi7QWIfzA==
+Date: Thu, 12 Nov 2009 13:02:39 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] ACPI: Limit the number of per cpu ACPI bootup
+ messages
+In-Reply-To: <20091112171949.218777000@alcatraz.americas.sgi.com>
+Message-ID: <alpine.DEB.2.00.0911121259260.13943@chino.kir.corp.google.com>
+References: <20091112171934.584037000@alcatraz.americas.sgi.com> <20091112171949.218777000@alcatraz.americas.sgi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1258059180-4353-1-git-send-email-felipe.contreras@gmail.com>
-References: <1258059180-4353-1-git-send-email-felipe.contreras@gmail.com>
-Date: Thu, 12 Nov 2009 23:00:14 +0200
-Message-ID: <94a0d4530911121300p633e5163xfa15b7434a074022@mail.gmail.com>
-Subject: Re: [PATCH v3] omap3-iommu: reorganize
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Hiroshi Doyu <hiroshi.doyu@nokia.com>,
-       Hari Kanigeri <h-kanigeri2@ti.com>,
-       Felipe Contreras <felipe.contreras@gmail.com>
-Content-Type: multipart/mixed; boundary=0016e64603ea7473a0047832d4fb
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e64603ea7473a0047832d4fb
-Content-Type: text/plain; charset=UTF-8
+On Thu, 12 Nov 2009, Mike Travis wrote:
 
-On Thu, Nov 12, 2009 at 10:52 PM, Felipe Contreras
-<felipe.contreras@gmail.com> wrote:
-> This is the third version of my attempt to reorganize the omap3 iommu code to
-> make it easier to read and more extensible. I've taken into consideration
-> Russell and Hiroshi's comments. Also, rebased on top of Tony's 'for-next'
-> branch, although no changes have been done since v2.
->
-> I'm resending because Tony asked me to.
+> Limit the number of per cpu ACPI messages when system is booting to
+> prevent clogging up the console output with repetitious messages.
+> 
 
-Last comments from Hiroshi were not so positive, so I'm attaching a
-dummy omap4-iommu.c with 4 devices in order to show that the new
-format is actually more extensible (the 2 formats are shown).
+... "by changing the log level from KERN_INFO to KERN_DEBUG."
 
-Cheers.
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+>  drivers/acpi/fan.c            |    2 +-
+>  drivers/acpi/processor_core.c |    2 +-
+>  drivers/acpi/tables.c         |   28 +++++++++++++++++++---------
+>  3 files changed, 21 insertions(+), 11 deletions(-)
+> 
+> --- linux.orig/drivers/acpi/fan.c
+> +++ linux/drivers/acpi/fan.c
+> @@ -267,7 +267,7 @@
+>  		goto end;
+>  	}
+>  
+> -	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
+> +	dev_dbg(&device->dev, "registered as cooling_device%d\n", cdev->id);
+>  
+>  	device->driver_data = cdev;
+>  	result = sysfs_create_link(&device->dev.kobj,
+> --- linux.orig/drivers/acpi/processor_core.c
+> +++ linux/drivers/acpi/processor_core.c
+> @@ -845,7 +845,7 @@
+>  		goto err_power_exit;
+>  	}
+>  
+> -	dev_info(&device->dev, "registered as cooling_device%d\n",
+> +	dev_dbg(&device->dev, "registered as cooling_device%d\n",
+>  		 pr->cdev->id);
+>  
+>  	result = sysfs_create_link(&device->dev.kobj,
+> --- linux.orig/drivers/acpi/tables.c
+> +++ linux/drivers/acpi/tables.c
+> @@ -66,11 +66,15 @@
+>  		{
+>  			struct acpi_madt_local_x2apic *p =
+>  			    (struct acpi_madt_local_x2apic *)header;
+> -			printk(KERN_INFO PREFIX
+> -			       "X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
+> -			       p->local_apic_id, p->uid,
+> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ?
+> -			       "enabled" : "disabled");
+> +			/*
+> +			 * Per cpu tracing clogs console output when NR_CPUS
+> +			 * is large.  Send only to kernel log buffer.
+> +			 */
+> +			printk(KERN_DEBUG PREFIX
+> +				"X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
+> +				p->local_apic_id, p->uid,
+> +				(p->lapic_flags & ACPI_MADT_ENABLED) ?
+> +					"enabled" : "disabled");
+>  		}
+>  		break;
+>  
 
--- 
-Felipe Contreras
+You can still use dev_dbg(PREFIX "...") here.
 
---0016e64603ea7473a0047832d4fb
-Content-Type: text/x-csrc; charset=US-ASCII; name="omap4-iommu-1.c"
-Content-Disposition: attachment; filename="omap4-iommu-1.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1y065wa0
+> @@ -171,10 +175,16 @@
+>  		{
+>  			struct acpi_madt_local_sapic *p =
+>  			    (struct acpi_madt_local_sapic *)header;
+> -			printk(KERN_INFO PREFIX
+> -			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
+> -			       p->processor_id, p->id, p->eid,
+> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" : "disabled");
+> +			/*
+> +			 * Per cpu tracing clogs console output when NR_CPUS
+> +			 * is large.  Send only to kernel log buffer.
+> +			 */
+> +			printk(KERN_DEBUG PREFIX
+> +				"LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] "
+> +				"lsapic_eid[0x%02x] %s)\n",
+> +				p->processor_id, p->id, p->eid,
+> +				(p->lapic_flags & ACPI_MADT_ENABLED) ?
+> +					"enabled" : "disabled");
+>  		}
+>  		break;
+>  
 
-LyoKICogb21hcCBpb21tdTogb21hcDQgZGV2aWNlIHJlZ2lzdHJhdGlvbgogKgogKiBDb3B5cmln
-aHQgKEMpIDIwMDgtMjAwOSBOb2tpYSBDb3Jwb3JhdGlvbgogKgogKiBXcml0dGVuIGJ5IEhhcmkg
-S2FuaWdlcmkgPGgta2FuaWdlcmkyQHRpLmNvbT4KICoKICogQWRkZWQgc3VwcG9ydCBmb3IgT01B
-UDQuIFRoaXMgaXMgYmFzZWQgb24gb3JpZ2luYWwgZmlsZQogKiBvbWFwMy1pb21tdS5jCiAqCiAq
-IFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
-bmQvb3IgbW9kaWZ5CiAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVi
-bGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzCiAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2Fy
-ZSBGb3VuZGF0aW9uLgogKi8KCiNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KCiNp
-bmNsdWRlIDxtYWNoL2lvbW11Lmg+CiNpbmNsdWRlIDxtYWNoL2lycXMuaD4KCiNkZWZpbmUgT01B
-UDRfTU1VMV9CQVNFCTB4NTUwODIwMDAKI2RlZmluZSBPTUFQNF9NTVUyX0JBU0UJMHg0QTA2NjAw
-MAojZGVmaW5lIE9NQVA0X01NVTNfQkFTRQkweDAwMDAwMDAwCiNkZWZpbmUgT01BUDRfTU1VNF9C
-QVNFCTB4MDAwMDAwMDAKCiNkZWZpbmUgT01BUDRfTU1VMV9JUlEJSU5UXzQ0WFhfRFVDQVRJX01N
-VV9JUlEKI2RlZmluZSBPTUFQNF9NTVUyX0lSUQlJTlRfNDRYWF9EU1BfTU1VCiNkZWZpbmUgT01B
-UDRfTU1VM19JUlEJMAojZGVmaW5lIE9NQVA0X01NVTRfSVJRCTAKCnN0YXRpYyB1bnNpZ25lZCBs
-b25nIGlvbW11X2Jhc2VbXSBfX2luaXRkYXRhID0gewoJT01BUDRfTU1VMV9CQVNFLAoJT01BUDRf
-TU1VMl9CQVNFLAoJT01BUDRfTU1VM19CQVNFLAoJT01BUDRfTU1VNF9CQVNFLAp9OwoKc3RhdGlj
-IGludCBpb21tdV9pcnFbXSBfX2luaXRkYXRhID0gewoJT01BUDRfTU1VMV9JUlEsCglPTUFQNF9N
-TVUyX0lSUSwKCU9NQVA0X01NVTNfSVJRLAp9OwoKc3RhdGljIGNvbnN0IHN0cnVjdCBpb21tdV9w
-bGF0Zm9ybV9kYXRhIG9tYXA0X2lvbW11X3BkYXRhW10gX19pbml0Y29uc3QgPSB7Cgl7CgkJLm5h
-bWUgPSAiZHVjYXRpIiwKCQkubnJfdGxiX2VudHJpZXMgPSAzMiwKCX0sCgl7CgkJLm5hbWUgPSAi
-aXNwIiwKCQkubnJfdGxiX2VudHJpZXMgPSA4LAoJfSwKCXsKCQkubmFtZSA9ICJmb29iYXIiLAoJ
-CS5ucl90bGJfZW50cmllcyA9IDgsCgl9LAojaWYgZGVmaW5lZChDT05GSUdfTVBVX1RFU0xBX0lP
-TU1VKQoJewoJCS5uYW1lID0gInRlc2xhIiwKCQkubnJfdGxiX2VudHJpZXMgPSAzMiwKCX0sCiNl
-bmRpZgp9OwojZGVmaW5lIE5SX0lPTU1VX0RFVklDRVMgQVJSQVlfU0laRShvbWFwNF9pb21tdV9w
-ZGF0YSkKCnN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpvbWFwNF9pb21tdV9wZGV2W05S
-X0lPTU1VX0RFVklDRVNdOwoKc3RhdGljIGludCBfX2luaXQgb21hcDRfaW9tbXVfaW5pdCh2b2lk
-KQp7CglpbnQgaSwgZXJyOwoKCWZvciAoaSA9IDA7IGkgPCBOUl9JT01NVV9ERVZJQ0VTOyBpKysp
-IHsKCQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2OwoJCXN0cnVjdCByZXNvdXJjZSByZXNb
-Ml07CgoJCXBkZXYgPSBwbGF0Zm9ybV9kZXZpY2VfYWxsb2MoIm9tYXAtaW9tbXUiLCBpKTsKCQlp
-ZiAoIXBkZXYpIHsKCQkJZXJyID0gLUVOT01FTTsKCQkJZ290byBlcnJfb3V0OwoJCX0KCgkJbWVt
-c2V0KHJlcywgMCwgIHNpemVvZihyZXMpKTsKCQlyZXNbMF0uc3RhcnQgPSBpb21tdV9iYXNlW2ld
-OwoJCXJlc1swXS5lbmQgPSBpb21tdV9iYXNlW2ldICsgTU1VX1JFR19TSVpFIC0gMTsKCQlyZXNb
-MF0uZmxhZ3MgPSBJT1JFU09VUkNFX01FTTsKCQlyZXNbMV0uc3RhcnQgPSByZXNbMV0uZW5kID0g
-aW9tbXVfaXJxW2ldOwoJCXJlc1sxXS5mbGFncyA9IElPUkVTT1VSQ0VfSVJROwoKCQllcnIgPSBw
-bGF0Zm9ybV9kZXZpY2VfYWRkX3Jlc291cmNlcyhwZGV2LCByZXMsCgkJCQkJCSAgICBBUlJBWV9T
-SVpFKHJlcykpOwoJCWlmIChlcnIpCgkJCWdvdG8gZXJyX291dDsKCQllcnIgPSBwbGF0Zm9ybV9k
-ZXZpY2VfYWRkX2RhdGEocGRldiwgJm9tYXA0X2lvbW11X3BkYXRhW2ldLAoJCQkJCSAgICAgICBz
-aXplb2Yob21hcDRfaW9tbXVfcGRhdGFbMF0pKTsKCQlpZiAoZXJyKQoJCQlnb3RvIGVycl9vdXQ7
-CgkJZXJyID0gcGxhdGZvcm1fZGV2aWNlX2FkZChwZGV2KTsKCQlpZiAoZXJyKQoJCQlnb3RvIGVy
-cl9vdXQ7CgkJb21hcDRfaW9tbXVfcGRldltpXSA9IHBkZXY7Cgl9CglyZXR1cm4gMDsKCmVycl9v
-dXQ6Cgl3aGlsZSAoaS0tKQoJCXBsYXRmb3JtX2RldmljZV9wdXQob21hcDRfaW9tbXVfcGRldltp
-XSk7CglyZXR1cm4gZXJyOwp9Cm1vZHVsZV9pbml0KG9tYXA0X2lvbW11X2luaXQpOwoKc3RhdGlj
-IHZvaWQgX19leGl0IG9tYXA0X2lvbW11X2V4aXQodm9pZCkKewoJaW50IGk7CgoJZm9yIChpID0g
-MDsgaSA8IE5SX0lPTU1VX0RFVklDRVM7IGkrKykKCQlwbGF0Zm9ybV9kZXZpY2VfdW5yZWdpc3Rl
-cihvbWFwNF9pb21tdV9wZGV2W2ldKTsKfQptb2R1bGVfZXhpdChvbWFwNF9pb21tdV9leGl0KTsK
-Ck1PRFVMRV9BVVRIT1IoIkhpcm9zaGkgRE9ZVSwgSGFyaSBLYW5pZ2VyaSIpOwpNT0RVTEVfREVT
-Q1JJUFRJT04oIm9tYXAgaW9tbXU6IG9tYXA0IGRldmljZSByZWdpc3RyYXRpb24iKTsKTU9EVUxF
-X0xJQ0VOU0UoIkdQTCB2MiIpOwo=
---0016e64603ea7473a0047832d4fb
-Content-Type: text/x-csrc; charset=US-ASCII; name="omap4-iommu-2.c"
-Content-Disposition: attachment; filename="omap4-iommu-2.c"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1y06hjo1
-
-LyoKICogb21hcCBpb21tdTogb21hcDQgZGV2aWNlIHJlZ2lzdHJhdGlvbgogKgogKiBDb3B5cmln
-aHQgKEMpIDIwMDgtMjAwOSBOb2tpYSBDb3Jwb3JhdGlvbgogKgogKiBXcml0dGVuIGJ5IEhhcmkg
-S2FuaWdlcmkgPGgta2FuaWdlcmkyQHRpLmNvbT4KICoKICogQWRkZWQgc3VwcG9ydCBmb3IgT01B
-UDQuIFRoaXMgaXMgYmFzZWQgb24gb3JpZ2luYWwgZmlsZQogKiBvbWFwMy1pb21tdS5jCiAqCiAq
-IFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
-bmQvb3IgbW9kaWZ5CiAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVi
-bGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzCiAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2Fy
-ZSBGb3VuZGF0aW9uLgogKi8KCiNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KCiNp
-bmNsdWRlIDxtYWNoL2lvbW11Lmg+CiNpbmNsdWRlIDxtYWNoL2lycXMuaD4KCnN0cnVjdCBpb21t
-dV9kZXZpY2UgewoJcmVzb3VyY2Vfc2l6ZV90IGJhc2U7CglpbnQgaXJxOwoJc3RydWN0IGlvbW11
-X3BsYXRmb3JtX2RhdGEgcGRhdGE7CglzdHJ1Y3QgcmVzb3VyY2UgcmVzWzJdOwp9OwoKc3RhdGlj
-IHN0cnVjdCBpb21tdV9kZXZpY2UgZGV2aWNlc1tdID0gewoJewoJCS5iYXNlID0gMHg1NTA4MjAw
-MCwKCQkuaXJxID0gSU5UXzQ0WFhfRFVDQVRJX01NVV9JUlEsCgkJLnBkYXRhID0gewoJCQkubmFt
-ZSA9ICJkdWNhdGkiLAoJCQkubnJfdGxiX2VudHJpZXMgPSAzMiwKCQl9LAoJfSwKCXsKCQkuYmFz
-ZSA9IDB4MDAwMDAwMDAsCgkJLmlycSA9IDAsCgkJLnBkYXRhID0gewoJCQkubmFtZSA9ICJpc3Ai
-LAoJCQkubnJfdGxiX2VudHJpZXMgPSA4LAoJCX0sCgl9LAoJewoJCS5iYXNlID0gMHgwMDAwMDAw
-MCwKCQkuaXJxID0gMCwKCQkucGRhdGEgPSB7CgkJCS5uYW1lID0gImZvb2JhciIsCgkJCS5ucl90
-bGJfZW50cmllcyA9IDgsCgkJfSwKCX0sCiNpZiBkZWZpbmVkKENPTkZJR19NUFVfVEVTTEFfSU9N
-TVUpCgl7CgkJLmJhc2UgPSAweDRBMDY2MDAwLAoJCS5pcnEgPSBJTlRfNDRYWF9EU1BfTU1VLAoJ
-CS5wZGF0YSA9IHsKCQkJLm5hbWUgPSAidGVzbGEiLAoJCQkubnJfdGxiX2VudHJpZXMgPSAzMiwK
-CQl9LAoJfSwKI2VuZGlmCn07CiNkZWZpbmUgTlJfSU9NTVVfREVWSUNFUyBBUlJBWV9TSVpFKGRl
-dmljZXMpCgpzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqb21hcDRfaW9tbXVfcGRldltO
-Ul9JT01NVV9ERVZJQ0VTXTsKCnN0YXRpYyBpbnQgX19pbml0IG9tYXA0X2lvbW11X2luaXQodm9p
-ZCkKewoJaW50IGksIGVycjsKCXN0cnVjdCByZXNvdXJjZSByZXNbXSA9IHsKCQl7IC5mbGFncyA9
-IElPUkVTT1VSQ0VfTUVNIH0sCgkJeyAuZmxhZ3MgPSBJT1JFU09VUkNFX0lSUSB9LAoJfTsKCglm
-b3IgKGkgPSAwOyBpIDwgTlJfSU9NTVVfREVWSUNFUzsgaSsrKSB7CgkJc3RydWN0IHBsYXRmb3Jt
-X2RldmljZSAqcGRldjsKCQljb25zdCBzdHJ1Y3QgaW9tbXVfZGV2aWNlICpkID0gJmRldmljZXNb
-aV07CgoJCXBkZXYgPSBwbGF0Zm9ybV9kZXZpY2VfYWxsb2MoIm9tYXAtaW9tbXUiLCBpKTsKCQlp
-ZiAoIXBkZXYpIHsKCQkJZXJyID0gLUVOT01FTTsKCQkJZ290byBlcnJfb3V0OwoJCX0KCgkJcmVz
-WzBdLnN0YXJ0ID0gZC0+YmFzZTsKCQlyZXNbMF0uZW5kID0gZC0+YmFzZSArIE1NVV9SRUdfU0la
-RSAtIDE7CgkJcmVzWzFdLnN0YXJ0ID0gcmVzWzFdLmVuZCA9IGQtPmlycTsKCgkJZXJyID0gcGxh
-dGZvcm1fZGV2aWNlX2FkZF9yZXNvdXJjZXMocGRldiwgcmVzLAoJCQkJCQkgICAgQVJSQVlfU0la
-RShyZXMpKTsKCQlpZiAoZXJyKQoJCQlnb3RvIGVycl9vdXQ7CgkJZXJyID0gcGxhdGZvcm1fZGV2
-aWNlX2FkZF9kYXRhKHBkZXYsICZkLT5wZGF0YSwKCQkJCQkgICAgICAgc2l6ZW9mKGQtPnBkYXRh
-KSk7CgkJaWYgKGVycikKCQkJZ290byBlcnJfb3V0OwoJCWVyciA9IHBsYXRmb3JtX2RldmljZV9h
-ZGQocGRldik7CgkJaWYgKGVycikKCQkJZ290byBlcnJfb3V0OwoJCW9tYXA0X2lvbW11X3BkZXZb
-aV0gPSBwZGV2OwoJfQoJcmV0dXJuIDA7CgplcnJfb3V0OgoJd2hpbGUgKGktLSkKCQlwbGF0Zm9y
-bV9kZXZpY2VfcHV0KG9tYXA0X2lvbW11X3BkZXZbaV0pOwoJcmV0dXJuIGVycjsKfQptb2R1bGVf
-aW5pdChvbWFwNF9pb21tdV9pbml0KTsKCnN0YXRpYyB2b2lkIF9fZXhpdCBvbWFwNF9pb21tdV9l
-eGl0KHZvaWQpCnsKCWludCBpOwoKCWZvciAoaSA9IDA7IGkgPCBOUl9JT01NVV9ERVZJQ0VTOyBp
-KyspCgkJcGxhdGZvcm1fZGV2aWNlX3VucmVnaXN0ZXIob21hcDRfaW9tbXVfcGRldltpXSk7Cn0K
-bW9kdWxlX2V4aXQob21hcDRfaW9tbXVfZXhpdCk7CgpNT0RVTEVfQVVUSE9SKCJIaXJvc2hpIERP
-WVUsIEhhcmkgS2FuaWdlcmkiKTsKTU9EVUxFX0RFU0NSSVBUSU9OKCJvbWFwIGlvbW11OiBvbWFw
-NCBkZXZpY2UgcmVnaXN0cmF0aW9uIik7Ck1PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKTsK
---0016e64603ea7473a0047832d4fb--
+Likewise, but recent emails from Linus indicate that we don't want to 
+break printk strings into multiple lines even if it goes over 80 
+characters unless broken at '\n'.  Users who grep for 
+"lsapic_id.*lsapic_eid" with this patch wouldn't find the string.
