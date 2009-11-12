@@ -1,147 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZKLIWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZKLIa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbZKLIWw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZKLIWv
+	id S1752663AbZKLIa4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZKLIaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:22:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58548 "EHLO hera.kernel.org"
+	Thu, 12 Nov 2009 03:30:55 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:45705 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZKLIWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:22:49 -0500
-Date: Thu, 12 Nov 2009 08:22:22 GMT
-From: tip-bot for Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       eranian@gmail.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, h-shimamoto@ct.jp.nec.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, eranian@gmail.com, mingo@elte.hu
-In-Reply-To: <4AFB721E.8070203@ct.jp.nec.com>
-References: <4AFB721E.8070203@ct.jp.nec.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event, x86: Annotate init functions and data
-Message-ID: <tip-db48cccc7c709ccfa7cb4ac702bc27c216bffee7@git.kernel.org>
-Git-Commit-ID: db48cccc7c709ccfa7cb4ac702bc27c216bffee7
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1752583AbZKLIay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 03:30:54 -0500
+Date: Thu, 12 Nov 2009 19:30:58 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: rr/sparc tree build failure
+Message-Id: <20091112193058.73942a58.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  db48cccc7c709ccfa7cb4ac702bc27c216bffee7
-Gitweb:     http://git.kernel.org/tip/db48cccc7c709ccfa7cb4ac702bc27c216bffee7
-Author:     Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-AuthorDate: Thu, 12 Nov 2009 11:25:34 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 12 Nov 2009 09:18:36 +0100
+Hi Rusty, Dave,
 
-perf_event, x86: Annotate init functions and data
+Today's linux-next build (sparc64 defconfig) failed like this:
 
-Annotate init functions and data with __init and __initconst.
+.tmp_exports-asm.o: In function `__ksymtab_pci_alloc_consistent':
+(__ksymtab_sorted+0x6650): undefined reference to `pci_alloc_consistent'
+.tmp_exports-asm.o: In function `__ksymtab_pci_dma_supported':
+(__ksymtab_sorted+0x6810): undefined reference to `pci_dma_supported'
+.tmp_exports-asm.o: In function `__ksymtab_pci_dma_sync_sg_for_cpu':
+(__ksymtab_sorted+0x6820): undefined reference to `pci_dma_sync_sg_for_cpu'
+.tmp_exports-asm.o: In function `__ksymtab_pci_dma_sync_single_for_cpu':
+(__ksymtab_sorted+0x6830): undefined reference to `pci_dma_sync_single_for_cpu'
+.tmp_exports-asm.o: In function `__ksymtab_pci_free_consistent':
+(__ksymtab_sorted+0x6910): undefined reference to `pci_free_consistent'
+.tmp_exports-asm.o: In function `__ksymtab_pci_map_sg':
+(__ksymtab_sorted+0x69b0): undefined reference to `pci_map_sg'
+.tmp_exports-asm.o: In function `__ksymtab_pci_map_single':
+(__ksymtab_sorted+0x69c0): undefined reference to `pci_map_single'
+.tmp_exports-asm.o: In function `__ksymtab_pci_unmap_sg':
+(__ksymtab_sorted+0x6c40): undefined reference to `pci_unmap_sg'
+.tmp_exports-asm.o: In function `__ksymtab_pci_unmap_single':
+(__ksymtab_sorted+0x6c50): undefined reference to `pci_unmap_single'
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Stephane Eranian <eranian@gmail.com>
-LKML-Reference: <4AFB721E.8070203@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Caused by sparc64 exporting static inline functions.  This has interacted
+with changes in the rr tree to produce these errors.
+
+I have applied this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 12 Nov 2009 19:26:14 +1100
+Subject: [PATCH] sparc64: don't export static inline pci_ functions
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/x86/kernel/cpu/perf_event.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ arch/sparc/kernel/pci.c            |    1 -
+ arch/sparc/kernel/sparc_ksyms_64.c |   12 ------------
+ 2 files changed, 0 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index 2e20bca..bd87430 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -245,7 +245,7 @@ static u64 __read_mostly hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX];
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index b85374f..539e83f 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -1064,7 +1064,6 @@ int pci64_dma_supported(struct pci_dev *pdev, u64 device_mask)
  
--static const u64 nehalem_hw_cache_event_ids
-+static __initconst u64 nehalem_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-@@ -336,7 +336,7 @@ static const u64 nehalem_hw_cache_event_ids
-  },
- };
- 
--static const u64 core2_hw_cache_event_ids
-+static __initconst u64 core2_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-@@ -427,7 +427,7 @@ static const u64 core2_hw_cache_event_ids
-  },
- };
- 
--static const u64 atom_hw_cache_event_ids
-+static __initconst u64 atom_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-@@ -536,7 +536,7 @@ static u64 intel_pmu_raw_event(u64 hw_event)
- 	return hw_event & CORE_EVNTSEL_MASK;
+ 	return (device_mask & dma_addr_mask) == dma_addr_mask;
  }
+-EXPORT_SYMBOL(pci_dma_supported);
  
--static const u64 amd_hw_cache_event_ids
-+static __initconst u64 amd_hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-@@ -1964,7 +1964,7 @@ static __read_mostly struct notifier_block perf_event_nmi_notifier = {
- 	.priority		= 1
- };
+ void pci_resource_to_user(const struct pci_dev *pdev, int bar,
+ 			  const struct resource *rp, resource_size_t *start,
+diff --git a/arch/sparc/kernel/sparc_ksyms_64.c b/arch/sparc/kernel/sparc_ksyms_64.c
+index 0f26066..372ad59 100644
+--- a/arch/sparc/kernel/sparc_ksyms_64.c
++++ b/arch/sparc/kernel/sparc_ksyms_64.c
+@@ -38,17 +38,5 @@ EXPORT_SYMBOL(sun4v_niagara_setperf);
+ EXPORT_SYMBOL(sun4v_niagara2_getperf);
+ EXPORT_SYMBOL(sun4v_niagara2_setperf);
  
--static struct x86_pmu p6_pmu = {
-+static __initconst struct x86_pmu p6_pmu = {
- 	.name			= "p6",
- 	.handle_irq		= p6_pmu_handle_irq,
- 	.disable_all		= p6_pmu_disable_all,
-@@ -1992,7 +1992,7 @@ static struct x86_pmu p6_pmu = {
- 	.get_event_idx		= intel_get_event_idx,
- };
- 
--static struct x86_pmu intel_pmu = {
-+static __initconst struct x86_pmu intel_pmu = {
- 	.name			= "Intel",
- 	.handle_irq		= intel_pmu_handle_irq,
- 	.disable_all		= intel_pmu_disable_all,
-@@ -2016,7 +2016,7 @@ static struct x86_pmu intel_pmu = {
- 	.get_event_idx		= intel_get_event_idx,
- };
- 
--static struct x86_pmu amd_pmu = {
-+static __initconst struct x86_pmu amd_pmu = {
- 	.name			= "AMD",
- 	.handle_irq		= amd_pmu_handle_irq,
- 	.disable_all		= amd_pmu_disable_all,
-@@ -2037,7 +2037,7 @@ static struct x86_pmu amd_pmu = {
- 	.get_event_idx		= gen_get_event_idx,
- };
- 
--static int p6_pmu_init(void)
-+static __init int p6_pmu_init(void)
- {
- 	switch (boot_cpu_data.x86_model) {
- 	case 1:
-@@ -2071,7 +2071,7 @@ static int p6_pmu_init(void)
- 	return 0;
- }
- 
--static int intel_pmu_init(void)
-+static __init int intel_pmu_init(void)
- {
- 	union cpuid10_edx edx;
- 	union cpuid10_eax eax;
-@@ -2144,7 +2144,7 @@ static int intel_pmu_init(void)
- 	return 0;
- }
- 
--static int amd_pmu_init(void)
-+static __init int amd_pmu_init(void)
- {
- 	/* Performance-monitoring supported from K7 and later: */
- 	if (boot_cpu_data.x86 < 6)
+-#ifdef CONFIG_PCI
+-/* inline functions in asm/pci_64.h */
+-EXPORT_SYMBOL(pci_alloc_consistent);
+-EXPORT_SYMBOL(pci_free_consistent);
+-EXPORT_SYMBOL(pci_map_single);
+-EXPORT_SYMBOL(pci_unmap_single);
+-EXPORT_SYMBOL(pci_map_sg);
+-EXPORT_SYMBOL(pci_unmap_sg);
+-EXPORT_SYMBOL(pci_dma_sync_single_for_cpu);
+-EXPORT_SYMBOL(pci_dma_sync_sg_for_cpu);
+-#endif
+-
+ /* Exporting a symbol from /init/main.c */
+ EXPORT_SYMBOL(saved_command_line);
+-- 
+1.6.5.2
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
