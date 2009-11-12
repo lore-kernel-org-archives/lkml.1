@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZKLPkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZKLPm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbZKLPkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 10:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKLPkj
+	id S1753309AbZKLPm3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 10:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbZKLPmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 10:40:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52752 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753145AbZKLPki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 10:40:38 -0500
-Date: Thu, 12 Nov 2009 07:40:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH v2] Documentation: rw_lock lessons learned
-In-Reply-To: <4AFBEC44.9030409@gmail.com>
-Message-ID: <alpine.LFD.2.01.0911120726430.31845@localhost.localdomain>
-References: <4AF9C540.5090403@gmail.com> <20091110180646.2e5859a8@nehalam> <4AFAEF78.4080807@gmail.com> <20091111093724.4f40a48d@nehalam> <4AFBEC44.9030409@gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 12 Nov 2009 10:42:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753160AbZKLPmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 10:42:23 -0500
+Date: Thu, 12 Nov 2009 16:40:50 +0100
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
+Message-ID: <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com>
+References: <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com> <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com> <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258038038.4039.467.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 12, 2009 at 04:00:38PM +0100, Peter Zijlstra wrote:
+> On Thu, 2009-11-12 at 15:49 +0100, Stanislaw Gruszka wrote:
+> >  I can not reproduce
+> > the bug with below patch:
+> > 
+> > diff --git a/kernel/exit.c b/kernel/exit.c
+> > index f7864ac..b85e384 100644
+> > --- a/kernel/exit.c
+> > +++ b/kernel/exit.c
+> > @@ -110,8 +110,8 @@ static void __exit_signal(struct task_struct *tsk)
+> >  		 * We won't ever get here for the group leader, since it
+> >  		 * will have been the last reference on the signal_struct.
+> >  		 */
+> > -		sig->utime = cputime_add(sig->utime, task_utime(tsk));
+> > -		sig->stime = cputime_add(sig->stime, task_stime(tsk));
+> > +		sig->utime = cputime_add(sig->utime, tsk->utime); //task_utime(tsk));
+> > +		sig->stime = cputime_add(sig->stime, tsk->stime); //task_stime(tsk));
+> >  		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
+> >  		sig->min_flt += tsk->min_flt;
+> >  		sig->maj_flt += tsk->maj_flt;
+> 
+> Yes, this is the thing I suggested and makes sense.
 
+Ok, I'm going to post this.
 
-On Thu, 12 Nov 2009, William Allen Simpson wrote:
->
-> In recent weeks, two different network projects erroneously
-> strayed down the rw_lock path.  Update the Documentation
-> based upon comments by Eric Dumazet and Paul E. McKenney in
-> those threads.
+Spencer,
 
-This still retains some pretty old and bogus language. For example, that 
-file still talks about spinlocks being "faster than a global interrupt 
-lock", which is kind of amusing - because we've not done that global 
-interrupt lock thing for the last ten years or so. 
+seems you have more test cases for utime decreasing issues,
+could you send links to me ? Somehow I could not find them 
+by my own. Particularly test case used in development this commit
+is interested:
 
-So I certainly agree with discouraging rwlocks - I don't think we've ever 
-really found a situation where they are useful except for some really 
-special cases - but I suspect the thing needs a bigger overhaul.
+  commit 49048622eae698e5c4ae61f7e71200f265ccc529
+  Author: Balbir Singh <balbir@linux.vnet.ibm.com>
+  Date:   Fri Sep 5 18:12:23 2008 +0200
+    sched: fix process time monotonicity
 
-I also suspect somebody should actually take a look at our _users_ of 
-rwlocks. We have a few fairly central ones like 'tasklist_lock', and it 
-may be an example of a _good_ case of rwlocks, but for a very non-obvious 
-reason.
-
-In the case of 'tasklist_lock', the magic subtle reason that makes it a 
-good idea is that that lock is commonly taken for reading in _interrupts_. 
-And the way rwlocks are defined, that means that you can take it for 
-reading without doing the *_irq() or *_irqsave() versions, because rwlocks 
-are not fair, so an active reader will never block a new reader even if 
-there is a blocked writer pending.
-
-So for tasklist_lock, raw rwlocks are still slower than raw spinlocks, but 
-because of the rwlock semantics the common case doesn't need to disable 
-and enable interrupts, so for the common case the comparison is not "raw 
-rwlock vs raw spinlock", but "raw rwlock vs interrupt-disabling spinlock", 
-and then it turns out rwlocks tend to win again.
-
-(Of course, lock_write() needs to disable interrupts for tasklist_lock, 
-but that tends to be the uncommon case).
-
-Ho humm..
-
-		Linus
+Stanislaw
