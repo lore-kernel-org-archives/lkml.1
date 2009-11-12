@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZKLVTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbZKLVUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZKLVTL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 16:19:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZKLVTH
+	id S1754571AbZKLVUU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZKLVUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 16:19:07 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:35321 "EHLO relay.sgi.com"
+	Thu, 12 Nov 2009 16:20:17 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:47417 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754525AbZKLVTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 16:19:06 -0500
-Message-ID: <4AFC7BCA.3070705@sgi.com>
-Date: Thu, 12 Nov 2009 13:19:06 -0800
+	id S1754163AbZKLVUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 16:20:16 -0500
+Message-ID: <4AFC7C11.1090701@sgi.com>
+Date: Thu, 12 Nov 2009 13:20:17 -0800
 From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -27,112 +27,100 @@ CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Jack Steiner <steiner@sgi.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] ACPI: Limit the number of per cpu ACPI bootup messages
-References: <20091112171934.584037000@alcatraz.americas.sgi.com> <20091112171949.218777000@alcatraz.americas.sgi.com> <alpine.DEB.2.00.0911121259260.13943@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0911121259260.13943@chino.kir.corp.google.com>
+Subject: Re: [PATCH 3/7] INIT: Limit the number of per cpu INIT bootup messages
+References: <20091112171934.584037000@alcatraz.americas.sgi.com> <20091112172006.809683000@alcatraz.americas.sgi.com> <alpine.DEB.2.00.0911121303261.13943@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0911121303261.13943@chino.kir.corp.google.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
+Hmm, yes I agree, too much cut and paste.  Will update. -thanks!
 
 David Rientjes wrote:
 > On Thu, 12 Nov 2009, Mike Travis wrote:
 > 
->> Limit the number of per cpu ACPI messages when system is booting to
+>> Limit the number of per cpu INIT messages when system is booting to
 >> prevent clogging up the console output with repetitious messages.
 >>
 > 
-> ... "by changing the log level from KERN_INFO to KERN_DEBUG."
+> Needs a better changelog.  What did you do to effect that change?  It 
+> looks like you're only emitting certain messages from the boot cpu.
 > 
 >> Signed-off-by: Mike Travis <travis@sgi.com>
 >> ---
->>  drivers/acpi/fan.c            |    2 +-
->>  drivers/acpi/processor_core.c |    2 +-
->>  drivers/acpi/tables.c         |   28 +++++++++++++++++++---------
->>  3 files changed, 21 insertions(+), 11 deletions(-)
+>>  init/calibrate.c |   22 +++++++++++++---------
+>>  kernel/cpu.c     |    5 ++---
+>>  2 files changed, 15 insertions(+), 12 deletions(-)
 >>
->> --- linux.orig/drivers/acpi/fan.c
->> +++ linux/drivers/acpi/fan.c
->> @@ -267,7 +267,7 @@
->>  		goto end;
->>  	}
+>> --- linux.orig/init/calibrate.c
+>> +++ linux/init/calibrate.c
+>> @@ -123,23 +123,26 @@
+>>  {
+>>  	unsigned long ticks, loopbit;
+>>  	int lps_precision = LPS_PREC;
+>> +	bool boot_cpu = (smp_processor_id() == 0);
 >>  
->> -	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
->> +	dev_dbg(&device->dev, "registered as cooling_device%d\n", cdev->id);
+>>  	if (preset_lpj) {
+>>  		loops_per_jiffy = preset_lpj;
+>> -		printk(KERN_INFO
+>> -			"Calibrating delay loop (skipped) preset value.. ");
+>> -	} else if ((smp_processor_id() == 0) && lpj_fine) {
+>> +		if (boot_cpu)
+>> +			pr_info("Calibrating delay loop (skipped) "
+>> +				"preset value.. ");
+> 
+> Same comment as before about breaking printk strings into multiple lines 
+> when not broken at '\n'.  All the other patches your series look good 
+> after this, however.
+> 
+>> +	} else if ((boot_cpu) && lpj_fine) {
+> 
+> Parentheses around boot_cpu?
+> 
+>>  		loops_per_jiffy = lpj_fine;
+>> -		printk(KERN_INFO
+>> -			"Calibrating delay loop (skipped), "
+>> +		pr_info("Calibrating delay loop (skipped), "
+>>  			"value calculated using timer frequency.. ");
+>>  	} else if ((loops_per_jiffy = calibrate_delay_direct()) != 0) {
+>> -		printk(KERN_INFO
+>> -			"Calibrating delay using timer specific routine.. ");
+>> +		if (boot_cpu)
+>> +			pr_info("Calibrating delay using timer "
+>> +				"specific routine.. ");
+>>  	} else {
+>>  		loops_per_jiffy = (1<<12);
 >>  
->>  	device->driver_data = cdev;
->>  	result = sysfs_create_link(&device->dev.kobj,
->> --- linux.orig/drivers/acpi/processor_core.c
->> +++ linux/drivers/acpi/processor_core.c
->> @@ -845,7 +845,7 @@
->>  		goto err_power_exit;
->>  	}
->>  
->> -	dev_info(&device->dev, "registered as cooling_device%d\n",
->> +	dev_dbg(&device->dev, "registered as cooling_device%d\n",
->>  		 pr->cdev->id);
->>  
->>  	result = sysfs_create_link(&device->dev.kobj,
->> --- linux.orig/drivers/acpi/tables.c
->> +++ linux/drivers/acpi/tables.c
->> @@ -66,11 +66,15 @@
->>  		{
->>  			struct acpi_madt_local_x2apic *p =
->>  			    (struct acpi_madt_local_x2apic *)header;
->> -			printk(KERN_INFO PREFIX
->> -			       "X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
->> -			       p->local_apic_id, p->uid,
->> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ?
->> -			       "enabled" : "disabled");
->> +			/*
->> +			 * Per cpu tracing clogs console output when NR_CPUS
->> +			 * is large.  Send only to kernel log buffer.
->> +			 */
->> +			printk(KERN_DEBUG PREFIX
->> +				"X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
->> +				p->local_apic_id, p->uid,
->> +				(p->lapic_flags & ACPI_MADT_ENABLED) ?
->> +					"enabled" : "disabled");
+>> -		printk(KERN_INFO "Calibrating delay loop... ");
+>> +		if (boot_cpu)
+>> +			pr_info("Calibrating delay loop... ");
+>>  		while ((loops_per_jiffy <<= 1) != 0) {
+>>  			/* wait for "start of" clock tick */
+>>  			ticks = jiffies;
+>> @@ -170,7 +173,8 @@
+>>  				loops_per_jiffy &= ~loopbit;
 >>  		}
->>  		break;
->>  
-> 
-> You can still use dev_dbg(PREFIX "...") here.
-
-I thought dev_dbg needed the 'dev' structure and I wasn't sure how to get that...?
-
-> 
->> @@ -171,10 +175,16 @@
->>  		{
->>  			struct acpi_madt_local_sapic *p =
->>  			    (struct acpi_madt_local_sapic *)header;
->> -			printk(KERN_INFO PREFIX
->> -			       "LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] lsapic_eid[0x%02x] %s)\n",
->> -			       p->processor_id, p->id, p->eid,
->> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ? "enabled" : "disabled");
->> +			/*
->> +			 * Per cpu tracing clogs console output when NR_CPUS
->> +			 * is large.  Send only to kernel log buffer.
->> +			 */
->> +			printk(KERN_DEBUG PREFIX
->> +				"LSAPIC (acpi_id[0x%02x] lsapic_id[0x%02x] "
->> +				"lsapic_eid[0x%02x] %s)\n",
->> +				p->processor_id, p->id, p->eid,
->> +				(p->lapic_flags & ACPI_MADT_ENABLED) ?
->> +					"enabled" : "disabled");
->>  		}
->>  		break;
->>  
-> 
-> Likewise, but recent emails from Linus indicate that we don't want to 
-> break printk strings into multiple lines even if it goes over 80 
-> characters unless broken at '\n'.  Users who grep for 
-> "lsapic_id.*lsapic_eid" with this patch wouldn't find the string.
-
-Ahh, ok, I hadn't heard that yet.  (Grep just needs to be made smarter... ;-)
-
-Thanks,
-Mike
+>>  	}
+>> -	printk(KERN_CONT "%lu.%02lu BogoMIPS (lpj=%lu)\n",
+>> +	if (boot_cpu)
+>> +		pr_cont("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+>>  			loops_per_jiffy/(500000/HZ),
+>>  			(loops_per_jiffy/(5000/HZ)) % 100, loops_per_jiffy);
+>>  }
+>> --- linux.orig/kernel/cpu.c
+>> +++ linux/kernel/cpu.c
+>> @@ -392,10 +392,9 @@
+>>  		if (cpu == first_cpu)
+>>  			continue;
+>>  		error = _cpu_down(cpu, 1);
+>> -		if (!error) {
+>> +		if (!error)
+>>  			cpumask_set_cpu(cpu, frozen_cpus);
+>> -			printk("CPU%d is down\n", cpu);
+>> -		} else {
+>> +		else {
+>>  			printk(KERN_ERR "Error taking CPU%d down: %d\n",
+>>  				cpu, error);
+>>  			break;
