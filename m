@@ -1,264 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbZKLPTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbZKLPUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbZKLPTz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 10:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZKLPTx
+	id S1753261AbZKLPUb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 10:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZKLPUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 10:19:53 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:24647 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbZKLPTw (ORCPT
+	Thu, 12 Nov 2009 10:20:30 -0500
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:63967 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752909AbZKLPUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 10:19:52 -0500
+	Thu, 12 Nov 2009 10:20:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
+        d=googlemail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=DW7XrCAHcM5E09bW19MDMdMi79m0wnLosxsJ+DbsXi7JVT53+E2fp4VPNjkm1wAzki
-         oqqyRSdym1+zvU/3Zv814RIQBLJLx7MVviB/DYNlfdGXdLxpBdtBh4uyOSJvpgoIjAhI
-         s/1+Ps1Jnse85m+2T+vl8ZNQlNvaUOJnCoSJw=
-Date: Thu, 12 Nov 2009 16:19:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 5/7] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf events
-Message-ID: <20091112151947.GC5237@nowhere>
-References: <1257474542-6648-1-git-send-email-fweisbec@gmail.com> <1257474542-6648-6-git-send-email-fweisbec@gmail.com> <20091108173107.GB4465@in.ibm.com>
+        b=XWHWZzMlv+UoPO0FJ0K9trN2OxlRWkUw0TCN5zcaw/gggFXBwS616Q6DmowcRm3bSy
+         YAAQqx+L5Im0ng3B6BpjLuysWvl1BCl6wkXcMPbBA/Wr8xBCalK6FjwO6lwhEzn0/7Rc
+         +IXIszGI5kKOXCkCBQErPfreUryAIIn2uSUi0=
+Date: Thu, 12 Nov 2009 16:20:26 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Mike Travis <travis@sgi.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [ RFC, PATCH - 1/2, v2 ] x86-microcode: refactor microcode
+ output messages
+Message-ID: <20091112152026.GI18592@alberich.amd.com>
+References: <b647ffbd0911051040r3987f63es1279c87bf349bcf6@mail.gmail.com>
+ <20091106123403.GB18592@alberich.amd.com>
+ <b647ffbd0911060456x5c37ebfapdb2ece392428f66@mail.gmail.com>
+ <20091106194626.GC18592@alberich.amd.com>
+ <b647ffbd0911070422g154c63bbo2fec62ba63c3c106@mail.gmail.com>
+ <b647ffbd0911110807n17933102g39c124a6eff74a44@mail.gmail.com>
+ <20091111193832.GG18592@alberich.amd.com>
+ <20091112113343.GA1386@elte.hu>
+ <b647ffbd0911120354s755e2dc0g6f07ef03ae28bd86@mail.gmail.com>
+ <b647ffbd0911120406o6e5bd58eq8aa022946f38f5ef@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091108173107.GB4465@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <b647ffbd0911120406o6e5bd58eq8aa022946f38f5ef@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 11:01:07PM +0530, K.Prasad wrote:
-> >  #include <asm/smpboot_hooks.h>
-> > @@ -328,7 +327,6 @@ notrace static void __cpuinit start_secondary(void *unused)
-> >  	x86_cpuinit.setup_percpu_clockev();
-> > 
-> >  	wmb();
-> > -	load_debug_registers();
-> >  	cpu_idle();
-> >  }
+On Thu, Nov 12, 2009 at 01:06:36PM +0100, Dmitry Adamushko wrote:
+> 2009/11/12 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
+> > 2009/11/12 Ingo Molnar <mingo@elte.hu>:
+> >>
+> >> -tip testing found the following bug - there's a _long_ boot delay of
+> >> 58.6 seconds if the CPU family is not supported:
+> >>
+> >> [    1.421761] calling  microcode_init+0x0/0x137 @ 1
+> >> [    1.426532] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+> >> [   61.433126] microcode: failed to load file amd-ucode/microcode_amd.bin
+> >> [   61.439682] microcode: CPU0: AMD CPU family 0xf not supported
+> >> [   61.445441] microcode: CPU1: AMD CPU family 0xf not supported
+> >> [   61.451273] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+> >> [   61.459116] initcall microcode_init+0x0/0x137 returned 0 after 58625622 usecs
+> >>
+> >> Where does this delay come from?
 > >
+> > My guess is that it's comming from
+> >
+> > static int loading_timeout = 60;        /* In seconds */
+> >
+> > drivers/base/firmware_class.c
+> >
+> > given that you seem to have MICROCODE build in kernel, so this patch
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=d1c84f79a6ba992dc01e312c44a21496303874d6
+> >
+> > will result in sending a request for a firmware image to user-space
+> > (unless that firmware image is also built-in into the kernel) and
+> > user-space has not started yet.
 > 
-> So, will the breakpoint values be stored in per-cpu variables and be
-> restored when a cpu (from the list of for_each_possible_cpu) eventually
-> turns online due to cpu-hotplug or resume from hibernate (as originally
-> done by load_debug_registers())?
+> btw., it doesn't make sense for request_firmware() to even try this if
+> the system_state != SYSTEM_RUNNING and current == 'init' (it'd perhaps
+> make some sense if it's been done in a context of another task -- like
+> in case of a parallel boot).
 
+> And perhaps it just makes sense for microcode to use request_firmware_nowait().
 
+That would be asynchronous.
 
-Yep. Perf has callbacks that handle that.
+I think I should ensure that microcode_amd.c is compiled into
+microcode.o if and only if its built as module. microcode_amd.c
+supports only the firmware interface.
 
+Thus I suggest to add below.
 
-> 
-> A few more observations....
-> 
-> int reserve_bp_slot(struct perf_event *bp)
-> {
-> ...
-> ....
-> 	if (!bp->attr.pinned) {
-> 		/*
-> 		 * If there are already flexible counters here,
-> 		 * there is at least one slot reserved for all
-> 		 * of them. Just join the party.
-> 		 *
-> 		 * Otherwise, check there is at least one free slot
-> 		 */
-> 		if (!slots.flexible && slots.pinned == HBP_NUM) {
-> 			ret = -ENOSPC;
-> 			goto end;
-> 		}
-> 
-> 	/* Flexible counters need to keep at least one slot */
-> 	} else if (slots.pinned + (!!slots.flexible) == HBP_NUM) {
-> 		ret = -ENOSPC;
-> 		goto end;
-> 	}
-> ..
-> ...
-> }
-> 
-> It appears that you're reserving one slot for the non-pinned breakpoint
-> requests, which I'm afraid wouldn't play well with PPC64 (having one
-> DABR).
+Regards,
+Andreas
 
+----
+>From 99cd1e170a30ea81164fd13333a5e5bb9587e4e8 Mon Sep 17 00:00:00 2001
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+Date: Thu, 12 Nov 2009 16:08:38 +0100
+Subject: [PATCH] x86, ucode-amd: Provide it only if microcode is compiled as module
 
+microcode_amd.c supports only the firmware interface. Thus it depends
+on the udev firmware helper. As we won't compile the micorode patches
+into the kernel it also doesn't make sense to compile microcode_amd.c
+into kernel.
 
-I don't understand what you mean. PPC64 has only one DABR, or...?
+This also ensures that loading an updated AMD microcode patch
+container file is always possible via
 
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-> Even with x86, I can't understand why we should allow the use of
-> only 3 registers for ptrace requests (which are all pinned) on every
-> system even if perf-events will never be used on them.
-> 
-
-
-Oh I see.
-
-I'm not reserving any register for non-pinned events if none are
-registered.
-The fact is non-pinned registers can be round-robined. So we need
-at least register for all of them.
-So the constraint here is: if I want to register a non-pinned breakpoint,
-I need to check if we have a free register left, in this case, reserve it.
-
-But if we don't have any non-pinned breakpoint in use, the
-four registers are all usable for ptrace or any other
-pinned breakpoints.
-
-
-
-> int __register_perf_hw_breakpoint(struct perf_event *bp)
-> {
-> ..
-> ...
-> 	if (!bp->attr.disabled)
-> 		ret = arch_validate_hwbkpt_settings(bp, bp->ctx->task);
-> 
-> 	return ret;
-> }
-> 
-> Can't the arch_validate_() check be done unconditionally?
-
-
-Perhaps, yeah. I did that because when ptrace writes in an address
-register, it creates a breakpoint stub, registered but disabled until
-it is activated through a write in dr7. This is to reserve the
-breakpoint until we activate it.
-
-But now I'm not sure this is neede. If we register the
-breakpoint later, only when dr7 is set to enable it, even if we
-refuse the request, gdb handles it and reports the error.
-
-
-> struct perf_event *
-> modify_user_hw_breakpoint(struct perf_event *bp,
-> 			  unsigned long addr,
-> 			  int len,
-> 			  int type,
-> 			  perf_callback_t triggered,
-> 			  struct task_struct *tsk,
-> 			  bool active)
-> {
-> 	/*
-> 	 * FIXME: do it without unregistering
-> 	 * - We don't want to lose our slot
-> 	 * - If the new bp is incorrect, don't lose the older one
-> 	 */
-> 	unregister_hw_breakpoint(bp);
-> 
-> 	return register_user_hw_breakpoint(addr, len, type, triggered,
-> 					   tsk, active);
-> }
-> 
-> Given that modify_user_hw_breakpoint() is used by ptrace, there's a risk
-> of breaking/changing ptrace's behaviour i.e. new ptrace failure
-> scenarios (while modifying DR0-DR3) which may not be acceptable to
-> user-space applications. I presume that you intend to address the FIXME
-> during the next few iterations itself...
-
-
-Sure.
-
-
-> 
-> void arch_uninstall_hw_breakpoint(struct perf_event *bp)
-> {
-> ...
-> ....
-> 	dr7 = &__get_cpu_var(dr7);
-> 	*dr7 &= ~encode_dr7(i, info->len, info->type);
-> 
-> 	set_debugreg(*dr7, 7);
-> }
-> 
-> The &= ~encode_dr7 would unset the GE flag in DR7 (encoded as
-> DR_GLOBAL_SLOWDOWN) which, I think is unintended.
-
-
-
-Oh right. I'll fix this.
-
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 17abcfa..0559ca3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -959,7 +959,7 @@ config MICROCODE_INTEL
  
-> struct pmu perf_ops_bp = {
->         .enable         = arch_install_hw_breakpoint,
->         .disable        = arch_uninstall_hw_breakpoint,
->         .read           = hw_breakpoint_pmu_read,
->         .unthrottle     = hw_breakpoint_pmu_unthrottle
-> };
-> 
-> So the enable/disable points to those routines that clear the debug
-> register off its breakpoint values but still don't seem to release the
-> slot (even temporarily)....i.e. nr_bp_flexible is unchanged
-
-
-nr_bp_flexible and others are just logical constructs that keep
-track of the breakpoints registered (ie: that can be scheduled in
-at any time).
-
-But they have nothing related to the registers themselves.
-The registers are used by the enable/disable callback.
-On enable time, we seek a free register and bind to it,
-on disable, we release the register we were using.
-All that is handled by perf internally that schedules the
-events depending on the contexts.
-
-
-> Will perf-events automatically re-use the disabled slot for breakpoint
-> requests from other perf-event instances?
-
-
-Yeah.
-We have a per cpu array[4] of perf events, those keep
-track of the breakpoints in use.
-The below is called when a breakpoint is scheduled out
-by perf:
-
-void arch_uninstall_hw_breakpoint(struct perf_event *bp)
-{
-	[...]
-	for (i = 0; i < HBP_NUM; i++) {
-		struct perf_event **slot = &__get_cpu_var(bp_per_reg[i]);
-
-		if (*slot == bp) {
-			*slot = NULL;	<---- here, we release the slot
-			break;
-		}
-	}
-	[...]
-}
-
-And when it is scheduled in:
-
-int arch_install_hw_breakpoint(struct perf_event *bp)
-{
-	for (i = 0; i < HBP_NUM; i++) {
-		struct perf_event **slot = &__get_cpu_var(bp_per_reg[i]);
-
-		if (!*slot) {
-			*slot = bp; <-- here we bind to a free slot
-			break;
-		}
-	}
-}
-
-
-Thanks for your reviews!
+ config MICROCODE_AMD
+ 	bool "AMD microcode patch loading support"
+-	depends on MICROCODE
++	depends on MICROCODE=m
+ 	select FW_LOADER
+ 	---help---
+ 	  If you select this option, microcode patch loading support for AMD
+-- 
+1.6.5.2
 
