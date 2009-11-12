@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZKLHW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751491AbZKLH1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751461AbZKLHW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 02:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZKLHW2
+	id S1751491AbZKLH1e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 02:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZKLH1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 02:22:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43949 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Nov 2009 02:27:33 -0500
+Received: from gw1.transmode.se ([213.115.205.20]:42908 "EHLO gw1.transmode.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751126AbZKLHW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 02:22:27 -0500
-Date: Thu, 12 Nov 2009 08:22:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091112072217.GA31719@elte.hu>
-References: <20091025225342.007138f5@infradead.org>
- <20091111020108.GA11423@localhost>
- <20091110223456.01ef355f@infradead.org>
- <4AFA6AEF.5060306@garzik.org>
- <20091111081905.270a4e55@infradead.org>
- <y0m3a4kpsiw.fsf@fche.csb>
- <4AFB4AC7.1090405@intel.com>
+	id S1751090AbZKLH1d convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 02:27:33 -0500
+In-Reply-To: <25e057c00911111546w414cbebbx5e7142866b925f65@mail.gmail.com>
+References: <1257762136-17593-1-git-send-email-Joakim.Tjernlund@transmode.se> <25e057c00911111546w414cbebbx5e7142866b925f65@mail.gmail.com>
+Subject: Re: [PATCH] zlib: Optimize inffast even more
+X-KeepSent: B722E663:C2FD29AD-C125766C:002805EE;
+ type=4; name=$KeepSent
+To: roel kluin <roel.kluin@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
+Message-ID: <OFB722E663.C2FD29AD-ONC125766C.002805EE-C125766C.00289A56@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.com>
+Date: Thu, 12 Nov 2009 08:23:29 +0100
+X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF964|October 21, 2009) at
+ 2009-11-12 08:27:37
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFB4AC7.1090405@intel.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-type: text/plain; charset=ISO-8859-15
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+roel kluin <roel.kluin@gmail.com> wrote on 12/11/2009 00:46:41:
+>
+> On Mon, Nov 9, 2009 at 11:22 AM, Joakim Tjernlund
+> <Joakim.Tjernlund@transmode.se> wrote:
+> > This improves zlib: Optimize inffast when copying direct from output
+> > and gives another 3-4% improvement for my MPC8321 target.
+> > Does not need CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS,
+> > uses get_unaligned() but only in one place.
+> > The copy loop just above this one can also use this
+> > optimization, but I havn't done so as I have not tested if it
+> > is a win there too.
+> >
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > ---
+>
+>
+> > @@ -240,52 +243,49 @@ void inflate_fast(z_streamp strm, unsigned start)
+> >                 }
+> >                 else {
+> >                     from = out - dist;          /* copy direct from output */
+> > -#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> >                     /* minimum length is three */
+> >                    if (dist > 2 ) {
+> > -                       unsigned short *sout = (unsigned short *)(out - OFF);
+> > -                       unsigned short *sfrom = (unsigned short *)(from - OFF);
+> > -                       unsigned long loops = len >> 1;
+> > +                       unsigned short *sout;
+> > +                       unsigned short *sfrom;
+> > +                       unsigned long loops;
+> >
+> > +                       /* Align out addr, only sfrom might be unaligned */
+> > +                       if (!((long)(out - 1 + OFF)) & 1) {
+>
+> I think this is wrong
+>
+> did you mean
+>
+> if (!((long)(out - 1 + OFF) & 1))
 
-* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+Yes, will fix and send out a new patch with
+cleanups and fixes for CPUs that cannot do unaligned
+accesses. Thanks
 
-> If you already know what the file object is, sure. We're interested in 
-> the case where we have no clue what the file object actually is to 
-> begin with. Having a trace with a random inode number pop up and then 
-> disappear into thin air won't help much at all, especially if we can't 
-> map it back to something "real" on disk. in time.
+      Jocke
 
-Yep.
-
-It's similar to PID/comm tracing, which we already do consistently for 
-all major task events such as fork/exit, sleep/wakeup/context-switch, 
-etc.
-
-By the 'use inode numbers' argument it should be perfectly fine to only 
-trace the physical PID itself, and look up the comm later in /proc, or 
-to add a syscall to do it.
-
-In reality it's not fine. Not just the unnecessary overhead (you have to 
-look up something you already had) - but also that tasks will exit in 
-high-freq workloads (so the comm is lost), the PID might not match up 
-anymore, tasks can change their comm, etc.
-
-The most important principle with event logging is that we want the most 
-high quality information and we want to a trustable and simple data 
-source: so for tasks we want the PID and the comm, and for files we want 
-the top name component and perhaps also the inode number (plus a 
-filesystem id), captured when the event happened.
-
-	Ingo
