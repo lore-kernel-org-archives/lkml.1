@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752192AbZKLIIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZKLIJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752192AbZKLIIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 03:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZKLIIu
+	id S1752299AbZKLIJB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 03:09:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZKLIJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 03:08:50 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49288 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbZKLIIu (ORCPT
+	Thu, 12 Nov 2009 03:09:00 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:40681 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbZKLII6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 03:08:50 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: mmotm 2009-11-01-10-01 uploaded
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Emmanuel Benisty <benisty.e@gmail.com>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
-References: <200911011807.nA1I7o95016136@imap1.linux-foundation.org> <alpine.LFD.2.00.0911052010050.12138@localhost.localdomain>
-Message-Id: <20091112170027.33AA.A69D9226@jp.fujitsu.com>
+	Thu, 12 Nov 2009 03:08:58 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sysctl tree build failure
+References: <20091112184805.1c0720cb.sfr@canb.auug.org.au>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 12 Nov 2009 00:08:59 -0800
+In-Reply-To: <20091112184805.1c0720cb.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 12 Nov 2009 18\:48\:05 +1100")
+Message-ID: <m1ljicp3l0.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 12 Nov 2009 17:08:52 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 1 Nov 2009, akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2009-11-01-10-01 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> 
-> Does "soon" mean within this century ?
-> 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> 
-> # git pull git://git.zen-sources.org/zen/mmotm.git master
-> git.zen-sources.org[0: 216.98.141.250]: errno=Connection timed out
-> git.zen-sources.org[0: 69.72.142.98]: errno=Connection refused
-> fatal: unable to connect a socket (Connection refused)
-> 
-> Thanks,
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-I asked the same question to mmotm git tree maintainer last month.
-Currently mmotm git was gone by unhappy thing. and akpm stoped his recovery.
-because akpm plan to get -mm into linux-next. He said please wait few weeks.
+> Hi Eric,
+>
+> Today's linux-next build (powerpc allnoconfig) failed like this:
+>
+> kernel/built-in.o: In function `get_sysctl':
+> sysctl_binary.c:(.text+0x100d4): undefined reference to `dev_get_by_index'
+>
+> Caused by commit 26a7034b40ba80f82f64fa251a2cbf49f9971c6a ("sysctl:
+> Reduce sys_sysctl to a compatibility wrapper around /proc/sys").
+>
+> CONFIG_NET is not set for this build.
+>
+> I have used this patch for today:
+> (It does produce this warning, though:
+>
+> kernel/sysctl_binary.c:1253: warning: unused variable 'net'
+>
+> so needs more work.)
 
-I guess akpm is pretty busy now. (guessing because recent mmotm commit mail
-was not so active). then, I'd like to answer you instead. I hope this mail help you.
+Thank you, and my apologies.  I thought I had tried it with every
+applicable compile option but apparently not.
 
-Thanks.
+Ugh.  It looks like I have a small refcount leak in that case as
+well.  Blind I was.
 
+Thank you very I will have this fixed shortly.
 
+Eric
 
