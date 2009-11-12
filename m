@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbZKLBNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759890AbZKLBTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbZKLBNx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 20:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbZKLBNw
+	id S1759890AbZKLBTJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 20:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759770AbZKLBTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 20:13:52 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60038 "EHLO mx1.suse.de"
+	Wed, 11 Nov 2009 20:19:08 -0500
+Received: from mga11.intel.com ([192.55.52.93]:1934 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759724AbZKLBNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 20:13:51 -0500
-Date: Thu, 12 Nov 2009 02:13:56 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 2/7] ipc: fix trivial warning
-In-Reply-To: <94a0d4530911111628p3edad1a0me3bb9f312491c637@mail.gmail.com>
-Message-ID: <alpine.LSU.2.00.0911120213380.15039@wotan.suse.de>
-References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>  <1255906474-25091-3-git-send-email-felipe.contreras@gmail.com>  <alpine.LSU.2.00.0910191610160.8582@wotan.suse.de>  <94a0d4530910190750j5674ef13m93198b68d305b188@mail.gmail.com> 
- <alpine.LSU.2.00.0910191655220.8582@wotan.suse.de>  <94a0d4530910190815n4cf2c2ebmd288f6e7501b1ba5@mail.gmail.com>  <alpine.LSU.2.00.0910191716580.8582@wotan.suse.de>  <94a0d4530910190949y265426cbq4c32466a9fab8966@mail.gmail.com>  <alpine.LSU.2.00.0910200047200.8582@wotan.suse.de>
- <94a0d4530911111628p3edad1a0me3bb9f312491c637@mail.gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1759718AbZKLBTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 20:19:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
+   d="scan'208";a="746131294"
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+From: ykzhao <yakui.zhao@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <4AFB0B02.4050306@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
+	 <4AFA210B.3020207@kernel.org>
+	 <1257930767.31183.113.camel@localhost.localdomain>
+	 <4AFB0B02.4050306@kernel.org>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Thu, 12 Nov 2009 09:17:12 +0800
+Message-Id: <1257988632.31183.134.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009, Felipe Contreras wrote:
-
-> > Well at least older compilers were able to see this, only 4.4 seems to be
-> > warning here ... I have applied the patch for now, but I am really not
-> > fully convinced about it yet, we should probably report it to gcc folks
-> > anyway.
+On Thu, 2009-11-12 at 03:05 +0800, Yinghai Lu wrote:
+> ykzhao wrote:
+> > On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
+> >> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+> >>
+> >> to get area is below 1M
+> >>
+> >> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+> > It seems that the function of find_e820_area is called in several
+> > places.
+> >    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
+> > bootmap_size, PAGE_SIZE);
+> >    
+> > If we also call it in the acpi_reserve_wakeup_memory, do we get the same
+> > base address as that obtained in initmem_init?
 > 
-> I have in my to-do list to report this to the gcc guys, but in the
-> meantime I don't see this patch applied.
+> no. find_e820_area will check the reserve res array that could be updated by reserve_early.
+It will check the reserved region array when calling the function of
+find_e820_area. 
+But it seems that the array is not updated when the find_e820_area is
+called in the function of initmem_init.
 
-It is applied in my tree, scheduled for next merge window.
+At the same time the  acpi_reserve_bootmem is called after initializing
+the boot mem allocator. Can we continue to reserve some region by using
+find_e820_area?
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+thanks.
+> 
+> YH
+
