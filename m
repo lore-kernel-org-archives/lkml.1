@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZKLU5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZKLVAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZKLU5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 15:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZKLU5A
+	id S1754391AbZKLVAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 16:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZKLU74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 15:57:00 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:55623 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754361AbZKLU46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 15:56:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=wZqZmNSUddMIlBbc8x8rPlI1GTfJ1MJDlyqulK3whlwuvM2zKONDuveDyTfQST1cW
-	DzaT3jJ2spgtACCvuATWg==
-Date: Thu, 12 Nov 2009 12:56:55 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Thu, 12 Nov 2009 15:59:56 -0500
+Received: from [95.166.99.235] ([95.166.99.235]:36366 "EHLO kernel.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbZKLU74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 15:59:56 -0500
+Date: Thu, 12 Nov 2009 22:00:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch v2] x86: reduce srat verbosity in the kernel log
-In-Reply-To: <20091110213312.GE23196@elte.hu>
-Message-ID: <alpine.DEB.2.00.0911121250140.9544@chino.kir.corp.google.com>
-References: <87pr8ay6tc.fsf@basil.nowhere.org> <4AE710C9.2070307@sgi.com> <alpine.DEB.2.00.0910271158490.24696@chino.kir.corp.google.com> <4AE75162.7080903@sgi.com> <alpine.DEB.2.00.0910271323410.32543@chino.kir.corp.google.com> <20091028033219.GE7744@basil.fritz.box>
- <alpine.DEB.2.00.0910272041360.8988@chino.kir.corp.google.com> <20091028041159.GI7744@basil.fritz.box> <alpine.DEB.2.00.0910272129250.17260@chino.kir.corp.google.com> <alpine.DEB.2.00.0911101307440.28728@chino.kir.corp.google.com>
- <20091110213312.GE23196@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       Mike Galbraith <efault@gmx.de>, mszeredi@suse.de
+Subject: Re: Performance regression in IO scheduler still there
+Message-ID: <20091112210000.GO8742@kernel.dk>
+References: <20091026172012.GC7233@duck.suse.cz> <x49zl7020mr.fsf@segfault.boston.devel.redhat.com> <20091111141031.GA21511@duck.suse.cz> <x493a4lot31.fsf@segfault.boston.devel.redhat.com> <20091112172941.GK14528@duck.suse.cz> <x49pr7npj71.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49pr7npj71.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009, Ingo Molnar wrote:
-
-> I'm waiting for Mike to test them (and other patches) and send a new 
-> series out with bits to pick up.
+On Thu, Nov 12 2009, Jeff Moyer wrote:
+> Jan Kara <jack@suse.cz> writes:
 > 
-
-Mike posted his series today without including my patch, so I've replied 
-to it.
-
-> But i really dont like such type of buffering - in the past they tended 
-> to be problematic.
-
-I'm not sure that I'd call it buffering when iterating through all apic 
-id's and setting appropriate bits in a bitmap when they map to a node id.  
-It's apparently not been problematic either on my machines, Mike's 
-machines, or his merge with ACPI 4.0 code.  I think the code is pretty 
-straight forward.
-
-> Why print this info at all in the default bootup?  
-> It's not needed on a correctly functioning system.
+> > On Wed 11-11-09 12:43:30, Jeff Moyer wrote:
+> >> Jan Kara <jack@suse.cz> writes:
+> >> 
+> >> >   Sadly, I don't see the improvement you can see :(. The numbers are the
+> >> > same regardless low_latency set to 0:
+> >> > 2.6.32-rc5 low_latency = 0:
+> >> > 37.39 36.43 36.51 -> 36.776667 0.434920
+> >> >   But my testing environment is a plain SATA drive so that probably
+> >> > explains the difference...
+> >> 
+> >> I just retested (10 runs for each kernel) on a SATA disk with no NCQ
+> >> support and I could not see a difference.  I'll try to dig up a disk
+> >> that support NCQ.  Is that what you're using for testing?
+> >   I don't think I am. How do I find out?
 > 
+> Good question.  ;-)  I grep for NCQ in dmesg output and make sure it's
+> greater than 0/32.  There may be a better way, though.
 
-We have no other export of the apic id to to node mappings in the kernel.  
-We already show each pxm's address range, each node's address range, and 
-the pxm to node map.  The only other way to map apic ids to nodes is by 
-looking for the lines "CPU 0/0 -> Node 0," which I believe are being 
-removed.
+cat /sys/block/<dev>/device/queue_depth
+
+:-)
+
+-- 
+Jens Axboe
+
