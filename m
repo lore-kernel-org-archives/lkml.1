@@ -1,147 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZKLQMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZKLQUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZKLQMA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 11:12:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZKLQL6
+	id S1753354AbZKLQUX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 11:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZKLQUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 11:11:58 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:39449 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752229AbZKLQL5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 11:11:57 -0500
-Subject: Re: [RFC] new -stable tag variant, Git workflow question
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20091112044142.GA27714@suse.de>
-References: <20091110034831.GB26809@elte.hu>
-	 <20091110041452.GA25575@suse.de> <1257863388.4184.220.camel@mulgrave.site>
-	 <20091110193747.GB12686@suse.de> <1257965424.11985.9.camel@mulgrave.site>
-	 <20091112044142.GA27714@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 12 Nov 2009 10:11:57 -0600
-Message-Id: <1258042317.2760.103.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Nov 2009 11:20:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33108 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753269AbZKLQUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 11:20:22 -0500
+Date: Thu, 12 Nov 2009 17:20:26 +0100
+From: Jan Kara <jack@suse.cz>
+To: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
+Subject: Re: warn on lookup_one_length/vfs_quota_on_mount
+Message-ID: <20091112162026.GJ14528@duck.suse.cz>
+References: <195c7a900911112329v7df8e718s5c0a5babdea39b99@mail.gmail.com> <20091112124238.GH14528@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
+Content-Disposition: inline
+In-Reply-To: <20091112124238.GH14528@duck.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 20:41 -0800, Greg KH wrote:
-> On Wed, Nov 11, 2009 at 12:50:24PM -0600, James Bottomley wrote:
-> > On Tue, 2009-11-10 at 11:37 -0800, Greg KH wrote:
-> > > On Tue, Nov 10, 2009 at 09:29:48AM -0500, James Bottomley wrote:
-> > > > On Mon, 2009-11-09 at 20:14 -0800, Greg KH wrote:
-> > > > > > A further question is, i can see using this tagging scheme in the future 
-> > > > > > in merge commits log messages too - will your scripts notice that too?
-> > > > > 
-> > > > > Hm, I don't think we look at merges as there's nothing there to actually
-> > > > > commit.
-> > > > > 
-> > > > > > For example if there's a few commits left in tip:*/urgent branches 
-> > > > > > (tip:sched/urgent, tip:core/urgent, tip:x86/urgent, etc.) by the time 
-> > > > > > v2.6.32 is released, i will then merge them into tip:sched/core, 
-> > > > > > tip:core/core, tip:x86/core, etc. - and i could use the merge commit as 
-> > > > > > a notification area to 'activate' them for -stable backporting via a 
-> > > > > > merge commit.
-> > > > > > 
-> > > > > > This is how such merge commits would look like:
-> > > > > > 
-> > > > > >   Merge branch 'core/urgent' into core/rcu
-> > > > > > 
-> > > > > >   Merge reason: Pick up urgent fixes that did not make it into .32.0
-> > > > > > 
-> > > > > >   Cc: <stable@kernel.org> # .32.x: 83f5b01: rcu: Fix long-grace-period race
-> > > > > >   Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > > > 
-> > > > > > This is not so rare of a situation as it might seem - for the trees i 
-> > > > > > maintain it happens in almost every release cycle - i typically skip 
-> > > > > > urgent branch merges after -rc8/-rc9, unless they are very-very-urgent 
-> > > > > > fixes - but they'd still be eligible for -stable.
-> > > > > 
-> > > > > Ok, that would be good and fine with me.
-> > > > > 
-> > > > > James, would your script pick this up, or does it need to also pay
-> > > > > attention to merge commits?
-> > > > 
-> > > > No ... because merge commits should effectively be empty (and when
-> > > > they're not you can't generate an applyable diff).  If I understand the
-> > > > workflow, the desire is to have the whole branch sent to stable by
-> > > > tagging the merge commit.  That's possible ... it's exactly the same
-> > > > logic I use in the commit scripts for the SCSI tree, so it should be
-> > > > possible to extract the logic.
-> > > > 
-> > > > By the looks of the above it's only a few commits, or is it the entire
-> > > > branch?
-> > > 
-> > > I'm thinking the commit would be the merge, right Ingo?  So it would
-> > > just be a single commit that has the marker in it.
+
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+  Hello,
+
+On Thu 12-11-09 13:42:38, Jan Kara wrote:
+> On Thu 12-11-09 08:29:06, Bastien ROUCARIES wrote:
+> > I get the following warm on my reiserfs disk with quota enabled at
+> > boot (each boot) see
+> > http://www.kerneloops.org/raw.php?rawid=937752&msgid=
+> > *lookup_one_len
+> > ? lookup_one_len
+> > ? lookup_one_len
+> > ? warn_slowpath_common
+> > ? lookup_one_len
+> > ? vfs_quota_on_mount
+> > ? finish_unfinished
+> > ? reiserfs_remount
+> > ? __filemap_fdatawrite_range
+> > ? do_remount_sb
+> > ? do_mount
+> > ? sys_mount
+> > ? system_call_fastpath
 > > 
-> > OK, so I can make it send you this just by removing the --no-merge flag
-> > from the git rev-list the script uses to sift through what changed
-> > (which I've already done).
-> > 
-> > The slight problem is that further down, to generate the patch the
-> > script uses git format-patch -k --stdout commit^..commit.  For a merge
-> > commit, this will generate a patch equivalent to the entire branch that
-> > was merged, even though the commit message will only pick out some of
-> > these ... is this OK?
-> > 
-> > If not, I can look at using git show instead to generate the patches (it
-> > will effectively generate null diffs for merge points with the stable
-> > tag, which is closer to what you want).
-> > 
-> > Alternatively, if you pick up the commits from Linus' tree anyway, I
-> > could just stop producing diffs, which will save email bandwidth and
-> > then be automatically correct whether the commit is a merge or not.
-> 
-> No, I'd like to keep diffs, and use Linus's suggestion to get the
-> correct diff, I have had that same bug in some scripts I have written as
-> well.
+> > But it seems a generic bug in the quota layer due to:
+> > http://www.kerneloops.org/oops.php?number=799645
+> > http://www.kerneloops.org/oops.php?number=700122
+>   OK, this shouldn't lead to any real bug (since we look them up during
+> filesystem mount or remount read-write when noone can mess with the root
+> directory). But it's probably good to silence the warning by proper locking
+> anyway. I'll do it. Thanks for the report!
+  Attached patch fixes the warning for me.
 
-OK, so git show --pretty=email -u --stat -M --cc <commit>
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-seems to be what works well (the options are -u to generate diff plus
-stats, -M to detect renames and --cc to try to generate a diff for merge
-points showing if there have been non trivial fix ups).
+--LQksG6bCIzRHxTLp
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="0001-quota-Fix-WARN_ON-in-lookup_one_len.patch"
 
-I've attached a sample below of what it will look like for a stable
-tagged merge point.  As you can see, because this is a simple merge, the
-diff is empty.
+>From 1422c40784979ee85aa0f74655fc6e627ddbb1c0 Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Thu, 12 Nov 2009 15:42:08 +0100
+Subject: [PATCH] quota: Fix WARN_ON in lookup_one_len
 
-James
+We should hold i_mutex when looking up quota files for journaled quotas,
+otherwise a WARN_ON in lookup_one_len triggers. The fact that we didn't
+hold i_mutex previously probably could not lead to a real bug since the
+filesystem is just being mounted / remounted read-write and thus the
+root directory cannot change anyway but it's definitely cleaner with
+i_mutex.
 
+Reported-by: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 ---
+ fs/quota/dquot.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-From: 	James Bottomley <jejb@kernel.org>
-To: 	jejb@kernel.org
-Subject: 	Patch Upstream: Merge branch 'master'
-of /pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6
-Date: 	12/11/09 10:07:58 (Thu, 12 Nov 2009 16:07:58 GMT)
-
-
-commit: f2d5c3c1e34a7cc006de8e3cf94fe11f68dad894
-From: James Bottomley <jejb@hera.kernel.org>
-Date: Thu, 12 Nov 2009 15:51:38 +0000
-Subject: [PATCH] Merge branch 'master' of /pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6
-
-Cc: Stable Tree <stable@kernel.org> # .32.x: 83f5b01: rcu: Fix long-grace-period race
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-
- drivers/scsi/bfa/bfad_im.c         |    2 +-
- drivers/scsi/ipr.c                 |   42 ++++++++++++++++++++++++++++-------
- drivers/scsi/ipr.h                 |    1 +
- drivers/scsi/libsas/sas_expander.c |    1 -
- drivers/scsi/pmcraid.c             |   10 ++++----
- drivers/scsi/scsi_transport_fc.c   |    3 ++
- include/scsi/scsi_host.h           |   29 +++++++++---------------
- 7 files changed, 54 insertions(+), 34 deletions(-)
+diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+index 39b49c4..aa97df1 100644
+--- a/fs/quota/dquot.c
++++ b/fs/quota/dquot.c
+@@ -2233,7 +2233,9 @@ int vfs_quota_on_mount(struct super_block *sb, char *qf_name,
+ 	struct dentry *dentry;
+ 	int error;
+ 
++	mutex_lock(&sb->s_root->d_inode->i_mutex);
+ 	dentry = lookup_one_len(qf_name, sb->s_root, strlen(qf_name));
++	mutex_unlock(&sb->s_root->d_inode->i_mutex);
+ 	if (IS_ERR(dentry))
+ 		return PTR_ERR(dentry);
+ 
+-- 
+1.6.0.2
 
 
+--LQksG6bCIzRHxTLp--
