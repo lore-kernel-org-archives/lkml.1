@@ -1,100 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZKLF0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbZKLF2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbZKLF0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 00:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZKLF0k
+	id S1752789AbZKLF2P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 00:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZKLF2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 00:26:40 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:39392 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161AbZKLF0i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 00:26:38 -0500
-MIME-Version: 1.0
-In-Reply-To: <878weco4r9.fsf@openvz.org>
-References: <bd36f99e0911110118v6dc7f87ao98968ba234fad7fc@mail.gmail.com>
-	 <4AFA835B.9000904@garzik.org>
-	 <bd36f99e0911110412hf2c7920gf06bd29ed43e240c@mail.gmail.com>
-	 <bd36f99e0911111309ie8166a9h8f926948bf15d350@mail.gmail.com>
-	 <4AFB2F2A.7080900@garzik.org>
-	 <bd36f99e0911111419w55346c8ct18b57c787401b8b7@mail.gmail.com>
-	 <878weco4r9.fsf@openvz.org>
-Date: Thu, 12 Nov 2009 00:26:44 -0500
-Message-ID: <bd36f99e0911112126j6e1fcfc9j283c4233e6550181@mail.gmail.com>
-Subject: Re: Crash during SATA reads
-From: Glenn Maynard <glenn@zewt.org>
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 12 Nov 2009 00:28:15 -0500
+Received: from 1wt.eu ([62.212.114.60]:51035 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbZKLF2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 00:28:14 -0500
+Date: Thu, 12 Nov 2009 06:27:54 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Matt Thrailkill <matt.thrailkill@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Machek <pavel@ucw.cz>, Avi Kivity <avi@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Matteo Croce <technoboy85@gmail.com>,
+       Sven-Haegar Koch <haegar@sdinet.de>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091112052754.GB15679@1wt.eu>
+References: <4AF9E61B.5090407@zytor.com> <20091110222031.GA22911@elte.hu> <20091110224222.GA28648@1wt.eu> <4AF9ED78.3000106@zytor.com> <20091111055220.GA560@1wt.eu> <4AFA569E.9040206@zytor.com> <20091111063617.GD560@1wt.eu> <4AFA6E50.7030808@zytor.com> <20091111093258.GE560@1wt.eu> <a91053ef0911111823v52669d18p7e5812076a63f03e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a91053ef0911111823v52669d18p7e5812076a63f03e@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 9:28 PM, Dmitry Monakhov <dmonakhov@openvz.org> wrote:
-> Seems what you have use-after-free here.
-> You probably have to add some debug info in to bio->end_io method
-> May be something like this.
+On Wed, Nov 11, 2009 at 06:23:14PM -0800, Matt Thrailkill wrote:
+> On Wed, Nov 11, 2009 at 1:32 AM, Willy Tarreau <w@1wt.eu> wrote:
+> > All I can say is that executing a NOP results in no state change in
+> > the processor except the instruction pointer which points to the
+> > next instruction after execution. Since a NOP changes nothing, it
+> > cannot be used alone to provide any privilege, access to data or
+> > any such thing. Since it does not perform any jump, it cannot either
+> > be used to take back control of the execution flow. And it is certain
+> > that the next instruction after it will be executed, so if the NOP
+> > crosses a page boundary and completes on a non-executable one, the
+> > next instruction will trigger the PF.
+> >
+> > So I can't see how a NOP can be used to circumvent any protection.
+> 
+> So a nop(l) sled won't be a problem, right?
 
-That's what it looks like, but won't these checks trigger on the use
-(and give the same trace), when we need to know where the free is
-happening?  The problem is manifesting in several places (bogus or
-NULL bh->b_end_io in end_bio_bh_io_sync(); bh->b_this_page == NULL--I
-think, havn't reproduced that again to confirm--in
-block_invalidatepage()).  I'm not sure how to figure out where the
-free might be happening; it's tricky enough in userspace with Valgrind
-available.
+Right. However we just noticed that with the KVM emulator, you
+can make it loop for a long time if you feed it with prefixes
+only. For instance, write a function which does zillions of 0x66
+(data size prefix) then return (0xC3) : 66 66 66 ... 66 C3.
 
-I tried logging alloc_buffer_head and free_buffer_head, but it was too
-much output (if it's not masking the problem entirely by changing the
-timing too much, it would take ages to repro).
+This is typically the sort of things we must be very careful about
+in emulators, because we don't want users to steal large amounts
+of system CPU time doing nothing.
 
-I just repro'd it (took several hours this time), on the
-BUG_ON(!bh->b_page); assertion.  This one happened while doing a
-partition copy (/dev/sdb2) rather than /dev/sdb.  Trace follows
-(though I doubt it offers any new information).  Hopefully somebody
-has an idea of where to look next...
+Regards,
+Willy
 
-
-kernel BUG at fs/buffer.c:2934!
-invalid opcode: 0000 [#1] PREEMPT
-last sysfs file:
-/sys/devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/model
-Modules linked in: netconsole atl1c rtc
-
-Pid: 0, comm: swapper Not tainted (2.6.31.6 #16) G31M-ES2L
-EIP: 0060:[<c107cce3>] EFLAGS: 00010282 CPU: 0
-EIP is at end_bio_bh_io_sync+0x20/0x63
-EAX: c1ae78c0 EBX: c107cce3 ECX: c1ae78c0 EDX: 00000000
-ESI: c1ae78c0 EDI: d9e5c450 EBP: c1351eac ESP: c1351e74
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process swapper (pid: 0, ti=c1350000 task=c1356260 task.ti=c1350000)
-Stack:
- c107e5b5 00000400 c1158828 00000000 df8a62c0 df8ef5a4 00000000 00000000
-<0> 00012c00 0000d400 00000000 d9e5c450 00000000 d9e5c450 df8ef168 c11589a2
-<0> df8a6500 00000000 c1158a59 00000000 df8a6500 00000000 d9e5c450 c1158ac8
-Call Trace:
- [<c107e5b5>] ? bio_endio+0x24/0x26
- [<c1158828>] ? blk_update_request+0xdf/0x24e
- [<c11589a2>] ? blk_update_bidi_request+0xb/0x41
- [<c1158a59>] ? blk_end_bidi_request+0x10/0x4f
- [<c1158ac8>] ? blk_end_request+0x7/0xc
- [<c11abd12>] ? scsi_end_request+0x17/0x69
- [<c11ac023>] ? scsi_io_completion+0x173/0x335
- [<c11a8390>] ? scsi_finish_command+0x70/0x86
- [<c11ac706>] ? scsi_softirq_done+0xd7/0xdc
- [<c115b45d>] ? blk_done_softirq+0x51/0x5d
- [<c101bde0>] ? __do_softirq+0x5f/0xc8
- [<c101be6b>] ? do_softirq+0x22/0x26
- [<c101becd>] ? irq_exit+0x29/0x34
- [<c1004097>] ? do_IRQ+0x53/0x63
- [<c1002ea9>] ? common_interrupt+0x29/0x30
- [<c100716e>] ? mwait_idle+0x3c/0x44
- [<c1001423>] ? cpu_idle+0x19/0x3a
- [<c13885aa>] ? start_kernel+0x1a4/0x1a6
-Code: 54 24 18 83 c4 48 5b 5e 5f 5d c3 56 53 89 c3 8b 48 40 8b 40 34
-85 c0 75 04 0f 0b eb fe 85 c9 75 04 0f 0b eb fe 83 79 08 00 75 04 <0f>
-0b eb fe 83 79 04 00 75 04 0f 0b eb fe 83 fa a1 75 08 80 4b
-EIP: [<c107cce3>] end_bio_bh_io_sync+0x20/0x63 SS:ESP 0068:c1351e74
-
--- 
-Glenn Maynard
