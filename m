@@ -1,130 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZKLXDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZKMAmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZKLXDY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 18:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZKLXDW
+	id S1754758AbZKMAmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 19:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZKMAmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 18:03:22 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36842 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754932AbZKLXDV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 18:03:21 -0500
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, greg@kroah.com, akpm@linux-foundation.org,
-       mcgrof@gmail.com, lrodriguez@atheros.com
-Subject: [RFC] scripts: add gen-linux-conf for remote kernel configuration
-Date: Thu, 12 Nov 2009 18:03:26 -0500
-Message-Id: <1258067006-2205-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
+	Thu, 12 Nov 2009 19:42:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45520 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754565AbZKMAmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 19:42:12 -0500
+Date: Thu, 12 Nov 2009 18:07:36 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time
+	stamps
+Message-ID: <20091112230736.GD2936@redhat.com>
+References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4AFA09C9.9050001@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFA09C9.9050001@cn.fujitsu.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new 'make localmodconfig' proves very useful but on low end
-systems we do not want to 'git clone' an entire kernel tree or
-download a whole kernel but just cross compile the kernel on a
-bigger machine. The .config generated with 'make localmodconfig'
-is still very helpfup though so to aid users and developers
-with that add a script which builds a tarball with only the
-necessary kernel glue stuff to be able to generate a local
-minimum kernel configuration with 'make localmodconfig'.
+On Wed, Nov 11, 2009 at 08:48:09AM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> >  
+> > @@ -1245,10 +1429,10 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
+> >  	struct cfq_queue *cfqq;
+> >  	int dispatched = 0;
+> >  
+> > -	while ((cfqq = cfq_rb_first(&cfqd->service_tree)) != NULL)
+> > +	while ((cfqq = cfq_get_next_queue(cfqd)) != NULL)
+> >  		dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> >  
+> > -	cfq_slice_expired(cfqd, 0);
+> > +	cfq_slice_expired(cfqd);
+> >  
+> >  	BUG_ON(cfqd->busy_queues);
+> >  
+> > @@ -1391,7 +1575,7 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+> >  	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
+> >  	    cfq_class_idle(cfqq))) {
+> >  		cfqq->slice_end = jiffies + 1;
+> > -		cfq_slice_expired(cfqd, 0);
+> > +		cfq_slice_expired(cfqd);
+> 
+> Hi Vivek,
+> 
+> I think here you should make sure that when updating cfqq->slice_end, cfqq->slice_end doesn't 
+> equal to 0. Because if cfqq->slice_end == 0, cfq_slice_expired() just charge for 1 jiffy, but
+> if cfqq->slice_end is updated when it equals to 0(first request still in the air), at that time
+> cfqq->slice_start == 0, and slice_used is charged as "jiffies - cfqq->slice_start". Following
+> patch fixes this bug.
+> 
 
-With this you can copy to your target device a relatively
-small tarball (1.2 MB currenty) and, allows you to modify
-the kernel config for your tree (mconf, conf, etc) and
-finally run 'make localmodconfig'.
+Hi Gui,
 
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
+This can happen only once during a one wrap around cycle of jiffies. That
+too depends in case we are hitting jiffies+1 as 0 or not.
 
-I had an itch to scratch and that was to use 'localmodconfig'
-on a small netbook but I didn't want to clone a whole tree
-or even compile an entire kernel on it. This did the trick,
-thought others might find it useful.
+So I would not worry much about it right now.
 
-A little grimy the bash script, but hey it works and its simple
-enough. I tried to reduce the Makefile count to only arch/ but
-found that that didn't do the trick. Perhaps this can be optimized
-more, suggestions welcomed. Maybe it should be written in Go :)
+In fact, not updating slice_end, will make idle or async queue slice last
+much longer than it should have.
 
-What would be *real* nice is to give an IP address of a box and
-have it build and fetch a localmodconfig .config for you.
+Thanks
+Vivek
 
-  Luis
-
- scripts/gen-linux-conf |   61 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 61 insertions(+), 0 deletions(-)
- create mode 100755 scripts/gen-linux-conf
-
-diff --git a/scripts/gen-linux-conf b/scripts/gen-linux-conf
-new file mode 100755
-index 0000000..5c88a50
---- /dev/null
-+++ b/scripts/gen-linux-conf
-@@ -0,0 +1,61 @@
-+#!/bin/bash
-+
-+DEST=linux-conf
-+rm -rf $DEST
-+
-+KCONFIGS=$(find ./ -type f -name Kconfig\*)
-+MAKEFILES=$(find ./ -type f -name Makefile\*)
-+KBUILDS=$(find ./ -type f -name Kbuild\*)
-+
-+COUNT=0
-+echo -en "\nAdding Kconfigs"
-+for i in ${KCONFIGS}; do
-+	FILE=$(basename $i)
-+	DIR=$(dirname $i)
-+	DIR=${DEST}/${DIR}
-+	mkdir -p ${DIR}
-+	cp $i ${DIR}
-+	echo -en "."
-+	let COUNT=$COUNT+1
-+done
-+echo "$COUNT files copied"
-+
-+COUNT=0
-+echo -en "Adding Makefiles"
-+for i in ${MAKEFILES}; do
-+	FILE=$(basename $i)
-+	DIR=$(dirname $i)
-+	DIR=${DEST}/${DIR}
-+	mkdir -p ${DIR}
-+	cp $i ${DIR}
-+	echo -en "."
-+	let COUNT=$COUNT+1
-+done
-+echo "$COUNT files copied"
-+
-+COUNT=0
-+echo -en "Adding Kbuild files"
-+for i in ${KBUILDS}; do
-+	FILE=$(basename $i)
-+	DIR=$(dirname $i)
-+	DIR=${DEST}/${DIR}
-+	mkdir -p ${DIR}
-+	cp $i ${DIR}
-+	echo -en "."
-+	let COUNT=$COUNT+1
-+done
-+echo -e "$COUNT files copied\n"
-+
-+cp -af scripts/ ${DEST}
-+cp -f Makefile ${DEST}
-+
-+TARBALL=${DEST}.tar.bz2
-+
-+tar -jcf ${TARBALL} ${DEST}
-+rm -rf ${DEST}
-+
-+echo -e "Finished ${TARBALL} ($(du -h $TARBALL | cut -f 1))"
-+echo -e "Now scp ${TARBALL} to target and run:\n"
-+echo -e "cp /boot/your-config .config"
-+echo -e "make menuconfig"
-+echo -e "make localmodconfig"
--- 
-1.6.5.2.155.gbb47
-
+ 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/cfq-iosched.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index f23d713..12afc14 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1999,7 +1999,8 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+>  	if (cfqd->busy_queues > 1 && ((!cfq_cfqq_sync(cfqq) &&
+>  	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
+>  	    cfq_class_idle(cfqq))) {
+> -		cfqq->slice_end = jiffies + 1;
+> +		if (cfqq->slice_end)
+> +			cfqq->slice_end = jiffies + 1;
+>  		cfq_slice_expired(cfqd);
+>  	}
+>  
+> -- 
+> 1.5.4.rc3
