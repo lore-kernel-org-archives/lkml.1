@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZKLRlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZKLRrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753757AbZKLRlL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:41:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZKLRlJ
+	id S1753831AbZKLRrl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbZKLRrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:41:09 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:59200 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbZKLRlH (ORCPT
+	Thu, 12 Nov 2009 12:47:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42166 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753532AbZKLRrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:41:07 -0500
-Date: Thu, 12 Nov 2009 09:40:12 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, lenb@kernel.org
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: linux-next: Tree for November 12 (acpi/processor.h)
-Message-Id: <20091112094012.2ef401ad.randy.dunlap@oracle.com>
-In-Reply-To: <20091112195101.63263490.sfr@canb.auug.org.au>
-References: <20091112195101.63263490.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 12 Nov 2009 12:47:40 -0500
+Date: Thu, 12 Nov 2009 17:49:16 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Robert Hancock" <hancockrwd@gmail.com>,
+       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Reading /dev/mem by dd
+Message-ID: <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
+In-Reply-To: <1258047454.16197.1344913359@webmail.messagingengine.com>
+References: <4AFACC03.7080209@mayc.ru>
+	<4AFB2822.30906@gmail.com>
+	<20091112021209.GA21625@khazad-dum.debian.net>
+	<878web7kwf.fsf@basil.nowhere.org>
+	<1258047454.16197.1344913359@webmail.messagingengine.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4AFC4895.003C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009 19:51:01 +1100 Stephen Rothwell wrote:
+> In this case, the problem seems to be access over /dev/mem to stuff the
+> kernel is already taking care of.  Certainly "as safe as possible" does
 
-> Hi all,
-> 
-> Changes since 20091111:
-> 
-> The cpufreq tree gained a conflict against the acpi tree.
+Which is often what is desired - eg debugging driver stuff.
 
-when CONFIG_CPU_FREQ=n:
+> not have to mean making /dev/mem useless for whatever good uses it has.
 
-arch/x86/kernel/acpi/processor.o: In function `acpi_processor_get_bios_limit':
-(.text+0x0): multiple definition of `acpi_processor_get_bios_limit'
-arch/x86/kernel/acpi/cstate.o:(.text+0x0): first defined here
+It does. Plain and simple.
 
-
-The function definition in include/apci/procssor.h needs to be "static inline"
-at line 323.
-
----
-~Randy
