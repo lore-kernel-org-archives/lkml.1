@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZKLRzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZKLR5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZKLRzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 12:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZKLRzl
+	id S1753830AbZKLR5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 12:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZKLR5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 12:55:41 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40951 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753439AbZKLRzk (ORCPT
+	Thu, 12 Nov 2009 12:57:44 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34178 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753642AbZKLR5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 12:55:40 -0500
-Date: Thu, 12 Nov 2009 17:56:49 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eran Liberty <liberty@extricom.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial_core: avoid Break bouncing
-Message-ID: <20091112175649.145cbf18@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091112140504.6daf3824@pedra.chehab.org>
-References: <20091112140504.6daf3824@pedra.chehab.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Nov 2009 12:57:44 -0500
+Message-Id: <1258048669.20754.1344916801@webmail.messagingengine.com>
+X-Sasl-Enc: 63ImrenbeZJTP1d4go7N4EJnlXw0YNC04s6TkuZP+6Es 1258048669
+From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "Andi Kleen" <andi@firstfloor.org>,
+       "Robert Hancock" <hancockrwd@gmail.com>,
+       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailer: MessagingEngine.com Webmail Interface
+In-Reply-To: <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
+References: <4AFACC03.7080209@mayc.ru><4AFB2822.30906@gmail.com><20091112021209.GA21625@khazad-dum.debian.net><878web7kwf.fsf@basil.nowhere.org><1258047454.16197.1344913359@webmail.messagingengine.com>
+ <20091112174916.59fe7805@lxorguk.ukuu.org.uk>
+Subject: Re: Reading /dev/mem by dd
+Date: Thu, 12 Nov 2009 15:57:49 -0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009 14:05:04 -0200
-Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
-
-> From: Eran Liberty <liberty@extricom.com>
+On Thu, 12 Nov 2009 17:49 +0000, "Alan Cox" <alan@lxorguk.ukuu.org.uk> wrote:
+> > In this case, the problem seems to be access over /dev/mem to stuff the
+> > kernel is already taking care of.  Certainly "as safe as possible" does
 > 
-> On some boxes, Break signal bounces, causing sysrq code to fail with some
-> serial interfaces.
+> Which is often what is desired - eg debugging driver stuff.
 > 
-> A solution were posted on LKML in 2008:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0809.2/0730.html
+> > not have to mean making /dev/mem useless for whatever good uses it has.
 > 
-> However, the fix weren't applied upstream.
+> It does. Plain and simple.
 
-Because it was NAKked at the time as it seemed to be a bug in Eran's
-hardware platform not a generic problem and also because it breaks
-autobauding on break as used by some (particularly older) software.
+Is that the only valid use of /dev/mem, or even its main use?
 
-It's still NAKked and it would be helpful if people resubmitting old
-stuff also looked through the thread attached the original submission.
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
 
-You seem to have a single case of a user with some kind of buggy uart or
-possibly other weirdness going on. That's probably worth investigating
-more deeply but the patch NAKked before is not the solution due to its
-side effects
-
-(also btw it'll upset other people who script their sysrq stuff including
-breaks and don't expect strange timing limits)
-
-NAK again
