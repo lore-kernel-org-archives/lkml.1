@@ -1,208 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbZKLEt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZKLExd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932237AbZKLEt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 23:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZKLEt4
+	id S1760034AbZKLExd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 23:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbZKLExd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 23:49:56 -0500
-Received: from mga11.intel.com ([192.55.52.93]:6578 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932224AbZKLEty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 23:49:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,726,1249282800"; 
-   d="c'?scan'208";a="513020318"
-From: "Ma, Ling" <ling.ma@intel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Thu, 12 Nov 2009 12:49:04 +0800
-Subject: RE: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast 	string.
-Thread-Topic: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast 	string.
-Thread-Index: AcpjUJBXvX7GzItISp6FZnAIxAvVewAAibUw
-Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7714FE8307DB@PDSMSX501.ccr.corp.intel.com>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
-	 <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
-	 <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu>
-	 <8FED46E8A9CA574792FC7AACAC38FE7714FE830398@PDSMSX501.ccr.corp.intel.com>
-	 <20091111203425.GA25401@lenovo> <4AFB3D31.6070901@zytor.com>
- <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
-In-Reply-To: <aa79d98a0911112028nf3fc475r30aa8dc37936ea22@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_"
+	Wed, 11 Nov 2009 23:53:33 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:57393 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756514AbZKLExc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Nov 2009 23:53:32 -0500
+To: <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Subject: BUG_ON(rq->nr_running != 0) in CPU_DEAD
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 11 Nov 2009 20:53:29 -0800
+Message-ID: <m1ljiccpiu.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
 
-SGkgQWxsDQpUaGUgYXR0YWNobWVudCBpcyBsYXRlc3QgbWVtY3B5LmMsIHBsZWFzZSB1cGRhdGUg
-YnkgDQoiY2MgLW8gbWVtY3B5IG1lbWNweS5jIC1PMiAtbTY0Ii4NCg0KVGhhbmtzDQpMaW5nDQoN
-Cg0KPi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogQ3lyaWxsIEdvcmN1bm92IFtt
-YWlsdG86Z29yY3Vub3ZAZ21haWwuY29tXQ0KPlNlbnQ6IDIwMDnlubQxMeaciDEy5pelIDEyOjI4
-DQo+VG86IEguIFBldGVyIEFudmluDQo+Q2M6IE1hLCBMaW5nOyBJbmdvIE1vbG5hcjsgSW5nbyBN
-b2xuYXI7IFRob21hcyBHbGVpeG5lcjsgbGludXgta2VybmVsDQo+U3ViamVjdDogUmU6IFtQQVRD
-SCBSRkNdIFtYODZdIHBlcmZvcm1hbmNlIGltcHJvdmVtZW50IGZvciBtZW1jcHlfNjQuUyBieSBm
-YXN0DQo+c3RyaW5nLg0KPg0KPk9uIFRodSwgTm92IDEyLCAyMDA5IGF0IDE6MzkgQU0sIEguIFBl
-dGVyIEFudmluIDxocGFAenl0b3IuY29tPiB3cm90ZToNCj4+IE9uIDExLzExLzIwMDkgMTI6MzQg
-UE0sIEN5cmlsbCBHb3JjdW5vdiB3cm90ZToNCj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBtZW1jcHlfb3JpZyDC
-oCDCoCBtZW1jDQo+cHlfbmV3DQo+Pj4gVFBUOiBMZW4gMTAyNCwgYWxpZ25tZW50IMKgOC8gMDog
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgNDkwIMKgIMKgIMKgIMKgIMKgIMKgIDU3MA0KPj4+IFRQVDog
-TGVuIDIwNDgsIGFsaWdubWVudCDCoDgvIDA6IMKgIMKgIMKgIMKgIMKgIMKgIMKgIDgyNiDCoCDC
-oCDCoCDCoCDCoCDCoCAzMjkNCj4+PiBUUFQ6IExlbiAzMDcyLCBhbGlnbm1lbnQgwqA4LyAwOiDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCA0NDEgwqAgwqAgwqAgwqAgwqAgwqAgNDY0DQo+Pj4gVFBUOiBM
-ZW4gNDA5NiwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAgwqAgwqAgwqAgwqAgNTc5IMKgIMKg
-IMKgIMKgIMKgIMKgIDU5Ng0KPj4+IFRQVDogTGVuIDUxMjAsIGFsaWdubWVudCDCoDgvIDA6IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIDcyMyDCoCDCoCDCoCDCoCDCoCDCoCA3MjkNCj4+PiBUUFQ6IExl
-biA2MTQ0LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoCDCoCDCoCDCoCDCoCA4NTkgwqAgwqAg
-wqAgwqAgwqAgwqAgODYxDQo+Pj4gVFBUOiBMZW4gNzE2OCwgYWxpZ25tZW50IMKgOC8gMDogwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgOTk2IMKgIMKgIMKgIMKgIMKgIMKgIDk5NA0KPj4+IFRQVDogTGVu
-IDgxOTIsIGFsaWdubWVudCDCoDgvIDA6IMKgIMKgIMKgIMKgIMKgIMKgIMKgIDExNjUgwqAgwqAg
-wqAgwqAgwqAgwqAxMTI3DQo+Pj4gVFBUOiBMZW4gOTIxNiwgYWxpZ25tZW50IMKgOC8gMDogwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgMTI3MyDCoCDCoCDCoCDCoCDCoCDCoDEyNjANCj4+PiBUUFQ6IExl
-biAxMDI0MCwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAxNDAyIMKgIMKgIMKgIMKgIMKgIMKg
-MTM5NQ0KPj4+IFRQVDogTGVuIDExMjY0LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoDE1NDMg
-wqAgwqAgwqAgwqAgwqAgwqAxNTI1DQo+Pj4gVFBUOiBMZW4gMTIyODgsIGFsaWdubWVudCDCoDgv
-IDA6IMKgIMKgIMKgMTY4MiDCoCDCoCDCoCDCoCDCoCDCoDE2NTkNCj4+PiBUUFQ6IExlbiAxMzMx
-MiwgYWxpZ25tZW50IMKgOC8gMDogwqAgwqAgwqAxODY5IMKgIMKgIMKgIMKgIMKgIMKgMTgxNQ0K
-Pj4+IFRQVDogTGVuIDE0MzM2LCBhbGlnbm1lbnQgwqA4LyAwOiDCoCDCoCDCoDE5ODIgwqAgwqAg
-wqAgwqAgwqAgwqAxOTUxDQo+Pj4gVFBUOiBMZW4gMTUzNjAsIGFsaWdubWVudCDCoDgvIDA6IMKg
-IMKgIMKgMjE4NSDCoCDCoCDCoCDCoCDCoCDCoDIxMTANCj4+Pg0KPj4+IEkndmUgcnVuIHRoaXMg
-dGVzdCBhIGZldyB0aW1lcyBhbmQgcmVzdWx0cyBhbG1vc3QgdGhlIHNhbWUsDQo+Pj4gd2l0aCBh
-bGlnbm1lbnQgMTAyNCwgMzA3MiwgNDA5NiwgNTEyMCwgNjE0NCwgbmV3IHZlcnNpb24gYSBiaXQg
-c2xvd2x5Lg0KPj4+DQo+Pg0KPj4gV2FzIHRoZSByZXN1bHQgZm9yIDIwNDggY29uc2lzdGVudCAo
-aXQgc2VlbXMgb2RkIGluIHRoZSBleHRyZW1lKS4uLiB0aGUNCj4+IGRpc2NyZXBhbmN5IGJldHdl
-ZW4gdGhpcyByZXN1bHQgYW5kIExpbmcncyByZXN1bHRzIGJvdGhlcnMgbWU7IHBlcmhhcHMNCj4+
-IHRoZSByaWdodCBhbnN3ZXIgaXMgdG8gbGVhdmUgdGhlIGN1cnJlbnQgY29kZSBmb3IgQ29yZTIg
-YW5kIHVzZSBuZXcgY29kZQ0KPj4gKHdpdGggYSBsb3dlciB0aGFuIDEwMjQgdGhyZXNob2xkPykg
-Zm9yIE5ITSBhbmQgSzg/DQo+Pg0KPj4gwqAgwqAgwqAgwqAtaHBhDQo+Pg0KPg0KPkhpIFBldGVy
-LA0KPg0KPm5vLCByZXN1bHRzIGZvciAyMDQ4IGlzIG5vdCByZXBlYXRhYmxlICh0aGF0IGlzIHdo
-eSBJIGRpZG4ndCBtZW50aW9uIHRoaXMgbnVtYmVyDQo+aW4gYSBmb3JtZXIgcmVwb3J0KS4NCj4N
-Cj5UZXN0MToNCj5UUFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTgyNgkzMjkNCj5UZXN0
-MjoNCj5UUFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTM1OQkzMjkNCj5UZXN0MzoNCj5U
-UFQ6IExlbiAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTMwNgkzMzENCj5UZXN0NDoNCj5UUFQ6IExl
-biAyMDQ4LCBhbGlnbm1lbnQgIDgvIDA6CTQxNQkzMjkNCj4NCj5JIGd1ZXNzIHRoaXMgd2FzIGR1
-ZSB0byBjcHUgZnJlcXVlbmN5IGNoYW5nZSBmcm9tIDgwMCB0byAyLjFHaHogc2luY2UNCj5JIGRp
-ZCB0ZXN0cyBtYW51YWxseQ0KPm5vdCB1c2luZyBhbnkga2luZCBvZiBiYXNoIGN5Y2xlIHRvIHJ1
-biB0aGUgdGVzdCBwcm9ncmFtLg0K
+When calling halt on one of my test machines I got this.
+I have seen this a few times (but it is rare).
 
---_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_
-Content-Type: text/plain; name="memcpy.c"
-Content-Description: memcpy.c
-Content-Disposition: attachment; filename="memcpy.c"; size=5495;
-	creation-date="Wed, 11 Nov 2009 15:46:11 GMT";
-	modification-date="Thu, 12 Nov 2009 12:42:50 GMT"
-Content-Transfer-Encoding: base64
+This appears to be BUG_ON(rq->nr_running != 0) from migration_call() CPU_DEAD.
 
-I2luY2x1ZGU8c3RkaW8uaD4KI2luY2x1ZGUgPHN0ZGxpYi5oPgoKCnR5cGVkZWYgdW5zaWduZWQg
-bG9uZyBsb25nIGludCBocF90aW1pbmdfdDsKI2RlZmluZSAgTUFYU0FNUExFU1RQVCAgICAgICAg
-MTAwMDAwCiNkZWZpbmUgIE1BWENPUFlTSVpFICAgICAgICAgICgxMDI0ICogMzIpCiNkZWZpbmUg
-IE9SSUcgIDAKI2RlZmluZSAgTkVXICAgMQpzdGF0aWMgY2hhciogYnVmMSA9IE5VTEw7CnN0YXRp
-YyBjaGFyKiBidWYyID0gTlVMTDsKCmhwX3RpbWluZ190IF9kbF9ocF90aW1pbmdfb3ZlcmhlYWQ7
-CiMgZGVmaW5lIEhQX1RJTUlOR19OT1coVmFyKSBcCiAgKHsgdW5zaWduZWQgbG9uZyBsb25nIF9o
-aSwgX2xvOyBcCiAgICAgYXNtIHZvbGF0aWxlICgicmR0c2MiIDogIj1hIiAoX2xvKSwgIj1kIiAo
-X2hpKSk7IFwKICAgICAoVmFyKSA9IF9oaSA8PCAzMiB8IF9sbzsgfSkKCiNkZWZpbmUgSFBfVElN
-SU5HX0RJRkYoRGlmZiwgU3RhcnQsIEVuZCkJKERpZmYpID0gKChFbmQpIC0gKFN0YXJ0KSkKI2Rl
-ZmluZSBIUF9USU1JTkdfVE9UQUwodG90YWxfdGltZSwgc3RhcnQsIGVuZCkJXAogIGRvCQkJCQkJ
-CQkJXAogICAgewkJCQkJCQkJCVwKICAgICAgaHBfdGltaW5nX3QgdG1wdGltZTsJCQkJCQlcCiAg
-ICAgIEhQX1RJTUlOR19ESUZGICh0bXB0aW1lLCBzdGFydCArIF9kbF9ocF90aW1pbmdfb3Zlcmhl
-YWQsIGVuZCk7CVwKCXRvdGFsX3RpbWUgKz0gdG1wdGltZTsJCQkJCQlcCiAgICB9CQkJCQkJCQkJ
-XAogIHdoaWxlICgwKQoKdm9pZCBtZW1jcHlfb3JpZyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50
-IGxlbik7CnZvaWQgbWVtY3B5X25ldyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbik7CnZv
-aWQgbWVtY3B5X2MoY2hhciAqZHN0LCBjaGFyICpzcmMsIGludCBsZW4pOwp2b2lkICgqZG9fbWVt
-Y3B5KShjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbik7CgpzdGF0aWMgdm9pZApkb19vbmVf
-dGhyb3VnaHB1dCAoIGNoYXIgKmRzdCwgY2hhciAqc3JjLAoJICAgICBzaXplX3QgbGVuKQp7CiAg
-ICAgIF9fYXNtX18oImNwdWlkIiA6IDogOiAiZWF4IiwgImVieCIsICJlY3giLCAiZWR4Iik7CiAg
-ICAgIHNpemVfdCBpOwogICAgICBocF90aW1pbmdfdCBzdGFydCBfX2F0dHJpYnV0ZSAoKHVudXNl
-ZCkpOwogICAgICBocF90aW1pbmdfdCBzdG9wIF9fYXR0cmlidXRlICgodW51c2VkKSk7CiAgICAg
-IGhwX3RpbWluZ190IHRvdGFsX3RpbWUgPSAgKGhwX3RpbWluZ190KSAwOwoKICAgICAgX19hc21f
-XygiY3B1aWQiIDogOiA6ICJlYXgiLCAiZWJ4IiwgImVjeCIsICJlZHgiKTsKICAgICAgZm9yIChp
-ID0gMDsgaSA8IE1BWFNBTVBMRVNUUFQ7ICsraSkgIHsKICAgICAgICAgIEhQX1RJTUlOR19OT1cg
-KHN0YXJ0KTsKCQlkb19tZW1jcHkoYnVmMSwgYnVmMiwgbGVuKTsKCSAgSFBfVElNSU5HX05PVyAo
-c3RvcCk7CgkgIEhQX1RJTUlOR19UT1RBTCAodG90YWxfdGltZSwgc3RhcnQsIHN0b3ApOwogICAg
-ICB9CgogICAgICBwcmludGYgKCJcdCV6ZCIsIChzaXplX3QpIHRvdGFsX3RpbWUvTUFYU0FNUExF
-U1RQVCk7Cgp9CgpzdGF0aWMgdm9pZApkb190cHRfdGVzdCAoc2l6ZV90IGFsaWduMSwgc2l6ZV90
-IGFsaWduMiwgc2l6ZV90IGxlbikKewogIHNpemVfdCBpLCBqOwogIGNoYXIgKnMxLCAqczI7Cgog
-IHMxID0gKGNoYXIgKikgKGJ1ZjEgKyBhbGlnbjEpOwogIHMyID0gKGNoYXIgKikgKGJ1ZjIgKyBh
-bGlnbjIpOwoKCiAgIHByaW50ZiAoIlRQVDogTGVuICU0emQsIGFsaWdubWVudCAlMnpkLyUyemQ6
-IiwgbGVuLCBhbGlnbjEsIGFsaWduMik7CiAgIGRvX21lbWNweSA9IG1lbWNweV9vcmlnOwogICBk
-b19vbmVfdGhyb3VnaHB1dCAoczIsIHMxLCBsZW4pOwogICBkb19tZW1jcHkgPSBtZW1jcHlfbmV3
-OwogICBkb19vbmVfdGhyb3VnaHB1dCAoczIsIHMxLCBsZW4pOwoKICAgIHB1dGNoYXIgKCdcbicp
-Owp9CgpzdGF0aWMgdGVzdF9pbml0KHZvaWQpCnsKICBpbnQgaTsKICBidWYxID0gdmFsbG9jKE1B
-WENPUFlTSVpFKTsKICBidWYyID0gdmFsbG9jKE1BWENPUFlTSVpFKTsKCiAgZm9yIChpID0gMDsg
-aSA8IE1BWENPUFlTSVpFIDsgaSA9IGkgKyA2NCkgewogICAgICAgIGJ1ZjFbaV0gPSBidWYyW2ld
-ID0gaSAmIDB4ZmY7CiAgfQoKfQoKdm9pZCBtZW1jcHlfbmV3KGNoYXIgKmRzdCwgY2hhciAqc3Jj
-LCBpbnQgbGVuKQp7CglfX2FzbV9fKCJtb3ZxICVyZGksICVyYXgiKTsKCV9fYXNtX18oIm1vdmwg
-JWVkeCwgJWVjeCIpOwoJX19hc21fXygic2hybCAgICQ2LCAlZWN4Iik7CglfX2FzbV9fKCJqeiAy
-ZiIpOwoKCV9fYXNtX18oImNtcCAkMHg0MDAsICVlZHgiKTsKCV9fYXNtX18oImphZSA3ZiIpOwoK
-CV9fYXNtX18oIjE6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCglfX2FzbV9fKCJtb3ZxIDAq
-OCglcnNpKSwgJXIxMSIpOwoJX19hc21fXygibW92cSAxKjgoJXJkaSksICVyOCIpOwoJX19hc21f
-XygibW92cSAlcjExLAkwKjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAkxKjgoJXJkaSki
-KTsKCglfX2FzbV9fKCJtb3ZxIDIqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDMqOCgl
-cmRpKSwgJXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTIqOCglcmRpKSIpOwoJX19hc21fXygi
-bW92cSAlcjEwLAkzKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDQqOCglcnNpKSwgJXIxMSIp
-OwoJX19hc21fXygibW92cSA1KjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92cSAlcjExLAk0
-KjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAk1KjgoJXJkaSkiKTsKCglfX2FzbV9fKCJt
-b3ZxIDYqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDcqOCglcmRpKSwgJXIxMCIpOwoJ
-X19hc21fXygibW92cSAlcjksCTYqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAlcjEwLAk3Kjgo
-JXJkaSkiKTsKCglfX2FzbV9fKCJsZWFxIDY0KCVyc2kpLCAlcnNpIik7CglfX2FzbV9fKCJsZWFx
-IDY0KCVyZGkpLCAlcmRpIik7CgoJX19hc21fXygiam56ICAxYiIpOwoKCV9fYXNtX18oIjI6Iik7
-CglfX2FzbV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oImFuZGwgJDYzLCAlZWN4Iik7
-CglfX2FzbV9fKCJzaGwgICAkMywgJWVjeCIpOwoJX19hc21fXygianogNGYiKTsKCgoJX19hc21f
-XygiMzoiKTsKCV9fYXNtX18oImRlY2wgJWVjeCIpOwoJX19hc21fXygibW92cSAoJXJzaSksCSVy
-OCIpOwoJX19hc21fXygibW92cSAlcjgsCSglcmRpKSIpOwoJX19hc21fXygibGVhcSA4KCVyZGkp
-LAklcmRpIik7CglfX2FzbV9fKCJsZWFxIDgoJXJzaSksCSVyc2kiKTsKCV9fYXNtX18oImpueiAz
-YiIpOwoKCV9fYXNtX18oIjQ6Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsCSVlY3giKTsKCV9fYXNt
-X18oImFuZGwgJDcsCSVlY3giKTsKCV9fYXNtX18oImp6IDZmIik7CgoJX19hc21fXygiNToiKTsK
-CV9fYXNtX18oIm1vdmIgKCVyc2kpLAklcjhiIik7CglfX2FzbV9fKCJtb3ZiICVyOGIsICglcmRp
-KSIpOwoJX19hc21fXygiaW5jcSAlcmRpIik7CglfX2FzbV9fKCJpbmNxICVyc2kiKTsKCV9fYXNt
-X18oImRlY2wgJWVjeCIpOwoJX19hc21fXygiam56IDViIik7CgoJX19hc21fXygiNjoiKTsKCV9f
-YXNtX18oInJldHEiKTsKCglfX2FzbV9fKCI3OiIpOwoJX19hc21fXygibW92bCAlZWR4LCAlZWN4
-Iik7CglfX2FzbV9fICgic2hyICQzLCAlZWN4Iik7CglfX2FzbV9fICgiYW5kbCAkNywgJWVkeCIp
-OwoJX19hc21fXygicmVwIG1vdnNxICIpOwoJX19hc21fXyAoImp6IDhmIik7CglfX2FzbV9fKCJt
-b3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oInJlcCBtb3ZzYiIpOwoKCV9fYXNtX18oIjg6Iik7
-Cn0Kdm9pZCBtZW1jcHlfb3JpZyhjaGFyICpkc3QsIGNoYXIgKnNyYywgaW50IGxlbikKewoJX19h
-c21fXygibW92cSAlcmRpLCAlcmF4Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9f
-YXNtX18oInNocmwgICAkNiwgJWVjeCIpOwoJX19hc21fXygianogMmYiKTsKCglfX2FzbV9fKCJt
-b3YgJDB4ODAsICVyOGQgICIpOyAgLyphbGlnbmVkIGNhc2UgZm9yIGxvb3AgMSAqLwoKCV9fYXNt
-X18oIjE6Iik7CglfX2FzbV9fKCJkZWNsICVlY3giKTsKCglfX2FzbV9fKCJtb3ZxIDAqOCglcnNp
-KSwgJXIxMSIpOwoJX19hc21fXygibW92cSAxKjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92
-cSAlcjExLAkwKjgoJXJkaSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAkxKjgoJXJkaSkiKTsKCglf
-X2FzbV9fKCJtb3ZxIDIqOCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDMqOCglcmRpKSwg
-JXIxMCIpOwoJX19hc21fXygibW92cSAlcjksCTIqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAl
-cjEwLAkzKjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDQqOCglcnNpKSwgJXIxMSIpOwoJX19h
-c21fXygibW92cSA1KjgoJXJkaSksICVyOCIpOwoJX19hc21fXygibW92cSAlcjExLAk0KjgoJXJk
-aSkiKTsKCV9fYXNtX18oIm1vdnEgJXI4LAk1KjgoJXJkaSkiKTsKCglfX2FzbV9fKCJtb3ZxIDYq
-OCglcnNpKSwgJXI5Iik7CglfX2FzbV9fKCJtb3ZxIDcqOCglcmRpKSwgJXIxMCIpOwoJX19hc21f
-XygibW92cSAlcjksCTYqOCglcmRpKSIpOwoJX19hc21fXygibW92cSAlcjEwLAk3KjgoJXJkaSki
-KTsKCglfX2FzbV9fKCJsZWFxIDY0KCVyc2kpLCAlcnNpIik7CglfX2FzbV9fKCJsZWFxIDY0KCVy
-ZGkpLCAlcmRpIik7CgoJX19hc21fXygiam56ICAxYiIpOwoKCV9fYXNtX18oIjI6Iik7CglfX2Fz
-bV9fKCJtb3ZsICVlZHgsICVlY3giKTsKCV9fYXNtX18oImFuZGwgJDYzLCAlZWN4Iik7CglfX2Fz
-bV9fKCJzaGwgICAkMywgJWVjeCIpOwoJX19hc21fXygianogNGYiKTsKCgoJX19hc21fXygiMzoi
-KTsKCV9fYXNtX18oImRlY2wgJWVjeCIpOwoJX19hc21fXygibW92cSAoJXJzaSksCSVyOCIpOwoJ
-X19hc21fXygibW92cSAlcjgsCSglcmRpKSIpOwoJX19hc21fXygibGVhcSA4KCVyZGkpLAklcmRp
-Iik7CglfX2FzbV9fKCJsZWFxIDgoJXJzaSksCSVyc2kiKTsKCV9fYXNtX18oImpueiAzYiIpOwoK
-CV9fYXNtX18oIjQ6Iik7CglfX2FzbV9fKCJtb3ZsICVlZHgsCSVlY3giKTsKCV9fYXNtX18oImFu
-ZGwgJDcsCSVlY3giKTsKCV9fYXNtX18oImp6IDZmIik7CgoJX19hc21fXygiNToiKTsKCV9fYXNt
-X18oIm1vdmIgKCVyc2kpLAklcjhiIik7CglfX2FzbV9fKCJtb3ZiICVyOGIsICglcmRpKSIpOwoJ
-X19hc21fXygiaW5jcSAlcmRpIik7CglfX2FzbV9fKCJpbmNxICVyc2kiKTsKCV9fYXNtX18oImRl
-Y2wgJWVjeCIpOwoJX19hc21fXygiam56IDViIik7CgoJX19hc21fXygiNjoiKTsKfQoKCnZvaWQg
-bWFpbih2b2lkKQp7CiAgaW50IGk7CiAgdGVzdF9pbml0KCk7CiAgcHJpbnRmICgiJTIzcyIsICIi
-KTsKICBwcmludGYgKCJcdCVzXHQlc1x0JXNcbiIsICJtZW1jcHlfb3JpZyIsICJtZW1jcHlfbmV3
-Iik7CgogIGZvciAoaSA9IDEwMjQ7IGkgPCAxMDI0ICogMTY7IGkgPSBpKyAxMDI0KQogICAgIGRv
-X3RwdF90ZXN0KDAsIDAsIGkpOwoKfQo=
+I don't know what to make of it other than disable_nonboot_cpus is broken,
+in a way I'm not familiar with.
 
---_002_8FED46E8A9CA574792FC7AACAC38FE7714FE8307DBPDSMSX501ccrc_--
+Eric
+
+
+[  624.034007] ------------[ cut here ]------------
+[  624.035066] Kernel BUG at ffffffff813d0d82 [verbose debug info unavailable]
+[  624.035066] invalid opcode: 0000 [#1] SMP 
+[  624.035066] last sysfs file: /sys/devices/pci0000:00/0000:00:1d.3/usb5/5-0:1.0/bInterfaceProtocol
+[  624.035066] CPU 0 
+[  624.035066] Modules linked in:
+[  624.035066] Pid: 7102, comm: halt Not tainted 2.6.32-rc6x86_64 #20         
+[  624.035066] RIP: 0010:[<ffffffff813d0d82>]  [<ffffffff813d0d82>] migration_call+0x358/0x4cd
+[  624.035066] RSP: 0018:ffff88007d967d48  EFLAGS: 00010046
+[  624.035066] RAX: 0000000000000003 RBX: 0000000000010000 RCX: ffff880001980000
+[  624.035066] RDX: 0000000000010000 RSI: ffff880001990088 RDI: ffff88007ea68e38
+[  624.035066] RBP: ffff880001990000 R08: ffff88007ea68898 R09: ffff880001990060
+[  624.035066] R10: ffff88007ea68888 R11: 0000000000000001 R12: ffff88007ea68df0
+[  624.035066] R13: ffff880001990000 R14: 0000000000000003 R15: 0000000000000000
+[  624.035066] FS:  00007f43ea5bb6f0(0000) GS:ffff880001800000(0000) knlGS:0000000000000000
+[  624.035066] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[  624.035066] CR2: 00000000005aae48 CR3: 000000007da9c000 CR4: 00000000000006f0
+[  624.035066] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  624.035066] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  624.035066] Process halt (pid: 7102, threadinfo ffff88007d966000, task ffff88007da686c0)
+[  624.035066] Stack:
+[  624.035066]  0000000000000003 0000000000000000 0000000000000000 00000000ffffffff
+[  624.035066] <0> ffffffff8161eec0 0000000000000003 0000000000000017 ffffffff81048ec4
+[  624.035066] <0> ffff88007da686c0 0000000000000003 0000000000000010 ffffffff816200e8
+[  624.035066] Call Trace:
+[  624.035066]  [<ffffffff81048ec4>] ? notifier_call_chain+0x29/0x56
+[  624.035066]  [<ffffffff813b4687>] ? _cpu_down+0x1a6/0x284
+[  624.035066]  [<ffffffff81036039>] ? disable_nonboot_cpus+0x63/0xfa
+[  624.035066]  [<ffffffff81040f3b>] ? kernel_power_off+0x21/0x3a
+[  624.035066]  [<ffffffff810411e3>] ? sys_reboot+0x13b/0x158
+[  624.035066]  [<ffffffff8103f145>] ? kill_pid_info+0x35/0x46
+[  624.035066]  [<ffffffff8103f9d9>] ? sys_kill+0x72/0x143
+[  624.035066]  [<ffffffff8109a316>] ? dput+0x2c/0x13a
+[  624.035066]  [<ffffffff8108c540>] ? __fput+0x198/0x1c8
+[  624.035066]  [<ffffffff8109ebbd>] ? mntput_no_expire+0x1c/0x8c
+[  624.035066]  [<ffffffff81089e60>] ? filp_close+0x5e/0x66
+[  624.035066]  [<ffffffff8100aceb>] ? system_call_fastpath+0x16/0x1b
+[  624.035066] Code: 49 8b 44 24 30 4c 89 e6 4c 89 ef ff 50 30 48 c7 c2 00 00 01 00 44 89 f0 41 83 bc 24 48 01 00 00 00 48 8b 0c c5 20 fc 61 81 75 04 <0 
+[  624.035066] RIP  [<ffffffff813d0d82>] migration_call+0x358/0x4cd
+[  624.035066]  RSP <ffff88007d967d48>
+[  624.035066] ---[ end trace b69b4ad3bcd0ae93 ]---
