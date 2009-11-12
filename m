@@ -1,153 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbZKKX6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZKLAAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbZKKX6J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Nov 2009 18:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbZKKX6H
+	id S1759688AbZKLAAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Nov 2009 19:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbZKLAAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Nov 2009 18:58:07 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:50322 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759671AbZKKX6F (ORCPT
+	Wed, 11 Nov 2009 19:00:42 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51937 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759486AbZKLAAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Nov 2009 18:58:05 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/C6HWpuGXt9BCVgNN7EDmU
-Date: Wed, 11 Nov 2009 15:58:08 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] omap3-iommu: reorganize
-Message-ID: <20091111235808.GQ24837@atomide.com>
-References: <1252874472-21089-1-git-send-email-felipe.contreras@gmail.com>
+	Wed, 11 Nov 2009 19:00:41 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AFB5019.7030901@jp.fujitsu.com>
+Date: Thu, 12 Nov 2009 09:00:25 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252874472-21089-1-git-send-email-felipe.contreras@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime()
+References: <4AF0C97F.7000603@bluehost.com> <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com> <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
+In-Reply-To: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Felipe Contreras <felipe.contreras@gmail.com> [090913 13:41]:
-> This way it's more object oriented and easier to see what is happening.
-> No functional changes.
+Stanislaw Gruszka wrote:
+> On Tue, Nov 10, 2009 at 02:47:34PM +0900, Hidetoshi Seto wrote:
+>> Remove casting to clock_t from task_u/stime(), and keep granularity of
+>> cputime_t over the calculation.
+>>
+>> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+>> ---
+>>  kernel/sched.c |   21 ++++++++++++---------
+>>  1 files changed, 12 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index 28dd4f4..1632e82 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -5171,41 +5171,44 @@ cputime_t task_stime(struct task_struct *p)
+>>  	return p->stime;
+>>  }
+>>  #else
+>> +
+>> +#ifndef nsecs_to_cputime
+>> +# define nsecs_to_cputime(__nsecs) msecs_to_cputime((__nsecs) / NSEC_PER_MSEC)
+>> +#endif
+>> +
+> 
+> I would like to test, but unfortunately with the patch kernel not build
+> on my system:
+> 
+> kernel/built-in.o: In function `task_utime':
+> /usr/src/rhel5/linux-2.6/kernel/sched.c:5187: undefined reference to
+> `__udivdi3'
+> kernel/built-in.o: In function `task_stime':
+> /usr/src/rhel5/linux-2.6/kernel/sched.c:5208: undefined reference to
+> `__udivdi3'
+> make: *** [.tmp_vmlinux1] Error 1
 
-Felipe, can you please refresh this against omap for-next branch?
+Wow, what arch?
+Could you provide your .config?
+
 
 Thanks,
+H.Seto
 
-Tony
- 
-> Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
-> ---
->  arch/arm/mach-omap2/omap3-iommu.c |   62 ++++++++++++++++++------------------
->  1 files changed, 31 insertions(+), 31 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/omap3-iommu.c b/arch/arm/mach-omap2/omap3-iommu.c
-> index 194189c..6abc217 100644
-> --- a/arch/arm/mach-omap2/omap3-iommu.c
-> +++ b/arch/arm/mach-omap2/omap3-iommu.c
-> @@ -14,47 +14,50 @@
->  
->  #include <mach/iommu.h>
->  
-> -#define OMAP3_MMU1_BASE	0x480bd400
-> -#define OMAP3_MMU2_BASE	0x5d000000
-> -#define OMAP3_MMU1_IRQ	24
-> -#define OMAP3_MMU2_IRQ	28
-> -
-> -
-> -static unsigned long iommu_base[] __initdata = {
-> -	OMAP3_MMU1_BASE,
-> -	OMAP3_MMU2_BASE,
-> -};
-> -
-> -static int iommu_irq[] __initdata = {
-> -	OMAP3_MMU1_IRQ,
-> -	OMAP3_MMU2_IRQ,
-> +struct iommu_device {
-> +	resource_size_t base;
-> +	int irq;
-> +	struct iommu_platform_data pdata;
-> +	struct resource res[2];
->  };
->  
-> -static const struct iommu_platform_data omap3_iommu_pdata[] __initconst = {
-> +static struct iommu_device devices[] = {
->  	{
-> -		.name = "isp",
-> -		.nr_tlb_entries = 8,
-> -		.clk_name = "cam_ick",
-> +		.base = 0x480bd400,
-> +		.irq = 24,
-> +		.pdata = {
-> +			.name = "isp",
-> +			.nr_tlb_entries = 8,
-> +			.clk_name = "cam_ick",
-> +		},
->  	},
->  #if defined(CONFIG_MPU_BRIDGE_IOMMU)
->  	{
-> -		.name = "iva2",
-> -		.nr_tlb_entries = 32,
-> -		.clk_name = "iva2_ck",
-> +		.base = 0x5d000000,
-> +		.irq = 28,
-> +		.pdata = {
-> +			.name = "iva2",
-> +			.nr_tlb_entries = 32,
-> +			.clk_name = "iva2_ck",
-> +		},
->  	},
->  #endif
->  };
-> -#define NR_IOMMU_DEVICES ARRAY_SIZE(omap3_iommu_pdata)
-> +#define NR_IOMMU_DEVICES ARRAY_SIZE(devices)
->  
->  static struct platform_device *omap3_iommu_pdev[NR_IOMMU_DEVICES];
->  
->  static int __init omap3_iommu_init(void)
->  {
->  	int i, err;
-> +	struct resource res[] = {
-> +		{ .flags = IORESOURCE_MEM },
-> +		{ .flags = IORESOURCE_IRQ },
-> +	};
->  
->  	for (i = 0; i < NR_IOMMU_DEVICES; i++) {
->  		struct platform_device *pdev;
-> -		struct resource res[2];
-> +		const struct iommu_device *d = &devices[i];
->  
->  		pdev = platform_device_alloc("omap-iommu", i);
->  		if (!pdev) {
-> @@ -62,19 +65,16 @@ static int __init omap3_iommu_init(void)
->  			goto err_out;
->  		}
->  
-> -		memset(res, 0,  sizeof(res));
-> -		res[0].start = iommu_base[i];
-> -		res[0].end = iommu_base[i] + MMU_REG_SIZE - 1;
-> -		res[0].flags = IORESOURCE_MEM;
-> -		res[1].start = res[1].end = iommu_irq[i];
-> -		res[1].flags = IORESOURCE_IRQ;
-> +		res[0].start = d->base;
-> +		res[0].end = d->base + MMU_REG_SIZE - 1;
-> +		res[1].start = res[1].end = d->irq;
->  
->  		err = platform_device_add_resources(pdev, res,
->  						    ARRAY_SIZE(res));
->  		if (err)
->  			goto err_out;
-> -		err = platform_device_add_data(pdev, &omap3_iommu_pdata[i],
-> -					       sizeof(omap3_iommu_pdata[0]));
-> +		err = platform_device_add_data(pdev, &d->pdata,
-> +					       sizeof(d->pdata));
->  		if (err)
->  			goto err_out;
->  		err = platform_device_add(pdev);
-> -- 
-> 1.6.5.rc1
-> 
