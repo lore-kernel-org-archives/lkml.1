@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZKLLil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbZKLLwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752914AbZKLLil (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 06:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZKLLil
+	id S1752816AbZKLLwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 06:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZKLLwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 06:38:41 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43227 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751596AbZKLLik (ORCPT
+	Thu, 12 Nov 2009 06:52:53 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:34196 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbZKLLww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 06:38:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        b=mTZbh4PB6u16mh2m2uxdfcdtk2wV5yzl6sUcZ/jp1eWmfg1N4cxTxXpoES+7Jnekrx
-         spsvYsHfThOrPBx7n7eVsD3g6RrwPl7XWjvNsoUw971LbAzJO0Wus8vIEjZOB1HZF4l6
-         Ek1jjtrTQ+bBK0d5PY20AKwVBLPhxV5CrLds0=
-Date: Thu, 12 Nov 2009 11:38:36 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091112113836.GA7963@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Nov 2009 06:52:52 -0500
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads before
+ invoking kthread_stop on them
+From: Romit Dasgupta <romit@ti.com>
+Reply-To: romit@ti.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Pavel Machek <pavel@ucw.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+In-Reply-To: <200911112141.12437.rjw@sisk.pl>
+References: <1257928216.15415.57.camel@boson>
+	 <200911111230.58479.rjw@sisk.pl> <20091111193719.GR8742@kernel.dk>
+	 <200911112141.12437.rjw@sisk.pl>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Texas Instruments
+Date: Thu, 12 Nov 2009 17:22:06 +0530
+Message-ID: <1258026726.2341.1.camel@boson>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11-11-2009 23:48, Caleb Cushing wrote:
-> On Wed, Nov 11, 2009 at 5:05 PM, Frans Pop <elendil@planet.nl> wrote:
->> On Wednesday 11 November 2009, Andi Kleen wrote:
->>> Caleb Cushing <xenoterracide@gmail.com> writes:
->>>>> I'm attaching the bisection log and a 'good' dmesg output.
->>>>>
->>>>> c9fb3ded7a8a6769f3bcb3ef3d9aed61d3e376a9 is the first bad commit
->>> Just gives fatal: bad object c9fb3ded7a8a6769f3bcb3ef3d9aed61d3e376a9
->>> here on a standard Linus linux-2.6 tree.
->> Looks to be a commit from a stable update:
->>
->> commit c9fb3ded7a8a6769f3bcb3ef3d9aed61d3e376a9
->> Author: Alan Stern <stern@rowland.harvard.edu>
->> Date: Â  Tue Sep 1 11:38:34 2009 -0400
->>
->> Â  Â usb-serial: change referencing of port and serial structures
->>
->> Â  Â commit 41bd34ddd7aa46dbc03b5bb33896e0fa8100fe7b upstream.
->>
->> Cheers,
->> FJP
->>
+Resubmitting after incorporationg the suggestions:
 > 
-> yeah it is. it's from greg kroah-hartman's tree.
+> Romit, please rework as suggested by Jens and resubmit.
 
-Could you answer the previous question too:
+Unfreezes the bdi flusher task when the said task needs to exit.
 
-On 11-11-2009 22:47, Andi Kleen wrote:
-...
-> It might be also useful if you could describe what kind
-> of network devices you use and how you determine
-> the packet loss.
+Steps to reproduce this.
+1) Mount a file system from MMC/SD card.
+2) Unmount the file system. This creates a flusher task.
+3) Attempt suspend to RAM. System is unresponsive.
 
-Btw, you didn't send the stats you compared, and your wireshark dump
-doesn't show anything wrong either.
+This is because the bdi flusher thread is already in the refrigerator and will
+remain so until it is thawed. The MMC driver suspend routine call stack will
+ultimately issue a 'kthread_stop' on the bdi flusher thread and will block
+until the flusher thread is exited. Since the bdi flusher thread is in the
+refrigerator it never cleans up until thawed.
 
-Jarek P.
+Signed-off-by: Romit Dasgupta <romit@ti.com>
+---
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 5a37e20..5a9ab6f 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -603,11 +603,15 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ 	bdi_remove_from_list(bdi);
+ 
+ 	/*
++	 * Force unfreeze of bdi threads before stopping it, otherwise
++	 * it would never exit if it is stuck in the refrigerator.
+ 	 * Finally, kill the kernel threads. We don't need to be RCU
+ 	 * safe anymore, since the bdi is gone from visibility.
+ 	 */
+-	list_for_each_entry(wb, &bdi->wb_list, list)
++	list_for_each_entry(wb, &bdi->wb_list, list) {
++		wb->task->flags &= ~PF_FROZEN;
+ 		kthread_stop(wb->task);
++	}
+ }
+ 
+ void bdi_unregister(struct backing_dev_info *bdi)
+
+
