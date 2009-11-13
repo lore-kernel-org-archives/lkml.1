@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZKMHHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZKMHRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbZKMHHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 02:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZKMHHo
+	id S1755061AbZKMHRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 02:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZKMHRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 02:07:44 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:42340 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZKMHHo (ORCPT
+	Fri, 13 Nov 2009 02:17:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35584 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbZKMHRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 02:07:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=EMgSvglO1BsZg/ja9SKdiuklXZKJDceukVTvUxSs9JOz4OoZGFMmts3o2FiUW/y/nb
-         a6yxNAHGLLcV67hnhe5QRDEEoMmKqiZs7uhFZwkZU1WcgmRRQXHu0gus/XsDYRQGOYFA
-         /iHOaaFZOMW+mr2nX5wDV9FTxqXunYRRs9D6M=
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH] hpfs: Use hweight32
-Date: Fri, 13 Nov 2009 16:07:08 +0900
-Message-Id: <1258096028-13426-1-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 1.6.5.1
+	Fri, 13 Nov 2009 02:17:31 -0500
+Message-ID: <4AFD07F0.70602@zytor.com>
+Date: Thu, 12 Nov 2009 23:17:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+References: <200911112134.34261.bzolnier@gmail.com> <20091112065930.GA9279@elte.hu> <4AFBB45A.9000606@zytor.com> <20091112081317.GB25345@elte.hu> <4AFC274C.2020209@zytor.com> <20091112175908.GB20542@elte.hu>
+In-Reply-To: <20091112175908.GB20542@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use hweight32 instead of counting for each bit
+On 11/12/2009 09:59 AM, Ingo Molnar wrote:
+>>
+>> No, please.  We have had people who have "helpfully" tried to change 
+>> /proc/cpuinfo in the past, and what we find is that application 
+>> developers don't tell us -- they grumble among themselves and put out 
+>> a new release saying "fixes breakage introduced by Linux ..."
+>>
+>> It's an ABI.  Keep it stable, please.
+> 
+> That's generally true, but i'm not suggesting that: i'm suggesting to 
+> _clear_ the HT flag from the cpufeatures if there's only one sibling. 
+> It's meaningless in that case and as the link quoted by the original 
+> patch shows many people are confused by that.
+> 
+> I have such a box so i can test it. (but i dont expect any problems)
+> 
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
----
- fs/hpfs/super.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+Ah, okay, that makes more sense.  Someone else in the tread wanted to
+rename the flag.
 
-diff --git a/fs/hpfs/super.c b/fs/hpfs/super.c
-index f2feaa0..cf6fe4a 100644
---- a/fs/hpfs/super.c
-+++ b/fs/hpfs/super.c
-@@ -119,11 +119,8 @@ unsigned hpfs_count_one_bitmap(struct super_block *s, secno secno)
- 	unsigned i, count;
- 	if (!(bits = hpfs_map_4sectors(s, secno, &qbh, 4))) return 0;
- 	count = 0;
--	for (i = 0; i < 2048 / sizeof(unsigned); i++) {
--		unsigned b; 
--		if (!bits[i]) continue;
--		for (b = bits[i]; b; b>>=1) count += b & 1;
--	}
-+	for (i = 0; i < 2048 / sizeof(unsigned); i++)
-+		count += hweight32(bits[i]);
- 	hpfs_brelse4(&qbh);
- 	return count;
- }
+	-hpa
+
 -- 
-1.6.5.1
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
