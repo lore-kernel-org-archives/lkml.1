@@ -1,50 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932620AbZKMXmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932640AbZKMXpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932620AbZKMXmX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932462AbZKMXmV
+	id S932640AbZKMXpc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932552AbZKMXpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:42:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:41884 "EHLO ozlabs.org"
+	Fri, 13 Nov 2009 18:45:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40420 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932326AbZKMXmV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:42:21 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Thiago Farina <tfransosi@gmail.com>
-Subject: Re: [PATCH v4 2/2] bsearch: prevent overflow when computing middle comparison element
-Date: Sat, 14 Nov 2009 10:12:18 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: =?utf-8?q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       tabbott@ksplice.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org
-References: <cover.1257864802.git.andre.goddard@gmail.com> <200911122336.11033.rusty@rustcorp.com.au> <a4c8a6d00911130703v44dcb920h81a41378ec7b026b@mail.gmail.com>
-In-Reply-To: <a4c8a6d00911130703v44dcb920h81a41378ec7b026b@mail.gmail.com>
+	id S932199AbZKMXpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 18:45:31 -0500
+Message-ID: <4AFDEF75.1080101@redhat.com>
+Date: Fri, 13 Nov 2009 18:44:53 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911141012.19050.rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH -tip 1/3] Pass mm->flags to binfmt core_dump for bitflag
+ consistency
+References: <20091113225226.15079.90813.stgit@harusame> <20091113150904.56c15910.akpm@linux-foundation.org> <20091113232457.GC21666@elte.hu>
+In-Reply-To: <20091113232457.GC21666@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Nov 2009 01:33:04 am Thiago Farina wrote:
-> Hi Rusty,
-> 
-> On Thu, Nov 12, 2009 at 11:06 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > On Wed, 11 Nov 2009 01:30:25 am André Goddard Rosa wrote:
-> >> It's really difficult to occur in practice because the sum of the lower
-> >> and higher limits must overflow an int variable, but it can occur when
-> >> working with large arrays. We'd better safe than sorry by avoiding this
-> >> overflow situation when computing the middle element for comparison.
-> >
-> > I applied all these, after testing.  In future would have been nice for you
-> > to have posted a test patch so I didn't have make my own...
-> 
-> Where did you apply this patch?
+Ingo Molnar wrote:
+>
+> * Andrew Morton<akpm@linux-foundation.org>  wrote:
+>
+>> On Fri, 13 Nov 2009 17:52:27 -0500
+>> Masami Hiramatsu<mhiramat@redhat.com>  wrote:
+>>
+>>> Pass mm->flags to binfmt core_dump for bitflag consistency.
+>>> Since mm->flags bit flags is not protected by locks, it will be
+>>> changed while dumping core. This patch copies mm->flags to a
+>>> mm_flags local variable at the beginning of do_coredump() and
+>>> use it while dumping. mm_flags also includes dump_filter which
+>>> filters elf sections from core file in elf_core_dump().
+>>> So, this patch also passes mm_flags to each binfmt->core_dump().
+>>
+>> I can kind-of guess the answer, but it would be much more reliable if
+>> we were to hear this from yourself:
+>>
+>>    Why did you write this patch?  What problem is being observed?
+>
+> i'm not Masami so i'm only guessing that while writing the tracepoint a
+> race got noticed but that otherwise there's no big practical effect,
+> 'just' a cleanliness problem fixed.
 
-To my kernel series, which means it is now in linux-next.
+Right, I'd like to add a tracepoint of coredump event with
+its information. And also, this patch may fix a small
+dumpable inconsistency issue below code
 
-Hope that helps,
-Rusty.
+---
+1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
+1788                 up_write(&mm->mmap_sem);
+1789                 put_cred(cred);
+1790                 goto fail;
+1791         }
+1792
+[...]
+1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
+1799                 flag = O_EXCL;          /* Stop rewrite attacks */
+1800                 cred->fsuid = 0;        /* Dump root private */
+1801         }
+
+Since dumpable bits are not protected by lock, there is a
+chance to change these bits between (1) and (2).
+
+This patch copies mm->flags to a local variable and check the variable
+for consistency.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
