@@ -1,78 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZKMG1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZKMGaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZKMG1p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 01:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZKMG1i
+	id S1754545AbZKMGaP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 01:30:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZKMGaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 01:27:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56329 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752911AbZKMG1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 01:27:37 -0500
-Message-ID: <4AFCFC0D.4030002@kernel.org>
-Date: Thu, 12 Nov 2009 22:26:21 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 13 Nov 2009 01:30:11 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55997 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754191AbZKMGaK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 01:30:10 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH 2/6] mm: mlocking in try_to_unmap_one
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0911102151500.2816@sister.anvils>
+References: <Pine.LNX.4.64.0911102142570.2272@sister.anvils> <Pine.LNX.4.64.0911102151500.2816@sister.anvils>
+Message-Id: <20091113151554.33C2.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 2/2] pci: pciehp update the slot bridge res to get big
- range for pcie devices - v10
-References: <4ADEB601.8020200@kernel.org>	<4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org>	<4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com>
-In-Reply-To: <4AFCF7D8.1090207@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 13 Nov 2009 15:30:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> Kenji Kaneshige wrote:
->>> Can I ask which is the latest version?
->>>
->>> I think -v10 is the latest. But I could not find -v10 for patch 1/2.
->>
->> please use
->>
->> http://patchwork.kernel.org/patch/57814/  1/2 -v9
->> http://patchwork.kernel.org/patch/58294/  2/2 -v10
->>
-> 
-> Regardless of PCIe hotplug, some of PCIe devices (not on hotplug
-> slots) doesn't work with your patches by the following error.
-> 
-> Copyright (c) 2007-2009 Intel Corporation.
-> igb 0000:07:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> igb 0000:07:00.0: setting latency timer to 64
-> igb 0000:07:00.0: PCI INT A disabled
-> igb: probe of 0000:07:00.0 failed with error -5
-> igb 0000:07:00.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-> igb 0000:07:00.1: setting latency timer to 64
-> igb 0000:07:00.1: PCI INT B disabled
-> igb: probe of 0000:07:00.1 failed with error -5
-> igb 0000:08:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> igb 0000:08:00.0: setting latency timer to 64
-> igb 0000:08:00.0: PCI INT A disabled
-> igb: probe of 0000:08:00.0 failed with error -5
-> igb 0000:08:00.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
-> igb 0000:08:00.1: setting latency timer to 64
-> igb 0000:08:00.1: PCI INT B disabled
-> igb: probe of 0000:08:00.1 failed with error -5
-> 
-> I'm using Jesse's latest linux-next.
-> I'm attaching the /proc/iomem outputs. The iomem-default.txt is
-> /proc/iomem output without your patches. The iomem-yinghai.txt
-> is /proc/iomem output with your patches.
+> @@ -787,6 +787,8 @@ static int try_to_unmap_one(struct page
+>  			ret = SWAP_MLOCK;
+>  			goto out_unmap;
+>  		}
+> +		if (MLOCK_PAGES && TTU_ACTION(flags) == TTU_MUNLOCK)
+> +			goto out_unmap;
+>  	}
+>  	if (!(flags & TTU_IGNORE_ACCESS)) {
+>  		if (ptep_clear_flush_young_notify(vma, address, pte)) {
+> @@ -852,12 +854,22 @@ static int try_to_unmap_one(struct page
+>  	} else
+>  		dec_mm_counter(mm, file_rss);
+>  
+> -
+>  	page_remove_rmap(page);
+>  	page_cache_release(page);
+>  
+>  out_unmap:
+>  	pte_unmap_unlock(pte, ptl);
+> +
+> +	if (MLOCK_PAGES && ret == SWAP_MLOCK) {
+> +		ret = SWAP_AGAIN;
+> +		if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+> +			if (vma->vm_flags & VM_LOCKED) {
+> +				mlock_vma_page(page);
+> +				ret = SWAP_MLOCK;
+> +			}
+> +			up_read(&vma->vm_mm->mmap_sem);
+> +		}
+> +	}
+>  out:
 
-can you post whole bootlog with pci debug enabled?
+Very small nit. How about this?
 
-Thanks
 
-Yinghai
+------------------------------------------------------------
+>From 9d4b507572eccf88dcaa02e650df59874216528c Mon Sep 17 00:00:00 2001
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Fri, 13 Nov 2009 15:00:04 +0900
+Subject: [PATCH] Simplify try_to_unmap_one()
+
+SWAP_MLOCK mean "We marked the page as PG_MLOCK, please move it to
+unevictable-lru". So, following code is easy confusable.
+
+	if (vma->vm_flags & VM_LOCKED) {
+		ret = SWAP_MLOCK;
+		goto out_unmap;
+	}
+
+Plus, if the VMA doesn't have VM_LOCKED, We don't need to check
+the needed of calling mlock_vma_page().
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/rmap.c |   25 ++++++++++++-------------
+ 1 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 4440a86..81a168c 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -784,10 +784,8 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+ 	 * skipped over this mm) then we should reactivate it.
+ 	 */
+ 	if (!(flags & TTU_IGNORE_MLOCK)) {
+-		if (vma->vm_flags & VM_LOCKED) {
+-			ret = SWAP_MLOCK;
+-			goto out_unmap;
+-		}
++		if (vma->vm_flags & VM_LOCKED)
++			goto out_unlock;
+ 		if (MLOCK_PAGES && TTU_ACTION(flags) == TTU_MUNLOCK)
+ 			goto out_unmap;
+ 	}
+@@ -856,18 +854,19 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+ 
+ out_unmap:
+ 	pte_unmap_unlock(pte, ptl);
++out:
++	return ret;
+ 
+-	if (MLOCK_PAGES && ret == SWAP_MLOCK) {
+-		ret = SWAP_AGAIN;
+-		if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+-			if (vma->vm_flags & VM_LOCKED) {
+-				mlock_vma_page(page);
+-				ret = SWAP_MLOCK;
+-			}
+-			up_read(&vma->vm_mm->mmap_sem);
++out_unlock:
++	pte_unmap_unlock(pte, ptl);
++
++	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
++		if (vma->vm_flags & VM_LOCKED) {
++			mlock_vma_page(page);
++			ret = SWAP_MLOCK;
+ 		}
++		up_read(&vma->vm_mm->mmap_sem);
+ 	}
+-out:
+ 	return ret;
+ }
+ 
+-- 
+1.6.2.5
+
+
+
+
+
