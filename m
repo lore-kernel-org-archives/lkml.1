@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZKMPMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbZKMPTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbZKMPMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbZKMPMs
+	id S1757309AbZKMPTC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 10:19:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbZKMPSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:12:48 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40145 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756937AbZKMPMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 10:12:10 -0500
-Date: Fri, 13 Nov 2009 15:11:19 +0000
-From: Russell King <rmk@arm.linux.org.uk>
-To: Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: d451564 breakage
-Message-ID: <20091113151119.GA27752@flint.arm.linux.org.uk>
+	Fri, 13 Nov 2009 10:18:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21527 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755948AbZKMPSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 10:18:35 -0500
+Date: Fri, 13 Nov 2009 10:18:15 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 05/16] blkio: Implement per cfq group latency target
+	and busy queue avg
+Message-ID: <20091113151815.GC17076@redhat.com>
+References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com> <1258068756-10766-6-git-send-email-vgoyal@redhat.com> <4e5e476b0911130246m372eb8e8x7b98f13278515a95@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4e5e476b0911130246m372eb8e8x7b98f13278515a95@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change:
+On Fri, Nov 13, 2009 at 11:46:49AM +0100, Corrado Zoccolo wrote:
+> On Fri, Nov 13, 2009 at 12:32 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >  static inline void
+> > @@ -441,10 +445,13 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> >        if (cfqd->cfq_latency) {
+> >                /* interested queues (we consider only the ones with the same
+> >                 * priority class) */
+> This comment needs to be updated
 
-highmem: Fix debug_kmap_atomic() to also handle KM_IRQ_PTE, KM_NMI, and KM_NMI_PTE
+Sure. Will do. Now the interested queues are the one with same priority
+class with-in group.
 
-Appears to break ARM:
+> >                 * priority class) */
+> > -               unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
+> > +               unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
+> > +                                               cfq_class_rt(cfqq));
+> >                unsigned sync_slice = cfqd->cfq_slice[1];
+> >                unsigned expect_latency = sync_slice * iq;
+> > -               if (expect_latency > cfq_target_latency) {
+> > +               unsigned group_target_lat = cfq_target_latency/cfqd->nr_groups;
+> 
+> I'm not sure that we should divide the target latency evenly among groups.
+> Groups with different weights will have different percentage of time
+> in each 300ms round, so probably we should consider it here.
+> 
 
-mm/highmem.c: In function â€˜debug_kmap_atomicâ€™:
-mm/highmem.c:436: error: â€˜KM_NMIâ€™ undeclared (first use in this function)
-mm/highmem.c:436: error: (Each undeclared identifier is reported only once
-mm/highmem.c:436: error: for each function it appears in.)
-mm/highmem.c:436: error: â€˜KM_NMI_PTEâ€™ undeclared (first use in this function)
-mm/highmem.c:443: error: â€˜KM_IRQ_PTEâ€™ undeclared (first use in this function)
-make[2]: *** [mm/highmem.o] Error 1
-make[1]: *** [mm] Error 2
+Taking group weight into account will be more precise thing. So may be
+I can keep track of total weight on the service tree and determine
+group target latency as proportion of total weight.
 
-I'd prefer not to have to add these definitions just so that highmem
-debugging can work for two reasons:
+ group_target_lat = group_weight * cfq_target_latency/total_weight_of_groups
 
-1. either we allocate mappings for these which will never be used, which
-   unnecessarily wastes precious virtual memory space.
+Thanks
+Vivek
 
-2. we define them to be some other KM_* value and hope that they never
-   get used.  If they do get used, we'll never know by way of compiler
-   error but could result in silent data corruption.
-
-The only sane alternative I can see would be to define these as KM_TYPE_NR
-and either ensure that kmap_atomic() always fails for out-of-bounds kmap
-types (more preferable to catch problems but has a performance impact) or
-we have the kmap debugging detect this as well.
-
-Any preferences?
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> > +
+> > +               if (expect_latency > group_target_lat) {
+> >                        unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
+> >                        /* scale low_slice according to IO priority
+> >                         * and sync vs async */
+> > @@ -452,7 +459,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> >                                min(slice, base_low_slice * slice / sync_slice);
+> >                        /* the adapted slice value is scaled to fit all iqs
+> >                         * into the target latency */
+> > -                       slice = max(slice * cfq_target_latency / expect_latency,
+> > +                       slice = max(slice * group_target_lat / expect_latency,
+> >                                    low_slice);
+> >                }
+> >        }
+> 
+> Thanks,
+> Corrado
