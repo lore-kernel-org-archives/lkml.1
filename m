@@ -1,66 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZKMKdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZKMKhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbZKMKdD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZKMKc6
+	id S1756028AbZKMKhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZKMKhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:32:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:49457 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756031AbZKMKc4 (ORCPT
+	Fri, 13 Nov 2009 05:37:36 -0500
+Received: from mail168c2.megamailservers.com ([69.49.111.68]:36656 "EHLO
+	mail168c2.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755564AbZKMKhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:32:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=WBQVR6T5fXa07lE+Xvq3Uh6Ehz+7LT9zCwxS9ffQ9phc3sTD1gg0BRt+E8XZwCF5sD
-         +0NCOmdJkvAgCJBsuVPBbpWLFiE4JJhpmyd5Rmixr4BCrqQhM03D+WmpKoMUEmnksQGC
-         qXUR3bqJoctPpIwFXmx0MYQT28RFn2DSaR0fw=
-Message-ID: <4AFD35DB.6050604@gmail.com>
-Date: Fri, 13 Nov 2009 11:32:59 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.6pre) Gecko/20091108 SUSE/3.0b4-11.1 Thunderbird/3.0pre
+	Fri, 13 Nov 2009 05:37:35 -0500
+X-Authenticated-User: kristoffer.gaisler.com
+Message-ID: <4AFD3644.1080907@gaisler.com>
+Date: Fri, 13 Nov 2009 11:34:44 +0100
+From: Kristoffer Glembo <kristoffer@gaisler.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070601 SeaMonkey/1.1.2
 MIME-Version: 1.0
-To: chris.mason@oracle.com
-CC: zheng.yan@oracle.com, linux-btrfs@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: BTRFS: unreachable code found
-X-Enigmail-Version: 0.97b
-Content-Type: text/plain; charset=ISO-8859-2
+To: David Miller <davem@davemloft.net>
+CC: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sparc tree build failure
+References: <20091105185014.76dd0d31.sfr@canb.auug.org.au>	<20091104.235315.18303666.davem@davemloft.net> <20091105.000012.61292273.davem@davemloft.net>
+In-Reply-To: <20091105.000012.61292273.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I noticed just now that this patch broke the driver on LEON SPARC. It
+does not find the root node by using of_find_node_by_name(NULL, "/").
 
-Stanse found unreachable code in btrfs_insert_some_items below (don't
-look at the line numbers, they are on preprocessed code). I would fix
-that if I knew how.
+I'm not sure whether this is because we build our OF tree wrong or if
+it is an incorrect way of doing things. But if I instead change it to
+of_find_node_by_path("/") it works fine.
 
-Should the assignment be after the if, before the break or nowhere?
+Signed-off-by: Kristoffer Glembo <kristoffer@gaisler.com>
 
- 3068|int btrfs_insert_some_items(struct btrfs_trans_handle *trans,
- 3069|       struct btrfs_root *root,
- 3070|       struct btrfs_path *path,
- 3071|       struct btrfs_key *cpu_key, u32 *data_size,
- 3072|       int nr)
- 3073|{
-...
- 3086| for (i = 0; i < nr; i++) {
- 3087|  if (total_size + data_size[i] + sizeof(struct btrfs_item) >
- 3088|      (((root->leafsize) - sizeof(struct btrfs_header)))) {
- 3089|   break;
- 3090|   nr = i;
-     |This node is unreachable prev next
- 3091|  }
- 3092|  total_data += data_size[i];
- 3093|  total_size += data_size[i] + sizeof(struct btrfs_item);
- 3094| }
+---
+  drivers/serial/apbuart.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
 
-regards,
--- 
-js
-Faculty of Informatics, Masaryk University
-Suse Labs, Novell
+diff --git a/drivers/serial/apbuart.c b/drivers/serial/apbuart.c
+index a1e9503..fe91319 100644
+--- a/drivers/serial/apbuart.c
++++ b/drivers/serial/apbuart.c
+@@ -609,7 +609,7 @@ static void grlib_apbuart_configure(void)
+                 return;
+
+         /* Get bus frequency */
+-       rp = of_find_node_by_name(NULL, "/");
++       rp = of_find_node_by_path("/");
+         rp = of_get_next_child(rp, NULL);
+         prop = of_get_property(rp, "clock-frequency", NULL);
+         freq_khz = *prop;
+--
+1.5.2.2
+
+
+David Miller wrote:
+> 
+> Hmm, it took a tiny bit more than that :-)  Here's what I commited
+> to fix this, thanks.
+> 
+> apbuart: Kill dependency on deprecated Sparc-only PROM interfaces.
+> 
+> Use the proper modern OF ones instead.
+> 
+> Noticed by Stephen Rothwell.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> ---
+>  drivers/serial/apbuart.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/serial/apbuart.c b/drivers/serial/apbuart.c
+> index c7883a3..5f9dec3 100644
+> --- a/drivers/serial/apbuart.c
+> +++ b/drivers/serial/apbuart.c
+> @@ -29,7 +29,6 @@
+>  #include <linux/io.h>
+>  #include <linux/serial_core.h>
+>  #include <asm/irq.h>
+> -#include <asm/oplib.h>
+>  
+>  #include "apbuart.h"
+>  
+> @@ -596,10 +595,9 @@ static struct of_platform_driver grlib_apbuart_of_driver = {
+>  static void grlib_apbuart_configure(void)
+>  {
+>  	static int enum_done;
+> -	struct device_node *np;
+> +	struct device_node *np, *rp;
+>  	struct uart_port *port = NULL;
+> -
+> -	int node;
+> +	const u32 *prop;
+>  	int freq_khz;
+>  	int v = 0, d = 0;
+>  	unsigned int addr;
+> @@ -610,8 +608,10 @@ static void grlib_apbuart_configure(void)
+>  		return;
+>  
+>  	/* Get bus frequency */
+> -	node = prom_getchild(prom_root_node);
+> -	freq_khz = prom_getint(node, "clock-frequency");
+> +	rp = of_find_node_by_name(NULL, "/");
+> +	rp = of_get_next_child(rp, NULL);
+> +	prop = of_get_property(rp, "clock-frequency", NULL);
+> +	freq_khz = *prop;
+>  
+>  	line = 0;
+>  	for_each_matching_node(np, apbuart_match) {
+
