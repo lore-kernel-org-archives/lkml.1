@@ -1,145 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZKMJyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbZKMJyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbZKMJyz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZKMJyv
+	id S1755957AbZKMJyd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZKMJyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:54:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56804 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbZKMJyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:54:49 -0500
-Date: Fri, 13 Nov 2009 10:53:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
-Message-ID: <20091113095350.GC1364@elte.hu>
-References: <20091112171934.584037000@alcatraz.americas.sgi.com>
- <alpine.DEB.2.00.0911121247420.9544@chino.kir.corp.google.com>
+	Fri, 13 Nov 2009 04:54:31 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54204 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755769AbZKMJy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:54:28 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 5/5] vmscan: Take order into consideration when deciding if kswapd is in trouble
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <1258054235-3208-6-git-send-email-mel@csn.ul.ie>
+References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <1258054235-3208-6-git-send-email-mel@csn.ul.ie>
+Message-Id: <20091113142608.33B9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0911121247420.9544@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 13 Nov 2009 18:54:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Rientjes <rientjes@google.com> wrote:
-
-> It's possible to reduce the number of SRAT messages emitted to the kernel
-> log by printing each valid pxm once and then creating bitmaps to represent
-> the apic ids that map to the same node.
+> If reclaim fails to make sufficient progress, the priority is raised.
+> Once the priority is higher, kswapd starts waiting on congestion.
+> However, on systems with large numbers of high-order atomics due to
+> crappy network cards, it's important that kswapd keep working in
+> parallel to save their sorry ass.
 > 
-> This reduces lines such as
+> This patch takes into account the order kswapd is reclaiming at before
+> waiting on congestion. The higher the order, the longer it is before
+> kswapd considers itself to be in trouble. The impact is that kswapd
+> works harder in parallel rather than depending on direct reclaimers or
+> atomic allocations to fail.
 > 
-> 	SRAT: PXM 0 -> APIC 0 -> Node 0
-> 	SRAT: PXM 0 -> APIC 1 -> Node 0
-> 	SRAT: PXM 1 -> APIC 2 -> Node 1
-> 	SRAT: PXM 1 -> APIC 3 -> Node 1
-> 
-> to
-> 
-> 	SRAT: PXM 0 -> APIC {0-1} -> Node 0
-> 	SRAT: PXM 1 -> APIC {2-3} -> Node 1
-> 
-> The buffer used to store the apic id list is 128 characters in length.
-> If that is too small to represent all the apic id ranges that are bound
-> to a single pxm, a trailing "..." is added.  APICID_LIST_LEN should be
-> manually increased for such configurations.
-> 
-> Acked-by: Mike Travis <travis@sgi.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 > ---
->  arch/x86/mm/srat_64.c |   41 +++++++++++++++++++++++++++++++++++++----
->  drivers/acpi/numa.c   |    5 +++++
->  include/linux/acpi.h  |    3 ++-
->  3 files changed, 44 insertions(+), 5 deletions(-)
+>  mm/vmscan.c |   14 ++++++++++++--
+>  1 files changed, 12 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-> --- a/arch/x86/mm/srat_64.c
-> +++ b/arch/x86/mm/srat_64.c
-> @@ -36,6 +36,9 @@ static int num_node_memblks __initdata;
->  static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
->  static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
->  
-> +static DECLARE_BITMAP(apicid_map, MAX_LOCAL_APIC) __initdata;
-> +#define APICID_LIST_LEN	(128)
-> +
->  static __init int setup_node(int pxm)
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index ffa1766..5e200f1 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1946,7 +1946,7 @@ static int sleeping_prematurely(int order, long remaining)
+>  static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
 >  {
->  	return acpi_map_pxm_to_node(pxm);
-> @@ -136,8 +139,6 @@ acpi_numa_x2apic_affinity_init(struct acpi_srat_x2apic_cpu_affinity *pa)
->  	apicid_to_node[apic_id] = node;
->  	node_set(node, cpu_nodes_parsed);
->  	acpi_numa = 1;
-> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
-> -	       pxm, apic_id, node);
->  }
+>  	int all_zones_ok;
+> -	int priority;
+> +	int priority, congestion_priority;
+>  	int i;
+>  	unsigned long total_scanned;
+>  	struct reclaim_state *reclaim_state = current->reclaim_state;
+> @@ -1967,6 +1967,16 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+>  	 */
+>  	int temp_priority[MAX_NR_ZONES];
 >  
->  /* Callback for Proximity Domain -> LAPIC mapping */
-> @@ -170,8 +171,40 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
->  	apicid_to_node[apic_id] = node;
->  	node_set(node, cpu_nodes_parsed);
->  	acpi_numa = 1;
-> -	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
-> -	       pxm, apic_id, node);
-> +}
-> +
-> +void __init acpi_numa_print_srat_mapping(void)
-> +{
-> +	char apicid_list[APICID_LIST_LEN];
-> +	int i, j;
-> +
-> +	for (i = 0; i < MAX_PXM_DOMAINS; i++) {
-> +		int len;
-> +		int nid;
-> +
-> +		nid = pxm_to_node(i);
-> +		if (nid == NUMA_NO_NODE)
-> +			continue;
-> +
-> +		bitmap_zero(apicid_map, MAX_LOCAL_APIC);
-> +		for (j = 0; j < MAX_LOCAL_APIC; j++)
-> +			if (apicid_to_node[j] == nid)
-> +				set_bit(j, apicid_map);
-> +
-> +		if (bitmap_empty(apicid_map, MAX_LOCAL_APIC))
-> +			continue;
-> +
-> +		/*
-> +		 * If the bitmap cannot be listed in a buffer of length
-> +		 * APICID_LIST_LEN, then it is suffixed with "...".
-> +		 */
-> +		len = bitmap_scnlistprintf(apicid_list, APICID_LIST_LEN,
-> +					   apicid_map, MAX_LOCAL_APIC);
-> +		pr_info("SRAT: PXM %u -> APIC {%s%s} -> Node %u\n",
-> +			i, apicid_list,
-> +			(len == APICID_LIST_LEN - 1) ? "..." : "",
-> +			nid);
-> +	}
->  }
+> +	/*
+> +	 * When priority reaches congestion_priority, kswapd will sleep
+> +	 * for a short time while congestion clears. The higher the
+> +	 * order being reclaimed, the less likely kswapd will go to
+> +	 * sleep as high-order allocations are harder to reclaim and
+> +	 * stall direct reclaimers longer
+> +	 */
+> +	congestion_priority = DEF_PRIORITY - 2;
+> +	congestion_priority -= min(congestion_priority, sc.order);
 
-No. As i suggested many times before, just get rid of the printouts or 
-make them boot-debug-flag dependent.
+This calculation mean
 
-	Ingo
+	sc.order	congestion_priority	scan-pages
+	---------------------------------------------------------
+	0		10			1/1024 * zone-mem
+	1		9			1/512  * zone-mem
+	2		8			1/256  * zone-mem
+	3		7			1/128  * zone-mem
+	4		6			1/64   * zone-mem
+	5		5			1/32   * zone-mem
+	6		4			1/16   * zone-mem
+	7		3			1/8    * zone-mem
+	8		2			1/4    * zone-mem
+	9		1			1/2    * zone-mem
+	10		0			1      * zone-mem
+	11+		0			1      * zone-mem
+
+I feel this is too agressive. The intention of this congestion_wait()
+is to prevent kswapd use 100% cpu time. but the above promotion seems
+break it.
+
+example,
+ia64 have 256MB hugepage (i.e. order=14). it mean kswapd never sleep.
+
+example2,
+order-3 (i.e. PAGE_ALLOC_COSTLY_ORDER) makes one of most inefficent
+reclaim, because it doesn't use lumpy recliam.
+I've seen 128GB size zone, it mean 1/128 = 1GB. oh well, kswapd definitely
+waste cpu time 100%.
+
+
+> +
+>  loop_again:
+>  	total_scanned = 0;
+>  	sc.nr_reclaimed = 0;
+> @@ -2092,7 +2102,7 @@ loop_again:
+>  		 * OK, kswapd is getting into trouble.  Take a nap, then take
+>  		 * another pass across the zones.
+>  		 */
+> -		if (total_scanned && priority < DEF_PRIORITY - 2)
+> +		if (total_scanned && priority < congestion_priority)
+>  			congestion_wait(BLK_RW_ASYNC, HZ/10);
+
+Instead, How about this?
+
+
+
+---
+ mm/vmscan.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 64e4388..937e90d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1938,6 +1938,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+ 	 * free_pages == high_wmark_pages(zone).
+ 	 */
+ 	int temp_priority[MAX_NR_ZONES];
++	int has_under_min_watermark_zone = 0;
+ 
+ loop_again:
+ 	total_scanned = 0;
+@@ -2057,6 +2058,15 @@ loop_again:
+ 			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
+ 			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
+ 				sc.may_writepage = 1;
++
++			/*
++			 * We are still under min water mark. it mean we have
++			 * GFP_ATOMIC allocation failure risk. Hurry up!
++			 */
++			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
++					      end_zone, 0))
++				has_under_min_watermark_zone = 1;
++
+ 		}
+ 		if (all_zones_ok)
+ 			break;		/* kswapd: all done */
+@@ -2064,7 +2074,8 @@ loop_again:
+ 		 * OK, kswapd is getting into trouble.  Take a nap, then take
+ 		 * another pass across the zones.
+ 		 */
+-		if (total_scanned && priority < DEF_PRIORITY - 2)
++		if (total_scanned && (priority < DEF_PRIORITY - 2) &&
++		    !has_under_min_watermark_zone)
+ 			congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 
+ 		/*
+-- 
+1.6.2.5
+
+
+
