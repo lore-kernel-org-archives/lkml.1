@@ -1,47 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZKMKqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZKMKsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZKMKqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbZKMKqo
+	id S1756115AbZKMKsJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:48:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZKMKsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:46:44 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:38657 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755765AbZKMKqn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:46:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uUPMbhrkd2mY2zXCX0plgPyo3ItHHkMutDnCXAVZD5iWFeEU6dms6ZoMRE8mWABDxg
-         YBEAseaL3fjaJXz7w6WPtK+K6bNLo/GH6v8ogoS6LVqscXVTKQF23dnwHPOdwpHCXaGR
-         OP5IDoxcyVgfRG/Cujokk4pnCSJgx8x2Zh4qk=
-MIME-Version: 1.0
-In-Reply-To: <1258068756-10766-6-git-send-email-vgoyal@redhat.com>
-References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com>
-	 <1258068756-10766-6-git-send-email-vgoyal@redhat.com>
-Date: Fri, 13 Nov 2009 11:46:49 +0100
-Message-ID: <4e5e476b0911130246m372eb8e8x7b98f13278515a95@mail.gmail.com>
-Subject: Re: [PATCH 05/16] blkio: Implement per cfq group latency target and 
-	busy queue avg
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+	Fri, 13 Nov 2009 05:48:05 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:60139 "EHLO kernel.dk"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755817AbZKMKsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 05:48:03 -0500
+Date: Fri, 13 Nov 2009 11:48:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
        kamezawa.hiroyu@jp.fujitsu.com
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 03/16] blkio: Keep queue on service tree until we
+	expire   it
+Message-ID: <20091113104808.GW8742@kernel.dk>
+References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com> <1258068756-10766-4-git-send-email-vgoyal@redhat.com> <4e5e476b0911130239j3bfdef6q789fa78da36c6023@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0911130239j3bfdef6q789fa78da36c6023@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nADAl216003344
 
-On Fri, Nov 13, 2009 at 12:32 AM, Vivek Goyal <vgoyal@redhat.com> wrote:> Â static inline void> @@ -441,10 +445,13 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)> Â  Â  Â  Â if (cfqd->cfq_latency) {> Â  Â  Â  Â  Â  Â  Â  Â /* interested queues (we consider only the ones with the same> Â  Â  Â  Â  Â  Â  Â  Â  * priority class) */This comment needs to be updated> - Â  Â  Â  Â  Â  Â  Â  unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));> + Â  Â  Â  Â  Â  Â  Â  unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,> + Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  cfq_class_rt(cfqq));> Â  Â  Â  Â  Â  Â  Â  Â unsigned sync_slice = cfqd->cfq_slice[1];> Â  Â  Â  Â  Â  Â  Â  Â unsigned expect_latency = sync_slice * iq;> - Â  Â  Â  Â  Â  Â  Â  if (expect_latency > cfq_target_latency) {> + Â  Â  Â  Â  Â  Â  Â  unsigned group_target_lat = cfq_target_latency/cfqd->nr_groups;
-I'm not sure that we should divide the target latency evenly among groups.Groups with different weights will have different percentage of timein each 300ms round, so probably we should consider it here.
-> +> + Â  Â  Â  Â  Â  Â  Â  if (expect_latency > group_target_lat) {> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â /* scale low_slice according to IO priority> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  * and sync vs async */> @@ -452,7 +459,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â min(slice, base_low_slice * slice / sync_slice);> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â /* the adapted slice value is scaled to fit all iqs> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  * into the target latency */> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  slice = max(slice * cfq_target_latency / expect_latency,> + Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  slice = max(slice * group_target_lat / expect_latency,> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â low_slice);> Â  Â  Â  Â  Â  Â  Â  Â }> Â  Â  Â  Â }
-Thanks,Corradoÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Fri, Nov 13 2009, Corrado Zoccolo wrote:
+> Hi Vivek,
+> the following is probably not on a critical path, but maybe it can be
+> written more efficiently.
+> Now, it will cicle through all service trees multiple times, to
+> retrieve the queues for the last one.
+> What about having a cfq_for_each_queue that takes a function pointer
+> and will apply it to all of them?
+
+I thought the same when reading this. Or perhaps have a small bitmap
+instead/with the counter to avoid looping around known empty groups.
+
+I want to start merging the initial prep patches soon, so we can both
+cut back on the size of your patchset while getting the simpler bits in.
+Unfortunately I had to stop here, but with a few corrections it can be
+merged too.
+
+> 
+> On Fri, Nov 13, 2009 at 12:32 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > +static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
+> > +{
+> > +       struct cfq_group *cfqg = &cfqd->root_group;
+> > +       struct cfq_queue *cfqq;
+> > +       int i, j;
+> > +
+> > +       if (!cfqd->rq_queued)
+> > +               return NULL;
+> > +
+> > +       for (i = 0; i < 2; ++i) {
+> > +               for (j = 0; j < 3; ++j) {
+> > +                       cfqq = cfq_rb_first(&cfqg->service_trees[i][j]);
+> > +                       if (cfqq)
+> > +                               return cfqq;
+> > +               }
+> > +       }
+> > +
+> > +       cfqq = cfq_rb_first(&cfqg->service_tree_idle);
+> > +       if (cfqq)
+> > +               return cfqq;
+> > +       return NULL;
+> > +}
+> > +
+> >  /*
+> >  * Get and set a new active queue for service.
+> >  */
+> > @@ -1590,16 +1633,8 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
+> >  {
+> >        struct cfq_queue *cfqq;
+> >        int dispatched = 0;
+> > -       int i, j;
+> > -       struct cfq_group *cfqg = &cfqd->root_group;
+> > -
+> > -       for (i = 0; i < 2; ++i)
+> > -               for (j = 0; j < 3; ++j)
+> > -                       while ((cfqq = cfq_rb_first(&cfqg->service_trees[i][j]))
+> > -                               != NULL)
+> > -                               dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> >
+> > -       while ((cfqq = cfq_rb_first(&cfqg->service_tree_idle)) != NULL)
+> > +       while ((cfqq = cfq_get_next_queue(cfqd)) != NULL)
+> >                dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> >
+> >        cfq_slice_expired(cfqd, 0);
+> > @@ -1770,13 +1805,14 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
+> >        cfq_log_cfqq(cfqd, cfqq, "put_queue");
+> >        BUG_ON(rb_first(&cfqq->sort_list));
+> >        BUG_ON(cfqq->allocated[READ] + cfqq->allocated[WRITE]);
+> > -       BUG_ON(cfq_cfqq_on_rr(cfqq));
+> >
+> >        if (unlikely(cfqd->active_queue == cfqq)) {
+> >                __cfq_slice_expired(cfqd, cfqq, 0);
+> >                cfq_schedule_dispatch(cfqd);
+> >        }
+> >
+> > +       BUG_ON(cfq_cfqq_on_rr(cfqq));
+> > +
+> >        kmem_cache_free(cfq_pool, cfqq);
+> >  }
+> >
+> > --
+> > 1.6.2.5
+> >
+> 
+> 
+> 
+> Thanks
+> Corrado
+
+-- 
+Jens Axboe
+
