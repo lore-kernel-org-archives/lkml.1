@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZKMQTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbZKMQXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZKMQTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 11:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZKMQTo
+	id S1752076AbZKMQXD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 11:23:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZKMQW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 11:19:44 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:45803 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbZKMQTn convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 11:22:56 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38212 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755001AbZKMQW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 11:19:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=vEmJN2kN57prX0uc3AicvQ1DKVO4R2dITekGm7QdTnfhCjxJSCMejyyQwGZsiOrsKW
-         Kp0rFkcB9qYQsKpM2tg/kNwasuDCYL8T36BwgYUT7zBn0169Fg/ZEsAnVj29Z83bg8Sj
-         FLjOJIKZXwFrsmUxVX40jJlm4Iza6NZ0eST+Q=
+	Fri, 13 Nov 2009 11:22:56 -0500
+Date: Fri, 13 Nov 2009 16:23:01 +0000
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, Matteo Croce <technoboy85@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091113162301.GU15157@caffeine.csclub.uwaterloo.ca>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> <20091003072127.GC21407@elte.hu> <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com> <4AF4526B.4060101@zytor.com> <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com> <20091109201608.GD15159@caffeine.csclub.uwaterloo.ca> <4AF886D4.1080108@zytor.com> <20091109212333.GE15159@caffeine.csclub.uwaterloo.ca> <20091112121805.GF1394@ucw.cz>
 MIME-Version: 1.0
-In-Reply-To: <51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
-References: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com> 
-	<51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 13 Nov 2009 08:19:29 -0800
-Message-ID: <43e72e890911130819m42c3da2bv4e956c5eed75617c@mail.gmail.com>
-Subject: Re: [ANN] Stable compat-wireless 2.6.32-rc7 released
-To: Greg Oliver <oliver.greg@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091112121805.GF1394@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 2:06 AM, Greg Oliver <oliver.greg@gmail.com> wrote:
-> On Thu, Nov 12, 2009 at 7:54 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->> Along with the 2.6.32-rc7 comes the stable compat-wireless based [1]
->> on it [2] which allows you to get the 2.6.32-rc7 wireless subsystem
->> and new wireless drivers compilable and installed on older kernels.
->> This is like the general compat-wireless releases but are *stable* and
->> should be *stable*. Please report any issues ASAP. For details on
->> changes you can refer to the ChangeLog-2.6.32-rc7-wireless [3].
->>
->>  Luis
->>
->> [1] http://wireless.kernel.org/en/users/Download/stable
->> [2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/compat-wireless-2.6.32-rc7.tar.bz2
->> [3] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/ChangeLog-2.6.32-rc7-wireless
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->
-> The link on kernel.org for rc7 is linked to rc6...  (rc7 does exist
-> there though)...
+On Thu, Nov 12, 2009 at 01:18:05PM +0100, Pavel Machek wrote:
+> Interesting...geode gx being buggy? I know pentium was famous for the
+> fdiv bug, but never heard of geode gx problems...
+> 
+> Are they something kernel can work around, or do those chips just have
+> to be avoided? Anything malicious user can use to crash the system?
+> Anything malicious user can use to gain extra priviledge?
 
-That seems fixed now.
+Well the one problem I have encountered is in the jsm driver (exar pci
+uart driver).
 
-  Luis
+On a typical PC with a P3, P4, Core 2, athlong, etc, it works perfectly.
+It works perfectly on a Geode LX as well.  On a Geode SC1200 (which
+is a GX with companion chip in one) it transmits out of order in a
+consistent way.
+
+If you transmit a chunk of data that looks like this:
+
+0123456789abcdef
+
+The data that comes out of the UART is:
+
+123056749ab8defc
+
+The fix to avoid the problem is:
+
+-               memcpy_toio(&ch->ch_neo_uart->txrxburst, ch->ch_wqueue + tail, s);
++               for(i=0;i<s;i++) {
++                       memcpy_toio(&(ch->ch_neo_uart->txrxburst[i]), ch->ch_wqueue + tail + i, 1);
++               }
+
+Calling memcpy_toio on the Geode SC1200 on anything larger than 1 byte
+causes the data to be delivered (at least on the PCI bus) reordered in
+that very consistent manner.
+
+The alignment doesn't affect it (I tested that).  Simply doing more than
+1 byte at a time with memcpy_toio to the pci device messes up.
+
+So as a result we run with this patch applied even though it certainly
+is less efficient, but at least it works.
+
+Every other CPU works fine that I have ever tried the driver on.
+
+-- 
+Len Sorensen
