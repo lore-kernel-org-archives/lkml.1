@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZKMJGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZKMJGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZKMJGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZKMJGZ
+	id S1755442AbZKMJGl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:06:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZKMJGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:06:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35978 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755007AbZKMJGV (ORCPT
+	Fri, 13 Nov 2009 04:06:38 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:64582 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbZKMJG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:06:21 -0500
-Subject: Re: -next: Nov 12 - kernel BUG at kernel/sched.c:7359!
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sachin Sant <sachinp@in.ibm.com>
+	Fri, 13 Nov 2009 04:06:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=aRd//2xD9N8V2YuPlpiY8yjOW5UUqDKgYPIOxAoP7hWn/s7toZp8ZDHC/TLnvFfSsq
+         s0dEcuscQF3YyyKSKLqUjr+ECXQ+h5N9reYJZnKg00KTCn2ouPciHU5kJXIbDovzCLEp
+         hG2AOtWK59LilCyxPqD2JlbdnWZAMRhR9uKbg=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Gautham R Shenoy <ego@in.ibm.com>
-In-Reply-To: <4AFD2027.5060303@in.ibm.com>
-References: <20091112195101.63263490.sfr@canb.auug.org.au>
-	 <4AFBF73B.5040500@in.ibm.com> <1258027820.4039.129.camel@laptop>
-	 <4AFBFE3D.80507@in.ibm.com>  <1258028831.4039.152.camel@laptop>
-	 <1258045831.4039.736.camel@laptop>  <4AFD2027.5060303@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 Nov 2009 10:06:13 +0100
-Message-ID: <1258103173.4039.1070.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH] tracing: Rename lockdep event subsystem into lock
+Date: Fri, 13 Nov 2009 10:06:34 +0100
+Message-Id: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <20091113085123.GA1318@elte.hu>
+References: <20091113085123.GA1318@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-13 at 14:30 +0530, Sachin Sant wrote:
-> Peter Zijlstra wrote:
-> > So what we need to do is make the whole of select_task_rq_fair()
-> > cpu_online/active_mask aware, or give up and simply punt:
-> >
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 1f2e99d..62df61c 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -2377,6 +2377,9 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
-> >  	task_rq_unlock(rq, &flags);
-> >
-> >  	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
-> > +	if (!cpu_active(cpu))
-> > +		cpu = cpumask_any_and(&p->cpus_allowed, cpu_active_mask);
-> > +
-> >  	if (cpu != orig_cpu) {
-> >  		local_irq_save(flags);
-> >  		rq = cpu_rq(cpu);
-> >
-> >
-> > Something I think Mike also tried and didn't deadlock for him..
-> >
-> > Sachin, Mike, could you try the above snippet and verify if it does
-> > indeed solve your respective issues?
-> >   
-> Unfortunately the above patch made things worse. With this patch
-> the machine failed to boot with following oops
+Lockdep events subsystem gathers various locking related events such
+as a request, release, contention or acquisition of a lock.
 
-Ugh, more head scratching for me then..
+The name of this event subsystem is a bit of a misnomer since these
+events are not quite related to lockdep but more generally to locking,
+ie: these events are not reporting lock dependencies or possible
+deadlock scenario but pure locking events.
 
-Thanks for testing.
+Hence this rename.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+---
+ include/trace/events/{lockdep.h => lock.h} |    8 ++++----
+ kernel/lockdep.c                           |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+ rename include/trace/events/{lockdep.h => lock.h} (92%)
+
+diff --git a/include/trace/events/lockdep.h b/include/trace/events/lock.h
+similarity index 92%
+rename from include/trace/events/lockdep.h
+rename to include/trace/events/lock.h
+index bcf1d20..a870ba1 100644
+--- a/include/trace/events/lockdep.h
++++ b/include/trace/events/lock.h
+@@ -1,8 +1,8 @@
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM lockdep
++#define TRACE_SYSTEM lock
+ 
+-#if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
+-#define _TRACE_LOCKDEP_H
++#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_LOCK_H
+ 
+ #include <linux/lockdep.h>
+ #include <linux/tracepoint.h>
+@@ -90,7 +90,7 @@ TRACE_EVENT(lock_acquired,
+ #endif
+ #endif
+ 
+-#endif /* _TRACE_LOCKDEP_H */
++#endif /* _TRACE_LOCK_H */
+ 
+ /* This part must be outside protection */
+ #include <trace/define_trace.h>
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 9af5672..f5dcd36 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -49,7 +49,7 @@
+ #include "lockdep_internals.h"
+ 
+ #define CREATE_TRACE_POINTS
+-#include <trace/events/lockdep.h>
++#include <trace/events/lock.h>
+ 
+ #ifdef CONFIG_PROVE_LOCKING
+ int prove_locking = 1;
+-- 
+1.6.2.3
 
