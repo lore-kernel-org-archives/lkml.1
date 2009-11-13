@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932249AbZKMTuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZKMTuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932249AbZKMTuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZKMTuV
+	id S932258AbZKMTuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237AbZKMTue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:50:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36051 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 14:50:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36062 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932189AbZKMTuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 14:50:16 -0500
-Date: Fri, 13 Nov 2009 19:50:03 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+	id S932223AbZKMTuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 14:50:32 -0500
+Date: Fri, 13 Nov 2009 19:50:18 GMT
+From: tip-bot for Jon Hunter <jon-hunter@ti.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        johnstul@us.ibm.com, jon-hunter@ti.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        johnstul@us.ibm.com, jon-hunter@ti.com, tglx@linutronix.de
-In-Reply-To: <new-submission>
-References: <new-submission>
+In-Reply-To: <1250617512-23567-3-git-send-email-jon-hunter@ti.com>
+References: <1250617512-23567-3-git-send-email-jon-hunter@ti.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] nohz: Track last do_timer() cpu
-Message-ID: <tip-27185016b806d5a1181ff501cae120582b2b27dd@git.kernel.org>
-Git-Commit-ID: 27185016b806d5a1181ff501cae120582b2b27dd
+Subject: [tip:timers/core] nohz: Allow 32-bit machines to sleep for more than 2.15 seconds
+Message-ID: <tip-97813f2fe77804a4464564c75ba8d8826377feea@git.kernel.org>
+Git-Commit-ID: 97813f2fe77804a4464564c75ba8d8826377feea
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,128 +29,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  27185016b806d5a1181ff501cae120582b2b27dd
-Gitweb:     http://git.kernel.org/tip/27185016b806d5a1181ff501cae120582b2b27dd
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Thu, 12 Nov 2009 22:12:06 +0100
+Commit-ID:  97813f2fe77804a4464564c75ba8d8826377feea
+Gitweb:     http://git.kernel.org/tip/97813f2fe77804a4464564c75ba8d8826377feea
+Author:     Jon Hunter <jon-hunter@ti.com>
+AuthorDate: Tue, 18 Aug 2009 12:45:11 -0500
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Fri, 13 Nov 2009 20:46:24 +0100
 
-nohz: Track last do_timer() cpu
+nohz: Allow 32-bit machines to sleep for more than 2.15 seconds
 
-The previous patch which limits the sleep time to the maximum
-deferment time of the time keeping clocksource has some limitations on
-SMP machines: if all CPUs are idle then for all CPUs the maximum sleep
-time is limited.
+In the dynamic tick code, "max_delta_ns" (member of the
+"clock_event_device" structure) represents the maximum sleep time
+that can occur between timer events in nanoseconds.
 
-Solve this by keeping track of which cpu had the do_timer() duty
-assigned last and limit the sleep time only for this cpu.
+The variable, "max_delta_ns", is defined as an unsigned long
+which is a 32-bit integer for 32-bit machines and a 64-bit
+integer for 64-bit machines (if -m64 option is used for gcc).
+The value of max_delta_ns is set by calling the function
+"clockevent_delta2ns()" which returns a maximum value of LONG_MAX.
+For a 32-bit machine LONG_MAX is equal to 0x7fffffff and in
+nanoseconds this equates to ~2.15 seconds. Hence, the maximum
+sleep time for a 32-bit machine is ~2.15 seconds, where as for
+a 64-bit machine it will be many years.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Cc: Jon Hunter <jon-hunter@ti.com>
+This patch changes the type of max_delta_ns to be "u64" instead of
+"unsigned long" so that this variable is a 64-bit type for both 32-bit
+and 64-bit machines. It also changes the maximum value returned by
+clockevent_delta2ns() to KTIME_MAX.  Hence this allows a 32-bit
+machine to sleep for longer than ~2.15 seconds. Please note that this
+patch also changes "min_delta_ns" to be "u64" too and although this is
+unnecessary, it makes the patch simpler as it avoids to fixup all
+callers of clockevent_delta2ns().
+
+[ tglx: changed "unsigned long long" to u64 as we use this data type
+  	through out the time code ]
+
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
 Cc: John Stultz <johnstul@us.ibm.com>
+LKML-Reference: <1250617512-23567-3-git-send-email-jon-hunter@ti.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/tick.h     |    2 +
- kernel/time/tick-sched.c |   52 ++++++++++++++++++++++++---------------------
- 2 files changed, 30 insertions(+), 24 deletions(-)
+ include/linux/clockchips.h |    8 ++++----
+ kernel/hrtimer.c           |    3 ++-
+ kernel/time/clockevents.c  |   11 +++++------
+ kernel/time/tick-oneshot.c |    4 ++--
+ kernel/time/timer_list.c   |    6 ++++--
+ 5 files changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 8dc0821..d2ae79e 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -43,6 +43,7 @@ enum tick_nohz_mode {
-  * @idle_exittime:	Time when the idle state was left
-  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
-  * @sleep_length:	Duration of the current idle sleep
-+ * @do_timer_lst:	CPU was the last one doing do_timer before going idle
+diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+index 4d438b0..0cf725b 100644
+--- a/include/linux/clockchips.h
++++ b/include/linux/clockchips.h
+@@ -77,8 +77,8 @@ enum clock_event_nofitiers {
+ struct clock_event_device {
+ 	const char		*name;
+ 	unsigned int		features;
+-	unsigned long		max_delta_ns;
+-	unsigned long		min_delta_ns;
++	u64			max_delta_ns;
++	u64			min_delta_ns;
+ 	u32			mult;
+ 	u32			shift;
+ 	int			rating;
+@@ -116,8 +116,8 @@ static inline unsigned long div_sc(unsigned long ticks, unsigned long nsec,
+ }
+ 
+ /* Clock event layer functions */
+-extern unsigned long clockevent_delta2ns(unsigned long latch,
+-					 struct clock_event_device *evt);
++extern u64 clockevent_delta2ns(unsigned long latch,
++			       struct clock_event_device *evt);
+ extern void clockevents_register_device(struct clock_event_device *dev);
+ 
+ extern void clockevents_exchange_device(struct clock_event_device *old,
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 6d70204..c215b74 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1240,7 +1240,8 @@ hrtimer_interrupt_hanging(struct clock_event_device *dev,
+ 	force_clock_reprogram = 1;
+ 	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
+ 	printk(KERN_WARNING "hrtimer: interrupt too slow, "
+-		"forcing clock min delta to %lu ns\n", dev->min_delta_ns);
++	       "forcing clock min delta to %llu ns\n",
++	       (unsigned long long) dev->min_delta_ns);
+ }
+ /*
+  * High resolution timer interrupt
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 620b58a..05e8aee 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -37,10 +37,9 @@ static DEFINE_SPINLOCK(clockevents_lock);
+  *
+  * Math helper, returns latch value converted to nanoseconds (bound checked)
   */
- struct tick_sched {
- 	struct hrtimer			sched_timer;
-@@ -64,6 +65,7 @@ struct tick_sched {
- 	unsigned long			last_jiffies;
- 	unsigned long			next_jiffies;
- 	ktime_t				idle_expires;
-+	int				do_timer_last;
- };
+-unsigned long clockevent_delta2ns(unsigned long latch,
+-				  struct clock_event_device *evt)
++u64 clockevent_delta2ns(unsigned long latch, struct clock_event_device *evt)
+ {
+-	u64 clc = ((u64) latch << evt->shift);
++	u64 clc = (u64) latch << evt->shift;
  
- extern void __init tick_init(void);
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index a80b464..df133bc 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -263,17 +263,7 @@ void tick_nohz_stop_sched_tick(int inidle)
- 		seq = read_seqbegin(&xtime_lock);
- 		last_update = last_jiffies_update;
- 		last_jiffies = jiffies;
--
--		/*
--		 * On SMP we really should only care for the CPU which
--		 * has the do_timer duty assigned. All other CPUs can
--		 * sleep as long as they want.
--		 */
--		if (cpu == tick_do_timer_cpu ||
--		    tick_do_timer_cpu == TICK_DO_TIMER_NONE)
--			time_delta = timekeeping_max_deferment();
--		else
--			time_delta = KTIME_MAX;
-+		time_delta = timekeeping_max_deferment();
- 	} while (read_seqretry(&xtime_lock, seq));
+ 	if (unlikely(!evt->mult)) {
+ 		evt->mult = 1;
+@@ -50,10 +49,10 @@ unsigned long clockevent_delta2ns(unsigned long latch,
+ 	do_div(clc, evt->mult);
+ 	if (clc < 1000)
+ 		clc = 1000;
+-	if (clc > LONG_MAX)
+-		clc = LONG_MAX;
++	if (clc > KTIME_MAX)
++		clc = KTIME_MAX;
  
- 	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
-@@ -296,6 +286,29 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if ((long)delta_jiffies >= 1) {
+-	return (unsigned long) clc;
++	return clc;
+ }
+ EXPORT_SYMBOL_GPL(clockevent_delta2ns);
  
- 		/*
-+		 * If this cpu is the one which updates jiffies, then
-+		 * give up the assignment and let it be taken by the
-+		 * cpu which runs the tick timer next, which might be
-+		 * this cpu as well. If we don't drop this here the
-+		 * jiffies might be stale and do_timer() never
-+		 * invoked. Keep track of the fact that it was the one
-+		 * which had the do_timer() duty last. If this cpu is
-+		 * the one which had the do_timer() duty last, we
-+		 * limit the sleep time to the timekeeping
-+		 * max_deferement value which we retrieved
-+		 * above. Otherwise we can sleep as long as we want.
-+		 */
-+		if (cpu == tick_do_timer_cpu) {
-+			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-+			ts->do_timer_last = 1;
-+		} else if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
-+			time_delta = KTIME_MAX;
-+			ts->do_timer_last = 0;
-+		} else if (!ts->do_timer_last) {
-+			time_delta = KTIME_MAX;
-+		}
-+
-+		/*
- 		 * calculate the expiry time for the next timer wheel
- 		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
- 		 * that there is no timer pending or at least extremely
-@@ -312,21 +325,12 @@ void tick_nohz_stop_sched_tick(int inidle)
- 			 */
- 			time_delta = min_t(u64, time_delta,
- 					   tick_period.tv64 * delta_jiffies);
--			expires = ktime_add_ns(last_update, time_delta);
--		} else {
--			expires.tv64 = KTIME_MAX;
+diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+index a96c0e2..0a8a213 100644
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -50,9 +50,9 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
+ 				dev->min_delta_ns += dev->min_delta_ns >> 1;
+ 
+ 			printk(KERN_WARNING
+-			       "CE: %s increasing min_delta_ns to %lu nsec\n",
++			       "CE: %s increasing min_delta_ns to %llu nsec\n",
+ 			       dev->name ? dev->name : "?",
+-			       dev->min_delta_ns << 1);
++			       (unsigned long long) dev->min_delta_ns << 1);
+ 
+ 			i = 0;
  		}
- 
--		/*
--		 * If this cpu is the one which updates jiffies, then
--		 * give up the assignment and let it be taken by the
--		 * cpu which runs the tick timer next, which might be
--		 * this cpu as well. If we don't drop this here the
--		 * jiffies might be stale and do_timer() never
--		 * invoked.
--		 */
--		if (cpu == tick_do_timer_cpu)
--			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-+		if (time_delta < KTIME_MAX)
-+			expires = ktime_add_ns(last_update, time_delta);
-+		else
-+			expires.tv64 = KTIME_MAX;
- 
- 		if (delta_jiffies > 1)
- 			cpumask_set_cpu(cpu, nohz_cpu_mask);
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index fa00da1..665c76e 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -204,8 +204,10 @@ print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
+ 		return;
+ 	}
+ 	SEQ_printf(m, "%s\n", dev->name);
+-	SEQ_printf(m, " max_delta_ns:   %lu\n", dev->max_delta_ns);
+-	SEQ_printf(m, " min_delta_ns:   %lu\n", dev->min_delta_ns);
++	SEQ_printf(m, " max_delta_ns:   %llu\n",
++		   (unsigned long long) dev->max_delta_ns);
++	SEQ_printf(m, " min_delta_ns:   %llu\n",
++		   (unsigned long long) dev->min_delta_ns);
+ 	SEQ_printf(m, " mult:           %u\n", dev->mult);
+ 	SEQ_printf(m, " shift:          %u\n", dev->shift);
+ 	SEQ_printf(m, " mode:           %d\n", dev->mode);
