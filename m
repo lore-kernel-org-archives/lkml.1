@@ -1,122 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbZKMXiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbZKMXj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932635AbZKMXiF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:38:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932610AbZKMXiE
+	id S932646AbZKMXj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbZKMXjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:38:04 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38542 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932496AbZKMXiC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:38:02 -0500
-Date: Fri, 13 Nov 2009 23:37:34 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Soeren Sandmann Pedersen <sandmann@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: d451564 breakage
-Message-ID: <20091113233734.GG27752@flint.arm.linux.org.uk>
-References: <20091113151119.GA27752@flint.arm.linux.org.uk> <20091113224820.GB29657@elte.hu> <20091113230223.GF27752@flint.arm.linux.org.uk> <20091113231714.GA21666@elte.hu>
+	Fri, 13 Nov 2009 18:39:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60879 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932565AbZKMXjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 18:39:24 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091113231714.GA21666@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 2/3] Add coredump tracepoint
+In-Reply-To: Masami Hiramatsu's message of  Friday, 13 November 2009 17:52:34 -0500 <20091113225233.15079.41600.stgit@harusame>
+References: <20091113225226.15079.90813.stgit@harusame>
+	<20091113225233.15079.41600.stgit@harusame>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20091113233912.192A3100E@magilla.sf.frob.com>
+Date: Fri, 13 Nov 2009 15:39:12 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 14, 2009 at 12:17:14AM +0100, Ingo Molnar wrote:
-> 
-> * Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> 
-> > On Fri, Nov 13, 2009 at 11:48:20PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Russell King <rmk@arm.linux.org.uk> wrote:
-> > > 
-> > > > Change:
-> > > > 
-> > > > highmem: Fix debug_kmap_atomic() to also handle KM_IRQ_PTE, KM_NMI, and KM_NMI_PTE
-> > > > 
-> > > > Appears to break ARM:
-> > > > 
-> > > > mm/highmem.c: In function ???debug_kmap_atomic???:
-> > > > mm/highmem.c:436: error: ???KM_NMI??? undeclared (first use in this function)
-> > > 
-> > > indeed - sorry.
-> > > 
-> > > Note that debug_kmap_atomic() will be removed in v2.6.33 so i'd suggest 
-> > > to just do the easy solution and add #ifndef dummy definitions to 
-> > > mm/highmem.c to cover ARM - we'll remove the whole cruft for good.
-> > 
-> > Actually, the following patch is probably the simplest solution.
-> > 
-> > > Btw., testing sidenote: i test the ARM defconfig and it didnt break 
-> > > there. Perhaps highmem is off in the ARM defconfig? It would be helpful 
-> > > if the ARM defconfig enabled highmem.
-> > 
-> > Given that highmem on ARM is experimental, I'd rather not have it enabled
-> > in too many machine defconfigs as standard just yet.
-> > 
-> > However, enabling highmem on itself is not enough to show this breakage,
-> > you also need highmem debugging enabled.
-> > 
-> >  arch/arm/include/asm/kmap_types.h |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/arm/include/asm/kmap_types.h b/arch/arm/include/asm/kmap_types.h
-> > index d16ec97..c019949 100644
-> > --- a/arch/arm/include/asm/kmap_types.h
-> > +++ b/arch/arm/include/asm/kmap_types.h
-> > @@ -22,4 +22,10 @@ enum km_type {
-> >  	KM_TYPE_NR
-> >  };
-> >  
-> > +#ifdef CONFIG_DEBUG_HIGHMEM
-> > +#define KM_NMI		(-1)
-> > +#define KM_NMI_PTE	(-1)
-> > +#define KM_IRQ_PTE	(-1)
-> > +#endif
-> 
-> Please solve this in mm/highmem.c as Andrew suggested it - other 
-> architectures could be affected as well beyond ARM.
+I can't really see what this has to do with "sched" to warrant that name.
+But, whatever.
 
-Have you actually put any thought into that approach?  What you're
-suggesting means:
+Note that you put the tracepoint where it won't get called in the various
+cases where no dump is really being made because of RLIMIT_CORE or file
+failures.  I suspect you would like to get those reported.  (Perhaps
+especially so, since there won't be any file around to notice later.)
 
-- adding preprocessor definitions to all existing places where these
-  symbols are defined
-- adding multiple complex ifdefs to mm/highmem.c thusly:
+Also, it seems nice to give the tracepoint the chance to look at the actual
+open file in case a fancy one wants to do that.
 
-		if (
-#ifdef KM_NMI
-			type != KM_NMI
-#else
-			1
-#endif
-			&&
-#ifdef KM_NMI_PTE
-			type != KM_NMI_PTE
-#else
-			1
-#endif
-		) {
-			WARN_ON(1);
-			warn_count--;
-		}
+e.g.
 
-and I really don't think this is a realistic solution, even for the
-interim.
-
-The other solution is to determine if KM_NMI/KM_NMI_PTE/KM_IRQ_PTE are
-x86 only (which does seem to be the case).  If that is the case, moving
-the new definitions in my patch into mm/highmem.c itself and ifdef out
-the ones in asm-generic/km_types.h would seem like another possible
-approach.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+diff --git a/fs/exec.c b/fs/exec.c
+index ba112bd..0000000 100644  
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1822,9 +1822,7 @@ void do_coredump(long signr, int exit_co
+ 	ispipe = format_corename(corename, signr);
+ 	unlock_kernel();
+ 
+-	if ((!ispipe) && (core_limit < binfmt->min_coredump))
+-		goto fail_unlock;
+-
++	file = NULL;
+  	if (ispipe) {
+ 		if (core_limit == 0) {
+ 			/*
+@@ -1845,7 +1843,7 @@ void do_coredump(long signr, int exit_co
+ 				"Process %d(%s) has RLIMIT_CORE set to 0\n",
+ 				task_tgid_vnr(current), current->comm);
+ 			printk(KERN_WARNING "Aborting core\n");
+-			goto fail_unlock;
++			goto nopipe;
+ 		}
+ 
+ 		dump_count = atomic_inc_return(&core_dump_count);
+@@ -1853,14 +1851,14 @@ void do_coredump(long signr, int exit_co
+ 			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
+ 			       task_tgid_vnr(current), current->comm);
+ 			printk(KERN_WARNING "Skipping core dump\n");
+-			goto fail_dropcount;
++			goto nopipe;
+ 		}
+ 
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+-			goto fail_dropcount;
++			goto nopipe;
+ 		}
+ 
+ 		core_limit = RLIM_INFINITY;
+@@ -1870,13 +1868,19 @@ void do_coredump(long signr, int exit_co
+ 				&file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+ 			       corename);
+-			goto fail_dropcount;
++			goto nopipe;
+  		}
+- 	} else
++ 	} else if (core_limit >= binfmt->min_coredump) {
+  		file = filp_open(corename,
+ 				 O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE | flag,
+ 				 0600);
+-	if (IS_ERR(file))
++	}
++
++nopipe:
++	trace_process_coredump((int) signr, core_limit, mm_flags,
++			       corename, file);
++
++	if (!file || IS_ERR(file))
+ 		goto fail_dropcount;
+ 	inode = file->f_path.dentry->d_inode;
+ 	if (inode->i_nlink > 1)
