@@ -1,182 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbZKMT4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbZKMT4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbZKMT4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932278AbZKMT4H
+	id S932312AbZKMT4t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932292AbZKMT4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:56:07 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:51710 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932230AbZKMTzh (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com;0:0>);
-	Fri, 13 Nov 2009 14:55:37 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH 3/3] macvlan: allow in-kernel modules to create and manage
-	macvlan devices
-To: kaber@trash.net, netdev@vger.kernel.org
-Cc: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       arnd@arndb.de, bridge@lists.linux-foundation.org
-Date: Fri, 13 Nov 2009 14:55:29 -0500
-Message-ID: <20091113195529.11184.19011.stgit@mimic.site>
-In-Reply-To: <20091113195201.11184.25766.stgit@mimic.site>
-References: <20091113195201.11184.25766.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Nov 2009 14:56:44 -0500
+Received: from nox.protox.org ([88.191.38.29]:50963 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932264AbZKMT4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 14:56:36 -0500
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: [PATCH 1/2] drm/radeon/kms: Disable TV load detect on RS400,RC410,RS480
+Date: Fri, 13 Nov 2009 20:56:35 +0100
+Message-Id: <1258142195-2032-1-git-send-email-jglisse@redhat.com>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The macvlan driver didn't allow for creation/deletion of devices
-by other in-kernel modules. This patch provides common routines
-for both in-kernel and netlink based management. This patch
-also enables macvlan device support for gro for lower level
-devices that support gro.
+RS400,RC410,RS480 chipset seems to report a lot of false positive
+with load detect on TV output. We haven't yet found a way to make
+load detect reliable on those chipset, thus just disable it for TV
+output. Would avoid user to experience phantom screen because X
+believe there is a monitor connected to the TV output.
 
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 ---
+ drivers/gpu/drm/radeon/radeon_connectors.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
- drivers/net/macvlan.c   |   72 ++++++++++++++++++++++++++++++++---------------
- include/linux/macvlan.h |    4 +++
- 2 files changed, 53 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index 3425e12..bb180d0 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -210,7 +210,7 @@ static const struct header_ops macvlan_hard_header_ops = {
- 	.cache_update	= eth_header_cache_update,
- };
- 
--static int macvlan_open(struct net_device *dev)
-+int macvlan_open(struct net_device *dev)
- {
- 	struct macvlan_dev *vlan = netdev_priv(dev);
- 	struct net_device *lowerdev = vlan->lowerdev;
-@@ -237,7 +237,7 @@ out:
- 	return err;
- }
- 
--static int macvlan_stop(struct net_device *dev)
-+int macvlan_stop(struct net_device *dev)
- {
- 	struct macvlan_dev *vlan = netdev_priv(dev);
- 	struct net_device *lowerdev = vlan->lowerdev;
-@@ -318,7 +318,7 @@ static struct lock_class_key macvlan_netdev_addr_lock_key;
- #define MACVLAN_FEATURES \
- 	(NETIF_F_SG | NETIF_F_ALL_CSUM | NETIF_F_HIGHDMA | NETIF_F_FRAGLIST | \
- 	 NETIF_F_GSO | NETIF_F_TSO | NETIF_F_UFO | NETIF_F_GSO_ROBUST | \
--	 NETIF_F_TSO_ECN | NETIF_F_TSO6)
-+	 NETIF_F_TSO_ECN | NETIF_F_TSO6 | NETIF_F_GRO)
- 
- #define MACVLAN_STATE_MASK \
- 	((1<<__LINK_STATE_NOCARRIER) | (1<<__LINK_STATE_DORMANT))
-@@ -454,6 +454,44 @@ int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
- }
- EXPORT_SYMBOL_GPL(macvlan_validate);
- 
-+int macvlan_link_lowerdev(struct net_device *dev,
-+			  struct net_device *lowerdev)
-+{
-+	struct macvlan_dev *vlan = netdev_priv(dev);
-+	struct macvlan_port *port;
-+	int err = 0;
-+
-+	if (lowerdev->macvlan_port == NULL) {
-+		err = macvlan_port_create(lowerdev);
-+		if (err < 0)
-+			return err;
-+	}
-+	port = lowerdev->macvlan_port;
-+
-+	vlan->lowerdev = lowerdev;
-+	vlan->dev      = dev;
-+	vlan->port     = port;
-+	vlan->receive  = netif_rx;
-+
-+	macvlan_init(dev);
-+
-+	list_add_tail(&vlan->list, &port->vlans);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(macvlan_link_lowerdev);
-+
-+void macvlan_unlink_lowerdev(struct net_device *dev)
-+{
-+	struct macvlan_dev *vlan = netdev_priv(dev);
-+	struct macvlan_port *port = vlan->port;
-+
-+	list_del(&vlan->list);
-+
-+	if (list_empty(&port->vlans))
-+		macvlan_port_destroy(port->dev);
-+}
-+EXPORT_SYMBOL_GPL(macvlan_unlink_lowerdev);
-+
- static int macvlan_get_tx_queues(struct net *net,
- 				 struct nlattr *tb[],
- 				 unsigned int *num_tx_queues,
-@@ -504,38 +542,26 @@ int macvlan_newlink(struct net_device *dev,
- 	if (!tb[IFLA_ADDRESS])
- 		random_ether_addr(dev->dev_addr);
- 
--	if (lowerdev->macvlan_port == NULL) {
--		err = macvlan_port_create(lowerdev);
--		if (err < 0)
--			return err;
--	}
--	port = lowerdev->macvlan_port;
--
--	vlan->lowerdev = lowerdev;
--	vlan->dev      = dev;
--	vlan->port     = port;
--	vlan->receive  = netif_rx;
-+	err = macvlan_link_lowerdev(dev, lowerdev);
-+	if (err < 0)
-+		return err;
- 
- 	err = register_netdevice(dev);
--	if (err < 0)
-+	if (err < 0) {
-+		macvlan_unlink_lowerdev(dev);
- 		return err;
-+	}
- 
--	list_add_tail(&vlan->list, &port->vlans);
- 	netif_stacked_transfer_operstate(dev, lowerdev);
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(macvlan_newlink);
- 
- void macvlan_dellink(struct net_device *dev)
- {
--	struct macvlan_dev *vlan = netdev_priv(dev);
--	struct macvlan_port *port = vlan->port;
--
--	list_del(&vlan->list);
-+	macvlan_unlink_lowerdev(dev);
- 	unregister_netdevice(dev);
--
--	if (list_empty(&port->vlans))
--		macvlan_port_destroy(port->dev);
- }
- EXPORT_SYMBOL_GPL(macvlan_dellink);
- 
-diff --git a/include/linux/macvlan.h b/include/linux/macvlan.h
-index 3f3c6c3..27f56d9 100644
---- a/include/linux/macvlan.h
-+++ b/include/linux/macvlan.h
-@@ -24,6 +24,10 @@ struct macvlan_dev {
- };
- 
- extern int macvlan_start_xmit(struct sk_buff *skb, struct net_device *dev);
-+extern int macvlan_link_lowerdev(struct net_device *dev,
-+				 struct net_device *lowerdev);
-+
-+extern void macvlan_unlink_lowerdev(struct net_device *dev);
- 
- extern void macvlan_setup(struct net_device *dev);
- 
+diff --git a/drivers/gpu/drm/radeon/radeon_connectors.c b/drivers/gpu/drm/radeon/radeon_connectors.c
+index fce4c40..55fecfc 100644
+--- a/drivers/gpu/drm/radeon/radeon_connectors.c
++++ b/drivers/gpu/drm/radeon/radeon_connectors.c
+@@ -1149,6 +1149,13 @@ radeon_add_legacy_connector(struct drm_device *dev,
+ 			if (ret)
+ 				goto failed;
+ 			radeon_connector->dac_load_detect = true;
++			/* RS400,RC410,RS480 chipset seems to report a lot
++			 * of false positive on load detect, we haven't yet
++			 * found a way to make load detect reliable on those
++			 * chipset, thus just disable it for TV.
++			 */
++			if (rdev->family == CHIP_RS400 || rdev->family == CHIP_RS480)
++				radeon_connector->dac_load_detect = false;
+ 			drm_connector_attach_property(&radeon_connector->base,
+ 						      rdev->mode_info.load_detect_property,
+ 						      1);
+-- 
+1.6.5.2
 
