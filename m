@@ -1,102 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbZKMReM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZKMRes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754606AbZKMReM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZKMReF
+	id S1754644AbZKMRes (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZKMRep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:34:05 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:46390 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbZKMReD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:34:03 -0500
-Date: Fri, 13 Nov 2009 23:03:25 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Rishikesh <risrajak@linux.vnet.ibm.com>
-Cc: iranna.ankad@in.ibm.com, markwiz@us.ibm.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       containers@lists.linux-foundation.org,
-       bugzilla-daemon@bugzilla.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>, lxie@us.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>, sharyath@linux.vnet.ibm.com,
-       santwana.samantray@in.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bugme-new] [Bug 14150] New: BUG: soft lockup - CPU#3 stuck for
-	61s!, while running cpu controller latency testcase on two
-	containers parallaly
-Message-ID: <20091113173324.GI9065@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <bug-14150-10286@http.bugzilla.kernel.org/> <20090911142813.dc823bf1.akpm@linux-foundation.org> <20090915125836.GA4087@linux.vnet.ibm.com> <4AB20086.8070105@linux.vnet.ibm.com> <4AB32EA7.20904@linux.vnet.ibm.com> <4AB34445.4060700@linux.vnet.ibm.com> <4AB8A24E.8060209@linux.vnet.ibm.com>
+	Fri, 13 Nov 2009 12:34:45 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:45148 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753444AbZKMReo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:34:44 -0500
+Date: Fri, 13 Nov 2009 17:34:46 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH] make crypto unplug fix V3
+Message-ID: <20091113173446.GL29804@csn.ul.ie>
+References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie> <20091112202748.GC2811@think> <20091112220005.GD2811@think> <20091113024642.GA7771@think> <20091113125812.GB7891@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4AB8A24E.8060209@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091113125812.GB7891@think>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 03:39:18PM +0530, Rishikesh wrote:
-> Hi Dhaval,
->
-> Today i tried 2 more scenario requested by you on -tip kernel:
->
-> 1> mount cpu on cgroup & other susbsystems ( ns, cpuset,freezer...  
-> except cpu) on cgroup1 e.g:.
-> /root/lxc on /cgroup type cgroup  
-> (rw,ns,cpuset,freezer,devices,memory,cpuacct,net_cls)
-> none on /cgroup1 type cgroup (rw,cpu)
->
->    Result: I am able to create container ( no crash after "lxc-execute  
-> ..." command execution).
-> 2> mount cpu,ns on cgroup
-> [root@x335a ~]# mount
-> none on /cgroup type cgroup (rw,ns,cpu)
-> [root@x335a ~]# lxc-execute -n foo2 -f /etc/lxc/lxc-macvlan.conf /bin/bash
->
->    Result : The system crash with following trace once i execute  
-> lxc-execute command:
->
-> x335a.in.ibm.com login: BUG: NMI Watchdog detected LOCKUP on CPU1, ip  
-> c0425854, registers:
-> Modules linked in: nfs lockd nfs_acl auth_rpcgss bridge stp llc bnep sco  
-> l2cap bluetooth autofs4 sunrpc ipv6 p4_clockmod dm_multipath uinput  
-> ata_generic pata_acpi floppy i2c_piix4 i2c_core pata_serverworks tg3  
-> pcspkr serio_raw mptspi mptscsih mptbase scsi_transport_spi [last  
-> unloaded: scsi_wait_scan]
->
-> Pid: 0, comm: swapper Not tainted (2.6.31-tip #2) eserver xSeries 335  
-> -[867641X]-
-> EIP: 0060:[<c0425854>] EFLAGS: 00000246 CPU: 1
-> EIP is at native_safe_halt+0xa/0xc
-> EAX: f70a8000 EBX: c096f0d4 ECX: b9d8d702 EDX: 00000001
-> ESI: 00000001 EDI: 00000000 EBP: f70a9f74 ESP: f70a9f74
-> DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process swapper (pid: 0, ti=f70a8000 task=f7086780 task.ti=f70a8000)
-> Stack:
-> f70a9f94 c040e63b f70a9f94 c0460b8d 00000001 c096f0d4 00000001 00000000
-> <0> f70a9fa4 c0407637 00000001 00000000 f70a9fb0 c075a578 0602080b 00000000
-> <0> 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> Call Trace:
-> [<c040e63b>] ? default_idle+0x4a/0x7c
-> [<c0460b8d>] ? tick_nohz_restart_sched_tick+0x115/0x123
-> [<c0407637>] ? cpu_idle+0x58/0x79
-> [<c075a578>] ? start_secondary+0x19c/0x1a1
-> Code: 89 e5 0f 1f 44 00 00 50 9d 5d c3 55 89 e5 0f 1f 44 00 00 fa 5d c3  
-> 55 89 e5 0f 1f 44 00 00 fb 5d c3 55 89 e5 0f 1f 44 00 00 fb f4 <5d> c3  
-> 55 89 e5 0f 1f 44 00 00 f4 5d c3 55 89 e5 0f 1f 44 00 00
->
->
-> Evening i am going to try 3rd scenario:
->    - Enable CONFIG_PROVE_LOCKING and then execute above scenario once  
-> again.
->
-> Hope above result will help you to debug further.
->
+On Fri, Nov 13, 2009 at 07:58:12AM -0500, Chris Mason wrote:
+> This is still likely to set your dm data on fire.  It is only meant for
+> testers that start with mkfs and don't have any valuable dm data.
+> 
 
-Just tested on latest -tip and this issue is no longer reproducible.
+The good news is that my room remains fire-free. Despite swap also
+running from dm-crypt, I had no corruption or instability issues.
+
+Here is an updated set of results for fake-gitk running.
+
+X86
+2.6.30-0000000-force-highorder           Elapsed:12:08.908    Failures:0
+2.6.31-0000000-force-highorder           Elapsed:10:56.283    Failures:0
+2.6.31-0000006-dm-crypt-unplug           Elapsed:11:51.653    Failures:0
+2.6.31-0000012-pgalloc-2.6.30            Elapsed:12:26.587    Failures:0
+2.6.31-0000123-congestion-both           Elapsed:10:55.298    Failures:0
+2.6.31-0001234-kswapd-quick-recheck      Elapsed:18:01.523    Failures:0
+2.6.31-0123456-dm-crypt-unplug           Elapsed:10:45.720    Failures:0
+2.6.31-revert-8aa7e847                   Elapsed:15:08.020    Failures:0
+2.6.32-rc6-0000000-force-highorder       Elapsed:16:20.765    Failures:4
+2.6.32-rc6-0000006-dm-crypt-unplug       Elapsed:13:42.920    Failures:0
+2.6.32-rc6-0000012-pgalloc-2.6.30        Elapsed:16:13.380    Failures:1
+2.6.32-rc6-0000123-congestion-both       Elapsed:18:39.118    Failures:0
+2.6.32-rc6-0001234-kswapd-quick-recheck  Elapsed:15:04.398    Failures:0
+2.6.32-rc6-0123456-dm-crypt-unplug       Elapsed:12:50.438    Failures:0
+2.6.32-rc6-revert-8aa7e847               Elapsed:20:50.888    Failures:0
+
+X86-64
+2.6.30-0000000-force-highorder           Elapsed:10:37.300    Failures:0
+2.6.31-0000000-force-highorder           Elapsed:08:49.338    Failures:0
+2.6.31-0000006-dm-crypt-unplug           Elapsed:09:37.840    Failures:0
+2.6.31-0000012-pgalloc-2.6.30            Elapsed:15:49.690    Failures:0
+2.6.31-0000123-congestion-both           Elapsed:09:18.790    Failures:0
+2.6.31-0001234-kswapd-quick-recheck      Elapsed:08:39.268    Failures:0
+2.6.31-0123456-dm-crypt-unplug           Elapsed:08:20.965    Failures:0
+2.6.31-revert-8aa7e847                   Elapsed:08:07.457    Failures:0
+2.6.32-rc6-0000000-force-highorder       Elapsed:18:29.103    Failures:1
+2.6.32-rc6-0000006-dm-crypt-unplug       Elapsed:25:53.515    Failures:3
+2.6.32-rc6-0000012-pgalloc-2.6.30        Elapsed:19:55.570    Failures:6
+2.6.32-rc6-0000123-congestion-both       Elapsed:17:29.255    Failures:2
+2.6.32-rc6-0001234-kswapd-quick-recheck  Elapsed:14:41.068    Failures:0
+2.6.32-rc6-0123456-dm-crypt-unplug       Elapsed:15:48.028    Failures:1
+2.6.32-rc6-revert-8aa7e847               Elapsed:14:48.647    Failures:0
+
+The numbering in the kernel indicates what patches are applied. I tested
+the dm-crypt patch both in isolation and in combination with the patches
+in this series.
+
+Basically, the dm-crypt-unplug makes a small difference in performance
+overall, mostly slight gains and losses. There was one massive regression
+with the dm-crypt patch applied to 2.6.32-rc6 but at the moment, I don't
+know what that is.
+
+In general, the patch reduces the amount of time direct reclaimers are
+spending on congestion_wait.
+
+> It includes my patch from last night, along with changes to force dm to
+> unplug when its IO queues empty.
+> 
+> The problem goes like this:
+> 
+> Process: submit read bio
+> dm: put bio onto work queue
+> process: unplug
+> dm: work queue finds bio, does a generic_make_request
+> 
+> The end result is that we miss the unplug completely.  dm-crypt needs to
+> unplug for sync bios.  This patch also changes it to unplug whenever the
+> queue is empty, which is far from ideal but better than missing the
+> unplugs.
+> 
+> This doesn't completely fix io stalls I'm seeing with dm-crypt, but its
+> my best guess.  If it works, I'll break it up and submit for real to
+> the dm people.
+> 
+
+Out of curiousity, how are you measuring IO stalls? In the tests I'm doing,
+the worker processes output their progress and it should be at a steady
+rate. I considered a stall to be an excessive delay between updates which
+is a pretty indirect measure.
+
+> -chris
+> 
+> diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+> index ed10381..729ae01 100644
+> --- a/drivers/md/dm-crypt.c
+> +++ b/drivers/md/dm-crypt.c
+> @@ -94,8 +94,12 @@ struct crypt_config {
+>  	struct bio_set *bs;
+>  
+>  	struct workqueue_struct *io_queue;
+> +	struct workqueue_struct *async_io_queue;
+>  	struct workqueue_struct *crypt_queue;
+>  
+> +	atomic_t sync_bios_in_queue;
+> +	atomic_t async_bios_in_queue;
+> +
+>  	/*
+>  	 * crypto related data
+>  	 */
+> @@ -679,11 +683,29 @@ static void kcryptd_io_write(struct dm_crypt_io *io)
+>  static void kcryptd_io(struct work_struct *work)
+>  {
+>  	struct dm_crypt_io *io = container_of(work, struct dm_crypt_io, work);
+> +	struct crypt_config *cc = io->target->private;
+> +	int zero_sync = 0;
+> +	int zero_async = 0;
+> +	int was_sync = 0;
+> +
+> +	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
+> +		zero_sync = atomic_dec_and_test(&cc->sync_bios_in_queue);
+> +		was_sync = 1;
+> +	} else
+> +		zero_async = atomic_dec_and_test(&cc->async_bios_in_queue);
+>  
+>  	if (bio_data_dir(io->base_bio) == READ)
+>  		kcryptd_io_read(io);
+>  	else
+>  		kcryptd_io_write(io);
+> +
+> +	if ((was_sync && zero_sync) ||
+> +	    (!was_sync && zero_async &&
+> +	     atomic_read(&cc->sync_bios_in_queue) == 0)) {
+> +		struct backing_dev_info *bdi;
+> +		bdi = blk_get_backing_dev_info(io->base_bio->bi_bdev);
+> +		blk_run_backing_dev(bdi, NULL);
+> +	}
+>  }
+>  
+>  static void kcryptd_queue_io(struct dm_crypt_io *io)
+> @@ -691,7 +713,13 @@ static void kcryptd_queue_io(struct dm_crypt_io *io)
+>  	struct crypt_config *cc = io->target->private;
+>  
+>  	INIT_WORK(&io->work, kcryptd_io);
+> -	queue_work(cc->io_queue, &io->work);
+> +	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
+> +		atomic_inc(&cc->sync_bios_in_queue);
+> +		queue_work(cc->io_queue, &io->work);
+> +	} else {
+> +		atomic_inc(&cc->async_bios_in_queue);
+> +		queue_work(cc->async_io_queue, &io->work);
+> +	}
+>  }
+>  
+>  static void kcryptd_crypt_write_io_submit(struct dm_crypt_io *io,
+> @@ -759,8 +787,7 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
+>  
+>  		/* Encryption was already finished, submit io now */
+>  		if (crypt_finished) {
+> -			kcryptd_crypt_write_io_submit(io, r, 0);
+> -
+> +			kcryptd_crypt_write_io_submit(io, r, 1);
+>  			/*
+>  			 * If there was an error, do not try next fragments.
+>  			 * For async, error is processed in async handler.
+> @@ -1120,6 +1147,15 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+>  	} else
+>  		cc->iv_mode = NULL;
+>  
+> +	atomic_set(&cc->sync_bios_in_queue, 0);
+> +	atomic_set(&cc->async_bios_in_queue, 0);
+> +
+> +	cc->async_io_queue = create_singlethread_workqueue("kcryptd_async_io");
+> +	if (!cc->async_io_queue) {
+> +		ti->error = "Couldn't create kcryptd io queue";
+> +		goto bad_async_io_queue;
+> +	}
+> +
+>  	cc->io_queue = create_singlethread_workqueue("kcryptd_io");
+>  	if (!cc->io_queue) {
+>  		ti->error = "Couldn't create kcryptd io queue";
+> @@ -1139,6 +1175,8 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+>  bad_crypt_queue:
+>  	destroy_workqueue(cc->io_queue);
+>  bad_io_queue:
+> +	destroy_workqueue(cc->async_io_queue);
+> +bad_async_io_queue:
+>  	kfree(cc->iv_mode);
+>  bad_ivmode_string:
+>  	dm_put_device(ti, cc->dev);
+> @@ -1166,6 +1204,7 @@ static void crypt_dtr(struct dm_target *ti)
+>  	struct crypt_config *cc = (struct crypt_config *) ti->private;
+>  
+>  	destroy_workqueue(cc->io_queue);
+> +	destroy_workqueue(cc->async_io_queue);
+>  	destroy_workqueue(cc->crypt_queue);
+>  
+>  	if (cc->req)
+> 
 
 -- 
-regards,
-Dhaval
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
