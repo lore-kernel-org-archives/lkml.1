@@ -1,81 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZKMR7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZKMSCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZKMR7c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170AbZKMR73
+	id S1756683AbZKMSCO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 13:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZKMSCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:59:29 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:62261 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754987AbZKMR72 (ORCPT
+	Fri, 13 Nov 2009 13:02:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45436 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbZKMSCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:59:28 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19K8f+1iYAUl3tHqcmJRrCT
-Date: Fri, 13 Nov 2009 09:59:28 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: ext Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-fbdev-devel@lists.sourceforge.net" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "dedekind1@gmail.com" <dedekind1@gmail.com>
-Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
-Message-ID: <20091113175928.GB3684@atomide.com>
-References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
- <1257856848.21596.753.camel@localhost>
- <1257929140.20378.51.camel@tubuntu.research.nokia.com>
- <1257932641.20378.77.camel@tubuntu.research.nokia.com>
- <20091111184208.GC24837@atomide.com>
- <20091112161028.427787d9.sfr@canb.auug.org.au>
- <20091112181457.GX24837@atomide.com>
- <20091113074811.ee61948f.sfr@canb.auug.org.au>
- <1258106168.20378.119.camel@tubuntu.research.nokia.com>
+	Fri, 13 Nov 2009 13:02:08 -0500
+Date: Sat, 14 Nov 2009 03:00:57 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 5/5] vmscan: Take order into consideration when deciding if kswapd is in trouble
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20091113135443.GF29804@csn.ul.ie>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie>
+Message-Id: <20091114023138.3DA5.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258106168.20378.119.camel@tubuntu.research.nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@nokia.com> [091113 01:55]:
-> Hi,
+
+> This makes a lot of sense. Tests look good and I added stats to make sure
+> the logic was triggering. On X86, kswapd avoided a congestion_wait 11723
+> times and X86-64 avoided it 5084 times. I think we should hold onto the
+> stats temporarily until all these bugs are ironed out.
 > 
-> On Thu, 2009-11-12 at 21:48 +0100, ext Stephen Rothwell wrote:
-> > Hi Tony, Tomi,
-> > 
-> > On Thu, 12 Nov 2009 10:14:57 -0800 Tony Lindgren <tony@atomide.com> wrote:
-> > >
-> > > OK. The only dependency is the the move of the headers.
-> > > 
-> > > Tomi, can you please rebase your patches on top of the "7xx-iosplit-plat-merge"
-> > > branch in linux-omap tree? This is commit 8171d88089ad63fc442b2bf32af7c18653adc5cb,
-> > > and it should stay static.
-> > 
-> > OK, *if* you (Tony) guarantee that the base is stable (i.e. never
-> > rebased, but may have things added to it) and in linux-next, then I can
-> > take the DSS2 stuff separately if you want me to.
-
-Thanks. Yes, there should not be any need to rebase that commit.
-
-> > Tomi, you can, of course, merge that branch into your tree instead of
-> > rebasing on top of it (which ever is easiest).
+> Would you like to sign off the following?
 > 
-> I rebased DSS2 on top of 8171d88089ad63fc442b2bf32af7c18653adc5cb. It
-> can be found from git://gitorious.org/linux-omap-dss2/linux.git for-next
-> branch.
+> If you are ok to sign off, this patch should replace my patch 5 in
+> the series.
+
+I'm sorry, I found my bug.
+Please see below.
+
 > 
-> I'm ok with Tony pulling DSS2 to his next-branch, or Stephen pulling
-> directly, which ever works easier for you.
+> ==== CUT HERE ====
+> 
+> vmscan: Stop kswapd waiting on congestion when the min watermark is not being met
+> 
+> If reclaim fails to make sufficient progress, the priority is raised.
+> Once the priority is higher, kswapd starts waiting on congestion.  However,
+> if the zone is below the min watermark then kswapd needs to continue working
+> without delay as there is a danger of an increased rate of GFP_ATOMIC
+> allocation failure.
+> 
+> This patch changes the conditions under which kswapd waits on
+> congestion by only going to sleep if the min watermarks are being met.
+> 
+> [mel@csn.ul.ie: Add stats to track how relevant the logic is]
+> Needs-signed-off-by-original-author
+> 
+> diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+> index 9716003..7d66695 100644
+> --- a/include/linux/vmstat.h
+> +++ b/include/linux/vmstat.h
+> @@ -41,6 +41,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+>  #endif
+>  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+>  		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
+> +		KSWAPD_NO_CONGESTION_WAIT,
+>  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index ffa1766..70967e1 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1966,6 +1966,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+>  	 * free_pages == high_wmark_pages(zone).
+>  	 */
+>  	int temp_priority[MAX_NR_ZONES];
+> +	int has_under_min_watermark_zone = 0;
 
-I'd rather see Stephen pulling directly from Tomi, that's a good long
-term solution for maintaining the DSS2 code.
+This is wrong declaration place.  It must change to
 
-Regards,
+        for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+                int end_zone = 0;       /* Inclusive.  0 = ZONE_DMA */
+                unsigned long lru_pages = 0;
++                int has_under_min_watermark_zone = 0;
 
-Tony
+
+because, has_under_min_watermark_zone should be initialized every priority.
+
+
+>  loop_again:
+>  	total_scanned = 0;
+> @@ -2085,6 +2086,15 @@ loop_again:
+>  			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
+>  			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
+>  				sc.may_writepage = 1;
+> +
+> +			/*
+> +			 * We are still under min water mark. it mean we have
+> +			 * GFP_ATOMIC allocation failure risk. Hurry up!
+> +			 */
+> +			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
+> +					      end_zone, 0))
+> +				has_under_min_watermark_zone = 1;
+> +
+>  		}
+>  		if (all_zones_ok)
+>  			break;		/* kswapd: all done */
+> @@ -2092,8 +2102,13 @@ loop_again:
+>  		 * OK, kswapd is getting into trouble.  Take a nap, then take
+>  		 * another pass across the zones.
+>  		 */
+> -		if (total_scanned && priority < DEF_PRIORITY - 2)
+> -			congestion_wait(BLK_RW_ASYNC, HZ/10);
+> +		if (total_scanned && (priority < DEF_PRIORITY - 2)) {
+> +
+
+This blank line is unnecesary.
+
+> +			if (!has_under_min_watermark_zone)
+
+Probably "if (has_under_min_watermark_zone)" is correct.
+
+
+> +				count_vm_event(KSWAPD_NO_CONGESTION_WAIT);
+> +			else
+> +				congestion_wait(BLK_RW_ASYNC, HZ/10);
+> +		}
+
+Otherthing looks pretty good to me. please feel free to add my s-o-b or reviewed-by.
+
+Thanks.
+
+
+
+
