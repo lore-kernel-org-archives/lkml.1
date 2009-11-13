@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbZKMFYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbZKMFad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbZKMFYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 00:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZKMFYO
+	id S1752266AbZKMFad (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 00:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZKMFa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 00:24:14 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53208 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbZKMFYM (ORCPT
+	Fri, 13 Nov 2009 00:30:28 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:52504 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZKMFa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 00:24:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org\"" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <1258054235-3208-3-git-send-email-mel@csn.ul.ie>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <1258054235-3208-3-git-send-email-mel@csn.ul.ie>
-Message-Id: <20091113142328.33B0.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 13 Nov 2009 00:30:28 -0500
+Subject: Re: [patch 0/1] Adding radio type FM
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Janakiram Sistla <janakiram.sistla@gmail.com>
+Cc: Julian Calaby <julian.calaby@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4fb5db50911122119j1271a5f4ra718aa8fb34f9bff@mail.gmail.com>
+References: <4fb5db50911121909h1619e483ga4aa395af8fc1161@mail.gmail.com>
+	 <20091113030950.GB4054@tuxdriver.com>
+	 <4fb5db50911121925t1a6770ddtbd5f01477470046d@mail.gmail.com>
+	 <646765f40911121929p5aa416c3o99f33bd5b5d8c5cb@mail.gmail.com>
+	 <1258083706.7715.16.camel@violet>
+	 <646765f40911121945p7080b920s230b92fb02b04ae7@mail.gmail.com>
+	 <4fb5db50911122119j1271a5f4ra718aa8fb34f9bff@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 13 Nov 2009 06:30:26 +0100
+Message-ID: <1258090226.3299.1.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 13 Nov 2009 14:24:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Commit 341ce06f69abfafa31b9468410a13dbd60e2b237 altered watermark logic
-> slightly by allowing rt_tasks that are handling an interrupt to set
-> ALLOC_HARDER. This patch brings the watermark logic more in line with
-> 2.6.30.
+Hi Janakiram,
 
-ditto.
-afaik, this patch have been sent to linus.
+> Thankyou for all the comments on the patch.Yes if you see the toshiba
+> Laptop series which have an FM key that enables FM.If still People say
+> that we cannot take KEY_FM yes we will go ahead and will resubmit a
+> patch with only RFKILL for FM
 
+how is that key mapped in reality? Or is that just a KEY_RFKILL toggle
+sort of key.
 
-> 
-> [rientjes@google.com: Spotted the problem]
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/page_alloc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 250d055..2bc2ac6 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1769,7 +1769,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
->  		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
->  		 */
->  		alloc_flags &= ~ALLOC_CPUSET;
-> -	} else if (unlikely(rt_task(p)))
-> +	} else if (unlikely(rt_task(p)) && !in_interrupt())
->  		alloc_flags |= ALLOC_HARDER;
->  
->  	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-> -- 
-> 1.6.5
-> 
+Submit the patch without the input modifications since that can be acked
+right away. And don't forget to send a patch for rfkill utility that
+adds FM support.
 
+Regards
+
+Marcel
 
 
