@@ -1,76 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZKMNls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZKMNnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbZKMNls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 08:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZKMNlm
+	id S1754209AbZKMNnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 08:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZKMNnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 08:41:42 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:11400 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZKMNll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 08:41:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=MYyVExUi7U3AH4FMQirpUtVF7ew3jogRvGoDfViNIy1ONdLGKe7pyskAF7y+qmkAmR
-         75eoy5NehgpVzjhr0HEczKMOHfdxz0DWBwwCPYyLXHZpk9GvNiVrYg+WteVs5lzjJGHR
-         iax+utMEMWFN3pPdj1CTMLcgkk5XB7oGs5vgU=
+	Fri, 13 Nov 2009 08:43:12 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:55357 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752480AbZKMNnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 08:43:11 -0500
+Message-ID: <4AFD6269.3090404@sgi.com>
+Date: Fri, 13 Nov 2009 05:43:05 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091113133211.GA8742@kernel.dk>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie>
-	 <1258054235-3208-4-git-send-email-mel@csn.ul.ie>
-	 <20091113142526.33B3.A69D9226@jp.fujitsu.com>
-	 <20091113115558.GY8742@kernel.dk> <20091113122821.GC29804@csn.ul.ie>
-	 <20091113133211.GA8742@kernel.dk>
-Date: Fri, 13 Nov 2009 15:41:46 +0200
-X-Google-Sender-Auth: f26db5d8f53c58f3
-Message-ID: <84144f020911130541p42c0b3d5lc307f97f22e2d356@mail.gmail.com>
-Subject: Re: [PATCH 3/5] page allocator: Wait on both sync and async 
-	congestion after direct reclaim
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] x86: Limit the number of processor bootup messages
+References: <20091112171934.584037000@alcatraz.americas.sgi.com> <20091112171942.423844000@alcatraz.americas.sgi.com> <20091112180910.GA8598@elte.hu> <4AFC6A6D.1040809@sgi.com> <20091113095249.GB1364@elte.hu>
+In-Reply-To: <20091113095249.GB1364@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
 
-On Fri, Nov 13, 2009 at 3:32 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> Suggest an alternative that brings congestion_wait() more in line with
->> 2.6.30 behaviour then.
->
-> I don't have a good explanation as to why the delays have changed,
-> unfortunately. Are we sure that they have between .30 and .31? The
-> dm-crypt case is overly complex and lots of changes could have broken
-> that house of cards.
 
-Hand-waving or not, we have end user reports stating that reverting
-commit 8aa7e847d834ed937a9ad37a0f2ad5b8584c1ab0 ("Fix
-congestion_wait() sync/async vs read/write confusion") fixes their
-(rather serious) OOM regression. The commit in question _does_
-introduce a functional change and if this was your average regression,
-people would be kicking and screaming to get it reverted.
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>>
+>> Ingo Molnar wrote:
+>>> * Mike Travis <travis@sgi.com> wrote:
+>>>
+>>>> --- linux.orig/arch/x86/kernel/smpboot.c
+>>>> +++ linux/arch/x86/kernel/smpboot.c
+>>>> @@ -442,6 +442,84 @@
+>>>> 		return c->llc_shared_map;
+>>>> }
+>>>> +/* Summarize Processor Information */
+>>>> +static void __init summarize_cpu_info(void)
+>>>> +{
+>>>> +	cpumask_var_t cpulist, cpusdone;
+>>>> +	int cpu;
+>>>> +	int err = 0;
+>>>> +
+>>>> +	if (!alloc_cpumask_var(&cpulist, GFP_KERNEL))
+>>>> +		err = 1;
+>>>> +	else if (!alloc_cpumask_var(&cpusdone, GFP_KERNEL)) {
+>>>> +		free_cpumask_var(cpulist);
+>>>> +		err = 1;
+>>>> +	}
+>>>> +	if (err) {
+>>>> +		printk(KERN_INFO "Can't print processor summaries\n");
+>>>> +		return;
+>>>> +	}
+>>>> +
+>>>> +	cpumask_clear(cpusdone);
+>>>> +	for (cpu = 0; cpu < nr_cpu_ids; cpu++) {
+>>>> +		struct cpuinfo_x86 *c;
+>>>> +		char buf[128];
+>>>> +		int ncpu, len;
+>>>> +		unsigned long minlpj, maxlpj, avglpj = 0;
+>>>> +
+>>>> +		/* skip if cpu has already been displayed */
+>>>> +		if (cpumask_test_cpu(cpu, cpusdone))
+>>>> +			continue;
+>>>> +
+>>>> +		c = &cpu_data(cpu);
+>>>> +		minlpj = ULONG_MAX;
+>>>> +		maxlpj = 0;
+>>>> +
+>>>> +		cpumask_clear(cpulist);
+>>>> +
+>>>> +		/* collate all cpus with same specifics */
+>>>> +		for (ncpu = cpu; ncpu < nr_cpu_ids; ncpu++) {
+>>>> +			struct cpuinfo_x86 *n = &cpu_data(ncpu);
+>>>> +
+>>>> +			if (c->x86 != n->x86 ||
+>>>> +			    c->x86_vendor != n->x86_vendor ||
+>>>> +			    c->x86_model  != n->x86_model  ||
+>>>> +			    c->x86_mask   != n->x86_mask   ||
+>>>> +			    strcmp(c->x86_model_id, n->x86_model_id))
+>>>> +				continue;
+>>>> +
+>>>> +			cpumask_set_cpu(ncpu, cpulist);
+>>>> +			cpumask_set_cpu(ncpu, cpusdone);
+>>>> +
+>>>> +			if (cpu_data(ncpu).loops_per_jiffy < minlpj)
+>>>> +				minlpj = cpu_data(ncpu).loops_per_jiffy;
+>>>> +
+>>>> +			if (cpu_data(ncpu).loops_per_jiffy > maxlpj)
+>>>> +				maxlpj = cpu_data(ncpu).loops_per_jiffy;
+>>>> +
+>>>> +			avglpj += cpu_data(ncpu).loops_per_jiffy;
+>>>> +		}
+>>>> +
+>>>> +		len = cpulist_scnprintf(buf, sizeof(buf), cpulist);
+>>>> +		printk(KERN_INFO
+>>>> +			"Processor Information for CPUS: %s%s\n",
+>>>> +				buf, (len == sizeof(buf)-1) ? "..." : "");
+>>>> +
+>>>> +		printk(KERN_INFO);
+>>>> +		print_cpu_info(c);
+>>>> +
+>>>> +		avglpj /= cpumask_weight(cpulist);
+>>>> +		printk(KERN_INFO "BogoMIPS: MIN %lu.%02lu (%lu) "
+>>>> +			"AVG %lu.%02lu (%lu) MAX %lu.%02lu (%lu)\n",
+>>>> +			minlpj/(500000/HZ), (minlpj/(5000/HZ)) % 100, minlpj,
+>>>> +			avglpj/(500000/HZ), (avglpj/(5000/HZ)) % 100, avglpj,
+>>>> +			maxlpj/(500000/HZ), (maxlpj/(5000/HZ)) % 100, maxlpj);
+>>>> +	}
+>>>> +
+>>>> +	free_cpumask_var(cpusdone);
+>>>> +	free_cpumask_var(cpulist);
+>>>> +}
+>>>> +
+>>> Sigh, that's _way_ too complex.
+>>>
+>>> If you cannot print it in a summarized way without carrying over
+>>> stupid state like bitmaps then please do the simple and obvious,
+>>> and print:
+>>>
+>>> booting CPUs: #0 #1 #2 #3 #4 #5 #6 ...
+>> That is almost exactly what it does. [...]
+> 
+> You are missing my point i think, which is that we dont want the 76 
+> lines long summarize_cpu_info() complexity during bootup. Lets keep it 
+> _very_ simple and zap excessive messages - like DaveJ's patch did.
+> 
+> 	Ingo
 
-So is there a reason we shouldn't send a partial revert of the commit
-(switching to BLK_RW_SYNC) to Linus until the "real" issue gets
-resolved? Yes, I realize it's ugly voodoo magic but dammit, it used to
-work!
+Ok, I'll zap the summary as I'm not sure how much easier to make a function
+that scans the cpus to find ones that are common, and print their specific
+information.  If I can include the model id and stepping in some /proc
+interface, then a user app could do the same thing (though I'm not sure if
+BogoMIPs is available or not.)
 
-                        Pekka
+Btw, I don't actually see the difference between the two functions, both
+scan a bit map list (apics vs. cpus) to find unprocessed items, then
+collates similar items comparing (nodeid vs. cpu specifics) and then
+prints a summary using the scnlistprintf to gather progressive item #'s.
+But maybe I'm missing something.
+
+Thanks,
+Mike
