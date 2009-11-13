@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZKMIKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZKMIKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbZKMIKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 03:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZKMIKd
+	id S1754575AbZKMIKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 03:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZKMIKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 03:10:33 -0500
-Received: from ernst.netinsight.se ([194.16.221.21]:21926 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754147AbZKMIKc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 03:10:32 -0500
-Date: Fri, 13 Nov 2009 09:10:31 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: Marco Stornelli <marco.stornelli@gmail.com>,
-       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
-       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
-       paul.gortmaker@windriver.com
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-Message-ID: <20091113091031.3f6d4bba@marrow.netinsight.se>
-In-Reply-To: <20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
-References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
-	<4AFC4D31.2000101@gmail.com>
-	<20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Nov 2009 03:10:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47094 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754519AbZKMIKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 03:10:40 -0500
+Date: Fri, 13 Nov 2009 09:10:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Ma, Ling" <ling.ma@intel.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+Message-ID: <20091113081037.GB18054@elte.hu>
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
+ <4AF457E0.4040107@zytor.com>
+ <4AF4784C.5090800@zytor.com>
+ <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
+ <4AF7C66C.6000009@zytor.com>
+ <20091109080830.GI453@elte.hu>
+ <20091112121619.GD1394@ucw.cz>
+ <20091113073340.GA26127@elte.hu>
+ <4AFD1326.506@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFD1326.506@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Nov 2009 16:56:49 -0500
-David VomLehn <dvomlehn@cisco.com> wrote:
 
-> Good question. Some more detail on our application might help. In some
-> situations, we may have no disk and only enough flash for the bootloader.
-> The kernel is downloaded over the network. When we get to user space, we
-> initialize a number of things dynamically. For example, we dynamically
-> compute some MAC address, and most of the IP addresses are obtained with
-> DHCP. This are very useful to have for panic analysis.
+* H. Peter Anvin <hpa@zytor.com> wrote:
+
+> On 11/12/2009 11:33 PM, Ingo Molnar wrote:
+> > 
+> > * Pavel Machek <pavel@ucw.cz> wrote:
+> > 
+> >>> Ling, if you are interested, could you send a user-space test-app to 
+> >>> this thread that everyone could just compile and run on various older 
+> >>> boxes, to gather a performance profile of hand-coded versus string ops 
+> >>> performance?
+> >>>
+> >>> ( And i think we can make a judgement based on cache-hot performance
+> >>>   alone - if then the strings ops will perform comparatively better in
+> >>>   cache-cold scenarios, so the cache-hot numbers would be a conservative
+> >>>   estimate. )
+> >>
+> >> Ugh, really? I'd expect cache-cold performance to be not helped at all 
+> >> (memory bandwidth limit) and you'll get slow down from additional 
+> >> i-cache misses...
+> > 
+> > That's my point - the new code is shorter, which will run comparatively 
+> > faster in a cache-cold environment.
+> > 
 > 
-> Since there is neither flash nor disk, user space has no place to store
-> this information, should the kernel panic. When we come back up, we will get
-> different MAC and IP addresses. Storing them in memory is our only hope.
-> 
-> Fortunately, there is a section of RAM that the bootloader promises not
-> to overwrite. On a panic, we capture the messages written on the console
-> and store them in the protected area. If the information from the
-> /proc file is written as part of the panic, we will capture it, too.
+> memcpy_c by itself is by far the shortest variant, of course.
 
-Can't you solve this completely from userspace using phram and mtdoops
-instead? I.e., setup two phram areas
+yep. The argument i made was when a long function was compared to a 
+short one. As you noted we dont actually enable the long function all 
+that often - which inverts the same argument.
 
-	modprobe phram 4K@start-of-your-area,4K@start-of-your-area+4K    # Can't remember the exact syntax!
+> The question is if it makes sense to use the long variants for short 
+> (< 1024 bytes) copies.
 
-you'll then get /dev/mtdX and /dev/mtdX+1 for these two. You can then do
+I'd say not - the kernel executes in a icache-cold environment most of 
+the time (as user-space is far more cache intense in the majority of 
+workloads and kernel processing starts with a cold icache), so 
+optimizing the kernel for code size is very important. (but numbers done 
+on real workloads can convince me of the opposite.)
 
-	modprobe mtdoops mtddev=/dev/mtdX+1 dump_oops=0
-
-to load mtdoops to catch the panic in the second area, and just write
-your userspace messages to /dev/mtdX.
-
-
-One thing probably have to be fixed though: I don't think phram has a
-panic_write, which will be needed by mtdoops to catch the panic - this
-should be trivial to add though since it's plain RAM.
-
-// Simon
+	Ingo
