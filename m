@@ -1,237 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZKMONJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZKMOOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZKMONJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 09:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZKMOND
+	id S1755302AbZKMOOF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 09:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbZKMOOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 09:13:03 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:41206 "EHLO gir.skynet.ie"
+	Fri, 13 Nov 2009 09:14:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58757 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbZKMONB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 09:13:01 -0500
-Date: Fri, 13 Nov 2009 14:13:03 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and
-	double check it should be asleep
-Message-ID: <20091113141303.GI29804@csn.ul.ie>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <1258054235-3208-5-git-send-email-mel@csn.ul.ie> <20091113142558.33B6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091113142558.33B6.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1753860AbZKMON7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 09:13:59 -0500
+Date: Fri, 13 Nov 2009 09:13:52 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-nfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       adobriyan@gmail.com, viro@ZenIV.linux.org.uk, jamie@shareable.org
+Subject: Re: [PATCH] nfs4: handle situation where dentry wasn't revalidated
+ on open
+Message-ID: <20091113091352.51bddfdb@tlielax.poochiereds.net>
+In-Reply-To: <1258119000.7430.5.camel@heimdal.trondhjem.org>
+References: <1258118636-1348-1-git-send-email-jlayton@redhat.com>
+	<1258119000.7430.5.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 07:43:09PM +0900, KOSAKI Motohiro wrote:
-> > After kswapd balances all zones in a pgdat, it goes to sleep. In the event
-> > of no IO congestion, kswapd can go to sleep very shortly after the high
-> > watermark was reached. If there are a constant stream of allocations from
-> > parallel processes, it can mean that kswapd went to sleep too quickly and
-> > the high watermark is not being maintained for sufficient length time.
-> > 
-> > This patch makes kswapd go to sleep as a two-stage process. It first
-> > tries to sleep for HZ/10. If it is woken up by another process or the
-> > high watermark is no longer met, it's considered a premature sleep and
-> > kswapd continues work. Otherwise it goes fully to sleep.
-> > 
-> > This adds more counters to distinguish between fast and slow breaches of
-> > watermarks. A "fast" premature sleep is one where the low watermark was
-> > hit in a very short time after kswapd going to sleep. A "slow" premature
-> > sleep indicates that the high watermark was breached after a very short
-> > interval.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> Why do you submit this patch to mainline? this is debugging patch
-> no more and no less.
-> 
+On Fri, 13 Nov 2009 22:30:00 +0900
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-Do you mean the stats part? The stats are included until such time as the page
-allocator failure reports stop or are significantly reduced. In the event a
-report is received, the value of the counters help determine if kswapd was
-struggling or not. They should be removed once this mess is ironed out.
-
-If there is a preference, I can split out the stats part and send it to
-people with page allocator failure reports for retesting.
-
-> 
+> On Fri, 2009-11-13 at 08:23 -0500, Jeff Layton wrote:
+> > This patch is an alternate approach to fixing this problem that doesn't
+> > rely on VFS changes...
+> > 
+> > Currently, the NFSv4 client code relies on the ->lookup and
+> > ->d_revalidate codepaths to handle the open processing during lookup. In
+> > certain situations (notably LAST_BIND symlinks and file bind mounts)
+> > it's possible for the VFS to skip calling d_revalidate on a dentry that
+> > it finds in the cache. If this is done on an open call, the file doesn't
+> > get opened on the wire, no state is established and stateful operations
+> > fail against it.
+> > 
+> > This patchset fixes this problem by taking advantage of the fact that we
+> > can pass an open routine to lookup_instantiate_filp. A new open file
+> > operation for NFSv4 is added that should only be called if the filp
+> > wasn't instantiated during lookup. The original open routine is passed
+> > to lookup_instantiate_filp to ensure no change in behavior there.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
 > > ---
-> >  include/linux/vmstat.h |    1 +
-> >  mm/vmscan.c            |   44 ++++++++++++++++++++++++++++++++++++++++++--
-> >  mm/vmstat.c            |    2 ++
-> >  3 files changed, 45 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-> > index 2d0f222..9716003 100644
-> > --- a/include/linux/vmstat.h
-> > +++ b/include/linux/vmstat.h
-> > @@ -40,6 +40,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
-> >  		PGSCAN_ZONE_RECLAIM_FAILED,
-> >  #endif
-> >  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
-> > +		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
-> >  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> 
-> Please don't use the word of "premature" and "fast". it is too hard to understand the meanings.
-
-How about KSWAPD_LOW_WMARK_HIT_QUICKLY and
-KSWAPD_HIGH_WMARK_HIT_QUICKLY?
-
-
-> Plus, please use per-zone stastics (like NUMA_HIT).
-> 
-
-Is that not overkill? The intention is just to track in general terms if
-kswapd is struggling or not. I hadn't been considering the problem on a
-per-zone basis to date.
-
-> >
-> >  #ifdef CONFIG_HUGETLB_PAGE
-> >  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 190bae1..ffa1766 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -1904,6 +1904,24 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
-> >  }
-> >  #endif
-> >  
-> > +/* is kswapd sleeping prematurely? */
-> > +static int sleeping_prematurely(int order, long remaining)
+> <snip>
+> > +/*
+> > + * should only be called when VFS skips revalidation
+> > + */
+> > +int
+> > +nfs4_open(struct inode *inode, struct file *filp)
 > > +{
-> > +	struct zone *zone;
+> > +	struct inode *dir = filp->f_path.dentry->d_parent->d_inode;
+> > +	struct rpc_cred *cred;
+> > +	struct nfs_open_context *ctx;
 > > +
-> > +	/* If a direct reclaimer woke kswapd within HZ/10, it's premature */
-> > +	if (remaining)
-> > +		return 1;
+> > +	cred = rpc_lookup_cred();
+> > +	if (IS_ERR(cred))
+> > +		return PTR_ERR(cred);
 > > +
-> > +	/* If after HZ/10, a zone is below the high mark, it's premature */
-> > +	for_each_populated_zone(zone)
-> > +		if (!zone_watermark_ok(zone, order, high_wmark_pages(zone),
-> > +								0, 0))
-> > +			return 1;
+> > +	ctx = alloc_nfs_open_context(filp->f_path.mnt, filp->f_path.dentry, cred);
+> > +	if (ctx == NULL) {
+> > +		put_rpccred(cred);
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	ctx->state = nfs4_do_open(dir, &filp->f_path, filp->f_mode, filp->f_flags, NULL, cred);
+> > +	put_rpccred(cred);
+> > +	if (IS_ERR(ctx->state)) {
+> > +		put_nfs_open_context(ctx);
+> > +		return PTR_ERR(ctx->state);
+> > +	}
+> > +	ctx->mode = filp->f_mode;
+> > +	nfs_set_verifier(filp->f_path.dentry, nfs_save_change_attribute(dir));
+> > +	nfs_file_set_open_context(filp, ctx);
+> > +	put_nfs_open_context(ctx);
+> > +	nfs_fscache_set_inode_cookie(inode, filp);
+> > +	return 0;
+> > +}
+> > +
 > 
-> for_each_populated_zone() iterate all populated zone. but kswapd shuld't see another node.
+> So what happens if the file has been renamed/deleted/replaced since the
+> lookup occurred? You basically end up with a state that corresponds to a
+> different file than the filp->f_path...
 > 
 
-Good spot.
+Good point...
 
-How about the following?
+I suppose I could add a check that the state->inode is the right one.
+I'm not certain what to do if they aren't though...
 
-==== CUT HERE ====
-vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
-
-This patch is a fix and a claritifacation to the patch "vmscan: Have
-kswapd sleep for a short interval and double check it should be asleep".
-The fix is for kswapd to only check zones in the node it is responsible
-for. The clarification is to rename two counters to better explain what is
-being counted.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- include/linux/vmstat.h |    2 +-
- mm/vmscan.c            |   20 +++++++++++++-------
- mm/vmstat.c            |    4 ++--
- 3 files changed, 16 insertions(+), 10 deletions(-)
-
-diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-index 7d66695..0591a48 100644
---- a/include/linux/vmstat.h
-+++ b/include/linux/vmstat.h
-@@ -40,7 +40,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
- 		PGSCAN_ZONE_RECLAIM_FAILED,
- #endif
- 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
--		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
-+		KSWAPD_LOW_WMARK_HIT_QUICKLY, KSWAPD_HIGH_WMARK_HIT_QUICKLY,
- 		KSWAPD_NO_CONGESTION_WAIT,
- 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
- #ifdef CONFIG_HUGETLB_PAGE
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 70967e1..5557555 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1905,19 +1905,25 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
- #endif
- 
- /* is kswapd sleeping prematurely? */
--static int sleeping_prematurely(int order, long remaining)
-+static int sleeping_prematurely(pg_data_t *pgdat, int order, long remaining)
- {
--	struct zone *zone;
-+	int i;
- 
- 	/* If a direct reclaimer woke kswapd within HZ/10, it's premature */
- 	if (remaining)
- 		return 1;
- 
- 	/* If after HZ/10, a zone is below the high mark, it's premature */
--	for_each_populated_zone(zone)
-+	for (i = 0; i < pgdat->nr_zones; i++) {
-+		struct zone *zone = pgdat->node_zones + i;
-+
-+		if (!populated_zone(zone))
-+			continue;
-+
- 		if (!zone_watermark_ok(zone, order, high_wmark_pages(zone),
- 								0, 0))
- 			return 1;
-+	}
- 
- 	return 0;
- }
-@@ -2221,7 +2227,7 @@ static int kswapd(void *p)
- 				long remaining = 0;
- 
- 				/* Try to sleep for a short interval */
--				if (!sleeping_prematurely(order, remaining)) {
-+				if (!sleeping_prematurely(pgdat, order, remaining)) {
- 					remaining = schedule_timeout(HZ/10);
- 					finish_wait(&pgdat->kswapd_wait, &wait);
- 					prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
-@@ -2232,13 +2238,13 @@ static int kswapd(void *p)
- 				 * premature sleep. If not, then go fully
- 				 * to sleep until explicitly woken up
- 				 */
--				if (!sleeping_prematurely(order, remaining))
-+				if (!sleeping_prematurely(pgdat, order, remaining))
- 					schedule();
- 				else {
- 					if (remaining)
--						count_vm_event(KSWAPD_PREMATURE_FAST);
-+						count_vm_event(KSWAPD_LOW_WMARK_HIT_QUICKLY);
- 					else
--						count_vm_event(KSWAPD_PREMATURE_SLOW);
-+						count_vm_event(KSWAPD_HIGH_WMARK_HIT_QUICKLY);
- 				}
- 			}
- 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index bc09547..6cc8dc6 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -683,8 +683,8 @@ static const char * const vmstat_text[] = {
- 	"slabs_scanned",
- 	"kswapd_steal",
- 	"kswapd_inodesteal",
--	"kswapd_slept_prematurely_fast",
--	"kswapd_slept_prematurely_slow",
-+	"kswapd_low_wmark_hit_quickly",
-+	"kswapd_high_wmark_hit_quickly",
- 	"kswapd_no_congestion_wait",
- 	"pageoutrun",
- 	"allocstall",
+I suppose we'd need to unhash the old dentry, and instantiate a new one,
+but it is OK to swap out the dentry in the f_path with the new one?
+Maybe I should just wait for your overhaul of the open codepath...
+-- 
+Jeff Layton <jlayton@redhat.com>
