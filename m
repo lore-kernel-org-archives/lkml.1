@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZKMAbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbZKMAll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbZKMAbn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 19:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZKMAbl
+	id S1754681AbZKMAll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 19:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbZKMAlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 19:31:41 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:60023 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755914AbZKMAbl convert rfc822-to-8bit (ORCPT
+	Thu, 12 Nov 2009 19:41:39 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:62405 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbZKMAli convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 19:31:41 -0500
+	Thu, 12 Nov 2009 19:41:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=lfgu0AlBNJqDi7wcygIHa3s1BdW+GQzf8xGxqmgr/wKYSPZx9kvT2MWBkuYRa3kZZx
-         gV3Cqoxli49JJWdsVc0iy/nS5BoClFCFFNkW/PiQbiFZ3ZATFH2ilPycCBfPYEvPZAkC
-         m74jS3DJv8P6+3MGGbgKUt0gsSvyLgNRtsf2I=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CgbkTB6qSBDf5Xv5dFruPbIFZKg3NkyXkGTfxWho99fAVk9Fqb/0Mi7JXj5wNVUw7X
+         foMQU0aOoZhjhpXfpvJMSGwrqUacDEP1uOFuUWLGkbcVg/g8g41AqHu40R6sqp3tY0zb
+         AqpKewFg4x0GRbMEp+E7ywChcYnjFZbBC7TFY=
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520911121531y70e05d4rcd361ec33799bc0a@mail.gmail.com>
-References: <1258067006-2205-1-git-send-email-lrodriguez@atheros.com> 
-	<9b2b86520911121531y70e05d4rcd361ec33799bc0a@mail.gmail.com>
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Thu, 12 Nov 2009 16:31:26 -0800
-X-Google-Sender-Auth: 48c6f62f9634f0cf
-Message-ID: <43e72e890911121631q2e4afd17k59dfb30bc1d309f2@mail.gmail.com>
-Subject: Re: [RFC] scripts: add gen-linux-conf for remote kernel configuration
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, greg@kroah.com,
-       akpm@linux-foundation.org
+In-Reply-To: <4AFCA75C.8000101@pobox.com>
+References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com>
+	 <4AF8F363.3010806@rtr.ca> <200911101651.24912.bzolnier@gmail.com>
+	 <84144f020911100808y55f5bfa2v5c203b356583a7b5@mail.gmail.com>
+	 <4AFB3C9D.4020609@rtr.ca>
+	 <a4c8a6d00911111450y7e451071h3f0ede0a1003678b@mail.gmail.com>
+	 <4AFC9FEC.8030304@rtr.ca> <4AFCA75C.8000101@pobox.com>
+Date: Thu, 12 Nov 2009 22:41:42 -0200
+Message-ID: <a4c8a6d00911121641k13288cb3s696a876901c68eb3@mail.gmail.com>
+Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
+From: Thiago Farina <tfransosi@gmail.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Mark Lord <liml@rtr.ca>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, mlord@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 3:31 PM, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> On 11/12/09, Luis R. Rodriguez <lrodriguez@atheros.com> wrote:
->> The new 'make localmodconfig' proves very useful but on low end
->> systems we do not want to 'git clone' an entire kernel tree or
->> download a whole kernel but just cross compile the kernel on a
->> bigger machine. The .config generated with 'make localmodconfig'
->> is still very helpfup though so to aid users and developers
->> with that add a script which builds a tarball with only the
->> necessary kernel glue stuff to be able to generate a local
->> minimum kernel configuration with 'make localmodconfig'.
+On Thu, Nov 12, 2009 at 10:25 PM, Jeff Garzik <jgarzik@pobox.com> wrote:
+> On 11/12/2009 06:53 PM, Mark Lord wrote:
 >>
->> With this you can copy to your target device a relatively
->> small tarball (1.2 MB currenty) and, allows you to modify
->> the kernel config for your tree (mconf, conf, etc) and
->> finally run 'make localmodconfig'.
+>> Thiago Farina wrote:
+>>>
+>>> On Wed, Nov 11, 2009 at 8:37 PM, Mark Lord <liml@rtr.ca> wrote:
+>>>>
+>>>> Looks like unnecessary churn and obfuscation to me.
+>>>
+>>> Obfuscation? Are you saying that just because you wrote this code? So
+>>> what is the usage of a macro? I think you are having a defensive
+>>> position here.
 >>
->> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
->> ---
+>> ..
 >>
->> I had an itch to scratch and that was to use 'localmodconfig'
->> on a small netbook but I didn't want to clone a whole tree
->> or even compile an entire kernel on it. This did the trick,
->> thought others might find it useful.
->>
->> A little grimy the bash script, but hey it works and its simple
->> enough. I tried to reduce the Makefile count to only arch/ but
->> found that that didn't do the trick. Perhaps this can be optimized
->> more, suggestions welcomed. Maybe it should be written in Go :)
->>
->> What would be *real* nice is to give an IP address of a box and
->> have it build and fetch a localmodconfig .config for you.
->>
->>   Luis
+>> No, actually I believe Jeff wrote that particular line of code.
 >
-> Thanks for posting this.
+> You know, Linus actually invented a command for people who enjoy this
+> game...  ;)
 >
-> When I tried this for my netbook, my approach was to copy
-> /proc/modules and /boot/config from the netbook.  As a shameless hack,
-> I temporarily bind mounted /proc/modules on the build system.  I guess
-> the cleaner way would be to copy the result of "lsmod", and have
-> localmodconfig accept "LSMOD_FILE=file".
+>        git blame drivers/ata/sata_mv.c
 >
-> Naturally I think my approach is simpler, despite not having actually
-> implemented it properly :).  What do you think about it?
+> shows each line of code, and metadata about each line such as commit id and
+> author name.
 
-It does sound simpler, but you'd still need the netbook's config and
-upgrade it to the the desired kernel's config, so you'd need to
-address that too. Just lsmod won't cut it I think.
-
-  Luis
+Sure, and I ran this command before saying that Mark wrote this code.
