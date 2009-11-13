@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZKMUSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbZKMU2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbZKMUSj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 15:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZKMUSe
+	id S1757519AbZKMU2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 15:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZKMU2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 15:18:34 -0500
-Received: from smtp101.biz.mail.mud.yahoo.com ([68.142.200.236]:34764 "HELO
-	smtp101.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757251AbZKMUSd (ORCPT
+	Fri, 13 Nov 2009 15:28:37 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:65388 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757476AbZKMU2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 15:18:33 -0500
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: OGltuk8VM1nycAXUuPtG4Ngbc_xheHJJviNGlXcDK8jhdNoivVTWXZGDnc6h3exilynHgSZ4lGx4klrqAvwMc4g5OpLCbF._TpMwJHMY3mf3H6FJe14UJo0lFY_I.R1puzGSdNLWCeSndEoAN1WfxCFETSlW11v5izeJehX8VWzdNnVVx1NBWAa_HRP9wzP6mTvo2PXsqOB2MEizvus9DcB2wf.kmw4WBapv9e.Oxh.3Oyn4AyveCP5XRJY97ZjCwN3T07V7fkMHjFXsV0Kbz0fKL6P0PbI6N4kQCTXW5.Fmcq2xOA3yxyWR84HQNQEQA9o2YhRPBnqWSyEXz4FxWHIipZie4xA52d8vVhWR8g--
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: uclinux-dev@uclinux.org
-Subject: [PATCH] m68knommu: export clk_* symbols in clk.c
-Date: Fri, 13 Nov 2009 12:18:37 -0800
-User-Agent: KMail/1.9.9
-Cc: Greg Ungerer <gerg@snapgear.com>, linux-kernel@vger.kernel.org
+	Fri, 13 Nov 2009 15:28:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZS2g54UGLOUeB4ymZs9Ibx6eQu978Sq3xFHA5EShadhyqLVxMtH51KTRZp4zgPJ1Yj
+         VjUP5XwIz2hUseimxYuuCbhC5tRrMXffApMYJ5EgO1Vi5GNKdPt6GRyydte29Zqzi5r/
+         dtg58YNvKWb42quHph8L5JokpSx5uemOGZreI=
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911131218.37434.sfking@fdwdc.com>
+In-Reply-To: <1258134207.6411.0.camel@c-dwalke-linux.qualcomm.com>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-4-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-5-git-send-email-felipe.contreras@gmail.com>
+	 <1252936556.28368.215.camel@desktop>
+	 <94a0d4530909140734q51779b76g2ddc7211ece87171@mail.gmail.com>
+	 <1252940549.28368.255.camel@desktop>
+	 <94a0d4530911111623h1ae3463dte8a3f83ec0ad1f75@mail.gmail.com>
+	 <1258134207.6411.0.camel@c-dwalke-linux.qualcomm.com>
+Date: Fri, 13 Nov 2009 22:28:41 +0200
+Message-ID: <94a0d4530911131228s6b6b6221o7b24002ca03373e5@mail.gmail.com>
+Subject: Re: [PATCH 4/5] acpi: fix trivial warning
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-export the clk_*  stubs defined in arch/m68knommu/platform/coldfire/clk.c so
-they can be used by modules.
+On Fri, Nov 13, 2009 at 7:43 PM, Daniel Walker <dwalker@fifo99.com> wrote:
+> On Thu, 2009-11-12 at 02:23 +0200, Felipe Contreras wrote:
+>> On Mon, Sep 14, 2009 at 5:02 PM, Daniel Walker <dwalker@fifo99.com> wrote:
+>> > On Mon, 2009-09-14 at 17:34 +0300, Felipe Contreras wrote:
+>> >> I did... the style issues are already there, my patch is not
+>> >> introducing them. Do you want me to send a separate patch to fix the
+>> >> existing style issues?
+>> >
+>> > Yes, If your inclined to clean up the whole file, or just the
+>> > surrounding code that would be helpful ..
+>>
+>> Nobody seems to like the patch you suggested me to do... did I wasted
+>> my time doing it?
+>> http://article.gmane.org/gmane.linux.acpi.devel/42383
+>
+> Did you get some negative feedback ? I don't see any..
 
-Signed-off-by: Steven King <sfking@fdwdc.com>
+Well:
+---
+And after today's discussion on kernel summit on this topic, I wouldn't
+expect any maintainer to merge it, sorry :)
 ---
 
- arch/m68knommu/platform/coldfire/clk.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+That doesn't seem too positive. Or at least there's no indication that
+somebody will pick it up.
 
-
-diff --git a/arch/m68knommu/platform/coldfire/clk.c b/arch/m68knommu/platform/coldfire/clk.c
-index 7cdbf44..9f1260c 100644
---- a/arch/m68knommu/platform/coldfire/clk.c
-+++ b/arch/m68knommu/platform/coldfire/clk.c
-@@ -9,6 +9,7 @@
- /***************************************************************************/
- 
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/clk.h>
- #include <asm/coldfire.h>
- 
-@@ -18,23 +19,27 @@ struct clk *clk_get(struct device *dev, const char *id)
- {
- 	return NULL;
- }
-+EXPORT_SYMBOL(clk_get);
- 
- int clk_enable(struct clk *clk)
- {
- 	return 0;
- }
-+EXPORT_SYMBOL(clk_enable);
- 
- void clk_disable(struct clk *clk)
- {
- }
-+EXPORT_SYMBOL(clk_disable);
- 
- void clk_put(struct clk *clk)
- {
- }
-+EXPORT_SYMBOL(clk_put);
- 
- unsigned long clk_get_rate(struct clk *clk)
- {
- 	return MCF_CLK;
- }
--
-+EXPORT_SYMBOL(clk_get_rate);
- /***************************************************************************/
+-- 
+Felipe Contreras
