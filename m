@@ -1,143 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZKMRmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbZKMRmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbZKMRmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZKMRk6
+	id S1756299AbZKMRmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbZKMRma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:40:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21397 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932073AbZKMRks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:40:48 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
-       riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: [PATCH 16/16] blkio: Documentation
-Date: Fri, 13 Nov 2009 12:40:15 -0500
-Message-Id: <1258134015-21632-17-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
-References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
+	Fri, 13 Nov 2009 12:42:30 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:43830 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932129AbZKMRlR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:41:17 -0500
+Date: Fri, 13 Nov 2009 12:41:19 -0500
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jordan Crouse <jordan@cosmicpenguin.net>,
+       linux-geode@lists.infradead.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] lxfb: add copyright/license info
+Message-ID: <20091113124119.34ec8677@mycelium.queued.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- Documentation/cgroups/blkio-controller.txt |  100 ++++++++++++++++++++++++++++
- 1 files changed, 100 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/cgroups/blkio-controller.txt
 
-diff --git a/Documentation/cgroups/blkio-controller.txt b/Documentation/cgroups/blkio-controller.txt
-new file mode 100644
-index 0000000..6fb772f
---- /dev/null
-+++ b/Documentation/cgroups/blkio-controller.txt
-@@ -0,0 +1,100 @@
-+				Block IO Controller
-+				===================
-+Overview
-+========
-+cgroup subsys "blkio" implements the block io controller. There seems to be
-+a need of various kind of IO control policies (like proportional BW, max BW)
-+both at leaf nodes as well as at intermediate nodes in storage hierarchy. Plan
-+is to use same cgroup based management interface for blkio controller and
-+based on user options switch IO policies in the background.
-+
-+In the first phase, this patchset implements proportional weight time based
-+division of disk policy. It is implemented in CFQ. Hence this policy takes
-+effect only on leaf nodes when CFQ is being used.
-+
-+HOWTO
-+=====
-+You can do a very simple testing of running two dd threads in two different
-+cgroups. Here is what you can do.
-+
-+- Enable group scheduling in CFQ
-+	CONFIG_CFQ_GROUP_IOSCHED=y
-+
-+- Compile and boot into kernel and mount IO controller (blkio).
-+
-+	mount -t cgroup -o blkio none /cgroup
-+
-+- Create two cgroups
-+	mkdir -p /cgroup/test1/ /cgroup/test2
-+
-+- Set weights of group test1 and test2
-+	echo 1000 > /cgroup/test1/blkio.weight
-+	echo 500 > /cgroup/test2/blkio.weight
-+
-+- Create two same size files (say 512MB each) on same disk (file1, file2) and
-+  launch two dd threads in different cgroup to read those files.
-+
-+	sync
-+	echo 3 > /proc/sys/vm/drop_caches
-+
-+	dd if=/mnt/sdb/zerofile1 of=/dev/null &
-+	echo $! > /cgroup/test1/tasks
-+	cat /cgroup/test1/tasks
-+
-+	dd if=/mnt/sdb/zerofile2 of=/dev/null &
-+	echo $! > /cgroup/test2/tasks
-+	cat /cgroup/test2/tasks
-+
-+- At macro level, first dd should finish first. To get more precise data, keep
-+  on looking at (with the help of script), at blkio.disk_time and
-+  blkio.disk_sectors files of both test1 and test2 groups. This will tell how
-+  much disk time (in milli seconds), each group got and how many secotors each
-+  group dispatched to the disk. We provide fairness in terms of disk time, so
-+  ideally io.disk_time of cgroups should be in proportion to the weight.
-+
-+Various user visible config options
-+===================================
-+CONFIG_CFQ_GROUP_IOSCHED
-+	- Enables group scheduling in CFQ. Currently only 1 level of group
-+	  creation is allowed.
-+
-+CONFIG_DEBUG_CFQ_IOSCHED
-+	- Enables some debugging messages in blktrace. Also creates extra
-+	  cgroup file blkio.dequeue.
-+
-+Config options selected automatically
-+=====================================
-+These config options are not user visible and are selected/deselected
-+automatically based on IO scheduler configuration.
-+
-+CONFIG_BLK_CGROUP
-+	- Block IO controller. Selected by CONFIG_CFQ_GROUP_IOSCHED.
-+
-+CONFIG_DEBUG_BLK_CGROUP
-+	- Debug help. Selected by CONFIG_DEBUG_CFQ_IOSCHED.
-+
-+Details of cgroup files
-+=======================
-+- blkio.weight
-+	- Specifies per cgroup weight.
-+
-+	  Currently allowed range of weights is from 100 to 1000.
-+
-+- blkio.time
-+	- disk time allocated to cgroup per device in milliseconds. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the disk time allocated to group in
-+	  milliseconds.
-+
-+- blkio.sectors
-+	- number of sectors transferred to/from disk by the group. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the number of sectors transferred by the
-+	  group to/from the device.
-+
-+- blkio.dequeue
-+	- Debugging aid only enabled if CONFIG_DEBUG_CFQ_IOSCHED=y. This
-+	  gives the statistics about how many a times a group was dequeued
-+	  from service tree of the device. First two fields specify the major
-+	  and minor number of the device and third field specifies the number
-+	  of times a group was dequeued from a particular device.
+The GRUB folks requested copyright/license info for lxfb.h, so here it is.
+
+Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
+---
+ drivers/video/geode/lxfb.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
+index 6a51448..67b26aa 100644
+--- a/drivers/video/geode/lxfb.h
++++ b/drivers/video/geode/lxfb.h
+@@ -1,3 +1,13 @@
++/* Geode LX framebuffer driver
++ *
++ * Copyright (C) 2006-2007, Advanced Micro Devices,Inc.
++ * Copyright (c) 2008  Andres Salomon <dilinger@debian.org>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
+ #ifndef _LXFB_H_
+ #define _LXFB_H_
+ 
 -- 
-1.6.2.5
+1.5.6.5
 
