@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbZKMJbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZKMJdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429AbZKMJbs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZKMJbn
+	id S1755975AbZKMJdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbZKMJds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:31:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53304 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 04:33:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53393 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbZKMJbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:31:42 -0500
-Date: Fri, 13 Nov 2009 09:31:25 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12580941042308-git-send-email->
-References: <12580941042308-git-send-email->
+	id S1755696AbZKMJdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:33:46 -0500
+Date: Fri, 13 Nov 2009 09:31:41 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, lizf@cn.fujitsu.com, efault@gmx.de,
+       peterz@infradead.org, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
+       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
+References: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Simplify association of forced quiescent states with grace periods
-Message-ID: <tip-8e9aa8f067d2dcd9457980ced618e1cffbcfba46@git.kernel.org>
-Git-Commit-ID: 8e9aa8f067d2dcd9457980ced618e1cffbcfba46
+Subject: [tip:perf/core] tracing: Rename 'lockdep' event subsystem into 'lock'
+Message-ID: <tip-b8b901965dbc6572f365457bb8c6a487f7da5d02@git.kernel.org>
+Git-Commit-ID: b8b901965dbc6572f365457bb8c6a487f7da5d02
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,107 +33,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8e9aa8f067d2dcd9457980ced618e1cffbcfba46
-Gitweb:     http://git.kernel.org/tip/8e9aa8f067d2dcd9457980ced618e1cffbcfba46
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Thu, 12 Nov 2009 22:35:04 -0800
+Commit-ID:  b8b901965dbc6572f365457bb8c6a487f7da5d02
+Gitweb:     http://git.kernel.org/tip/b8b901965dbc6572f365457bb8c6a487f7da5d02
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 13 Nov 2009 10:06:34 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Nov 2009 10:18:36 +0100
+CommitDate: Fri, 13 Nov 2009 10:28:13 +0100
 
-rcu: Simplify association of forced quiescent states with grace periods
+tracing: Rename 'lockdep' event subsystem into 'lock'
 
-The force_quiescent_state() function also took a snapshot
-of the ->completed field, which was as obnoxious as it was in
-rcu_sched_qs() and friends.  So snapshot ->gpnum-1.
+Lockdep events subsystem gathers various locking related events
+such as a request, release, contention or acquisition of a lock.
 
-Also, since the dyntick_record_completed() and
-dyntick_recall_completed() functions are now simple assignments
-that are independent of CONFIG_NO_HZ, and since their names are
-now misleading, get rid of them.
+The name of this event subsystem is a bit of a misnomer since
+these events are not quite related to lockdep but more generally
+to locking, ie: these events are not reporting lock dependencies
+or possible deadlock scenario but pure locking events.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <12580941042308-git-send-email->
+Hence this rename.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/rcutree.c |   27 +++------------------------
- 1 files changed, 3 insertions(+), 24 deletions(-)
+ include/trace/events/lockdep.h |    8 ++++----
+ kernel/lockdep.c               |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index b4efb9e..3df0438 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -178,29 +178,9 @@ static struct rcu_node *rcu_get_root(struct rcu_state *rsp)
- 	return &rsp->node[0];
- }
+diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
+index bcf1d20..a870ba1 100644
+--- a/include/trace/events/lockdep.h
++++ b/include/trace/events/lockdep.h
+@@ -1,8 +1,8 @@
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM lockdep
++#define TRACE_SYSTEM lock
  
--/*
-- * Record the specified "completed" value, which is later used to validate
-- * dynticks counter manipulations and CPU-offline checks.  Specify
-- * "rsp->completed - 1" to unconditionally invalidate any future dynticks
-- * manipulations and CPU-offline checks.  Such invalidation is useful at
-- * the beginning of a grace period.
-- */
--static void dyntick_record_completed(struct rcu_state *rsp, long comp)
--{
--	rsp->completed_fqs = comp;
--}
--
- #ifdef CONFIG_SMP
+-#if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
+-#define _TRACE_LOCKDEP_H
++#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_LOCK_H
  
- /*
-- * Recall the previously recorded value of the completion for dynticks.
-- */
--static long dyntick_recall_completed(struct rcu_state *rsp)
--{
--	return rsp->completed_fqs;
--}
--
--/*
-  * If the specified CPU is offline, tell the caller that it is in
-  * a quiescent state.  Otherwise, whack it with a reschedule IPI.
-  * Grace periods can end up waiting on an offline CPU when that
-@@ -702,7 +682,6 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	rsp->signaled = RCU_GP_INIT; /* Hold off force_quiescent_state. */
- 	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
- 	record_gp_stall_check_time(rsp);
--	dyntick_record_completed(rsp, rsp->completed - 1);
+ #include <linux/lockdep.h>
+ #include <linux/tracepoint.h>
+@@ -90,7 +90,7 @@ TRACE_EVENT(lock_acquired,
+ #endif
+ #endif
  
- 	/* Special-case the common single-level case. */
- 	if (NUM_RCU_NODES == 1) {
-@@ -1214,7 +1193,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		goto unlock_ret; /* no emergency and done recently. */
- 	rsp->n_force_qs++;
- 	spin_lock(&rnp->lock);
--	lastcomp = rsp->completed;
-+	lastcomp = rsp->gpnum - 1;
- 	signaled = rsp->signaled;
- 	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
- 	if (lastcomp == rsp->gpnum) {
-@@ -1248,7 +1227,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		if (lastcomp == rsp->completed &&
- 		    rsp->signaled == signaled) {
- 			rsp->signaled = RCU_FORCE_QS;
--			dyntick_record_completed(rsp, lastcomp);
-+			rsp->completed_fqs = lastcomp;
- 			forcenow = signaled == RCU_SAVE_COMPLETED;
- 		}
- 		spin_unlock(&rnp->lock);
-@@ -1259,7 +1238,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 	case RCU_FORCE_QS:
+-#endif /* _TRACE_LOCKDEP_H */
++#endif /* _TRACE_LOCK_H */
  
- 		/* Check dyntick-idle state, send IPI to laggarts. */
--		if (rcu_process_dyntick(rsp, dyntick_recall_completed(rsp),
-+		if (rcu_process_dyntick(rsp, rsp->completed_fqs,
- 					rcu_implicit_dynticks_qs))
- 			goto unlock_ret;
+ /* This part must be outside protection */
+ #include <trace/define_trace.h>
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 9af5672..f5dcd36 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -49,7 +49,7 @@
+ #include "lockdep_internals.h"
  
+ #define CREATE_TRACE_POINTS
+-#include <trace/events/lockdep.h>
++#include <trace/events/lock.h>
+ 
+ #ifdef CONFIG_PROVE_LOCKING
+ int prove_locking = 1;
