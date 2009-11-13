@@ -1,95 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZKMNx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZKMNyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbZKMNx4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 08:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZKMNxv
+	id S1754753AbZKMNyp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 08:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZKMNym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 08:53:51 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:50126 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753311AbZKMNxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 08:53:51 -0500
-Message-ID: <4AFD64EF.20807@sgi.com>
-Date: Fri, 13 Nov 2009 05:53:51 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 13 Nov 2009 08:54:42 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57407 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbZKMNyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 08:54:41 -0500
+Date: Fri, 13 Nov 2009 13:54:43 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 5/5] vmscan: Take order into consideration when
+	deciding if kswapd is in trouble
+Message-ID: <20091113135443.GF29804@csn.ul.ie>
+References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <1258054235-3208-6-git-send-email-mel@csn.ul.ie> <20091113142608.33B9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] ACPI: Limit the number of per cpu ACPI bootup messages
-References: <20091112171934.584037000@alcatraz.americas.sgi.com> <20091112171949.218777000@alcatraz.americas.sgi.com> <alpine.DEB.2.00.0911121259260.13943@chino.kir.corp.google.com> <4AFC7BCA.3070705@sgi.com> <alpine.DEB.2.00.0911121324280.17797@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0911121324280.17797@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091113142608.33B9.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-David Rientjes wrote:
-> On Thu, 12 Nov 2009, Mike Travis wrote:
+On Fri, Nov 13, 2009 at 06:54:29PM +0900, KOSAKI Motohiro wrote:
+> > If reclaim fails to make sufficient progress, the priority is raised.
+> > Once the priority is higher, kswapd starts waiting on congestion.
+> > However, on systems with large numbers of high-order atomics due to
+> > crappy network cards, it's important that kswapd keep working in
+> > parallel to save their sorry ass.
+> > 
+> > This patch takes into account the order kswapd is reclaiming at before
+> > waiting on congestion. The higher the order, the longer it is before
+> > kswapd considers itself to be in trouble. The impact is that kswapd
+> > works harder in parallel rather than depending on direct reclaimers or
+> > atomic allocations to fail.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  mm/vmscan.c |   14 ++++++++++++--
+> >  1 files changed, 12 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index ffa1766..5e200f1 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -1946,7 +1946,7 @@ static int sleeping_prematurely(int order, long remaining)
+> >  static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+> >  {
+> >  	int all_zones_ok;
+> > -	int priority;
+> > +	int priority, congestion_priority;
+> >  	int i;
+> >  	unsigned long total_scanned;
+> >  	struct reclaim_state *reclaim_state = current->reclaim_state;
+> > @@ -1967,6 +1967,16 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+> >  	 */
+> >  	int temp_priority[MAX_NR_ZONES];
+> >  
+> > +	/*
+> > +	 * When priority reaches congestion_priority, kswapd will sleep
+> > +	 * for a short time while congestion clears. The higher the
+> > +	 * order being reclaimed, the less likely kswapd will go to
+> > +	 * sleep as high-order allocations are harder to reclaim and
+> > +	 * stall direct reclaimers longer
+> > +	 */
+> > +	congestion_priority = DEF_PRIORITY - 2;
+> > +	congestion_priority -= min(congestion_priority, sc.order);
 > 
->>>> --- linux.orig/drivers/acpi/tables.c
->>>> +++ linux/drivers/acpi/tables.c
->>>> @@ -66,11 +66,15 @@
->>>>  		{
->>>>  			struct acpi_madt_local_x2apic *p =
->>>>  			    (struct acpi_madt_local_x2apic *)header;
->>>> -			printk(KERN_INFO PREFIX
->>>> -			       "X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
->>>> -			       p->local_apic_id, p->uid,
->>>> -			       (p->lapic_flags & ACPI_MADT_ENABLED) ?
->>>> -			       "enabled" : "disabled");
->>>> +			/*
->>>> +			 * Per cpu tracing clogs console output when NR_CPUS
->>>> +			 * is large.  Send only to kernel log buffer.
->>>> +			 */
->>>> +			printk(KERN_DEBUG PREFIX
->>>> +				"X2APIC (apic_id[0x%02x] uid[0x%02x] %s)\n",
->>>> +				p->local_apic_id, p->uid,
->>>> +				(p->lapic_flags & ACPI_MADT_ENABLED) ?
->>>> +					"enabled" : "disabled");
->>>>  		}
->>>>  		break;
->>>>  
->>> You can still use dev_dbg(PREFIX "...") here.
->> I thought dev_dbg needed the 'dev' structure and I wasn't sure how to get
->> that...?
->>
+> This calculation mean
 > 
-> Ah, ok, it needs to be pr_debug(PREFIX "...") then.
-
-The primary reason I'm using KERN_DEBUG instead of pr_debug is that the
-messages will end up in the log in the former case, so dmesg can print
-them out, whether it's a DEBUG kernel or not.  This helps diagnose problems
-without requiring a reboot of a DEBUG kernel to reproduce a problem, which
-often is not acceptable to many customers (security and system availability
-being the primary concerns.)
-
-> Any reason why the other printk's in acpi_table_print_madt_entry() weren't 
-> converted to use KERN_DEBUG?  It might make more sense to convert all 
-> those to use a new acpi=verbose flag.
-
-I thought of that, but the ACPI debug infrastructure is complex to understand,
-and since I can't really test most cases, I wanted to tread lightly.
+> 	sc.order	congestion_priority	scan-pages
+> 	---------------------------------------------------------
+> 	0		10			1/1024 * zone-mem
+> 	1		9			1/512  * zone-mem
+> 	2		8			1/256  * zone-mem
+> 	3		7			1/128  * zone-mem
+> 	4		6			1/64   * zone-mem
+> 	5		5			1/32   * zone-mem
+> 	6		4			1/16   * zone-mem
+> 	7		3			1/8    * zone-mem
+> 	8		2			1/4    * zone-mem
+> 	9		1			1/2    * zone-mem
+> 	10		0			1      * zone-mem
+> 	11+		0			1      * zone-mem
 > 
-> I'm not sure if Ingo is the right person to go through for acpi patches, I 
-> think this should probably be submitted to Len Brown <lenb@kernel.org> and 
-> linux-acpi@vger.kernel.org instead.
+> I feel this is too agressive. The intention of this congestion_wait()
+> is to prevent kswapd use 100% cpu time.
 
-I can do that.
+Ok, I thought the intention might be to avoid dumping too many pages on
+the queue but it was already waiting on congestion elsewhere.
 
-Thanks,
-Mike
+> but the above promotion seems
+> break it.
+> 
+> example,
+> ia64 have 256MB hugepage (i.e. order=14). it mean kswapd never sleep.
+> 
+> example2,
+> order-3 (i.e. PAGE_ALLOC_COSTLY_ORDER) makes one of most inefficent
+> reclaim, because it doesn't use lumpy recliam.
+> I've seen 128GB size zone, it mean 1/128 = 1GB. oh well, kswapd definitely
+> waste cpu time 100%.
+> 
+> 
+> > +
+> >  loop_again:
+> >  	total_scanned = 0;
+> >  	sc.nr_reclaimed = 0;
+> > @@ -2092,7 +2102,7 @@ loop_again:
+> >  		 * OK, kswapd is getting into trouble.  Take a nap, then take
+> >  		 * another pass across the zones.
+> >  		 */
+> > -		if (total_scanned && priority < DEF_PRIORITY - 2)
+> > +		if (total_scanned && priority < congestion_priority)
+> >  			congestion_wait(BLK_RW_ASYNC, HZ/10);
+> 
+> Instead, How about this?
+> 
+
+This makes a lot of sense. Tests look good and I added stats to make sure
+the logic was triggering. On X86, kswapd avoided a congestion_wait 11723
+times and X86-64 avoided it 5084 times. I think we should hold onto the
+stats temporarily until all these bugs are ironed out.
+
+Would you like to sign off the following?
+
+If you are ok to sign off, this patch should replace my patch 5 in
+the series.
+
+==== CUT HERE ====
+
+vmscan: Stop kswapd waiting on congestion when the min watermark is not being met
+
+If reclaim fails to make sufficient progress, the priority is raised.
+Once the priority is higher, kswapd starts waiting on congestion.  However,
+if the zone is below the min watermark then kswapd needs to continue working
+without delay as there is a danger of an increased rate of GFP_ATOMIC
+allocation failure.
+
+This patch changes the conditions under which kswapd waits on
+congestion by only going to sleep if the min watermarks are being met.
+
+[mel@csn.ul.ie: Add stats to track how relevant the logic is]
+Needs-signed-off-by-original-author
+
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 9716003..7d66695 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -41,6 +41,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ #endif
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+ 		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
++		KSWAPD_NO_CONGESTION_WAIT,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+ #ifdef CONFIG_HUGETLB_PAGE
+ 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index ffa1766..70967e1 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1966,6 +1966,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+ 	 * free_pages == high_wmark_pages(zone).
+ 	 */
+ 	int temp_priority[MAX_NR_ZONES];
++	int has_under_min_watermark_zone = 0;
+ 
+ loop_again:
+ 	total_scanned = 0;
+@@ -2085,6 +2086,15 @@ loop_again:
+ 			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
+ 			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
+ 				sc.may_writepage = 1;
++
++			/*
++			 * We are still under min water mark. it mean we have
++			 * GFP_ATOMIC allocation failure risk. Hurry up!
++			 */
++			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
++					      end_zone, 0))
++				has_under_min_watermark_zone = 1;
++
+ 		}
+ 		if (all_zones_ok)
+ 			break;		/* kswapd: all done */
+@@ -2092,8 +2102,13 @@ loop_again:
+ 		 * OK, kswapd is getting into trouble.  Take a nap, then take
+ 		 * another pass across the zones.
+ 		 */
+-		if (total_scanned && priority < DEF_PRIORITY - 2)
+-			congestion_wait(BLK_RW_ASYNC, HZ/10);
++		if (total_scanned && (priority < DEF_PRIORITY - 2)) {
++
++			if (!has_under_min_watermark_zone)
++				count_vm_event(KSWAPD_NO_CONGESTION_WAIT);
++			else
++				congestion_wait(BLK_RW_ASYNC, HZ/10);
++		}
+ 
+ 		/*
+ 		 * We do this so kswapd doesn't build up large priorities for
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 90b11e4..bc09547 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -685,6 +685,7 @@ static const char * const vmstat_text[] = {
+ 	"kswapd_inodesteal",
+ 	"kswapd_slept_prematurely_fast",
+ 	"kswapd_slept_prematurely_slow",
++	"kswapd_no_congestion_wait",
+ 	"pageoutrun",
+ 	"allocstall",
+ 
