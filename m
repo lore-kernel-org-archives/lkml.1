@@ -1,208 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZKMOxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbZKMOyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZKMOxs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 09:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZKMOxo
+	id S1755823AbZKMOyD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 09:54:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZKMOyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 09:53:44 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:58078 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755313AbZKMOxn (ORCPT
+	Fri, 13 Nov 2009 09:54:01 -0500
+Received: from mail.free-electrons.com ([88.191.76.200]:59117 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755591AbZKMOyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 09:53:43 -0500
-Date: Fri, 13 Nov 2009 15:53:49 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for 2.6.32-rc7
-Message-ID: <20091113155349.37d8be88@mschwide.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Nov 2009 09:54:01 -0500
+Date: Fri, 13 Nov 2009 15:54:00 +0100
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Martin Michlmayr <tbm@cyrius.com>, sam@ravnborg.org
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       akpm@linux-foundation.org, hpa@zytor.com, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 2/4] Add support for LZO-compressed kernels for ARM
+Message-ID: <20091113145349.GA2201@pc-ran3241.res.insa>
+References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+ <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+ <1257942478-18719-3-git-send-email-albin.tonnerre@free-electrons.com>
+ <20091112125938.GA19698@deprecation.cyrius.com>
+ <20091113142917.GA12149@Chamillionaire.breakpoint.cc>
+ <20091113145008.GN13296@deprecation.cyrius.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091113145008.GN13296@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 13 Nov 2009 14:50 +0000, Martin Michlmayr wrote :
+> * Sebastian Andrzej Siewior <sebastian@breakpoint.cc> [2009-11-13 15:29]:
+> > > # For __aeabi_uidivmod
+> > >-lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+> > >+lib1funcs = arch/$(SRCARCH)/lib/lib1funcs.o
+> > 
+> > +lib1funcs = $(obj)/arch/$(SRCARCH)/lib/lib1funcs.o
+> > 
+> > This is untested but it should refer to obj because you break out of
+> > tree builds (O=) if you don't :)
+> 
+> With this I get:
+>  make[4]: *** No rule to make target `arch/arm/boot/compressed/arch/arm/lib/lib1funcs.o', needed by `arch/arm/boot/compressed/vmlinux'.  Stop.
 
-another 4 s390 bug fixes for 2.6.32.
-Please pull from 'for-linus' branch of
+Sam: what's the correct way to solve this issue?
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
-
-to receive the following updates:
-
-Christian Borntraeger (1):
-      [S390] s390: fix single stepping on svc0
-
-Gerald Schaefer (1):
-      [S390] monreader: fix use after free bug with suspend/resume
-
-Martin Schwidefsky (2):
-      [S390] reset cputime accounting after IPL from NSS
-      [S390] sclp: undo quiesce handler override on resume
-
- arch/s390/kernel/early.c         |    9 +++++++
- arch/s390/kernel/entry.S         |    8 +++---
- arch/s390/kernel/entry64.S       |    8 +++---
- drivers/s390/char/monreader.c    |    1 +
- drivers/s390/char/sclp_quiesce.c |   48 ++++++++++++++++++++++++++++++--------
- 5 files changed, 56 insertions(+), 18 deletions(-)
-
-diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
-index bf8b4ae..e49e9e0 100644
---- a/arch/s390/kernel/early.c
-+++ b/arch/s390/kernel/early.c
-@@ -55,6 +55,7 @@ static void __init reset_tod_clock(void)
- 		disabled_wait(0);
- 
- 	sched_clock_base_cc = TOD_UNIX_EPOCH;
-+	S390_lowcore.last_update_clock = sched_clock_base_cc;
- }
- 
- #ifdef CONFIG_SHARED_KERNEL
-@@ -167,6 +168,14 @@ static noinline __init void create_kernel_nss(void)
- 		return;
- 	}
- 
-+	/* re-initialize cputime accounting. */
-+	sched_clock_base_cc = get_clock();
-+	S390_lowcore.last_update_clock = sched_clock_base_cc;
-+	S390_lowcore.last_update_timer = 0x7fffffffffffffffULL;
-+	S390_lowcore.user_timer = 0;
-+	S390_lowcore.system_timer = 0;
-+	asm volatile("SPT 0(%0)" : : "a" (&S390_lowcore.last_update_timer));
-+
- 	/* re-setup boot command line with new ipl vm parms */
- 	ipl_update_parameters();
- 	setup_boot_command_line();
-diff --git a/arch/s390/kernel/entry.S b/arch/s390/kernel/entry.S
-index f43d2ee..48215d1 100644
---- a/arch/s390/kernel/entry.S
-+++ b/arch/s390/kernel/entry.S
-@@ -565,10 +565,10 @@ pgm_svcper:
- 	lh	%r7,0x8a		# get svc number from lowcore
- 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
- 	TRACE_IRQS_OFF
--	l	%r1,__TI_task(%r9)
--	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
--	mvc	__THREAD_per+__PER_address(4,%r1),__LC_PER_ADDRESS
--	mvc	__THREAD_per+__PER_access_id(1,%r1),__LC_PER_ACCESS_ID
-+	l	%r8,__TI_task(%r9)
-+	mvc	__THREAD_per+__PER_atmid(2,%r8),__LC_PER_ATMID
-+	mvc	__THREAD_per+__PER_address(4,%r8),__LC_PER_ADDRESS
-+	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
- 	oi	__TI_flags+3(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
- 	TRACE_IRQS_ON
- 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
-diff --git a/arch/s390/kernel/entry64.S b/arch/s390/kernel/entry64.S
-index a6f7b20..9aff1d4 100644
---- a/arch/s390/kernel/entry64.S
-+++ b/arch/s390/kernel/entry64.S
-@@ -543,10 +543,10 @@ pgm_svcper:
- 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
- 	llgh	%r7,__LC_SVC_INT_CODE	# get svc number from lowcore
- 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
--	lg	%r1,__TI_task(%r9)
--	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
--	mvc	__THREAD_per+__PER_address(8,%r1),__LC_PER_ADDRESS
--	mvc	__THREAD_per+__PER_access_id(1,%r1),__LC_PER_ACCESS_ID
-+	lg	%r8,__TI_task(%r9)
-+	mvc	__THREAD_per+__PER_atmid(2,%r8),__LC_PER_ATMID
-+	mvc	__THREAD_per+__PER_address(8,%r8),__LC_PER_ADDRESS
-+	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
- 	oi	__TI_flags+7(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
- 	TRACE_IRQS_ON
- 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
-diff --git a/drivers/s390/char/monreader.c b/drivers/s390/char/monreader.c
-index 89ece1c..66e21dd 100644
---- a/drivers/s390/char/monreader.c
-+++ b/drivers/s390/char/monreader.c
-@@ -357,6 +357,7 @@ static int mon_close(struct inode *inode, struct file *filp)
- 	atomic_set(&monpriv->msglim_count, 0);
- 	monpriv->write_index  = 0;
- 	monpriv->read_index   = 0;
-+	dev_set_drvdata(monreader_device, NULL);
- 
- 	for (i = 0; i < MON_MSGLIM; i++)
- 		kfree(monpriv->msg_array[i]);
-diff --git a/drivers/s390/char/sclp_quiesce.c b/drivers/s390/char/sclp_quiesce.c
-index 84c191c..05909a7 100644
---- a/drivers/s390/char/sclp_quiesce.c
-+++ b/drivers/s390/char/sclp_quiesce.c
-@@ -20,9 +20,12 @@
- 
- #include "sclp.h"
- 
-+static void (*old_machine_restart)(char *);
-+static void (*old_machine_halt)(void);
-+static void (*old_machine_power_off)(void);
-+
- /* Shutdown handler. Signal completion of shutdown by loading special PSW. */
--static void
--do_machine_quiesce(void)
-+static void do_machine_quiesce(void)
- {
- 	psw_t quiesce_psw;
- 
-@@ -33,23 +36,48 @@ do_machine_quiesce(void)
- }
- 
- /* Handler for quiesce event. Start shutdown procedure. */
--static void
--sclp_quiesce_handler(struct evbuf_header *evbuf)
-+static void sclp_quiesce_handler(struct evbuf_header *evbuf)
- {
--	_machine_restart = (void *) do_machine_quiesce;
--	_machine_halt = do_machine_quiesce;
--	_machine_power_off = do_machine_quiesce;
-+	if (_machine_restart != (void *) do_machine_quiesce) {
-+		old_machine_restart = _machine_restart;
-+		old_machine_halt = _machine_halt;
-+		old_machine_power_off = _machine_power_off;
-+		_machine_restart = (void *) do_machine_quiesce;
-+		_machine_halt = do_machine_quiesce;
-+		_machine_power_off = do_machine_quiesce;
-+	}
- 	ctrl_alt_del();
- }
- 
-+/* Undo machine restart/halt/power_off modification on resume */
-+static void sclp_quiesce_pm_event(struct sclp_register *reg,
-+				  enum sclp_pm_event sclp_pm_event)
-+{
-+	switch (sclp_pm_event) {
-+	case SCLP_PM_EVENT_RESTORE:
-+		if (old_machine_restart) {
-+			_machine_restart = old_machine_restart;
-+			_machine_halt = old_machine_halt;
-+			_machine_power_off = old_machine_power_off;
-+			old_machine_restart = NULL;
-+			old_machine_halt = NULL;
-+			old_machine_power_off = NULL;
-+		}
-+		break;
-+	case SCLP_PM_EVENT_FREEZE:
-+	case SCLP_PM_EVENT_THAW:
-+		break;
-+	}
-+}
-+
- static struct sclp_register sclp_quiesce_event = {
- 	.receive_mask = EVTYP_SIGQUIESCE_MASK,
--	.receiver_fn = sclp_quiesce_handler
-+	.receiver_fn = sclp_quiesce_handler,
-+	.pm_event_fn = sclp_quiesce_pm_event
- };
- 
- /* Initialize quiesce driver. */
--static int __init
--sclp_quiesce_init(void)
-+static int __init sclp_quiesce_init(void)
- {
- 	return sclp_register(&sclp_quiesce_event);
- }
+Regards,
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
