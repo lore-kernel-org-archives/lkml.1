@@ -1,105 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZKMJGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZKMJJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZKMJGl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZKMJGi
+	id S1755449AbZKMJJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZKMJJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:06:38 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:64582 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbZKMJG0 (ORCPT
+	Fri, 13 Nov 2009 04:09:55 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:47813 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755243AbZKMJJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:06:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=aRd//2xD9N8V2YuPlpiY8yjOW5UUqDKgYPIOxAoP7hWn/s7toZp8ZDHC/TLnvFfSsq
-         s0dEcuscQF3YyyKSKLqUjr+ECXQ+h5N9reYJZnKg00KTCn2ouPciHU5kJXIbDovzCLEp
-         hG2AOtWK59LilCyxPqD2JlbdnWZAMRhR9uKbg=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
+	Fri, 13 Nov 2009 04:09:53 -0500
+Date: Fri, 13 Nov 2009 10:09:32 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Subject: [PATCH] tracing: Rename lockdep event subsystem into lock
-Date: Fri, 13 Nov 2009 10:06:34 +0100
-Message-Id: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20091113085123.GA1318@elte.hu>
-References: <20091113085123.GA1318@elte.hu>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 1/2] locking: Make inlining decision Kconfig based
+Message-ID: <20091113090932.GC4839@osiris.boeblingen.de.ibm.com>
+References: <20091109150033.125758935@linutronix.de>
+ <20091109151428.504477141@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109151428.504477141@linutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lockdep events subsystem gathers various locking related events such
-as a request, release, contention or acquisition of a lock.
+On Mon, Nov 09, 2009 at 03:21:34PM -0000, Thomas Gleixner wrote:
+> commit 892a7c67 (locking: Allow arch-inlined spinlocks) implements the
+> selection of which lock functions are inlined based on defines in
+> arch/.../spinlock.h: #define __always_inline__LOCK_FUNCTION
+> 
+> Despite of the name __always_inline__* the lock functions can be built
+> out of line depending on config options. Also if the arch does not set
+> some inline defines the generic code might set them; again depending on
+> config options.
+> 
+> This makes it unnecessary hard to figure out when and which lock
+> functions are inlined. Aside of that it makes it way harder and
+> messier for -rt to manipulate the lock functions.
+> 
+> Convert the inlining decision to CONFIG switches. Each lock function
+> is inlined depending on CONFIG_INLINE_*. The configs implement the
+> existing dependencies. The architecture code can select ARCH_INLINE_*
+> to signal that it wants the corresponding lock function inlined.
+> ARCH_INLINE_* is necessary as Kconfig ignores "depends on"
+> restrictions when a config element is selected.
+> 
+> No functional change.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: linux-arch@vger.kernel.org
+> ---
+>  arch/s390/Kconfig                |   28 +++++
+>  arch/s390/include/asm/spinlock.h |   29 -----
+>  include/linux/spinlock_api_smp.h |   75 +++++---------
+>  init/Kconfig                     |    1 
+>  kernel/Kconfig.locks             |  199 +++++++++++++++++++++++++++++++++++++++
+>  kernel/spinlock.c                |   56 +++++-----
+>  6 files changed, 284 insertions(+), 104 deletions(-)
 
-The name of this event subsystem is a bit of a misnomer since these
-events are not quite related to lockdep but more generally to locking,
-ie: these events are not reporting lock dependencies or possible
-deadlock scenario but pure locking events.
-
-Hence this rename.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
----
- include/trace/events/{lockdep.h => lock.h} |    8 ++++----
- kernel/lockdep.c                           |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
- rename include/trace/events/{lockdep.h => lock.h} (92%)
-
-diff --git a/include/trace/events/lockdep.h b/include/trace/events/lock.h
-similarity index 92%
-rename from include/trace/events/lockdep.h
-rename to include/trace/events/lock.h
-index bcf1d20..a870ba1 100644
---- a/include/trace/events/lockdep.h
-+++ b/include/trace/events/lock.h
-@@ -1,8 +1,8 @@
- #undef TRACE_SYSTEM
--#define TRACE_SYSTEM lockdep
-+#define TRACE_SYSTEM lock
- 
--#if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
--#define _TRACE_LOCKDEP_H
-+#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_LOCK_H
- 
- #include <linux/lockdep.h>
- #include <linux/tracepoint.h>
-@@ -90,7 +90,7 @@ TRACE_EVENT(lock_acquired,
- #endif
- #endif
- 
--#endif /* _TRACE_LOCKDEP_H */
-+#endif /* _TRACE_LOCK_H */
- 
- /* This part must be outside protection */
- #include <trace/define_trace.h>
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 9af5672..f5dcd36 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -49,7 +49,7 @@
- #include "lockdep_internals.h"
- 
- #define CREATE_TRACE_POINTS
--#include <trace/events/lockdep.h>
-+#include <trace/events/lock.h>
- 
- #ifdef CONFIG_PROVE_LOCKING
- int prove_locking = 1;
--- 
-1.6.2.3
-
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
