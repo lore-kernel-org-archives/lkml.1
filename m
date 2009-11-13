@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZKMTzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbZKMTzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbZKMTzL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbZKMTzF
+	id S1757478AbZKMTzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZKMTzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:55:05 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:50975 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756929AbZKMTyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 14:54:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=xtiEewMNJXtIvs61sjrlfJz98tHywZj418syvxBbsg2aGM9b5qQ0E/yvrjL48nBXBt
-         fjFxUetVkANu5PaIHS2NOqqCBJkFL6kH381MSBr/VzvLwBbd3Ls0v3KohLKiHSYLTUTG
-         HUo0aHmXxLbTMCaFvyeLqANqZ+mfYhuxhz+ao=
-From: Brian Gerst <brgerst@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] x86, 64-bit: Use user_mode() to determine new stack pointer in copy_thread()
-Date: Fri, 13 Nov 2009 14:54:58 -0500
-Message-Id: <1258142098-3832-5-git-send-email-brgerst@gmail.com>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258142098-3832-1-git-send-email-brgerst@gmail.com>
-References: <1258142098-3832-1-git-send-email-brgerst@gmail.com>
+	Fri, 13 Nov 2009 14:55:17 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:45405 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757381AbZKMTzM (ORCPT
+	<rfc822;groupwise-PMullaney@novell.com;0:0>);
+	Fri, 13 Nov 2009 14:55:12 -0500
+From: Patrick Mullaney <pmullaney@novell.com>
+Subject: [PATCH 0/3] macvlan: support for guest vm direct rx/tx
+To: kaber@trash.net, netdev@vger.kernel.org
+Cc: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       arnd@arndb.de, bridge@lists.linux-foundation.org
+Date: Fri, 13 Nov 2009 14:55:06 -0500
+Message-ID: <20091113195201.11184.25766.stgit@mimic.site>
+In-Reply-To: <4AFAD86A.9070506@trash.net>
+References: <4AFAD86A.9070506@trash.net>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use user_mode() instead of a magic value for sp to determine when returning
-to kernel mode.  This simplifies kernel_thread().
+(Applies to net-2.6.git/master:1dfc5827)
 
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
+These patches allow other modules to override the receive
+path of a macvlan. This is being done to support guest
+VMs operating directly over a macvlan. Routines to allow
+creation and deletion of macvlans from in-kernel modules
+were also exposed/added.
+
 ---
- arch/x86/kernel/process.c    |    6 +-----
- arch/x86/kernel/process_64.c |    5 +++--
- 2 files changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 71a22c9..4ebe3e4 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -255,7 +255,6 @@ extern void kernel_thread_helper(void);
- int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
- {
- 	struct pt_regs regs;
--	unsigned long newsp;
- 
- 	memset(&regs, 0, sizeof(regs));
- 
-@@ -267,9 +266,6 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
- 	regs.es = __USER_DS;
- 	regs.fs = __KERNEL_PERCPU;
- 	regs.gs = __KERNEL_STACK_CANARY;
--	newsp = 0;
--#else
--	newsp = ~0UL;
- #endif
- 
- 	regs.orig_ax = -1;
-@@ -278,7 +274,7 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
- 	regs.flags = X86_EFLAGS_IF | 2;
- 
- 	/* Ok, create the new process.. */
--	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, newsp, &regs, 0, NULL, NULL);
-+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
- }
- EXPORT_SYMBOL(kernel_thread);
- 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 8151a82..a9be0d5 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -283,8 +283,9 @@ int copy_thread(unsigned long clone_flags, unsigned long sp,
- 	*childregs = *regs;
- 
- 	childregs->ax = 0;
--	childregs->sp = sp;
--	if (sp == ~0UL)
-+	if (user_mode(regs))
-+		childregs->sp = sp;
-+	else
- 		childregs->sp = (unsigned long)childregs;
- 
- 	p->thread.sp = (unsigned long) childregs;
--- 
-1.6.2.5
+Patrick Mullaney (3):
+      macvlan: allow in-kernel modules to create and manage macvlan devices
+      macvlan:  derived from Arnd Bergmann's patch for macvtap
+      netdevice: provide common routine for macvlan and vlan operstate management
+
+
+ drivers/net/macvlan.c     |  135 ++++++++++++++++++++++-----------------------
+ include/linux/macvlan.h   |   41 ++++++++++++++
+ include/linux/netdevice.h |    3 +
+ net/8021q/vlan.c          |   29 +---------
+ net/core/dev.c            |   27 +++++++++
+ 5 files changed, 142 insertions(+), 93 deletions(-)
+ create mode 100644 include/linux/macvlan.h
 
