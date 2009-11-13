@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZKMXfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbZKMXh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932583AbZKMXfl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932546AbZKMXfk
+	id S932612AbZKMXh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932496AbZKMXh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:35:40 -0500
-Received: from h1047321.serverkompetenz.net ([85.214.67.163]:38171 "EHLO
-	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932545AbZKMXfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:35:39 -0500
-Message-ID: <4AFDED47.5070606@ahsoftware.de>
-Date: Sat, 14 Nov 2009 00:35:35 +0100
-From: Alexander Holler <holler@ahsoftware.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problems with p55-express and sleeping usb-hds
-References: <4AFDDDF6.4050907@ahsoftware.de> <200911140030.32727.oliver@neukum.org>
-In-Reply-To: <200911140030.32727.oliver@neukum.org>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
+	Fri, 13 Nov 2009 18:37:26 -0500
+Received: from mail.perches.com ([173.55.12.10]:1044 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932414AbZKMXhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 18:37:25 -0500
+Subject: Re: [PATCH] drivers/thermal/thermal_sys.c: fix strncmp tests
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Sujith Thomas <sujith.thomas@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091113142254.73f82283.akpm@linux-foundation.org>
+References: <1257804769.12852.22.camel@Joe-Laptop.home>
+	 <20091113142254.73f82283.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 13 Nov 2009 15:37:30 -0800
+Message-ID: <1258155450.16857.129.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 14.11.2009 00:30, schrieb Oliver Neukum:
-> Am Freitag, 13. November 2009 23:30:14 schrieb Alexander Holler:
->> (And here comes the problem)
->>
->> Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed
->> USB device using ehci_hcd and address 3
->> Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware
->> changed
->
-> You cut too early. This shows a failed reset but not the cause.
+On Fri, 2009-11-13 at 14:22 -0800, Andrew Morton wrote:
+> On Mon, 09 Nov 2009 14:12:49 -0800
+> Joe Perches <joe@perches.com> wrote:
+> 
+> > Use strncmp(var, "foo", sizeof("foo") - 1)
+> > not strncmp(var, "foo", sizeof("foo"))
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> > diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> > index 4e83c29..c35d538 100644
+> > --- a/drivers/thermal/thermal_sys.c
+> > +++ b/drivers/thermal/thermal_sys.c
+> > @@ -147,9 +147,9 @@ mode_store(struct device *dev, struct device_attribute *attr,
+> >  	if (!tz->ops->set_mode)
+> >  		return -EPERM;
+> >  
+> > -	if (!strncmp(buf, "enabled", sizeof("enabled")))
+> > +	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+> 
+> How about
+> 
+> 	if (!strcmp(buf, "enabled"))
 
-There are no relevant messages in the log before:
+Fine with me.
 
---------
-  Nov 13 19:06:23 krabat kernel: [  190.790549] EXT4-fs (dm-1): mounted 
-filesystem with ordered data mode
-Nov 13 19:08:05 krabat ntpd[3381]: synchronized to 192.168.207.1, 
-stratum 2
-Nov 13 19:08:05 krabat ntpd[3381]: kernel time sync status change 2001 
+I think strncmp(foo, "bar", sizeof("bar"))
+where foo has a trailing 0 should be
+converted to strcmp(foo, "bar");
 
-Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed 
-USB device using ehci_hcd and address 3
-----------------------------------------------------
+
+
