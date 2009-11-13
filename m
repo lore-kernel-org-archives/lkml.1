@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZKMIFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbZKMIHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbZKMIFG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 03:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZKMIFE
+	id S1754343AbZKMIHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 03:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZKMIHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 03:05:04 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33096 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754165AbZKMIFD (ORCPT
+	Fri, 13 Nov 2009 03:07:36 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52335 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZKMIHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 03:05:03 -0500
-Message-ID: <4AFD1326.506@zytor.com>
-Date: Fri, 13 Nov 2009 00:04:54 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pavel Machek <pavel@ucw.cz>, "Ma, Ling" <ling.ma@intel.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast string.
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <4AF7C66C.6000009@zytor.com> <20091109080830.GI453@elte.hu> <20091112121619.GD1394@ucw.cz> <20091113073340.GA26127@elte.hu>
-In-Reply-To: <20091113073340.GA26127@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 13 Nov 2009 03:07:35 -0500
+Subject: Re: perf stat output
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
+References: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 13 Nov 2009 09:07:35 +0100
+Message-ID: <1258099655.4039.998.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/12/2009 11:33 PM, Ingo Molnar wrote:
+On Thu, 2009-11-12 at 20:03 -0200, Lucas De Marchi wrote:
+> Hi all!
 > 
-> * Pavel Machek <pavel@ucw.cz> wrote:
+> Some questions about perf stat output. See example:
 > 
->>> Ling, if you are interested, could you send a user-space test-app to 
->>> this thread that everyone could just compile and run on various older 
->>> boxes, to gather a performance profile of hand-coded versus string ops 
->>> performance?
->>>
->>> ( And i think we can make a judgement based on cache-hot performance
->>>   alone - if then the strings ops will perform comparatively better in
->>>   cache-cold scenarios, so the cache-hot numbers would be a conservative
->>>   estimate. )
->>
->> Ugh, really? I'd expect cache-cold performance to be not helped at all 
->> (memory bandwidth limit) and you'll get slow down from additional 
->> i-cache misses...
 > 
-> That's my point - the new code is shorter, which will run comparatively 
-> faster in a cache-cold environment.
+> lucas@LMS-linux:~/programming/testprograms> perf stat -e
+> L1-dcache-loads -e L1-dcache-load-misses -- make -j
+> gcc test_schedchanges.c -o test_schedchanges
+> gcc -pthread test_taskaff1.c -o test_taskaff1
+> gcc -pthread test_taskaff2.c -o test_taskaff2
+> gcc -pthread test_taskaff3.c -o test_taskaff3
 > 
+>  Performance counter stats for 'make -j':
+> 
+>        161384667  L1-dcache-loads          #      0.000 M/sec
+>               24853791  L1-dcache-load-misses    #      0.000 M/sec
+> 
+> 	          0.066893389  seconds time elapsed
+> 
+> Why do we have both L1-dcache-loads and  L1-dcache-load-misses with
+> 0.000 M/sec? Also, why do we have 0 M/s when running "perf stat -a -e
+> cache-misses -e cache-references" but values different than 0 when
+> running "perf stat -a" without selecting the events?
 
-memcpy_c by itself is by far the shortest variant, of course.
+No idea, you'd have to look at the code computing this M/sec stuff. I
+think Ingo wrote that, so he might have an idea.
 
-The question is if it makes sense to use the long variants for short (<
-1024 bytes) copies.
+> The last question: what does the  "scaled from X%" mean? Is it related
+> to the maximum number of performance registers a processor can count
+> at a time?
 
-	-hpa
+Yes, if the hardware has only 2 counters and you specify 4, we'll
+round-robin those 4 onto the 2. In that case you'll see things like
+scaled from ~50% because each counter will only have been on the actual
+PMU for about 50% of the time.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+(RR happens with tick granularity, so if your runtime is of that order
+or shorter you can get funny results with some counters being 0).
 
