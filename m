@@ -1,142 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZKMV6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbZKMWC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZKMV6r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 16:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZKMV6n
+	id S1756623AbZKMWC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 17:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZKMWCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 16:58:43 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37616 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199AbZKMV6m convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 17:02:22 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:47545 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754574AbZKMWCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 16:58:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FCkr1vf80jknTMoXYBicycheCmsj6yTrOwf+UhBX90StKV2WNB4iqql+4qQ1hGtY5Q
-         B9GGWC31JXgEFXTiejCykxC2dGEEe/fT5WLec4EPwNylvkYalYr6whNegoiP4nGA7uqN
-         3NG1A5uz093XdW8u+vcHOxV2JklcDW1DdDXmQ=
+	Fri, 13 Nov 2009 17:02:22 -0500
+Date: Fri, 13 Nov 2009 22:02:20 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: [PATCH 1/3] setup: Store the boot cursor state
+Message-ID: <20091113220220.GA7233@srcf.ucam.org>
+References: <1258142222-16092-1-git-send-email-mjg@redhat.com> <4AFDD4D3.4060909@zytor.com>
 MIME-Version: 1.0
-In-Reply-To: <4AFD6325.8000000@sgi.com>
-References: <20091112171934.584037000@alcatraz.americas.sgi.com>
-	 <20091112171942.423844000@alcatraz.americas.sgi.com>
-	 <86802c440911121410v30c5b00ewdd9ada71096b4e65@mail.gmail.com>
-	 <4AFD6325.8000000@sgi.com>
-Date: Fri, 13 Nov 2009 13:58:47 -0800
-Message-ID: <86802c440911131358p71807088pe09ddae6957becd2@mail.gmail.com>
-Subject: Re: [PATCH 1/7] x86: Limit the number of processor bootup messages
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFDD4D3.4060909@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 5:46 AM, Mike Travis <travis@sgi.com> wrote:
->
->
-> Yinghai Lu wrote:
->>
->> On Thu, Nov 12, 2009 at 9:19 AM, Mike Travis <travis@sgi.com> wrote:
->>>
->>> With a large number of processors in a system there is an excessive
->>> amount
->>> of messages sent to the system console.  It's estimated that with 4096
->>> processors in a system, and the console baudrate set to 56K, the startup
->>> messages will take about 84 minutes to clear the serial port.
->>>
->>> This set of patches limits the number of repetitious messages which
->>> contain
->>> no additional information.  Much of this information is obtainable from
->>> the
->>> /proc and /sysfs.   Most of the messages are also sent to the kernel log
->>> buffer as KERN_DEBUG messages so it can be used to examine more closely
->>> any
->>> details specific to a processor.
->>>
->>> The list of message transformations....
->>>
->>> For system_state == SYSTEM_BOOTING:
->>>
->>> [   18.669304] Booting Node   0, Processors  1 2 3 4 5 6 7 Ok.
->>> [   19.321065] Booting Node   1, Processors  8 9 10 11 12 13 14 15 Ok.
->>> [   20.065325] Booting Node   2, Processors  16 17 18 19 20 21 22 23 Ok.
->>> ..
->>> [  117.153053] Booting Node  63, Processors  1016 1017 1018 1019 1020
->>> 1021 1022 1023 Ok.
->>> [  117.952235] Brought up 1024 CPUs
->>>
->>> Timing shows that with NO bootup messages, it takes only slightly less
->>> time
->>> so printing adds very little overhead:
->>>
->>> [   18.670219] Booting all processors
->>> [  117.180248] Brought up 1024 CPUs
->>>
->>> For Processor Information printout, the specifics of CPU0 are printed and
->>> then at the end of the bootup sequence, a summary is printed:
->>>
->>> [  117.957682] Processor Information for CPUS: 0-191,208-223,256-271,...
->>> [  117.968034] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping
->>> 04
->>> [  117.977406] BogoMIPS: MIN 3989.01 (7978031) AVG 4266.62 (8533249) MAX
->>> 4537.51 (9075028)
->>> [  117.984496] Processor Information for CPUS:
->>> 192-207,240-255,272-287,...
->>> [  117.996032] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping
->>> 03
->>> [  118.001404] BogoMIPS: MIN 4021.49 (8042995) AVG 4265.91 (8531833) MAX
->>> 4479.79 (8959584)
->>> [  118.012373] Processor Information for CPUS: 224-239,736-751
->>> [  118.020032] Genuine Intel(R) CPU             0000 @ 1.87GHz stepping
->>> 03
->>> [  118.028033] BogoMIPS: MIN 3733.92 (7467855) AVG 3746.96 (7493933) MAX
->>> 3939.52 (7879056)
->>> [  118.036360] Processor Information for CPUS:
->>> 320-335,384-415,432-447,...
->>> [  118.044032] Intel(R) Xeon(R) CPU           X7560  @ 2.27GHz stepping
->>> 05
->>> [  118.053404] BogoMIPS: MIN 4244.65 (8489318) AVG 4532.45 (9064917) MAX
->>> 4666.80 (9333604)
->>> [  118.060644] Total of 1024 processors activated (4386353.46 BogoMIPS).
->>>
->>>
->>> The following lines have been removed:
->>>
->>>       CPU: Physical Processor ID:
->>>       CPU: Processor Core ID:
->>>       CPU %d/0x%x -> Node %d
->>
->> why?
->
-> Someone asked that they be removed?
->
-> The intent of the patch was to remove repetitious per cpu printouts where
-> the
-> information is easily available via some other means, which is the case of
-> the
-> above 3 lines.  Would you prefer they stay as KERN_DEBUG or pr_debug lines?
-> (I had it this way in the first version but then was told that the messages
-> were
-> not needed.)
+On Fri, Nov 13, 2009 at 01:51:15PM -0800, H. Peter Anvin wrote:
 
-at least on one distribution kernel ( SLES 11?), when BSP is from
-socket1, the kernel is not happy
-(thought that cpu is from socket 0).
+> I'm cool with this, but please update the appropriate files in
+> Documentation/x86 as well.
 
-YH
+It's in screen_info rather than the zero page - is there any relevant 
+documentation to update?
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
