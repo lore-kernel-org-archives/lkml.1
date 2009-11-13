@@ -1,175 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZKMCJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZKMCMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbZKMCJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Nov 2009 21:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZKMCJn
+	id S1755283AbZKMCMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Nov 2009 21:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZKMCMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Nov 2009 21:09:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61143 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754960AbZKMCJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Nov 2009 21:09:42 -0500
-Message-ID: <4AFCBF02.1030600@cn.fujitsu.com>
-Date: Fri, 13 Nov 2009 10:05:54 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+	Thu, 12 Nov 2009 21:12:16 -0500
+Received: from smtp104.prem.mail.sp1.yahoo.com ([98.136.44.59]:45236 "HELO
+	smtp104.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754821AbZKMCMP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Nov 2009 21:12:15 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: bb.q1NsVM1kqP5A8xfc5CSd8MYB1WjVb14XPy7C4xgfy5w20al5392_.kSY9NRHqZU8E3WSIW6AZR9yGnEnOz6VSWPAKNGsioq1k6T_LI2NLTf2.7VNtaKxq5u687Hi.FUS83Z54Gnz7YpbqFTL16A_QkBFc3xPm2RYYH._csjJNgIjEtufKChXrzvw4sfyiY9KmYGrjLBUAutcwCARONeT7rJy9drDUsMRzvec1QDczY5VrEc1ebQ8IyRUSdvy0cammL46wx3ZTmK5pcvGlWLs9eeFCTA2fjBiKUPkJOni2sbolLhU283g-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AFCC06B.1030302@schaufler-ca.com>
+Date: Thu, 12 Nov 2009 18:11:55 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 02/20] blkio: Change CFQ to use CFS like queue time	stamps
-References: <1257291837-6246-1-git-send-email-vgoyal@redhat.com> <1257291837-6246-3-git-send-email-vgoyal@redhat.com> <4AFA09C9.9050001@cn.fujitsu.com> <20091112230736.GD2936@redhat.com> <4AFCAF5C.8080402@cn.fujitsu.com> <20091113012400.GA12164@redhat.com>
-In-Reply-To: <20091113012400.GA12164@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: James Morris <jmorris@namei.org>
+CC: Julia Lawall <julia@diku.dk>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com> <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>
+In-Reply-To: <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Fri, Nov 13, 2009 at 08:59:08AM +0800, Gui Jianfeng wrote:
+James Morris wrote:
+> On Thu, 12 Nov 2009, Casey Schaufler wrote:
+>
+>   
+>> I strongly suggest that this is not what is wanted.
+>>     strcmp(x,y)
+>> and
+>>     strncmp(x,y,sizeof(y))
 >>
->> Vivek Goyal wrote:
->>> On Wed, Nov 11, 2009 at 08:48:09AM +0800, Gui Jianfeng wrote:
->>>> Vivek Goyal wrote:
->>>> ...
->>>>>  
->>>>> @@ -1245,10 +1429,10 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
->>>>>  	struct cfq_queue *cfqq;
->>>>>  	int dispatched = 0;
->>>>>  
->>>>> -	while ((cfqq = cfq_rb_first(&cfqd->service_tree)) != NULL)
->>>>> +	while ((cfqq = cfq_get_next_queue(cfqd)) != NULL)
->>>>>  		dispatched += __cfq_forced_dispatch_cfqq(cfqq);
->>>>>  
->>>>> -	cfq_slice_expired(cfqd, 0);
->>>>> +	cfq_slice_expired(cfqd);
->>>>>  
->>>>>  	BUG_ON(cfqd->busy_queues);
->>>>>  
->>>>> @@ -1391,7 +1575,7 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
->>>>>  	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
->>>>>  	    cfq_class_idle(cfqq))) {
->>>>>  		cfqq->slice_end = jiffies + 1;
->>>>> -		cfq_slice_expired(cfqd, 0);
->>>>> +		cfq_slice_expired(cfqd);
->>>> Hi Vivek,
->>>>
->>>> I think here you should make sure that when updating cfqq->slice_end, cfqq->slice_end doesn't 
->>>> equal to 0. Because if cfqq->slice_end == 0, cfq_slice_expired() just charge for 1 jiffy, but
->>>> if cfqq->slice_end is updated when it equals to 0(first request still in the air), at that time
->>>> cfqq->slice_start == 0, and slice_used is charged as "jiffies - cfqq->slice_start". Following
->>>> patch fixes this bug.
->>>>
->>> Hi Gui,
->>>
->>> This can happen only once during a one wrap around cycle of jiffies. That
->>> too depends in case we are hitting jiffies+1 as 0 or not.
->>>
->>> So I would not worry much about it right now.
->>>
->>> In fact, not updating slice_end, will make idle or async queue slice last
->>> much longer than it should have.
->>   I don't think so Vivek, this bug can be easily trigger by creating two cgroup and run a idle
->>   task in one group, then run a normal task in the other group. When the idle task sends out its
->>   first request, this bug occurs. I can reproduce this bug every time by the following script.
->>
-> 
-> Oh.., sorry, Looks like I read your mail too fast. So you are saying that
-> in this case we should be charging 1 ms but instead we will be charging
-> (jiffies - 0), which might be too huge a number and then a particular
-> group will not be scheduled for a long time?
+>> are functionally equivalent and strcmp has a bad reputation in
+>> the security community because it is associated with potential
+>> buffer overrun issues.
+>>     
+>
+> Do you see potential for a buffer overrun in this case?
+>   
 
-  Yes, that's it.
+No, but I hate arguing with people who think that every time
+they see strcmp that they have found a security flaw. The
+existing code does exactly what it is intended to. Why make
+a change that just clutters things up?
 
-> 
-> How about changing the charging code to also check if slice_start == 0? So
-> in my V2 I will change the cfq_cfqq_slice_usage() to also check for
-> slice_start to make sure whether a slice has actually started or not.
-> 
-> if (!cfqq->slice_start || cfqq->slice_start == jiffies) {
-> 	charge_1ms;
-> else
-> 	charge_based_on_time_elapsed;
-
-  I think this change should also work :)
-
-Thanks
-Gui
-
-> 
-> Thanks
-> Vivek
-> 
->> #!/bin/sh
->>
->> mkdir /cgroup
->> mount -t cgroup -o blkio io /cgroup
->> mkdir /cgroup/tst1
->> mkdir /cgroup/tst2
->>
->> dd if=/dev/sdb2 of=/dev/null &
->> pid1=$!
->> echo $pid1 > /cgroup/tst1/tasks
->>
->> dd if=/dev/sdb3 of=/dev/null &
->> pid2=$!
->> ionice -c3 -p$pid2
->> echo $pid2 > /cgroup/tst2/tasks
->>
->> sleep 5
->>
->> cat /cgroup/tst1/blkio.time
->> cat /cgroup/tst2/blkio.time
->>
->> killall -9 dd
->> sleep 1
->>
->> rmdir /cgroup/tst1
->> rmdir /cgroup/tst2
->> umount /cgroup
->> rmdir /cgroup
->>
->>
->>> Thanks
->>> Vivek
->>>
->>>  
->>>> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
->>>> ---
->>>>  block/cfq-iosched.c |    3 ++-
->>>>  1 files changed, 2 insertions(+), 1 deletions(-)
->>>>
->>>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->>>> index f23d713..12afc14 100644
->>>> --- a/block/cfq-iosched.c
->>>> +++ b/block/cfq-iosched.c
->>>> @@ -1999,7 +1999,8 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
->>>>  	if (cfqd->busy_queues > 1 && ((!cfq_cfqq_sync(cfqq) &&
->>>>  	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
->>>>  	    cfq_class_idle(cfqq))) {
->>>> -		cfqq->slice_end = jiffies + 1;
->>>> +		if (cfqq->slice_end)
->>>> +			cfqq->slice_end = jiffies + 1;
->>>>  		cfq_slice_expired(cfqd);
->>>>  	}
->>>>  
->>>> -- 
->>>> 1.5.4.rc3
->>>
->>>
->> -- 
->> Regards
->> Gui Jianfeng
-> 
-> 
-> 
-
--- 
-Regards
-Gui Jianfeng
+> The strings being compared are "sysfs" and the name field of 'struct 
+> file_system_type'.  The kernel code elsewhere assumes the latter string to 
+> be a valid zero-terminated string, and we should, too.
+>
+>
+> - James
+>   
 
