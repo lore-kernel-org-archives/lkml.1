@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZKMQQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbZKMQPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbZKMQQZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 11:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZKMQQV
+	id S1755613AbZKMQPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 11:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZKMQPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 11:16:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:12678 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756144AbZKMQQU (ORCPT
+	Fri, 13 Nov 2009 11:15:45 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:65517 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755030AbZKMQPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 11:16:20 -0500
+	Fri, 13 Nov 2009 11:15:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=DqN5rt+2kwqr5rP4VApSoNW1ccqkhNQ5JnmxVJVhWoDwXEwEilyWl2ci8o3VQkSzNW
-         YgiQfXP5vY7RlekbfoHD6U4s3f13wdo/wYHXx6GepoDC6yb5UWHgEuqr1mUTLuc9PyBr
-         HH6xoD7WAZxSfprjkuyYapon5nowj4R9mtOSI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
-Date: Fri, 13 Nov 2009 17:15:24 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-References: <4AFCC0D4.9020708@gmail.com>
-In-Reply-To: <4AFCC0D4.9020708@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=YPIOCgNUyW6CFZsBbtSf5+Asg9pToRQ4d5N2lOImP5PuDaECE4zjbNOF8At+s+FVIg
+         d1bjLXZYSBdxqnWcqSVSZC0Jixec4wpxFVdEdclMtas6vY7WWfTSzEnN9R1gqjcVd51N
+         76yfx/djjQ7AMcBNhpk6BdEMu4o6Zo4YILhAA=
+Message-ID: <4AFD862E.6070105@gmail.com>
+Date: Fri, 13 Nov 2009 11:15:42 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Message-Id: <200911131715.24377.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Stephen Hemminger <shemminger@vyatta.com>, sclark46@earthlink.net,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: Documentation: rw_lock lessons learned
+References: <4AF9C540.5090403@gmail.com>	<20091110180646.2e5859a8@nehalam>	<4AFAEF78.4080807@gmail.com>	<20091111093724.4f40a48d@nehalam>	<4AFBEC44.9030409@gmail.com>	<4AFC5E3F.7070609@earthlink.net> <20091112150029.1a26c641@nehalam> <4AFD1FF1.7080906@s5r6.in-berlin.de>
+In-Reply-To: <4AFD1FF1.7080906@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 November 2009 03:13:40 Robert Hancock wrote:
-> Remove the experimental tag on Parallel ATA drivers. Though some of the
-> individual PATA drivers are still marked as experimental, as a group they can
-> hardly be considered to be, given they've been used in various distros for some
-> time.
+Stefan Richter wrote:
+> Stephen Hemminger wrote:
+>> On Thu, 12 Nov 2009 14:13:03 -0500
+>> Stephen Clark <sclark46@earthlink.net> wrote:
+>>> How up to date is this doc?
+>>>
+>>> http://www.kernel.org/pub/linux/kernel/people/rusty/kernel-locking/index.html
+>>>
+>> Out of date.
+>> 1. Missing mutex's which have largely replaced semaphores.
+>>
+>> 2. Missing change to lock initialization in later kernels.
+>>
+>> 3. Missing description of lock dependency checker which should be in same guide.
 > 
-> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+> 4. The section on atomic reference counting should refer to <linux/kref.h>.
 
-Fine but please update status of following host drivers that were
-marked as "stable" prematurely by commit e3389cb first:
+I'd also read that, and that's where I got some of my wrong thinking.  But
+that does point to Documentation/spin_locks.txt, which I took to be
+authoritative (and followed).  That's the reason spin_locks.txt should be
+updated, as others are having the same problems....
 
-PATA_PDC_OLD: needs to be marked as EXPERIMENTAL (or just BROKEN)
-- known reliability problems with UDMA
+Anybody have answers/updates to Linus's concerns about "pretty old and
+bogus language"?
 
-PATA_ALI: EXPERIMENTAL
-- ATAPI DMA is still broken
-
-PATA_CMD64X: EXPERIMENTAL
-- potential data corruption issues remains unfixed for CMD64[3,6]
-
-PATA_SIS: EXPERIMENTAL
-- missing MWDMA support on newer controllers
-
-They are all old & known problems and not present in
-[ "old", "deprecated", "legacy" ] counterparts.
-
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index f2df6e2..33133c6 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -3,7 +3,7 @@
->  #
->  
->  menuconfig ATA
-> -	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
-> +	tristate "Serial ATA and Parallel ATA drivers"
->  	depends on HAS_IOMEM
->  	depends on BLOCK
->  	depends on !(M32R || M68K) || BROKEN
-
--- 
-Bartlomiej Zolnierkiewicz
