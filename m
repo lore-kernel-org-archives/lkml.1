@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbZKMRlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbZKMRlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbZKMRlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZKMRlI
+	id S1753444AbZKMRlK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZKMRlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:41:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54417 "EHLO mx1.redhat.com"
+	Fri, 13 Nov 2009 12:41:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13515 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932075AbZKMRkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932095AbZKMRkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Nov 2009 12:40:49 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
@@ -17,196 +17,356 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
        riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: [PATCH 04/16] blkio: Implement per cfq group latency target and busy queue avg
-Date: Fri, 13 Nov 2009 12:40:03 -0500
-Message-Id: <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 05/16] blkio: Introduce blkio controller cgroup interface
+Date: Fri, 13 Nov 2009 12:40:04 -0500
+Message-Id: <1258134015-21632-6-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o So far we had 300ms soft target latency system wide. Now with the
-  introduction of cfq groups, divide that latency by number of groups so
-  that one can come up with group target latency which will be helpful
-  in determining the workload slice with-in group and also the dynamic
-  slice length of the cfq queue.
+o This is basic implementation of blkio controller cgroup interface. This is
+  the common interface visible to user space and should be used by different
+  IO control policies as we implement those.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/cfq-iosched.c |   65 +++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 45 insertions(+), 20 deletions(-)
+ block/Kconfig                 |   13 +++
+ block/Kconfig.iosched         |    1 +
+ block/Makefile                |    1 +
+ block/blk-cgroup.c            |  177 +++++++++++++++++++++++++++++++++++++++++
+ block/blk-cgroup.h            |   58 +++++++++++++
+ include/linux/cgroup_subsys.h |    6 ++
+ include/linux/iocontext.h     |    4 +
+ 7 files changed, 260 insertions(+), 0 deletions(-)
+ create mode 100644 block/blk-cgroup.c
+ create mode 100644 block/blk-cgroup.h
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 73d93af..11256c3 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -78,6 +78,7 @@ struct cfq_rb_root {
- 	struct rb_node *left;
- 	unsigned count;
- 	u64 min_vdisktime;
-+	unsigned total_weight;
- };
- #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+diff --git a/block/Kconfig b/block/Kconfig
+index 9be0b56..6ba1a8e 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -77,6 +77,19 @@ config BLK_DEV_INTEGRITY
+ 	T10/SCSI Data Integrity Field or the T13/ATA External Path
+ 	Protection.  If in doubt, say N.
  
-@@ -167,6 +168,8 @@ struct cfq_group {
- 	/* number of cfqq currently on this group */
- 	int nr_cfqq;
++config BLK_CGROUP
++	bool
++	depends on CGROUPS
++	default n
++	---help---
++	Generic block IO controller cgroup interface. This is the common
++	cgroup interface which should be used by various IO controlling
++	policies.
++
++	Currently, CFQ IO scheduler uses it to recognize task groups and
++	control disk bandwidth allocation (proportional time slice allocation)
++	to such task groups.
++
+ endif # BLOCK
  
-+	/* Per group busy queus average. Useful for workload slice calc. */
-+	unsigned int busy_queues_avg[2];
- 	/*
- 	 * rr lists of queues with requests, onle rr for each priority class.
- 	 * Counts are embedded in the cfq_rb_root
-@@ -184,6 +187,8 @@ struct cfq_data {
- 	/* Root service tree for cfq_groups */
- 	struct cfq_rb_root grp_service_tree;
- 	struct cfq_group root_group;
-+	/* Number of active cfq groups on group service tree */
-+	int nr_groups;
+ config BLOCK_COMPAT
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 8bd1051..be0280d 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -23,6 +23,7 @@ config IOSCHED_DEADLINE
  
- 	/*
- 	 * The priority currently being served
-@@ -201,7 +206,6 @@ struct cfq_data {
- 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+ config IOSCHED_CFQ
+ 	tristate "CFQ I/O scheduler"
++	select BLK_CGROUP
+ 	default y
+ 	---help---
+ 	  The CFQ I/O scheduler tries to distribute bandwidth equally
+diff --git a/block/Makefile b/block/Makefile
+index 7914108..cb2d515 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_BLOCK) := elevator.o blk-core.o blk-tag.o blk-sysfs.o \
+ 			blk-iopoll.o ioctl.o genhd.o scsi_ioctl.o
  
- 	unsigned int busy_queues;
--	unsigned int busy_queues_avg[2];
- 
- 	int rq_in_driver[2];
- 	int sync_flight;
-@@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
- 	return SYNC_WORKLOAD;
- }
- 
--static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
-+static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
-+					struct cfq_data *cfqd,
-+					struct cfq_group *cfqg)
- {
--	struct cfq_group *cfqg = &cfqd->root_group;
--
- 	if (wl == IDLE_WORKLOAD)
- 		return cfqg->service_tree_idle.count;
- 
-@@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-  * to quickly follows sudden increases and decrease slowly
-  */
- 
--static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
-+static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
-+					struct cfq_group *cfqg, bool rt)
- {
- 	unsigned min_q, max_q;
- 	unsigned mult  = cfq_hist_divisor - 1;
- 	unsigned round = cfq_hist_divisor / 2;
--	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
-+	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
- 
--	min_q = min(cfqd->busy_queues_avg[rt], busy);
--	max_q = max(cfqd->busy_queues_avg[rt], busy);
--	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
-+	min_q = min(cfqg->busy_queues_avg[rt], busy);
-+	max_q = max(cfqg->busy_queues_avg[rt], busy);
-+	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
- 		cfq_hist_divisor;
--	return cfqd->busy_queues_avg[rt];
-+	return cfqg->busy_queues_avg[rt];
+ obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
++obj-$(CONFIG_BLK_CGROUP)	+= blk-cgroup.o
+ obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+new file mode 100644
+index 0000000..4f6afd7
+--- /dev/null
++++ b/block/blk-cgroup.c
+@@ -0,0 +1,177 @@
++/*
++ * Common Block IO controller cgroup interface
++ *
++ * Based on ideas and code from CFQ, CFS and BFQ:
++ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
++ *
++ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
++ *		      Paolo Valente <paolo.valente@unimore.it>
++ *
++ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
++ * 	              Nauman Rafique <nauman@google.com>
++ */
++#include <linux/ioprio.h>
++#include "blk-cgroup.h"
++
++struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
++
++struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
++{
++	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
++			    struct blkio_cgroup, css);
 +}
 +
-+static inline unsigned
-+cfq_group_latency(struct cfq_data *cfqd, struct cfq_group *cfqg)
++void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
++				struct blkio_group *blkg, void *key)
 +{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
++	unsigned long flags;
 +
-+	return cfq_target_latency * cfqg->weight / st->total_weight;
- }
- 
- static inline void
-@@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
- 	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
- 	if (cfqd->cfq_latency) {
--		/* interested queues (we consider only the ones with the same
--		 * priority class) */
--		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-+		/*
-+		 * interested queues (we consider only the ones with the same
-+		 * priority class in the cfq group)
-+		 */
-+		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
-+						cfq_class_rt(cfqq));
- 		unsigned sync_slice = cfqd->cfq_slice[1];
- 		unsigned expect_latency = sync_slice * iq;
--		if (expect_latency > cfq_target_latency) {
-+		unsigned group_target_lat = cfq_group_latency(cfqd, cfqq->cfqg);
++	spin_lock_irqsave(&blkcg->lock, flags);
++	rcu_assign_pointer(blkg->key, key);
++	hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
++	spin_unlock_irqrestore(&blkcg->lock, flags);
++}
 +
-+		if (expect_latency > group_target_lat) {
- 			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
- 			/* scale low_slice according to IO priority
- 			 * and sync vs async */
-@@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 				min(slice, base_low_slice * slice / sync_slice);
- 			/* the adapted slice value is scaled to fit all iqs
- 			 * into the target latency */
--			slice = max(slice * cfq_target_latency / expect_latency,
-+			slice = max(slice * group_target_lat / expect_latency,
- 				    low_slice);
- 		}
- 	}
-@@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
++int blkiocg_del_blkio_group(struct blkio_group *blkg)
++{
++	/* Implemented later */
++	return 0;
++}
++
++/* called under rcu_read_lock(). */
++struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key)
++{
++	struct blkio_group *blkg;
++	struct hlist_node *n;
++	void *__key;
++
++	hlist_for_each_entry_rcu(blkg, n, &blkcg->blkg_list, blkcg_node) {
++		__key = blkg->key;
++		if (__key == key)
++			return blkg;
++	}
++
++	return NULL;
++}
++
++#define SHOW_FUNCTION(__VAR)						\
++static u64 blkiocg_##__VAR##_read(struct cgroup *cgroup,		\
++				       struct cftype *cftype)		\
++{									\
++	struct blkio_cgroup *blkcg;					\
++									\
++	blkcg = cgroup_to_blkio_cgroup(cgroup);				\
++	return (u64)blkcg->__VAR;					\
++}
++
++SHOW_FUNCTION(weight);
++#undef SHOW_FUNCTION
++
++static int
++blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
++{
++	struct blkio_cgroup *blkcg;
++
++	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
++		return -EINVAL;
++
++	blkcg = cgroup_to_blkio_cgroup(cgroup);
++	blkcg->weight = (unsigned int)val;
++	return 0;
++}
++
++struct cftype blkio_files[] = {
++	{
++		.name = "weight",
++		.read_u64 = blkiocg_weight_read,
++		.write_u64 = blkiocg_weight_write,
++	},
++};
++
++static int blkiocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
++{
++	return cgroup_add_files(cgroup, subsys, blkio_files,
++				ARRAY_SIZE(blkio_files));
++}
++
++static void blkiocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
++{
++	struct blkio_cgroup *blkcg = cgroup_to_blkio_cgroup(cgroup);
++
++	free_css_id(&blkio_subsys, &blkcg->css);
++	kfree(blkcg);
++}
++
++static struct cgroup_subsys_state *
++blkiocg_create(struct cgroup_subsys *subsys, struct cgroup *cgroup)
++{
++	struct blkio_cgroup *blkcg, *parent_blkcg;
++
++	if (!cgroup->parent) {
++		blkcg = &blkio_root_cgroup;
++		goto done;
++	}
++
++	/* Currently we do not support hierarchy deeper than two level (0,1) */
++	parent_blkcg = cgroup_to_blkio_cgroup(cgroup->parent);
++	if (css_depth(&parent_blkcg->css) > 0)
++		return ERR_PTR(-EINVAL);
++
++	blkcg = kzalloc(sizeof(*blkcg), GFP_KERNEL);
++	if (!blkcg)
++		return ERR_PTR(-ENOMEM);
++
++	blkcg->weight = BLKIO_WEIGHT_DEFAULT;
++done:
++	spin_lock_init(&blkcg->lock);
++	INIT_HLIST_HEAD(&blkcg->blkg_list);
++
++	return &blkcg->css;
++}
++
++/*
++ * We cannot support shared io contexts, as we have no mean to support
++ * two tasks with the same ioc in two different groups without major rework
++ * of the main cic data structures.  For now we allow a task to change
++ * its cgroup only if it's the only owner of its ioc.
++ */
++static int blkiocg_can_attach(struct cgroup_subsys *subsys,
++				struct cgroup *cgroup, struct task_struct *tsk,
++				bool threadgroup)
++{
++	struct io_context *ioc;
++	int ret = 0;
++
++	/* task_lock() is needed to avoid races with exit_io_context() */
++	task_lock(tsk);
++	ioc = tsk->io_context;
++	if (ioc && atomic_read(&ioc->nr_tasks) > 1)
++		ret = -EINVAL;
++	task_unlock(tsk);
++
++	return ret;
++}
++
++static void blkiocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
++				struct cgroup *prev, struct task_struct *tsk,
++				bool threadgroup)
++{
++	struct io_context *ioc;
++
++	task_lock(tsk);
++	ioc = tsk->io_context;
++	if (ioc)
++		ioc->cgroup_changed = 1;
++	task_unlock(tsk);
++}
++
++struct cgroup_subsys blkio_subsys = {
++	.name = "blkio",
++	.create = blkiocg_create,
++	.can_attach = blkiocg_can_attach,
++	.attach = blkiocg_attach,
++	.destroy = blkiocg_destroy,
++	.populate = blkiocg_populate,
++	.subsys_id = blkio_subsys_id,
++	.use_id = 1,
++};
+diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
+new file mode 100644
+index 0000000..ba5703f
+--- /dev/null
++++ b/block/blk-cgroup.h
+@@ -0,0 +1,58 @@
++#ifndef _BLK_CGROUP_H
++#define _BLK_CGROUP_H
++/*
++ * Common Block IO controller cgroup interface
++ *
++ * Based on ideas and code from CFQ, CFS and BFQ:
++ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
++ *
++ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
++ *		      Paolo Valente <paolo.valente@unimore.it>
++ *
++ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
++ * 	              Nauman Rafique <nauman@google.com>
++ */
++
++#include <linux/cgroup.h>
++
++struct blkio_cgroup {
++	struct cgroup_subsys_state css;
++	unsigned int weight;
++	spinlock_t lock;
++	struct hlist_head blkg_list;
++};
++
++struct blkio_group {
++	/* An rcu protected unique identifier for the group */
++	void *key;
++	struct hlist_node blkcg_node;
++};
++
++#define BLKIO_WEIGHT_MIN	100
++#define BLKIO_WEIGHT_MAX	1000
++#define BLKIO_WEIGHT_DEFAULT	500
++
++#ifdef CONFIG_BLK_CGROUP
++extern struct blkio_cgroup blkio_root_cgroup;
++extern struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
++extern void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
++				struct blkio_group *blkg, void *key);
++extern int blkiocg_del_blkio_group(struct blkio_group *blkg);
++extern struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg,
++						void *key);
++#else
++static inline struct blkio_cgroup *
++cgroup_to_blkio_cgroup(struct cgroup *cgroup) { return NULL; }
++
++static inline void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
++			struct blkio_group *blkg, void *key)
++{
++}
++
++static inline int
++blkiocg_del_blkio_group(struct blkio_group *blkg) { return 0; }
++
++static inline struct blkio_group *
++blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key) { return NULL; }
++#endif
++#endif /* _BLK_CGROUP_H */
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index 9c8d31b..ccefff0 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -60,3 +60,9 @@ SUBSYS(net_cls)
+ #endif
  
- 	__cfq_group_service_tree_add(st, cfqg);
- 	cfqg->on_st = true;
-+	cfqd->nr_groups++;
-+	st->total_weight += cfqg->weight;
- }
+ /* */
++
++#ifdef CONFIG_BLK_CGROUP
++SUBSYS(blkio)
++#endif
++
++/* */
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index eb73632..d61b0b8 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -68,6 +68,10 @@ struct io_context {
+ 	unsigned short ioprio;
+ 	unsigned short ioprio_changed;
  
- static void
-@@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 		return;
- 
- 	cfqg->on_st = false;
-+	cfqd->nr_groups--;
-+	st->total_weight -= cfqg->weight;
- 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
- 		cfq_rb_erase(&cfqg->rb_node, st);
- }
-@@ -1592,6 +1614,7 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	unsigned slice;
- 	unsigned count;
- 	struct cfq_rb_root *st;
-+	int group_target_latency;
- 
- 	if (!cfqg) {
- 		cfqd->serving_prio = IDLE_WORKLOAD;
-@@ -1600,9 +1623,9 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	}
- 
- 	/* Choose next priority. RT > BE > IDLE */
--	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
-+	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
- 		cfqd->serving_prio = RT_WORKLOAD;
--	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
-+	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
- 		cfqd->serving_prio = BE_WORKLOAD;
- 	else {
- 		cfqd->serving_prio = IDLE_WORKLOAD;
-@@ -1640,9 +1663,11 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	 * proportional to the number of queues in that workload, over
- 	 * all the queues in the same priority class
++#ifdef CONFIG_BLK_CGROUP
++	unsigned short cgroup_changed;
++#endif
++
+ 	/*
+ 	 * For request batching
  	 */
--	slice = cfq_target_latency * count /
--		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
--		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
-+	group_target_latency = cfq_group_latency(cfqd, cfqg);
-+
-+	slice = group_target_latency * count /
-+		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
-+		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
- 
- 	if (cfqd->serving_type == ASYNC_WORKLOAD)
- 		/* async workload slice is scaled down according to
 -- 
 1.6.2.5
 
