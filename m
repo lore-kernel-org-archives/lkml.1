@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZKMJ4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZKMJ6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbZKMJ4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbZKMJ4i
+	id S1755902AbZKMJ6L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:58:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbZKMJ6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:56:38 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:47520 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755693AbZKMJ4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:56:37 -0500
-Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-To: ext Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Tony Lindgren <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-fbdev-devel@lists.sourceforge.net" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "dedekind1@gmail.com" <dedekind1@gmail.com>
-In-Reply-To: <20091113074811.ee61948f.sfr@canb.auug.org.au>
-References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
-	 <1257856848.21596.753.camel@localhost>
-	 <1257929140.20378.51.camel@tubuntu.research.nokia.com>
-	 <1257932641.20378.77.camel@tubuntu.research.nokia.com>
-	 <20091111184208.GC24837@atomide.com>
-	 <20091112161028.427787d9.sfr@canb.auug.org.au>
-	 <20091112181457.GX24837@atomide.com>
-	 <20091113074811.ee61948f.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 Nov 2009 11:56:08 +0200
-Message-ID: <1258106168.20378.119.camel@tubuntu.research.nokia.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Nov 2009 09:56:10.0804 (UTC) FILETIME=[873FC740:01CA6447]
-X-Nokia-AV: Clean
+	Fri, 13 Nov 2009 04:58:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51986 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755752AbZKMJ6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:58:07 -0500
+Date: Fri, 13 Nov 2009 09:57:38 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, lizf@cn.fujitsu.com, efault@gmx.de,
+       peterz@infradead.org, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
+       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
+References: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] tracing: Rename 'lockdep' event subsystem into 'lock'
+Message-ID: <tip-67178767b936fb47a3a5e88097cff41ccbda7acb@git.kernel.org>
+Git-Commit-ID: 67178767b936fb47a3a5e88097cff41ccbda7acb
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  67178767b936fb47a3a5e88097cff41ccbda7acb
+Gitweb:     http://git.kernel.org/tip/67178767b936fb47a3a5e88097cff41ccbda7acb
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 13 Nov 2009 10:06:34 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 13 Nov 2009 10:48:27 +0100
 
-On Thu, 2009-11-12 at 21:48 +0100, ext Stephen Rothwell wrote:
-> Hi Tony, Tomi,
-> 
-> On Thu, 12 Nov 2009 10:14:57 -0800 Tony Lindgren <tony@atomide.com> wrote:
-> >
-> > OK. The only dependency is the the move of the headers.
-> > 
-> > Tomi, can you please rebase your patches on top of the "7xx-iosplit-plat-merge"
-> > branch in linux-omap tree? This is commit 8171d88089ad63fc442b2bf32af7c18653adc5cb,
-> > and it should stay static.
-> 
-> OK, *if* you (Tony) guarantee that the base is stable (i.e. never
-> rebased, but may have things added to it) and in linux-next, then I can
-> take the DSS2 stuff separately if you want me to.
-> 
-> Tomi, you can, of course, merge that branch into your tree instead of
-> rebasing on top of it (which ever is easiest).
+tracing: Rename 'lockdep' event subsystem into 'lock'
 
-I rebased DSS2 on top of 8171d88089ad63fc442b2bf32af7c18653adc5cb. It
-can be found from git://gitorious.org/linux-omap-dss2/linux.git for-next
-branch.
+Lockdep events subsystem gathers various locking related events
+such as a request, release, contention or acquisition of a lock.
 
-I'm ok with Tony pulling DSS2 to his next-branch, or Stephen pulling
-directly, which ever works easier for you.
+The name of this event subsystem is a bit of a misnomer since
+these events are not quite related to lockdep but more generally
+to locking, ie: these events are not reporting lock dependencies
+or possible deadlock scenario but pure locking events.
 
- Tomi
+Hence this rename.
 
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/trace/events/{lockdep.h => lock.h} |    8 ++++----
+ kernel/lockdep.c                           |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/include/trace/events/lockdep.h b/include/trace/events/lock.h
+similarity index 92%
+rename from include/trace/events/lockdep.h
+rename to include/trace/events/lock.h
+index bcf1d20..a870ba1 100644
+--- a/include/trace/events/lockdep.h
++++ b/include/trace/events/lock.h
+@@ -1,8 +1,8 @@
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM lockdep
++#define TRACE_SYSTEM lock
+ 
+-#if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
+-#define _TRACE_LOCKDEP_H
++#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_LOCK_H
+ 
+ #include <linux/lockdep.h>
+ #include <linux/tracepoint.h>
+@@ -90,7 +90,7 @@ TRACE_EVENT(lock_acquired,
+ #endif
+ #endif
+ 
+-#endif /* _TRACE_LOCKDEP_H */
++#endif /* _TRACE_LOCK_H */
+ 
+ /* This part must be outside protection */
+ #include <trace/define_trace.h>
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 9af5672..f5dcd36 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -49,7 +49,7 @@
+ #include "lockdep_internals.h"
+ 
+ #define CREATE_TRACE_POINTS
+-#include <trace/events/lockdep.h>
++#include <trace/events/lock.h>
+ 
+ #ifdef CONFIG_PROVE_LOCKING
+ int prove_locking = 1;
