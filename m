@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbZKMRlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZKMRk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932152AbZKMRlW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbZKMRlP
+	id S1754844AbZKMRk5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZKMRko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:41:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57128 "EHLO mx1.redhat.com"
+	Fri, 13 Nov 2009 12:40:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50537 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932102AbZKMRkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:40:51 -0500
+	id S1753444AbZKMRkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:40:42 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -17,179 +17,186 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
        riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: [PATCH 06/16] blkio: Introduce per cfq group weights and vdisktime calculations
-Date: Fri, 13 Nov 2009 12:40:05 -0500
-Message-Id: <1258134015-21632-7-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 07/16] blkio: Group time used accounting and workload context save restore
+Date: Fri, 13 Nov 2009 12:40:06 -0500
+Message-Id: <1258134015-21632-8-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o Bring in the per cfq group weight and how vdisktime is calculated for the
-  group. Also bring in the functionality of updating the min_vdisktime of
-  the group service tree.
+o This patch introduces the functionality to do the accounting of group time
+  when a queue expires. This time used decides which is the group to go
+  next.
+
+o Also introduce the functionlity to save and restore the workload type
+  context with-in group. It might happen that once we expire the cfq queue
+  and group, a different group will schedule in and we will lose the context
+  of the workload type. Hence save and restore it upon queue expiry.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/Kconfig.iosched |    9 ++++++-
- block/cfq-iosched.c   |   62 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 69 insertions(+), 2 deletions(-)
+ block/cfq-iosched.c |   76 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 76 insertions(+), 0 deletions(-)
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index be0280d..fa95fa7 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -23,7 +23,6 @@ config IOSCHED_DEADLINE
- 
- config IOSCHED_CFQ
- 	tristate "CFQ I/O scheduler"
--	select BLK_CGROUP
- 	default y
- 	---help---
- 	  The CFQ I/O scheduler tries to distribute bandwidth equally
-@@ -33,6 +32,14 @@ config IOSCHED_CFQ
- 
- 	  This is the default I/O scheduler.
- 
-+config CFQ_GROUP_IOSCHED
-+	bool "CFQ Group Scheduling support"
-+	depends on IOSCHED_CFQ && CGROUPS
-+	select BLK_CGROUP
-+	default n
-+	---help---
-+	  Enable group IO scheduling in CFQ.
-+
- choice
- 	prompt "Default I/O scheduler"
- 	default DEFAULT_CFQ
 diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 11256c3..0754d61 100644
+index 0754d61..4c05d45 100644
 --- a/block/cfq-iosched.c
 +++ b/block/cfq-iosched.c
-@@ -13,6 +13,7 @@
- #include <linux/rbtree.h>
- #include <linux/ioprio.h>
- #include <linux/blktrace_api.h>
-+#include "blk-cgroup.h"
+@@ -114,6 +114,10 @@ struct cfq_queue {
+ 	/* fifo list of requests in sort_list */
+ 	struct list_head fifo;
  
- /*
-  * tunables
-@@ -49,6 +50,7 @@ static const int cfq_hist_divisor = 4;
- 
- #define CFQ_SLICE_SCALE		(5)
- #define CFQ_HW_QUEUE_MIN	(5)
-+#define CFQ_SERVICE_SHIFT       12
- 
- #define RQ_CIC(rq)		\
- 	((struct cfq_io_context *) (rq)->elevator_private)
-@@ -79,6 +81,7 @@ struct cfq_rb_root {
- 	unsigned count;
- 	u64 min_vdisktime;
- 	unsigned total_weight;
-+	struct rb_node *active;
++	/* time when queue got scheduled in to dispatch first request. */
++	unsigned long dispatch_start;
++	/* time when first request from queue completed and slice started. */
++	unsigned long slice_start;
+ 	unsigned long slice_end;
+ 	long slice_resid;
+ 	unsigned int slice_dispatch;
+@@ -180,6 +184,10 @@ struct cfq_group {
+ 	 */
+ 	struct cfq_rb_root service_trees[2][3];
+ 	struct cfq_rb_root service_tree_idle;
++
++	unsigned long saved_workload_slice;
++	enum wl_type_t saved_workload;
++	enum wl_prio_t saved_serving_prio;
  };
- #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
  
-@@ -163,6 +166,7 @@ struct cfq_group {
- 
- 	/* group service_tree key */
- 	u64 vdisktime;
-+	unsigned int weight;
- 	bool on_st;
- 
- 	/* number of cfqq currently on this group */
-@@ -418,6 +422,51 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
- }
- 
-+static inline u64 cfq_scale_slice(unsigned long delta, struct cfq_group *cfqg)
-+{
-+	u64 d = delta << CFQ_SERVICE_SHIFT;
-+
-+	d = d * BLKIO_WEIGHT_DEFAULT;
-+	do_div(d, cfqg->weight);
-+	return d;
-+}
-+
-+static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
-+{
-+	s64 delta = (s64)(vdisktime - min_vdisktime);
-+	if (delta > 0)
-+		min_vdisktime = vdisktime;
-+
-+	return min_vdisktime;
-+}
-+
-+static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
-+{
-+	s64 delta = (s64)(vdisktime - min_vdisktime);
-+	if (delta < 0)
-+		min_vdisktime = vdisktime;
-+
-+	return min_vdisktime;
-+}
-+
-+static void update_min_vdisktime(struct cfq_rb_root *st)
-+{
-+	u64 vdisktime = st->min_vdisktime;
-+	struct cfq_group *cfqg;
-+
-+	if (st->active) {
-+		cfqg = rb_entry(st->active, struct cfq_group, rb_node);
-+		vdisktime = cfqg->vdisktime;
-+	}
-+
-+	if (st->left) {
-+		cfqg = rb_entry(st->left, struct cfq_group, rb_node);
-+		vdisktime = min_vdisktime(vdisktime, cfqg->vdisktime);
-+	}
-+
-+	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
-+}
-+
  /*
-  * get averaged number of queues of RT/BE priority.
-  * average is updated, with a formula that gives more weight to higher numbers,
-@@ -734,8 +783,12 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
- {
- 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
- 
-+	if (st->active == &cfqg->rb_node)
-+		st->active = NULL;
+@@ -523,6 +531,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 				    low_slice);
+ 		}
+ 	}
++	cfqq->slice_start = jiffies;
+ 	cfqq->slice_end = jiffies + slice;
+ 	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
+ }
+@@ -798,6 +807,55 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ 	st->total_weight -= cfqg->weight;
+ 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
+ 		cfq_rb_erase(&cfqg->rb_node, st);
++	cfqg->saved_workload_slice = 0;
++}
 +
- 	BUG_ON(cfqg->nr_cfqq < 1);
- 	cfqg->nr_cfqq--;
++static inline unsigned long cfq_cfqq_slice_usage(struct cfq_queue *cfqq)
++{
++	unsigned long slice_used, allocated_slice;
 +
- 	/* If there are other cfq queues under this group, don't delete it */
- 	if (cfqg->nr_cfqq)
- 		return;
-@@ -1684,10 +1737,14 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
- {
- 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+	struct cfq_group *cfqg;
- 
- 	if (RB_EMPTY_ROOT(&st->rb))
- 		return NULL;
--	return cfq_rb_first_group(st);
-+	cfqg = cfq_rb_first_group(st);
-+	st->active = &cfqg->rb_node;
-+	update_min_vdisktime(st);
-+	return cfqg;
++	/*
++	 * Queue got expired before even a single request completed or
++	 * got expired immediately after first request completion.
++	 */
++	if (!cfqq->slice_start || cfqq->slice_start == jiffies) {
++		/*
++		 * Also charge the seek time incurred to the group, otherwise
++		 * if there are mutiple queues in the group, each can dispatch
++		 * a single request on seeky media and cause lots of seek time
++		 * and group will never know it.
++		 */
++		slice_used = max_t(unsigned long,
++					(jiffies - cfqq->dispatch_start), 1);
++	} else {
++		slice_used = jiffies - cfqq->slice_start;
++		allocated_slice = cfqq->slice_end - cfqq->slice_start;
++		if (slice_used > allocated_slice)
++			slice_used = allocated_slice;
++	}
++
++	cfq_log_cfqq(cfqq->cfqd, cfqq, "sl_used=%lu", slice_used);
++	return slice_used;
++}
++
++static void cfq_group_served(struct cfq_data *cfqd, struct cfq_group *cfqg,
++				unsigned long service)
++{
++	struct cfq_rb_root *st = &cfqd->grp_service_tree;
++
++	/* Can't update vdisktime while group is on service tree */
++	cfq_rb_erase(&cfqg->rb_node, st);
++	cfqg->vdisktime += cfq_scale_slice(service, cfqg);
++	__cfq_group_service_tree_add(st, cfqg);
++
++	/* This group is being expired. Save the context */
++	if (time_after(cfqd->workload_expires, jiffies)) {
++		cfqg->saved_workload_slice = cfqd->workload_expires
++						- jiffies;
++		cfqg->saved_workload = cfqd->serving_type;
++		cfqg->saved_serving_prio = cfqd->serving_prio;
++	} else
++		cfqg->saved_workload_slice = 0;
  }
  
- static void cfq_choose_cfqg(struct cfq_data *cfqd)
-@@ -3163,6 +3220,9 @@ static void *cfq_init_queue(struct request_queue *q)
- 	cfqg->service_tree_idle = CFQ_RB_ROOT;
- 	RB_CLEAR_NODE(&cfqg->rb_node);
+ /*
+@@ -813,6 +871,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	unsigned long rb_key;
+ 	struct cfq_rb_root *service_tree;
+ 	int left;
++	int new_cfqq = 1;
  
-+	/* Give preference to root group over other groups */
-+	cfqg->weight = 2*BLKIO_WEIGHT_DEFAULT;
+ 	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
+ 						cfqq_type(cfqq), cfqd);
+@@ -841,6 +900,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	}
+ 
+ 	if (!RB_EMPTY_NODE(&cfqq->rb_node)) {
++		new_cfqq = 0;
+ 		/*
+ 		 * same position, nothing more to do
+ 		 */
+@@ -882,6 +942,8 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	rb_link_node(&cfqq->rb_node, parent, p);
+ 	rb_insert_color(&cfqq->rb_node, &service_tree->rb);
+ 	service_tree->count++;
++	if (add_front || !new_cfqq)
++		return;
+ 	cfq_group_service_tree_add(cfqd, cfqq->cfqg);
+ }
+ 
+@@ -1199,6 +1261,8 @@ static void __cfq_set_active_queue(struct cfq_data *cfqd,
+ {
+ 	if (cfqq) {
+ 		cfq_log_cfqq(cfqd, cfqq, "set_active");
++		cfqq->slice_start = 0;
++		cfqq->dispatch_start = jiffies;
+ 		cfqq->slice_end = 0;
+ 		cfqq->slice_dispatch = 0;
+ 
+@@ -1236,6 +1300,8 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		cfq_log_cfqq(cfqd, cfqq, "resid=%ld", cfqq->slice_resid);
+ 	}
+ 
++	cfq_group_served(cfqd, cfqq->cfqg, cfq_cfqq_slice_usage(cfqq));
 +
- 	/*
- 	 * Not strictly needed (since RB_ROOT just clears the node and we
- 	 * zeroed cfqd on alloc), but better be safe in case someone decides
+ 	if (cfq_cfqq_on_rr(cfqq) && RB_EMPTY_ROOT(&cfqq->sort_list))
+ 		cfq_del_cfqq_rr(cfqd, cfqq);
+ 
+@@ -1244,6 +1310,9 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	if (cfqq == cfqd->active_queue)
+ 		cfqd->active_queue = NULL;
+ 
++	if (&cfqq->cfqg->rb_node == cfqd->grp_service_tree.active)
++		cfqd->grp_service_tree.active = NULL;
++
+ 	if (cfqd->active_cic) {
+ 		put_io_context(cfqd->active_cic->ioc);
+ 		cfqd->active_cic = NULL;
+@@ -1752,6 +1821,13 @@ static void cfq_choose_cfqg(struct cfq_data *cfqd)
+ 	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
+ 
+ 	cfqd->serving_group = cfqg;
++
++	/* Restore the workload type data */
++	if (cfqg->saved_workload_slice) {
++		cfqd->workload_expires = jiffies + cfqg->saved_workload_slice;
++		cfqd->serving_type = cfqg->saved_workload;
++		cfqd->serving_prio = cfqg->saved_serving_prio;
++	}
+ 	choose_service_tree(cfqd, cfqg);
+ }
+ 
 -- 
 1.6.2.5
 
