@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZKMPTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZKMPXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbZKMPTM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757319AbZKMPTD
+	id S1753226AbZKMPXx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 10:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKMPXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:19:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63627 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757308AbZKMPSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 10:18:51 -0500
-Date: Fri, 13 Nov 2009 10:18:38 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 01/16] blkio: Documentation
-Message-ID: <20091113151838.GD17076@redhat.com>
-References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com> <1258068756-10766-2-git-send-email-vgoyal@redhat.com> <20091113104833.GX8742@kernel.dk>
+	Fri, 13 Nov 2009 10:23:51 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34968 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbZKMPXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 10:23:50 -0500
+Date: Fri, 13 Nov 2009 15:21:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: Martin Michlmayr <tbm@cyrius.com>, sam@ravnborg.org,
+       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       akpm@linux-foundation.org, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 2/4] Add support for LZO-compressed kernels for ARM
+Message-ID: <20091113152155.GC27752@flint.arm.linux.org.uk>
+References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com> <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com> <1257942478-18719-3-git-send-email-albin.tonnerre@free-electrons.com> <20091112125938.GA19698@deprecation.cyrius.com> <20091113142917.GA12149@Chamillionaire.breakpoint.cc> <20091113145008.GN13296@deprecation.cyrius.com> <20091113145349.GA2201@pc-ran3241.res.insa>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091113104833.GX8742@kernel.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091113145349.GA2201@pc-ran3241.res.insa>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 11:48:34AM +0100, Jens Axboe wrote:
-> On Thu, Nov 12 2009, Vivek Goyal wrote:
-> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+On Fri, Nov 13, 2009 at 03:54:00PM +0100, Albin Tonnerre wrote:
+> On Fri, 13 Nov 2009 14:50 +0000, Martin Michlmayr wrote :
+> > * Sebastian Andrzej Siewior <sebastian@breakpoint.cc> [2009-11-13 15:29]:
+> > > > # For __aeabi_uidivmod
+> > > >-lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+> > > >+lib1funcs = arch/$(SRCARCH)/lib/lib1funcs.o
+> > > 
+> > > +lib1funcs = $(obj)/arch/$(SRCARCH)/lib/lib1funcs.o
+> > > 
+> > > This is untested but it should refer to obj because you break out of
+> > > tree builds (O=) if you don't :)
+> > 
+> > With this I get:
+> >  make[4]: *** No rule to make target `arch/arm/boot/compressed/arch/arm/lib/lib1funcs.o', needed by `arch/arm/boot/compressed/vmlinux'.  Stop.
 > 
-> You should put this at the end for the next posting, no point in having
-> documentation without the code.
-> 
+> Sam: what's the correct way to solve this issue?
 
-Sure. Will do that in next posting.
+We already have something similar - with the font support.  Just do this:
 
-Thanks
-Vivek
+lib1funcs = $(obj)/lib1funcs.o
 
-> -- 
-> Jens Axboe
+$(obj)/lib1funcs.S: $(srctree)/arch/arm/lib/lib1funcs.S FORCE
+        $(call cmd,shipped)
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
