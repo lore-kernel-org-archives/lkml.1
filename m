@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZKMV2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZKMVew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZKMV2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 16:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZKMV2O
+	id S1754715AbZKMVew (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 16:34:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZKMVeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 16:28:14 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36384 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753147AbZKMV2N (ORCPT
+	Fri, 13 Nov 2009 16:34:46 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:55728 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbZKMVep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 16:28:13 -0500
-Date: Fri, 13 Nov 2009 21:30:07 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
-Message-ID: <20091113213007.774e75e3@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911132039.06929.bzolnier@gmail.com>
-References: <4AFCC0D4.9020708@gmail.com>
-	<200911131715.24377.bzolnier@gmail.com>
-	<20091113182515.38fb3793@lxorguk.ukuu.org.uk>
-	<200911132039.06929.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Nov 2009 16:34:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=exEhneIWEU7nRDP3HxIzY6ahfa4ZrGKBsK3v6GIZThwlFI1ZbxXd5gPL5mvER7euQG
+         IDZ/tkwTg7g1qVMf03jquSl0EirkUmdmQiQMWuDEiW8BL1EiFaZISFKI5UvqMhBAG+Nm
+         jLRvzNNdLe+Fjl7UY4dI7cAqOlx9wmzWuKYv0=
+Message-ID: <4AFDD0EF.7000809@lwfinger.net>
+Date: Fri, 13 Nov 2009 15:34:39 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Michael Buesch <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 64-bit DMA problems with BCM4312 using b43
+References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org> <200911132144.24110.mb@bu3sch.de> <4AFDCA0E.4080007@lwfinger.net> <20091113211306.GA6600@srcf.ucam.org>
+In-Reply-To: <20091113211306.GA6600@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Not experimental as we default to not doing ATAPI DMA. Glancing over the
+On 11/13/2009 03:13 PM, Matthew Garrett wrote:
+> On Fri, Nov 13, 2009 at 03:05:18PM -0600, Larry Finger wrote:
 > 
-> Which is a regression compared to the "old IDE" driver.
-
-And given the two drivers show the difference when exactly the sequence
-of I/O writes/reads occurs one that nobody plans to worry about as its
-clearly some kind of hardware timing issue.
-
-> > code I notice the ALI C2/C3 workaround probably wants adding to the old
-> > driver as it can do nasty things otherwise. (See the reset function in
-> > the pata_ali driver)
+>> I'm in the process of creating a patch to set the latency to 200 usec. The
+>> default is 2000. On my fast prosessors, it should not be anything nearly that
+>> slow. If we determine this to be the problem, then we can try tuning.
 > 
-> Please let the driver's maintainer know about it.
-> 
-> One would wonder why workaround hasn't been back-ported to stable driver
+> The latency is the amount of time it takes to get out of deep C states 
+> and into C0. That's a function of the processor design rather than the 
+> frequency.
 
-It's in the stable driver, might not be in drivers/ide. The note about it
-being missing was posted out to various people at the time so I guess it
-got missed
+Thanks for that info. I should have said my Turion 64 X2 is different.
 
-> > > PATA_CMD64X: EXPERIMENTAL
-> > > - potential data corruption issues remains unfixed for CMD64[3,6]
-> > 
-> > Patch in testing, and unlike the old IDE one it doesn't cripple the
-> > controller but implements the proper workaround in full including
-> > permitting parallel PIO command streams. I'll push that back through
-> > stable once done.
-> 
-> This patch is way too complex and risky for -rc, let alone -stable.
-
-How would you know - I've not posted it yet ? And btw I don't plan to
-post it for the -rc. Nor would simply posting a serializing hack fix it.
-It might make it less likely to occur but that isn't a fix.
-
-> > it. Trivial and fixed.
-> 
-> I can't see a fix anywhere but I'll assume that I can't look for it
-> properly (I'm really sorry for it).
-
-Fixed as in I fixed it now. Which is why I just noticed the old IDE ones
-are buggy. I'll add it to the next patch sets for Jeff, along with the
-Toshiba driver and some other bits.
-
-Alan
-
-
+Larry
