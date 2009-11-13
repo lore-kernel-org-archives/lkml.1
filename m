@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbZKMXZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932448AbZKMX13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932509AbZKMXZK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932447AbZKMXZH
+	id S932448AbZKMX13 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932405AbZKMX1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:25:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53385 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932319AbZKMXZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:25:06 -0500
-Date: Sat, 14 Nov 2009 00:24:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH -tip 1/3] Pass mm->flags to binfmt core_dump for bitflag
- consistency
-Message-ID: <20091113232457.GC21666@elte.hu>
-References: <20091113225226.15079.90813.stgit@harusame>
- <20091113150904.56c15910.akpm@linux-foundation.org>
+	Fri, 13 Nov 2009 18:27:24 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:50298 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932404AbZKMX1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 18:27:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=TqFrRIOksg4lg3tgyk41mV4ulRP67xPiifDXFzJNIam81BcKHRZLTV1Ta1J+7LbgNW
+         d5T6J4zfD6jP6C0VK8MzLjEFXtPvVhnh3w46wtOlaOscO0X5xO/1uWgbTn79nm03WGwM
+         hBA+CjYoaMieLDiCVP63Dy9UVrYEMmHDmOWYo=
+Message-ID: <4AFDEB57.2050908@gmail.com>
+Date: Fri, 13 Nov 2009 17:27:19 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091113150904.56c15910.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alexander Holler <holler@ahsoftware.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Problems with p55-express and sleeping usb-hds
+References: <4AFDDDF6.4050907@ahsoftware.de>
+In-Reply-To: <4AFDDDF6.4050907@ahsoftware.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/13/2009 04:30 PM, Alexander Holler wrote:
+> Hello,
+>
+> I'm having a problem with kernels (x86_64) <=2.6.32-rc7 (that means all
+> kernels I tried, including the latest stable 2.6.31.6) on a Gigabyte
+> P55M-UD4 mb (Bios F4l) with an Intel Core i7 860 and sleeping usb-hds.
+>
+> I don't have the problems when using the same usb-drives on a laptop
+> with a core2duo (ICH8), so it seems to be a problem with the chipset
+> (p55-express).
+>
+> The problem seems to occur when the usb-drive goes to sleep (because of
+> inactivity) and the kernel tries to access them afterwards.
+>
+> Here are the excerpts from the log:
+>
+> ...
+>
+> (And here comes the problem)>
+> Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed
+> USB device using ehci_hcd and address 3
+> Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware
+> changed
+> Nov 13 19:47:39 krabat kernel: [ 2661.120489] usb 9-7: USB disconnect,
+> address 3
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 13 Nov 2009 17:52:27 -0500
-> Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
-> > Pass mm->flags to binfmt core_dump for bitflag consistency.
-> > Since mm->flags bit flags is not protected by locks, it will be
-> > changed while dumping core. This patch copies mm->flags to a
-> > mm_flags local variable at the beginning of do_coredump() and
-> > use it while dumping. mm_flags also includes dump_filter which
-> > filters elf sections from core file in elf_core_dump().
-> > So, this patch also passes mm_flags to each binfmt->core_dump().
-> 
-> I can kind-of guess the answer, but it would be much more reliable if
-> we were to hear this from yourself:
-> 
->   Why did you write this patch?  What problem is being observed?
-
-i'm not Masami so i'm only guessing that while writing the tracepoint a 
-race got noticed but that otherwise there's no big practical effect, 
-'just' a cleanliness problem fixed.
-
-	Ingo
+That sounds like the device started reporting a different firmware 
+string after it woke up, and the kernel decided it wasn't the same 
+device anymore and triggered a disconnect/reconnect..
