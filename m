@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbZKMIHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZKMIKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbZKMIHl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 03:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZKMIHg
+	id S1754482AbZKMIKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 03:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZKMIKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 03:07:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52335 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbZKMIHf (ORCPT
+	Fri, 13 Nov 2009 03:10:33 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:21926 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754147AbZKMIKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 03:07:35 -0500
-Subject: Re: perf stat output
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
-References: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 Nov 2009 09:07:35 +0100
-Message-ID: <1258099655.4039.998.camel@laptop>
+	Fri, 13 Nov 2009 03:10:32 -0500
+Date: Fri, 13 Nov 2009 09:10:31 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: Marco Stornelli <marco.stornelli@gmail.com>,
+       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
+       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+Message-ID: <20091113091031.3f6d4bba@marrow.netinsight.se>
+In-Reply-To: <20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
+References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
+	<4AFC4D31.2000101@gmail.com>
+	<20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-12 at 20:03 -0200, Lucas De Marchi wrote:
-> Hi all!
-> 
-> Some questions about perf stat output. See example:
-> 
-> 
-> lucas@LMS-linux:~/programming/testprograms> perf stat -e
-> L1-dcache-loads -e L1-dcache-load-misses -- make -j
-> gcc test_schedchanges.c -o test_schedchanges
-> gcc -pthread test_taskaff1.c -o test_taskaff1
-> gcc -pthread test_taskaff2.c -o test_taskaff2
-> gcc -pthread test_taskaff3.c -o test_taskaff3
-> 
->  Performance counter stats for 'make -j':
-> 
->        161384667  L1-dcache-loads          #      0.000 M/sec
->               24853791  L1-dcache-load-misses    #      0.000 M/sec
-> 
-> 	          0.066893389  seconds time elapsed
-> 
-> Why do we have both L1-dcache-loads and  L1-dcache-load-misses with
-> 0.000 M/sec? Also, why do we have 0 M/s when running "perf stat -a -e
-> cache-misses -e cache-references" but values different than 0 when
-> running "perf stat -a" without selecting the events?
+On Thu, 12 Nov 2009 16:56:49 -0500
+David VomLehn <dvomlehn@cisco.com> wrote:
 
-No idea, you'd have to look at the code computing this M/sec stuff. I
-think Ingo wrote that, so he might have an idea.
+> Good question. Some more detail on our application might help. In some
+> situations, we may have no disk and only enough flash for the bootloader.
+> The kernel is downloaded over the network. When we get to user space, we
+> initialize a number of things dynamically. For example, we dynamically
+> compute some MAC address, and most of the IP addresses are obtained with
+> DHCP. This are very useful to have for panic analysis.
+> 
+> Since there is neither flash nor disk, user space has no place to store
+> this information, should the kernel panic. When we come back up, we will get
+> different MAC and IP addresses. Storing them in memory is our only hope.
+> 
+> Fortunately, there is a section of RAM that the bootloader promises not
+> to overwrite. On a panic, we capture the messages written on the console
+> and store them in the protected area. If the information from the
+> /proc file is written as part of the panic, we will capture it, too.
 
-> The last question: what does the  "scaled from X%" mean? Is it related
-> to the maximum number of performance registers a processor can count
-> at a time?
+Can't you solve this completely from userspace using phram and mtdoops
+instead? I.e., setup two phram areas
 
-Yes, if the hardware has only 2 counters and you specify 4, we'll
-round-robin those 4 onto the 2. In that case you'll see things like
-scaled from ~50% because each counter will only have been on the actual
-PMU for about 50% of the time.
+	modprobe phram 4K@start-of-your-area,4K@start-of-your-area+4K    # Can't remember the exact syntax!
 
-(RR happens with tick granularity, so if your runtime is of that order
-or shorter you can get funny results with some counters being 0).
+you'll then get /dev/mtdX and /dev/mtdX+1 for these two. You can then do
 
+	modprobe mtdoops mtddev=/dev/mtdX+1 dump_oops=0
+
+to load mtdoops to catch the panic in the second area, and just write
+your userspace messages to /dev/mtdX.
+
+
+One thing probably have to be fixed though: I don't think phram has a
+panic_write, which will be needed by mtdoops to catch the panic - this
+should be trivial to add though since it's plain RAM.
+
+// Simon
