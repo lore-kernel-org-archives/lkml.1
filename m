@@ -1,115 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZKMOvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZKMOxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbZKMOvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 09:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZKMOv1
+	id S1755644AbZKMOxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 09:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZKMOxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 09:51:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:11973 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbZKMOv0 (ORCPT
+	Fri, 13 Nov 2009 09:53:44 -0500
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:58078 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755313AbZKMOxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 09:51:26 -0500
-Message-ID: <4AFD726E.40101@natemccallum.com>
-Date: Fri, 13 Nov 2009 09:51:26 -0500
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] Devices that ignore USB spec generate invalid modaliases
-References: <4AFA73C7.4070002@natemccallum.com> <20091112234255.GA23889@kroah.com> <4AFCB1AE.6030200@natemccallum.com>
-In-Reply-To: <4AFCB1AE.6030200@natemccallum.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Nov 2009 09:53:43 -0500
+Date: Fri, 13 Nov 2009 15:53:49 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for 2.6.32-rc7
+Message-ID: <20091113155349.37d8be88@mschwide.boeblingen.de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/12/2009 08:09 PM, Nathaniel McCallum wrote:
-> On 11/12/2009 06:42 PM, Greg KH wrote:
->> On Wed, Nov 11, 2009 at 03:20:23AM -0500, Nathaniel McCallum wrote:
->>> Please CC me as I'm not subscribed to LKML.
->>>
->>> The current code to generate usb modaliases from usb_device_id assumes
->>> that the device's bcdDevice descriptor will actually be in BCD format.
->>> While this should be a sane assumption, some devices don't follow spec
->>> and just use plain old hex. This causes drivers for these devices to
->>> generate invalid modalias lines which will never actually match for the
->>> hardware.
->>>
->>> The following patch adds hex support for bcdDevice in file2alias.c.
->>> Drivers for devices which have bcdDevice conforming to BCD will have no
->>> change in modalias output. Drivers for devices which don't conform
->>> (primarily usb-storage and ibmcam in my initial survey) should now
->>> generate valid modaliases.
->>>
->>> EXAMPLE OUTPUT (ibmcam; space added to highlight change)
->>> Old: usb:v0545p800D d030[10-9] dc*dsc*dp*ic*isc*ip*
->>> New: usb:v0545p800D d030a dc*dsc*dp*ic*isc*ip*
->>
->> Huh? The old one had '[]' in it?
->>
->> What does the bcdDevice for this really look like in the device itself?
->> If it is messed up in the descriptor, then how can we know to fix it up
->> here?
->
-> The device contains 0x030A (an invalid value since 0x0309 + 1 == 0x0310
-> in BCD format) in the bcdDevice descriptor. The driver matches against
-> this descriptor (see the usb_device_id table in
-> drivers/media/video/usbvideo/ibmcam.c).
->
-> There are three possible solutions:
-> 1. Fix the ibmcam driver not to match against bcdDevice. I'm not sure if
-> this is possible. Nor does it solve the problem for future devices which
-> may be misprogrammed.
-> 2. Change *all* usb modaliases to be generated assuming hex ranges. This
-> makes file2alias.c a little simpler at the cost of changing a large
-> number of existing modaliases. The impact of this change is potentially
-> large.
-> 3. My solution, which is to detect if either bcdDevice_lo or
-> bcdDevice_hi is in hexadecimal rather than BCD format. We do this by
-> checking each character to see if it is above 0x9. If either of these
-> fields is in hex format, we switch into hex mode and render the modalias
-> appropriately. This also has some potential impact on userspace tools,
-> however, since currently the only modalias that is affected is ibmcam,
-> the change is measurably small in impact.
->
-> The second bug (related here: http://lkml.org/lkml/2009/11/11/245) is
-> just simply a bug in the modalias generation code. Namely, 0x59 + 1 ==
-> 0x60 in BCD format, not 0x5A. Therefore, you cannot rely on i++ to
-> increment. Fixing it has no impact other than fixing a broken modalias
-> (which occurs in usb-storage).
+Hi Linus,
 
-Just in case it is helpful, here is a diff between the old modules.alias 
-and the new modules.alias generated with my patches applied.  The 
-usb_storage line is fixed by the increment patch.  The ibmcam lines are 
-fixed by the bcd/hex patch.
+another 4 s390 bug fixes for 2.6.32.
+Please pull from 'for-linus' branch of
 
---- modules.alias.old   2009-11-13 09:46:36.191640578 -0500
-+++ modules.alias.fixed 2009-11-13 09:46:36.549891821 -0500
-@@ -345,7 +345,6 @@
-  alias usb:v041Ep4064d*dc*dsc*dp*ic*isc*ip* gspca_ov519
-  alias usb:v041Ep4068d*dc*dsc*dp*ic*isc*ip* gspca_ov519
-  alias usb:v0420p0001d0100dc*dsc*dp*ic*isc*ip* usb_storage
--alias usb:v0421p0019d05[10-9]*dc*dsc*dp*ic*isc*ip* usb_storage
-  alias usb:v0421p0019d059[2-9]dc*dsc*dp*ic*isc*ip* usb_storage
-  alias usb:v0421p0019d060*dc*dsc*dp*ic*isc*ip* usb_storage
-  alias usb:v0421p0019d0610dc*dsc*dp*ic*isc*ip* usb_storage
-@@ -1021,12 +1020,12 @@
-  alias usb:v0543p1921d*dc*dsc*dp*ic*isc*ip* ipaq
-  alias usb:v0543p1922d*dc*dsc*dp*ic*isc*ip* ipaq
-  alias usb:v0543p1923d*dc*dsc*dp*ic*isc*ip* ipaq
--alias usb:v0545p8002d030[10-9]dc*dsc*dp*ic*isc*ip* ibmcam
--alias usb:v0545p800Cd030[10-9]dc*dsc*dp*ic*isc*ip* ibmcam
--alias usb:v0545p800Dd030[10-9]dc*dsc*dp*ic*isc*ip* ibmcam
-+alias usb:v0545p8002d030Adc*dsc*dp*ic*isc*ip* ibmcam
-+alias usb:v0545p800Cd030Adc*dsc*dp*ic*isc*ip* ibmcam
-+alias usb:v0545p800Dd030Adc*dsc*dp*ic*isc*ip* ibmcam
-  alias usb:v0545p8080d0002dc*dsc*dp*ic*isc*ip* ibmcam
--alias usb:v0545p8080d030[10-9]dc*dsc*dp*ic*isc*ip* ibmcam
-  alias usb:v0545p8080d0301dc*dsc*dp*ic*isc*ip* ibmcam
-+alias usb:v0545p8080d030Adc*dsc*dp*ic*isc*ip* ibmcam
-  alias usb:v0545p808Bd*dc*dsc*dp*ic*isc*ip* gspca_tv8532
-  alias usb:v0545p8333d*dc*dsc*dp*ic*isc*ip* gspca_tv8532
-  alias usb:v0546p3155d*dc*dsc*dp*ic*isc*ip* gspca_sunplus
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
+
+to receive the following updates:
+
+Christian Borntraeger (1):
+      [S390] s390: fix single stepping on svc0
+
+Gerald Schaefer (1):
+      [S390] monreader: fix use after free bug with suspend/resume
+
+Martin Schwidefsky (2):
+      [S390] reset cputime accounting after IPL from NSS
+      [S390] sclp: undo quiesce handler override on resume
+
+ arch/s390/kernel/early.c         |    9 +++++++
+ arch/s390/kernel/entry.S         |    8 +++---
+ arch/s390/kernel/entry64.S       |    8 +++---
+ drivers/s390/char/monreader.c    |    1 +
+ drivers/s390/char/sclp_quiesce.c |   48 ++++++++++++++++++++++++++++++--------
+ 5 files changed, 56 insertions(+), 18 deletions(-)
+
+diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
+index bf8b4ae..e49e9e0 100644
+--- a/arch/s390/kernel/early.c
++++ b/arch/s390/kernel/early.c
+@@ -55,6 +55,7 @@ static void __init reset_tod_clock(void)
+ 		disabled_wait(0);
+ 
+ 	sched_clock_base_cc = TOD_UNIX_EPOCH;
++	S390_lowcore.last_update_clock = sched_clock_base_cc;
+ }
+ 
+ #ifdef CONFIG_SHARED_KERNEL
+@@ -167,6 +168,14 @@ static noinline __init void create_kernel_nss(void)
+ 		return;
+ 	}
+ 
++	/* re-initialize cputime accounting. */
++	sched_clock_base_cc = get_clock();
++	S390_lowcore.last_update_clock = sched_clock_base_cc;
++	S390_lowcore.last_update_timer = 0x7fffffffffffffffULL;
++	S390_lowcore.user_timer = 0;
++	S390_lowcore.system_timer = 0;
++	asm volatile("SPT 0(%0)" : : "a" (&S390_lowcore.last_update_timer));
++
+ 	/* re-setup boot command line with new ipl vm parms */
+ 	ipl_update_parameters();
+ 	setup_boot_command_line();
+diff --git a/arch/s390/kernel/entry.S b/arch/s390/kernel/entry.S
+index f43d2ee..48215d1 100644
+--- a/arch/s390/kernel/entry.S
++++ b/arch/s390/kernel/entry.S
+@@ -565,10 +565,10 @@ pgm_svcper:
+ 	lh	%r7,0x8a		# get svc number from lowcore
+ 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
+ 	TRACE_IRQS_OFF
+-	l	%r1,__TI_task(%r9)
+-	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
+-	mvc	__THREAD_per+__PER_address(4,%r1),__LC_PER_ADDRESS
+-	mvc	__THREAD_per+__PER_access_id(1,%r1),__LC_PER_ACCESS_ID
++	l	%r8,__TI_task(%r9)
++	mvc	__THREAD_per+__PER_atmid(2,%r8),__LC_PER_ATMID
++	mvc	__THREAD_per+__PER_address(4,%r8),__LC_PER_ADDRESS
++	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
+ 	oi	__TI_flags+3(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
+ 	TRACE_IRQS_ON
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+diff --git a/arch/s390/kernel/entry64.S b/arch/s390/kernel/entry64.S
+index a6f7b20..9aff1d4 100644
+--- a/arch/s390/kernel/entry64.S
++++ b/arch/s390/kernel/entry64.S
+@@ -543,10 +543,10 @@ pgm_svcper:
+ 	mvc	__LC_LAST_UPDATE_TIMER(8),__LC_SYNC_ENTER_TIMER
+ 	llgh	%r7,__LC_SVC_INT_CODE	# get svc number from lowcore
+ 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
+-	lg	%r1,__TI_task(%r9)
+-	mvc	__THREAD_per+__PER_atmid(2,%r1),__LC_PER_ATMID
+-	mvc	__THREAD_per+__PER_address(8,%r1),__LC_PER_ADDRESS
+-	mvc	__THREAD_per+__PER_access_id(1,%r1),__LC_PER_ACCESS_ID
++	lg	%r8,__TI_task(%r9)
++	mvc	__THREAD_per+__PER_atmid(2,%r8),__LC_PER_ATMID
++	mvc	__THREAD_per+__PER_address(8,%r8),__LC_PER_ADDRESS
++	mvc	__THREAD_per+__PER_access_id(1,%r8),__LC_PER_ACCESS_ID
+ 	oi	__TI_flags+7(%r9),_TIF_SINGLE_STEP # set TIF_SINGLE_STEP
+ 	TRACE_IRQS_ON
+ 	stosm	__SF_EMPTY(%r15),0x03	# reenable interrupts
+diff --git a/drivers/s390/char/monreader.c b/drivers/s390/char/monreader.c
+index 89ece1c..66e21dd 100644
+--- a/drivers/s390/char/monreader.c
++++ b/drivers/s390/char/monreader.c
+@@ -357,6 +357,7 @@ static int mon_close(struct inode *inode, struct file *filp)
+ 	atomic_set(&monpriv->msglim_count, 0);
+ 	monpriv->write_index  = 0;
+ 	monpriv->read_index   = 0;
++	dev_set_drvdata(monreader_device, NULL);
+ 
+ 	for (i = 0; i < MON_MSGLIM; i++)
+ 		kfree(monpriv->msg_array[i]);
+diff --git a/drivers/s390/char/sclp_quiesce.c b/drivers/s390/char/sclp_quiesce.c
+index 84c191c..05909a7 100644
+--- a/drivers/s390/char/sclp_quiesce.c
++++ b/drivers/s390/char/sclp_quiesce.c
+@@ -20,9 +20,12 @@
+ 
+ #include "sclp.h"
+ 
++static void (*old_machine_restart)(char *);
++static void (*old_machine_halt)(void);
++static void (*old_machine_power_off)(void);
++
+ /* Shutdown handler. Signal completion of shutdown by loading special PSW. */
+-static void
+-do_machine_quiesce(void)
++static void do_machine_quiesce(void)
+ {
+ 	psw_t quiesce_psw;
+ 
+@@ -33,23 +36,48 @@ do_machine_quiesce(void)
+ }
+ 
+ /* Handler for quiesce event. Start shutdown procedure. */
+-static void
+-sclp_quiesce_handler(struct evbuf_header *evbuf)
++static void sclp_quiesce_handler(struct evbuf_header *evbuf)
+ {
+-	_machine_restart = (void *) do_machine_quiesce;
+-	_machine_halt = do_machine_quiesce;
+-	_machine_power_off = do_machine_quiesce;
++	if (_machine_restart != (void *) do_machine_quiesce) {
++		old_machine_restart = _machine_restart;
++		old_machine_halt = _machine_halt;
++		old_machine_power_off = _machine_power_off;
++		_machine_restart = (void *) do_machine_quiesce;
++		_machine_halt = do_machine_quiesce;
++		_machine_power_off = do_machine_quiesce;
++	}
+ 	ctrl_alt_del();
+ }
+ 
++/* Undo machine restart/halt/power_off modification on resume */
++static void sclp_quiesce_pm_event(struct sclp_register *reg,
++				  enum sclp_pm_event sclp_pm_event)
++{
++	switch (sclp_pm_event) {
++	case SCLP_PM_EVENT_RESTORE:
++		if (old_machine_restart) {
++			_machine_restart = old_machine_restart;
++			_machine_halt = old_machine_halt;
++			_machine_power_off = old_machine_power_off;
++			old_machine_restart = NULL;
++			old_machine_halt = NULL;
++			old_machine_power_off = NULL;
++		}
++		break;
++	case SCLP_PM_EVENT_FREEZE:
++	case SCLP_PM_EVENT_THAW:
++		break;
++	}
++}
++
+ static struct sclp_register sclp_quiesce_event = {
+ 	.receive_mask = EVTYP_SIGQUIESCE_MASK,
+-	.receiver_fn = sclp_quiesce_handler
++	.receiver_fn = sclp_quiesce_handler,
++	.pm_event_fn = sclp_quiesce_pm_event
+ };
+ 
+ /* Initialize quiesce driver. */
+-static int __init
+-sclp_quiesce_init(void)
++static int __init sclp_quiesce_init(void)
+ {
+ 	return sclp_register(&sclp_quiesce_event);
+ }
