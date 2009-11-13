@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZKMGfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZKMGgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbZKMGfs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 01:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbZKMGfn
+	id S1754733AbZKMGgn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 01:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZKMGgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 01:35:43 -0500
-Received: from mga14.intel.com ([143.182.124.37]:56011 "EHLO mga14.intel.com"
+	Fri, 13 Nov 2009 01:36:39 -0500
+Received: from mga03.intel.com ([143.182.124.21]:10674 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbZKMGfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 01:35:42 -0500
+	id S1753437AbZKMGgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 01:36:38 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,734,1249282800"; 
-   d="scan'208";a="211042189"
-Date: Fri, 13 Nov 2009 14:35:44 +0800
+   d="scan'208";a="211042844"
+Date: Fri, 13 Nov 2009 14:36:40 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Patrick McHardy <kaber@trash.net>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        "Yin, Kangkai" <kangkai.yin@intel.com>, netdev@vger.kernel.org
-Message-ID: <20091113063544.GA28859@localhost>
+Subject: [PATCH] netfilter: nf_log: fix sleeping function called from
+	invalid context in seq_show()
+Message-ID: <20091113063640.GA29012@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,8 +27,6 @@ User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-netfilter: nf_log: fix sleeping function called from invalid context in seq_show()
 
 [  171.925285] BUG: sleeping function called from invalid context at kernel/mutex.c:280
 [  171.925296] in_atomic(): 1, irqs_disabled(): 0, pid: 671, name: grep
