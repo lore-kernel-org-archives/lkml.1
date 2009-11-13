@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZKMORr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZKMO3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbZKMORr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 09:17:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZKMORo
+	id S1754981AbZKMO3c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 09:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZKMO32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 09:17:44 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:44075 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbZKMORn (ORCPT
+	Fri, 13 Nov 2009 09:29:28 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:56806 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753377AbZKMO32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 09:17:43 -0500
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: David VomLehn <dvomlehn@cisco.com>,
-       Marco Stornelli <marco.stornelli@gmail.com>,
-       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
-       paul.gortmaker@windriver.com,
-       "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
-	<ext-atal.shargorodsky@nokia.com>
-In-Reply-To: <20091113125946.5353164c@marrow.netinsight.se>
-References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
-	 <4AFC4D31.2000101@gmail.com>
-	 <20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
-	 <20091113091031.3f6d4bba@marrow.netinsight.se>
-	 <1258112748.21596.1227.camel@localhost>
-	 <20091113125946.5353164c@marrow.netinsight.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 13 Nov 2009 16:16:53 +0200
-Message-Id: <1258121813.21596.1229.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 Nov 2009 14:16:59.0567 (UTC) FILETIME=[F6A383F0:01CA646B]
-X-Nokia-AV: Clean
+	Fri, 13 Nov 2009 09:29:28 -0500
+Date: Fri, 13 Nov 2009 15:29:17 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>,
+       akpm@linux-foundation.org, hpa@zytor.com, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 2/4] Add support for LZO-compressed kernels for ARM
+Message-ID: <20091113142917.GA12149@Chamillionaire.breakpoint.cc>
+References: <1257942478-18719-1-git-send-email-albin.tonnerre@free-electrons.com>
+ <1257942478-18719-2-git-send-email-albin.tonnerre@free-electrons.com>
+ <1257942478-18719-3-git-send-email-albin.tonnerre@free-electrons.com>
+ <20091112125938.GA19698@deprecation.cyrius.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091112125938.GA19698@deprecation.cyrius.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-13 at 12:59 +0100, Simon Kagstrom wrote:
-> (Also fix David Woodhouses address and add Atal)
-> 
-> On Fri, 13 Nov 2009 13:45:48 +0200
-> Artem Bityutskiy <dedekind1@gmail.com> wrote:
-> 
-> > So we really need to print some user-space supplied information during
-> > the panic, and then we store it on flash with mtdoops, and the later,
-> > when the device has network access we send whole bunch of oopses via the
-> > network.
-> 
-> Yes, I see that your case would have to be handled differently. A
-> complication (which I believe was discussed before) is that kmsg_dump()
-> is done before the panic notifiers are called.
-> 
-> The reason I put it there is to have it before crash_kexec(), so I
-> guess we'll have to take up the discussion on what to do with it. For
-> me it now seems like it would be OK to move kmsg_dump() down below the
-> panic notifiers.
-> 
-> If you have a kdump kernel to load, then you will most likely not need
-> the kmsg dumped data anyway.
+* Martin Michlmayr | 2009-11-12 12:59:38 [+0000]:
 
-Yeah, I think this is a separate issue which can be fixed separately.
+>* Albin Tonnerre <albin.tonnerre@free-electrons.com> [2009-11-11 13:27]:
+>> This is the second part of patch. This part includes:
+>>  - changes to ach/arch/boot/Makefile to make it easier to add new
+>>    compression types
+>> +
+>> +# For __aeabi_uidivmod
+>> +lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+>
+>I build my kernel in a different directory to where the sources are
+>stored and I get:
+>
+>make[7]: *** No rule to make target `/home/tbm/kernel/linux-2.6-2.6.32~rc6/debian/build/source_armel_none/arch/arm/lib/lib1funcs.o', needed by `arch/arm/boot/compressed/vmlinux'.  Stop.
+>
+>The following patch makes it compile for me:
+>
+>--- a/arm/boot/compressed/Makefile	2009-11-12 12:26:47.000000000 +0000
+>+++ b/arm/boot/compressed/Makefile	2009-11-12 12:26:58.000000000 +0000
+>@@ -101,7 +101,7 @@
+> LDFLAGS_vmlinux += -T
+> 
+> # For __aeabi_uidivmod
+>-lib1funcs = $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.o
+>+lib1funcs = arch/$(SRCARCH)/lib/lib1funcs.o
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
++lib1funcs = $(obj)/arch/$(SRCARCH)/lib/lib1funcs.o
 
+This is untested but it should refer to obj because you break out of
+tree builds (O=) if you don't :)
+
+> 
+> # Don't allow any static data in misc.o, which
+> # would otherwise mess up our GOT table
+>
+>-- 
+>Martin Michlmayr
+>http://www.cyrius.com/
+
+Sebastian
