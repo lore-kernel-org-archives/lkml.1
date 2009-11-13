@@ -1,124 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZKMNoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZKMNqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbZKMNoE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 08:44:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZKMNoA
+	id S1753526AbZKMNqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 08:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZKMNqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 08:44:00 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:47432 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbZKMNn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 08:43:59 -0500
-Date: Fri, 13 Nov 2009 13:44:01 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/7] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091113134401.GE29804@csn.ul.ie>
-References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie> <20091112202748.GC2811@think> <20091112220005.GD2811@think>
+	Fri, 13 Nov 2009 08:46:14 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:51186 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751719AbZKMNqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 08:46:14 -0500
+Message-ID: <4AFD6325.8000000@sgi.com>
+Date: Fri, 13 Nov 2009 05:46:13 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091112220005.GD2811@think>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] x86: Limit the number of processor bootup messages
+References: <20091112171934.584037000@alcatraz.americas.sgi.com>	 <20091112171942.423844000@alcatraz.americas.sgi.com> <86802c440911121410v30c5b00ewdd9ada71096b4e65@mail.gmail.com>
+In-Reply-To: <86802c440911121410v30c5b00ewdd9ada71096b4e65@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 05:00:05PM -0500, Chris Mason wrote:
-> On Thu, Nov 12, 2009 at 03:27:48PM -0500, Chris Mason wrote:
-> > On Thu, Nov 12, 2009 at 07:30:06PM +0000, Mel Gorman wrote:
-> > > Sorry for the long delay in posting another version. Testing is extremely
-> > > time-consuming and I wasn't getting to work on this as much as I'd have liked.
-> > > 
-> > > Changelog since V2
-> > >   o Dropped the kswapd-quickly-notice-high-order patch. In more detailed
-> > >     testing, it made latencies even worse as kswapd slept more on high-order
-> > >     congestion causing order-0 direct reclaims.
-> > >   o Added changes to how congestion_wait() works
-> > >   o Added a number of new patches altering the behaviour of reclaim
-> > > 
-> > > Since 2.6.31-rc1, there have been an increasing number of GFP_ATOMIC
-> > > failures. A significant number of these have been high-order GFP_ATOMIC
-> > > failures and while they are generally brushed away, there has been a large
-> > > increase in them recently and there are a number of possible areas the
-> > > problem could be in - core vm, page writeback and a specific driver. The
-> > > bugs affected by this that I am aware of are;
-> > 
-> > Thanks for all the time you've spent on this one.  Let me start with
-> > some more questions about the workload ;)
-> > 
-> > So the workload is gitk reading a git repo and a program reading data
-> > over the network.  Which part of the workload writes to disk?
-> 
-> Sorry for the self reply, I started digging through your data (man,
-> that's a lot of data ;). 
 
-Yeah, sorry about that. Because I lacked a credible explanation as to
-why waiting on sync really made such a difference, I had little choice
-but to punt everything I had for people to dig through.
 
-To be clear, I'm not actually running gitk. The fake-gitk is reading the
-commits into memory and building a tree in a similar fashion to what gitk
-does. I didn't want to use gitk itself because there wasn't a way of measuring
-whether it was stalling or just other than looking at it and making a guess.
+Yinghai Lu wrote:
+> On Thu, Nov 12, 2009 at 9:19 AM, Mike Travis <travis@sgi.com> wrote:
+>> With a large number of processors in a system there is an excessive amount
+>> of messages sent to the system console.  It's estimated that with 4096
+>> processors in a system, and the console baudrate set to 56K, the startup
+>> messages will take about 84 minutes to clear the serial port.
+>>
+>> This set of patches limits the number of repetitious messages which contain
+>> no additional information.  Much of this information is obtainable from the
+>> /proc and /sysfs.   Most of the messages are also sent to the kernel log
+>> buffer as KERN_DEBUG messages so it can be used to examine more closely any
+>> details specific to a processor.
+>>
+>> The list of message transformations....
+>>
+>> For system_state == SYSTEM_BOOTING:
+>>
+>> [   18.669304] Booting Node   0, Processors  1 2 3 4 5 6 7 Ok.
+>> [   19.321065] Booting Node   1, Processors  8 9 10 11 12 13 14 15 Ok.
+>> [   20.065325] Booting Node   2, Processors  16 17 18 19 20 21 22 23 Ok.
+>> ..
+>> [  117.153053] Booting Node  63, Processors  1016 1017 1018 1019 1020 1021 1022 1023 Ok.
+>> [  117.952235] Brought up 1024 CPUs
+>>
+>> Timing shows that with NO bootup messages, it takes only slightly less time
+>> so printing adds very little overhead:
+>>
+>> [   18.670219] Booting all processors
+>> [  117.180248] Brought up 1024 CPUs
+>>
+>> For Processor Information printout, the specifics of CPU0 are printed and
+>> then at the end of the bootup sequence, a summary is printed:
+>>
+>> [  117.957682] Processor Information for CPUS: 0-191,208-223,256-271,...
+>> [  117.968034] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping 04
+>> [  117.977406] BogoMIPS: MIN 3989.01 (7978031) AVG 4266.62 (8533249) MAX 4537.51 (9075028)
+>> [  117.984496] Processor Information for CPUS: 192-207,240-255,272-287,...
+>> [  117.996032] Genuine Intel(R) CPU             0000 @ 2.13GHz stepping 03
+>> [  118.001404] BogoMIPS: MIN 4021.49 (8042995) AVG 4265.91 (8531833) MAX 4479.79 (8959584)
+>> [  118.012373] Processor Information for CPUS: 224-239,736-751
+>> [  118.020032] Genuine Intel(R) CPU             0000 @ 1.87GHz stepping 03
+>> [  118.028033] BogoMIPS: MIN 3733.92 (7467855) AVG 3746.96 (7493933) MAX 3939.52 (7879056)
+>> [  118.036360] Processor Information for CPUS: 320-335,384-415,432-447,...
+>> [  118.044032] Intel(R) Xeon(R) CPU           X7560  @ 2.27GHz stepping 05
+>> [  118.053404] BogoMIPS: MIN 4244.65 (8489318) AVG 4532.45 (9064917) MAX 4666.80 (9333604)
+>> [  118.060644] Total of 1024 processors activated (4386353.46 BogoMIPS).
+>>
+>>
+>> The following lines have been removed:
+>>
+>>        CPU: Physical Processor ID:
+>>        CPU: Processor Core ID:
+>>        CPU %d/0x%x -> Node %d
+> 
+> why?
 
-> I took another tour through dm-crypt and
-> things make more sense now.
-> 
-> dm-crypt has two different single threaded workqueues for each dm-crypt
-> device.  The first one is meant to deal with the actual encryption and
-> decryption, and the second one is meant to do the IO.
-> 
-> So the path for a write looks something like this:
-> 
-> filesystem -> crypt thread -> encrypt the data -> io thread -> disk
-> 
-> And the path for read looks something like this:
-> 
-> filesystem -> io thread -> disk -> crypt thread -> decrypt data -> FS
-> 
-> One thread does encryption and one thread does IO, and these threads are
-> shared for reads and writes.  The end result is that all of the sync
-> reads get stuck behind any async write congestion and all of the async
-> writes get stuck behind any sync read congestion.
-> 
-> It's almost like you need to check for both sync and async congestion
-> before you have any hopes of a new IO making progress.
-> 
-> The confusing part is that dm hasn't gotten any worse in this regard
-> since 2.6.30 but the workload here is generating more sync reads
-> (hopefully from gitk and swapin) than async writes (from the low
-> bandwidth rsync).  So in general if you were to change mm/*.c wait
-> for sync congestion instead of async, things should appear better.
-> 
+Someone asked that they be removed?
 
-Thanks very much for that explanation. It makes a lot of sense and
-explains why waiting on sync-congestion made such a difference on the
-test setup.
+The intent of the patch was to remove repetitious per cpu printouts where the
+information is easily available via some other means, which is the case of the
+above 3 lines.  Would you prefer they stay as KERN_DEBUG or pr_debug lines?
+(I had it this way in the first version but then was told that the messages were
+not needed.)
 
-> The punch line is that the btrfs guy thinks we can solve all of this with
-> just one more thread.  If we change dm-crypt to have a thread dedicated
-> to sync IO and a thread dedicated to async IO the system should smooth
-> out.
-> 
-
-I see you have posted another patch so I'll test that out first before
-looking into that.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Mike
