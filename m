@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZKMRk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZKMRlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbZKMRk5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbZKMRko
+	id S1755453AbZKMRlb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZKMRl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:40:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50537 "EHLO mx1.redhat.com"
+	Fri, 13 Nov 2009 12:41:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30400 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbZKMRkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:40:42 -0500
+	id S1755049AbZKMRlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:41:02 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -17,186 +17,194 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
        riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: [PATCH 07/16] blkio: Group time used accounting and workload context save restore
-Date: Fri, 13 Nov 2009 12:40:06 -0500
-Message-Id: <1258134015-21632-8-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 08/16] blkio: Dynamic cfq group creation based on cgroup tasks belongs to
+Date: Fri, 13 Nov 2009 12:40:07 -0500
+Message-Id: <1258134015-21632-9-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This patch introduces the functionality to do the accounting of group time
-  when a queue expires. This time used decides which is the group to go
-  next.
+o Determine the cgroup IO submitting task belongs to and create the cfq
+  group if it does not exist already.
 
-o Also introduce the functionlity to save and restore the workload type
-  context with-in group. It might happen that once we expire the cfq queue
-  and group, a different group will schedule in and we will lose the context
-  of the workload type. Hence save and restore it upon queue expiry.
+o Also link cfqq and associated cfq group.
+
+o Currently all async IO is mapped to root group.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/cfq-iosched.c |   76 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 76 insertions(+), 0 deletions(-)
+ block/cfq-iosched.c |  113 ++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 102 insertions(+), 11 deletions(-)
 
 diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 0754d61..4c05d45 100644
+index 4c05d45..9653caf 100644
 --- a/block/cfq-iosched.c
 +++ b/block/cfq-iosched.c
-@@ -114,6 +114,10 @@ struct cfq_queue {
- 	/* fifo list of requests in sort_list */
- 	struct list_head fifo;
- 
-+	/* time when queue got scheduled in to dispatch first request. */
-+	unsigned long dispatch_start;
-+	/* time when first request from queue completed and slice started. */
-+	unsigned long slice_start;
- 	unsigned long slice_end;
- 	long slice_resid;
- 	unsigned int slice_dispatch;
-@@ -180,6 +184,10 @@ struct cfq_group {
- 	 */
- 	struct cfq_rb_root service_trees[2][3];
- 	struct cfq_rb_root service_tree_idle;
-+
-+	unsigned long saved_workload_slice;
-+	enum wl_type_t saved_workload;
-+	enum wl_prio_t saved_serving_prio;
+@@ -188,6 +188,10 @@ struct cfq_group {
+ 	unsigned long saved_workload_slice;
+ 	enum wl_type_t saved_workload;
+ 	enum wl_prio_t saved_serving_prio;
++	struct blkio_group blkg;
++#ifdef CONFIG_CFQ_GROUP_IOSCHED
++	struct hlist_node cfqd_node;
++#endif
  };
  
  /*
-@@ -523,6 +531,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 				    low_slice);
- 		}
- 	}
-+	cfqq->slice_start = jiffies;
- 	cfqq->slice_end = jiffies + slice;
- 	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
- }
-@@ -798,6 +807,55 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	st->total_weight -= cfqg->weight;
- 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
- 		cfq_rb_erase(&cfqg->rb_node, st);
-+	cfqg->saved_workload_slice = 0;
-+}
+@@ -267,8 +271,13 @@ struct cfq_data {
+ 	struct cfq_queue oom_cfqq;
+ 
+ 	unsigned long last_end_sync_rq;
 +
-+static inline unsigned long cfq_cfqq_slice_usage(struct cfq_queue *cfqq)
-+{
-+	unsigned long slice_used, allocated_slice;
++	/* List of cfq groups being managed on this device*/
++	struct hlist_head cfqg_list;
+ };
+ 
++static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd);
 +
-+	/*
-+	 * Queue got expired before even a single request completed or
-+	 * got expired immediately after first request completion.
-+	 */
-+	if (!cfqq->slice_start || cfqq->slice_start == jiffies) {
-+		/*
-+		 * Also charge the seek time incurred to the group, otherwise
-+		 * if there are mutiple queues in the group, each can dispatch
-+		 * a single request on seeky media and cause lots of seek time
-+		 * and group will never know it.
-+		 */
-+		slice_used = max_t(unsigned long,
-+					(jiffies - cfqq->dispatch_start), 1);
-+	} else {
-+		slice_used = jiffies - cfqq->slice_start;
-+		allocated_slice = cfqq->slice_end - cfqq->slice_start;
-+		if (slice_used > allocated_slice)
-+			slice_used = allocated_slice;
-+	}
-+
-+	cfq_log_cfqq(cfqq->cfqd, cfqq, "sl_used=%lu", slice_used);
-+	return slice_used;
-+}
-+
-+static void cfq_group_served(struct cfq_data *cfqd, struct cfq_group *cfqg,
-+				unsigned long service)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+
-+	/* Can't update vdisktime while group is on service tree */
-+	cfq_rb_erase(&cfqg->rb_node, st);
-+	cfqg->vdisktime += cfq_scale_slice(service, cfqg);
-+	__cfq_group_service_tree_add(st, cfqg);
-+
-+	/* This group is being expired. Save the context */
-+	if (time_after(cfqd->workload_expires, jiffies)) {
-+		cfqg->saved_workload_slice = cfqd->workload_expires
-+						- jiffies;
-+		cfqg->saved_workload = cfqd->serving_type;
-+		cfqg->saved_serving_prio = cfqd->serving_prio;
-+	} else
-+		cfqg->saved_workload_slice = 0;
+ static struct cfq_rb_root *service_tree_for(struct cfq_group *cfqg,
+ 					    enum wl_prio_t prio,
+ 					    enum wl_type_t type,
+@@ -858,6 +867,91 @@ static void cfq_group_served(struct cfq_data *cfqd, struct cfq_group *cfqg,
+ 		cfqg->saved_workload_slice = 0;
  }
  
++#ifdef CONFIG_CFQ_GROUP_IOSCHED
++static inline struct cfq_group *cfqg_of_blkg(struct blkio_group *blkg)
++{
++	if (blkg)
++		return container_of(blkg, struct cfq_group, blkg);
++	return NULL;
++}
++
++static struct cfq_group *
++cfq_find_alloc_cfqg(struct cfq_data *cfqd, struct cgroup *cgroup, int create)
++{
++	struct blkio_cgroup *blkcg = cgroup_to_blkio_cgroup(cgroup);
++	struct cfq_group *cfqg = NULL;
++	void *key = cfqd;
++	int i, j;
++
++	/* Do we need to take this reference */
++	if (!css_tryget(&blkcg->css))
++		return NULL;;
++
++	cfqg = cfqg_of_blkg(blkiocg_lookup_group(blkcg, key));
++	if (cfqg || !create)
++		goto done;
++
++	cfqg = kzalloc_node(sizeof(*cfqg), GFP_ATOMIC, cfqd->queue->node);
++	if (!cfqg)
++		goto done;
++
++	cfqg->weight = blkcg->weight;
++
++	for (i = 0; i < 2; ++i)
++		for (j = 0; j < 3; ++j)
++			cfqg->service_trees[i][j] = CFQ_RB_ROOT;
++	cfqg->service_tree_idle = CFQ_RB_ROOT;
++	RB_CLEAR_NODE(&cfqg->rb_node);
++
++	/* Add group onto cgroup list */
++	blkiocg_add_blkio_group(blkcg, &cfqg->blkg, (void *)cfqd);
++
++	/* Add group on cfqd list */
++	hlist_add_head(&cfqg->cfqd_node, &cfqd->cfqg_list);
++
++done:
++	css_put(&blkcg->css);
++	return cfqg;
++}
++
++/*
++ * Search for the cfq group current task belongs to. If create = 1, then also
++ * create the cfq group if it does not exist. request_queue lock must be held.
++ */
++static struct cfq_group *cfq_get_cfqg(struct cfq_data *cfqd, int create)
++{
++	struct cgroup *cgroup;
++	struct cfq_group *cfqg = NULL;
++
++	rcu_read_lock();
++	cgroup = task_cgroup(current, blkio_subsys_id);
++	cfqg = cfq_find_alloc_cfqg(cfqd, cgroup, create);
++	if (!cfqg && create)
++		cfqg = &cfqd->root_group;
++	rcu_read_unlock();
++	return cfqg;
++}
++
++static void cfq_link_cfqq_cfqg(struct cfq_queue *cfqq, struct cfq_group *cfqg)
++{
++	/* Currently, all async queues are mapped to root group */
++	if (!cfq_cfqq_sync(cfqq))
++		cfqg = &cfqq->cfqd->root_group;
++
++	cfqq->cfqg = cfqg;
++}
++#else /* GROUP_IOSCHED */
++static struct cfq_group *cfq_get_cfqg(struct cfq_data *cfqd, int create)
++{
++	return &cfqd->root_group;
++}
++static inline void
++cfq_link_cfqq_cfqg(struct cfq_queue *cfqq, struct cfq_group *cfqg) {
++	cfqq->cfqg = cfqg;
++}
++
++#endif /* GROUP_IOSCHED */
++
  /*
-@@ -813,6 +871,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	unsigned long rb_key;
- 	struct cfq_rb_root *service_tree;
- 	int left;
-+	int new_cfqq = 1;
+  * The cfqd->service_trees holds all pending cfq_queue's that have
+  * requests waiting to be processed. It is sorted in the order that
+@@ -1350,13 +1444,17 @@ static struct cfq_queue *__cfq_get_next_queue(struct cfq_data *cfqd)
  
- 	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
- 						cfqq_type(cfqq), cfqd);
-@@ -841,6 +900,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	}
- 
- 	if (!RB_EMPTY_NODE(&cfqq->rb_node)) {
-+		new_cfqq = 0;
- 		/*
- 		 * same position, nothing more to do
- 		 */
-@@ -882,6 +942,8 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	rb_link_node(&cfqq->rb_node, parent, p);
- 	rb_insert_color(&cfqq->rb_node, &service_tree->rb);
- 	service_tree->count++;
-+	if (add_front || !new_cfqq)
-+		return;
- 	cfq_group_service_tree_add(cfqd, cfqq->cfqg);
- }
- 
-@@ -1199,6 +1261,8 @@ static void __cfq_set_active_queue(struct cfq_data *cfqd,
+ static struct cfq_queue *cfq_get_next_queue(struct cfq_data *cfqd)
  {
- 	if (cfqq) {
- 		cfq_log_cfqq(cfqd, cfqq, "set_active");
-+		cfqq->slice_start = 0;
-+		cfqq->dispatch_start = jiffies;
- 		cfqq->slice_end = 0;
- 		cfqq->slice_dispatch = 0;
+-	struct cfq_group *cfqg = &cfqd->root_group;
++	struct cfq_group *cfqg;
+ 	struct cfq_queue *cfqq;
+ 	int i, j;
  
-@@ -1236,6 +1300,8 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		cfq_log_cfqq(cfqd, cfqq, "resid=%ld", cfqq->slice_resid);
- 	}
+ 	if (!cfqd->rq_queued)
+ 		return NULL;
  
-+	cfq_group_served(cfqd, cfqq->cfqg, cfq_cfqq_slice_usage(cfqq));
++	cfqg = cfq_get_next_cfqg(cfqd);
++	if (!cfqg)
++		return NULL;
 +
- 	if (cfq_cfqq_on_rr(cfqq) && RB_EMPTY_ROOT(&cfqq->sort_list))
- 		cfq_del_cfqq_rr(cfqd, cfqq);
- 
-@@ -1244,6 +1310,9 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	if (cfqq == cfqd->active_queue)
- 		cfqd->active_queue = NULL;
- 
-+	if (&cfqq->cfqg->rb_node == cfqd->grp_service_tree.active)
-+		cfqd->grp_service_tree.active = NULL;
-+
- 	if (cfqd->active_cic) {
- 		put_io_context(cfqd->active_cic->ioc);
- 		cfqd->active_cic = NULL;
-@@ -1752,6 +1821,13 @@ static void cfq_choose_cfqg(struct cfq_data *cfqd)
- 	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
- 
- 	cfqd->serving_group = cfqg;
-+
-+	/* Restore the workload type data */
-+	if (cfqg->saved_workload_slice) {
-+		cfqd->workload_expires = jiffies + cfqg->saved_workload_slice;
-+		cfqd->serving_type = cfqg->saved_workload;
-+		cfqd->serving_prio = cfqg->saved_serving_prio;
-+	}
- 	choose_service_tree(cfqd, cfqg);
+ 	for (i = 0; i < 2; ++i) {
+ 		for (j = 0; j < 3; ++j) {
+ 			cfqq = cfq_rb_first(&cfqg->service_trees[i][j]);
+@@ -2395,16 +2493,6 @@ static void cfq_init_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	cfqq->pid = pid;
  }
  
+-static void cfq_link_cfqq_cfqg(struct cfq_queue *cfqq, struct cfq_group *cfqg)
+-{
+-	cfqq->cfqg = cfqg;
+-}
+-
+-static struct cfq_group *cfq_get_cfqg(struct cfq_data *cfqd, int create)
+-{
+-	return &cfqd->root_group;
+-}
+-
+ static struct cfq_queue *
+ cfq_find_alloc_queue(struct cfq_data *cfqd, bool is_sync,
+ 		     struct io_context *ioc, gfp_t gfp_mask)
+@@ -3299,6 +3387,9 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	/* Give preference to root group over other groups */
+ 	cfqg->weight = 2*BLKIO_WEIGHT_DEFAULT;
+ 
++#ifdef CONFIG_CFQ_GROUP_IOSCHED
++	blkiocg_add_blkio_group(&blkio_root_cgroup, &cfqg->blkg, (void *)cfqd);
++#endif
+ 	/*
+ 	 * Not strictly needed (since RB_ROOT just clears the node and we
+ 	 * zeroed cfqd on alloc), but better be safe in case someone decides
 -- 
 1.6.2.5
 
