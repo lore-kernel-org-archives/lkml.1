@@ -1,110 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZKMXHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbZKMXIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932543AbZKMXHd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbZKMXH0
+	id S932550AbZKMXIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbZKMXIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:07:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932291AbZKMXHY (ORCPT
+	Fri, 13 Nov 2009 18:08:13 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:37153 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932472AbZKMXIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:07:24 -0500
-Date: Fri, 13 Nov 2009 15:07:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Frans Pop <elendil@planet.nl>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Nick Piggin <npiggin@suse.de>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: Mount -o sync regression in 2.6.31
-Message-Id: <20091113150719.9d31dde2.akpm@linux-foundation.org>
-In-Reply-To: <20091113144727.575cf038@nehalam>
-References: <20091111123340.703f5c86@nehalam>
-	<200911112234.24180.elendil@planet.nl>
-	<20091113144727.575cf038@nehalam>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Fri, 13 Nov 2009 18:08:12 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Julia Lawall <julia@diku.dk>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, James Morris <jmorris@namei.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+In-Reply-To: Your message of "Fri, 13 Nov 2009 22:26:20 +0100."
+             <Pine.LNX.4.64.0911132224370.6325@ask.diku.dk>
+From: Valdis.Kletnieks@vt.edu
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com> <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org> <4AFCC06B.1030302@schaufler-ca.com> <19857.1258147396@turing-police.cc.vt.edu>
+            <Pine.LNX.4.64.0911132224370.6325@ask.diku.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1258153693_3022P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Nov 2009 18:08:13 -0500
+Message-ID: <24306.1258153693@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020204.4AFDE6DD.014B,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Nov 2009 14:47:27 -0800
-Stephen Hemminger <shemminger@vyatta.com> wrote:
+--==_Exmh_1258153693_3022P
+Content-Type: text/plain; charset=us-ascii
 
-> Okay the scenario is:
-> 1. Mount floppy with ext2 filesystem in sync mode
-> 2. Write to floppy
-> 3. Prematurely eject floppy
-> 4. Unmount floppy
-
-I assume that by "prematurely eject", you mean that you waited until
-the activity LED had turned off, then hit the button without typing
-umount?
-
-
-Really, I think ext2 is just wrong here.  At unmount time it runs
-ext2_sync_super(), which updates a few fields in the superblock and
-tries to write them back.
-
-But if the fs was mounted with `-osync' then the driver should be
-operating synchronously, dammit!  That means that any time any syscall
-alters the filesystem's s_free_blocks_count, s_free_inodes_count or
-s_wtime, the driver should write those fields back to the superblock
-prior to returning from the syscall.
-
-However that might be unreasonaly anal of us, because those fields
-aren't terribly important.  A fsck will whine and fix them up.
-
-> This triggers this warning in 2.6.31 which did not occur in 2.6.30
-
-hm, I wonder why that changed.  The warning's been there for a while.
-
->  [  580.325447] floppy0: disk absent or changed during operation
->  [  580.325454] lost page write due to I/O error on fd0
->  [  580.958434] ------------[ cut here ]------------
->  [  580.958437] WARNING: at fs/buffer.c:1152 mark_buffer_dirty+0x23/0x7d()
->  [  580.958440] Hardware name: System Product Name
->  [  580.958442] Modules linked in: hid_belkin binfmt_misc bridge stp llc kvm_intel kvm ipv6 video output pci_slot acpi_cpufreq cpufreq_powersave cpufreq_ondemand cpufreq_conservative cpufreq_userspace psmouse pcspkr serio_raw rtc_cmos wmi evdev sg sr_mod cdrom usbhid mvsas pata_acpi pata_marvell ata_piix libsas ahci igb sky2 scsi_transport_sas dca e1000e floppy dm_mirror dm_region_hash dm_log dm_snapshot dm_mod fuse
->  [  580.958475] Pid: 8340, comm: umount Not tainted 2.6.30-rc6-bisect #12
->  [  580.958477] Call Trace:
->  [  580.958483]  [<ffffffff80232ebb>] ? warn_slowpath_fmt+0xd9/0x10b
->  [  580.958489]  [<ffffffff80270031>] ? find_get_pages_tag+0x41/0xdd
->  [  580.958494]  [<ffffffff802782f0>] ? pagevec_lookup+0x17/0x1e
->  [  580.958498]  [<ffffffff80279377>] ? truncate_inode_pages_range+0x21d/0x31d
->  [  580.958502]  [<ffffffff80270db5>] ? wait_on_page_writeback_range+0xce/0x11b
->  [  580.958507]  [<ffffffff80245037>] ? bit_waitqueue+0x10/0xa0
->  [  580.958510]  [<ffffffff802be80d>] ? mark_buffer_dirty+0x23/0x7d
->  [  580.958515]  [<ffffffff803003eb>] ? ext2_sync_super+0x39/0x55
->  [  580.958519]  [<ffffffff8030079c>] ? ext2_put_super+0x34/0xc7
->  [  580.958524]  [<ffffffff802a3174>] ? generic_shutdown_super+0x70/0xfd
->  [  580.958533]  [<ffffffff802a3223>] ? kill_block_super+0x22/0x3a
->  [  580.958537]  [<ffffffff802a3831>] ? deactivate_super+0x43/0x5a
->  [  580.958541]  [<ffffffff802b56f9>] ? sys_umount+0x2d8/0x307
->  [  580.958546]  [<ffffffff8020aeeb>] ? system_call_fastpath+0x16/0x1b
->  [  580.958549] ---[ end trace ccbde6411acd243f ]---
->  [  580.958580] floppy0: disk absent or changed during operation
->  [  580.958587] lost page write due to I/O error on fd0
-
-	void mark_buffer_dirty(struct buffer_head *bh)
-	{
-		WARN_ON_ONCE(!buffer_uptodate(bh));
-
-that's expected, I expect.  And it's just a WARN_ON_ONCE() so it
-won't be flooding logs.  We could just delete it I suppose.
-
-> Bisecting between 2.6.30 and 2.6.31-rc1 reduced it down to:
+On Fri, 13 Nov 2009 22:26:20 +0100, Julia Lawall said:
+> On Fri, 13 Nov 2009, Valdis.Kletnieks@vt.edu wrote:
+> > Julia, is there a way to use coccinelle to detect unsafe changes like that?  Or
+> > is expressing those semantics too difficult?
 > 
-> 8f184f27300f66f6dcc8296c2dae7a1fbe8429c9 is first bad commit
-> commit 8f184f27300f66f6dcc8296c2dae7a1fbe8429c9
-> Author: Frederic Weisbecker <fweisbec@gmail.com>
-> Date:   Sat May 16 06:24:36 2009 +0200
-> 
->     tracing/stat: replace linked list by an rbtree for sorting
+> Could you give a concrete example of something that would be a problem?
+> If something like alias analysis is required, to know what strings a 
+> variable might be bound to, that might be difficult.  Coccinelle works 
+> better when there is some concrete codeto match against.
 
-Current score:
+Here's a concrete example of how a previously audited strcmp() can go bad...
 
-git: 			4,559
-kernel developers:	0
+struct foo {
+    char[16] a; /* old code allows 15 chars and 1 more for the \0 */
+    int b;
+    int c;
+}
+
+bzero(foo,sizeof(foo));
+
+Now code can pretty safely mess with the first 15 bytes of foo->a and
+we know we're OK if we call strcmp(foo->a,....) because that bzero()
+nuked a[15] for us. It's safe to strncpy(foo->a,bar,15); and not worry
+about the fact that if bar is 15 chars long, a trailing \0 won't be put in.
+
+Now somebody comes along and does:
+
+struct foo {
+    char *a; /* we need more than 15 chars for some oddball hardware */
+    int b;
+    int c;
+}
+
+bzero(foo,sizeof(foo));
+foo->a = kmalloc(32);  /* whoops should have been kzmalloc */
+
+Now suddenly, strncpy(foo->a,bar,31); *isn't* safe....
+
+(Yes, I know there's plenty of blame to go around in this example - the failure
+to use kzmalloc, the use of strncpy() without an explicit \0 being assigned
+someplace, the use of strcmp() rather than strncmp()... But our tendency to
+intentionally omit several steps of this to produce more efficient code means
+it's easier to shoot ourselves in the foot...)
+
+
+--==_Exmh_1258153693_3022P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK/ebdcC3lWbTT17ARAq8pAKC4w21JS88AQ2QVaPk79sivFBQd4ACeJnN4
+Uf1cDnloW2vx0Tqypq9HJzY=
+=cbTA
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1258153693_3022P--
+
