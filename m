@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932338AbZKMUo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbZKMUok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932338AbZKMUo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 15:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932273AbZKMUoX
+	id S932230AbZKMUok (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 15:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbZKMUoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 15:44:23 -0500
-Received: from bu3sch.de ([62.75.166.246]:40093 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932230AbZKMUoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 15:44:22 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: bcm43xx-dev@lists.berlios.de
-Subject: Re: 64-bit DMA problems with BCM4312 using b43
-Date: Fri, 13 Nov 2009 21:44:21 +0100
-User-Agent: KMail/1.9.9
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org>
-In-Reply-To: <20091113201112.GA5540@srcf.ucam.org>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Fri, 13 Nov 2009 15:44:34 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:50696 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932353AbZKMUoa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 15:44:30 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18LU3CGa9dlBHxPWb1FoYPR
+Date: Fri, 13 Nov 2009 12:44:29 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       vikram pandita <vikram.pandita@ti.com>
+Subject: Re: linux-next: manual merge of the sound tree with the omap tree
+Message-ID: <20091113204429.GE3684@atomide.com>
+References: <20091113131947.03d1b259.sfr@canb.auug.org.au>
+ <20091113123901.GB30966@sirena.org.uk>
+ <s5h1vk2po9n.wl%tiwai@suse.de>
+ <20091113131148.GC21516@rakim.wolfsonmicro.main>
+ <s5hzl6qo9c9.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200911132144.24110.mb@bu3sch.de>
+In-Reply-To: <s5hzl6qo9c9.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 November 2009 21:11:12 Matthew Garrett wrote:
-> On Fri, Nov 13, 2009 at 11:21:18AM -0600, Larry Finger wrote:
+* Takashi Iwai <tiwai@suse.de> [091113 05:13]:
+> At Fri, 13 Nov 2009 13:11:48 +0000,
+> Mark Brown wrote:
+> > 
+> > On Fri, Nov 13, 2009 at 02:06:44PM +0100, Takashi Iwai wrote:
+> > > Mark Brown wrote:
+> > 
+> > > > into the OMAP tree to resolve this.  There's some older ASoC changes in
+> > > > there to ensure the patches applied but I'm happy for you to carry those
+> > > > providing Takashi is.
+> > 
+> > > I can merge the tree above to for-next branch of sound git tree, too.
+> > > In that way, we can keep asoc branches clean.
+> > 
+> > I believe that creates the same problem both ways :/ .  If we merge
+> > OMAP->sound we may as well put it on the ASoC topic branch, it'll
+> > probably be helpful for people doing OMAP work anyway.
 > 
-> > I do not know enough about either the ACPI or DMA code to begin debugging in
-> > either of those regions. Any suggestions on debugging strategies, or links to
-> > similar problems would be appreciated.
-> 
-> Could the hardware be highly sensitive to DMA latencies? Take a look at 
-> the pm_qos code in ipw2100.
+> OK, in both ways I don't care...
 
-This makes perfect sense, yes. The DMA engine has so many quirks, I wouldn't be
-surprised if it couldn't handle pm properly.
+I think this should get resolved if I git cherry-pick the following
+commits to linux-omap for-next:
 
--- 
-Greetings, Michael.
+MFD: twl4030: add twl4030_codec MFD as a new child to the core
+0b83ddebc6e884dc0221358cf68c461520fbdd8e
+
+OMAP: Platform support for twl4030_codec MFD
+f8d9aad96d0d7b57d0bf2e4de21fdda3a42f4449
+
+OMAP: Configure audio_mclk for twl4030-codec MFD
+953e2f3d272db9db6671ad4f4244820557a71cf7
+
+Then I can tweak the sdp and zoom patches accordingly. So let's try
+that first, I'll try it out today.
+
+Regards,
+
+Tony
+
