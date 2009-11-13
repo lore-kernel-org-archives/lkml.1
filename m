@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZKMFk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZKMFzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZKMFk5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 00:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZKMFku
+	id S1752758AbZKMFzL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 00:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZKMFzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 00:40:50 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:35421 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZKMFku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 00:40:50 -0500
-Subject: ANNOUNCE: LKML Podcast
-From: Jon Masters <jonathan@jonmasters.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 13 Nov 2009 00:41:58 -0500
-Message-Id: <1258090918.10147.253.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Fri, 13 Nov 2009 00:55:08 -0500
+Received: from snt0-omc3-s5.snt0.hotmail.com ([65.55.90.144]:13048 "EHLO
+	snt0-omc3-s5.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750913AbZKMFzH convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 00:55:07 -0500
+Message-ID: <SNT125-W3FF05F92BC6F07010B0F9C3A80@phx.gbl>
+X-Originating-IP: [96.253.143.208]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <lsorense@csclub.uwaterloo.ca>
+CC: <hpa@zytor.com>, <technoboy85@gmail.com>, <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: i686 quirk for AMD Geode
+Date: Thu, 12 Nov 2009 21:55:12 -0800
+Importance: Normal
+In-Reply-To: <20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+ <20091003072127.GC21407@elte.hu>
+ <40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+ <4AF4526B.4060101@zytor.com>
+ <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
+ <200911,<20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 13 Nov 2009 05:55:12.0328 (UTC) FILETIME=[DD536C80:01CA6425]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folks,
-
-After a little hiatus of a couple of weeks in October, I resumed
-semi-daily podcasts last week. There's a new format (and catchy intro
-tune) that focuses on the summary paragraphs people actually cared
-about, rather than including mention of *every* patch. So, while I
-continue to cover every major topic, I won't mention if I patch was
-routinely pulled that didn't cause conversation or didn't stand out.
-
-It was getting a little unsustainable. It's still a lot of work, but
-I've now got it down to about 30 minutes to produce an episode. Last
-week saw one day with 702 downloads, and overall, we're nearing 100K
-downloads so far this year (that's since May), which isn't bad.
-
-http://www.kernelpodcast.org/ (All under CC-BY-NC-SA 3.0 USA)
-
-Jon.
 
 
+> Which would be mroe indication that the Geode LX may in fact be a K6
+> based CPU design. The Geode NX is very clearly an Athlon (K7) and AMD
+> has never even tried to hide that. They have never said what the LX is
+> based on, other than it isn't based on the GX (fortunately, that thing
+> was a buggy piece of crap).
+Well, do you know the history of the Geode line? It originated in the Cyrix MediaGX, then that was sold to NSC and renamed to Geode, then that was sold to AMD later.
+
+Yuhong Bao
+ 		 	   		  
+_________________________________________________________________
+Hotmail: Powerful Free email with security by Microsoft.
+http://clk.atdmt.com/GBL/go/171222986/direct/01/
