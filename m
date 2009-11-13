@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbZKMX20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbZKMX2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932585AbZKMX20 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZKMX2R
+	id S932447AbZKMX2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZKMX2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:28:17 -0500
-Received: from mga06.intel.com ([134.134.136.21]:23208 "EHLO
+	Fri, 13 Nov 2009 18:28:21 -0500
+Received: from mga06.intel.com ([134.134.136.21]:11893 "EHLO
 	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932435AbZKMX2N (ORCPT
+	with ESMTP id S932414AbZKMX2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:28:13 -0500
+	Fri, 13 Nov 2009 18:28:14 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,739,1249282800"; 
-   d="scan'208";a="569382154"
+   d="scan'208";a="569382162"
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de, x86@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 2/5] x86, sleep: always save the value of EFER
-Date: Fri, 13 Nov 2009 15:28:14 -0800
-Message-Id: <1258154897-6770-3-git-send-email-hpa@zytor.com>
+       "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
+       Tim Starling <tstarling@wikimedia.org>,
+       Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 3/5] x86, pageattr: make set_memory_(x|nx) aware of NX support
+Date: Fri, 13 Nov 2009 15:28:15 -0800
+Message-Id: <1258154897-6770-4-git-send-email-hpa@zytor.com>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1258154897-6770-1-git-send-email-hpa@zytor.com>
 References: <1258154897-6770-1-git-send-email-hpa@zytor.com>
@@ -29,37 +31,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always save the value of EFER, regardless of the state of NX.  Since
-EFER may not actually exist, use rdmsr_safe() to do so.
+Make set_memory_x/set_memory_nx directly aware of if NX is supported
+in the system or not, rather than requiring that every caller assesses
+that support independently.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Nigel Cunningham <nigel@tuxonice.net>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Tim Starling <tstarling@wikimedia.org>
+Cc: Hannes Eder <hannes@hanneseder.net>
 ---
- arch/x86/kernel/acpi/sleep.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ arch/x86/kernel/machine_kexec_32.c |    6 ++----
+ arch/x86/mm/pageattr.c             |    6 ++++++
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index ca93638..c2e4455 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -78,12 +78,9 @@ int acpi_save_state_mem(void)
- #ifndef CONFIG_64BIT
- 	store_gdt((struct desc_ptr *)&header->pmode_gdt);
+diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
+index c1c429d..03657e7 100644
+--- a/arch/x86/kernel/machine_kexec_32.c
++++ b/arch/x86/kernel/machine_kexec_32.c
+@@ -157,8 +157,7 @@ int machine_kexec_prepare(struct kimage *image)
+ {
+ 	int error;
  
--	header->pmode_efer_low = nx_enabled;
--	if (header->pmode_efer_low & 1) {
--		/* This is strange, why not save efer, always? */
--		rdmsr(MSR_EFER, header->pmode_efer_low,
--			header->pmode_efer_high);
--	}
-+	header->pmode_efer_low = header->pmode_efer_high = 0;
-+	rdmsr_safe(MSR_EFER,
-+		   &header->pmode_efer_low, &header->pmode_efer_high);
- #endif /* !CONFIG_64BIT */
+-	if (nx_enabled)
+-		set_pages_x(image->control_code_page, 1);
++	set_pages_x(image->control_code_page, 1);
+ 	error = machine_kexec_alloc_page_tables(image);
+ 	if (error)
+ 		return error;
+@@ -172,8 +171,7 @@ int machine_kexec_prepare(struct kimage *image)
+  */
+ void machine_kexec_cleanup(struct kimage *image)
+ {
+-	if (nx_enabled)
+-		set_pages_nx(image->control_code_page, 1);
++	set_pages_nx(image->control_code_page, 1);
+ 	machine_kexec_free_page_tables(image);
+ }
  
- 	header->pmode_cr0 = read_cr0();
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index dd38bfb..442b8ac 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -1069,12 +1069,18 @@ EXPORT_SYMBOL(set_memory_array_wb);
+ 
+ int set_memory_x(unsigned long addr, int numpages)
+ {
++	if (!(__supported_pte_mask & _PAGE_NX))
++		return 0;
++
+ 	return change_page_attr_clear(&addr, numpages, __pgprot(_PAGE_NX), 0);
+ }
+ EXPORT_SYMBOL(set_memory_x);
+ 
+ int set_memory_nx(unsigned long addr, int numpages)
+ {
++	if (!(__supported_pte_mask & _PAGE_NX))
++		return 0;
++
+ 	return change_page_attr_set(&addr, numpages, __pgprot(_PAGE_NX), 0);
+ }
+ EXPORT_SYMBOL(set_memory_nx);
 -- 
 1.6.2.5
 
