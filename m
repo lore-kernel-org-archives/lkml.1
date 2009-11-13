@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZKMRm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbZKMRlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbZKMRm7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZKMRms
+	id S1754680AbZKMRlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZKMRlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:42:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24693 "EHLO mx1.redhat.com"
+	Fri, 13 Nov 2009 12:41:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54417 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754938AbZKMRlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:41:00 -0500
+	id S932075AbZKMRkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:40:49 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -17,259 +17,196 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
        m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
        riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: [PATCH 03/16] blkio: Introduce the root service tree for cfq groups
-Date: Fri, 13 Nov 2009 12:40:02 -0500
-Message-Id: <1258134015-21632-4-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 04/16] blkio: Implement per cfq group latency target and busy queue avg
+Date: Fri, 13 Nov 2009 12:40:03 -0500
+Message-Id: <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o So far we just had one cfq_group in cfq_data. To create space for more than
-  one cfq_group, we need to have a service tree of groups where all the groups
-  can be queued if they have active cfq queues backlogged in these.
+o So far we had 300ms soft target latency system wide. Now with the
+  introduction of cfq groups, divide that latency by number of groups so
+  that one can come up with group target latency which will be helpful
+  in determining the workload slice with-in group and also the dynamic
+  slice length of the cfq queue.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/cfq-iosched.c |  137 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 134 insertions(+), 3 deletions(-)
+ block/cfq-iosched.c |   65 +++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 45 insertions(+), 20 deletions(-)
 
 diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index d099880..73d93af 100644
+index 73d93af..11256c3 100644
 --- a/block/cfq-iosched.c
 +++ b/block/cfq-iosched.c
-@@ -77,8 +77,9 @@ struct cfq_rb_root {
- 	struct rb_root rb;
+@@ -78,6 +78,7 @@ struct cfq_rb_root {
  	struct rb_node *left;
  	unsigned count;
-+	u64 min_vdisktime;
+ 	u64 min_vdisktime;
++	unsigned total_weight;
  };
--#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, }
-+#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+ #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
  
- /*
-  * Per process-grouping structure
-@@ -156,6 +157,16 @@ enum wl_type_t {
+@@ -167,6 +168,8 @@ struct cfq_group {
+ 	/* number of cfqq currently on this group */
+ 	int nr_cfqq;
  
- /* This is per cgroup per device grouping structure */
- struct cfq_group {
-+	/* group service_tree member */
-+	struct rb_node rb_node;
-+
-+	/* group service_tree key */
-+	u64 vdisktime;
-+	bool on_st;
-+
-+	/* number of cfqq currently on this group */
-+	int nr_cfqq;
-+
++	/* Per group busy queus average. Useful for workload slice calc. */
++	unsigned int busy_queues_avg[2];
  	/*
  	 * rr lists of queues with requests, onle rr for each priority class.
  	 * Counts are embedded in the cfq_rb_root
-@@ -170,6 +181,8 @@ struct cfq_group {
- struct cfq_data {
- 	struct request_queue *queue;
- 
-+	/* Root service tree for cfq_groups */
-+	struct cfq_rb_root grp_service_tree;
+@@ -184,6 +187,8 @@ struct cfq_data {
+ 	/* Root service tree for cfq_groups */
+ 	struct cfq_rb_root grp_service_tree;
  	struct cfq_group root_group;
++	/* Number of active cfq groups on group service tree */
++	int nr_groups;
  
  	/*
-@@ -245,6 +258,9 @@ static struct cfq_rb_root *service_tree_for(struct cfq_group *cfqg,
- 					    enum wl_type_t type,
- 					    struct cfq_data *cfqd)
- {
-+	if (!cfqg)
-+		return NULL;
-+
- 	if (prio == IDLE_WORKLOAD)
- 		return &cfqg->service_tree_idle;
+ 	 * The priority currently being served
+@@ -201,7 +206,6 @@ struct cfq_data {
+ 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
  
-@@ -570,6 +586,17 @@ static struct cfq_queue *cfq_rb_first(struct cfq_rb_root *root)
- 	return NULL;
+ 	unsigned int busy_queues;
+-	unsigned int busy_queues_avg[2];
+ 
+ 	int rq_in_driver[2];
+ 	int sync_flight;
+@@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
+ 	return SYNC_WORKLOAD;
  }
  
-+static struct cfq_group *cfq_rb_first_group(struct cfq_rb_root *root)
-+{
-+	if (!root->left)
-+		root->left = rb_first(&root->rb);
-+
-+	if (root->left)
-+		return rb_entry(root->left, struct cfq_group, rb_node);
-+
-+	return NULL;
-+}
-+
- static void rb_erase_init(struct rb_node *n, struct rb_root *root)
+-static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
++static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
++					struct cfq_data *cfqd,
++					struct cfq_group *cfqg)
  {
- 	rb_erase(n, root);
-@@ -621,6 +648,83 @@ static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
- 		       cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
- }
+-	struct cfq_group *cfqg = &cfqd->root_group;
+-
+ 	if (wl == IDLE_WORKLOAD)
+ 		return cfqg->service_tree_idle.count;
  
-+static inline s64
-+cfqg_key(struct cfq_rb_root *st, struct cfq_group *cfqg)
-+{
-+	return cfqg->vdisktime - st->min_vdisktime;
+@@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+  * to quickly follows sudden increases and decrease slowly
+  */
+ 
+-static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
++static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
++					struct cfq_group *cfqg, bool rt)
+ {
+ 	unsigned min_q, max_q;
+ 	unsigned mult  = cfq_hist_divisor - 1;
+ 	unsigned round = cfq_hist_divisor / 2;
+-	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
++	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
+ 
+-	min_q = min(cfqd->busy_queues_avg[rt], busy);
+-	max_q = max(cfqd->busy_queues_avg[rt], busy);
+-	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
++	min_q = min(cfqg->busy_queues_avg[rt], busy);
++	max_q = max(cfqg->busy_queues_avg[rt], busy);
++	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
+ 		cfq_hist_divisor;
+-	return cfqd->busy_queues_avg[rt];
++	return cfqg->busy_queues_avg[rt];
 +}
 +
-+static void
-+__cfq_group_service_tree_add(struct cfq_rb_root *st, struct cfq_group *cfqg)
-+{
-+	struct rb_node **node = &st->rb.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct cfq_group *__cfqg;
-+	s64 key = cfqg_key(st, cfqg);
-+	int left = 1;
-+
-+	while (*node != NULL) {
-+		parent = *node;
-+		__cfqg = rb_entry(parent, struct cfq_group, rb_node);
-+
-+		if (key < cfqg_key(st, __cfqg))
-+			node = &parent->rb_left;
-+		else {
-+			node = &parent->rb_right;
-+			left = 0;
-+		}
-+	}
-+
-+	if (left)
-+		st->left = &cfqg->rb_node;
-+
-+	rb_link_node(&cfqg->rb_node, parent, node);
-+	rb_insert_color(&cfqg->rb_node, &st->rb);
-+}
-+
-+static void
-+cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+	struct cfq_group *__cfqg;
-+	struct rb_node *n;
-+
-+	cfqg->nr_cfqq++;
-+	if (cfqg->on_st)
-+		return;
-+
-+	/*
-+	 * Currently put the group at the end. Later implement something
-+	 * so that groups get lesser vtime based on their weights, so that
-+	 * if group does not loose all if it was not continously backlogged.
-+	 */
-+	n = rb_last(&st->rb);
-+	if (n) {
-+		__cfqg = rb_entry(n, struct cfq_group, rb_node);
-+		cfqg->vdisktime = __cfqg->vdisktime + CFQ_IDLE_DELAY;
-+	} else
-+		cfqg->vdisktime = st->min_vdisktime;
-+
-+	__cfq_group_service_tree_add(st, cfqg);
-+	cfqg->on_st = true;
-+}
-+
-+static void
-+cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
++static inline unsigned
++cfq_group_latency(struct cfq_data *cfqd, struct cfq_group *cfqg)
 +{
 +	struct cfq_rb_root *st = &cfqd->grp_service_tree;
 +
-+	BUG_ON(cfqg->nr_cfqq < 1);
-+	cfqg->nr_cfqq--;
-+	/* If there are other cfq queues under this group, don't delete it */
-+	if (cfqg->nr_cfqq)
-+		return;
-+
-+	cfqg->on_st = false;
-+	if (!RB_EMPTY_NODE(&cfqg->rb_node))
-+		cfq_rb_erase(&cfqg->rb_node, st);
-+}
-+
- /*
-  * The cfqd->service_trees holds all pending cfq_queue's that have
-  * requests waiting to be processed. It is sorted in the order that
-@@ -703,6 +807,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	rb_link_node(&cfqq->rb_node, parent, p);
- 	rb_insert_color(&cfqq->rb_node, &service_tree->rb);
- 	service_tree->count++;
-+	cfq_group_service_tree_add(cfqd, cfqq->cfqg);
++	return cfq_target_latency * cfqg->weight / st->total_weight;
  }
  
- static struct cfq_queue *
-@@ -813,6 +918,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 		cfqq->p_root = NULL;
+ static inline void
+@@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+ 	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
+ 	if (cfqd->cfq_latency) {
+-		/* interested queues (we consider only the ones with the same
+-		 * priority class) */
+-		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
++		/*
++		 * interested queues (we consider only the ones with the same
++		 * priority class in the cfq group)
++		 */
++		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
++						cfq_class_rt(cfqq));
+ 		unsigned sync_slice = cfqd->cfq_slice[1];
+ 		unsigned expect_latency = sync_slice * iq;
+-		if (expect_latency > cfq_target_latency) {
++		unsigned group_target_lat = cfq_group_latency(cfqd, cfqq->cfqg);
++
++		if (expect_latency > group_target_lat) {
+ 			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
+ 			/* scale low_slice according to IO priority
+ 			 * and sync vs async */
+@@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 				min(slice, base_low_slice * slice / sync_slice);
+ 			/* the adapted slice value is scaled to fit all iqs
+ 			 * into the target latency */
+-			slice = max(slice * cfq_target_latency / expect_latency,
++			slice = max(slice * group_target_lat / expect_latency,
+ 				    low_slice);
+ 		}
  	}
+@@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
  
-+	cfq_group_service_tree_del(cfqd, cfqq->cfqg);
-+
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
+ 	__cfq_group_service_tree_add(st, cfqg);
+ 	cfqg->on_st = true;
++	cfqd->nr_groups++;
++	st->total_weight += cfqg->weight;
  }
-@@ -1089,6 +1196,9 @@ static struct cfq_queue *__cfq_get_next_queue(struct cfq_data *cfqd)
- 	if (!cfqd->rq_queued)
- 		return NULL;
  
-+	/* There is nothing to dispatch */
-+	if (!service_tree)
-+		return NULL;
- 	if (RB_EMPTY_ROOT(&service_tree->rb))
- 		return NULL;
- 	return cfq_rb_first(service_tree);
-@@ -1483,6 +1593,12 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ static void
+@@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ 		return;
+ 
+ 	cfqg->on_st = false;
++	cfqd->nr_groups--;
++	st->total_weight -= cfqg->weight;
+ 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
+ 		cfq_rb_erase(&cfqg->rb_node, st);
+ }
+@@ -1592,6 +1614,7 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ 	unsigned slice;
  	unsigned count;
  	struct cfq_rb_root *st;
++	int group_target_latency;
  
-+	if (!cfqg) {
-+		cfqd->serving_prio = IDLE_WORKLOAD;
-+		cfqd->workload_expires = jiffies + 1;
-+		return;
-+	}
-+
+ 	if (!cfqg) {
+ 		cfqd->serving_prio = IDLE_WORKLOAD;
+@@ -1600,9 +1623,9 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ 	}
+ 
  	/* Choose next priority. RT > BE > IDLE */
- 	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
+-	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
++	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
  		cfqd->serving_prio = RT_WORKLOAD;
-@@ -1540,10 +1656,21 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
- 	cfqd->workload_expires = jiffies + slice;
- }
- 
-+static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
+-	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
++	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
+ 		cfqd->serving_prio = BE_WORKLOAD;
+ 	else {
+ 		cfqd->serving_prio = IDLE_WORKLOAD;
+@@ -1640,9 +1663,11 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ 	 * proportional to the number of queues in that workload, over
+ 	 * all the queues in the same priority class
+ 	 */
+-	slice = cfq_target_latency * count /
+-		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
+-		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
++	group_target_latency = cfq_group_latency(cfqd, cfqg);
 +
-+	if (RB_EMPTY_ROOT(&st->rb))
-+		return NULL;
-+	return cfq_rb_first_group(st);
-+}
-+
- static void cfq_choose_cfqg(struct cfq_data *cfqd)
- {
--	cfqd->serving_group = &cfqd->root_group;
--	choose_service_tree(cfqd, &cfqd->root_group);
-+	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
-+
-+	cfqd->serving_group = cfqg;
-+	choose_service_tree(cfqd, cfqg);
- }
++	slice = group_target_latency * count /
++		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
++		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
  
- /*
-@@ -2999,6 +3126,9 @@ static void *cfq_init_queue(struct request_queue *q)
- 	if (!cfqd)
- 		return NULL;
- 
-+	/* Init root service tree */
-+	cfqd->grp_service_tree = CFQ_RB_ROOT;
-+
- 	/* Init root group */
- 	cfqg = &cfqd->root_group;
- 
-@@ -3006,6 +3136,7 @@ static void *cfq_init_queue(struct request_queue *q)
- 		for (j = 0; j < 3; ++j)
- 			cfqg->service_trees[i][j] = CFQ_RB_ROOT;
- 	cfqg->service_tree_idle = CFQ_RB_ROOT;
-+	RB_CLEAR_NODE(&cfqg->rb_node);
- 
- 	/*
- 	 * Not strictly needed (since RB_ROOT just clears the node and we
+ 	if (cfqd->serving_type == ASYNC_WORKLOAD)
+ 		/* async workload slice is scaled down according to
 -- 
 1.6.2.5
 
