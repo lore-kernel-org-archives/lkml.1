@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbZKMXXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbZKMXZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbZKMXXX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbZKMXXW
+	id S932509AbZKMXZK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932447AbZKMXZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:23:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53067 "EHLO mx3.mail.elte.hu"
+	Fri, 13 Nov 2009 18:25:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53385 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932303AbZKMXXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:23:21 -0500
-Date: Sat, 14 Nov 2009 00:23:07 +0100
+	id S932319AbZKMXZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 18:25:06 -0500
+Date: Sat, 14 Nov 2009 00:24:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>,
        lkml <linux-kernel@vger.kernel.org>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
        Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
 Subject: Re: [PATCH -tip 1/3] Pass mm->flags to binfmt core_dump for bitflag
  consistency
-Message-ID: <20091113232307.GB21666@elte.hu>
+Message-ID: <20091113232457.GC21666@elte.hu>
 References: <20091113225226.15079.90813.stgit@harusame>
- <20091113231602.2DD2C100E@magilla.sf.frob.com>
+ <20091113150904.56c15910.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091113231602.2DD2C100E@magilla.sf.frob.com>
+In-Reply-To: <20091113150904.56c15910.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -41,50 +40,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Roland McGrath <roland@redhat.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> To clarify, proc_coredump_filter_write() is the one place that can 
-> change mm->flags during a core dump.  I don't think any other is 
-> possible while all the other tasks sharing that mm are prevented from 
-> running.  Is there any other way that mm->flags might change during 
-> do_coredump()?
+> On Fri, 13 Nov 2009 17:52:27 -0500
+> Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> I don't see anything wrong with this change.  But (assuming that is 
-> the only case), there is another approach we could take instead.  That 
-> is, have proc_coredump_filter_write() do:
+> > Pass mm->flags to binfmt core_dump for bitflag consistency.
+> > Since mm->flags bit flags is not protected by locks, it will be
+> > changed while dumping core. This patch copies mm->flags to a
+> > mm_flags local variable at the beginning of do_coredump() and
+> > use it while dumping. mm_flags also includes dump_filter which
+> > filters elf sections from core file in elf_core_dump().
+> > So, this patch also passes mm_flags to each binfmt->core_dump().
 > 
-> 	down_read(&mm->mmap_sem);
-> 	ret = mm->core_state ? -EBUSY : 0;
-> 	up_read(&mm->mmap_sem);
+> I can kind-of guess the answer, but it would be much more reliable if
+> we were to hear this from yourself:
+> 
+>   Why did you write this patch?  What problem is being observed?
 
-this would fix the (probably harmless) race too, but isnt the whole 
-approach taken by the patch more robust, i.e. to take a snapshot of 
-mm->flags value and pass it along coredump processing?
-
-That makes it evidently immutable in the future too. It also makes the 
-code a bit easier to read IMO - instead of get_dumpable() we use the 
-mm_flags.
-
-The only other observation i have is that for this parameter set:
-
-  long signr, struct pt_regs *regs, struct file *file,
-  unsigned long limit, unsigned long mm_flags)
-
-we should probably introduce a coredump parameter struct, and pass that 
-along:
-
-struct coredump_params {
-	long signr;
-	struct pt_regs *regs;
-	struct file *file;
-	unsigned long limit;
-	unsigned long mm_flags;
-}
-
-Had this been done in the past this present patch would be a lot simpler 
-as well: we could have added mm_flags to coredump_params, instead of 
-having to propagate it through ~6 function interface surfaces.
-
-Thanks,
+i'm not Masami so i'm only guessing that while writing the tracepoint a 
+race got noticed but that otherwise there's no big practical effect, 
+'just' a cleanliness problem fixed.
 
 	Ingo
