@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZKMHgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZKMHnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbZKMHgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 02:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZKMHgr
+	id S1753927AbZKMHnA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 02:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZKMHm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 02:36:47 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:50431 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124AbZKMHgq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 02:36:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qZjmMfNjkf+P5WsNxCz8VZ5eVw5wuSLw61r96q3JiA3JN6vDqF/YafKTdd2zQ8wDt7
-         MynsCY/BvJRaa7ZbOyzIJReWK3lqdP7wkuWm6iReSyLl6kE5inPTqPKProUMnHK6QNnD
-         2Hyh2muDqEKt7+KrngnsE2hcVMJDXnKrlItTA=
-Date: Thu, 12 Nov 2009 23:36:47 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.32-rc7
-Message-ID: <20091113073647.GA7783@core.coreip.homeip.net>
+	Fri, 13 Nov 2009 02:42:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43294 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753220AbZKMHm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 02:42:58 -0500
+Date: Fri, 13 Nov 2009 08:42:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] x86: fix confusing name of /proc/cpuinfo "ht" flag
+Message-ID: <20091113074248.GA2775@elte.hu>
+References: <200911112134.34261.bzolnier@gmail.com>
+ <20091112065930.GA9279@elte.hu>
+ <4AFBB45A.9000606@zytor.com>
+ <20091112081317.GB25345@elte.hu>
+ <4AFC274C.2020209@zytor.com>
+ <20091112175908.GB20542@elte.hu>
+ <20091112183718.GA1925@codemonkey.org.uk>
+ <4AFC66E7.5040900@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4AFC66E7.5040900@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull from:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> On 11/12/2009 10:37 AM, Dave Jones wrote:
+> > On Thu, Nov 12, 2009 at 06:59:08PM +0100, Ingo Molnar wrote:
+> >  > > It's an ABI.  Keep it stable, please.
+> >  > 
+> >  > That's generally true, but i'm not suggesting that: i'm suggesting to 
+> >  > _clear_ the HT flag from the cpufeatures if there's only one sibling. 
+> >  > It's meaningless in that case and as the link quoted by the original 
+> >  > patch shows many people are confused by that.
+> >  > 
+> >  > I have such a box so i can test it. (but i dont expect any problems)
+> > 
+> > I agree that it's an ABI change, but any software depending on its current
+> > state has to implement a fallback for the case where 'ht' isn't present anyway
+> > unless there's some program that only runs on ht capable hardware, which
+> > sounds just crazy.
+> > 
+> > The only potential for breakage that I can see is that code that is tuned
+> > to be run in the HT case will stop running in cases where it shouldn't.
+> > Which sounds like a positive thing to me.
+> 
+> The most likely breakage would be some stupid licensing scheme.
+> 
+> The other aspect is that we as much as possible have tried to stay to 
+> the hardware-documented names of these strings.  Inventing new strings 
+> is generally a bad idea.
 
-to receive updates for the input subsystem.
+Agreed - and we rejected such patches a couple of times in the past and 
+for good reasons. Some /proc details are rarely used by apps (so they 
+are no real ABIs) but cpuinfo is frequently parsed.
 
-Changelog:
----------
+Clearing the ht flag on non-hyperthreading CPUs would be a limited 
+quirk/fix in essence applicable to a relatively narrow range of CPUs - 
+and easily undone, should it cause any problems. So if Bart wants to 
+take a stab at that it would be a nice solution to the problem at hand 
+...
 
-Dmitry Torokhov (3):
-      Input: fix locking in memoryless force-feedback devices
-      Input: force LED reset on resume
-      Input: atkbd - restore LED state at reconnect
-
-Takashi Iwai (1):
-      Input: psmouse - remove unneeded '\n' from psmouse.proto parameter
-
-Diffstat:
---------
-
- drivers/input/ff-core.c            |   20 +++++++++++---------
- drivers/input/ff-memless.c         |   26 +++++++++++---------------
- drivers/input/input.c              |   29 ++++++++++++++++++-----------
- drivers/input/keyboard/atkbd.c     |   13 +++++++++++++
- drivers/input/mouse/psmouse-base.c |    2 +-
- include/linux/input.h              |    4 ++++
- 6 files changed, 58 insertions(+), 36 deletions(-)
-
--- 
-Dmitry
-
+	Ingo
