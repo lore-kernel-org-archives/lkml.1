@@ -1,111 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZKMKKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZKMKMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbZKMKKG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:10:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZKMKKD
+	id S1756166AbZKMKMV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZKMKMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:10:03 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47018 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756032AbZKMKKA (ORCPT
+	Fri, 13 Nov 2009 05:12:14 -0500
+Received: from de01.mail.all-tld.net ([195.140.232.8]:58908 "EHLO
+	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755657AbZKMKMO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:10:00 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4AFD306F.1020802@s5r6.in-berlin.de>
-Date: Fri, 13 Nov 2009 11:09:51 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+	Fri, 13 Nov 2009 05:12:14 -0500
+Date: Fri, 13 Nov 2009 11:11:53 +0100
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: [PATCH v2] qnx4: Use hweight8
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Akinobu Mita <akinobu.mita@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <1258104305l.9440l.0l@i-dmzi_al.realan.de>
+	<1258106265-18181-1-git-send-email-akinobu.mita@gmail.com>
+In-Reply-To: <1258106265-18181-1-git-send-email-akinobu.mita@gmail.com>
+	(from akinobu.mita@gmail.com on Fri Nov 13 10:57:45 2009)
+X-Mailer: Balsa 2.3.14
+Message-Id: <1258107113l.9440l.1l@i-dmzi_al.realan.de>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firedtv: fix regression: tuning fails due to bogus error
- return
-References: <4ADA149E.1070704@s5r6.in-berlin.de> <4ADA26D0.6010108@s5r6.in-berlin.de> <tkrat.de5abfc32fa5476d@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.de5abfc32fa5476d@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
+X-ALL-TLD-GmbH-VirusScanner: Found to be clean
+X-ALL-TLD-GmbH-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote on 2009-10-17:
-> Since 2.6.32(-rc1), DVB core checks the return value of
-> dvb_frontend_ops.set_frontend.  Now it becomes apparent that firedtv
-> always returned a bogus value from its set_frontend method.
+On 2009-11-13 10:57:45, Akinobu Mita wrote:
+> Oops,
 > 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Subject: [PATCH v2] qnx4: Use hweight8
+> 
+> Use hweight8 instead of counting for each bit
+> 
+> [ v2: count_bit() counts zero bits in the bitmap]
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Anders Larsen <al@alarsen.net>
+> Cc: Al Viro <viro@zeniv.linux.org.uk>
 
-Hi Mauro,
-
-when you committed this, you added "CC: stable@kernel.org".  This is not
-necessary, 2.6.32-rc1 is the first kernel version with the regression
-(see changelog).
-
-Well, OK, the patch would become necessary in -stable if somebody was to
-put the new set_frontend return code check in dvb core into -stable. But
-I hope nobody is going to do that; it'd be a bad idea.
-
-Furthermore...
+Acked-by: Anders Larsen <al@alarsen.net>
 
 > ---
->  drivers/media/dvb/firewire/firedtv-avc.c |    7 +++++--
->  drivers/media/dvb/firewire/firedtv-fe.c  |    8 +-------
->  2 files changed, 6 insertions(+), 9 deletions(-)
+>  fs/qnx4/bitmap.c |   17 +----------------
+>  1 files changed, 1 insertions(+), 16 deletions(-)
 > 
-> Index: linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-avc.c
-> ===================================================================
-> --- linux-2.6.32-rc5.orig/drivers/media/dvb/firewire/firedtv-avc.c
-> +++ linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-avc.c
-> @@ -573,8 +573,11 @@ int avc_tuner_dsd(struct firedtv *fdtv,
->  
->  	msleep(500);
->  #if 0
-> -	/* FIXME: */
-> -	/* u8 *status was an out-parameter of avc_tuner_dsd, unused by caller */
-> +	/*
-> +	 * FIXME:
-> +	 * u8 *status was an out-parameter of avc_tuner_dsd, unused by caller
-> +	 * Check for AVC_RESPONSE_ACCEPTED here instead?
-> +	 */
->  	if (status)
->  		*status = r->operand[2];
->  #endif
+> diff --git a/fs/qnx4/bitmap.c b/fs/qnx4/bitmap.c
+> index 0afba06..cbaae72 100644
+> --- a/fs/qnx4/bitmap.c
+> +++ b/fs/qnx4/bitmap.c
+> @@ -35,22 +35,7 @@ static void count_bits(register const char *bmPart, register int size,
+>  	}
+>  	do {
+>  		b = *bmPart++;
+> -		if ((b & 1) == 0)
+> -			tot++;
+> -		if ((b & 2) == 0)
+> -			tot++;
+> -		if ((b & 4) == 0)
+> -			tot++;
+> -		if ((b & 8) == 0)
+> -			tot++;
+> -		if ((b & 16) == 0)
+> -			tot++;
+> -		if ((b & 32) == 0)
+> -			tot++;
+> -		if ((b & 64) == 0)
+> -			tot++;
+> -		if ((b & 128) == 0)
+> -			tot++;
+> +		tot += 8 - hweight8(b);
+>  		size--;
+>  	} while (size != 0);
+>  	*tf = tot;
+> -- 
+> 1.6.5.1
 
-...the firedtv-avc.c part of the patch vanished when you committed it. I
-guess this was accident, not deliberate --- otherwise a note in the
-changelog below of my Signed-off-by would have been appreciated.
-
-I will resubmit this missing comment change or a variation of it or even
-a fix of the FIXME sometime in the future.
-
-> Index: linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-fe.c
-> ===================================================================
-> --- linux-2.6.32-rc5.orig/drivers/media/dvb/firewire/firedtv-fe.c
-> +++ linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-fe.c
-> @@ -141,18 +141,12 @@ static int fdtv_read_uncorrected_blocks(
->  	return -EOPNOTSUPP;
->  }
->  
-> -#define ACCEPTED 0x9
-> -
->  static int fdtv_set_frontend(struct dvb_frontend *fe,
->  			     struct dvb_frontend_parameters *params)
->  {
->  	struct firedtv *fdtv = fe->sec_priv;
->  
-> -	/* FIXME: avc_tuner_dsd never returns ACCEPTED. Check status? */
-> -	if (avc_tuner_dsd(fdtv, params) != ACCEPTED)
-> -		return -EINVAL;
-> -	else
-> -		return 0; /* not sure of this... */
-> +	return avc_tuner_dsd(fdtv, params);
->  }
->  
->  static int fdtv_get_frontend(struct dvb_frontend *fe,
-> 
-
--- 
-Stefan Richter
--=====-==--= =-== -==-=
-http://arcgraph.de/sr/
