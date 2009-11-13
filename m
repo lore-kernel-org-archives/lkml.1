@@ -1,30 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbZKMJrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZKMJyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631AbZKMJrG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:47:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZKMJq6
+	id S1755667AbZKMJyN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbZKMJyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:46:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43476 "EHLO mx3.mail.elte.hu"
+	Fri, 13 Nov 2009 04:54:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56617 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755012AbZKMJq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:46:57 -0500
-Date: Fri, 13 Nov 2009 10:46:50 +0100
+	id S1754773AbZKMJyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:54:09 -0500
+Date: Fri, 13 Nov 2009 10:52:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ling Ma <ling.ma@intel.com>
-Subject: Re: [PATCH 1/4] perf bench: Add new subsystem and new suite,
- bench/mem-memcpy.c
-Message-ID: <20091113094650.GA1364@elte.hu>
-References: <1258086186-32317-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <1258086186-32317-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+To: Mike Travis <travis@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] x86: Limit the number of processor bootup messages
+Message-ID: <20091113095249.GB1364@elte.hu>
+References: <20091112171934.584037000@alcatraz.americas.sgi.com>
+ <20091112171942.423844000@alcatraz.americas.sgi.com>
+ <20091112180910.GA8598@elte.hu>
+ <4AFC6A6D.1040809@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1258086186-32317-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <4AFC6A6D.1040809@sgi.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -38,314 +48,109 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <sys/time.h>
-> +#include <assert.h>
-> +
-> +#define K 1024
-> +static char *length_str = (char *)"1MB";
-> +static char *routine = (char *)"default";
+> 
+> 
+> Ingo Molnar wrote:
+> >* Mike Travis <travis@sgi.com> wrote:
+> >
+> >>--- linux.orig/arch/x86/kernel/smpboot.c
+> >>+++ linux/arch/x86/kernel/smpboot.c
+> >>@@ -442,6 +442,84 @@
+> >> 		return c->llc_shared_map;
+> >> }
+> >>+/* Summarize Processor Information */
+> >>+static void __init summarize_cpu_info(void)
+> >>+{
+> >>+	cpumask_var_t cpulist, cpusdone;
+> >>+	int cpu;
+> >>+	int err = 0;
+> >>+
+> >>+	if (!alloc_cpumask_var(&cpulist, GFP_KERNEL))
+> >>+		err = 1;
+> >>+	else if (!alloc_cpumask_var(&cpusdone, GFP_KERNEL)) {
+> >>+		free_cpumask_var(cpulist);
+> >>+		err = 1;
+> >>+	}
+> >>+	if (err) {
+> >>+		printk(KERN_INFO "Can't print processor summaries\n");
+> >>+		return;
+> >>+	}
+> >>+
+> >>+	cpumask_clear(cpusdone);
+> >>+	for (cpu = 0; cpu < nr_cpu_ids; cpu++) {
+> >>+		struct cpuinfo_x86 *c;
+> >>+		char buf[128];
+> >>+		int ncpu, len;
+> >>+		unsigned long minlpj, maxlpj, avglpj = 0;
+> >>+
+> >>+		/* skip if cpu has already been displayed */
+> >>+		if (cpumask_test_cpu(cpu, cpusdone))
+> >>+			continue;
+> >>+
+> >>+		c = &cpu_data(cpu);
+> >>+		minlpj = ULONG_MAX;
+> >>+		maxlpj = 0;
+> >>+
+> >>+		cpumask_clear(cpulist);
+> >>+
+> >>+		/* collate all cpus with same specifics */
+> >>+		for (ncpu = cpu; ncpu < nr_cpu_ids; ncpu++) {
+> >>+			struct cpuinfo_x86 *n = &cpu_data(ncpu);
+> >>+
+> >>+			if (c->x86 != n->x86 ||
+> >>+			    c->x86_vendor != n->x86_vendor ||
+> >>+			    c->x86_model  != n->x86_model  ||
+> >>+			    c->x86_mask   != n->x86_mask   ||
+> >>+			    strcmp(c->x86_model_id, n->x86_model_id))
+> >>+				continue;
+> >>+
+> >>+			cpumask_set_cpu(ncpu, cpulist);
+> >>+			cpumask_set_cpu(ncpu, cpusdone);
+> >>+
+> >>+			if (cpu_data(ncpu).loops_per_jiffy < minlpj)
+> >>+				minlpj = cpu_data(ncpu).loops_per_jiffy;
+> >>+
+> >>+			if (cpu_data(ncpu).loops_per_jiffy > maxlpj)
+> >>+				maxlpj = cpu_data(ncpu).loops_per_jiffy;
+> >>+
+> >>+			avglpj += cpu_data(ncpu).loops_per_jiffy;
+> >>+		}
+> >>+
+> >>+		len = cpulist_scnprintf(buf, sizeof(buf), cpulist);
+> >>+		printk(KERN_INFO
+> >>+			"Processor Information for CPUS: %s%s\n",
+> >>+				buf, (len == sizeof(buf)-1) ? "..." : "");
+> >>+
+> >>+		printk(KERN_INFO);
+> >>+		print_cpu_info(c);
+> >>+
+> >>+		avglpj /= cpumask_weight(cpulist);
+> >>+		printk(KERN_INFO "BogoMIPS: MIN %lu.%02lu (%lu) "
+> >>+			"AVG %lu.%02lu (%lu) MAX %lu.%02lu (%lu)\n",
+> >>+			minlpj/(500000/HZ), (minlpj/(5000/HZ)) % 100, minlpj,
+> >>+			avglpj/(500000/HZ), (avglpj/(5000/HZ)) % 100, avglpj,
+> >>+			maxlpj/(500000/HZ), (maxlpj/(5000/HZ)) % 100, maxlpj);
+> >>+	}
+> >>+
+> >>+	free_cpumask_var(cpusdone);
+> >>+	free_cpumask_var(cpulist);
+> >>+}
+> >>+
+> >
+> >Sigh, that's _way_ too complex.
+> >
+> >If you cannot print it in a summarized way without carrying over
+> >stupid state like bitmaps then please do the simple and obvious,
+> >and print:
+> >
+> >booting CPUs: #0 #1 #2 #3 #4 #5 #6 ...
+> 
+> That is almost exactly what it does. [...]
 
-no cast is needed for string literals.
-
-> +static int use_clockcycle = 0;
-
-also, please use the vertical alignment initialization style used in 
-other builtin-*.c tools.
-
-> +
-> +typedef unsigned long int clockcycle_t;
-
-We dont do new typedefs in .c's generally. It should be put into a 
-header - but i think using u64 would be good too.
-
-> +
-> +#ifdef x86_64
-> +
-> +static inline clockcycle_t get_clock(void)
-> +{
-> +	long int ret;
-> +
-> +	asm("rdtsc; shlq $32, %%rdx;"
-> +	    "orq %%rdx, %%rax;"
-> +	    "movq %%rax, %0;"
-> +	    : "=r" (ret));
-> +
-> +	return ret;
-> +}
-> +
-> +#endif /* x86_64 */
-
-There's full rdtscll implementations in arch/x86/include/asm/tsc.h. They 
-should either be included - or copied in part.
-
-> +static const struct option options[] = {
-> +	OPT_STRING('l', "length", &length_str, "1MB",
-> +		    "Specify length of memory to copy. "
-> +		    "available unit: B, MB, GB (upper and lower)"),
-> +	OPT_STRING('r', "routine", &routine, "default",
-> +		    "Specify routine to copy"),
-> +#ifdef x86_64
-> +	/*
-> +	 * TODO: This should be expanded to any architecuture
-> +	 * perf supports
-> +	 */
-> +	OPT_BOOLEAN('c', "clockcycle", &use_clockcycle,
-> +		    "Use CPU's clock cycle for measurement"),
-> +#endif /* x86_64 */
-
-That #ifdef x86_64 looks quite ugly.
-
-Also, why not use the 'cycles' perf event to retrieve cycles?
-
-> +	OPT_END()
-> +};
-> +
-> +struct routine {
-> +	const char *name;
-> +	void * (*fn)(void *dst, const void *src, size_t len);
-> +	const char *desc;
-
-We try to align structure definitions vertically too.
-
-> +};
-> +
-> +struct routine routines[] = {
-> +	{ "default",
-> +	  memcpy,
-> +	  "Default memcpy() provided by glibc" },
-> +	{ NULL,
-> +	  NULL,
-> +	  NULL }
-
-{ NULL, } would be equivalent i guess.
-
-> +};
-> +
-> +static const char * const bench_mem_memcpy_usage[] = {
-> +	"perf bench mem memcpy <options>",
-> +	NULL
-> +};
-> +
-> +static size_t str2length(char *_str)
-> +{
-> +	int i, unit = 1;
-> +	char *str;
-> +	size_t length = -1;
-> +
-> +	str = calloc(strlen(_str) + 1, sizeof(char));
-> +	assert(str);
-> +	strcpy(str, _str);
-> +
-> +	if (!isdigit(str[0]))
-> +		goto err;
-> +
-> +	for (i = 1; i < (int)strlen(str); i++) {
-
-if 'i' was of type unsigned long then the (int) cast wouldnt be needed i 
-suspect?
-
-> +		switch ((int)str[i]) {
-
-is the cast to 'int' needed here?
-
-> +		case 'B':
-> +		case 'b':
-> +			str[i] = '\0';
-> +			break;
-> +		case 'K':
-> +		case 'k':
-> +			if (str[i + 1] != 'B' && str[i + 1] != 'b')
-> +				goto err;
-> +			unit = K;
-> +			str[i] = '\0';
-> +			break;
-> +		case 'M':
-> +		case 'm':
-> +			if (str[i + 1] != 'B' && str[i + 1] != 'b')
-> +				goto err;
-> +			unit = K * K;
-> +			str[i] = '\0';
-> +			break;
-> +		case 'G':
-> +		case 'g':
-> +			if (str[i + 1] != 'B' && str[i + 1] != 'b')
-> +				goto err;
-> +			unit = K * K * K;
-> +			str[i] = '\0';
-> +			break;
-> +		case '\0':	/* only specified figures */
-> +			unit = 1;
-> +			break;
-> +		default:
-> +			if (!isdigit(str[i]))
-> +				goto err;
-> +			break;
-> +		}
-> +	}
-> +
-> +	length = atoi(str) * unit;
-> +	goto end;
-> +
-> +err:
-> +	fprintf(stderr, "Invalid length:%s\n", str);
-> +end:
-> +	free(str);
-> +	return length;
-> +}
-
-This should go until a utils/*.c helper file i suspect.
-
-> +
-> +static double timeval2double(struct timeval *ts)
-> +{
-> +	return (double)ts->tv_sec +
-> +		(double)ts->tv_usec / (double)1000000;
-> +}
-> +
-> +int bench_mem_memcpy(int argc, const char **argv,
-> +		     const char *prefix __used)
-> +{
-> +	int i;
-> +	void *dst, *src;
-> +	struct timeval start, stop, diff;
-> +	clockcycle_t clock_start = 0, clock_diff = 0;
-> +	size_t length;
-> +	double bps = 0.0;
-> +
-> +	argc = parse_options(argc, argv, options,
-> +			     bench_mem_memcpy_usage, 0);
-> +
-> +	/*
-> +	 * Caution!
-> +	 * Without the statement
-> +	 * 	gettimeofday(&diff, NULL);
-> +	 * compiler warns (and build environment of perf regards it as error)
-> +	 * like this,
-> +	 * bench/mem-memcpy.c:93: error: ‘diff.tv_sec’ may be\
-> +	 * used uninitialized in this function
-> +	 * bench/mem-memcpy.c:93: error: ‘diff.tv_usec’ may be\
-> +	 * used uninitialized in this function
-> +	 *
-> +	 * hmm...
-> +	 */
-> +	gettimeofday(&diff, NULL);
-
-well, because 'gettimeofday' could fail in theory and then 'diff' 
-remains uninitialized. Initializing it would solve that.
-
-> +
-> +	length = str2length(length_str);
-> +	if ((int)length < 0)
-> +		return 1;
-
-str2length should return a proper type instead of forcing a (int) cast 
-here.
-
-> +
-> +	for (i = 0; routines[i].name; i++)
-> +		if (!strcmp(routines[i].name, routine))
-> +			break;
-
-Please use { } curly braces around all non-single-line statements. I.e. 
-the above should be:
-
-	for (i = 0; routines[i].name; i++) {
-		if (!strcmp(routines[i].name, routine))
-			break;
-	}
-
-It's a tiny bit longer but more robust.
-
-> +	if (!routines[i].name) {
-> +		printf("Unknown routine:%s\n", routine);
-> +		printf("Available routines...\n");
-> +		for (i = 0; routines[i].name; i++)
-> +			printf("\t%s ... %s\n",
-> +			       routines[i].name, routines[i].desc);
-> +		return 1;
-> +	}
-> +
-> +	dst = calloc(length, sizeof(char));
-> +	assert(dst);
-> +	src = calloc(length, sizeof(char));
-> +	assert(src);
-
-Please use BUG_ON() - we try to standardize on kernel code style in perf 
-tooling.
-
-> +
-> +	if (bench_format == BENCH_FORMAT_DEFAULT)
-> +		printf("# Copying %s Bytes from %p to %p ...\n\n",
-> +		       length_str, src, dst);
-
-curly braces needed.
-
-> +
-> +	if (use_clockcycle) {
-> +		clock_start = get_clock();
-> +	} else {
-> +		gettimeofday(&start, NULL);
-> +	}
-
-these curly braces are not needed. (but this code would probably go away 
-if the code used perf events to retrieve cycles or time of day elapsed 
-time.)
-
-> +
-> +	routines[i].fn(dst, src, length);
-> +
-> +	if (use_clockcycle) {
-> +		clock_diff = get_clock() - clock_start;
-> +	} else {
-> +		gettimeofday(&stop, NULL);
-> +		timersub(&stop, &start, &diff);
-> +		bps = (double)((double)length / timeval2double(&diff));
-> +	}
-> +
-> +	switch (bench_format) {
-> +	case BENCH_FORMAT_DEFAULT:
-> +		if (use_clockcycle)
-> +			printf(" %14lf Clock/Byte\n",
-> +			       (double)clock_diff / (double)length);
-> +		else
-> +			if (bps < K)
-> +				printf(" %14lf B/Sec\n", bps);
-> +			else if (bps < K * K)
-> +				printf(" %14lfd KB/Sec\n", bps / 1024);
-> +			else if (bps < K * K * K)
-> +				printf(" %14lf MB/Sec\n", bps / 1024 / 1024);
-> +			else
-> +				printf(" %14lf GB/Sec\n",
-> +				       bps / 1024 / 1024 / 1024);
-
-curly braces needed.
-
-> +		break;
-> +	case BENCH_FORMAT_SIMPLE:
-> +		if (use_clockcycle)
-> +			printf("%lf\n",
-> +			       (double)clock_diff / (double)length);
-> +		else
-> +			printf("%lf\n", bps);
-> +		break;
-> +	default:
-> +		/* reaching here is something disaster */
-> +		fprintf(stderr, "Unknown format:%d\n", bench_format);
-
-could use pr_err() here i guess.
-
-> +		exit(1);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-
-Thanks,
+You are missing my point i think, which is that we dont want the 76 
+lines long summarize_cpu_info() complexity during bootup. Lets keep it 
+_very_ simple and zap excessive messages - like DaveJ's patch did.
 
 	Ingo
