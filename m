@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZKMWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbZKMWSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZKMWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 17:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZKMWQw
+	id S932180AbZKMWSa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 17:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZKMWS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 17:16:52 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37187 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756001AbZKMWQw (ORCPT
+	Fri, 13 Nov 2009 17:18:26 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:14235 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756103AbZKMWSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 17:16:52 -0500
-Message-ID: <4AFDDAD3.5080307@zytor.com>
-Date: Fri, 13 Nov 2009 14:16:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 13 Nov 2009 17:18:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=GlVcxLlaWisRNQIBlS0GBmRx+AOqEDFxbv+LosLHTWmnB45W94mQ1aiymQyGXdyQn7
+         GezXbpKrCVzKRMjPUNMgtqDBENgK3u3VQQV6ixYgyr8jBV2kag6ubY7Xgee6Kwy+55YB
+         YTRBLTO84mI6L3TGafvYS7bBrJmG42gHLrq1M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+Date: Fri, 13 Nov 2009 23:17:35 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+References: <4AFCC0D4.9020708@gmail.com> <200911132039.06929.bzolnier@gmail.com> <20091113213007.774e75e3@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091113213007.774e75e3@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 1/3] setup: Store the boot cursor state
-References: <1258142222-16092-1-git-send-email-mjg@redhat.com> <4AFDD4D3.4060909@zytor.com> <20091113220220.GA7233@srcf.ucam.org>
-In-Reply-To: <20091113220220.GA7233@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <200911132317.35088.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/13/2009 02:02 PM, Matthew Garrett wrote:
-> On Fri, Nov 13, 2009 at 01:51:15PM -0800, H. Peter Anvin wrote:
+On Friday 13 November 2009 22:30:07 Alan Cox wrote:
+
+> > > > PATA_CMD64X: EXPERIMENTAL
+> > > > - potential data corruption issues remains unfixed for CMD64[3,6]
+> > > 
+> > > Patch in testing, and unlike the old IDE one it doesn't cripple the
+> > > controller but implements the proper workaround in full including
+> > > permitting parallel PIO command streams. I'll push that back through
+> > > stable once done.
+> > 
+> > This patch is way too complex and risky for -rc, let alone -stable.
 > 
->> I'm cool with this, but please update the appropriate files in
->> Documentation/x86 as well.
-> 
-> It's in screen_info rather than the zero page - is there any relevant 
-> documentation to update?
-> 
+> How would you know - I've not posted it yet ? And btw I don't plan to
 
-Hm, looks like there isn't... although it would be rather good to get
-screen_info and the other substructures documented!
+I prefer to not talk about "virtual" patches (especially since I'm still
+waiting for HPA fixes promised in May) and the only patch so far was the one
+from two weeks ago:
 
-	-hpa
+	http://article.gmane.org/gmane.linux.ide/43136
 
+[ it has still unfixed problems.. ]
 
-
+-- 
+Bartlomiej Zolnierkiewicz
