@@ -1,177 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZKMMwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbZKMNAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbZKMMwA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 07:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZKMMwA
+	id S1752825AbZKMNAI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 08:00:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZKMNAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 07:52:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:51298 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbZKMMv6 convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 08:00:04 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:51547 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753871AbZKMM7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 07:51:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xi2nrmV337a3h5GXeec99V+wQCpLtdm75+Eh3MbzQ/Qb4A8WU3LKLOo6Iubyywdy+a
-         DBO9MFzSWXRpUr+X2pyn6q8J7pFs8y4B9020nqFZF2AZKQXuALsneeo30FOQcNfWTPWW
-         i7MdOopXqsF/nQJSSHfZiD+Gd0tFYpBy0oovc=
+	Fri, 13 Nov 2009 07:59:53 -0500
+Date: Fri, 13 Nov 2009 07:58:12 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: [PATCH] make crypto unplug fix V3
+Message-ID: <20091113125812.GB7891@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+	Sven Geggus <lists@fuchsschwanzdomain.de>,
+	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+	Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Rik van Riel <riel@redhat.com>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	Stephan von Krawczynski <skraw@ithnet.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie>
+ <20091112202748.GC2811@think>
+ <20091112220005.GD2811@think>
+ <20091113024642.GA7771@think>
 MIME-Version: 1.0
-In-Reply-To: <6278d2220911051641g5a626229o27dfc66faf588ca4@mail.gmail.com>
-References: <6278d2220910251631j40caec00lf2dee6159947d983@mail.gmail.com>
-	 <1256563190.3742.4.camel@heimdal.trondhjem.org>
-	 <6278d2220911010447v5889b9bbt33f685ef7669cc45@mail.gmail.com>
-	 <6278d2220911040136m4cadc0f5sb71b8306bf02fc5b@mail.gmail.com>
-	 <1257443105.3114.14.camel@heimdal.trondhjem.org>
-	 <6278d2220911051641g5a626229o27dfc66faf588ca4@mail.gmail.com>
-Date: Fri, 13 Nov 2009 12:52:02 +0000
-Message-ID: <6278d2220911130452u6e40662do44bcbcbaf9bad714@mail.gmail.com>
-Subject: Re: regression, bisected: getcwd() ENOENT on NFS4...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091113024642.GA7771@think>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AFD57FC.00D3:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trond,
+This is still likely to set your dm data on fire.  It is only meant for
+testers that start with mkfs and don't have any valuable dm data.
 
-On Fri, Nov 6, 2009 at 12:41 AM, Daniel J Blueman
-<daniel.blueman@gmail.com> wrote:
-> On Thu, Nov 5, 2009 at 5:45 PM, Trond Myklebust
-> <trond.myklebust@fys.uio.no> wrote:
->> On Wed, 2009-11-04 at 09:36 +0000, Daniel J Blueman wrote:
->>> On Sun, Nov 1, 2009 at 12:47 PM, Daniel J Blueman
->>> <daniel.blueman@gmail.com> wrote:
->>> > Hi Trond,
->>> >
->>> > On Mon, Oct 26, 2009 at 1:19 PM, Trond Myklebust
->>> > <Trond.Myklebust@netapp.com> wrote:
->>> >> On Sun, 2009-10-25 at 23:31 +0000, Daniel J Blueman wrote:
->>> >>> Since 2.6.30-rc, I've been experiencing various issues relating to
->>> >>> getcwd() returning ENOENT on NFS4 clients. I used an over-complicated
->>> >>> but reliable reproducer [1] (on Karmic RC against a 2.6.32-rc5 NFS4
->>> >>> server) to bisect [2].
->>> >>>
->>> >>> The impact of this regression is moderate (side-effects range from
->>> >>> benign to failure), so we should get a fix into 2.6.32 if at all
->>> >>> possible and strongly consider a 2.6.31 stable update.
->>> >>>
->>> >>> Thanks,
->>> >>>   Daniel
->>> >>>
->>> >>> --- [1]
->>> >>>
->>> >>> $ apt-get source apt
->>> >>> $ cd apt-*
->>> >>> $ ./configure && make
->>> >>> [snip]
->>> >>> sh: getcwd() failed: No such file or directory
->>> >>>
->>> >>> --- [2]
->>> >>>
->>> >>> a65318bf3afc93ce49227e849d213799b072c5fd is first bad commit
->>> >>> commit a65318bf3afc93ce49227e849d213799b072c5fd
->>> >>> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
->>> >>> Date:   Wed Mar 11 14:10:28 2009 -0400
->>> >>>
->>> >>>     NFSv4: Simplify some cache consistency post-op GETATTRs
->>> >>
->>> >> I'm having a lot of trouble seeing how this patch could result in
->>> >> ENOENT. All it should be doing is reducing the frequency with which we
->>> >> update some of the inode metadata.
->>> >>
->>> >> Have you ever been able to capture one of these errors using strace?
->>> >
->>> > Backing this patch out by hand against stock 2.6.32-rc5 (w/ 2.6.32-rc5
->>> > on server) corrects the behaviour. It's readily reproducible [1];
->>> > using 2.6.30, the issue is not seen, thus is a regression.
->>> >
->>> > To observe the change to user-level behaviour (after the reproducer commands):
->>> > # make clean
->>> > # strace -ffe getcwd make -n >list
->>> > [pid  3829] getcwd(0x7fffa269a380, 4096) = -1 ENOENT (No such file or directory)
->>> > make: getcwd: No such file or directory
->>> >
->>> > Would this help for me to log this via a bugzilla.kernel.org ticket?
->>> >
->>> > Thanks,
->>> >  Daniel
->>> >
->>> > --- [1]
->>> >
->>> > booting eg:
->>> > http://mira.sunsite.utk.edu/ubuntu-releases/karmic/ubuntu-9.10-desktop-amd64.iso
->>> >
->>> > $ sudo bash
->>> > # apt-get install build-essential
->>> > # apt-get build-dep apt
->>> > # mount server:/ /mnt -tnfs4 && cd /mnt
->>> > # apt-get source apt
->>> > # cd apt-0.7.23.1ubuntu2
->>> > # ./configure && make
->>> >  -> "getcwd: No such file or directory" messages observed with cited
->>> > patch and not without
->>>
->>> For continuity with the mailing list thread, I've created a bug report
->>> of this at:
->>>
->>> http://bugzilla.kernel.org/show_bug.cgi?id=14541
->>
->> I just committed the following patch into the above bugzilla entry. I
->> hope it suffices to fix the bug.
->>
->> Cheers
->>  Trond
->> -------------------------------------------------------------------
->> NFSv4: Fix a cache validation bug which causes getcwd() to return ENOENT
->> From: Trond Myklebust <Trond.Myklebust@netapp.com>
->>
->> Changeset a65318bf3afc93ce49227e849d213799b072c5fd (NFSv4: Simplify some
->> cache consistency post-op GETATTRs) incorrectly changed the getattr
->> bitmap for readdir().
->> This causes the readdir() function to fail to return a
->> fileid/inode number, which again exposed a bug in the NFS readdir code that
->> causes spurious ENOENT errors to appear in applications (see
->> http://bugzilla.kernel.org/show_bug.cgi?id=14541).
->>
->> The immediate band aid is to revert the incorrect bitmap change, but more
->> long term, we should change the NFS readdir code to cope with the
->> fact that NFSv4 servers are not required to support fileids/inode numbers.
->>
->> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
->> ---
->>
->>  fs/nfs/nfs4proc.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->>
->> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
->> index ff37454..741a562 100644
->> --- a/fs/nfs/nfs4proc.c
->> +++ b/fs/nfs/nfs4proc.c
->> @@ -2767,7 +2767,7 @@ static int _nfs4_proc_readdir(struct dentry *dentry, struct rpc_cred *cred,
->>                .pages = &page,
->>                .pgbase = 0,
->>                .count = count,
->> -               .bitmask = NFS_SERVER(dentry->d_inode)->cache_consistency_bitmask,
->> +               .bitmask = NFS_SERVER(dentry->d_inode)->attr_bitmask,
->>        };
->>        struct nfs4_readdir_res res;
->>        struct rpc_message msg = {
->>
->
-> This fixes the behaviour and passes some heavy testing with two good
-> test-cases, with 2.6.32-rc6. As well, this would be good value for the
-> stable stream. I've sync'd the bugzilla report.
+It includes my patch from last night, along with changes to force dm to
+unplug when its IO queues empty.
 
-Is there opportunity to get this regression fix into 2.6.32-rc8, since
--rc8 may be the (pen)ultimate before final?
+The problem goes like this:
 
-Thanks,
-  Daniel
--- 
-Daniel J Blueman
+Process: submit read bio
+dm: put bio onto work queue
+process: unplug
+dm: work queue finds bio, does a generic_make_request
+
+The end result is that we miss the unplug completely.  dm-crypt needs to
+unplug for sync bios.  This patch also changes it to unplug whenever the
+queue is empty, which is far from ideal but better than missing the
+unplugs.
+
+This doesn't completely fix io stalls I'm seeing with dm-crypt, but its
+my best guess.  If it works, I'll break it up and submit for real to
+the dm people.
+
+-chris
+
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index ed10381..729ae01 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -94,8 +94,12 @@ struct crypt_config {
+ 	struct bio_set *bs;
+ 
+ 	struct workqueue_struct *io_queue;
++	struct workqueue_struct *async_io_queue;
+ 	struct workqueue_struct *crypt_queue;
+ 
++	atomic_t sync_bios_in_queue;
++	atomic_t async_bios_in_queue;
++
+ 	/*
+ 	 * crypto related data
+ 	 */
+@@ -679,11 +683,29 @@ static void kcryptd_io_write(struct dm_crypt_io *io)
+ static void kcryptd_io(struct work_struct *work)
+ {
+ 	struct dm_crypt_io *io = container_of(work, struct dm_crypt_io, work);
++	struct crypt_config *cc = io->target->private;
++	int zero_sync = 0;
++	int zero_async = 0;
++	int was_sync = 0;
++
++	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
++		zero_sync = atomic_dec_and_test(&cc->sync_bios_in_queue);
++		was_sync = 1;
++	} else
++		zero_async = atomic_dec_and_test(&cc->async_bios_in_queue);
+ 
+ 	if (bio_data_dir(io->base_bio) == READ)
+ 		kcryptd_io_read(io);
+ 	else
+ 		kcryptd_io_write(io);
++
++	if ((was_sync && zero_sync) ||
++	    (!was_sync && zero_async &&
++	     atomic_read(&cc->sync_bios_in_queue) == 0)) {
++		struct backing_dev_info *bdi;
++		bdi = blk_get_backing_dev_info(io->base_bio->bi_bdev);
++		blk_run_backing_dev(bdi, NULL);
++	}
+ }
+ 
+ static void kcryptd_queue_io(struct dm_crypt_io *io)
+@@ -691,7 +713,13 @@ static void kcryptd_queue_io(struct dm_crypt_io *io)
+ 	struct crypt_config *cc = io->target->private;
+ 
+ 	INIT_WORK(&io->work, kcryptd_io);
+-	queue_work(cc->io_queue, &io->work);
++	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
++		atomic_inc(&cc->sync_bios_in_queue);
++		queue_work(cc->io_queue, &io->work);
++	} else {
++		atomic_inc(&cc->async_bios_in_queue);
++		queue_work(cc->async_io_queue, &io->work);
++	}
+ }
+ 
+ static void kcryptd_crypt_write_io_submit(struct dm_crypt_io *io,
+@@ -759,8 +787,7 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
+ 
+ 		/* Encryption was already finished, submit io now */
+ 		if (crypt_finished) {
+-			kcryptd_crypt_write_io_submit(io, r, 0);
+-
++			kcryptd_crypt_write_io_submit(io, r, 1);
+ 			/*
+ 			 * If there was an error, do not try next fragments.
+ 			 * For async, error is processed in async handler.
+@@ -1120,6 +1147,15 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 	} else
+ 		cc->iv_mode = NULL;
+ 
++	atomic_set(&cc->sync_bios_in_queue, 0);
++	atomic_set(&cc->async_bios_in_queue, 0);
++
++	cc->async_io_queue = create_singlethread_workqueue("kcryptd_async_io");
++	if (!cc->async_io_queue) {
++		ti->error = "Couldn't create kcryptd io queue";
++		goto bad_async_io_queue;
++	}
++
+ 	cc->io_queue = create_singlethread_workqueue("kcryptd_io");
+ 	if (!cc->io_queue) {
+ 		ti->error = "Couldn't create kcryptd io queue";
+@@ -1139,6 +1175,8 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ bad_crypt_queue:
+ 	destroy_workqueue(cc->io_queue);
+ bad_io_queue:
++	destroy_workqueue(cc->async_io_queue);
++bad_async_io_queue:
+ 	kfree(cc->iv_mode);
+ bad_ivmode_string:
+ 	dm_put_device(ti, cc->dev);
+@@ -1166,6 +1204,7 @@ static void crypt_dtr(struct dm_target *ti)
+ 	struct crypt_config *cc = (struct crypt_config *) ti->private;
+ 
+ 	destroy_workqueue(cc->io_queue);
++	destroy_workqueue(cc->async_io_queue);
+ 	destroy_workqueue(cc->crypt_queue);
+ 
+ 	if (cc->req)
