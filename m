@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752978AbZKMH2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZKMHaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752978AbZKMH2g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 02:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZKMH2a
+	id S1753582AbZKMHaX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 02:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZKMHaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 02:28:30 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:43588 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750788AbZKMH23 (ORCPT
+	Fri, 13 Nov 2009 02:30:18 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33125 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbZKMHaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 02:28:29 -0500
-X-Sasl-enc: /Xrar6/5SUAIKaBABvgf91mk9KljdicwT8A54a49XfGU 1258097314
-Message-ID: <4AFD0AA2.7070205@ladisch.de>
-Date: Fri, 13 Nov 2009 08:28:34 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 13 Nov 2009 02:30:17 -0500
+Message-ID: <4AFD0AFC.5020603@zytor.com>
+Date: Thu, 12 Nov 2009 23:30:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Daniel Mack <daniel@caiaq.de>
-CC: Pavel Machek <pavel@ucw.cz>, David Newall <davidn@davidnewall.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: make the default cursor shape configurable
-References: <4AF7D439.4030305@ladisch.de>	<20091109091044.GX29442@buzzloop.caiaq.de>	<4AF7DDC1.4090006@ladisch.de>	<20091109095316.6283fbd6@lxorguk.ukuu.org.uk>	<4AF7FC64.6030904@ladisch.de>	<20091109114600.4d91b90e@lxorguk.ukuu.org.uk>	<20091109145056.GB14091@buzzloop.caiaq.de>	<4AF8582B.2000403@davidnewall.com>	<20091109220944.GH14091@buzzloop.caiaq.de>	<20091110210940.GA1590@ucw.cz>	<20091110152605.fc8e760e.akpm@linux-foundation.org>	<4AFA603B.6000102@ladisch.de> <20091112140546.303e7dd6.akpm@linux-foundation.org>
-In-Reply-To: <20091112140546.303e7dd6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
+To: "Ma, Ling" <ling.ma@intel.com>
+CC: Pavel Machek <pavel@ucw.cz>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <20091112121604.GC1394@ucw.cz> <8FED46E8A9CA574792FC7AACAC38FE7714FEB070EE@PDSMSX501.ccr.corp.intel.com> <4AFCF6D6.6040607@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FEB071DF@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FEB071DF@PDSMSX501.ccr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Clemens Ladisch <clemens@ladisch.de> wrote:
-> > [PATCH] vt: make the default cursor shape configurable
-> > 
-> > Make the default console cursor type configurable rather than
-> > hard-coding it.
+On 11/12/2009 11:23 PM, Ma, Ling wrote:
+> Hi H. Peter Anvin
+>> What it sounds to me is that for Nehalem, we want to use memcpy_c for >=
+>> 1024 bytes and the old code for < 1024 bytes;
 > 
-> The changelog omitted the most important piece of information: the
-> reason why we're making this change to the kernel.
+> Yes, so we modify memcpy_c as memcpy_new for Nehalem, and keep old
+> code for Core2 is acceptable?
 
-[PATCH] vt: make the default cursor shape configurable
+No, what I think we should do is to rename the old memcpy to something
+like memcpy_o, and then have the actual memcpy routine look like:
 
-For embedded systems, the blinking cursor at startup time can be
-annoying and unintended. Add a new kernel parameter to change the
-default cursor shape.
+	cmpq $1024, %rcx
+	ja memcpy_c
+	jmp memcpy_o
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Cc: Daniel Mack <daniel@caiaq.de>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
-Daniel, could you ack this?
+... where the constant as well as the ja opcode can be patched by the
+alternatives mechanism (to a jb if needed).
+
+memcpy is *definitely* frequent enough that static patching is justified.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
