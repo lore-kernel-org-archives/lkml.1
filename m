@@ -1,109 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZKMW1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbZKMXEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZKMW1F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 17:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbZKMW05
+	id S932451AbZKMXEQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407AbZKMXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 17:26:57 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:30269 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756322AbZKMW04 (ORCPT
+	Fri, 13 Nov 2009 18:04:14 -0500
+Received: from h1047321.serverkompetenz.net ([85.214.67.163]:42300 "EHLO
+	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932406AbZKMXEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 17:26:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type;
-        b=sotKBV3D27Lkmu5K9TkCFZ3ZzslCL686KfXKBMrsIYo8+oUHPpnT/dDtIMdxrHF1PJ
-         qyWGQVL9+BWZ37fMTF2ma9khDXTn3Zeld/NhpsMn5nbtXoEcBrXpMfAmNRP7tsJ7kAbV
-         hC7gZ+5ib5w4glcdUoHHG+EZXG3XeS+PZ33to=
-Date: Fri, 13 Nov 2009 23:26:52 +0100
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
-Message-ID: <20091113232652.5719f8a1@varda>
-In-Reply-To: <20091113182515.38fb3793@lxorguk.ukuu.org.uk>
-References: <4AFCC0D4.9020708@gmail.com>
-	<200911131715.24377.bzolnier@gmail.com>
-	<20091113182515.38fb3793@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA256;
- boundary="Sig_/l+1ugFhP2WvcLvWvEZwAxHZ"; protocol="application/pgp-signature"
+	Fri, 13 Nov 2009 18:04:13 -0500
+X-Greylist: delayed 2035 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Nov 2009 18:04:12 EST
+Message-ID: <4AFDDDF6.4050907@ahsoftware.de>
+Date: Fri, 13 Nov 2009 23:30:14 +0100
+From: Alexander Holler <holler@ahsoftware.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Problems with p55-express and sleeping usb-hds
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/l+1ugFhP2WvcLvWvEZwAxHZ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-El Fri, 13 Nov 2009 18:25:15 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> escribi=C3=B3:
+I'm having a problem with kernels (x86_64) <=2.6.32-rc7 (that means all 
+kernels I tried, including the latest stable 2.6.31.6) on a Gigabyte 
+P55M-UD4 mb (Bios F4l) with an Intel Core i7 860 and sleeping usb-hds.
 
+I don't have the problems when using the same usb-drives on a laptop 
+with a core2duo (ICH8), so it seems to be a problem with the chipset 
+(p55-express).
 
->=20
-> > PATA_ALI: EXPERIMENTAL
-> > - ATAPI DMA is still broken
->=20
-> Not experimental as we default to not doing ATAPI DMA. Glancing over the
-> code I notice the ALI C2/C3 workaround probably wants adding to the old
-> driver as it can do nasty things otherwise. (See the reset function in
-> the pata_ali driver)
+The problem seems to occur when the usb-drive goes to sleep (because of 
+inactivity) and the kernel tries to access them afterwards.
 
- FWIW I have a Motherboard with Ali chipset and have been using ATAPI DMA
-(forcing it via proc) without issues since the DMA was disabled by default.
-=20
- lspci -v
- IDE interface: ALi Corporation M5229 IDE (rev c7) (prog-if 8a [Master SecP=
- PriP])
- Subsystem: ASRock Incorporation Device 5229
- Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 21
- [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [disabled] [size=
-=3D8]
- [virtual] Memory at 000003f0 (type 3, non-prefetchable) [disabled] [size=
-=3D1]
- [virtual] Memory at 00000170 (32-bit, non-prefetchable) [disabled] [size=
-=3D8]
- [virtual] Memory at 00000370 (type 3, non-prefetchable) [disabled] [size=
-=3D1]
- I/O ports at ff00 [size=3D16]
- Capabilities: <access denied>
- Kernel driver in use: pata_ali
- Kernel modules: ata_generic
+Here are the excerpts from the log:
 
+-------------------------------------------------------------------------
+Nov 13 19:03:34 krabat kernel: [    0.000000] Linux version 2.6.32-rc7 
+(root@krabat.ahsoftware) (gcc version 4.4.1 20090725 (Red Hat 4.4.1-2) 
+(GCC) ) #1 SMP Fri Nov 13 19:01:02 CET 2009
 
+...
 
->=20
+(This warning seems to be unrelated, but I'm getting this too with every 
+kernel I've tried, so I'm including it here)
 
-> Alan
->=20
+Nov 13 19:03:34 krabat kernel: [    1.259269] cpuidle: using governor menu
+Nov 13 19:03:34 krabat kernel: [    1.259274] ------------[ cut here 
+]------------
+Nov 13 19:03:34 krabat kernel: [    1.259278] WARNING: at 
+arch/x86/kernel/hpet.c:390 hpet_next_event+0x68/0x80()
+Nov 13 19:03:34 krabat kernel: [    1.259279] Hardware name: P55M-UD4
+Nov 13 19:03:34 krabat kernel: [    1.259280] Modules linked in:
+Nov 13 19:03:34 krabat kernel: [    1.259282] Pid: 0, comm: swapper Not 
+tainted 2.6.32-rc7 #1
+Nov 13 19:03:34 krabat kernel: [    1.259283] Call Trace:
+Nov 13 19:03:34 krabat kernel: [    1.259287]  [<ffffffff8103b0a3>] ? 
+warn_slowpath_common+0x73/0xb0
+Nov 13 19:03:34 krabat kernel: [    1.259289]  [<ffffffff81025648>] ? 
+hpet_next_event+0x68/0x80
+Nov 13 19:03:34 krabat kernel: [    1.259292]  [<ffffffff8105de28>] ? 
+tick_dev_program_event+0x38/0xc0
+Nov 13 19:03:34 krabat kernel: [    1.259293]  [<ffffffff8105d7cd>] ? 
+tick_broadcast_oneshot_control+0x10d/0x110
+Nov 13 19:03:34 krabat kernel: [    1.259295]  [<ffffffff8105d05d>] ? 
+tick_notify+0x31d/0x440
+Nov 13 19:03:34 krabat kernel: [    1.259298]  [<ffffffff81055a37>] ? 
+notifier_call_chain+0x37/0x70
+Nov 13 19:03:34 krabat kernel: [    1.259299]  [<ffffffff8105c86b>] ? 
+clockevents_notify+0x2b/0x90
+Nov 13 19:03:34 krabat kernel: [    1.259303]  [<ffffffff812086b2>] ? 
+acpi_idle_enter_bm+0x15e/0x2cc
+Nov 13 19:03:34 krabat kernel: [    1.259306]  [<ffffffff8129727b>] ? 
+cpuidle_idle_call+0x9b/0x110
+Nov 13 19:03:34 krabat kernel: [    1.259308]  [<ffffffff8100a4dc>] ? 
+cpu_idle+0x5c/0xb0
+Nov 13 19:03:34 krabat kernel: [    1.259312] ---[ end trace 
+a8b94b9411d73a80 ]---
 
---Sig_/l+1ugFhP2WvcLvWvEZwAxHZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+(Here I have plugged in one of those discs)
 
-iQIcBAEBCAAGBQJK/d0sAAoJEDO4iEReSTB27oUQAMAJrOHK5GPQ1NnsMNVn1Sa2
-fo14jwjkXw1ucu+3NDklfiu/xxGAWYkh8txF+1biS6RxEflzFy4+UEy+Z9FmZ+Z8
-QUpBBEjZzNogkYDKWOGb5XjM/ryeEzyqxp2Fewzh8jkRrLwRSoFTHNpJyX7OL8pz
-OFpc/7fEJSC+Gte0YsZRCcqk1qsTDFtcoFKMdZ8YHqBDgxPZ1Zpa+Zrrnr4UXj9a
-bEw2BLzs6YOgNSPALrNqJowxiFRRcDgx2b4iDmk5fHhFDhqmrSjN1HPS7Z4tivGG
-h77vwAyNwbobO2GKgTIaweC2RIrt5fK8QNmYmQan9AEHn8TJDT4Jj5UJ4INFECly
-XjsWwE8VP/VG2lX85G3ZkdpjCNfOSZPE4SZBVgUCn9KGCZLtbWpYjRCljJbIFYxD
-VqS3jibMnAxRo96o4VBMOo3JuyBQuUjZPkURt6VocR6WZgUb8gducviXGsYcqz+T
-ngw4+uZAS754CsQ7FQcRuKsbXM/OQpUeFPeNTJN6ItqjZiF9u5tXYMJwPVNEF5Is
-3SrxDOh4/W1LyXs2P0WBHg3/uE/C9ziSiwM59U2qOpBEuTZYoWs9T6muoxnJkxTv
-yxdln4Ap0W1tO1HtaomuqvePK8PBgGzEvCtu/Lo/+F2DjMS1vkdCoQGQfRO4Ne0J
-stEp3vBUAWwwJj73yboJ
-=GFTJ
------END PGP SIGNATURE-----
+Nov 13 19:04:07 krabat kernel: [   55.344953] usb 9-7: new high speed 
+USB device using ehci_hcd and address 3
+Nov 13 19:04:07 krabat kernel: [   55.491513] usb 9-7: New USB device 
+found, idVendor=0bc2, idProduct=2100
+Nov 13 19:04:07 krabat kernel: [   55.491517] usb 9-7: New USB device 
+strings: Mfr=1, Product=2, SerialNumber=3
+Nov 13 19:04:07 krabat kernel: [   55.491521] usb 9-7: Product: FreeAgent Go
+Nov 13 19:04:07 krabat kernel: [   55.491523] usb 9-7: Manufacturer: Seagate
+Nov 13 19:04:07 krabat kernel: [   55.491525] usb 9-7: SerialNumber: 
+2GE1IXJ9
+Nov 13 19:04:07 krabat kernel: [   55.491661] usb 9-7: configuration #1 
+chosen from 1 choice
+Nov 13 19:04:07 krabat kernel: [   55.544762] Initializing USB Mass 
+Storage driver...
+Nov 13 19:04:07 krabat kernel: [   55.545011] scsi6 : SCSI emulation for 
+USB Mass Storage devices
+Nov 13 19:04:07 krabat kernel: [   55.545348] usbcore: registered new 
+interface driver usb-storage
+Nov 13 19:04:07 krabat kernel: [   55.545520] USB Mass Storage support 
+registered.
+Nov 13 19:04:12 krabat kernel: [   60.533824] scsi 6:0:0:0: 
+Direct-Access     Seagate  FreeAgent Go     102D PQ: 0 ANSI: 4
+Nov 13 19:04:12 krabat kernel: [   60.534036] sd 6:0:0:0: Attached scsi 
+generic sg1 type 0
+Nov 13 19:04:12 krabat kernel: [   60.535901] sd 6:0:0:0: [sdb] 
+976773168 512-byte logical blocks: (500 GB/465 GiB)
+Nov 13 19:04:12 krabat kernel: [   60.537208] sd 6:0:0:0: [sdb] Write 
+Protect is off
+Nov 13 19:04:12 krabat kernel: [   60.537216] sd 6:0:0:0: [sdb] Assuming 
+drive cache: write through
+Nov 13 19:04:12 krabat kernel: [   60.540517] sd 6:0:0:0: [sdb] Assuming 
+drive cache: write through
+Nov 13 19:04:12 krabat kernel: [   60.540521]  sdb:
+Nov 13 19:04:12 krabat kernel: [   60.778284]  sdb1 sdb2 sdb3
+Nov 13 19:04:12 krabat kernel: [   60.781552] sd 6:0:0:0: [sdb] Assuming 
+drive cache: write through
+Nov 13 19:04:12 krabat kernel: [   60.781557] sd 6:0:0:0: [sdb] Attached 
+SCSI disk
 
---Sig_/l+1ugFhP2WvcLvWvEZwAxHZ--
+...
+
+(And here comes the problem)
+
+Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed 
+USB device using ehci_hcd and address 3
+Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware 
+changed
+Nov 13 19:47:39 krabat kernel: [ 2661.120489] usb 9-7: USB disconnect, 
+address 3
+Nov 13 19:47:39 krabat kernel: [ 2661.120521] sd 6:0:0:0: Device 
+offlined - not ready after error recovery
+Nov 13 19:47:39 krabat kernel: [ 2661.120528] sd 6:0:0:0: [sdb] 
+Unhandled error code
+Nov 13 19:47:39 krabat kernel: [ 2661.120531] sd 6:0:0:0: [sdb] Result: 
+hostbyte=DID_ABORT driverbyte=DRIVER_OK
+Nov 13 19:47:39 krabat kernel: [ 2661.120536] sd 6:0:0:0: [sdb] CDB: 
+Read(10): 28 00 03 04 7b da 00 00 10 00
+Nov 13 19:47:39 krabat kernel: [ 2661.120546] end_request: I/O error, 
+dev sdb, sector 50625498
+Nov 13 19:47:39 krabat kernel: [ 2661.120555] sd 6:0:0:0: rejecting I/O 
+to offline device
+Nov 13 19:47:39 krabat kernel: [ 2661.120584] sd 6:0:0:0: [sdb] 
+Unhandled error code
+Nov 13 19:47:39 krabat kernel: [ 2661.120587] sd 6:0:0:0: [sdb] Result: 
+hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
+Nov 13 19:47:39 krabat kernel: [ 2661.120593] sd 6:0:0:0: [sdb] CDB: 
+Read(10): 28 00 03 04 7b ea 00 00 f0 00
+Nov 13 19:47:39 krabat kernel: [ 2661.120641] end_request: I/O error, 
+dev sdb, sector 50625514
+Nov 13 19:47:40 krabat kernel: [ 2661.371696] usb 9-7: new high speed 
+USB device using ehci_hcd and address 5
+Nov 13 19:47:41 krabat kernel: [ 2662.329564] EXT4-fs error (device 
+dm-0): __ext4_get_inode_loc: unable to read inode block - inode=3250, 
+block=1260
+Nov 13 19:47:43 krabat kernel: [ 2664.658446] EXT4-fs error (device 
+dm-0): __ext4_get_inode_loc: unable to read inode block - inode=7078109, 
+block=28311597
+Nov 13 19:47:44 krabat kernel: [ 2665.259794] __ratelimit: 126 callbacks 
+suppressed
+...
+-------------------------------------------------------------------------
+
+If someone needs a full log, logs with some debugging options turned on, 
+or has some patches for me to test, just send me a mail.
+
+Kind regards,
+
+Alexander Holler
