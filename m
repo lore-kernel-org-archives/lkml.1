@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZKMVew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZKMVgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZKMVew (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 16:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZKMVeq
+	id S1755560AbZKMVgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 16:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZKMVgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 16:34:46 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:55728 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbZKMVep (ORCPT
+	Fri, 13 Nov 2009 16:36:05 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:59900 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754361AbZKMVgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 16:34:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=exEhneIWEU7nRDP3HxIzY6ahfa4ZrGKBsK3v6GIZThwlFI1ZbxXd5gPL5mvER7euQG
-         IDZ/tkwTg7g1qVMf03jquSl0EirkUmdmQiQMWuDEiW8BL1EiFaZISFKI5UvqMhBAG+Nm
-         jLRvzNNdLe+Fjl7UY4dI7cAqOlx9wmzWuKYv0=
-Message-ID: <4AFDD0EF.7000809@lwfinger.net>
-Date: Fri, 13 Nov 2009 15:34:39 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Michael Buesch <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
+	Fri, 13 Nov 2009 16:36:04 -0500
+Date: Fri, 13 Nov 2009 16:36:02 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: zheng.yan@oracle.com, linux-btrfs@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 64-bit DMA problems with BCM4312 using b43
-References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org> <200911132144.24110.mb@bu3sch.de> <4AFDCA0E.4080007@lwfinger.net> <20091113211306.GA6600@srcf.ucam.org>
-In-Reply-To: <20091113211306.GA6600@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: BTRFS: unreachable code found
+Message-ID: <20091113213602.GF11332@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jiri Slaby <jirislaby@gmail.com>, zheng.yan@oracle.com,
+	linux-btrfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <4AFD35DB.6050604@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AFD35DB.6050604@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AFDD145.00FB:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/13/2009 03:13 PM, Matthew Garrett wrote:
-> On Fri, Nov 13, 2009 at 03:05:18PM -0600, Larry Finger wrote:
+On Fri, Nov 13, 2009 at 11:32:59AM +0100, Jiri Slaby wrote:
+> Hi,
 > 
->> I'm in the process of creating a patch to set the latency to 200 usec. The
->> default is 2000. On my fast prosessors, it should not be anything nearly that
->> slow. If we determine this to be the problem, then we can try tuning.
-> 
-> The latency is the amount of time it takes to get out of deep C states 
-> and into C0. That's a function of the processor design rather than the 
-> frequency.
+> Stanse found unreachable code in btrfs_insert_some_items below (don't
+> look at the line numbers, they are on preprocessed code). I would fix
+> that if I knew how.
 
-Thanks for that info. I should have said my Turion 64 X2 is different.
+It turns out the entire function isn't used anymore.  We can safely
+delete it.
 
-Larry
+-chris
