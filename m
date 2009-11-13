@@ -1,96 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZKMJ0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZKMJ3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZKMJ0l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZKMJ0d
+	id S1755169AbZKMJ3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZKMJ3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:26:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47921 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Nov 2009 04:29:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33414 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755483AbZKMJ0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:26:32 -0500
-Date: Fri, 13 Nov 2009 10:26:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Subject: Re: [PATCH] tracing: Rename lockdep event subsystem into lock
-Message-ID: <20091113092612.GA26185@elte.hu>
-References: <20091113085123.GA1318@elte.hu>
- <1258103194-843-1-git-send-email-fweisbec@gmail.com>
- <1258103409.4039.1079.camel@laptop>
+	id S1754730AbZKMJ32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:29:28 -0500
+Message-ID: <4AFD26F5.809@kernel.org>
+Date: Fri, 13 Nov 2009 18:29:25 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258103409.4039.1079.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2.6.32-rc6] workqueue: fix race condition in schedule_on_each_cpu()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 65a64464349883891e21e74af16c05d6e1eeb4e9 which allows
+schedule_on_each_cpu() to be called from keventd added a race
+condition.  schedule_on_each_cpu() may race with cpu hotplug and end
+up executing the function twice on a cpu.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Fix it by moving direct execution into the section protected with
+get/put_online_cpus().  While at it, update code such that direct
+execution is done after works have been scheduled for all other cpus
+and drop unnecessary cpu != orig test from flush loop.
 
-> On Fri, 2009-11-13 at 10:06 +0100, Frederic Weisbecker wrote:
-> > Lockdep events subsystem gathers various locking related events such
-> > as a request, release, contention or acquisition of a lock.
-> > 
-> > The name of this event subsystem is a bit of a misnomer since these 
-> > events are not quite related to lockdep but more generally to 
-> > locking, ie: these events are not reporting lock dependencies or 
-> > possible deadlock scenario but pure locking events.
-> 
-> But in order to get them you need pretty much all of lockdep, except 
-> PROVE_LOCKING. You get all the lock debugging, the lock tracking, the 
-> struct dep_map bloat etc.
-> 
-> But sure, I don't mind renaming the category.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+---
+Andi, Oleg, this patch tested fine on my machine but it would be great
+if you guys can ack it.  Ingo, upon ack, can you please route this
+patch?
 
-Yeah, i'd prefer it this way. You are right that most of lockdep.o is 
-still there, but most of the lockdep _overhead_ shouldnt be there - no 
-hashing, no tracking, etc.
+Thanks.
 
-it's still nonzero - see 'perf top' of a hackbench session, with 
-LOCK_STAT enabled and PROVE_LOCKING disabled:
+ kernel/workqueue.c |   28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
 
-------------------------------------------------------------------------------
-   PerfTop:   14059 irqs/sec  kernel:99.8% [1000Hz cycles],  (all, 16 CPUs)
-------------------------------------------------------------------------------
-
-             samples  pcnt function                                 DSO
-             _______ _____ ________________________________ ________________
-
-             7320.00  7.9% sched_clock_local                [kernel]
-             7217.00  7.8% lock_acquired                    [kernel]
-             5768.00  6.2% trace_hardirqs_off               [kernel]
-             4562.00  4.9% __lock_acquire                   [kernel]
-             4304.00  4.6% lock_release                     [kernel]
-             3838.00  4.1% lock_acquire                     [kernel]
-             3833.00  4.1% look_up_lock_class               [kernel]
-             3561.00  3.8% cpu_clock                        [kernel]
-             3283.00  3.5% start_critical_timing            [kernel]
-             2992.00  3.2% __alloc_skb                      [kernel]
-             2680.00  2.9% acpi_pm_read                     [kernel]
-             2498.00  2.7% sched_clock                      [kernel]
-             2409.00  2.6% copy_user_generic_string         [kernel]
-             2016.00  2.2% lock_release_holdtime            [kernel]
-             1899.00  2.0% sched_clock_cpu                  [kernel]
-
-but i think those should be gradually eliminated and improved, as lock 
-statistics could become a quite popular thing.
-
-If the tracepoints are named 'lock', people will expect less overhead, 
-and might end up fixing/improving it. If it's named 'lockdep' on the 
-other hand, the expectation is higher overhead.
-
-	Ingo
+Index: work/kernel/workqueue.c
+===================================================================
+--- work.orig/kernel/workqueue.c
++++ work/kernel/workqueue.c
+@@ -692,31 +692,29 @@ int schedule_on_each_cpu(work_func_t fun
+ 	if (!works)
+ 		return -ENOMEM;
+ 
++	get_online_cpus();
++
+ 	/*
+-	 * when running in keventd don't schedule a work item on itself.
+-	 * Can just call directly because the work queue is already bound.
+-	 * This also is faster.
+-	 * Make this a generic parameter for other workqueues?
++	 * When running in keventd don't schedule a work item on
++	 * itself.  Can just call directly because the work queue is
++	 * already bound.  This also is faster.
+ 	 */
+-	if (current_is_keventd()) {
++	if (current_is_keventd())
+ 		orig = raw_smp_processor_id();
+-		INIT_WORK(per_cpu_ptr(works, orig), func);
+-		func(per_cpu_ptr(works, orig));
+-	}
+ 
+-	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+ 		struct work_struct *work = per_cpu_ptr(works, cpu);
+ 
+-		if (cpu == orig)
+-			continue;
+ 		INIT_WORK(work, func);
+-		schedule_work_on(cpu, work);
+-	}
+-	for_each_online_cpu(cpu) {
+ 		if (cpu != orig)
+-			flush_work(per_cpu_ptr(works, cpu));
++			schedule_work_on(cpu, work);
+ 	}
++	if (orig >= 0)
++		func(per_cpu_ptr(works, orig));
++
++	for_each_online_cpu(cpu)
++		flush_work(per_cpu_ptr(works, cpu));
++
+ 	put_online_cpus();
+ 	free_percpu(works);
+ 	return 0;
