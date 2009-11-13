@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbZKMR6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZKMSAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756522AbZKMR6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbZKMR6R
+	id S1756270AbZKMSAP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 13:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZKMSAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:58:17 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:43112 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754828AbZKMR6R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:58:17 -0500
-Message-ID: <4AFD9E3A.6070801@canonical.com>
-Date: Fri, 13 Nov 2009 09:58:18 -0800
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 13 Nov 2009 13:00:12 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:39496 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751917AbZKMSAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 13:00:11 -0500
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: "David S. Miller" <davem@redhat.com>
+Subject: [PATCH]remove deprecated and not used: print_mac()
+Date: Fri, 13 Nov 2009 19:58:41 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.32-rc7; KDE/4.2.4; x86_64; ; )
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor #3 0/12] AppArmor security module
-References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com> <20091113094425.5b4c553b@s6510>
-In-Reply-To: <20091113094425.5b4c553b@s6510>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911131958.42263.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> On Tue, 10 Nov 2009 08:12:53 -0800
-> John Johansen <john.johansen@canonical.com> wrote:
-> 
->> This is the newest version of the AppArmor security module it has been
->> rewritten to use the security_path hooks instead of the previous vfs
->> approach.  The current implementation is aimed at being as semantically
->> close to previous versions of AppArmor as possible while using the
->> existing LSM infrastructure.
-> 
-> Does it fix the problem reported as the #1 failure on kernel oops:
-> 
-> Oops 718946 first showed up in kernel version 2.6.31-14-generic
-> Oops 718946 last showed up in version 2.6.31-13-generic
-> 2.6.31 -- 512
+Hi all,
 
-yes, and several others oops as well.  I have also identified a couple other
-oops that will have fixes in push #4.
+The function print_mac in net/ethernet/eth.c is marked __deprecated
+and not used. Remove it.
 
-thanks
-john
+The patch is against 2.6.32-rc7.
+
+Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+
+=====================================================================
+--- a/include/linux/if_ether.h	2009-11-13 19:16:15.000000000 +0200
++++ b/include/linux/if_ether.h	2009-11-13 19:18:25.000000000 +0200
+@@ -136,10 +136,6 @@
+ 
+ extern ssize_t sysfs_format_mac(char *buf, const unsigned char *addr, int len);
+ 
+-/*
+- *	Display a 6 byte device address (MAC) in a readable format.
+- */
+-extern char *print_mac(char *buf, const unsigned char *addr) __deprecated;
+ #define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
+ #define MAC_BUF_SIZE	18
+ #define DECLARE_MAC_BUF(var) char var[MAC_BUF_SIZE]
+
+--- a/net/ethernet/eth.c	2009-11-13 19:16:30.000000000 +0200
++++ b/net/ethernet/eth.c	2009-11-13 19:20:31.000000000 +0200
+@@ -393,10 +393,3 @@
+ 	return ((ssize_t) l);
+ }
+ EXPORT_SYMBOL(sysfs_format_mac);
+-
+-char *print_mac(char *buf, const unsigned char *addr)
+-{
+-	_format_mac_addr(buf, MAC_BUF_SIZE, addr, ETH_ALEN);
+-	return buf;
+-}
+-EXPORT_SYMBOL(print_mac);
