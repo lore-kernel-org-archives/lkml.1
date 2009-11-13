@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZKML4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZKML7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbZKML4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 06:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbZKML4T
+	id S1755331AbZKML7s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 06:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZKML7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 06:56:19 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:54273 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753854AbZKML4S convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;5:1>);
-	Fri, 13 Nov 2009 06:56:18 -0500
-Message-Id: <4AFD5778020000780001F8F4@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 13 Nov 2009 11:56:24 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, <v.mayatskih@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86-64: __copy_from_user_inatomic() adjustments
+	Fri, 13 Nov 2009 06:59:46 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:1260 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754466AbZKML7p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 06:59:45 -0500
+Date: Fri, 13 Nov 2009 12:59:46 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: dedekind1@gmail.com
+Cc: David VomLehn <dvomlehn@cisco.com>,
+       Marco Stornelli <marco.stornelli@gmail.com>,
+       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com,
+       "Shargorodsky Atal (EXT-Teleca/Helsinki)" 
+	<ext-atal.shargorodsky@nokia.com>
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+Message-ID: <20091113125946.5353164c@marrow.netinsight.se>
+In-Reply-To: <1258112748.21596.1227.camel@localhost>
+References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
+	<4AFC4D31.2000101@gmail.com>
+	<20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
+	<20091113091031.3f6d4bba@marrow.netinsight.se>
+	<1258112748.21596.1227.camel@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ad2fc2cd925300b8127cf682f5a1c7511ae9dd27 rendered
-__copy_from_user_inatomic() identical to copy_user_generic(), yet
-didn't make the former just call the latter from an inline function.
+(Also fix David Woodhouses address and add Atal)
 
-Commit b885808e185a4ec2dfe16c84434f79e95f0245b0 converted the return
-type of __copy_to_user_inatomic() from unsigned long to int, but didn't
-do the same to __copy_from_user_inatomic()
+On Fri, 13 Nov 2009 13:45:48 +0200
+Artem Bityutskiy <dedekind1@gmail.com> wrote:
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+> So we really need to print some user-space supplied information during
+> the panic, and then we store it on flash with mtdoops, and the later,
+> when the device has network access we send whole bunch of oopses via the
+> network.
 
----
- arch/x86/include/asm/uaccess_64.h |    7 +++++--
- arch/x86/kernel/x8664_ksyms_64.c  |    1 -
- arch/x86/lib/copy_user_64.S       |    6 ------
- 3 files changed, 5 insertions(+), 9 deletions(-)
+Yes, I see that your case would have to be handled differently. A
+complication (which I believe was discussed before) is that kmsg_dump()
+is done before the panic notifiers are called.
 
---- linux-2.6.32-rc7/arch/x86/include/asm/uaccess_64.h	2009-09-10 00:13:59.000000000 +0200
-+++ 2.6.32-rc7-x86_64-copy_from_user_inatomic/arch/x86/include/asm/uaccess_64.h	2009-11-10 13:54:10.000000000 +0100
-@@ -176,8 +176,11 @@ __must_check long strlen_user(const char
- __must_check unsigned long clear_user(void __user *mem, unsigned long len);
- __must_check unsigned long __clear_user(void __user *mem, unsigned long len);
- 
--__must_check long __copy_from_user_inatomic(void *dst, const void __user *src,
--					    unsigned size);
-+static __must_check __always_inline int
-+__copy_from_user_inatomic(void *dst, const void __user *src, unsigned size)
-+{
-+	return copy_user_generic(dst, (__force const void *)src, size);
-+}
- 
- static __must_check __always_inline int
- __copy_to_user_inatomic(void __user *dst, const void *src, unsigned size)
---- linux-2.6.32-rc7/arch/x86/kernel/x8664_ksyms_64.c	2009-06-10 05:05:27.000000000 +0200
-+++ 2.6.32-rc7-x86_64-copy_from_user_inatomic/arch/x86/kernel/x8664_ksyms_64.c	2009-11-10 12:47:22.000000000 +0100
-@@ -32,7 +32,6 @@ EXPORT_SYMBOL(copy_user_generic);
- EXPORT_SYMBOL(__copy_user_nocache);
- EXPORT_SYMBOL(copy_from_user);
- EXPORT_SYMBOL(copy_to_user);
--EXPORT_SYMBOL(__copy_from_user_inatomic);
- 
- EXPORT_SYMBOL(copy_page);
- EXPORT_SYMBOL(clear_page);
---- linux-2.6.32-rc7/arch/x86/lib/copy_user_64.S	2009-09-10 00:13:59.000000000 +0200
-+++ 2.6.32-rc7-x86_64-copy_from_user_inatomic/arch/x86/lib/copy_user_64.S	2009-11-10 12:43:14.000000000 +0100
-@@ -96,12 +96,6 @@ ENTRY(copy_user_generic)
- 	CFI_ENDPROC
- ENDPROC(copy_user_generic)
- 
--ENTRY(__copy_from_user_inatomic)
--	CFI_STARTPROC
--	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
--	CFI_ENDPROC
--ENDPROC(__copy_from_user_inatomic)
--
- 	.section .fixup,"ax"
- 	/* must zero dest */
- ENTRY(bad_from_user)
+The reason I put it there is to have it before crash_kexec(), so I
+guess we'll have to take up the discussion on what to do with it. For
+me it now seems like it would be OK to move kmsg_dump() down below the
+panic notifiers.
 
+If you have a kdump kernel to load, then you will most likely not need
+the kmsg dumped data anyway.
 
-
+// Simon
