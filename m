@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbZKMVQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbZKMVUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932416AbZKMVQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 16:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbZKMVQo
+	id S1757041AbZKMVUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 16:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZKMVUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 16:16:44 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:60140 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932236AbZKMVQn (ORCPT
+	Fri, 13 Nov 2009 16:20:15 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33611 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755525AbZKMVUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 16:16:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Wj7REzL77VCSV9ji+lSuA1hstwEnjaeNF9cc/8PO+hsz22gF095AP2Lnp8vIuJza+K
-         TqQfUKLrE+dvERj9c5jsZb3cJQVUhMhIZRIRPbCKr7qrs9E/o0EmLiIzQkb/CPGuNMSa
-         BmF3x/aEqUZU6NdbeZe8tk8MSN3HX8lWWG9RM=
-Date: Fri, 13 Nov 2009 22:16:40 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091113211640.GA2540@ami.dom.local>
-References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>
- <20091112113836.GA7963@ff.dom.local>
- <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com>
- <4AFC5C58.9030207@gmail.com>
- <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 13 Nov 2009 16:20:14 -0500
+Date: Fri, 13 Nov 2009 21:21:48 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091113212148.5cb829d4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091113192412.GY15157@caffeine.csclub.uwaterloo.ca>
+References: <20091003072127.GC21407@elte.hu>
+	<40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
+	<4AF4526B.4060101@zytor.com>
+	<40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
+	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
+	<4AF886D4.1080108@zytor.com>
+	<20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
+	<20091112121805.GF1394@ucw.cz>
+	<20091113162301.GU15157@caffeine.csclub.uwaterloo.ca>
+	<20091113165730.0b9b2676@lxorguk.ukuu.org.uk>
+	<20091113192412.GY15157@caffeine.csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 11:25:25AM -0500, Caleb Cushing wrote:
-> > So I assume it's your only network device on this box and according
-> > to these reports it's 192.168.1.3 with 192.168.1.1 as the gateway,
-> > and your only change is kernel on this 192.168.1.3 box, right?
+> > Which usually means some form of write gathering is enabled or something
+> > thinks the device is write combining on the PCI bus. What does the PCI
+> > bus and the RCRR MTRR set look like ?
 > 
-> yes, and semi obviously that router is my box (LinkSys wrt 54gl
-> openwrt kamikaze 8.09.1.
-> 
-> > Since the loss is seen on the first hop already, it seems it should be
-> > enough to query 192.168.1.1 only - did you try this? If so, does this
-> > happen from the beginning of the test or after many loops? Could you
-> > try to repeat this wireshark dump with more data than before (but just
-> > to be sure there are a few unanswered pings). If possible it would be
-> > nice to have wireshark or tcpdump data from 192.168.1.1 too, while
-> > pinged from 192.168.1.3. Please, send it gzipped to bugzilla only plus
-> > ifconfig eth0 before and after the test (and let us know here).
-> 
-> same bug? or new bug? I can see what I can do to get a tcpdump from
-> the router.  yes I tried that, I can tell within the first 10 pings. I
-> should say I don't notice it on every kernel boot, it's ~80% of
-> reboots (but that's pulled from my behind). but I haven't noticed it
-> on gfa31221 at all. it's reproducible in 31.6 too (arch just added
-> that).
+> Well there is no /proc/mtrr.
 
-Might be the same bugzilla report, I guess. We need to establish if
-these pings reach 192.168.1.1, so a short test and tcpdump without any
-special options just to get a few lost cases as seen on both sides.
-(And ifconfigs before and after the test.)
-
-Btw, could you check with lsmod if usbserial module is loaded before
-this test? I'd like to verify this git bisection result. (If the
-module is loaded or you have CONFIG_USB_SERIAL=y instead of m, try to
-recompile the kernel with this option turned off, for this test.)
-
-Thanks,
-Jarek P.
+Linux doesn't have an RCRR driver - so you need to dump the MSRs directly
+(see the Geode GX manual MSR list) and read out the msrs.
