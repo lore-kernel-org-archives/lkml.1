@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZKMS0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbZKMScp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZKMS0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 13:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbZKMS02
+	id S1756155AbZKMScp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 13:32:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZKMSck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 13:26:28 -0500
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:59428 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756786AbZKMS0Y convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 13:26:24 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met
-Date: Fri, 13 Nov 2009 19:26:21 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie>
-In-Reply-To: <20091113181557.GM29804@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200911131926.25291.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Nov 2009 18:26:25.0283 (UTC) FILETIME=[CEE68D30:01CA648E]
+	Fri, 13 Nov 2009 13:32:40 -0500
+Received: from mga02.intel.com ([134.134.136.20]:2434 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752528AbZKMSck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 13:32:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,738,1249282800"; 
+   d="scan'208";a="569306772"
+Subject: RE: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
+ hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, john stultz <johnstul@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain>
+References: <alpine.DEB.2.00.0911080932590.4556@p34.internal.lan>
+	 <20091111195016.GB22225@redhat.com>
+	 <alpine.DEB.2.00.0911111608020.5456@p34.internal.lan>
+	 <alpine.DEB.2.00.0911121120330.6976@p34.internal.lan>
+	 <alpine.DEB.2.00.0911121127500.6976@p34.internal.lan>
+	 <1f1b08da0911121513l32d47b4x8b9722ad3440ceb6@mail.gmail.com>
+	 <alpine.DEB.2.00.0911121824290.2852@p34.internal.lan>
+	 <1258069232.14894.9.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain>
+	 <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan>
+	 <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>
+	 <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 13 Nov 2009 10:32:45 -0800
+Message-Id: <1258137165.21141.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 November 2009, Mel Gorman wrote:
-> If reclaim fails to make sufficient progress, the priority is raised.
-> Once the priority is higher, kswapd starts waiting on congestion.
->  However, if the zone is below the min watermark then kswapd needs to
-> continue working without delay as there is a danger of an increased rate
-> of GFP_ATOMIC allocation failure.
->
-> This patch changes the conditions under which kswapd waits on
-> congestion by only going to sleep if the min watermarks are being met.
->
-> This patch replaces
-> vmscan-take-order-into-consideration-when-deciding-if-kswapd-is-in-troub
->le.patch .
->
-> [mel@csn.ul.ie: Add stats to track how relevant the logic is]
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+On Fri, 2009-11-13 at 01:38 -0800, Thomas Gleixner wrote:
+> On Thu, 12 Nov 2009, Pallipadi, Venkatesh wrote:
+> > Yes. Yes. This is a hardware errata. I have a patch to workaround this and
+> > waiting on the errata description to get published..
+> 
+> Can we at least have some PCI quirk or whatever until you can push the
+> final workaround out so peoples machines do not explode ?
 
-For this to work with git-am, the From: line has to be _above_ the patch 
-description (must be the first line of the mail even). AFAIK at least.
+Its a harmless bug functionality-wise and should not have any side
+effect other than triggering the WARN_ON_ONCE in hpet next event code.
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Thanks,
+Venki
 
-Cheers,
-FJP
