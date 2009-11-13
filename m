@@ -1,45 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZKMKtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZKMKvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZKMKtK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZKMKtH
+	id S932139AbZKMKvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932088AbZKMKvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:49:07 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51239 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756040AbZKMKtF (ORCPT
+	Fri, 13 Nov 2009 05:51:20 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:31529 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932082AbZKMKvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:49:05 -0500
-Date: Fri, 13 Nov 2009 10:50:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Matteo Croce <technoboy85@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091113105039.6d438101@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091112121805.GF1394@ucw.cz>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
-	<20091003072127.GC21407@elte.hu>
-	<40101cc30911060659k7b3b6428ob1340e476bdbac5b@mail.gmail.com>
-	<4AF4526B.4060101@zytor.com>
-	<40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
-	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
-	<4AF886D4.1080108@zytor.com>
-	<20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
-	<20091112121805.GF1394@ucw.cz>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Nov 2009 05:51:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Qy4h+qPxLTkcMRztTaFOIQQUrsBuQ8WrZ7+tLAVjniB8SkI7isiSPm8E6CugUKIUU2
+         FkTQoU4fE8i4D9mWaekEar6HcSn2C/ZXPrFNP0Z8EhyI7/CjGYO2WDmmjLmJ5XqIuVOx
+         mA+RbV0QkkUSeXMNBG/zR8S+Di9csPDHSOWVY=
+Date: Fri, 13 Nov 2009 11:51:27 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Measuring term of acquiring spinlock
+Message-ID: <20091113105126.GC5243@nowhere>
+References: <20091112.154353.680961628170545165.mitake@dcl.info.waseda.ac.jp> <20091112073909.GB31719@elte.hu> <20091113.132125.468378199533086916.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091113.132125.468378199533086916.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Interesting...geode gx being buggy? I know pentium was famous for the
-> fdiv bug, but never heard of geode gx problems...
+On Fri, Nov 13, 2009 at 01:21:25PM +0900, Hitoshi Mitake wrote:
+> > Might make sense to put it into 'perf lock' kind of tool. I think 
+> > Frederic had such plans.
+> 
+> If you want a tester for 'perf lock', please call me, Frederic :)
 
-Depends which one - the older ones were very solid. The very first (5510)
-had some interesting bugs but they were fairly soon stomped.
 
-Alan
+Thanks :)
+I haven't started it yet, because of some other things I need to finish.
+
+Would you be interested in starting it?
+
+The lock tracepoints are:
+
+- lock_acquire: the lock is requested but not yet "acquired"
+- lock_release
+- lock_contended: we can't get the lock yet because someone already
+  holds it.
+- lock_acquired: we got the lock
+
+
+So, the point would be to develop a state machine that is
+able to give us statistics on a per lock granularity
+basis:
+
+
+- the total/average/maximum time a lock is contended,
+  waited before being acquired (probably
+  lock_acquired time - lock_acquire time)
+
+- the ratio of contention versus immediate availability
+  => Sequence acquire - acquired means immediate
+     availability. If we have a contended event inside
+     it means it had to wait because of the contention.
+
+- the total/average/maximum time a lock is held.
+  It would be very nice to also add an option to see the
+  callsites sorted from max to min, if possible with a per
+  boundary granularity: the couple (lock callsite, unlock callsite),
+  still on a per lock basis.
+
+- any idea you could have...
+
+
+Such a tool would be very useful to profile the kernel locking.
+
+It would be nice to use design close to what perf sched does:
+having an lock event structure that provides callbacks for each
+lock events so that we can easily plug various plugin inside.
+
+It's just a suggestion in case you are interested and have time
+for that. Otherwise I'll do it later.
+
+Hm?
+
+Thanks,
+	Frederic.
+
