@@ -1,96 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZKMPKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZKMPOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbZKMPKo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbZKMPKi
+	id S1756598AbZKMPOc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 10:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZKMPKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:10:38 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:41614 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756195AbZKMPJJ (ORCPT
+	Fri, 13 Nov 2009 10:10:35 -0500
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:44521 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756200AbZKMPJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Nov 2009 10:09:09 -0500
-Message-Id: <20091113150917.146610745@de.ibm.com>
+Message-Id: <20091113150917.346507094@de.ibm.com>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Nov 2009 16:09:08 +0100
+Date: Fri, 13 Nov 2009 16:09:09 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Sebastian Ott <sebott@linux.vnet.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 44/52] [PATCH] cio: remove registered flag from ccw_device_private
+Subject: [patch 45/52] [PATCH] cio: add per device initialization status flag
 References: <20091113150824.351347652@de.ibm.com>
-Content-Disposition: inline; filename=143-cio-rm-registered-flag.diff
+Content-Disposition: inline; filename=144-cio-device-init-flag.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sebastian Ott <sebott@linux.vnet.ibm.com>
 
-We used to maintain a "registered" flag in our ccw_device_private
-structure. This patch removes the "registered" flag and converts
-all users of it to device_is_registered which has the exact same
-meaning.
-
-Note: The usage the atomic operation test_and_clear_bit is replaced
-by the non-atomic if (device_is_registered()) device_del(). This
-will not do harm, since we serialize calls to ccw_device_unregister
-with a single-threaded workqueue.
+The function ccw_device_unregister has to ensure to remove
+all references obtained by device_add and device_initialize.
+Unfortunately it gets called for devices which are
+1) uninitialized, 2) initialized but unregistered, and
+3) registered devices. To distinguish 1) and 2) this patch
+introduces a new flag "initialized", which is 1 as long as we
+hold the initial device reference.
 
 Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/cio/device.c |   11 +++--------
- drivers/s390/cio/io_sch.h |    1 -
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ drivers/s390/cio/device.c |    6 ++++++
+ drivers/s390/cio/io_sch.h |    1 +
+ 2 files changed, 7 insertions(+)
 
 Index: quilt-2.6/drivers/s390/cio/device.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device.c	2009-11-13 16:08:20.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/device.c	2009-11-13 16:08:21.000000000 +0100
-@@ -303,7 +303,7 @@
- 
+--- quilt-2.6.orig/drivers/s390/cio/device.c	2009-11-13 16:08:21.000000000 +0100
++++ quilt-2.6/drivers/s390/cio/device.c	2009-11-13 16:08:22.000000000 +0100
+@@ -304,7 +304,11 @@
  static void ccw_device_unregister(struct ccw_device *cdev)
  {
--	if (test_and_clear_bit(1, &cdev->private->registered)) {
-+	if (device_is_registered(&cdev->dev)) {
+ 	if (device_is_registered(&cdev->dev)) {
++		/* Undo device_add(). */
  		device_del(&cdev->dev);
++	}
++	if (cdev->private->flags.initialized) {
++		cdev->private->flags.initialized = 0;
  		/* Release reference from device_initialize(). */
  		put_device(&cdev->dev);
-@@ -640,12 +640,7 @@
- 			   cdev->private->dev_id.devno);
- 	if (ret)
- 		return ret;
--	ret = device_add(dev);
--	if (ret)
--		return ret;
--
--	set_bit(1, &cdev->private->registered);
--	return ret;
-+	return device_add(dev);
+ 	}
+@@ -716,6 +720,7 @@
+ 		put_device(&cdev->dev);
+ 		return -ENODEV;
+ 	}
++	cdev->private->flags.initialized = 1;
+ 	return 0;
  }
  
- static int match_dev_id(struct device *dev, void *data)
-@@ -669,7 +664,7 @@
- {
- 	int ret;
- 
--	if (test_bit(1, &cdev->private->registered)) {
-+	if (device_is_registered(&cdev->dev)) {
- 		device_release_driver(&cdev->dev);
- 		ret = device_attach(&cdev->dev);
- 		WARN_ON(ret == -ENODEV);
+@@ -998,6 +1003,7 @@
+ 		cdev = sch_get_cdev(sch);
+ 		cdev->dev.groups = ccwdev_attr_groups;
+ 		device_initialize(&cdev->dev);
++		cdev->private->flags.initialized = 1;
+ 		ccw_device_register(cdev);
+ 		/*
+ 		 * Check if the device is already online. If it is
 Index: quilt-2.6/drivers/s390/cio/io_sch.h
 ===================================================================
 --- quilt-2.6.orig/drivers/s390/cio/io_sch.h	2009-11-13 16:08:21.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/io_sch.h	2009-11-13 16:08:21.000000000 +0100
-@@ -145,7 +145,6 @@
- 	struct subchannel *sch;
- 	int state;		/* device state */
- 	atomic_t onoff;
--	unsigned long registered;
- 	struct ccw_dev_id dev_id;	/* device id */
- 	struct subchannel_id schid;	/* subchannel number */
- 	struct ccw_request req;		/* internal I/O request */
++++ quilt-2.6/drivers/s390/cio/io_sch.h	2009-11-13 16:08:22.000000000 +0100
+@@ -167,6 +167,7 @@
+ 		unsigned int resuming:1;    /* recognition while resume */
+ 		unsigned int pgroup:1;	    /* pathgroup is set up */
+ 		unsigned int mpath:1;	    /* multipathing is set up */
++		unsigned int initialized:1; /* set if initial reference held */
+ 	} __attribute__((packed)) flags;
+ 	unsigned long intparm;	/* user interruption parameter */
+ 	struct qdio_irq *qdio_data;
 
