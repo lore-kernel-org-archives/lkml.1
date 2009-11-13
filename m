@@ -1,232 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZKMRes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZKMRoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZKMRes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 12:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZKMRep
+	id S1754812AbZKMRoH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 12:44:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbZKMRkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 12:34:45 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:45148 "EHLO gir.skynet.ie"
+	Fri, 13 Nov 2009 12:40:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24482 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbZKMReo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 12:34:44 -0500
-Date: Fri, 13 Nov 2009 17:34:46 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] make crypto unplug fix V3
-Message-ID: <20091113173446.GL29804@csn.ul.ie>
-References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie> <20091112202748.GC2811@think> <20091112220005.GD2811@think> <20091113024642.GA7771@think> <20091113125812.GB7891@think>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091113125812.GB7891@think>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1754660AbZKMRkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 12:40:43 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, vgoyal@redhat.com, akpm@linux-foundation.org,
+       riel@redhat.com, kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
+Subject: [RFC] Block IO Controller V3
+Date: Fri, 13 Nov 2009 12:39:59 -0500
+Message-Id: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 07:58:12AM -0500, Chris Mason wrote:
-> This is still likely to set your dm data on fire.  It is only meant for
-> testers that start with mkfs and don't have any valuable dm data.
-> 
+Hi Jens,
 
-The good news is that my room remains fire-free. Despite swap also
-running from dm-crypt, I had no corruption or instability issues.
+This is V3 of the Block IO controller patches on top of "for-2.6.33" branch
+of block tree.
 
-Here is an updated set of results for fake-gitk running.
+A consolidated patch can be found here:
 
-X86
-2.6.30-0000000-force-highorder           Elapsed:12:08.908    Failures:0
-2.6.31-0000000-force-highorder           Elapsed:10:56.283    Failures:0
-2.6.31-0000006-dm-crypt-unplug           Elapsed:11:51.653    Failures:0
-2.6.31-0000012-pgalloc-2.6.30            Elapsed:12:26.587    Failures:0
-2.6.31-0000123-congestion-both           Elapsed:10:55.298    Failures:0
-2.6.31-0001234-kswapd-quick-recheck      Elapsed:18:01.523    Failures:0
-2.6.31-0123456-dm-crypt-unplug           Elapsed:10:45.720    Failures:0
-2.6.31-revert-8aa7e847                   Elapsed:15:08.020    Failures:0
-2.6.32-rc6-0000000-force-highorder       Elapsed:16:20.765    Failures:4
-2.6.32-rc6-0000006-dm-crypt-unplug       Elapsed:13:42.920    Failures:0
-2.6.32-rc6-0000012-pgalloc-2.6.30        Elapsed:16:13.380    Failures:1
-2.6.32-rc6-0000123-congestion-both       Elapsed:18:39.118    Failures:0
-2.6.32-rc6-0001234-kswapd-quick-recheck  Elapsed:15:04.398    Failures:0
-2.6.32-rc6-0123456-dm-crypt-unplug       Elapsed:12:50.438    Failures:0
-2.6.32-rc6-revert-8aa7e847               Elapsed:20:50.888    Failures:0
+http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v3.patch
 
-X86-64
-2.6.30-0000000-force-highorder           Elapsed:10:37.300    Failures:0
-2.6.31-0000000-force-highorder           Elapsed:08:49.338    Failures:0
-2.6.31-0000006-dm-crypt-unplug           Elapsed:09:37.840    Failures:0
-2.6.31-0000012-pgalloc-2.6.30            Elapsed:15:49.690    Failures:0
-2.6.31-0000123-congestion-both           Elapsed:09:18.790    Failures:0
-2.6.31-0001234-kswapd-quick-recheck      Elapsed:08:39.268    Failures:0
-2.6.31-0123456-dm-crypt-unplug           Elapsed:08:20.965    Failures:0
-2.6.31-revert-8aa7e847                   Elapsed:08:07.457    Failures:0
-2.6.32-rc6-0000000-force-highorder       Elapsed:18:29.103    Failures:1
-2.6.32-rc6-0000006-dm-crypt-unplug       Elapsed:25:53.515    Failures:3
-2.6.32-rc6-0000012-pgalloc-2.6.30        Elapsed:19:55.570    Failures:6
-2.6.32-rc6-0000123-congestion-both       Elapsed:17:29.255    Failures:2
-2.6.32-rc6-0001234-kswapd-quick-recheck  Elapsed:14:41.068    Failures:0
-2.6.32-rc6-0123456-dm-crypt-unplug       Elapsed:15:48.028    Failures:1
-2.6.32-rc6-revert-8aa7e847               Elapsed:14:48.647    Failures:0
+Changed from V2:
+- Made group target latency calculations in proportion to group weight
+  instead of evenly dividing the slice among all the groups.
 
-The numbering in the kernel indicates what patches are applied. I tested
-the dm-crypt patch both in isolation and in combination with the patches
-in this series.
+- Modified cfq_rb_first() to check "count" and return NULL if service tree
+  is empty.
 
-Basically, the dm-crypt-unplug makes a small difference in performance
-overall, mostly slight gains and losses. There was one massive regression
-with the dm-crypt patch applied to 2.6.32-rc6 but at the moment, I don't
-know what that is.
+- Did some reshuffling in patch order. Moved Documentation patch to the end.
+  Also moved group idling patch down the order.
 
-In general, the patch reduces the amount of time direct reclaimers are
-spending on congestion_wait.
+- Fixed the "slice_end" issue raised by Gui during slice usage calculation.
+  
+Changes from V1:
 
-> It includes my patch from last night, along with changes to force dm to
-> unplug when its IO queues empty.
-> 
-> The problem goes like this:
-> 
-> Process: submit read bio
-> dm: put bio onto work queue
-> process: unplug
-> dm: work queue finds bio, does a generic_make_request
-> 
-> The end result is that we miss the unplug completely.  dm-crypt needs to
-> unplug for sync bios.  This patch also changes it to unplug whenever the
-> queue is empty, which is far from ideal but better than missing the
-> unplugs.
-> 
-> This doesn't completely fix io stalls I'm seeing with dm-crypt, but its
-> my best guess.  If it works, I'll break it up and submit for real to
-> the dm people.
-> 
+- Rebased the patches for "for-2.6.33" branch. 
+- Currently dropped the support for priority class of groups. For the time
+  being only BE class groups are supported.
+ 
+After the discussions at IO minisummit at Tokyo, Japan, it was agreed that
+one single IO control policy at either leaf nodes or at higher level nodes
+does not meet all the requirements and we need something so that we have
+the capability to support more than one IO control policy (like proportional
+weight division and max bandwidth control) and also have capability to
+implement some of these policies at higher level logical devices.
 
-Out of curiousity, how are you measuring IO stalls? In the tests I'm doing,
-the worker processes output their progress and it should be at a steady
-rate. I considered a stall to be an excessive delay between updates which
-is a pretty indirect measure.
+It was agreed that CFQ is the right place to implement time based proportional
+weight division policy. Other policies like max bandwidth control/throttling
+will make more sense at higher level logical devices.
 
-> -chris
-> 
-> diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
-> index ed10381..729ae01 100644
-> --- a/drivers/md/dm-crypt.c
-> +++ b/drivers/md/dm-crypt.c
-> @@ -94,8 +94,12 @@ struct crypt_config {
->  	struct bio_set *bs;
->  
->  	struct workqueue_struct *io_queue;
-> +	struct workqueue_struct *async_io_queue;
->  	struct workqueue_struct *crypt_queue;
->  
-> +	atomic_t sync_bios_in_queue;
-> +	atomic_t async_bios_in_queue;
-> +
->  	/*
->  	 * crypto related data
->  	 */
-> @@ -679,11 +683,29 @@ static void kcryptd_io_write(struct dm_crypt_io *io)
->  static void kcryptd_io(struct work_struct *work)
->  {
->  	struct dm_crypt_io *io = container_of(work, struct dm_crypt_io, work);
-> +	struct crypt_config *cc = io->target->private;
-> +	int zero_sync = 0;
-> +	int zero_async = 0;
-> +	int was_sync = 0;
-> +
-> +	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
-> +		zero_sync = atomic_dec_and_test(&cc->sync_bios_in_queue);
-> +		was_sync = 1;
-> +	} else
-> +		zero_async = atomic_dec_and_test(&cc->async_bios_in_queue);
->  
->  	if (bio_data_dir(io->base_bio) == READ)
->  		kcryptd_io_read(io);
->  	else
->  		kcryptd_io_write(io);
-> +
-> +	if ((was_sync && zero_sync) ||
-> +	    (!was_sync && zero_async &&
-> +	     atomic_read(&cc->sync_bios_in_queue) == 0)) {
-> +		struct backing_dev_info *bdi;
-> +		bdi = blk_get_backing_dev_info(io->base_bio->bi_bdev);
-> +		blk_run_backing_dev(bdi, NULL);
-> +	}
->  }
->  
->  static void kcryptd_queue_io(struct dm_crypt_io *io)
-> @@ -691,7 +713,13 @@ static void kcryptd_queue_io(struct dm_crypt_io *io)
->  	struct crypt_config *cc = io->target->private;
->  
->  	INIT_WORK(&io->work, kcryptd_io);
-> -	queue_work(cc->io_queue, &io->work);
-> +	if (io->base_bio->bi_rw & (1 << BIO_RW_SYNCIO)) {
-> +		atomic_inc(&cc->sync_bios_in_queue);
-> +		queue_work(cc->io_queue, &io->work);
-> +	} else {
-> +		atomic_inc(&cc->async_bios_in_queue);
-> +		queue_work(cc->async_io_queue, &io->work);
-> +	}
->  }
->  
->  static void kcryptd_crypt_write_io_submit(struct dm_crypt_io *io,
-> @@ -759,8 +787,7 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
->  
->  		/* Encryption was already finished, submit io now */
->  		if (crypt_finished) {
-> -			kcryptd_crypt_write_io_submit(io, r, 0);
-> -
-> +			kcryptd_crypt_write_io_submit(io, r, 1);
->  			/*
->  			 * If there was an error, do not try next fragments.
->  			 * For async, error is processed in async handler.
-> @@ -1120,6 +1147,15 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
->  	} else
->  		cc->iv_mode = NULL;
->  
-> +	atomic_set(&cc->sync_bios_in_queue, 0);
-> +	atomic_set(&cc->async_bios_in_queue, 0);
-> +
-> +	cc->async_io_queue = create_singlethread_workqueue("kcryptd_async_io");
-> +	if (!cc->async_io_queue) {
-> +		ti->error = "Couldn't create kcryptd io queue";
-> +		goto bad_async_io_queue;
-> +	}
-> +
->  	cc->io_queue = create_singlethread_workqueue("kcryptd_io");
->  	if (!cc->io_queue) {
->  		ti->error = "Couldn't create kcryptd io queue";
-> @@ -1139,6 +1175,8 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
->  bad_crypt_queue:
->  	destroy_workqueue(cc->io_queue);
->  bad_io_queue:
-> +	destroy_workqueue(cc->async_io_queue);
-> +bad_async_io_queue:
->  	kfree(cc->iv_mode);
->  bad_ivmode_string:
->  	dm_put_device(ti, cc->dev);
-> @@ -1166,6 +1204,7 @@ static void crypt_dtr(struct dm_target *ti)
->  	struct crypt_config *cc = (struct crypt_config *) ti->private;
->  
->  	destroy_workqueue(cc->io_queue);
-> +	destroy_workqueue(cc->async_io_queue);
->  	destroy_workqueue(cc->crypt_queue);
->  
->  	if (cc->req)
-> 
+This patch introduces blkio cgroup controller. It provides the management
+interface for the block IO control. The idea is that keep the interface
+common and in the background we should be able to switch policies based on
+user options. Hence user can control the IO throughout the IO stack with
+a single cgroup interface.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Apart from blkio cgroup interface, this patchset also modifies CFQ to implement
+time based proportional weight division of disk. CFQ already does it in flat
+mode. It has been modified to do group IO scheduling also.
+
+IO control is a huge problem and the moment we start addressing all the
+issues in one patchset, it bloats to unmanageable proportions and then nothing
+gets inside the kernel. So at io mini summit we agreed that lets take small
+steps and once a piece of code is inside the kernel and stablized, take the
+next step. So this is the first step.
+
+Some parts of the code are based on BFQ patches posted by Paolo and Fabio.
+
+Your feedback is welcome.
+
+TODO
+====
+- Support async IO control (buffered writes).
+
+ Buffered writes is a beast and requires changes at many a places to solve the
+ problem and patchset becomes huge. Hence first we plan to support only sync
+ IO in control then work on async IO too.
+
+ Some of the work items identified are.
+
+	- Per memory cgroup dirty ratio
+	- Possibly modification of writeback to force writeback from a
+	  particular cgroup.
+	- Implement IO tracking support so that a bio can be mapped to a cgroup.
+	- Per group request descriptor infrastructure in block layer.
+	- At CFQ level, implement per cfq_group async queues.	
+
+  In this patchset, all the async IO goes in system wide queues and there are
+  no per group async queues. That means we will see service differentiation
+  only for sync IO only. Async IO willl be handled later.
+
+- Support for higher level policies like max BW controller.
+- Support groups of RT class also.
+
+Thanks
+Vivek
+
+ Documentation/cgroups/blkio-controller.txt |  100 +++
+ block/Kconfig                              |   22 +
+ block/Kconfig.iosched                      |   17 +
+ block/Makefile                             |    1 +
+ block/blk-cgroup.c                         |  312 ++++++++++
+ block/blk-cgroup.h                         |   90 +++
+ block/cfq-iosched.c                        |  922 ++++++++++++++++++++++++----
+ include/linux/cgroup_subsys.h              |    6 +
+ include/linux/iocontext.h                  |    4 +
+ 9 files changed, 1365 insertions(+), 109 deletions(-)
+
