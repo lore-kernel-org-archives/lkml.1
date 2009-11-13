@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZKMS02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZKMS0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZKMS02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 13:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZKMS0W
+	id S1756860AbZKMS0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 13:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbZKMS02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 13:26:22 -0500
-Received: from artax.karlin.mff.cuni.cz ([195.113.26.195]:52975 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbZKMS0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 13:26:22 -0500
+	Fri, 13 Nov 2009 13:26:28 -0500
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:59428 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756786AbZKMS0Y convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 13:26:24 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met
 Date: Fri, 13 Nov 2009 19:26:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Lars-Peter Clausen <lars@metafoo.de>,
-       Paul Fertser <fercerpav@gmail.com>, linux-kernel@vger.kernel.org,
-       Ben Dooks <ben@simtec.co.uk>, Anton Vorontsov <cbou@mail.ru>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 3/6] gta02: set pcf50633 charger_reference_current_ma
-Message-ID: <20091113182621.GA1368@ucw.cz>
-References: <1257369899-325-1-git-send-email-fercerpav@gmail.com> <1257369899-325-2-git-send-email-fercerpav@gmail.com> <1257369899-325-3-git-send-email-fercerpav@gmail.com> <20091111134844.GB22476@home.pavel.comp> <20091111153143.GA1610@oksana.dev.rtsoft.ru> <20091112074059.GB11365@elf.ucw.cz> <20091112215947.GB12308@n2100.arm.linux.org.uk>
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie>
+In-Reply-To: <20091113181557.GM29804@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20091112215947.GB12308@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911131926.25291.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Nov 2009 18:26:25.0283 (UTC) FILETIME=[CEE68D30:01CA648E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-11-12 21:59:47, Russell King - ARM Linux wrote:
-> On Thu, Nov 12, 2009 at 08:40:59AM +0100, Pavel Machek wrote:
-> > On Wed 2009-11-11 18:31:43, Anton Vorontsov wrote:
-> > > On Wed, Nov 11, 2009 at 04:48:44PM +0300, Paul Fertser wrote:
-> > > > Hi,
-> > > > 
-> > > > Ben, please give us an advice on how to proceed with this rather
-> > > > trivial patch. Anton doesn't merge the other patches from this series
-> > > > because we do not know via which tree to merge this particular patch.
-> > > 
-> > > Paul, I'll just merge the whole patch set but skip this particular
-> > > patch.
-> > 
-> > Feel free to merge that patch, too. It is clearly related to the
-> > other stuff, and Russell being totally unresponsive should not be
-> > reason to block patches.
-> > 
-> > He is the maintainer, he was cc-ed, and at this point it is quite
-> > clear that he does not care.
-> 
-> Err, WTF?  How do you come to the conclusion that I'm somehow related
-> to Samsung stuff, or GTA03 stuff?  Oh, that's right, you don't let facts
-> get in the way of blaming me for something.
+On Friday 13 November 2009, Mel Gorman wrote:
+> If reclaim fails to make sufficient progress, the priority is raised.
+> Once the priority is higher, kswapd starts waiting on congestion.
+>  However, if the zone is below the min watermark then kswapd needs to
+> continue working without delay as there is a danger of an increased rate
+> of GFP_ATOMIC allocation failure.
+>
+> This patch changes the conditions under which kswapd waits on
+> congestion by only going to sleep if the min watermarks are being met.
+>
+> This patch replaces
+> vmscan-take-order-into-consideration-when-deciding-if-kswapd-is-in-troub
+>le.patch .
+>
+> [mel@csn.ul.ie: Add stats to track how relevant the logic is]
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Ok, you are right, Ben is listed as Samsung maintainer. Accept my
-apologies. The rest stands: Anton should just take the patch, because
-maintainer does not care.
+For this to work with git-am, the From: line has to be _above_ the patch 
+description (must be the first line of the mail even). AFAIK at least.
 
-Actually, given that Ben is unresponsive, it should be either you or
-Anton taking the patch; so if you prefer, you can take it.
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-> I've been ignoring this because as far as I can see, it's got nothing
-> to do with me, and therefore its pointless me acking it.
-> 
-> Really Pavel, just take a moment to get your facts straight before you
-> start blaming people.
-
-Now, you still are arm maintainer, and that includes arch-msm. There's
-nice series in your inbox for week+ -- HTC Dream support. There's also
-Daniel Walker who is willing to maintain the architecture. Can we get
-the patches applied (or some other decision?).  Pavel
-
--- (english)
-http://www.livejournal.com/~pavelmachek (cesky, pictures)
-http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+FJP
