@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZKMKCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZKMKGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZKMKCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZKMKCm
+	id S1755790AbZKMKGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbZKMKGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:02:42 -0500
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:43098 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755346AbZKMKCk (ORCPT
+	Fri, 13 Nov 2009 05:06:11 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:50257 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755563AbZKMKGJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:02:40 -0500
-Message-ID: <4AFD2EC3.3040104@linux.vnet.ibm.com>
-Date: Fri, 13 Nov 2009 15:32:43 +0530
-From: Rishikesh <risrajak@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Fri, 13 Nov 2009 05:06:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XGzn2+Y8njyr5F/k0zq5OGt4hSWUHzzqB6UZUM/aln1qt/48p8uEDLepRP42vyk1yR
+         PZ9UOSA+vwz439SucZJB1TJ33qqk30lIgi41pUnoCvYCaanOCai2Z/NjPsImpi+g3I03
+         Dyt3N7ccsuKZSFPspo523msD7rG0rsj4/QPe4=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.32-rc6] : WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask+0x1cb/0x67c()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com>
+References: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com>
+Date: Fri, 13 Nov 2009 04:06:13 -0600
+Message-ID: <51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
+Subject: Re: [ANN] Stable compat-wireless 2.6.32-rc7 released
+From: Greg Oliver <oliver.greg@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 12, 2009 at 7:54 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> Along with the 2.6.32-rc7 comes the stable compat-wireless based [1]
+> on it [2] which allows you to get the 2.6.32-rc7 wireless subsystem
+> and new wireless drivers compilable and installed on older kernels.
+> This is like the general compat-wireless releases but are *stable* and
+> should be *stable*. Please report any issues ASAP. For details on
+> changes you can refer to the ChangeLog-2.6.32-rc7-wireless [3].
+>
+>  Luis
+>
+> [1] http://wireless.kernel.org/en/users/Download/stable
+> [2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/compat-wireless-2.6.32-rc7.tar.bz2
+> [3] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/ChangeLog-2.6.32-rc7-wireless
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-Hi All,
-
-Getting this call trace on on 2.6.32-rc6 kernel. while running some 
-memory testcases.
-
-
-------------[ cut here ]------------
-WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask+0x1cb/0x67c()
-Hardware name: IBM eServer BladeCenter HS21 -[8853L6A]-
-Modules linked in: veth macvlan dummy ipt_MASQUERADE iptable_nat nf_nat 
-bridge stp llc nfsd lockd nfs_acl auth_rpcgss exportfs sunrpc ipv6 
-cpufreq_ondemand acpi_cpufreq freq_table dm_mirror dm_region_hash dm_log 
-dm_multipath dm_mod ata_generic pata_acpi i5k_amb hwmon i5000_edac 
-edac_core ioatdma dca bnx2 iTCO_wdt iTCO_vendor_support pcspkr ata_piix 
-serio_raw shpchp mptsas mptscsih mptbase scsi_transport_sas [last 
-unloaded: microcode]
-Pid: 17590, comm: cat Not tainted 2.6.32-rc6-tip+ #1
-Call Trace:
- [<ffffffff8104ecd6>] warn_slowpath_common+0x77/0x8f
- [<ffffffff8104ecfd>] warn_slowpath_null+0xf/0x11
- [<ffffffff810cb5eb>] __alloc_pages_nodemask+0x1cb/0x67c
- [<ffffffff81078ef9>] ? mark_held_locks+0x52/0x70
- [<ffffffff810c9fe0>] ? __free_pages_ok+0x16d/0x186
- [<ffffffff810f21a1>] alloc_pages_current+0x90/0x99
- [<ffffffff810ca380>] __get_free_pages+0x13/0x50
- [<ffffffff810fb62e>] __kmalloc+0x42/0x1a1
- [<ffffffff810fa5be>] ? kfree+0x6d/0x138
- [<ffffffff8111d639>] ? seq_read+0x1fd/0x36c
- [<ffffffff8111d639>] seq_read+0x1fd/0x36c
- [<ffffffff8111d43c>] ? seq_read+0x0/0x36c
- [<ffffffff8114d5bb>] proc_reg_read+0x8d/0xac
- [<ffffffff8110586f>] vfs_read+0xa6/0x103
- [<ffffffff81079185>] ? trace_hardirqs_on_caller+0x11d/0x141
- [<ffffffff81105982>] sys_read+0x45/0x69
- [<ffffffff81009bc2>] system_call_fastpath+0x16/0x1b
----[ end trace ec8ffea506351141 ]---
-
-
--Rishi
+The link on kernel.org for rc7 is linked to rc6...  (rc7 does exist
+there though)...
