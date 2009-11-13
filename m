@@ -1,56 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZKMKGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZKMKKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbZKMKGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 05:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbZKMKGL
+	id S1756196AbZKMKKG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 05:10:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZKMKKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 05:06:11 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:50257 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755563AbZKMKGJ convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 05:10:03 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47018 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756032AbZKMKKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 05:06:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XGzn2+Y8njyr5F/k0zq5OGt4hSWUHzzqB6UZUM/aln1qt/48p8uEDLepRP42vyk1yR
-         PZ9UOSA+vwz439SucZJB1TJ33qqk30lIgi41pUnoCvYCaanOCai2Z/NjPsImpi+g3I03
-         Dyt3N7ccsuKZSFPspo523msD7rG0rsj4/QPe4=
+	Fri, 13 Nov 2009 05:10:00 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4AFD306F.1020802@s5r6.in-berlin.de>
+Date: Fri, 13 Nov 2009 11:09:51 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-In-Reply-To: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com>
-References: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com>
-Date: Fri, 13 Nov 2009 04:06:13 -0600
-Message-ID: <51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
-Subject: Re: [ANN] Stable compat-wireless 2.6.32-rc7 released
-From: Greg Oliver <oliver.greg@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firedtv: fix regression: tuning fails due to bogus error
+ return
+References: <4ADA149E.1070704@s5r6.in-berlin.de> <4ADA26D0.6010108@s5r6.in-berlin.de> <tkrat.de5abfc32fa5476d@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.de5abfc32fa5476d@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 7:54 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> Along with the 2.6.32-rc7 comes the stable compat-wireless based [1]
-> on it [2] which allows you to get the 2.6.32-rc7 wireless subsystem
-> and new wireless drivers compilable and installed on older kernels.
-> This is like the general compat-wireless releases but are *stable* and
-> should be *stable*. Please report any issues ASAP. For details on
-> changes you can refer to the ChangeLog-2.6.32-rc7-wireless [3].
->
->  Luis
->
-> [1] http://wireless.kernel.org/en/users/Download/stable
-> [2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/compat-wireless-2.6.32-rc7.tar.bz2
-> [3] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/ChangeLog-2.6.32-rc7-wireless
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Stefan Richter wrote on 2009-10-17:
+> Since 2.6.32(-rc1), DVB core checks the return value of
+> dvb_frontend_ops.set_frontend.  Now it becomes apparent that firedtv
+> always returned a bogus value from its set_frontend method.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-The link on kernel.org for rc7 is linked to rc6...  (rc7 does exist
-there though)...
+Hi Mauro,
+
+when you committed this, you added "CC: stable@kernel.org".  This is not
+necessary, 2.6.32-rc1 is the first kernel version with the regression
+(see changelog).
+
+Well, OK, the patch would become necessary in -stable if somebody was to
+put the new set_frontend return code check in dvb core into -stable. But
+I hope nobody is going to do that; it'd be a bad idea.
+
+Furthermore...
+
+> ---
+>  drivers/media/dvb/firewire/firedtv-avc.c |    7 +++++--
+>  drivers/media/dvb/firewire/firedtv-fe.c  |    8 +-------
+>  2 files changed, 6 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-avc.c
+> ===================================================================
+> --- linux-2.6.32-rc5.orig/drivers/media/dvb/firewire/firedtv-avc.c
+> +++ linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-avc.c
+> @@ -573,8 +573,11 @@ int avc_tuner_dsd(struct firedtv *fdtv,
+>  
+>  	msleep(500);
+>  #if 0
+> -	/* FIXME: */
+> -	/* u8 *status was an out-parameter of avc_tuner_dsd, unused by caller */
+> +	/*
+> +	 * FIXME:
+> +	 * u8 *status was an out-parameter of avc_tuner_dsd, unused by caller
+> +	 * Check for AVC_RESPONSE_ACCEPTED here instead?
+> +	 */
+>  	if (status)
+>  		*status = r->operand[2];
+>  #endif
+
+...the firedtv-avc.c part of the patch vanished when you committed it. I
+guess this was accident, not deliberate --- otherwise a note in the
+changelog below of my Signed-off-by would have been appreciated.
+
+I will resubmit this missing comment change or a variation of it or even
+a fix of the FIXME sometime in the future.
+
+> Index: linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-fe.c
+> ===================================================================
+> --- linux-2.6.32-rc5.orig/drivers/media/dvb/firewire/firedtv-fe.c
+> +++ linux-2.6.32-rc5/drivers/media/dvb/firewire/firedtv-fe.c
+> @@ -141,18 +141,12 @@ static int fdtv_read_uncorrected_blocks(
+>  	return -EOPNOTSUPP;
+>  }
+>  
+> -#define ACCEPTED 0x9
+> -
+>  static int fdtv_set_frontend(struct dvb_frontend *fe,
+>  			     struct dvb_frontend_parameters *params)
+>  {
+>  	struct firedtv *fdtv = fe->sec_priv;
+>  
+> -	/* FIXME: avc_tuner_dsd never returns ACCEPTED. Check status? */
+> -	if (avc_tuner_dsd(fdtv, params) != ACCEPTED)
+> -		return -EINVAL;
+> -	else
+> -		return 0; /* not sure of this... */
+> +	return avc_tuner_dsd(fdtv, params);
+>  }
+>  
+>  static int fdtv_get_frontend(struct dvb_frontend *fe,
+> 
+
+-- 
+Stefan Richter
+-=====-==--= =-== -==-=
+http://arcgraph.de/sr/
