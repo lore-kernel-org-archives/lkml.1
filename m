@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932391AbZKMT6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbZKMT6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932391AbZKMT6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932302AbZKMT61
+	id S932396AbZKMT6o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbZKMT6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:58:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48719 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 14:58:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48725 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932367AbZKMT6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 14:58:14 -0500
-Date: Fri, 13 Nov 2009 19:57:38 GMT
+	id S932381AbZKMT6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 14:58:20 -0500
+Date: Fri, 13 Nov 2009 19:57:54 GMT
 From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, heiko.carstens@de.ibm.com, tglx@linutronix.de,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, heiko.carstens@de.ibm.com, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <20091109151428.504477141@linutronix.de>
-References: <20091109151428.504477141@linutronix.de>
+In-Reply-To: <20091109151428.548614772@linutronix.de>
+References: <20091109151428.548614772@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/locking] locking: Make inlining decision Kconfig based
-Message-ID: <tip-6beb000923882f6204ea2cfcd932e568e900803f@git.kernel.org>
-Git-Commit-ID: 6beb000923882f6204ea2cfcd932e568e900803f
+Subject: [tip:core/locking] locking: Reduce ifdefs in kernel/spinlock.c
+Message-ID: <tip-8e13c7b772387f55dc05c6a0e5b30010c3c46ff9@git.kernel.org>
+Git-Commit-ID: 8e13c7b772387f55dc05c6a0e5b30010c3c46ff9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,765 +31,310 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6beb000923882f6204ea2cfcd932e568e900803f
-Gitweb:     http://git.kernel.org/tip/6beb000923882f6204ea2cfcd932e568e900803f
+Commit-ID:  8e13c7b772387f55dc05c6a0e5b30010c3c46ff9
+Gitweb:     http://git.kernel.org/tip/8e13c7b772387f55dc05c6a0e5b30010c3c46ff9
 Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 9 Nov 2009 15:21:34 +0000
+AuthorDate: Mon, 9 Nov 2009 15:21:41 +0000
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Fri, 13 Nov 2009 20:53:28 +0100
 
-locking: Make inlining decision Kconfig based
+locking: Reduce ifdefs in kernel/spinlock.c
 
-commit 892a7c67 (locking: Allow arch-inlined spinlocks) implements the
-selection of which lock functions are inlined based on defines in
-arch/.../spinlock.h: #define __always_inline__LOCK_FUNCTION
-
-Despite of the name __always_inline__* the lock functions can be built
-out of line depending on config options. Also if the arch does not set
-some inline defines the generic code might set them; again depending on
-config options.
-
-This makes it unnecessary hard to figure out when and which lock
-functions are inlined. Aside of that it makes it way harder and
-messier for -rt to manipulate the lock functions.
-
-Convert the inlining decision to CONFIG switches. Each lock function
-is inlined depending on CONFIG_INLINE_*. The configs implement the
-existing dependencies. The architecture code can select ARCH_INLINE_*
-to signal that it wants the corresponding lock function inlined.
-ARCH_INLINE_* is necessary as Kconfig ignores "depends on"
-restrictions when a config element is selected.
+With the Kconfig based inline decisions we can remove extra ifdefs in
+kernel/spinlock.c by creating the complex lockbreak functions as
+inlines which are inserted into the non inlined lock functions.
 
 No functional change.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <20091109151428.504477141@linutronix.de>
+LKML-Reference: <20091109151428.548614772@linutronix.de>
 Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Reviewed-by: Ingo Molnar <mingo@elte.hu>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/s390/Kconfig                |   28 ++++++
- arch/s390/include/asm/spinlock.h |   29 ------
- include/linux/spinlock_api_smp.h |   75 ++++++---------
- init/Kconfig                     |    1 +
- kernel/Kconfig.locks             |  199 ++++++++++++++++++++++++++++++++++++++
- kernel/spinlock.c                |   56 ++++++------
- 6 files changed, 284 insertions(+), 104 deletions(-)
+ kernel/spinlock.c |  258 ++++++++++++++++++++++++++---------------------------
+ 1 files changed, 127 insertions(+), 131 deletions(-)
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 43c0aca..16c6730 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -95,6 +95,34 @@ config S390
- 	select HAVE_ARCH_TRACEHOOK
- 	select INIT_ALL_POSSIBLE
- 	select HAVE_PERF_EVENTS
-+	select ARCH_INLINE_SPIN_TRYLOCK
-+	select ARCH_INLINE_SPIN_TRYLOCK_BH
-+	select ARCH_INLINE_SPIN_LOCK
-+	select ARCH_INLINE_SPIN_LOCK_BH
-+	select ARCH_INLINE_SPIN_LOCK_IRQ
-+	select ARCH_INLINE_SPIN_LOCK_IRQSAVE
-+	select ARCH_INLINE_SPIN_UNLOCK
-+	select ARCH_INLINE_SPIN_UNLOCK_BH
-+	select ARCH_INLINE_SPIN_UNLOCK_IRQ
-+	select ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE
-+	select ARCH_INLINE_READ_TRYLOCK
-+	select ARCH_INLINE_READ_LOCK
-+	select ARCH_INLINE_READ_LOCK_BH
-+	select ARCH_INLINE_READ_LOCK_IRQ
-+	select ARCH_INLINE_READ_LOCK_IRQSAVE
-+	select ARCH_INLINE_READ_UNLOCK
-+	select ARCH_INLINE_READ_UNLOCK_BH
-+	select ARCH_INLINE_READ_UNLOCK_IRQ
-+	select ARCH_INLINE_READ_UNLOCK_IRQRESTORE
-+	select ARCH_INLINE_WRITE_TRYLOCK
-+	select ARCH_INLINE_WRITE_LOCK
-+	select ARCH_INLINE_WRITE_LOCK_BH
-+	select ARCH_INLINE_WRITE_LOCK_IRQ
-+	select ARCH_INLINE_WRITE_LOCK_IRQSAVE
-+	select ARCH_INLINE_WRITE_UNLOCK
-+	select ARCH_INLINE_WRITE_UNLOCK_BH
-+	select ARCH_INLINE_WRITE_UNLOCK_IRQ
-+	select ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
- 
- config SCHED_OMIT_FRAME_POINTER
- 	bool
-diff --git a/arch/s390/include/asm/spinlock.h b/arch/s390/include/asm/spinlock.h
-index 41ce686..c9af0d1 100644
---- a/arch/s390/include/asm/spinlock.h
-+++ b/arch/s390/include/asm/spinlock.h
-@@ -191,33 +191,4 @@ static inline int __raw_write_trylock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
--#define __always_inline__spin_lock
--#define __always_inline__read_lock
--#define __always_inline__write_lock
--#define __always_inline__spin_lock_bh
--#define __always_inline__read_lock_bh
--#define __always_inline__write_lock_bh
--#define __always_inline__spin_lock_irq
--#define __always_inline__read_lock_irq
--#define __always_inline__write_lock_irq
--#define __always_inline__spin_lock_irqsave
--#define __always_inline__read_lock_irqsave
--#define __always_inline__write_lock_irqsave
--#define __always_inline__spin_trylock
--#define __always_inline__read_trylock
--#define __always_inline__write_trylock
--#define __always_inline__spin_trylock_bh
--#define __always_inline__spin_unlock
--#define __always_inline__read_unlock
--#define __always_inline__write_unlock
--#define __always_inline__spin_unlock_bh
--#define __always_inline__read_unlock_bh
--#define __always_inline__write_unlock_bh
--#define __always_inline__spin_unlock_irq
--#define __always_inline__read_unlock_irq
--#define __always_inline__write_unlock_irq
--#define __always_inline__spin_unlock_irqrestore
--#define __always_inline__read_unlock_irqrestore
--#define __always_inline__write_unlock_irqrestore
--
- #endif /* __ASM_SPINLOCK_H */
-diff --git a/include/linux/spinlock_api_smp.h b/include/linux/spinlock_api_smp.h
-index 7a7e18f..8264a7f 100644
---- a/include/linux/spinlock_api_smp.h
-+++ b/include/linux/spinlock_api_smp.h
-@@ -60,137 +60,118 @@ void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- 							__releases(lock);
- 
--/*
-- * We inline the unlock functions in the nondebug case:
-- */
--#if !defined(CONFIG_DEBUG_SPINLOCK) && !defined(CONFIG_PREEMPT)
--#define __always_inline__spin_unlock
--#define __always_inline__read_unlock
--#define __always_inline__write_unlock
--#define __always_inline__spin_unlock_irq
--#define __always_inline__read_unlock_irq
--#define __always_inline__write_unlock_irq
--#endif
--
--#ifndef CONFIG_DEBUG_SPINLOCK
--#ifndef CONFIG_GENERIC_LOCKBREAK
--
--#ifdef __always_inline__spin_lock
-+#ifdef CONFIG_INLINE_SPIN_LOCK
- #define _spin_lock(lock) __spin_lock(lock)
- #endif
- 
--#ifdef __always_inline__read_lock
-+#ifdef CONFIG_INLINE_READ_LOCK
- #define _read_lock(lock) __read_lock(lock)
- #endif
- 
--#ifdef __always_inline__write_lock
-+#ifdef CONFIG_INLINE_WRITE_LOCK
- #define _write_lock(lock) __write_lock(lock)
- #endif
- 
--#ifdef __always_inline__spin_lock_bh
-+#ifdef CONFIG_INLINE_SPIN_LOCK_BH
- #define _spin_lock_bh(lock) __spin_lock_bh(lock)
- #endif
- 
--#ifdef __always_inline__read_lock_bh
-+#ifdef CONFIG_INLINE_READ_LOCK_BH
- #define _read_lock_bh(lock) __read_lock_bh(lock)
- #endif
- 
--#ifdef __always_inline__write_lock_bh
-+#ifdef CONFIG_INLINE_WRITE_LOCK_BH
- #define _write_lock_bh(lock) __write_lock_bh(lock)
- #endif
- 
--#ifdef __always_inline__spin_lock_irq
-+#ifdef CONFIG_INLINE_SPIN_LOCK_IRQ
- #define _spin_lock_irq(lock) __spin_lock_irq(lock)
- #endif
- 
--#ifdef __always_inline__read_lock_irq
-+#ifdef CONFIG_INLINE_READ_LOCK_IRQ
- #define _read_lock_irq(lock) __read_lock_irq(lock)
- #endif
- 
--#ifdef __always_inline__write_lock_irq
-+#ifdef CONFIG_INLINE_WRITE_LOCK_IRQ
- #define _write_lock_irq(lock) __write_lock_irq(lock)
- #endif
- 
--#ifdef __always_inline__spin_lock_irqsave
-+#ifdef CONFIG_INLINE_SPIN_LOCK_IRQSAVE
- #define _spin_lock_irqsave(lock) __spin_lock_irqsave(lock)
- #endif
- 
--#ifdef __always_inline__read_lock_irqsave
-+#ifdef CONFIG_INLINE_READ_LOCK_IRQSAVE
- #define _read_lock_irqsave(lock) __read_lock_irqsave(lock)
- #endif
- 
--#ifdef __always_inline__write_lock_irqsave
-+#ifdef CONFIG_INLINE_WRITE_LOCK_IRQSAVE
- #define _write_lock_irqsave(lock) __write_lock_irqsave(lock)
- #endif
- 
--#endif /* !CONFIG_GENERIC_LOCKBREAK */
--
--#ifdef __always_inline__spin_trylock
-+#ifdef CONFIG_INLINE_SPIN_TRYLOCK
- #define _spin_trylock(lock) __spin_trylock(lock)
- #endif
- 
--#ifdef __always_inline__read_trylock
-+#ifdef CONFIG_INLINE_READ_TRYLOCK
- #define _read_trylock(lock) __read_trylock(lock)
- #endif
- 
--#ifdef __always_inline__write_trylock
-+#ifdef CONFIG_INLINE_WRITE_TRYLOCK
- #define _write_trylock(lock) __write_trylock(lock)
- #endif
- 
--#ifdef __always_inline__spin_trylock_bh
-+#ifdef CONFIG_INLINE_SPIN_TRYLOCK_BH
- #define _spin_trylock_bh(lock) __spin_trylock_bh(lock)
- #endif
- 
--#ifdef __always_inline__spin_unlock
-+#ifdef CONFIG_INLINE_SPIN_UNLOCK
- #define _spin_unlock(lock) __spin_unlock(lock)
- #endif
- 
--#ifdef __always_inline__read_unlock
-+#ifdef CONFIG_INLINE_READ_UNLOCK
- #define _read_unlock(lock) __read_unlock(lock)
- #endif
- 
--#ifdef __always_inline__write_unlock
-+#ifdef CONFIG_INLINE_WRITE_UNLOCK
- #define _write_unlock(lock) __write_unlock(lock)
- #endif
- 
--#ifdef __always_inline__spin_unlock_bh
-+#ifdef CONFIG_INLINE_SPIN_UNLOCK_BH
- #define _spin_unlock_bh(lock) __spin_unlock_bh(lock)
- #endif
- 
--#ifdef __always_inline__read_unlock_bh
-+#ifdef CONFIG_INLINE_READ_UNLOCK_BH
- #define _read_unlock_bh(lock) __read_unlock_bh(lock)
- #endif
- 
--#ifdef __always_inline__write_unlock_bh
-+#ifdef CONFIG_INLINE_WRITE_UNLOCK_BH
- #define _write_unlock_bh(lock) __write_unlock_bh(lock)
- #endif
- 
--#ifdef __always_inline__spin_unlock_irq
-+#ifdef CONFIG_INLINE_SPIN_UNLOCK_IRQ
- #define _spin_unlock_irq(lock) __spin_unlock_irq(lock)
- #endif
- 
--#ifdef __always_inline__read_unlock_irq
-+#ifdef CONFIG_INLINE_READ_UNLOCK_IRQ
- #define _read_unlock_irq(lock) __read_unlock_irq(lock)
- #endif
- 
--#ifdef __always_inline__write_unlock_irq
-+#ifdef CONFIG_INLINE_WRITE_UNLOCK_IRQ
- #define _write_unlock_irq(lock) __write_unlock_irq(lock)
- #endif
- 
--#ifdef __always_inline__spin_unlock_irqrestore
-+#ifdef CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE
- #define _spin_unlock_irqrestore(lock, flags) __spin_unlock_irqrestore(lock, flags)
- #endif
- 
--#ifdef __always_inline__read_unlock_irqrestore
-+#ifdef CONFIG_INLINE_READ_UNLOCK_IRQRESTORE
- #define _read_unlock_irqrestore(lock, flags) __read_unlock_irqrestore(lock, flags)
- #endif
- 
--#ifdef __always_inline__write_unlock_irqrestore
-+#ifdef CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE
- #define _write_unlock_irqrestore(lock, flags) __write_unlock_irqrestore(lock, flags)
- #endif
- 
--#endif /* CONFIG_DEBUG_SPINLOCK */
--
- static inline int __spin_trylock(spinlock_t *lock)
- {
- 	preempt_disable();
-diff --git a/init/Kconfig b/init/Kconfig
-index 9e03ef8..06863dd 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1210,3 +1210,4 @@ source "block/Kconfig"
- config PREEMPT_NOTIFIERS
- 	bool
- 
-+source "kernel/Kconfig.locks"
-diff --git a/kernel/Kconfig.locks b/kernel/Kconfig.locks
-new file mode 100644
-index 0000000..d1f86db
---- /dev/null
-+++ b/kernel/Kconfig.locks
-@@ -0,0 +1,199 @@
-+#
-+# The ARCH_INLINE foo is necessary because select ignores "depends on"
-+#
-+config ARCH_INLINE_SPIN_TRYLOCK
-+	bool
-+
-+config ARCH_INLINE_SPIN_TRYLOCK_BH
-+	bool
-+
-+config ARCH_INLINE_SPIN_LOCK
-+	bool
-+
-+config ARCH_INLINE_SPIN_LOCK_BH
-+	bool
-+
-+config ARCH_INLINE_SPIN_LOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_SPIN_LOCK_IRQSAVE
-+	bool
-+
-+config ARCH_INLINE_SPIN_UNLOCK
-+	bool
-+
-+config ARCH_INLINE_SPIN_UNLOCK_BH
-+	bool
-+
-+config ARCH_INLINE_SPIN_UNLOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE
-+	bool
-+
-+
-+config ARCH_INLINE_READ_TRYLOCK
-+	bool
-+
-+config ARCH_INLINE_READ_LOCK
-+	bool
-+
-+config ARCH_INLINE_READ_LOCK_BH
-+	bool
-+
-+config ARCH_INLINE_READ_LOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_READ_LOCK_IRQSAVE
-+	bool
-+
-+config ARCH_INLINE_READ_UNLOCK
-+	bool
-+
-+config ARCH_INLINE_READ_UNLOCK_BH
-+	bool
-+
-+config ARCH_INLINE_READ_UNLOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_READ_UNLOCK_IRQRESTORE
-+	bool
-+
-+
-+config ARCH_INLINE_WRITE_TRYLOCK
-+	bool
-+
-+config ARCH_INLINE_WRITE_LOCK
-+	bool
-+
-+config ARCH_INLINE_WRITE_LOCK_BH
-+	bool
-+
-+config ARCH_INLINE_WRITE_LOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_WRITE_LOCK_IRQSAVE
-+	bool
-+
-+config ARCH_INLINE_WRITE_UNLOCK
-+	bool
-+
-+config ARCH_INLINE_WRITE_UNLOCK_BH
-+	bool
-+
-+config ARCH_INLINE_WRITE_UNLOCK_IRQ
-+	bool
-+
-+config ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
-+	bool
-+
-+#
-+# lock_* functions are inlined when:
-+#   - DEBUG_SPINLOCK=n and GENERIC_LOCKBREAK=n and ARCH_INLINE_*LOCK=y
-+#
-+# trylock_* functions are inlined when:
-+#   - DEBUG_SPINLOCK=n and ARCH_INLINE_*LOCK=y
-+#
-+# unlock and unlock_irq functions are inlined when:
-+#   - DEBUG_SPINLOCK=n and ARCH_INLINE_*LOCK=y
-+#  or
-+#   - DEBUG_SPINLOCK=n and PREEMPT=n
-+#
-+# unlock_bh and unlock_irqrestore functions are inlined when:
-+#   - DEBUG_SPINLOCK=n and ARCH_INLINE_*LOCK=y
-+#
-+
-+config INLINE_SPIN_TRYLOCK
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_SPIN_TRYLOCK
-+
-+config INLINE_SPIN_TRYLOCK_BH
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_SPIN_TRYLOCK_BH
-+
-+config INLINE_SPIN_LOCK
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && ARCH_INLINE_SPIN_LOCK
-+
-+config INLINE_SPIN_LOCK_BH
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_SPIN_LOCK_BH
-+
-+config INLINE_SPIN_LOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_SPIN_LOCK_IRQ
-+
-+config INLINE_SPIN_LOCK_IRQSAVE
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_SPIN_LOCK_IRQSAVE
-+
-+config INLINE_SPIN_UNLOCK
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_SPIN_UNLOCK)
-+
-+config INLINE_SPIN_UNLOCK_BH
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_SPIN_UNLOCK_BH
-+
-+config INLINE_SPIN_UNLOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_SPIN_UNLOCK_BH)
-+
-+config INLINE_SPIN_UNLOCK_IRQRESTORE
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE
-+
-+
-+config INLINE_READ_TRYLOCK
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_READ_TRYLOCK
-+
-+config INLINE_READ_LOCK
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && ARCH_INLINE_READ_LOCK
-+
-+config INLINE_READ_LOCK_BH
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_READ_LOCK_BH
-+
-+config INLINE_READ_LOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_READ_LOCK_IRQ
-+
-+config INLINE_READ_LOCK_IRQSAVE
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_READ_LOCK_IRQSAVE
-+
-+config INLINE_READ_UNLOCK
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_READ_UNLOCK)
-+
-+config INLINE_READ_UNLOCK_BH
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_READ_UNLOCK_BH
-+
-+config INLINE_READ_UNLOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_READ_UNLOCK_BH)
-+
-+config INLINE_READ_UNLOCK_IRQRESTORE
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_READ_UNLOCK_IRQRESTORE
-+
-+
-+config INLINE_WRITE_TRYLOCK
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_WRITE_TRYLOCK
-+
-+config INLINE_WRITE_LOCK
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && ARCH_INLINE_WRITE_LOCK
-+
-+config INLINE_WRITE_LOCK_BH
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_WRITE_LOCK_BH
-+
-+config INLINE_WRITE_LOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_WRITE_LOCK_IRQ
-+
-+config INLINE_WRITE_LOCK_IRQSAVE
-+	def_bool !DEBUG_SPINLOCK && !GENERIC_LOCKBREAK && \
-+		 ARCH_INLINE_WRITE_LOCK_IRQSAVE
-+
-+config INLINE_WRITE_UNLOCK
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_WRITE_UNLOCK)
-+
-+config INLINE_WRITE_UNLOCK_BH
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_WRITE_UNLOCK_BH
-+
-+config INLINE_WRITE_UNLOCK_IRQ
-+	def_bool !DEBUG_SPINLOCK && (!PREEMPT || ARCH_INLINE_WRITE_UNLOCK_BH)
-+
-+config INLINE_WRITE_UNLOCK_IRQRESTORE
-+	def_bool !DEBUG_SPINLOCK && ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
 diff --git a/kernel/spinlock.c b/kernel/spinlock.c
-index 5ddab73..235a957 100644
+index 235a957..41e0422 100644
 --- a/kernel/spinlock.c
 +++ b/kernel/spinlock.c
-@@ -21,7 +21,7 @@
+@@ -21,6 +21,133 @@
  #include <linux/debug_locks.h>
  #include <linux/module.h>
  
--#ifndef _spin_trylock
-+#ifndef CONFIG_INLINE_SPIN_TRYLOCK
++/*
++ * If lockdep is enabled then we use the non-preemption spin-ops
++ * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
++ * not re-enabled during lock-acquire (which the preempt-spin-ops do):
++ */
++#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
++/*
++ * The __lock_function inlines are taken from
++ * include/linux/spinlock_api_smp.h
++ */
++#else
++/*
++ * We build the __lock_function inlines here. They are too large for
++ * inlining all over the place, but here is only one user per function
++ * which embedds them into the calling _lock_function below.
++ *
++ * This could be a long-held lock. We both prepare to spin for a long
++ * time (making _this_ CPU preemptable if possible), and we also signal
++ * towards that other CPU that it should break the lock ASAP.
++ */
++#define BUILD_LOCK_OPS(op, locktype)					\
++void __lockfunc __##op##_lock(locktype##_t *lock)			\
++{									\
++	for (;;) {							\
++		preempt_disable();					\
++		if (likely(_raw_##op##_trylock(lock)))			\
++			break;						\
++		preempt_enable();					\
++									\
++		if (!(lock)->break_lock)				\
++			(lock)->break_lock = 1;				\
++		while (!op##_can_lock(lock) && (lock)->break_lock)	\
++			_raw_##op##_relax(&lock->raw_lock);		\
++	}								\
++	(lock)->break_lock = 0;						\
++}									\
++									\
++unsigned long __lockfunc __##op##_lock_irqsave(locktype##_t *lock)	\
++{									\
++	unsigned long flags;						\
++									\
++	for (;;) {							\
++		preempt_disable();					\
++		local_irq_save(flags);					\
++		if (likely(_raw_##op##_trylock(lock)))			\
++			break;						\
++		local_irq_restore(flags);				\
++		preempt_enable();					\
++									\
++		if (!(lock)->break_lock)				\
++			(lock)->break_lock = 1;				\
++		while (!op##_can_lock(lock) && (lock)->break_lock)	\
++			_raw_##op##_relax(&lock->raw_lock);		\
++	}								\
++	(lock)->break_lock = 0;						\
++	return flags;							\
++}									\
++									\
++void __lockfunc __##op##_lock_irq(locktype##_t *lock)			\
++{									\
++	_##op##_lock_irqsave(lock);					\
++}									\
++									\
++void __lockfunc __##op##_lock_bh(locktype##_t *lock)			\
++{									\
++	unsigned long flags;						\
++									\
++	/*							*/	\
++	/* Careful: we must exclude softirqs too, hence the	*/	\
++	/* irq-disabling. We use the generic preemption-aware	*/	\
++	/* function:						*/	\
++	/**/								\
++	flags = _##op##_lock_irqsave(lock);				\
++	local_bh_disable();						\
++	local_irq_restore(flags);					\
++}									\
++
++/*
++ * Build preemption-friendly versions of the following
++ * lock-spinning functions:
++ *
++ *         __[spin|read|write]_lock()
++ *         __[spin|read|write]_lock_irq()
++ *         __[spin|read|write]_lock_irqsave()
++ *         __[spin|read|write]_lock_bh()
++ */
++BUILD_LOCK_OPS(spin, spinlock);
++BUILD_LOCK_OPS(read, rwlock);
++BUILD_LOCK_OPS(write, rwlock);
++
++#endif
++
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++void __lockfunc _spin_lock_nested(spinlock_t *lock, int subclass)
++{
++	preempt_disable();
++	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
++}
++EXPORT_SYMBOL(_spin_lock_nested);
++
++unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock,
++						   int subclass)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	preempt_disable();
++	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
++	LOCK_CONTENDED_FLAGS(lock, _raw_spin_trylock, _raw_spin_lock,
++				_raw_spin_lock_flags, &flags);
++	return flags;
++}
++EXPORT_SYMBOL(_spin_lock_irqsave_nested);
++
++void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
++				     struct lockdep_map *nest_lock)
++{
++	preempt_disable();
++	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
++}
++EXPORT_SYMBOL(_spin_lock_nest_lock);
++
++#endif
++
+ #ifndef CONFIG_INLINE_SPIN_TRYLOCK
  int __lockfunc _spin_trylock(spinlock_t *lock)
  {
- 	return __spin_trylock(lock);
-@@ -29,7 +29,7 @@ int __lockfunc _spin_trylock(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_trylock);
+@@ -45,13 +172,6 @@ int __lockfunc _write_trylock(rwlock_t *lock)
+ EXPORT_SYMBOL(_write_trylock);
  #endif
  
--#ifndef _read_trylock
-+#ifndef CONFIG_INLINE_READ_TRYLOCK
- int __lockfunc _read_trylock(rwlock_t *lock)
- {
- 	return __read_trylock(lock);
-@@ -37,7 +37,7 @@ int __lockfunc _read_trylock(rwlock_t *lock)
- EXPORT_SYMBOL(_read_trylock);
- #endif
- 
--#ifndef _write_trylock
-+#ifndef CONFIG_INLINE_WRITE_TRYLOCK
- int __lockfunc _write_trylock(rwlock_t *lock)
- {
- 	return __write_trylock(lock);
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(_write_trylock);
-  */
- #if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
- 
--#ifndef _read_lock
-+#ifndef CONFIG_INLINE_READ_LOCK
+-/*
+- * If lockdep is enabled then we use the non-preemption spin-ops
+- * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
+- * not re-enabled during lock-acquire (which the preempt-spin-ops do):
+- */
+-#if !defined(CONFIG_GENERIC_LOCKBREAK) || defined(CONFIG_DEBUG_LOCK_ALLOC)
+-
+ #ifndef CONFIG_INLINE_READ_LOCK
  void __lockfunc _read_lock(rwlock_t *lock)
  {
- 	__read_lock(lock);
-@@ -60,7 +60,7 @@ void __lockfunc _read_lock(rwlock_t *lock)
- EXPORT_SYMBOL(_read_lock);
+@@ -148,130 +268,6 @@ void __lockfunc _write_lock(rwlock_t *lock)
+ EXPORT_SYMBOL(_write_lock);
  #endif
  
--#ifndef _spin_lock_irqsave
-+#ifndef CONFIG_INLINE_SPIN_LOCK_IRQSAVE
- unsigned long __lockfunc _spin_lock_irqsave(spinlock_t *lock)
- {
- 	return __spin_lock_irqsave(lock);
-@@ -68,7 +68,7 @@ unsigned long __lockfunc _spin_lock_irqsave(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_lock_irqsave);
- #endif
- 
--#ifndef _spin_lock_irq
-+#ifndef CONFIG_INLINE_SPIN_LOCK_IRQ
- void __lockfunc _spin_lock_irq(spinlock_t *lock)
- {
- 	__spin_lock_irq(lock);
-@@ -76,7 +76,7 @@ void __lockfunc _spin_lock_irq(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_lock_irq);
- #endif
- 
--#ifndef _spin_lock_bh
-+#ifndef CONFIG_INLINE_SPIN_LOCK_BH
- void __lockfunc _spin_lock_bh(spinlock_t *lock)
- {
- 	__spin_lock_bh(lock);
-@@ -84,7 +84,7 @@ void __lockfunc _spin_lock_bh(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_lock_bh);
- #endif
- 
--#ifndef _read_lock_irqsave
-+#ifndef CONFIG_INLINE_READ_LOCK_IRQSAVE
- unsigned long __lockfunc _read_lock_irqsave(rwlock_t *lock)
- {
- 	return __read_lock_irqsave(lock);
-@@ -92,7 +92,7 @@ unsigned long __lockfunc _read_lock_irqsave(rwlock_t *lock)
- EXPORT_SYMBOL(_read_lock_irqsave);
- #endif
- 
--#ifndef _read_lock_irq
-+#ifndef CONFIG_INLINE_READ_LOCK_IRQ
- void __lockfunc _read_lock_irq(rwlock_t *lock)
- {
- 	__read_lock_irq(lock);
-@@ -100,7 +100,7 @@ void __lockfunc _read_lock_irq(rwlock_t *lock)
- EXPORT_SYMBOL(_read_lock_irq);
- #endif
- 
--#ifndef _read_lock_bh
-+#ifndef CONFIG_INLINE_READ_LOCK_BH
- void __lockfunc _read_lock_bh(rwlock_t *lock)
- {
- 	__read_lock_bh(lock);
-@@ -108,7 +108,7 @@ void __lockfunc _read_lock_bh(rwlock_t *lock)
- EXPORT_SYMBOL(_read_lock_bh);
- #endif
- 
--#ifndef _write_lock_irqsave
-+#ifndef CONFIG_INLINE_WRITE_LOCK_IRQSAVE
- unsigned long __lockfunc _write_lock_irqsave(rwlock_t *lock)
- {
- 	return __write_lock_irqsave(lock);
-@@ -116,7 +116,7 @@ unsigned long __lockfunc _write_lock_irqsave(rwlock_t *lock)
- EXPORT_SYMBOL(_write_lock_irqsave);
- #endif
- 
--#ifndef _write_lock_irq
-+#ifndef CONFIG_INLINE_WRITE_LOCK_IRQ
- void __lockfunc _write_lock_irq(rwlock_t *lock)
- {
- 	__write_lock_irq(lock);
-@@ -124,7 +124,7 @@ void __lockfunc _write_lock_irq(rwlock_t *lock)
- EXPORT_SYMBOL(_write_lock_irq);
- #endif
- 
--#ifndef _write_lock_bh
-+#ifndef CONFIG_INLINE_WRITE_LOCK_BH
- void __lockfunc _write_lock_bh(rwlock_t *lock)
- {
- 	__write_lock_bh(lock);
-@@ -132,7 +132,7 @@ void __lockfunc _write_lock_bh(rwlock_t *lock)
- EXPORT_SYMBOL(_write_lock_bh);
- #endif
- 
--#ifndef _spin_lock
-+#ifndef CONFIG_INLINE_SPIN_LOCK
- void __lockfunc _spin_lock(spinlock_t *lock)
- {
- 	__spin_lock(lock);
-@@ -140,7 +140,7 @@ void __lockfunc _spin_lock(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_lock);
- #endif
- 
--#ifndef _write_lock
-+#ifndef CONFIG_INLINE_WRITE_LOCK
- void __lockfunc _write_lock(rwlock_t *lock)
- {
- 	__write_lock(lock);
-@@ -272,7 +272,7 @@ EXPORT_SYMBOL(_spin_lock_nest_lock);
- 
- #endif
- 
--#ifndef _spin_unlock
-+#ifndef CONFIG_INLINE_SPIN_UNLOCK
+-#else /* CONFIG_PREEMPT: */
+-
+-/*
+- * This could be a long-held lock. We both prepare to spin for a long
+- * time (making _this_ CPU preemptable if possible), and we also signal
+- * towards that other CPU that it should break the lock ASAP.
+- *
+- * (We do this in a function because inlining it would be excessive.)
+- */
+-
+-#define BUILD_LOCK_OPS(op, locktype)					\
+-void __lockfunc _##op##_lock(locktype##_t *lock)			\
+-{									\
+-	for (;;) {							\
+-		preempt_disable();					\
+-		if (likely(_raw_##op##_trylock(lock)))			\
+-			break;						\
+-		preempt_enable();					\
+-									\
+-		if (!(lock)->break_lock)				\
+-			(lock)->break_lock = 1;				\
+-		while (!op##_can_lock(lock) && (lock)->break_lock)	\
+-			_raw_##op##_relax(&lock->raw_lock);		\
+-	}								\
+-	(lock)->break_lock = 0;						\
+-}									\
+-									\
+-EXPORT_SYMBOL(_##op##_lock);						\
+-									\
+-unsigned long __lockfunc _##op##_lock_irqsave(locktype##_t *lock)	\
+-{									\
+-	unsigned long flags;						\
+-									\
+-	for (;;) {							\
+-		preempt_disable();					\
+-		local_irq_save(flags);					\
+-		if (likely(_raw_##op##_trylock(lock)))			\
+-			break;						\
+-		local_irq_restore(flags);				\
+-		preempt_enable();					\
+-									\
+-		if (!(lock)->break_lock)				\
+-			(lock)->break_lock = 1;				\
+-		while (!op##_can_lock(lock) && (lock)->break_lock)	\
+-			_raw_##op##_relax(&lock->raw_lock);		\
+-	}								\
+-	(lock)->break_lock = 0;						\
+-	return flags;							\
+-}									\
+-									\
+-EXPORT_SYMBOL(_##op##_lock_irqsave);					\
+-									\
+-void __lockfunc _##op##_lock_irq(locktype##_t *lock)			\
+-{									\
+-	_##op##_lock_irqsave(lock);					\
+-}									\
+-									\
+-EXPORT_SYMBOL(_##op##_lock_irq);					\
+-									\
+-void __lockfunc _##op##_lock_bh(locktype##_t *lock)			\
+-{									\
+-	unsigned long flags;						\
+-									\
+-	/*							*/	\
+-	/* Careful: we must exclude softirqs too, hence the	*/	\
+-	/* irq-disabling. We use the generic preemption-aware	*/	\
+-	/* function:						*/	\
+-	/**/								\
+-	flags = _##op##_lock_irqsave(lock);				\
+-	local_bh_disable();						\
+-	local_irq_restore(flags);					\
+-}									\
+-									\
+-EXPORT_SYMBOL(_##op##_lock_bh)
+-
+-/*
+- * Build preemption-friendly versions of the following
+- * lock-spinning functions:
+- *
+- *         _[spin|read|write]_lock()
+- *         _[spin|read|write]_lock_irq()
+- *         _[spin|read|write]_lock_irqsave()
+- *         _[spin|read|write]_lock_bh()
+- */
+-BUILD_LOCK_OPS(spin, spinlock);
+-BUILD_LOCK_OPS(read, rwlock);
+-BUILD_LOCK_OPS(write, rwlock);
+-
+-#endif /* CONFIG_PREEMPT */
+-
+-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+-
+-void __lockfunc _spin_lock_nested(spinlock_t *lock, int subclass)
+-{
+-	preempt_disable();
+-	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
+-	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+-}
+-EXPORT_SYMBOL(_spin_lock_nested);
+-
+-unsigned long __lockfunc _spin_lock_irqsave_nested(spinlock_t *lock, int subclass)
+-{
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	preempt_disable();
+-	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
+-	LOCK_CONTENDED_FLAGS(lock, _raw_spin_trylock, _raw_spin_lock,
+-				_raw_spin_lock_flags, &flags);
+-	return flags;
+-}
+-EXPORT_SYMBOL(_spin_lock_irqsave_nested);
+-
+-void __lockfunc _spin_lock_nest_lock(spinlock_t *lock,
+-				     struct lockdep_map *nest_lock)
+-{
+-	preempt_disable();
+-	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
+-	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+-}
+-EXPORT_SYMBOL(_spin_lock_nest_lock);
+-
+-#endif
+-
+ #ifndef CONFIG_INLINE_SPIN_UNLOCK
  void __lockfunc _spin_unlock(spinlock_t *lock)
  {
- 	__spin_unlock(lock);
-@@ -280,7 +280,7 @@ void __lockfunc _spin_unlock(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_unlock);
- #endif
- 
--#ifndef _write_unlock
-+#ifndef CONFIG_INLINE_WRITE_UNLOCK
- void __lockfunc _write_unlock(rwlock_t *lock)
- {
- 	__write_unlock(lock);
-@@ -288,7 +288,7 @@ void __lockfunc _write_unlock(rwlock_t *lock)
- EXPORT_SYMBOL(_write_unlock);
- #endif
- 
--#ifndef _read_unlock
-+#ifndef CONFIG_INLINE_READ_UNLOCK
- void __lockfunc _read_unlock(rwlock_t *lock)
- {
- 	__read_unlock(lock);
-@@ -296,7 +296,7 @@ void __lockfunc _read_unlock(rwlock_t *lock)
- EXPORT_SYMBOL(_read_unlock);
- #endif
- 
--#ifndef _spin_unlock_irqrestore
-+#ifndef CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE
- void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
- {
- 	__spin_unlock_irqrestore(lock, flags);
-@@ -304,7 +304,7 @@ void __lockfunc _spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
- EXPORT_SYMBOL(_spin_unlock_irqrestore);
- #endif
- 
--#ifndef _spin_unlock_irq
-+#ifndef CONFIG_INLINE_SPIN_UNLOCK_IRQ
- void __lockfunc _spin_unlock_irq(spinlock_t *lock)
- {
- 	__spin_unlock_irq(lock);
-@@ -312,7 +312,7 @@ void __lockfunc _spin_unlock_irq(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_unlock_irq);
- #endif
- 
--#ifndef _spin_unlock_bh
-+#ifndef CONFIG_INLINE_SPIN_UNLOCK_BH
- void __lockfunc _spin_unlock_bh(spinlock_t *lock)
- {
- 	__spin_unlock_bh(lock);
-@@ -320,7 +320,7 @@ void __lockfunc _spin_unlock_bh(spinlock_t *lock)
- EXPORT_SYMBOL(_spin_unlock_bh);
- #endif
- 
--#ifndef _read_unlock_irqrestore
-+#ifndef CONFIG_INLINE_READ_UNLOCK_IRQRESTORE
- void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- {
- 	__read_unlock_irqrestore(lock, flags);
-@@ -328,7 +328,7 @@ void __lockfunc _read_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- EXPORT_SYMBOL(_read_unlock_irqrestore);
- #endif
- 
--#ifndef _read_unlock_irq
-+#ifndef CONFIG_INLINE_READ_UNLOCK_IRQ
- void __lockfunc _read_unlock_irq(rwlock_t *lock)
- {
- 	__read_unlock_irq(lock);
-@@ -336,7 +336,7 @@ void __lockfunc _read_unlock_irq(rwlock_t *lock)
- EXPORT_SYMBOL(_read_unlock_irq);
- #endif
- 
--#ifndef _read_unlock_bh
-+#ifndef CONFIG_INLINE_READ_UNLOCK_BH
- void __lockfunc _read_unlock_bh(rwlock_t *lock)
- {
- 	__read_unlock_bh(lock);
-@@ -344,7 +344,7 @@ void __lockfunc _read_unlock_bh(rwlock_t *lock)
- EXPORT_SYMBOL(_read_unlock_bh);
- #endif
- 
--#ifndef _write_unlock_irqrestore
-+#ifndef CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE
- void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- {
- 	__write_unlock_irqrestore(lock, flags);
-@@ -352,7 +352,7 @@ void __lockfunc _write_unlock_irqrestore(rwlock_t *lock, unsigned long flags)
- EXPORT_SYMBOL(_write_unlock_irqrestore);
- #endif
- 
--#ifndef _write_unlock_irq
-+#ifndef CONFIG_INLINE_WRITE_UNLOCK_IRQ
- void __lockfunc _write_unlock_irq(rwlock_t *lock)
- {
- 	__write_unlock_irq(lock);
-@@ -360,7 +360,7 @@ void __lockfunc _write_unlock_irq(rwlock_t *lock)
- EXPORT_SYMBOL(_write_unlock_irq);
- #endif
- 
--#ifndef _write_unlock_bh
-+#ifndef CONFIG_INLINE_WRITE_UNLOCK_BH
- void __lockfunc _write_unlock_bh(rwlock_t *lock)
- {
- 	__write_unlock_bh(lock);
-@@ -368,7 +368,7 @@ void __lockfunc _write_unlock_bh(rwlock_t *lock)
- EXPORT_SYMBOL(_write_unlock_bh);
- #endif
- 
--#ifndef _spin_trylock_bh
-+#ifndef CONFIG_INLINE_SPIN_TRYLOCK_BH
- int __lockfunc _spin_trylock_bh(spinlock_t *lock)
- {
- 	return __spin_trylock_bh(lock);
