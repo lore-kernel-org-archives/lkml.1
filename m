@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbZKMQPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZKMQTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755613AbZKMQPt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 11:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZKMQPp
+	id S1756182AbZKMQTv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 11:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZKMQTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 11:15:45 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:65517 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755030AbZKMQPo (ORCPT
+	Fri, 13 Nov 2009 11:19:44 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:45803 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbZKMQTn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 11:15:44 -0500
+	Fri, 13 Nov 2009 11:19:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=YPIOCgNUyW6CFZsBbtSf5+Asg9pToRQ4d5N2lOImP5PuDaECE4zjbNOF8At+s+FVIg
-         d1bjLXZYSBdxqnWcqSVSZC0Jixec4wpxFVdEdclMtas6vY7WWfTSzEnN9R1gqjcVd51N
-         76yfx/djjQ7AMcBNhpk6BdEMu4o6Zo4YILhAA=
-Message-ID: <4AFD862E.6070105@gmail.com>
-Date: Fri, 13 Nov 2009 11:15:42 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=vEmJN2kN57prX0uc3AicvQ1DKVO4R2dITekGm7QdTnfhCjxJSCMejyyQwGZsiOrsKW
+         Kp0rFkcB9qYQsKpM2tg/kNwasuDCYL8T36BwgYUT7zBn0169Fg/ZEsAnVj29Z83bg8Sj
+         FLjOJIKZXwFrsmUxVX40jJlm4Iza6NZ0eST+Q=
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Stephen Hemminger <shemminger@vyatta.com>, sclark46@earthlink.net,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: Documentation: rw_lock lessons learned
-References: <4AF9C540.5090403@gmail.com>	<20091110180646.2e5859a8@nehalam>	<4AFAEF78.4080807@gmail.com>	<20091111093724.4f40a48d@nehalam>	<4AFBEC44.9030409@gmail.com>	<4AFC5E3F.7070609@earthlink.net> <20091112150029.1a26c641@nehalam> <4AFD1FF1.7080906@s5r6.in-berlin.de>
-In-Reply-To: <4AFD1FF1.7080906@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
+References: <43e72e890911121754p751060b1h1cec7eeb78da8806@mail.gmail.com> 
+	<51058d550911130206m2982d20dq51bcf943f1ec91c3@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 13 Nov 2009 08:19:29 -0800
+Message-ID: <43e72e890911130819m42c3da2bv4e956c5eed75617c@mail.gmail.com>
+Subject: Re: [ANN] Stable compat-wireless 2.6.32-rc7 released
+To: Greg Oliver <oliver.greg@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Stephen Hemminger wrote:
->> On Thu, 12 Nov 2009 14:13:03 -0500
->> Stephen Clark <sclark46@earthlink.net> wrote:
->>> How up to date is this doc?
->>>
->>> http://www.kernel.org/pub/linux/kernel/people/rusty/kernel-locking/index.html
->>>
->> Out of date.
->> 1. Missing mutex's which have largely replaced semaphores.
+On Fri, Nov 13, 2009 at 2:06 AM, Greg Oliver <oliver.greg@gmail.com> wrote:
+> On Thu, Nov 12, 2009 at 7:54 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> Along with the 2.6.32-rc7 comes the stable compat-wireless based [1]
+>> on it [2] which allows you to get the 2.6.32-rc7 wireless subsystem
+>> and new wireless drivers compilable and installed on older kernels.
+>> This is like the general compat-wireless releases but are *stable* and
+>> should be *stable*. Please report any issues ASAP. For details on
+>> changes you can refer to the ChangeLog-2.6.32-rc7-wireless [3].
 >>
->> 2. Missing change to lock initialization in later kernels.
+>>  Luis
 >>
->> 3. Missing description of lock dependency checker which should be in same guide.
-> 
-> 4. The section on atomic reference counting should refer to <linux/kref.h>.
+>> [1] http://wireless.kernel.org/en/users/Download/stable
+>> [2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/compat-wireless-2.6.32-rc7.tar.bz2
+>> [3] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/ChangeLog-2.6.32-rc7-wireless
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
+> The link on kernel.org for rc7 is linked to rc6...  (rc7 does exist
+> there though)...
 
-I'd also read that, and that's where I got some of my wrong thinking.  But
-that does point to Documentation/spin_locks.txt, which I took to be
-authoritative (and followed).  That's the reason spin_locks.txt should be
-updated, as others are having the same problems....
+That seems fixed now.
 
-Anybody have answers/updates to Linus's concerns about "pretty old and
-bogus language"?
-
+  Luis
