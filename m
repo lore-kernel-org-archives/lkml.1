@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbZKMPNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZKMPJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932090AbZKMPNl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZKMPLl
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:11:41 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:54766 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756144AbZKMPJH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1756138AbZKMPJH (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 13 Nov 2009 10:09:07 -0500
-Message-Id: <20091113150915.570953227@de.ibm.com>
-User-Agent: quilt/0.48-1
-Date: Fri, 13 Nov 2009 16:08:59 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 35/52] [PATCH] cio: dont panic in non-fatal conditions
-References: <20091113150824.351347652@de.ibm.com>
-Content-Disposition: inline; filename=134-cio-avoid-panic.diff
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZKMPJA
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 13 Nov 2009 10:09:00 -0500
+Received: from mga11.intel.com ([192.55.52.93]:38203 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755994AbZKMPI7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 10:08:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,737,1249282800"; 
+   d="scan'208";a="746670686"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Date: Fri, 13 Nov 2009 15:09:00 +0000
+Subject: RE: [PATCH] Add COH 901 318 DMA block driver v4
+Thread-Topic: [PATCH] Add COH 901 318 DMA block driver v4
+Thread-Index: AcphfE1bct5Ipe2aTIqVv5ztIXsO/gC9pOFw
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B7C11778@irsmsx504.ger.corp.intel.com>
+References: <1257798973-11943-1-git-send-email-linus.walleij@stericsson.com>
+In-Reply-To: <1257798973-11943-1-git-send-email-linus.walleij@stericsson.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Linus Walleij wrote:
+> This patch adds support for the ST-Ericsson COH 901 318 DMA block,
+> found in the U300 series platforms. It registers a DMA slave for
+> device I/O and also a memcpy slave for memcpy.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> ---
+> ChangeLog v3->v4
+> - Removed the useless forward declaration of structs by arranging
+>   #includes correctly. (Alan Cox)
+> - NULL check ordering, exit on failure etc (Alan Cox)
+> - Fixed a possible overflow in if statement. (Alan Cox)
+> - Tag IO areas as __iomem (Alan Cox)
+> - Check for base adresss NULL before operating on pointer on
+>   several spots. (Alan Cox)
+> - Removed dma_map() and dma_unmap() - clients shall do this.
+>   (Maciej)
+> - Add spin_unlock() in error path for coh901318_lli_fill_sg.
+>   (Maciej)
+> - Hope it is fine now!
+> ---
 
-Remove the call to BUG() for situations which are unexpected
-but do not cause actual problems.
-
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- drivers/s390/cio/device_fsm.c |   25 ++++++-------------------
- 1 file changed, 6 insertions(+), 19 deletions(-)
-
-Index: quilt-2.6/drivers/s390/cio/device_fsm.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device_fsm.c	2009-11-13 16:08:19.000000000 +0100
-+++ quilt-2.6/drivers/s390/cio/device_fsm.c	2009-11-13 16:08:19.000000000 +0100
-@@ -1055,14 +1055,14 @@
- 		ccw_device_start_id(cdev, 0);
- }
- 
--static void
--ccw_device_offline_irq(struct ccw_device *cdev, enum dev_event dev_event)
-+static void ccw_device_disabled_irq(struct ccw_device *cdev,
-+				    enum dev_event dev_event)
- {
- 	struct subchannel *sch;
- 
- 	sch = to_subchannel(cdev->dev.parent);
- 	/*
--	 * An interrupt in state offline means a previous disable was not
-+	 * An interrupt in a disabled state means a previous disable was not
- 	 * successful - should not happen, but we try to disable again.
- 	 */
- 	cio_disable_subchannel(sch);
-@@ -1125,25 +1125,12 @@
- }
- 
- /*
-- * Bug operation action. 
-- */
--static void
--ccw_device_bug(struct ccw_device *cdev, enum dev_event dev_event)
--{
--	CIO_MSG_EVENT(0, "Internal state [%i][%i] not handled for device "
--		      "0.%x.%04x\n", cdev->private->state, dev_event,
--		      cdev->private->dev_id.ssid,
--		      cdev->private->dev_id.devno);
--	BUG();
--}
--
--/*
-  * device statemachine
-  */
- fsm_func_t *dev_jumptable[NR_DEV_STATES][NR_DEV_EVENTS] = {
- 	[DEV_STATE_NOT_OPER] = {
- 		[DEV_EVENT_NOTOPER]	= ccw_device_nop,
--		[DEV_EVENT_INTERRUPT]	= ccw_device_bug,
-+		[DEV_EVENT_INTERRUPT]	= ccw_device_disabled_irq,
- 		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
- 		[DEV_EVENT_VERIFY]	= ccw_device_nop,
- 	},
-@@ -1161,7 +1148,7 @@
- 	},
- 	[DEV_STATE_OFFLINE] = {
- 		[DEV_EVENT_NOTOPER]	= ccw_device_generic_notoper,
--		[DEV_EVENT_INTERRUPT]	= ccw_device_offline_irq,
-+		[DEV_EVENT_INTERRUPT]	= ccw_device_disabled_irq,
- 		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
- 		[DEV_EVENT_VERIFY]	= ccw_device_offline_verify,
- 	},
-@@ -1218,7 +1205,7 @@
- 	[DEV_STATE_DISCONNECTED] = {
- 		[DEV_EVENT_NOTOPER]	= ccw_device_nop,
- 		[DEV_EVENT_INTERRUPT]	= ccw_device_start_id,
--		[DEV_EVENT_TIMEOUT]	= ccw_device_bug,
-+		[DEV_EVENT_TIMEOUT]	= ccw_device_nop,
- 		[DEV_EVENT_VERIFY]	= ccw_device_start_id,
- 	},
- 	[DEV_STATE_DISCONNECTED_SENSE_ID] = {
-
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
