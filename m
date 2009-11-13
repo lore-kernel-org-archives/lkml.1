@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZKMSWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbZKMSXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbZKMSWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 13:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbZKMSWq
+	id S1756810AbZKMSXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 13:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbZKMSXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 13:22:46 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:44845 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756634AbZKMSWp convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 13:23:42 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48029 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756764AbZKMSXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 13:22:45 -0500
-MIME-Version: 1.0
-In-Reply-To: <20091113111019.GA3563@pengutronix.de>
-References: <1257844329-20687-1-git-send-email-l.fu@pengutronix.de> 
-	<1258108877-25435-1-git-send-email-l.fu@pengutronix.de> <1258108877-25435-2-git-send-email-l.fu@pengutronix.de> 
-	<1258108877-25435-3-git-send-email-l.fu@pengutronix.de> <1258108877-25435-4-git-send-email-l.fu@pengutronix.de> 
-	<20091113111019.GA3563@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 13 Nov 2009 11:22:31 -0700
-X-Google-Sender-Auth: 63b3da2958d3d8ab
-Message-ID: <fa686aa40911131022yc84ab95wd9c67ab5d03c5ecb@mail.gmail.com>
-Subject: Re: [PATCH 3/3] [V2] mpc52xx_spi: add gpio chipselect
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Luotao Fu <l.fu@pengutronix.de>, spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 13 Nov 2009 13:23:41 -0500
+Date: Fri, 13 Nov 2009 18:25:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+Message-ID: <20091113182515.38fb3793@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911131715.24377.bzolnier@gmail.com>
+References: <4AFCC0D4.9020708@gmail.com>
+	<200911131715.24377.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 4:10 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Fri, Nov 13, 2009 at 11:41:17AM +0100, Luotao Fu wrote:
->> This one enables the mpc52xx_spi driver for usage of user defined gpio lines
->> as chipselect. This way we can control some more spi devices than only one
->>
->> V2 Changes:
->> * preinitialize the gpio as output in probe function and call gpio_set_value in
->>   the chip select function instead of calling direction_output every time.
->> * initialize the gpio line with output high, since we don't support CS_HIGH
->>   in the driver currently any way. change gpio value setting to default active
->>   low in chip select call.
->> * free the gpio array while error or removing.
->>
->> Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
+> Fine but please update status of following host drivers that were
+> marked as "stable" prematurely by commit e3389cb first:
+> 
+> PATA_PDC_OLD: needs to be marked as EXPERIMENTAL (or just BROKEN)
+> - known reliability problems with UDMA
 
->> @@ -477,6 +520,12 @@ static int __devinit mpc52xx_spi_probe(struct of_device *op,
->>   err_register:
->>       dev_err(&ms->master->dev, "initialization failed\n");
->>       spi_master_put(master);
->> + err_gpio:
->> +     while (i-- > 0)
->> +             gpio_free(ms->gpio_cs[i]);
->> +
->> +     if (ms->gpio_cs != NULL)
->> +             kfree(ms->gpio_cs);
->
-> kfree() is NULL aware, so no if needed.
+A few odd reports apparently linked to specific chip revs. It's at
+least as stable as the old IDE one which doesn't work on my hardware. I'd
+love to get it working on everything but neither driver does and I don't
+think we are likely to ever extract more docs from Promise.
 
-Not dangerous though.  No need to respin just for this.
+> PATA_ALI: EXPERIMENTAL
+> - ATAPI DMA is still broken
 
-g.
+Not experimental as we default to not doing ATAPI DMA. Glancing over the
+code I notice the ALI C2/C3 workaround probably wants adding to the old
+driver as it can do nasty things otherwise. (See the reset function in
+the pata_ali driver)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+> PATA_CMD64X: EXPERIMENTAL
+> - potential data corruption issues remains unfixed for CMD64[3,6]
+
+Patch in testing, and unlike the old IDE one it doesn't cripple the
+controller but implements the proper workaround in full including
+permitting parallel PIO command streams. I'll push that back through
+stable once done.
+
+> PATA_SIS: EXPERIMENTAL
+> - missing MWDMA support on newer controllers
+
+Yes seems someone fixed that in the old driver but didn't forward port
+it. Trivial and fixed.
+
+BTW - its wrong in the old driver as far as I can see - it doesn't clip
+the DMA mode to the PIO limit as required by the documentation and the
+ATA standard. Remember the same timings are used for both PIO and MWDMA
+cycles.
+
+> They are all old & known problems and not present in
+> [ "old", "deprecated", "legacy" ] counterparts.
+
+Which has its own different set of problems.
+
+Any others spring to mind while you are at it ?
+
+Alan
+
