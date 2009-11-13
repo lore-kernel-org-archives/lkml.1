@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZKMIKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZKMIMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZKMIKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 03:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZKMIKm
+	id S1754192AbZKMIMP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 03:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbZKMIMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 03:10:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47094 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754519AbZKMIKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 03:10:40 -0500
-Date: Fri, 13 Nov 2009 09:10:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Ma, Ling" <ling.ma@intel.com>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
- fast string.
-Message-ID: <20091113081037.GB18054@elte.hu>
-References: <1257500482-16182-1-git-send-email-ling.ma@intel.com>
- <4AF457E0.4040107@zytor.com>
- <4AF4784C.5090800@zytor.com>
- <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com>
- <4AF7C66C.6000009@zytor.com>
- <20091109080830.GI453@elte.hu>
- <20091112121619.GD1394@ucw.cz>
- <20091113073340.GA26127@elte.hu>
- <4AFD1326.506@zytor.com>
+	Fri, 13 Nov 2009 03:12:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40506 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbZKMIMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 03:12:06 -0500
+Message-ID: <4AFD1497.8040303@zytor.com>
+Date: Fri, 13 Nov 2009 00:11:03 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFD1326.506@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dave Jones <davej@redhat.com>, Mike Travis <travis@sgi.com>,
+       Andi Kleen <ak@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Yinghai Lu <yinghai@kernel.org>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
+References: <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com> <4AEEBE65.3070202@linux.intel.com> <4AEF3143.2030701@sgi.com> <20091112222200.GA19109@redhat.com> <4AFC92DD.3020105@zytor.com> <20091112231542.GA7129@redhat.com> <20091113080312.GA18054@elte.hu>
+In-Reply-To: <20091113080312.GA18054@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> On 11/12/2009 11:33 PM, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> >>> Ling, if you are interested, could you send a user-space test-app to 
-> >>> this thread that everyone could just compile and run on various older 
-> >>> boxes, to gather a performance profile of hand-coded versus string ops 
-> >>> performance?
-> >>>
-> >>> ( And i think we can make a judgement based on cache-hot performance
-> >>>   alone - if then the strings ops will perform comparatively better in
-> >>>   cache-cold scenarios, so the cache-hot numbers would be a conservative
-> >>>   estimate. )
-> >>
-> >> Ugh, really? I'd expect cache-cold performance to be not helped at all 
-> >> (memory bandwidth limit) and you'll get slow down from additional 
-> >> i-cache misses...
-> > 
-> > That's my point - the new code is shorter, which will run comparatively 
-> > faster in a cache-cold environment.
-> > 
+On 11/13/2009 12:03 AM, Ingo Molnar wrote:
 > 
-> memcpy_c by itself is by far the shortest variant, of course.
+> * Dave Jones <davej@redhat.com> wrote:
+> 
+>> In which case..
+>>
+>> 	Dave
+>>
+>> --- 
+>>
+>> Remove the CPU cache size printk's.
+>>
+>> They aren't useful, and pollute the dmesg output a lot (especially on 
+>> machines with many cores). Also the same information can be trivially 
+>> found out from userspace.
+>>
+>> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> Precisely - these are the kind of simple patches i'd like to see.
+> 
 
-yep. The argument i made was when a long function was compared to a 
-short one. As you noted we dont actually enable the long function all 
-that often - which inverts the same argument.
+Indeed.
 
-> The question is if it makes sense to use the long variants for short 
-> (< 1024 bytes) copies.
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-I'd say not - the kernel executes in a icache-cold environment most of 
-the time (as user-space is far more cache intense in the majority of 
-workloads and kernel processing starts with a cold icache), so 
-optimizing the kernel for code size is very important. (but numbers done 
-on real workloads can convince me of the opposite.)
+I'll apply it tomorrow if you don't beat me to it.
 
-	Ingo
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
