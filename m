@@ -1,57 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZKMQgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZKMPds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbZKMQgn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 11:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbZKMQgj
+	id S1754130AbZKMPds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 10:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKMPdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 11:36:39 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:50546 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755239AbZKMQgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 11:36:39 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] intermittent suspend problem again
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911111238.22696.rjw@sisk.pl>
-	<87pr7pi40p.fsf@tac.ki.iif.hu> <200911111547.21149.rjw@sisk.pl>
-Date: Fri, 13 Nov 2009 17:35:55 +0100
-In-Reply-To: <200911111547.21149.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 11 Nov 2009 15:47:21 +0100")
-Message-ID: <87my2qwff8.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Nov 2009 10:33:43 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:42533 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751912AbZKMPdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 10:33:42 -0500
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org,
+       avictor.za@gmail.com
+Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
+       linux@arm.linux.org.uk, Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH v2] atmel_lcdfb Kconfig: remove long dependency line
+Date: Fri, 13 Nov 2009 17:39:58 +0100
+Message-Id: <1258130398-13737-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <29424085870c8c8cc3fe9d6e1f382a24f8a9ca2b.1257263893.git.nicolas.ferre@atmel.com>
+References: <29424085870c8c8cc3fe9d6e1f382a24f8a9ca2b.1257263893.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Many Atmel SOC are embedding a LCD controller. This patch removes the long
+dependency line for this Atmel LCD framebuffer driver configuration entry.
+The HAVE_FB_ATMEL configuration option is located in the video Kconfig file
+as it may be setup by ARM/AT91 and AVR32 chips.
 
-> Yes, echo "core" to /sys/power/pm_test before executing s2disk.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ arch/arm/mach-at91/Kconfig |    6 ++++++
+ arch/avr32/Kconfig         |    1 +
+ drivers/video/Kconfig      |    5 ++++-
+ 3 files changed, 11 insertions(+), 1 deletions(-)
 
-It snapshots the system and returns, producing the same console output
-as s2ram (is this the expected behaviour?)  I ran this several times in
-a loop, and experienced no problems at all.  Maybe it depends on the
-amount of memory used...  I saw a freeze saying "99% done" (ie. not
-100%), btw.  Are other pm_test values meaningful with s2disk?  Is this
-handled explicitly in s2disk, or does simply the kernel act as if it was
-resumed instead of providing the system image after SNAPSHOT_CREATE_IMAGE?
-
-> On Wednesday 11 November 2009, Ferenc Wagner wrote:
->
->> I already did the test for STR (see
->> http://bugs.freedesktop.org/show_bug.cgi?id=22126#c3), but will redo
->> with the current kernel tonight.
->
-> OK, thanks.
-
-No change on this front, FWIW.  But rc7 is out now, I'll test again.
+diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
+index bb4cd27..3df124e 100644
+--- a/arch/arm/mach-at91/Kconfig
++++ b/arch/arm/mach-at91/Kconfig
+@@ -41,18 +41,21 @@ config ARCH_AT91SAM9261
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9G10
+ 	bool "AT91SAM9G10"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9263
+ 	bool "AT91SAM9263"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9RL
+ 	bool "AT91SAM9RL"
+@@ -60,6 +63,7 @@ config ARCH_AT91SAM9RL
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91SAM9G20
+ 	bool "AT91SAM9G20"
+@@ -76,12 +80,14 @@ config ARCH_AT91SAM9G45
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_AT91_USART3
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91CAP9
+ 	bool "AT91CAP9"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select HAVE_FB_ATMEL
+ 
+ config ARCH_AT91X40
+ 	bool "AT91x40"
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index 35e3bd9..d856354 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -92,6 +92,7 @@ config PLATFORM_AT32AP
+ 	select PERFORMANCE_COUNTERS
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select GENERIC_ALLOCATOR
++	select HAVE_FB_ATMEL
+ 
+ #
+ # CPU types
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 9bbb285..6d3f291 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -5,6 +5,9 @@
+ menu "Graphics support"
+ 	depends on HAS_IOMEM
+ 
++config HAVE_FB_ATMEL
++	bool
++
+ source "drivers/char/agp/Kconfig"
+ 
+ source "drivers/gpu/vga/Kconfig"
+@@ -937,7 +940,7 @@ config FB_S1D13XXX
+ 
+ config FB_ATMEL
+ 	tristate "AT91/AT32 LCD Controller support"
+-	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
++	depends on FB && HAVE_FB_ATMEL
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-Thanks,
-Feri.
+1.5.6.5
+
