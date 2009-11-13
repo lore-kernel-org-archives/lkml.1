@@ -1,106 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZKMUOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZKMUSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZKMUOb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 15:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZKMUO0
+	id S1757410AbZKMUSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 15:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZKMUSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 15:14:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48488 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757361AbZKMUOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 15:14:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Allow memory hotplug and hibernation in the same kernel
-Date: Fri, 13 Nov 2009 21:16:02 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc6-rjw; KDE/4.3.1; x86_64; ; )
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org, gerald.schaefer@de.ibm.com,
-       linux-kernel@vger.kernel.org
-References: <20091113105944.GA16028@basil.fritz.box>
-In-Reply-To: <20091113105944.GA16028@basil.fritz.box>
+	Fri, 13 Nov 2009 15:18:34 -0500
+Received: from smtp101.biz.mail.mud.yahoo.com ([68.142.200.236]:34764 "HELO
+	smtp101.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757251AbZKMUSd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 15:18:33 -0500
+X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
+X-YMail-OSG: OGltuk8VM1nycAXUuPtG4Ngbc_xheHJJviNGlXcDK8jhdNoivVTWXZGDnc6h3exilynHgSZ4lGx4klrqAvwMc4g5OpLCbF._TpMwJHMY3mf3H6FJe14UJo0lFY_I.R1puzGSdNLWCeSndEoAN1WfxCFETSlW11v5izeJehX8VWzdNnVVx1NBWAa_HRP9wzP6mTvo2PXsqOB2MEizvus9DcB2wf.kmw4WBapv9e.Oxh.3Oyn4AyveCP5XRJY97ZjCwN3T07V7fkMHjFXsV0Kbz0fKL6P0PbI6N4kQCTXW5.Fmcq2xOA3yxyWR84HQNQEQA9o2YhRPBnqWSyEXz4FxWHIipZie4xA52d8vVhWR8g--
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: uclinux-dev@uclinux.org
+Subject: [PATCH] m68knommu: export clk_* symbols in clk.c
+Date: Fri, 13 Nov 2009 12:18:37 -0800
+User-Agent: KMail/1.9.9
+Cc: Greg Ungerer <gerg@snapgear.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911132116.02659.rjw@sisk.pl>
+Message-Id: <200911131218.37434.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 November 2009, Andi Kleen wrote:
-> Allow memory hotplug and hibernation in the same kernel
-> 
-> Memory hotplug and hibernation was excluded in Kconfig. This is obviously
-> a problem for distribution kernels who want to support both in the same
-> image.
-> 
-> After some discussions with Rafael and others the only problem is 
-> with parallel memory hotadd or removal while a hibernation operation
-> is in process. It was also working for s390 before.
-> 
-> This patch removes the Kconfig level exclusion, and simply
-> makes the memory add / remove functions grab the pm_mutex
-> to exclude against hibernation.
-> 
-> This is a 2.6.32 candidate.
-> 
-> Cc: gerald.schaefer@de.ibm.com
-> Cc: rjw@sisk.pl
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  include/linux/suspend.h |   21 +++++++++++++++++++--
->  mm/Kconfig              |    5 +----
->  mm/memory_hotplug.c     |   21 +++++++++++++++++----
->  3 files changed, 37 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6.32-rc6-ak/include/linux/suspend.h
-> ===================================================================
-> --- linux-2.6.32-rc6-ak.orig/include/linux/suspend.h
-> +++ linux-2.6.32-rc6-ak/include/linux/suspend.h
-> @@ -301,6 +301,8 @@ static inline int unregister_pm_notifier
->  #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
->  #endif /* !CONFIG_PM_SLEEP */
->  
-> +extern struct mutex pm_mutex;
-> +
->  #ifndef CONFIG_HIBERNATION
->  static inline void register_nosave_region(unsigned long b, unsigned long e)
->  {
-> @@ -308,8 +310,23 @@ static inline void register_nosave_regio
->  static inline void register_nosave_region_late(unsigned long b, unsigned long e)
->  {
->  }
-> -#endif
->  
-> -extern struct mutex pm_mutex;
-> +static inline void lock_hibernation(void) {}
-> +static inline void unlock_hibernation(void) {}
-> +
-> +#else
-> +
-> +/* Let some subsystems like memory hotadd exclude hibernation */
-> +
-> +static inline void lock_hibernation(void)
-> +{
-> +	mutex_lock(&pm_mutex);
-> +}
-> +
-> +static inline void unlock_hibernation(void)
-> +{
-> +	mutex_unlock(&pm_mutex);
-> +}
+export the clk_*  stubs defined in arch/m68knommu/platform/coldfire/clk.c so
+they can be used by modules.
 
-This also is going to affect suspend to RAM, which kind of makes sense BTW,
-so I'd not put it under the #ifdef.  Also, the names should reflect the fact
-that suspend is affected too.  What about block|unblock_system_sleep()?
+Signed-off-by: Steven King <sfking@fdwdc.com>
+---
 
-> +#endif
->  
->  #endif /* _LINUX_SUSPEND_H */
+ arch/m68knommu/platform/coldfire/clk.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-The rest of the patch is fine by me.
 
-Thanks,
-Rafael
+diff --git a/arch/m68knommu/platform/coldfire/clk.c b/arch/m68knommu/platform/coldfire/clk.c
+index 7cdbf44..9f1260c 100644
+--- a/arch/m68knommu/platform/coldfire/clk.c
++++ b/arch/m68knommu/platform/coldfire/clk.c
+@@ -9,6 +9,7 @@
+ /***************************************************************************/
+ 
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/clk.h>
+ #include <asm/coldfire.h>
+ 
+@@ -18,23 +19,27 @@ struct clk *clk_get(struct device *dev, const char *id)
+ {
+ 	return NULL;
+ }
++EXPORT_SYMBOL(clk_get);
+ 
+ int clk_enable(struct clk *clk)
+ {
+ 	return 0;
+ }
++EXPORT_SYMBOL(clk_enable);
+ 
+ void clk_disable(struct clk *clk)
+ {
+ }
++EXPORT_SYMBOL(clk_disable);
+ 
+ void clk_put(struct clk *clk)
+ {
+ }
++EXPORT_SYMBOL(clk_put);
+ 
+ unsigned long clk_get_rate(struct clk *clk)
+ {
+ 	return MCF_CLK;
+ }
+-
++EXPORT_SYMBOL(clk_get_rate);
+ /***************************************************************************/
