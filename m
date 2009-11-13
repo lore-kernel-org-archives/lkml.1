@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZKMTuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932249AbZKMTuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbZKMTuL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZKMTuG
+	id S932249AbZKMTuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZKMTuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:50:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36038 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 14:50:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36051 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932070AbZKMTuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 14:50:03 -0500
-Date: Fri, 13 Nov 2009 19:49:47 GMT
-From: tip-bot for Jon Hunter <jon-hunter@ti.com>
+	id S932189AbZKMTuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 14:50:16 -0500
+Date: Fri, 13 Nov 2009 19:50:03 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        johnstul@us.ibm.com, jon-hunter@ti.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        johnstul@us.ibm.com, jon-hunter@ti.com, tglx@linutronix.de
-In-Reply-To: <1250617512-23567-2-git-send-email-jon-hunter@ti.com>
-References: <1250617512-23567-2-git-send-email-jon-hunter@ti.com>
+In-Reply-To: <new-submission>
+References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] nohz: Prevent clocksource wrapping during idle
-Message-ID: <tip-98962465ed9e6ea99c38e0af63fe1dcb5a79dc25@git.kernel.org>
-Git-Commit-ID: 98962465ed9e6ea99c38e0af63fe1dcb5a79dc25
+Subject: [tip:timers/core] nohz: Track last do_timer() cpu
+Message-ID: <tip-27185016b806d5a1181ff501cae120582b2b27dd@git.kernel.org>
+Git-Commit-ID: 27185016b806d5a1181ff501cae120582b2b27dd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,243 +29,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  98962465ed9e6ea99c38e0af63fe1dcb5a79dc25
-Gitweb:     http://git.kernel.org/tip/98962465ed9e6ea99c38e0af63fe1dcb5a79dc25
-Author:     Jon Hunter <jon-hunter@ti.com>
-AuthorDate: Tue, 18 Aug 2009 12:45:10 -0500
+Commit-ID:  27185016b806d5a1181ff501cae120582b2b27dd
+Gitweb:     http://git.kernel.org/tip/27185016b806d5a1181ff501cae120582b2b27dd
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Thu, 12 Nov 2009 22:12:06 +0100
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Fri, 13 Nov 2009 20:46:24 +0100
 
-nohz: Prevent clocksource wrapping during idle
+nohz: Track last do_timer() cpu
 
-The dynamic tick allows the kernel to sleep for periods longer than a
-single tick, but it does not limit the sleep time currently. In the
-worst case the kernel could sleep longer than the wrap around time of
-the time keeping clock source which would result in losing track of
-time.
+The previous patch which limits the sleep time to the maximum
+deferment time of the time keeping clocksource has some limitations on
+SMP machines: if all CPUs are idle then for all CPUs the maximum sleep
+time is limited.
 
-Prevent this by limiting it to the safe maximum sleep time of the
-current time keeping clock source. The value is calculated when the
-clock source is registered.
+Solve this by keeping track of which cpu had the do_timer() duty
+assigned last and limit the sleep time only for this cpu.
 
-[ tglx: simplified the code a bit and massaged the commit msg ]
-
-Signed-off-by: Jon Hunter <jon-hunter@ti.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-LKML-Reference: <1250617512-23567-2-git-send-email-jon-hunter@ti.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
+Cc: Jon Hunter <jon-hunter@ti.com>
+Cc: John Stultz <johnstul@us.ibm.com>
 ---
- include/linux/clocksource.h |    2 +
- include/linux/time.h        |    1 +
- kernel/time/clocksource.c   |   44 ++++++++++++++++++++++++++++++++++++
- kernel/time/tick-sched.c    |   52 +++++++++++++++++++++++++++++++-----------
- kernel/time/timekeeping.c   |   11 +++++++++
- 5 files changed, 96 insertions(+), 14 deletions(-)
+ include/linux/tick.h     |    2 +
+ kernel/time/tick-sched.c |   52 ++++++++++++++++++++++++---------------------
+ 2 files changed, 30 insertions(+), 24 deletions(-)
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index f57f882..279c547 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -151,6 +151,7 @@ extern u64 timecounter_cyc2time(struct timecounter *tc,
-  *			subtraction of non 64 bit counters
-  * @mult:		cycle to nanosecond multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-+ * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-  * @resume:		resume function for the clocksource, if necessary
-@@ -168,6 +169,7 @@ struct clocksource {
- 	cycle_t mask;
- 	u32 mult;
- 	u32 shift;
-+	u64 max_idle_ns;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
- 	void (*resume)(void);
-diff --git a/include/linux/time.h b/include/linux/time.h
-index fe04e5e..6e026e4 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -148,6 +148,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
- 
- extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
- extern int timekeeping_valid_for_hres(void);
-+extern u64 timekeeping_max_deferment(void);
- extern void update_wall_time(void);
- extern void update_xtime_cache(u64 nsec);
- extern void timekeeping_leap_insert(int leapsecond);
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 407c089..b65b242 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -469,6 +469,47 @@ void clocksource_touch_watchdog(void)
- #ifdef CONFIG_GENERIC_TIME
- 
- /**
-+ * clocksource_max_deferment - Returns max time the clocksource can be deferred
-+ * @cs:         Pointer to clocksource
-+ *
-+ */
-+static u64 clocksource_max_deferment(struct clocksource *cs)
-+{
-+	u64 max_nsecs, max_cycles;
-+
-+	/*
-+	 * Calculate the maximum number of cycles that we can pass to the
-+	 * cyc2ns function without overflowing a 64-bit signed result. The
-+	 * maximum number of cycles is equal to ULLONG_MAX/cs->mult which
-+	 * is equivalent to the below.
-+	 * max_cycles < (2^63)/cs->mult
-+	 * max_cycles < 2^(log2((2^63)/cs->mult))
-+	 * max_cycles < 2^(log2(2^63) - log2(cs->mult))
-+	 * max_cycles < 2^(63 - log2(cs->mult))
-+	 * max_cycles < 1 << (63 - log2(cs->mult))
-+	 * Please note that we add 1 to the result of the log2 to account for
-+	 * any rounding errors, ensure the above inequality is satisfied and
-+	 * no overflow will occur.
-+	 */
-+	max_cycles = 1ULL << (63 - (ilog2(cs->mult) + 1));
-+
-+	/*
-+	 * The actual maximum number of cycles we can defer the clocksource is
-+	 * determined by the minimum of max_cycles and cs->mask.
-+	 */
-+	max_cycles = min_t(u64, max_cycles, (u64) cs->mask);
-+	max_nsecs = clocksource_cyc2ns(max_cycles, cs->mult, cs->shift);
-+
-+	/*
-+	 * To ensure that the clocksource does not wrap whilst we are idle,
-+	 * limit the time the clocksource can be deferred by 12.5%. Please
-+	 * note a margin of 12.5% is used because this can be computed with
-+	 * a shift, versus say 10% which would require division.
-+	 */
-+	return max_nsecs - (max_nsecs >> 5);
-+}
-+
-+/**
-  * clocksource_select - Select the best clocksource available
-  *
-  * Private function. Must hold clocksource_mutex when called.
-@@ -564,6 +605,9 @@ static void clocksource_enqueue(struct clocksource *cs)
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 8dc0821..d2ae79e 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -43,6 +43,7 @@ enum tick_nohz_mode {
+  * @idle_exittime:	Time when the idle state was left
+  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
+  * @sleep_length:	Duration of the current idle sleep
++ * @do_timer_lst:	CPU was the last one doing do_timer before going idle
   */
- int clocksource_register(struct clocksource *cs)
- {
-+	/* calculate max idle time permitted for this clocksource */
-+	cs->max_idle_ns = clocksource_max_deferment(cs);
-+
- 	mutex_lock(&clocksource_mutex);
- 	clocksource_enqueue(cs);
- 	clocksource_select();
+ struct tick_sched {
+ 	struct hrtimer			sched_timer;
+@@ -64,6 +65,7 @@ struct tick_sched {
+ 	unsigned long			last_jiffies;
+ 	unsigned long			next_jiffies;
+ 	ktime_t				idle_expires;
++	int				do_timer_last;
+ };
+ 
+ extern void __init tick_init(void);
 diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index c65ba0f..a80b464 100644
+index a80b464..df133bc 100644
 --- a/kernel/time/tick-sched.c
 +++ b/kernel/time/tick-sched.c
-@@ -208,6 +208,7 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	struct tick_sched *ts;
- 	ktime_t last_update, expires, now;
- 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
-+	u64 time_delta;
- 	int cpu;
- 
- 	local_irq_save(flags);
-@@ -262,6 +263,17 @@ void tick_nohz_stop_sched_tick(int inidle)
+@@ -263,17 +263,7 @@ void tick_nohz_stop_sched_tick(int inidle)
  		seq = read_seqbegin(&xtime_lock);
  		last_update = last_jiffies_update;
  		last_jiffies = jiffies;
-+
-+		/*
-+		 * On SMP we really should only care for the CPU which
-+		 * has the do_timer duty assigned. All other CPUs can
-+		 * sleep as long as they want.
-+		 */
-+		if (cpu == tick_do_timer_cpu ||
-+		    tick_do_timer_cpu == TICK_DO_TIMER_NONE)
-+			time_delta = timekeeping_max_deferment();
-+		else
-+			time_delta = KTIME_MAX;
+-
+-		/*
+-		 * On SMP we really should only care for the CPU which
+-		 * has the do_timer duty assigned. All other CPUs can
+-		 * sleep as long as they want.
+-		 */
+-		if (cpu == tick_do_timer_cpu ||
+-		    tick_do_timer_cpu == TICK_DO_TIMER_NONE)
+-			time_delta = timekeeping_max_deferment();
+-		else
+-			time_delta = KTIME_MAX;
++		time_delta = timekeeping_max_deferment();
  	} while (read_seqretry(&xtime_lock, seq));
  
  	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
-@@ -284,11 +296,26 @@ void tick_nohz_stop_sched_tick(int inidle)
+@@ -296,6 +286,29 @@ void tick_nohz_stop_sched_tick(int inidle)
  	if ((long)delta_jiffies >= 1) {
  
  		/*
--		* calculate the expiry time for the next timer wheel
--		* timer
--		*/
--		expires = ktime_add_ns(last_update, tick_period.tv64 *
--				   delta_jiffies);
-+		 * calculate the expiry time for the next timer wheel
-+		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
-+		 * that there is no timer pending or at least extremely
-+		 * far into the future (12 days for HZ=1000). In this
-+		 * case we set the expiry to the end of time.
++		 * If this cpu is the one which updates jiffies, then
++		 * give up the assignment and let it be taken by the
++		 * cpu which runs the tick timer next, which might be
++		 * this cpu as well. If we don't drop this here the
++		 * jiffies might be stale and do_timer() never
++		 * invoked. Keep track of the fact that it was the one
++		 * which had the do_timer() duty last. If this cpu is
++		 * the one which had the do_timer() duty last, we
++		 * limit the sleep time to the timekeeping
++		 * max_deferement value which we retrieved
++		 * above. Otherwise we can sleep as long as we want.
 +		 */
-+		if (likely(delta_jiffies < NEXT_TIMER_MAX_DELTA)) {
-+			/*
-+			 * Calculate the time delta for the next timer event.
-+			 * If the time delta exceeds the maximum time delta
-+			 * permitted by the current clocksource then adjust
-+			 * the time delta accordingly to ensure the
-+			 * clocksource does not wrap.
-+			 */
-+			time_delta = min_t(u64, time_delta,
-+					   tick_period.tv64 * delta_jiffies);
-+			expires = ktime_add_ns(last_update, time_delta);
-+		} else {
-+			expires.tv64 = KTIME_MAX;
++		if (cpu == tick_do_timer_cpu) {
++			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
++			ts->do_timer_last = 1;
++		} else if (tick_do_timer_cpu != TICK_DO_TIMER_NONE) {
++			time_delta = KTIME_MAX;
++			ts->do_timer_last = 0;
++		} else if (!ts->do_timer_last) {
++			time_delta = KTIME_MAX;
 +		}
- 
- 		/*
- 		 * If this cpu is the one which updates jiffies, then
-@@ -332,22 +359,19 @@ void tick_nohz_stop_sched_tick(int inidle)
- 
- 		ts->idle_sleeps++;
- 
-+		/* Mark expires */
-+		ts->idle_expires = expires;
 +
- 		/*
--		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
--		 * there is no timer pending or at least extremly far
--		 * into the future (12 days for HZ=1000). In this case
--		 * we simply stop the tick timer:
-+		 * If the expiration time == KTIME_MAX, then
-+		 * in this case we simply stop the tick timer.
- 		 */
--		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
--			ts->idle_expires.tv64 = KTIME_MAX;
-+		 if (unlikely(expires.tv64 == KTIME_MAX)) {
- 			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
- 				hrtimer_cancel(&ts->sched_timer);
- 			goto out;
++		/*
+ 		 * calculate the expiry time for the next timer wheel
+ 		 * timer. delta_jiffies >= NEXT_TIMER_MAX_DELTA signals
+ 		 * that there is no timer pending or at least extremely
+@@ -312,21 +325,12 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 			 */
+ 			time_delta = min_t(u64, time_delta,
+ 					   tick_period.tv64 * delta_jiffies);
+-			expires = ktime_add_ns(last_update, time_delta);
+-		} else {
+-			expires.tv64 = KTIME_MAX;
  		}
  
--		/* Mark expiries */
--		ts->idle_expires = expires;
--
- 		if (ts->nohz_mode == NOHZ_MODE_HIGHRES) {
- 			hrtimer_start(&ts->sched_timer, expires,
- 				      HRTIMER_MODE_ABS_PINNED);
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 96b3f0d..5d4d423 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -478,6 +478,17 @@ int timekeeping_valid_for_hres(void)
- }
+-		/*
+-		 * If this cpu is the one which updates jiffies, then
+-		 * give up the assignment and let it be taken by the
+-		 * cpu which runs the tick timer next, which might be
+-		 * this cpu as well. If we don't drop this here the
+-		 * jiffies might be stale and do_timer() never
+-		 * invoked.
+-		 */
+-		if (cpu == tick_do_timer_cpu)
+-			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
++		if (time_delta < KTIME_MAX)
++			expires = ktime_add_ns(last_update, time_delta);
++		else
++			expires.tv64 = KTIME_MAX;
  
- /**
-+ * timekeeping_max_deferment - Returns max time the clocksource can be deferred
-+ *
-+ * Caller must observe xtime_lock via read_seqbegin/read_seqretry to
-+ * ensure that the clocksource does not change!
-+ */
-+u64 timekeeping_max_deferment(void)
-+{
-+	return timekeeper.clock->max_idle_ns;
-+}
-+
-+/**
-  * read_persistent_clock -  Return time from the persistent clock.
-  *
-  * Weak dummy function for arches that do not yet support it.
+ 		if (delta_jiffies > 1)
+ 			cpumask_set_cpu(cpu, nohz_cpu_mask);
