@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZKMQKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZKMQMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZKMQKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 11:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZKMQKT
+	id S1755686AbZKMQMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 11:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZKMQMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 11:10:19 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:34938 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754604AbZKMQKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 11:10:18 -0500
-Message-ID: <4AFD84E9.1010908@sgi.com>
-Date: Fri, 13 Nov 2009 08:10:17 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Dave Jones <davej@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Yinghai Lu <yinghai@kernel.org>, David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Limit the number of processor bootup messages
-References: <20091023233743.439628000@alcatraz.americas.sgi.com> <20091023233746.128967000@alcatraz.americas.sgi.com> <87tyxmy6x6.fsf@basil.nowhere.org> <4AE5E48F.6020408@sgi.com> <20091026215544.GA3355@basil.fritz.box> <4AEB3D95.50300@sgi.com> <4AEEBE65.3070202@linux.intel.com> <4AEF3143.2030701@sgi.com> <20091112222200.GA19109@redhat.com> <4AFC92DD.3020105@zytor.com>
-In-Reply-To: <4AFC92DD.3020105@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Nov 2009 11:12:15 -0500
+Received: from mail.gmx.net ([213.165.64.20]:32800 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754697AbZKMQMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 11:12:15 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18RYxAGKW4R+/WdOur/iyI0bC0vLA1Nskut5jFPPU
+	ngLDaFmbVJa3NV
+Subject: Re: -next: Nov 12 - kernel BUG at kernel/sched.c:7359!
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: ego@in.ibm.com, Sachin Sant <sachinp@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1258108281.22655.5.camel@laptop>
+References: <20091112195101.63263490.sfr@canb.auug.org.au>
+	 <4AFBF73B.5040500@in.ibm.com> <1258027820.4039.129.camel@laptop>
+	 <4AFBFE3D.80507@in.ibm.com> <1258028831.4039.152.camel@laptop>
+	 <1258045831.4039.736.camel@laptop>  <20091113095801.GA29977@in.ibm.com>
+	 <1258107368.4039.1149.camel@laptop>  <1258108281.22655.5.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 13 Nov 2009 17:12:11 +0100
+Message-Id: <1258128731.6284.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-11-13 at 11:31 +0100, Peter Zijlstra wrote:
 
+> /me goes try a PREEMPT=n kernel, since that is what Mike reports boot
+> funnies with..
 
-H. Peter Anvin wrote:
-> On 11/12/2009 02:22 PM, Dave Jones wrote:
->> But I don't disagree with Andi either, that it's not particularly useful,
->> and we can get all this from userspace in /proc/cpuinfo, or x86info.
->>
-> 
-> I personally don't think it's useful at all.  It gives information about
-> the processor which can be obtained from other sources.  What we want is
-> enough information that the CPU can be unambiguously identified, so that
-> when someone posts dmesg we can tell what machine they came from.
-> 
-> 	-hpa
+My highly intermittent funny is still there unfortunately.
 
-Can we say the same thing about the sched debug messages?  It's even more
-painful because the number of lines output is exponential to the number
-of cpus.
+dmesg|grep span
+[    0.504026]  domain 0: span 0,3 level MC
+[    0.504032]   domain 1: span 0-3 level CPU
+[    0.504042]  domain 0: span 1-2 level MC
+[    0.504047]   domain 1: span 0-3 level CPU
+[    0.504055]  domain 0: span 1-2 level MC
+[    0.504060]   domain 1: span 0-3 level CPU
+[    0.504069]  domain 0: span 0,3 level MC
+[    0.504073]   domain 1: span 0-3 level CPU
 
-Thanks,
-Mike
+	-Mike
+
