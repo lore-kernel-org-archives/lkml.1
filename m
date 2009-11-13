@@ -1,125 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZKMPds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZKMQmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZKMPds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKMPdn
+	id S1756453AbZKMQmz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 11:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZKMQmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:33:43 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:42533 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751912AbZKMPdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 10:33:42 -0500
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.infradead.org,
-       avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org,
-       linux@arm.linux.org.uk, Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH v2] atmel_lcdfb Kconfig: remove long dependency line
-Date: Fri, 13 Nov 2009 17:39:58 +0100
-Message-Id: <1258130398-13737-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <29424085870c8c8cc3fe9d6e1f382a24f8a9ca2b.1257263893.git.nicolas.ferre@atmel.com>
-References: <29424085870c8c8cc3fe9d6e1f382a24f8a9ca2b.1257263893.git.nicolas.ferre@atmel.com>
+	Fri, 13 Nov 2009 11:42:55 -0500
+Received: from ns.firmix.at ([62.141.48.66]:4502 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756402AbZKMQmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 11:42:54 -0500
+Subject: Re: sizeof vs strlen (was Re: [PATCH 4/4] fs/qnx4: decrement
+ sizeof size in strncmp)
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Julia Lawall <julia@diku.dk>
+Cc: al@alarsen.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0911121632540.19779@ask.diku.dk>
+References: <Pine.LNX.4.64.0911120849260.16627@ask.diku.dk>
+	 <1258021335.3689.41.camel@tara.firmix.at>
+	 <Pine.LNX.4.64.0911121632540.19779@ask.diku.dk>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Fri, 13 Nov 2009 17:42:46 +0100
+Message-Id: <1258130566.27859.4.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.67 on ns.firmix.at
+X-Firmix-Spam-Score: -2.107 () AWL,BAYES_00,FORGED_RCVD_HELO,SARE_SUB_6CONS_WORD,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.107 required=5
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+X-Firmix-Received-Date: Fri, 13 Nov 2009 17:42:59 CET
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many Atmel SOC are embedding a LCD controller. This patch removes the long
-dependency line for this Atmel LCD framebuffer driver configuration entry.
-The HAVE_FB_ATMEL configuration option is located in the video Kconfig file
-as it may be setup by ARM/AT91 and AVR32 chips.
+On Thu, 2009-11-12 at 16:33 +0100, Julia Lawall wrote: 
+> On Thu, 12 Nov 2009, Bernd Petrovitsch wrote:
+> 
+> > On Thu, 2009-11-12 at 08:49 +0100, Julia Lawall wrote:
+> > > From: Julia Lawall <julia@diku.dk>
+> > > 
+> > > As observed by Joe Perches, sizeof of a constant string includes the
+> > > trailing 0.  If what is wanted is to check the initial characters of
+> > > another string, this trailing 0 should not be taken into account.  If an
+> > > exact match is wanted, strcmp should be used instead.
+> > [...]
+> > > strncmp(foo, abc, 
+> > > - sizeof(abc)
+> > > + sizeof(abc)-1
+> > >  )
+> > > // </smpl>
+> > Am I the only one who find "strlen()" instead of "sizeof()-1" here much
+> > more readable (and to the point).
+> > 
+> > As for run-time, it shouldn't make a difference for static/constant
+> > strings as gcc should be able calculate the length at compile time. And
+> > if the string is not constant, sizeof() is probably wrong anyways.
+> 
+> Does gcc have access to the definition of strlen?  It does not seem to be 
+> an inlined function, eg in lib/string.c.
+Since "strlen()" is defined in the C-Standard C-compilers could rely on
+the defined behaviour (but I don't know exactly how gcc behaves with
+-ffreestanding for all supported versions).
+Then there is __builin_strlen() (see also
+http://gcc.gnu.org/onlinedocs/gcc-4.4.2/gcc/Other-Builtins.html#Other-Builtins).
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- arch/arm/mach-at91/Kconfig |    6 ++++++
- arch/avr32/Kconfig         |    1 +
- drivers/video/Kconfig      |    5 ++++-
- 3 files changed, 11 insertions(+), 1 deletions(-)
+Stepping a quite small abstraction layer higher:
+include/linux/string.h has at teh end:
+----  snip  ----
+static inline bool strstarts(const char *str, const char *prefix)
+{
+	return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+---- snip  ----
+seems to be what most uses of strnmcp() actually are: check if one
+string is a prefix of another.
 
-diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
-index bb4cd27..3df124e 100644
---- a/arch/arm/mach-at91/Kconfig
-+++ b/arch/arm/mach-at91/Kconfig
-@@ -41,18 +41,21 @@ config ARCH_AT91SAM9261
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9G10
- 	bool "AT91SAM9G10"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9263
- 	bool "AT91SAM9263"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9RL
- 	bool "AT91SAM9RL"
-@@ -60,6 +63,7 @@ config ARCH_AT91SAM9RL
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91SAM9G20
- 	bool "AT91SAM9G20"
-@@ -76,12 +80,14 @@ config ARCH_AT91SAM9G45
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_AT91_USART3
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91CAP9
- 	bool "AT91CAP9"
- 	select CPU_ARM926T
- 	select GENERIC_TIME
- 	select GENERIC_CLOCKEVENTS
-+	select HAVE_FB_ATMEL
- 
- config ARCH_AT91X40
- 	bool "AT91x40"
-diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
-index 35e3bd9..d856354 100644
---- a/arch/avr32/Kconfig
-+++ b/arch/avr32/Kconfig
-@@ -92,6 +92,7 @@ config PLATFORM_AT32AP
- 	select PERFORMANCE_COUNTERS
- 	select ARCH_REQUIRE_GPIOLIB
- 	select GENERIC_ALLOCATOR
-+	select HAVE_FB_ATMEL
- 
- #
- # CPU types
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 9bbb285..6d3f291 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -5,6 +5,9 @@
- menu "Graphics support"
- 	depends on HAS_IOMEM
- 
-+config HAVE_FB_ATMEL
-+	bool
-+
- source "drivers/char/agp/Kconfig"
- 
- source "drivers/gpu/vga/Kconfig"
-@@ -937,7 +940,7 @@ config FB_S1D13XXX
- 
- config FB_ATMEL
- 	tristate "AT91/AT32 LCD Controller support"
--	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
-+	depends on FB && HAVE_FB_ATMEL
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+	Bernd
 -- 
-1.5.6.5
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
 
