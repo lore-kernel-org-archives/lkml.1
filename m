@@ -1,134 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZKMPZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZKMP14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZKMPZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 10:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbZKMPZW
+	id S1756791AbZKMP14 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 10:27:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbZKMP1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 10:25:22 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:22587 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756168AbZKMPZU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 10:25:20 -0500
-Date: Fri, 13 Nov 2009 10:22:54 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3/5] page allocator: Wait on both sync and async
- congestion after direct reclaim
-Message-ID: <20091113152254.GC7891@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Jens Axboe <jens.axboe@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-	Sven Geggus <lists@fuchsschwanzdomain.de>,
-	Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-	Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	Rik van Riel <riel@redhat.com>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	Stephan von Krawczynski <skraw@ithnet.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie>
- <1258054235-3208-4-git-send-email-mel@csn.ul.ie>
- <20091113142526.33B3.A69D9226@jp.fujitsu.com>
- <20091113115558.GY8742@kernel.dk>
- <20091113122821.GC29804@csn.ul.ie>
- <20091113133211.GA8742@kernel.dk>
- <84144f020911130541p42c0b3d5lc307f97f22e2d356@mail.gmail.com>
+	Fri, 13 Nov 2009 10:27:51 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:64371 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753471AbZKMP1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 10:27:50 -0500
+Message-ID: <4AFD7AE5.9010901@atmel.com>
+Date: Fri, 13 Nov 2009 16:27:33 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020911130541p42c0b3d5lc307f97f22e2d356@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4AFD79EB.0041:SCFMA4539814,ss=1,fgs=0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>, plagnioj@jcrosoft.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       avictor.za@gmail.com
+Subject: Re: [RFC PATCH] atmel_lcdfb Kconfig: remove long dependency line
+References: <4A40D695.5000302@atmel.com> <1245767456-6434-1-git-send-email-nicolas.ferre@atmel.com> <20090623153556.0e574899@hskinnemoen-d830> <4A40E2E6.9060904@atmel.com> <20090625084631.GA7985@n2100.arm.linux.org.uk> <4AF04148.8070103@atmel.com> <20091103210542.GA8719@n2100.arm.linux.org.uk>
+In-Reply-To: <20091103210542.GA8719@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 03:41:46PM +0200, Pekka Enberg wrote:
-> Hi Jens,
+Russell King - ARM Linux :
+> On Tue, Nov 03, 2009 at 03:42:16PM +0100, Nicolas Ferre wrote:
+>> The problem is that if I do not setup the dependency here the menu entry
+>> will not be available at the proper level. In fact I will see the Atmel
+>> LCD entry here:
+>> "Graphics support"
+>>  <*> Support for frame buffer devices  --->
+>>  <*> AT91/AT32 LCD Controller support
+>>
+>> instead of here:
+>> "Graphics support"
+>>  ---> "Support for frame buffer devices"
+>>       [..]
+>>       <*> "AT91/AT32 LCD Controller support"
+>>       [..]
+>>
+>> So I keep the depend.
 > 
-> On Fri, Nov 13, 2009 at 3:32 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> >> Suggest an alternative that brings congestion_wait() more in line with
-> >> 2.6.30 behaviour then.
-> >
-> > I don't have a good explanation as to why the delays have changed,
-> > unfortunately. Are we sure that they have between .30 and .31? The
-> > dm-crypt case is overly complex and lots of changes could have broken
-> > that house of cards.
-> 
-> Hand-waving or not, we have end user reports stating that reverting
-> commit 8aa7e847d834ed937a9ad37a0f2ad5b8584c1ab0 ("Fix
-> congestion_wait() sync/async vs read/write confusion") fixes their
-> (rather serious) OOM regression. The commit in question _does_
-> introduce a functional change and if this was your average regression,
-> people would be kicking and screaming to get it reverted.
-> 
-> So is there a reason we shouldn't send a partial revert of the commit
-> (switching to BLK_RW_SYNC) to Linus until the "real" issue gets
-> resolved? Yes, I realize it's ugly voodoo magic but dammit, it used to
-> work!
+> The depend is on ARCH_ATMEL_HAS_FB which has no description (and therefore
+> does not appear in the menus) not the symbol for "AT91/AT32 LCD Controller
+> support".
 
-If the workload didn't involve dm-crypt everything would make more sense.
-With dm-crypt, things look like this:
+The issue with the menu was that the additional variable was in the middle 
+of the list of frame buffer devices.
 
-VM:
-Someone submits a write (sync or not) to clean a page
-out of pages, I'll wait for the disk
+Here is a snippet of the solution I propose without the not needed depend. 
+I cook a v2 patch just now.
 
-dm-crypt:
-Async threads wakeup and start encrypting submitted writes
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 9bbb285..6d3f291 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -5,6 +5,9 @@
+ menu "Graphics support"
+        depends on HAS_IOMEM
+ 
++config HAVE_FB_ATMEL
++       bool
++
+ source "drivers/char/agp/Kconfig"
+ 
+ source "drivers/gpu/vga/Kconfig"
+@@ -937,7 +940,7 @@ config FB_S1D13XXX
+ 
+ config FB_ATMEL
+        tristate "AT91/AT32 LCD Controller support"
+-       depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT9
++       depends on FB && HAVE_FB_ATMEL
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
 
-Async threads finish and hand off to other async threads to submit new writes
-or
-dm encryption thread submits the write directly (without my patch)
-
-The problem with all of this is that waiting for congestion doesn't
-actually have very much to do with waiting for dm-crypt IO.  We might
-be checking congestion long before dm-cryptd actually gets around to
-sending the IO to the disk (so we'll just wait for the full timeout),
-or the congestion check could be waiting for entirely unrelated IO.
-
-Because dm-crypt uses the same queue for encrypting and decrypting reads
-and writes, if writepage needs to read a block (say a metadata mapping
-block), waiting for that block to become unencrypted will have to wait
-for the entire queue of both encrypted and decrypted blocks to finish.
-
-[ Unless I completely misread dm-crypt, which is always possible ]
-
-So, cleaning pages can take an arbitrary amount of time, based on how
-much CPU time is available, how many other pages are in the worker
-threads and how fast the disk is once we finally hand the pages over to
-it.
-
-Tuning the VM timeouts based on this seems like a bad idea to me.  If
-the VM is waiting for pages to leave writeback, we should just add a
-sequence counter and wait queue that gets bumped as pages leave
-writeback (or something that wouldn't do horrible things to cachelines).
-
-Otherwise we're going to end up waiting way too long for the sync
-congestion on configs that don't intermix sync and async in such complex
-ways.
-
--chris
+Best regards,
+-- 
+Nicolas Ferre
 
