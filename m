@@ -1,47 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbZKMXG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZKMXHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbZKMXG3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 18:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZKMXGZ
+	id S932543AbZKMXHd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 18:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbZKMXH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 18:06:25 -0500
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:32889 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932485AbZKMXGY (ORCPT
+	Fri, 13 Nov 2009 18:07:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50157 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932291AbZKMXHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 18:06:24 -0500
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-Date: Fri, 13 Nov 2009 23:06:28 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <hdkopk$qk3$1@taverner.cs.berkeley.edu>
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org> <4AFCC06B.1030302@schaufler-ca.com> <19857.1258147396@turing-police.cc.vt.edu>
-Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1258153588 27267 128.32.168.222 (13 Nov 2009 23:06:28 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Fri, 13 Nov 2009 23:06:28 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Fri, 13 Nov 2009 18:07:24 -0500
+Date: Fri, 13 Nov 2009 15:07:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Frans Pop <elendil@planet.nl>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Nick Piggin <npiggin@suse.de>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: Mount -o sync regression in 2.6.31
+Message-Id: <20091113150719.9d31dde2.akpm@linux-foundation.org>
+In-Reply-To: <20091113144727.575cf038@nehalam>
+References: <20091111123340.703f5c86@nehalam>
+	<200911112234.24180.elendil@planet.nl>
+	<20091113144727.575cf038@nehalam>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The biggest problem with strcmp() is that even if it got audited when
-> that code went in, it's prone to unaudited breakage when somebody changes
-> something in some other piece of code, quite often in some other .c file
-> in some other directory.
+On Fri, 13 Nov 2009 14:47:27 -0800
+Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-I don't understand what concern you are ferring to.  Could you explain?
-What is special about strcmp() that requires auditing?  What kind of
-breakage are you talking about?
+> Okay the scenario is:
+> 1. Mount floppy with ext2 filesystem in sync mode
+> 2. Write to floppy
+> 3. Prematurely eject floppy
+> 4. Unmount floppy
 
-Are you just referring to the fact that strcmp() assumes its strings
-are '\0'-terminated?  Do you have the same concern about every library
-function that handles '\0'-terminated strings?  Does your concern apply
-to this particular code snippet, where the call is (or would be) of the
-form strcmp(s, "string constant")?  Does your concern apply equally to
-strncmp(s, "string constant", sizeof("string constant"))?
+I assume that by "prematurely eject", you mean that you waited until
+the activity LED had turned off, then hit the button without typing
+umount?
+
+
+Really, I think ext2 is just wrong here.  At unmount time it runs
+ext2_sync_super(), which updates a few fields in the superblock and
+tries to write them back.
+
+But if the fs was mounted with `-osync' then the driver should be
+operating synchronously, dammit!  That means that any time any syscall
+alters the filesystem's s_free_blocks_count, s_free_inodes_count or
+s_wtime, the driver should write those fields back to the superblock
+prior to returning from the syscall.
+
+However that might be unreasonaly anal of us, because those fields
+aren't terribly important.  A fsck will whine and fix them up.
+
+> This triggers this warning in 2.6.31 which did not occur in 2.6.30
+
+hm, I wonder why that changed.  The warning's been there for a while.
+
+>  [  580.325447] floppy0: disk absent or changed during operation
+>  [  580.325454] lost page write due to I/O error on fd0
+>  [  580.958434] ------------[ cut here ]------------
+>  [  580.958437] WARNING: at fs/buffer.c:1152 mark_buffer_dirty+0x23/0x7d()
+>  [  580.958440] Hardware name: System Product Name
+>  [  580.958442] Modules linked in: hid_belkin binfmt_misc bridge stp llc kvm_intel kvm ipv6 video output pci_slot acpi_cpufreq cpufreq_powersave cpufreq_ondemand cpufreq_conservative cpufreq_userspace psmouse pcspkr serio_raw rtc_cmos wmi evdev sg sr_mod cdrom usbhid mvsas pata_acpi pata_marvell ata_piix libsas ahci igb sky2 scsi_transport_sas dca e1000e floppy dm_mirror dm_region_hash dm_log dm_snapshot dm_mod fuse
+>  [  580.958475] Pid: 8340, comm: umount Not tainted 2.6.30-rc6-bisect #12
+>  [  580.958477] Call Trace:
+>  [  580.958483]  [<ffffffff80232ebb>] ? warn_slowpath_fmt+0xd9/0x10b
+>  [  580.958489]  [<ffffffff80270031>] ? find_get_pages_tag+0x41/0xdd
+>  [  580.958494]  [<ffffffff802782f0>] ? pagevec_lookup+0x17/0x1e
+>  [  580.958498]  [<ffffffff80279377>] ? truncate_inode_pages_range+0x21d/0x31d
+>  [  580.958502]  [<ffffffff80270db5>] ? wait_on_page_writeback_range+0xce/0x11b
+>  [  580.958507]  [<ffffffff80245037>] ? bit_waitqueue+0x10/0xa0
+>  [  580.958510]  [<ffffffff802be80d>] ? mark_buffer_dirty+0x23/0x7d
+>  [  580.958515]  [<ffffffff803003eb>] ? ext2_sync_super+0x39/0x55
+>  [  580.958519]  [<ffffffff8030079c>] ? ext2_put_super+0x34/0xc7
+>  [  580.958524]  [<ffffffff802a3174>] ? generic_shutdown_super+0x70/0xfd
+>  [  580.958533]  [<ffffffff802a3223>] ? kill_block_super+0x22/0x3a
+>  [  580.958537]  [<ffffffff802a3831>] ? deactivate_super+0x43/0x5a
+>  [  580.958541]  [<ffffffff802b56f9>] ? sys_umount+0x2d8/0x307
+>  [  580.958546]  [<ffffffff8020aeeb>] ? system_call_fastpath+0x16/0x1b
+>  [  580.958549] ---[ end trace ccbde6411acd243f ]---
+>  [  580.958580] floppy0: disk absent or changed during operation
+>  [  580.958587] lost page write due to I/O error on fd0
+
+	void mark_buffer_dirty(struct buffer_head *bh)
+	{
+		WARN_ON_ONCE(!buffer_uptodate(bh));
+
+that's expected, I expect.  And it's just a WARN_ON_ONCE() so it
+won't be flooding logs.  We could just delete it I suppose.
+
+> Bisecting between 2.6.30 and 2.6.31-rc1 reduced it down to:
+> 
+> 8f184f27300f66f6dcc8296c2dae7a1fbe8429c9 is first bad commit
+> commit 8f184f27300f66f6dcc8296c2dae7a1fbe8429c9
+> Author: Frederic Weisbecker <fweisbec@gmail.com>
+> Date:   Sat May 16 06:24:36 2009 +0200
+> 
+>     tracing/stat: replace linked list by an rbtree for sorting
+
+Current score:
+
+git: 			4,559
+kernel developers:	0
