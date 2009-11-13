@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZKMGAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZKMGE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961AbZKMGAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 01:00:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZKMGAD
+	id S1752845AbZKMGE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 01:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZKMGEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 01:00:03 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54590 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbZKMGAB (ORCPT
+	Fri, 13 Nov 2009 01:04:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:32928 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbZKMGEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 01:00:01 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AFCF5D6.70902@jp.fujitsu.com>
-Date: Fri, 13 Nov 2009 14:59:50 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 13 Nov 2009 01:04:21 -0500
+Message-ID: <4AFCF6D6.6040607@zytor.com>
+Date: Thu, 12 Nov 2009 22:04:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org
-Subject: [PATCH] mm/memory_hotplug : fix section mismatch
-Content-Type: text/plain; charset=ISO-2022-JP
+To: "Ma, Ling" <ling.ma@intel.com>
+CC: Pavel Machek <pavel@ucw.cz>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] performance improvement for memcpy_64.S by
+ fast string.
+References: <1257500482-16182-1-git-send-email-ling.ma@intel.com> <4AF457E0.4040107@zytor.com> <4AF4784C.5090800@zytor.com> <8FED46E8A9CA574792FC7AACAC38FE7714FCF772C9@PDSMSX501.ccr.corp.intel.com> <20091112121604.GC1394@ucw.cz> <8FED46E8A9CA574792FC7AACAC38FE7714FEB070EE@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FEB070EE@PDSMSX501.ccr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With CONFIG_MEMORY_HOTPLUG I got following warning:
+On 11/12/2009 09:33 PM, Ma, Ling wrote:
+>> Well, so you are running cache hot and it is only a win on huge
+>> copies... how common are those?
+>>
+> Hi Pavel Machek
+> Yes, we intend to introduce movsq for huge hot size(over 1024bytes)
+> and avoid regression for less 1024bytes. I guess you suggest using
+> prefetch instruction for cold data (if I was wrong please correct me).
+> memcpy don't know whether data has been in cache or not,
+> so only when copy size is over (first level 1 cache)/2 and lower
+> (last level cache)/2 , prefetch will get benefit. Currently first
+> level cache size of most cpus is around 32KB, so it is useful for prefetch 
+> when copy size is over 16KB, but as H. Peter Anvin mentioned in last email,
+> over 16KB copy in kernel is rare.
+> 
 
-WARNING: vmlinux.o(.text+0x1276b0): Section mismatch in reference from
-the function hotadd_new_pgdat() to the function
-.meminit.text:free_area_init_node()
-The function hotadd_new_pgdat() references
-the function __meminit free_area_init_node().
-This is often because hotadd_new_pgdat lacks a __meminit
-annotation or the annotation of free_area_init_node is wrong.
+What it sounds to me is that for Nehalem, we want to use memcpy_c for >=
+1024 bytes and the old code for < 1024 bytes; for Core2 it might be the
+exact opposite.
 
-Use __ref to fix this.
+Either way, whatever we do should use the appropriate static replacement
+mechanism.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- mm/memory_hotplug.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+	-hpa
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 821dee5..380aef4 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -447,7 +447,8 @@ int online_pages(unsigned long pfn, unsigned long nr_pages)
- }
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
- 
--static pg_data_t *hotadd_new_pgdat(int nid, u64 start)
-+/* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
-+static pg_data_t __ref *hotadd_new_pgdat(int nid, u64 start)
- {
- 	struct pglist_data *pgdat;
- 	unsigned long zones_size[MAX_NR_ZONES] = {0};
 -- 
-1.6.5.2
-
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
