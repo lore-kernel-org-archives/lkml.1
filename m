@@ -1,110 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZKMJ6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZKMJ6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbZKMJ6L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 04:58:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbZKMJ6J
+	id S1755984AbZKMJ6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 04:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZKMJ6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 04:58:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51986 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755752AbZKMJ6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 04:58:07 -0500
-Date: Fri, 13 Nov 2009 09:57:38 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, lizf@cn.fujitsu.com, efault@gmx.de,
-       peterz@infradead.org, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
-       efault@gmx.de, mitake@dcl.info.waseda.ac.jp, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
-References: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] tracing: Rename 'lockdep' event subsystem into 'lock'
-Message-ID: <tip-67178767b936fb47a3a5e88097cff41ccbda7acb@git.kernel.org>
-Git-Commit-ID: 67178767b936fb47a3a5e88097cff41ccbda7acb
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Fri, 13 Nov 2009 04:58:46 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:50169 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755780AbZKMJ6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 04:58:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=SCIeFt+t+TZ3zIIUPnf1s0otSZqw0ODiPc4PrmPmYej5wEWqpcHylrKxGQUp9ANFED
+         dQytnCh0DdsEwLkqimq0lPh2Mboz/1+YgsVmdH3mHbaeGA0m6PeeONKZ6DyfCEwl+iUt
+         iiuvc8btTLwvAlNotRjpuJzyGOwH8JTr4OqcM=
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>, Anders Larsen <al@alarsen.net>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH v2] qnx4: Use hweight8
+Date: Fri, 13 Nov 2009 18:57:45 +0900
+Message-Id: <1258106265-18181-1-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: git-send-email 1.6.5.1
+In-Reply-To: <1258104305l.9440l.0l@i-dmzi_al.realan.de>
+References: <1258104305l.9440l.0l@i-dmzi_al.realan.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  67178767b936fb47a3a5e88097cff41ccbda7acb
-Gitweb:     http://git.kernel.org/tip/67178767b936fb47a3a5e88097cff41ccbda7acb
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 13 Nov 2009 10:06:34 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Nov 2009 10:48:27 +0100
+> The original code counted the number of zeroes whereas hweight8() counts ones, so
+>
+> NAK
+>
+> (hint: "tot += 8 - hweight8(b)" should do the trick)
 
-tracing: Rename 'lockdep' event subsystem into 'lock'
+Oops,
 
-Lockdep events subsystem gathers various locking related events
-such as a request, release, contention or acquisition of a lock.
+Subject: [PATCH v2] qnx4: Use hweight8
 
-The name of this event subsystem is a bit of a misnomer since
-these events are not quite related to lockdep but more generally
-to locking, ie: these events are not reporting lock dependencies
-or possible deadlock scenario but pure locking events.
+Use hweight8 instead of counting for each bit
 
-Hence this rename.
+[ v2: count_bit() counts zero bits in the bitmap]
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Acked-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <1258103194-843-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Anders Larsen <al@alarsen.net>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- include/trace/events/{lockdep.h => lock.h} |    8 ++++----
- kernel/lockdep.c                           |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ fs/qnx4/bitmap.c |   17 +----------------
+ 1 files changed, 1 insertions(+), 16 deletions(-)
 
-diff --git a/include/trace/events/lockdep.h b/include/trace/events/lock.h
-similarity index 92%
-rename from include/trace/events/lockdep.h
-rename to include/trace/events/lock.h
-index bcf1d20..a870ba1 100644
---- a/include/trace/events/lockdep.h
-+++ b/include/trace/events/lock.h
-@@ -1,8 +1,8 @@
- #undef TRACE_SYSTEM
--#define TRACE_SYSTEM lockdep
-+#define TRACE_SYSTEM lock
- 
--#if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
--#define _TRACE_LOCKDEP_H
-+#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_LOCK_H
- 
- #include <linux/lockdep.h>
- #include <linux/tracepoint.h>
-@@ -90,7 +90,7 @@ TRACE_EVENT(lock_acquired,
- #endif
- #endif
- 
--#endif /* _TRACE_LOCKDEP_H */
-+#endif /* _TRACE_LOCK_H */
- 
- /* This part must be outside protection */
- #include <trace/define_trace.h>
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 9af5672..f5dcd36 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -49,7 +49,7 @@
- #include "lockdep_internals.h"
- 
- #define CREATE_TRACE_POINTS
--#include <trace/events/lockdep.h>
-+#include <trace/events/lock.h>
- 
- #ifdef CONFIG_PROVE_LOCKING
- int prove_locking = 1;
+diff --git a/fs/qnx4/bitmap.c b/fs/qnx4/bitmap.c
+index 0afba06..cbaae72 100644
+--- a/fs/qnx4/bitmap.c
++++ b/fs/qnx4/bitmap.c
+@@ -35,22 +35,7 @@ static void count_bits(register const char *bmPart, register int size,
+ 	}
+ 	do {
+ 		b = *bmPart++;
+-		if ((b & 1) == 0)
+-			tot++;
+-		if ((b & 2) == 0)
+-			tot++;
+-		if ((b & 4) == 0)
+-			tot++;
+-		if ((b & 8) == 0)
+-			tot++;
+-		if ((b & 16) == 0)
+-			tot++;
+-		if ((b & 32) == 0)
+-			tot++;
+-		if ((b & 64) == 0)
+-			tot++;
+-		if ((b & 128) == 0)
+-			tot++;
++		tot += 8 - hweight8(b);
+ 		size--;
+ 	} while (size != 0);
+ 	*tf = tot;
+-- 
+1.6.5.1
+
