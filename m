@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbZKMVFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbZKMVIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbZKMVFW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 16:05:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932361AbZKMVFU
+	id S932425AbZKMVIJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 16:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932381AbZKMVIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 16:05:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:25401 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932271AbZKMVFT (ORCPT
+	Fri, 13 Nov 2009 16:08:05 -0500
+Received: from mga11.intel.com ([192.55.52.93]:13232 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932361AbZKMVIE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 16:05:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=EEv+GrD1XNym4cOmucM4nQCNRKopt089vVLU4KZAVpBZ4zNU0TtVbfH0BEkSDSSskc
-         HWyT5r3R4wG22QVIBntiKxXJ85XYblaywe7PNjZtkqZLS4Bn27e1ZY6ED0jqHAHHyO8B
-         lJ4PdQnnmunYbAAgpdT9iw3dkfBH8+vS/PWME=
-Message-ID: <4AFDCA0E.4080007@lwfinger.net>
-Date: Fri, 13 Nov 2009 15:05:18 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Fri, 13 Nov 2009 16:08:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,739,1249282800"; 
+   d="scan'208";a="746768272"
+From: "Moore, Robert" <robert.moore@intel.com>
+To: Daniel Walker <dwalker@fifo99.com>, Jiri Kosina <jkosina@suse.cz>
+CC: Felipe Contreras <felipe.contreras@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Lin, Ming M" <ming.m.lin@intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Date: Fri, 13 Nov 2009 13:08:08 -0800
+Subject: RE: [PATCH 5/7] acpi: fix a bunch of style issues on 'actypes.h'
+Thread-Topic: [PATCH 5/7] acpi: fix a bunch of style issues on 'actypes.h'
+Thread-Index: AcpkpBWt/0y1MTd/QIa7LpMjEW3ewQAAUjSw
+Message-ID: <4911F71203A09E4D9981D27F9D8308583E43CEEB@orsmsx503.amr.corp.intel.com>
+References: <1255906474-25091-1-git-send-email-felipe.contreras@gmail.com>
+	 <1255906474-25091-6-git-send-email-felipe.contreras@gmail.com>
+	 <alpine.LSU.2.00.0910191616290.8582@wotan.suse.de>
+ <1258145921.6411.18.camel@c-dwalke-linux.qualcomm.com>
+In-Reply-To: <1258145921.6411.18.camel@c-dwalke-linux.qualcomm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: bcm43xx-dev@lists.berlios.de, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 64-bit DMA problems with BCM4312 using b43
-References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org> <200911132144.24110.mb@bu3sch.de>
-In-Reply-To: <200911132144.24110.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/13/2009 02:44 PM, Michael Buesch wrote:
-> On Friday 13 November 2009 21:11:12 Matthew Garrett wrote:
->> On Fri, Nov 13, 2009 at 11:21:18AM -0600, Larry Finger wrote:
->>
->>> I do not know enough about either the ACPI or DMA code to begin debugging in
->>> either of those regions. Any suggestions on debugging strategies, or links to
->>> similar problems would be appreciated.
->>
->> Could the hardware be highly sensitive to DMA latencies? Take a look at 
->> the pm_qos code in ipw2100.
-> 
-> This makes perfect sense, yes. The DMA engine has so many quirks, I wouldn't be
-> surprised if it couldn't handle pm properly.
 
-I'm in the process of creating a patch to set the latency to 200 usec. The
-default is 2000. On my fast prosessors, it should not be anything nearly that
-slow. If we determine this to be the problem, then we can try tuning.
+>-----Original Message-----
+>From: Daniel Walker [mailto:dwalker@fifo99.com]
+>Sent: Friday, November 13, 2009 12:59 PM
+>To: Jiri Kosina
+>Cc: Felipe Contreras; linux-kernel@vger.kernel.org; Len Brown; Moore,
+>Robert; Lin, Ming M; linux-acpi@vger.kernel.org
+>Subject: Re: [PATCH 5/7] acpi: fix a bunch of style issues on 'actypes.h'
+>
+>On Mon, 2009-10-19 at 16:20 +0200, Jiri Kosina wrote:
+>> On Mon, 19 Oct 2009, Felipe Contreras wrote:
+>>
+>> > Many still remain.
+>> >
+>> > Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+>>
+>> I have never been in favor of merging whitespace-only patches (in a sense
+>> that the sole purpose of them being to change whitespaces, but no else
+>> value added).
+>>
+>> And after today's discussion on kernel summit on this topic, I wouldn't
+>> expect any maintainer to merge it, sorry :)
+>
+>could you be more specific about what "discussion" you are talking
+>about.
+>
 
-Larry
+Yes, do tell.
+
+
+>Daniel
+
