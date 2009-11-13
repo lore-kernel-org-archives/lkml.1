@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbZKMT1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbZKMT3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbZKMT1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 14:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbZKMT1M
+	id S1757288AbZKMT3O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 14:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbZKMT3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 14:27:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55605 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932215AbZKMT1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 14:27:11 -0500
-Date: Fri, 13 Nov 2009 14:26:48 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 05/16] blkio: Implement per cfq group latency target
-	and busy queue avg
-Message-ID: <20091113192648.GK17076@redhat.com>
-References: <1258068756-10766-1-git-send-email-vgoyal@redhat.com> <1258068756-10766-6-git-send-email-vgoyal@redhat.com> <4e5e476b0911130246m372eb8e8x7b98f13278515a95@mail.gmail.com> <20091113151815.GC17076@redhat.com> <20091113161506.GF17076@redhat.com> <4e5e476b0911131040l58dc1e04ncbb4be7ca2ca7227@mail.gmail.com>
+	Fri, 13 Nov 2009 14:29:09 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:53045 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757246AbZKMT3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 14:29:08 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Philip Downer <phil@csldevices.co.uk>
+Subject: Re: firmware loading interface
+Date: Fri, 13 Nov 2009 20:29:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <4AFD971C.3090204@csldevices.co.uk> <4AFD9BAF.1010200@csldevices.co.uk>
+In-Reply-To: <4AFD9BAF.1010200@csldevices.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0911131040l58dc1e04ncbb4be7ca2ca7227@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911132029.01432.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18ZJVl0ODC6eSLViRsGZ2jh1OBhEcFCdxiqigw
+ dw0NDQrz9bjRdBuE+IP/O8agL7A6CZXuNb9+RN+Fv93QPbc7mA
+ WA8Y+KdkOXgKb2bU2+mSg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 07:40:51PM +0100, Corrado Zoccolo wrote:
-> On Fri, Nov 13, 2009 at 5:15 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Fri, Nov 13, 2009 at 10:18:15AM -0500, Vivek Goyal wrote:
-> >> On Fri, Nov 13, 2009 at 11:46:49AM +0100, Corrado Zoccolo wrote:
-> >> > On Fri, Nov 13, 2009 at 12:32 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >> > >  static inline void
-> >> > > @@ -441,10 +445,13 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-> >> > >        if (cfqd->cfq_latency) {
-> >> > >                /* interested queues (we consider only the ones with the same
-> >> > >                 * priority class) */
-> >> > This comment needs to be updated
-> >>
-> >> Sure. Will do. Now the interested queues are the one with same priority
-> >> class with-in group.
-> >>
-> >> > >                 * priority class) */
-> >> > > -               unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-> >> > > +               unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
-> >> > > +                                               cfq_class_rt(cfqq));
-> >> > >                unsigned sync_slice = cfqd->cfq_slice[1];
-> >> > >                unsigned expect_latency = sync_slice * iq;
-> >> > > -               if (expect_latency > cfq_target_latency) {
-> >> > > +               unsigned group_target_lat = cfq_target_latency/cfqd->nr_groups;
-> >> >
-> >> > I'm not sure that we should divide the target latency evenly among groups.
-> >> > Groups with different weights will have different percentage of time
-> >> > in each 300ms round, so probably we should consider it here.
-> >> >
-> >>
-> >> Taking group weight into account will be more precise thing. So may be
-> >> I can keep track of total weight on the service tree and determine
-> >> group target latency as proportion of total weight.
-> >>
-> >>  group_target_lat = group_weight * cfq_target_latency/total_weight_of_groups
-> >>
-> >
-> > Here is the patch I generated on top of all the patches in series.
-> >
-> > o Determine group target latency in proportion to group weight instead of
-> >  just number of groups.
-> 
-> Great.
-> I have only one concern, regarding variable naming:
-> group_target_lat is a bit misleading. The fact is that it will be
-> larger for higher weight groups, so people could ask why are you
-> giving more latency to higher weight group...
-> Actually, it is the group share of the scheduling round, so you should
-> name it accordingly.
-> 
+On Friday 13 November 2009, Philip Downer wrote:
+> However our device will have flash to store the firmware in and, whilst
+> it looks as though it would be possible for us to use request_firmware
+> to provide occasional firmware upgrades from userspace, I can't find any
+> reference as to whether this is an accepted method for doing so. Could
+> someone please confirm for me whether or not it's a good idea to use
+> request_firmware for this, or perhaps point me at another standard
+> method for doing firmware updates from userspace?
 
-How about "group_slice" ?
+The idea of request_firmware is that it helps you load the firmware
+into the device at initialization time so you can use it directly,
+without making the firmware blob a part of the kernel driver.
 
-Thanks
-Vivek
+If I understand you correctly, you never need a firmware in user space
+in order to use the device, but only for flashing a new version into
+the nonvolatile memory.
 
+The easiest way to do that would be an ioctl operation, if you are
+implementing a character or block device interface anyway. Just load
+the firmware into the RAM of a user application and call an ioctl
+with the pointer to the firmware as an argument, but don't use
+a data structure with a pointer in it, which would mess up 32 bit
+compatibility operation.
+
+If you don't implement a character or block device, the chances are
+that you need something else besides an ioctl, depending on how
+an application would communicate with your hardware.
+
+	Arnd <><
