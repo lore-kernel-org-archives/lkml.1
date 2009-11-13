@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751289AbZKMMQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbZKMMRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751289AbZKMMQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 07:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZKMMQI
+	id S1751447AbZKMMRR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 07:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZKMMRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 07:16:08 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:58433 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZKMMQH (ORCPT
+	Fri, 13 Nov 2009 07:17:08 -0500
+Received: from d112a2.x-mailer.de ([212.162.53.4]:47977 "EHLO
+	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbZKMMRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 07:16:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=PnPoFPtnmJWCTG6kYuT/e3FsHdBEnL2BzguQOskIhx+dA1++Ei3YUldGx8PBsHbAXs
-         S8FXhoun7u16ruOEX/njXLo7vJQOIUr/OFCFyr8518D9P6n7xGEIIP+RHVL7f+SLTOu6
-         3Yihon+NUJ9Vm9nbV7n21ijqektSLpEYjYtE8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Prasad <prasad@linux.vnet.ibm.com>
-Subject: [PATCH] hw-breakpoints: Provide an off-case for counter_arch_bp()
-Date: Fri, 13 Nov 2009 13:16:15 +0100
-Message-Id: <1258114575-32655-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Fri, 13 Nov 2009 07:17:07 -0500
+From: Karsten Keil <keil@b1-systems.de>
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] mISDN: fix error return in HFCmulti_init()
+Date: Fri, 13 Nov 2009 13:17:10 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.27.37-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: isdn4linux@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4AFC3D85.6070904@gmail.com>
+In-Reply-To: <4AFC3D85.6070904@gmail.com>
+Organization: B1-systems
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911131317.10446.keil@b1-systems.de>
+X-Info: valid message
+X-Info: original Date
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If an arch doesn't support the hw breakpoints, counter_arch_bp() has
-no off case to cover the missing breakpoint info structure from the
-perf event. The result is a build error in non-x86 configs.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
----
- include/linux/hw_breakpoint.h |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index 7eba9b9..18710e0 100644
---- a/include/linux/hw_breakpoint.h
-+++ b/include/linux/hw_breakpoint.h
-@@ -16,11 +16,6 @@ enum {
- 	HW_BREAKPOINT_X = 4,
- };
+On Donnerstag, 12. November 2009 17:53:25 Roel Kluin wrote:
+ The returned error should stay negative
  
--static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
--{
--	return &bp->hw.info;
--}
--
- static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
- {
- 	return bp->attr.bp_addr;
-@@ -83,6 +78,11 @@ extern void release_bp_slot(struct perf_event *bp);
+ Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Acked-by: Karsten Keil <keil@b1-systems.de>
+ ---
+  drivers/isdn/hardware/mISDN/hfcmulti.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
  
- extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
+ diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c
+  b/drivers/isdn/hardware/mISDN/hfcmulti.c index faed794..a6624ad 100644
+ --- a/drivers/isdn/hardware/mISDN/hfcmulti.c
+ +++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+ @@ -5481,7 +5481,7 @@ HFCmulti_init(void)
+  		if (err) {
+  			printk(KERN_ERR "error registering embedded driver: "
+  				"%x\n", err);
+ -			return -err;
+ +			return err;
+  		}
+  		HFC_cnt++;
+  		printk(KERN_INFO "%d devices registered\n", HFC_cnt);
  
-+static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
-+{
-+	return &bp->hw.info;
-+}
-+
- #else /* !CONFIG_HAVE_HW_BREAKPOINT */
- 
- static inline struct perf_event *
-@@ -126,6 +126,11 @@ static inline void release_bp_slot(struct perf_event *bp) 		{ }
- 
- static inline void flush_ptrace_hw_breakpoint(struct task_struct *tsk)	{ }
- 
-+static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
-+{
-+	return NULL;
-+}
-+
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 
- #endif /* _LINUX_HW_BREAKPOINT_H */
--- 
-1.6.2.3
-
