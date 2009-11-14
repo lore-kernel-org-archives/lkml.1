@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbZKNABj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZKNAHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932580AbZKNABj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbZKNABh
+	id S1757336AbZKNAHE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZKNAHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:01:37 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42690 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932504AbZKNABg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:01:36 -0500
-Date: Sat, 14 Nov 2009 00:03:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
-Message-ID: <20091114000329.5d224cdc@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911132358.45137.bzolnier@gmail.com>
-References: <4AFCC0D4.9020708@gmail.com>
-	<200911132317.35088.bzolnier@gmail.com>
-	<20091113224251.766c7910@lxorguk.ukuu.org.uk>
-	<200911132358.45137.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Nov 2009 19:07:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56859 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756781AbZKNAHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 19:07:02 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 2/3] Add coredump tracepoint
+In-Reply-To: Ingo Molnar's message of  Saturday, 14 November 2009 01:02:34 +0100 <20091114000234.GA24738@elte.hu>
+References: <20091113225226.15079.90813.stgit@harusame>
+	<20091113225233.15079.41600.stgit@harusame>
+	<20091113233912.192A3100E@magilla.sf.frob.com>
+	<20091114000234.GA24738@elte.hu>
+X-Windows: dissatisfaction guaranteed.
+Message-Id: <20091114000627.48ED615E8@magilla.sf.frob.com>
+Date: Fri, 13 Nov 2009 16:06:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Nov 2009 23:58:45 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> Oh, so SystemTap is the motivator of these tracepoints? 
 
-> On Friday 13 November 2009 23:42:51 Alan Cox wrote:
-> > 
-> > > 	http://article.gmane.org/gmane.linux.ide/43136
-> > > 
-> > > [ it has still unfixed problems.. ]
-> > 
-> > Which of course you haven't bothered to point out or explain.
-> 
-> I meant problems reported by Mikulas:
-> 
-> 	http://thread.gmane.org/gmane.linux.ide/43069/focus=43136
-> 
-> Maybe they were fixed in your local tree but how would anyone know that given
-> that there haven't been any updates on the problem for the last two weeks..
+Nope.  My suggestion about arguments to pass was just generic based on the
+innate context of this tracepoint.
 
-Yeah its fixed - well I think so. I've not chased it up further yet
-because I've been working on far more important things than an anicent IDE
-controller patch that isn't an -rc candidate anyway.
+> Do you know about exact usecases where these tracepoints would be
+> utilized? Would be interesting (and relevant) to list them.
 
-(basically you need to also set priv->dma_live if you are the only device
-or nothing is live but doing DMA)
+Masami's colleagues do have something in particular in mind,
+but I'm not sure whether they intend to use systemtap as part
+of the implementation of that or not.
 
-Alan
+
+Thanks,
+Roland
