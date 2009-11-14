@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbZKNCsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbZKNCvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbZKNCsz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 21:48:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbZKNCsy
+	id S1756848AbZKNCvA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 21:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZKNCu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 21:48:54 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:65399 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbZKNCsx convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 21:50:59 -0500
+Received: from h1047321.serverkompetenz.net ([85.214.67.163]:47165 "EHLO
+	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754966AbZKNCu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 21:48:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=FWLn5CcktNRhoG9F3wcOJgl3EPe4R0tyXDPdbjoy4FChMDd9qSM+N7wG7zTSMmZPv9
-         NojHFbKXmm0pSLMRWwp3nxY0LryuchxHhTmQ9MJzDH8FE79fyDtE4qwLSlQaEE6dREG2
-         0xYwSnHluqGVDufFTht4m8Ifr1VresJpPVXYs=
+	Fri, 13 Nov 2009 21:50:59 -0500
+Message-ID: <4AFE1B0D.3060404@ahsoftware.de>
+Date: Sat, 14 Nov 2009 03:50:53 +0100
+From: Alexander Holler <holler@ahsoftware.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091114013856.GB21609@redhat.com>
-References: <20091113203000.GA19160@redhat.com>
-	 <tip-0388423dba2217b4e5b6c61690b0506d13b25a49@git.kernel.org>
-	 <86802c440911131703y35520496pfbdaa4e0bd8f8609@mail.gmail.com>
-	 <20091114013856.GB21609@redhat.com>
-Date: Fri, 13 Nov 2009 18:48:58 -0800
-Message-ID: <86802c440911131848o2cccb056x32a819634c6855d9@mail.gmail.com>
-Subject: Re: [tip:x86/debug] x86: Minimise printk spew from per-vendor init 
-	code
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Dave Jones <davej@redhat.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Problems with p55-express and sleeping usb-hds
+References: <4AFDDDF6.4050907@ahsoftware.de> <200911140030.32727.oliver@neukum.org> <4AFDED47.5070606@ahsoftware.de>
+In-Reply-To: <4AFDED47.5070606@ahsoftware.de>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 5:38 PM, Dave Jones <davej@redhat.com> wrote:
-> On Fri, Nov 13, 2009 at 05:03:44PM -0800, Yinghai Lu wrote:
->
->  > > --- a/arch/x86/kernel/cpu/common.c
->  > > +++ b/arch/x86/kernel/cpu/common.c
->  > > @@ -656,6 +656,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
->  > >
->  > >  void __init early_cpu_init(void)
->  > >  {
->  > > +#ifdef PROCESSOR_SELECT
->  > >        const struct cpu_dev *const *cdev;
->  > >        int count = 0;
->  > >
->  > > @@ -676,7 +677,7 @@ void __init early_cpu_init(void)
->  > >                                cpudev->c_ident[j]);
->  > >                }
->  > >        }
->  > > -
->  > > +#endif
->  > >        early_identify_cpu(&boot_cpu_data);
->  > >  }
->  >
->  > NACK.
->  >
->  > the function is initializing cpu_devs array.
->
-> Ugh, I don't know how I missed that.  I also seem to have boot tested the wrong kernel.
-> Back to the drawing board.
->
-use two loop instead?
+Hello,
 
-YH
+Am 14.11.2009 00:35, schrieb Alexander Holler:
+> Am 14.11.2009 00:30, schrieb Oliver Neukum:
+>> Am Freitag, 13. November 2009 23:30:14 schrieb Alexander Holler:
+>>> (And here comes the problem)
+>>>
+>>> Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed
+>>> USB device using ehci_hcd and address 3
+>>> Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware
+>>> changed
+>>
+>> You cut too early. This shows a failed reset but not the cause.
+>
+> There are no relevant messages in the log before:
+>
+> --------
+> Nov 13 19:06:23 krabat kernel: [ 190.790549] EXT4-fs (dm-1): mounted
+> filesystem with ordered data mode
+> Nov 13 19:08:05 krabat ntpd[3381]: synchronized to 192.168.207.1, stratum 2
+> Nov 13 19:08:05 krabat ntpd[3381]: kernel time sync status change 2001
+> Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed
+> USB device using ehci_hcd and address 3
+> ----------------------------------------------------
+
+it might be that my assumption is totally wrong an the usb-disconnect is 
+unrelated to the time the usb-drives are going to sleep. What I have 
+done inbetween that mount and the disconnect was a rsync -c -n (dry-run) 
+between two of those usb-discs (I'm using them for backups). Both drives 
+are containing the same files, some large (up to 5-10 gb) and small 
+files. Looking at the leds of those usb-drives I just assumed the 
+problem happens when one of those was inactive for some time (because 
+rsync computes the hash of one of the large files on the other drive).
+In the excerpt of the log I've posted before, I've cut out the 
+disconnect of the other drive, which has happend almost at the same time 
+(and with the same consequences) as the one shown. In fact I've cut out 
+one line from the log (sorry for that):
+---------
+Nov 13 19:08:05 krabat ntpd[3381]: kernel time sync status change 2001
+Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed 
+USB device using ehci_hcd and address 3
+Nov 13 19:47:35 krabat kernel: [ 2656.233278] usb 9-1: reset high speed 
+USB device using ehci_hcd and address 4
+Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware 
+changed
+Nov 13 19:47:39 krabat kernel: [ 2661.120489] usb 9-7: USB disconnect, 
+address 3
+---------
+Afterwards the messages for the second drive where the same as for the 
+one I've posted.
+
+This is reproducible, at least through starting the rsync. I will turn 
+on some debugging knobs and will see if I can see some more hints in the 
+resulting logs.
+
+Kind regards,
+
+Alexander Holler
