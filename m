@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbZKNAJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZKNAKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757533AbZKNAJu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZKNAJt
+	id S1757568AbZKNAKI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbZKNAKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:09:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43102 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 19:10:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43127 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756918AbZKNAJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:09:48 -0500
-Date: Sat, 14 Nov 2009 00:09:40 GMT
+	id S1757275AbZKNAKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 19:10:04 -0500
+Date: Sat, 14 Nov 2009 00:09:56 GMT
 From: tip-bot for Matthew Garrett <mjg@redhat.com>
 Cc: linux-kernel@vger.kernel.org, mjg@redhat.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, mjg@redhat.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <1258142222-16092-1-git-send-email-mjg@redhat.com>
-References: <1258142222-16092-1-git-send-email-mjg@redhat.com>
+In-Reply-To: <1258143251-5818-1-git-send-email-mjg@redhat.com>
+References: <1258143251-5818-1-git-send-email-mjg@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/setup] x86, setup: Store the boot cursor state
-Message-ID: <tip-d9b263528e01bfbaf716b51f38606b3dfe5ac1e9@git.kernel.org>
-Git-Commit-ID: d9b263528e01bfbaf716b51f38606b3dfe5ac1e9
+Subject: [tip:x86/setup] vc: Add support for hiding the cursor when creating VTs
+Message-ID: <tip-f6c06b6807ff9281295989ebad72523865325a4f@git.kernel.org>
+Git-Commit-ID: f6c06b6807ff9281295989ebad72523865325a4f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,63 +29,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d9b263528e01bfbaf716b51f38606b3dfe5ac1e9
-Gitweb:     http://git.kernel.org/tip/d9b263528e01bfbaf716b51f38606b3dfe5ac1e9
+Commit-ID:  f6c06b6807ff9281295989ebad72523865325a4f
+Gitweb:     http://git.kernel.org/tip/f6c06b6807ff9281295989ebad72523865325a4f
 Author:     Matthew Garrett <mjg@redhat.com>
-AuthorDate: Fri, 13 Nov 2009 14:57:00 -0500
+AuthorDate: Fri, 13 Nov 2009 15:14:11 -0500
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 13 Nov 2009 14:23:11 -0800
+CommitDate: Fri, 13 Nov 2009 15:54:27 -0800
 
-x86, setup: Store the boot cursor state
+vc: Add support for hiding the cursor when creating VTs
 
-Add a field to store the boot cursor state and implement this for VGA on
-x86. This can then be used to set the default policy for the boot console.
+Add support for setting a global default for whether or not a visible
+cursor should be enabled when creating VCs. The default will be to do so,
+unless overridden by the user at boot time or by a driver.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
-LKML-Reference: <1258142222-16092-1-git-send-email-mjg@redhat.com>
+LKML-Reference: <1258143251-5818-1-git-send-email-mjg@redhat.com>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/boot/video.c       |    6 ++++++
- include/linux/screen_info.h |    5 ++++-
- 2 files changed, 10 insertions(+), 1 deletions(-)
+ Documentation/kernel-parameters.txt |    9 +++++++++
+ drivers/char/vt.c                   |   11 ++++++++++-
+ drivers/video/console/vgacon.c      |    2 ++
+ include/linux/vt_kern.h             |    3 +++
+ 4 files changed, 24 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/boot/video.c b/arch/x86/boot/video.c
-index d42da38..f767164 100644
---- a/arch/x86/boot/video.c
-+++ b/arch/x86/boot/video.c
-@@ -27,6 +27,12 @@ static void store_cursor_position(void)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9107b38..dd42eb6 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2729,6 +2729,15 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Default is 1, i.e. UTF-8 mode is enabled for all
+ 			newly opened terminals.
  
- 	boot_params.screen_info.orig_x = oreg.dl;
- 	boot_params.screen_info.orig_y = oreg.dh;
++	vt.global_cursor_default=
++			[VT]
++			Format=<-1|0|1>
++			Set system-wide default for whether a cursor
++			is shown on new VTs. Default is -1,
++			i.e. cursors will be created by default unless
++			overridden by individual drivers. 0 will hide
++			cursors, 1 will display them.
 +
-+	if (oreg.ch & 0x20)
-+		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
+ 	waveartist=	[HW,OSS]
+ 			Format: <io>,<irq>,<dma>,<dma2>
+ 
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 0c80c68..1e3d728 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -161,6 +161,8 @@ static void set_palette(struct vc_data *vc);
+ static int printable;		/* Is console ready for printing? */
+ int default_utf8 = true;
+ module_param(default_utf8, int, S_IRUGO | S_IWUSR);
++int global_cursor_default = -1;
++module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
+ 
+ /*
+  * ignore_poke: don't unblank the screen when things are typed.  This is
+@@ -775,6 +777,12 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 		vc_cons[currcons].d = NULL;
+ 		return -ENOMEM;
+ 	    }
 +
-+	if ((oreg.ch & 0x1f) > (oreg.cl & 0x1f))
-+		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
++	    /* If no drivers have overridden us and the user didn't pass a
++	       boot option, default to displaying the cursor */
++	    if (global_cursor_default == -1)
++		    global_cursor_default = 1;
++
+ 	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
+ 	    vcs_make_sysfs(currcons);
+ 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
+@@ -1616,7 +1624,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
+ 	vc->vc_decscnm		= 0;
+ 	vc->vc_decom		= 0;
+ 	vc->vc_decawm		= 1;
+-	vc->vc_deccm		= 1;
++	vc->vc_deccm		= global_cursor_default;
+ 	vc->vc_decim		= 0;
+ 
+ 	set_kbd(vc, decarm);
+@@ -4078,6 +4086,7 @@ EXPORT_SYMBOL(fg_console);
+ EXPORT_SYMBOL(console_blank_hook);
+ EXPORT_SYMBOL(console_blanked);
+ EXPORT_SYMBOL(vc_cons);
++EXPORT_SYMBOL(global_cursor_default);
+ #ifndef VT_SINGLE_DRIVER
+ EXPORT_SYMBOL(take_over_console);
+ EXPORT_SYMBOL(give_up_console);
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index da55cca..564643e 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -585,6 +585,8 @@ static void vgacon_init(struct vc_data *c, int init)
+ 	vgacon_uni_pagedir[1]++;
+ 	if (!vgacon_uni_pagedir[0] && p)
+ 		con_set_default_unimap(c);
++
++	hide_boot_cursor(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
  }
  
- static void store_video_mode(void)
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index 1ee2c05..899fbb4 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -14,7 +14,8 @@ struct screen_info {
- 	__u16 orig_video_page;	/* 0x04 */
- 	__u8  orig_video_mode;	/* 0x06 */
- 	__u8  orig_video_cols;	/* 0x07 */
--	__u16 unused2;		/* 0x08 */
-+	__u8  flags;		/* 0x08 */
-+	__u8  unused2;		/* 0x09 */
- 	__u16 orig_video_ega_bx;/* 0x0a */
- 	__u16 unused3;		/* 0x0c */
- 	__u8  orig_video_lines;	/* 0x0e */
-@@ -65,6 +66,8 @@ struct screen_info {
+ static void vgacon_deinit(struct vc_data *c)
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index c0c4e11..7f56db4 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -110,6 +110,7 @@ extern char con_buf[CON_BUF_SIZE];
+ extern struct mutex con_buf_mtx;
+ extern char vt_dont_switch;
+ extern int default_utf8;
++extern int global_cursor_default;
  
- #define VIDEO_TYPE_EFI		0x70	/* EFI graphic mode		*/
+ struct vt_spawn_console {
+ 	spinlock_t lock;
+@@ -130,4 +131,6 @@ struct vt_notifier_param {
+ extern int register_vt_notifier(struct notifier_block *nb);
+ extern int unregister_vt_notifier(struct notifier_block *nb);
  
-+#define VIDEO_FLAGS_NOCURSOR	(1 << 0) /* The video mode has no cursor set */
++extern void hide_boot_cursor(bool hide);
 +
- #ifdef __KERNEL__
- extern struct screen_info screen_info;
- 
+ #endif /* _VT_KERN_H */
