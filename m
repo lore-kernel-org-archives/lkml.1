@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbZKNAZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932530AbZKNA1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727AbZKNAZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZKNAZn
+	id S932530AbZKNA1E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757648AbZKNA1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:25:43 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59537 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754079AbZKNAZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:25:43 -0500
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [RFC] MAINTAINERS: add SPI co-maintainer.
-To: akpm@linux-foundation.org, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Date: Fri, 13 Nov 2009 17:25:45 -0700
-Message-ID: <20091114001001.5343.99566.stgit@angua>
-User-Agent: StGIT/0.14.2
+	Fri, 13 Nov 2009 19:27:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61546 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757602AbZKNA1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 19:27:00 -0500
+Message-ID: <4AFDF912.10203@redhat.com>
+Date: Fri, 13 Nov 2009 19:25:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Roland McGrath <roland@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 2/3] Add coredump tracepoint
+References: <20091113225226.15079.90813.stgit@harusame>	<20091113225233.15079.41600.stgit@harusame>	<20091113233912.192A3100E@magilla.sf.frob.com>	<20091114000234.GA24738@elte.hu> <20091114000627.48ED615E8@magilla.sf.frob.com>
+In-Reply-To: <20091114000627.48ED615E8@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Roland McGrath wrote:
+>> Oh, so SystemTap is the motivator of these tracepoints?
+>
+> Nope.  My suggestion about arguments to pass was just generic based on the
+> innate context of this tracepoint.
+>
+>> Do you know about exact usecases where these tracepoints would be
+>> utilized? Would be interesting (and relevant) to list them.
+>
+> Masami's colleagues do have something in particular in mind,
+> but I'm not sure whether they intend to use systemtap as part
+> of the implementation of that or not.
 
-Hi David, Andrew.
+Yeah, we'd like to use this tracepoint to analyze coredump
+miss-configuration. Sometimes, users miss-configure dump-filter
+and rlimit, that will cause system-slowdown when several processes,
+which share a large amount of memory among them (e.g. database),
+start core-dump with shared memory. And then, it can cause a
+system-switching on HA cluster system.
 
-David, I know that you haven't had enough time lately to keep on top
-of the pending SPI patches, so I was wondering if you would like some
-help?  If you are interested, I'm willing to act as co-maintainer of
-for the SPI subsystem.
+With this tracepoint, we can analyze why the coredumps were slow.
 
-Here's what I'm thinking.  Right now all SPI patches are going through
-the -mm tree and just adding to akpm's burden.  I'd be more than happy
-to take over the task of actually collecting the acked patches into a
-git tree, getting them some exposure on linux-next, and asking Linus
-to pull it during the merge window.  If you ack them, then I'll merge
-them.
+Thank you,
 
-I'm also be willing to take responsibility for all powerpc-specific
-SPI patches so that you don't need to look at them.
+-- 
+Masami Hiramatsu
 
-How does this sound to you?
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-Cheers,
-g.
-
- MAINTAINERS |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a1a2ace..2b697cb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4937,6 +4937,7 @@ F:	drivers/char/specialix*
- 
- SPI SUBSYSTEM
- M:	David Brownell <dbrownell@users.sourceforge.net>
-+M:	Grant Likely <grant.likely@secretlab.ca>
- L:	spi-devel-general@lists.sourceforge.net
- S:	Maintained
- F:	Documentation/spi/
+e-mail: mhiramat@redhat.com
 
