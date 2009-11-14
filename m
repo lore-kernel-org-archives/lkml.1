@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbZKMGe4 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 13 Nov 2009 01:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZKMGeo
+	id S932285AbZKNDvR (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 13 Nov 2009 22:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZKNDvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 01:34:44 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53219 "EHLO e1.ny.us.ibm.com"
+	Fri, 13 Nov 2009 22:51:15 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50634 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479AbZKMGen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 01:34:43 -0500
+	id S1756782AbZKNDvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 22:51:15 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,99 +16,93 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/2] rcu: simplify association of forced quiescent states with grace periods
-Date: Thu, 12 Nov 2009 22:35:04 -0800
-Message-Id: <12580941042308-git-send-email->
+Subject: [PATCH tip/core/rcu 1/2] rcu: further cleanups of use of lastcomp
+Date: Fri, 13 Nov 2009 19:51:38 -0800
+Message-Id: <1258170699933-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091113063439.GA560@linux.vnet.ibm.com>
-References: <20091113063439.GA560@linux.vnet.ibm.com>
+In-Reply-To: <20091114035100.GA9599@linux.vnet.ibm.com>
+References: <20091114035100.GA9599@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-The force_quiescent_state() function also took a snapshot
-of the ->completed field, which was as obnoxious as it was in
-rcu_sched_qs() and friends.  So snapshot ->gpnum-1.  Also, since the
-dyntick_record_completed() and dyntick_recall_completed() functions are
-now simple assignments that are independent of CONFIG_NO_HZ, and since
-their names are now misleading, get rid of them.
+Now that a copy of the rsp->completed flag is available in all rcu_node
+structures, make full use of it.  It is still legitimate to access
+rsp->completed while holding the root rcu_node structure's lock, however.
+Also, tighten up force_quiescent_state()'s checks for end of current
+grace period.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |   27 +++------------------------
- 1 files changed, 3 insertions(+), 24 deletions(-)
+ kernel/rcutree.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 0490371..f93f0e2 100644
+index f93f0e2..1089d08 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -178,29 +178,9 @@ static struct rcu_node *rcu_get_root(struct rcu_state *rsp)
- 	return &rsp->node[0];
- }
+@@ -817,7 +817,7 @@ cpu_quiet(int cpu, struct rcu_state *rsp, struct rcu_data *rdp, long lastcomp)
  
--/*
-- * Record the specified "completed" value, which is later used to validate
-- * dynticks counter manipulations and CPU-offline checks.  Specify
-- * "rsp->completed - 1" to unconditionally invalidate any future dynticks
-- * manipulations and CPU-offline checks.  Such invalidation is useful at
-- * the beginning of a grace period.
-- */
--static void dyntick_record_completed(struct rcu_state *rsp, long comp)
--{
--	rsp->completed_fqs = comp;
--}
--
- #ifdef CONFIG_SMP
+ 	rnp = rdp->mynode;
+ 	spin_lock_irqsave(&rnp->lock, flags);
+-	if (lastcomp != ACCESS_ONCE(rsp->completed)) {
++	if (lastcomp != rnp->completed) {
  
- /*
-- * Recall the previously recorded value of the completion for dynticks.
-- */
--static long dyntick_recall_completed(struct rcu_state *rsp)
--{
--	return rsp->completed_fqs;
--}
--
--/*
-  * If the specified CPU is offline, tell the caller that it is in
-  * a quiescent state.  Otherwise, whack it with a reschedule IPI.
-  * Grace periods can end up waiting on an offline CPU when that
-@@ -702,7 +682,6 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	rsp->signaled = RCU_GP_INIT; /* Hold off force_quiescent_state. */
- 	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
- 	record_gp_stall_check_time(rsp);
--	dyntick_record_completed(rsp, rsp->completed - 1);
- 
- 	/* Special-case the common single-level case. */
- 	if (NUM_RCU_NODES == 1) {
-@@ -1201,7 +1180,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		goto unlock_ret; /* no emergency and done recently. */
- 	rsp->n_force_qs++;
- 	spin_lock(&rnp->lock);
+ 		/*
+ 		 * Someone beat us to it for this grace period, so leave.
+@@ -935,7 +935,6 @@ static void rcu_adopt_orphan_cbs(struct rcu_state *rsp)
+ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ {
+ 	unsigned long flags;
+-	long lastcomp;
+ 	unsigned long mask;
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+ 	struct rcu_node *rnp;
+@@ -958,7 +957,6 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
+ 		rnp = rnp->parent;
+ 	} while (rnp != NULL);
 -	lastcomp = rsp->completed;
-+	lastcomp = rsp->gpnum - 1;
+ 
+ 	spin_unlock_irqrestore(&rsp->onofflock, flags);
+ 
+@@ -1132,7 +1130,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
+ 	rcu_for_each_leaf_node(rsp, rnp) {
+ 		mask = 0;
+ 		spin_lock_irqsave(&rnp->lock, flags);
+-		if (rsp->completed != lastcomp) {
++		if (rnp->completed != lastcomp) {
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return 1;
+ 		}
+@@ -1146,7 +1144,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
+ 			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
+ 				mask |= bit;
+ 		}
+-		if (mask != 0 && rsp->completed == lastcomp) {
++		if (mask != 0 && rnp->completed == lastcomp) {
+ 
+ 			/* cpu_quiet_msk() releases rnp->lock. */
+ 			cpu_quiet_msk(mask, rsp, rnp, flags);
+@@ -1183,7 +1181,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	lastcomp = rsp->gpnum - 1;
  	signaled = rsp->signaled;
  	rsp->jiffies_force_qs = jiffies + RCU_JIFFIES_TILL_FORCE_QS;
- 	if (lastcomp == rsp->gpnum) {
-@@ -1235,7 +1214,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 		if (lastcomp == rsp->completed &&
+-	if (lastcomp == rsp->gpnum) {
++	if(!rcu_gp_in_progress(rsp)) {
+ 		rsp->n_force_qs_ngp++;
+ 		spin_unlock(&rnp->lock);
+ 		goto unlock_ret;  /* no GP in progress, time updated. */
+@@ -1211,7 +1209,8 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 		/* Update state, record completion counter. */
+ 		forcenow = 0;
+ 		spin_lock(&rnp->lock);
+-		if (lastcomp == rsp->completed &&
++		if (lastcomp + 1 == rsp->gpnum &&
++		    lastcomp == rsp->completed &&
  		    rsp->signaled == signaled) {
  			rsp->signaled = RCU_FORCE_QS;
--			dyntick_record_completed(rsp, lastcomp);
-+			rsp->completed_fqs = lastcomp;
- 			forcenow = signaled == RCU_SAVE_COMPLETED;
- 		}
- 		spin_unlock(&rnp->lock);
-@@ -1246,7 +1225,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 	case RCU_FORCE_QS:
- 
- 		/* Check dyntick-idle state, send IPI to laggarts. */
--		if (rcu_process_dyntick(rsp, dyntick_recall_completed(rsp),
-+		if (rcu_process_dyntick(rsp, rsp->completed_fqs,
- 					rcu_implicit_dynticks_qs))
- 			goto unlock_ret;
- 
+ 			rsp->completed_fqs = lastcomp;
 -- 
 1.5.2.5
 
