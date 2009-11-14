@@ -1,91 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751788AbZKNMvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZKNNGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751788AbZKNMvx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 07:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZKNMvw
+	id S1752073AbZKNNGM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 08:06:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZKNNGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 07:51:52 -0500
-Received: from fallback3.mail.ru ([94.100.176.58]:53688 "EHLO
-	fallback3.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbZKNMvv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 07:51:51 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
-Subject: Three buttons reported on two-button touchpad
-Date: Sat, 14 Nov 2009 15:51:10 +0300
-User-Agent: KMail/1.12.90 (Linux/2.6.31.6-desktop-0.rc1.1mnb; KDE/4.3.73; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1855912.F8eKTYv1IE";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sat, 14 Nov 2009 08:06:11 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45281 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751687AbZKNNGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 08:06:11 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18IkC5MXagIVPBR86cZjX8a0NIOOQyvsKAoLyE8vX
+	NleLDYHOn5O9Lw
+Subject: Re: [patch] cpu_early_init() breakage
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1258202602.6380.3.camel@marge.simson.net>
+References: <1258202602.6380.3.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sat, 14 Nov 2009 14:06:13 +0100
+Message-Id: <1258203973.6380.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911141551.14263.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1855912.F8eKTYv1IE
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Bah, missed quilt refresh after fixing my own typo :)
 
-Kernel 2.6.31.x
+0388423 typo caused loss of vendor data even with CONFIG_PROCESSOR_SELECT.
 
-dmesg:
-Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1c0b1, caps: 0xa04751/0x0
+[    0.000000] CPU: vendor_id 'GenuineIntel' unknown, using generic init.
+[    0.000000] CPU: Your system may be unstable.
+[    0.044003] MCE: unknown CPU type - not enabling MCE support.
+...
+[    0.437241] Brought up 4 CPUs
+[    0.440002] Total of 4 processors activated (19139.97 BogoMIPS).
+[    0.448021] CPU0 attaching sched-domain:
+[    0.448024]  domain 0: span 0-3 level MC
+[    0.448026]   groups: 0 1 2 3
+[    0.448031] CPU1 attaching sched-domain:
+[    0.448033]  domain 0: span 0-3 level MC
+[    0.448035]   groups: 1 2 3 0
+[    0.448039] CPU2 attaching sched-domain:
+[    0.448041]  domain 0: span 0-3 level MC
+[    0.448043]   groups: 2 3 0 1
+[    0.448047] CPU3 attaching sched-domain:
+[    0.448048]  domain 0: span 0-3 level MC
+[    0.448050]   groups: 3 0 1 2
 
-but /proc/bus/input/devices:
+x86: Fix typo in 0388423 "Minimise printk spew from per-vendor init code"
 
-I: Bus=3D0011 Vendor=3D0002 Product=3D0007 Version=3D01b1
-N: Name=3D"SynPS/2 Synaptics TouchPad"
-P: Phys=3Disa0060/serio1/input0
-S: Sysfs=3D/devices/platform/i8042/serio1/input/input15
-U: Uniq=3D
-H: Handlers=3Dmouse1 event2
-B: EV=3Db
-B: KEY=3D420 70000 0 0 0 0
-B: ABS=3D11000003
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Jones <davej@redhat.com>
+LKML-Reference: <new-submission>
 
-So even when capabilities clear say only 2 buttons, driver claims there=20
-are 3 of them.
+---
+ arch/x86/kernel/cpu/common.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-The reason most likely is initialization sequence.=20
-psmouse_switch_protocol() unconditionally sets supported buttons:
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -651,11 +651,12 @@ static void __init early_identify_cpu(st
+ 
+ void __init early_cpu_init(void)
+ {
+-#ifdef PROCESSOR_SELECT
+ 	const struct cpu_dev *const *cdev;
+ 	int count = 0;
+ 
++#ifdef CONFIG_PROCESSOR_SELECT
+ 	printk(KERN_INFO "KERNEL supported cpus:\n");
++#endif
+ 	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
+ 		const struct cpu_dev *cpudev = *cdev;
+ 		unsigned int j;
+@@ -665,14 +666,15 @@ void __init early_cpu_init(void)
+ 		cpu_devs[count] = cpudev;
+ 		count++;
+ 
++#ifdef CONFIG_PROCESSOR_SELECT
+ 		for (j = 0; j < 2; j++) {
+ 			if (!cpudev->c_ident[j])
+ 				continue;
+ 			printk(KERN_INFO "  %s %s\n", cpudev->c_vendor,
+ 				cpudev->c_ident[j]);
+ 		}
+-	}
+ #endif
++	}
+ 	early_identify_cpu(&boot_cpu_data);
+ }
+ 
 
-        input_dev->evbit[0] =3D BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
-        input_dev->keybit[BIT_WORD(BTN_MOUSE)] =3D BIT_MASK(BTN_LEFT) |
-                BIT_MASK(BTN_MIDDLE) | BIT_MASK(BTN_RIGHT);
-        input_dev->relbit[0] =3D BIT_MASK(REL_X) | BIT_MASK(REL_Y);
 
-before even starting hardware detection and knowing real capabilities.=20
-Detection for specific hardware won't change it (possibly only extend).
-
-Is it OK to move button bits setting into ps2bare_detect()? This seems=20
-to agree with comments in psmouse_extensions() as well:
-
-/*
- * Okay, all failed, we have a standard mouse here. The number of the=20
-buttons
- * is still a question, though. We assume 3.
- */
-
-All other detection routines seem to be setting those bits already.
-
---nextPart1855912.F8eKTYv1IE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEUEABECAAYFAkr+p74ACgkQR6LMutpd94w3twCYjjvW30+2AlKT5ULtivr+Vowl
-4gCfUT6vyIpnWmdOSLhVrd/LzVcVIg4=
-=PzVJ
------END PGP SIGNATURE-----
-
---nextPart1855912.F8eKTYv1IE--
