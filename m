@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbZKNS1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751313AbZKNSof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751259AbZKNS1p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 13:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZKNS1p
+	id S1751313AbZKNSof (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 13:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZKNSof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 13:27:45 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46495 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZKNS1o convert rfc822-to-8bit (ORCPT
+	Sat, 14 Nov 2009 13:44:35 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:33365 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbZKNSoe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 13:27:44 -0500
-Date: Sat, 14 Nov 2009 10:29:19 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: venu <vjosyula@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       Philip Downer <phil@csldevices.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: firmware loading interface
-Message-ID: <20091114102919.54606831@infradead.org>
-In-Reply-To: <51f3faa70911141019y1248fb27k5f7edb3729f72375@mail.gmail.com>
-References: <4AFD971C.3090204@csldevices.co.uk>
-	<4AFD9BAF.1010200@csldevices.co.uk>
-	<aday6mac5ai.fsf@roland-alpha.cisco.com>
-	<4AFED614.1050109@gmail.com>
-	<53ea87da0911140855u7993989aod746bcaf18ee4c31@mail.gmail.com>
-	<51f3faa70911141019y1248fb27k5f7edb3729f72375@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 14 Nov 2009 13:44:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=jhGvM//RT/1OyHj0aVJsTrgdnhN/nDfcTCz+iNMXIrxcFKSDsGMVGHhWmpZWxz2Vd3
+         uTLuATN1QuiycqEtDrpXCzVdQxRvJx+wNvfCqcXgIj2UozVuQCat4KtFKdiTcki/lD4/
+         ndZ6ApliIbLtEnyul0cbkrTnyua5gibhVVaTA=
+Message-ID: <4AFEFA94.8060207@gmail.com>
+Date: Sat, 14 Nov 2009 19:44:36 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091112 SUSE/3.0.0-1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Yong Wang <yong.y.wang@linux.intel.com>
+Subject: Re: resume crashes in intel_init_thermal [was: mmotm 2009-11-13-19-59
+ uploaded]
+References: <200911140403.nAE43CN1016851@imap1.linux-foundation.org>	<4AFEB060.80007@gmail.com> <20091114081549.1477fabc.akpm@linux-foundation.org>
+In-Reply-To: <20091114081549.1477fabc.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.97b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Nov 2009 12:19:13 -0600
-Robert Hancock <hancockrwd@gmail.com> wrote:
-
-> On Sat, Nov 14, 2009 at 10:55 AM, venu <vjosyula@gmail.com> wrote:
-> >  who triggers this upgrade from userspace ? I understand it is a
-> > naivee / beginers questions but i hope somebody explains me how ?
+On 11/14/2009 05:15 PM, Andrew Morton wrote:
+> Revert
 > 
-> The request_firmware interface probably isn't suitable for that..
-> using an ioctl or read/write-based interface, possibly on a separate
-> device node, would likely be the way to go..
+> : commit ce6b5d768c79b9d5dd6345c033bae781d5ca9b8e
+> : Author:     Yong Wang <yong.y.wang@linux.intel.com>
+> : AuthorDate: Wed Nov 11 15:51:25 2009 +0800
+> : Commit:     Ingo Molnar <mingo@elte.hu>
+> : CommitDate: Wed Nov 11 12:33:32 2009 +0100
+> : 
+> :     x86: Mark the thermal init functions __init
 > 
+> because intel_init_thermal() is called from mce_intel_feature_init() at
+> resume time, and we'd like its text to still be in memory when that
+> happens.
 
-it's not unusual to have a sysfs attribute that, when written to, will
-just do a request_firmware().
-It's not pretty, but it's cleaner than the alternatives....
-
+Works for me. Thanks.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+js
+Faculty of Informatics, Masaryk University
+Suse Labs, Novell
