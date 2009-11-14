@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZKNDGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbZKNDJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZKNDGn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 22:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbZKNDGl
+	id S932213AbZKNDJl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 22:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbZKNDJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 22:06:41 -0500
-Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:37004 "HELO
-	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756662AbZKNDGk (ORCPT
+	Fri, 13 Nov 2009 22:09:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37008
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755465AbZKNDJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 22:06:40 -0500
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: s1FL2c8VM1mZXyrimQZye8VPvArotQCdfZkwWjStnwcpVTYXvPTo36ausVHvkm8iwi2Mv.HpQ3deFBcFLDFvCEfZVgsO6Mvt4frrn1gO7BZwHjZ9N.QbyJslG1xorLHBuwZP8QCTWZQGxnAxeadJx3dz1EFMHjKwadjunpn_Vh3yzO9FDSB.fC0R1KVP5HtaC5xm.Q430Pk.96p4OrxpwOXmYy4WH6BsP45ygCX3U13T86ZjCbkZ3Ncoc15wa4HRURz7Jm5r13aLEX5G_2I69iwadLoiW4.06zjt5dhnQaPkEmnTTH6hjyDpbdm.bLvZippY9rTpls3ev5.BQJ4-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4AFE1EA9.60102@schaufler-ca.com>
-Date: Fri, 13 Nov 2009 19:06:17 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: James Morris <jmorris@namei.org>, Julia Lawall <julia@diku.dk>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com> <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>            <4AFCC06B.1030302@schaufler-ca.com> <19857.1258147396@turing-police.cc.vt.edu>
-In-Reply-To: <19857.1258147396@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 13 Nov 2009 22:09:38 -0500
+Date: Fri, 13 Nov 2009 19:09:54 -0800 (PST)
+Message-Id: <20091113.190954.189642997.davem@davemloft.net>
+To: gregory.haskins@gmail.com
+Cc: herbert@gondor.apana.org.au, ghaskins@novell.com, mst@redhat.com,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4AFE15AD.6000208@gmail.com>
+References: <4AFE08EF.2030308@gmail.com>
+	<20091114022103.GA19020@gondor.apana.org.au>
+	<4AFE15AD.6000208@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 12 Nov 2009 18:11:55 PST, Casey Schaufler said:
->   
->> James Morris wrote:
->>     
->>> Do you see potential for a buffer overrun in this case?
->>>       
->
->   
->> No, but I hate arguing with people who think that every time
->> they see strcmp that they have found a security flaw.
->>     
->
-> How do you feel about people who think every time they see strcmp()
-> "Oh crap, something that needs auditing"? ;)
->   
+From: Gregory Haskins <gregory.haskins@gmail.com>
+Date: Fri, 13 Nov 2009 21:27:57 -0500
 
-They have my deep sympathy. Which is why I'm advocating leaving
-the perfectly functional and correct use of strncmp() as it is.
+> Clearly there must be _some_ mechanism to synchronize (e.g.
+> flush/barrier) though, right?  Otherwise, that interface would seem to
+> be quite prone to races and would likely be unusable.   So what does
+> said flush use to know when the buffer is free?
 
-> The biggest problem with strcmp() is that even if it got audited when that code
-> went in, it's prone to unaudited breakage when somebody changes something in
-> some other piece of code, quite often in some other .c file in some other
-> directory.
->
-> Julia, is there a way to use coccinelle to detect unsafe changes like that?  Or
-> is expressing those semantics too difficult?
->
->
->   
+There is no such synchronization at all.
 
+If some synchronization is required, it must be done at a higher
+level.
+
+For example, SAMBA can only use sendfile() to serve file contents when
+the client holds an SMB "OP Lock" on the file.  Luckily, by default
+pretty much all SMB client implementations hold the OP Lock on a file
+even just to read it (this is so that self-modifying autoexec.bat
+scripts work :-)
+
+But frankly most sendfile() consumers don't care, and the only thing
+that really matters is that the checksum on the final TCP packet that
+goes out is correct, and since we require card checksums to sendfile()
+without copying, that is taken care of transparently.
