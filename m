@@ -1,57 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752364AbZKNOD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZKNOiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752364AbZKNOD5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 09:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZKNOD4
+	id S1752905AbZKNOiR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 09:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZKNOiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 09:03:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60544 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbZKNOD4 (ORCPT
+	Sat, 14 Nov 2009 09:38:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:61525 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZKNOiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 09:03:56 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 1/1] alpha: Fixup recvmmsg syscall glue
-Date: Sat, 14 Nov 2009 12:03:54 -0200
-Message-Id: <1258207434-5946-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 14 Nov 2009 09:38:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=JSut8kKA346hbWL0vMHTz99um+1MKiI37syg/a3+HXHoAXs68j7BotYer0U6cNjAQX
+         4HI2D00IpCqchkST+sN5nDxvOjqo4ewby7K9/nYzB6jpo0fpKKjKoV8Ge83gjmW3T6pa
+         ILER782Ovau7E7HN8AE2oNDxP2OPv0Q8aEZNI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] libata: prepare for removal of experimental tag on PATA drivers
+Date: Sat, 14 Nov 2009 15:37:19 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911141537.19068.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Push experimental tags to host drivers that still need it so we can
+remove the "global" experimental tag for PATA drivers.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+I hear that some issues are being worked on but the patch reflects
+the current situation and we can trivially update status of affected
+host drivers after new fixes are merged.
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- arch/alpha/include/asm/unistd.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/ata/Kconfig |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/alpha/include/asm/unistd.h b/arch/alpha/include/asm/unistd.h
-index 5b5c174..7f23665 100644
---- a/arch/alpha/include/asm/unistd.h
-+++ b/arch/alpha/include/asm/unistd.h
-@@ -433,10 +433,11 @@
- #define __NR_signalfd			476
- #define __NR_timerfd			477
- #define __NR_eventfd			478
-+#define __NR_recvmmsg			479
+Index: b/drivers/ata/Kconfig
+===================================================================
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -230,8 +230,8 @@ config PATA_ACPI
+ 	  otherwise unsupported hardware.
  
- #ifdef __KERNEL__
+ config PATA_ALI
+-	tristate "ALi PATA support"
+-	depends on PCI
++	tristate "ALi PATA support (Experimental)"
++	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the ALi ATA interfaces
+ 	  found on the many ALi chipsets.
+@@ -293,8 +293,8 @@ config PATA_CMD640_PCI
+ 	  If unsure, say N.
  
--#define NR_SYSCALLS			479
-+#define NR_SYSCALLS			480
+ config PATA_CMD64X
+-	tristate "CMD64x PATA support"
+-	depends on PCI
++	tristate "CMD64x PATA support (Experimental)"
++	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the CMD64x series chips
+ 	  except for the CMD640.
+@@ -574,8 +574,8 @@ config PATA_PCMCIA
+ 	  If unsure, say N.
  
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
--- 
-1.6.2.5
-
+ config PATA_PDC_OLD
+-	tristate "Older Promise PATA controller support"
+-	depends on PCI
++	tristate "Older Promise PATA controller support (Experimental)"
++	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the Promise 20246, 20262, 20263,
+ 	  20265 and 20267 adapters.
+@@ -660,8 +660,8 @@ config PATA_SIL680
+ 	  If unsure, say N.
+ 
+ config PATA_SIS
+-	tristate "SiS PATA support"
+-	depends on PCI
++	tristate "SiS PATA support (Experimental)"
++	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for SiS PATA controllers
+ 
