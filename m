@@ -1,94 +1,491 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZKNOiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZKOPK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905AbZKNOiR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 09:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZKNOiR
+	id S1753048AbZKOPK7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 10:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZKOPK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 09:38:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:61525 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbZKNOiQ (ORCPT
+	Sun, 15 Nov 2009 10:10:58 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:57025 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZKOPKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 09:38:16 -0500
+	Sun, 15 Nov 2009 10:10:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=JSut8kKA346hbWL0vMHTz99um+1MKiI37syg/a3+HXHoAXs68j7BotYer0U6cNjAQX
-         4HI2D00IpCqchkST+sN5nDxvOjqo4ewby7K9/nYzB6jpo0fpKKjKoV8Ge83gjmW3T6pa
-         ILER782Ovau7E7HN8AE2oNDxP2OPv0Q8aEZNI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] libata: prepare for removal of experimental tag on PATA drivers
-Date: Sat, 14 Nov 2009 15:37:19 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=sQOSced2en2dcG9lDK7ML96OZ4IAiRsO3dBECSuwYZgqP0Tx6NgmZDDmdxsMQxRl0u
+         pb7tfpflk8+n9KWYt6qywAWbRq/wHj4B7TpG/uWQMGtvfkE6qk/CxfFu3f4PkgC0mJs5
+         lY7hEVxl3u6PABilIEMxunPiZo3RguViTrpW8=
+From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+To: jkosina@suse.cz, "linux list" <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
+Subject: [PATCH v3 0/2] trivial: fix assorted typos all over the place
+Date: Sat, 14 Nov 2009 13:09:04 -0200
+Message-Id: <cover.1258210891.git.andre.goddard@gmail.com>
+X-Mailer: git-send-email 1.6.5.2.180.gc5b3e.dirty
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911141537.19068.bzolnier@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Push experimental tags to host drivers that still need it so we can
-remove the "global" experimental tag for PATA drivers.
+That is "success", "unknown", "through", "performance", "[re|un]mapping"
+, "access", "default", "reasonable", "[con]currently", "temperature"
+, "channel", "[un]used", "application", "example","hierarchy", "therefore"
+, "[over|under]flow", "contiguous", "threshold", "enough" and others.
 
-I hear that some issues are being worked on but the patch reflects
-the current situation and we can trivially update status of affected
-host drivers after new fixes are merged.
+Changelog:
+    v3: separate the patch affecting staging for Greg's consumption
+    v2: consolidated patch affecting all the tree
+    v1: original submission broken by typo fix of a specific word
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ata/Kconfig |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+André Goddard Rosa (2):
+  trivial: tree-wide: fix assorted typos all over the place
+  trivial: staging: fix assorted typos all over the place
 
-Index: b/drivers/ata/Kconfig
-===================================================================
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -230,8 +230,8 @@ config PATA_ACPI
- 	  otherwise unsupported hardware.
- 
- config PATA_ALI
--	tristate "ALi PATA support"
--	depends on PCI
-+	tristate "ALi PATA support (Experimental)"
-+	depends on PCI && EXPERIMENTAL
- 	help
- 	  This option enables support for the ALi ATA interfaces
- 	  found on the many ALi chipsets.
-@@ -293,8 +293,8 @@ config PATA_CMD640_PCI
- 	  If unsure, say N.
- 
- config PATA_CMD64X
--	tristate "CMD64x PATA support"
--	depends on PCI
-+	tristate "CMD64x PATA support (Experimental)"
-+	depends on PCI && EXPERIMENTAL
- 	help
- 	  This option enables support for the CMD64x series chips
- 	  except for the CMD640.
-@@ -574,8 +574,8 @@ config PATA_PCMCIA
- 	  If unsure, say N.
- 
- config PATA_PDC_OLD
--	tristate "Older Promise PATA controller support"
--	depends on PCI
-+	tristate "Older Promise PATA controller support (Experimental)"
-+	depends on PCI && EXPERIMENTAL
- 	help
- 	  This option enables support for the Promise 20246, 20262, 20263,
- 	  20265 and 20267 adapters.
-@@ -660,8 +660,8 @@ config PATA_SIL680
- 	  If unsure, say N.
- 
- config PATA_SIS
--	tristate "SiS PATA support"
--	depends on PCI
-+	tristate "SiS PATA support (Experimental)"
-+	depends on PCI && EXPERIMENTAL
- 	help
- 	  This option enables support for SiS PATA controllers
- 
+ Documentation/ABI/testing/procfs-diskstats         |    2 +-
+ Documentation/ABI/testing/sysfs-block              |    2 +-
+ Documentation/DocBook/mtdnand.tmpl                 |    2 +-
+ Documentation/DocBook/v4l/videodev2.h.xml          |    2 +-
+ Documentation/DocBook/writing-an-alsa-driver.tmpl  |    2 +-
+ Documentation/dvb/README.dvb-usb                   |    2 +-
+ Documentation/lguest/lguest.c                      |    2 +-
+ Documentation/scsi/ChangeLog.megaraid_sas          |    2 +-
+ Documentation/spi/spi-summary                      |    2 +-
+ Documentation/sysctl/vm.txt                        |    2 +-
+ Documentation/video4linux/gspca.txt                |    2 +-
+ Documentation/vm/page-types.c                      |    2 +-
+ arch/alpha/mm/numa.c                               |    2 +-
+ arch/arm/common/scoop.c                            |    2 +-
+ .../mach-bcmring/include/mach/csp/dmacHw_priv.h    |    2 +-
+ arch/arm/mach-bcmring/include/mach/dma.h           |    2 +-
+ arch/arm/mach-lh7a40x/include/mach/hardware.h      |    2 +-
+ arch/arm/mach-orion5x/pci.c                        |    2 +-
+ arch/arm/mach-pxa/include/mach/palmld.h            |    2 +-
+ arch/arm/mach-pxa/include/mach/palmt5.h            |    2 +-
+ arch/arm/mach-pxa/include/mach/palmtc.h            |    2 +-
+ arch/arm/mach-pxa/include/mach/palmte2.h           |    2 +-
+ arch/arm/mach-pxa/include/mach/palmtx.h            |    2 +-
+ arch/arm/mach-pxa/include/mach/palmz72.h           |    2 +-
+ arch/arm/mach-s3c6400/setup-sdhci.c                |    2 +-
+ arch/arm/mach-s3c6410/setup-sdhci.c                |    2 +-
+ arch/arm/mach-sa1100/dma.c                         |    2 +-
+ arch/arm/plat-mxc/include/mach/iomux-mx3.h         |    2 +-
+ arch/arm/plat-mxc/include/mach/iomux-mxc91231.h    |    2 +-
+ arch/arm/plat-mxc/pwm.c                            |    2 +-
+ arch/arm/plat-omap/dma.c                           |    2 +-
+ arch/arm/plat-omap/include/mach/omap16xx.h         |    2 +-
+ arch/arm/plat-s3c24xx/include/plat/map.h           |    2 +-
+ arch/avr32/boards/hammerhead/Kconfig               |    2 +-
+ arch/blackfin/kernel/traps.c                       |    2 +-
+ .../mach-bf518/include/mach/defBF51x_base.h        |    4 +-
+ .../mach-bf527/include/mach/defBF52x_base.h        |    4 +-
+ arch/blackfin/mach-bf537/include/mach/defBF534.h   |    4 +-
+ arch/blackfin/mach-bf548/include/mach/defBF544.h   |    4 +-
+ arch/blackfin/mach-bf548/include/mach/defBF547.h   |    4 +-
+ arch/blackfin/mach-bf548/include/mach/defBF548.h   |    4 +-
+ arch/blackfin/mach-bf548/include/mach/defBF549.h   |    4 +-
+ arch/cris/mm/fault.c                               |    2 +-
+ arch/ia64/hp/common/sba_iommu.c                    |    2 +-
+ arch/ia64/ia32/ia32_entry.S                        |    2 +-
+ arch/ia64/include/asm/perfmon_default_smpl.h       |    2 +-
+ arch/ia64/include/asm/sn/shubio.h                  |    2 +-
+ arch/ia64/kernel/esi.c                             |    2 +-
+ arch/ia64/kernel/perfmon.c                         |    2 +-
+ arch/m68k/ifpsp060/src/fpsp.S                      |   28 +++++-----
+ arch/m68k/ifpsp060/src/pfpsp.S                     |   26 ++++----
+ arch/m68k/include/asm/bootinfo.h                   |    2 +-
+ arch/microblaze/lib/memcpy.c                       |    2 +-
+ arch/microblaze/lib/memmove.c                      |    2 +-
+ arch/microblaze/lib/memset.c                       |    2 +-
+ arch/mips/include/asm/mach-pnx833x/gpio.h          |    2 +-
+ arch/mips/include/asm/sgi/ioc.h                    |    2 +-
+ arch/mips/include/asm/sibyte/sb1250_mac.h          |    2 +-
+ arch/mips/include/asm/sn/sn0/hubio.h               |    2 +-
+ arch/mips/kernel/smtc.c                            |    2 +-
+ arch/mips/math-emu/dp_sub.c                        |    2 +-
+ arch/mips/txx9/generic/smsc_fdc37m81x.c            |    2 +-
+ arch/powerpc/include/asm/reg_fsl_emb.h             |    2 +-
+ arch/powerpc/kernel/kgdb.c                         |    2 +-
+ arch/powerpc/kernel/tau_6xx.c                      |    2 +-
+ arch/powerpc/oprofile/op_model_cell.c              |    4 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c          |    2 +-
+ arch/powerpc/platforms/powermac/pci.c              |    2 +-
+ arch/powerpc/sysdev/dart_iommu.c                   |    2 +-
+ arch/s390/math-emu/math.c                          |    4 +-
+ arch/x86/include/asm/desc_defs.h                   |    4 +-
+ arch/x86/include/asm/mmzone_32.h                   |    2 +-
+ arch/x86/include/asm/uv/uv_bau.h                   |    2 +-
+ arch/x86/kernel/acpi/boot.c                        |    2 +-
+ arch/x86/kernel/amd_iommu.c                        |    4 +-
+ arch/x86/kernel/cpu/perf_event.c                   |    2 +-
+ arch/x86/kernel/kprobes.c                          |    4 +-
+ arch/x86/mm/kmmio.c                                |    4 +-
+ arch/x86/pci/amd_bus.c                             |    2 +-
+ block/blk-iopoll.c                                 |    2 +-
+ drivers/ata/ata_piix.c                             |    2 +-
+ drivers/ata/sata_fsl.c                             |    6 +-
+ drivers/atm/iphase.c                               |    2 +-
+ drivers/base/dd.c                                  |    2 +-
+ drivers/bluetooth/btmrvl_sdio.c                    |    2 +-
+ drivers/bluetooth/hci_ldisc.c                      |    2 +-
+ drivers/char/mem.c                                 |    2 +-
+ drivers/char/mspec.c                               |    2 +-
+ drivers/char/n_r3964.c                             |    2 +-
+ drivers/char/rio/route.h                           |    2 +-
+ drivers/crypto/hifn_795x.c                         |    2 +-
+ drivers/dma/at_hdmac.c                             |    2 +-
+ drivers/firewire/core-topology.c                   |    2 +-
+ drivers/gpu/drm/drm_crtc.c                         |    4 +-
+ drivers/gpu/drm/i915/i915_gem.c                    |    2 +-
+ drivers/gpu/drm/i915/intel_fb.c                    |    2 +-
+ drivers/gpu/drm/i915/intel_sdvo.c                  |    2 +-
+ drivers/gpu/drm/radeon/r600.c                      |    4 +-
+ drivers/gpu/drm/radeon/radeon_fb.c                 |    2 +-
+ drivers/gpu/drm/radeon/radeon_state.c              |    2 +-
+ drivers/gpu/drm/radeon/radeon_ttm.c                |    2 +-
+ drivers/gpu/drm/radeon/rv770.c                     |    4 +-
+ drivers/gpu/drm/ttm/ttm_bo_util.c                  |    2 +-
+ drivers/hwmon/adm1029.c                            |    2 +-
+ drivers/hwmon/lm93.c                               |    2 +-
+ drivers/ieee1394/dv1394.c                          |    2 +-
+ drivers/infiniband/hw/ipath/ipath_iba6110.c        |    2 +-
+ drivers/infiniband/hw/ipath/ipath_sd7220.c         |    4 +-
+ drivers/infiniband/hw/mlx4/qp.c                    |    2 +-
+ drivers/input/serio/hp_sdc.c                       |    2 +-
+ drivers/input/serio/hp_sdc_mlc.c                   |    2 +-
+ drivers/input/touchscreen/atmel-wm97xx.c           |    2 +-
+ drivers/input/touchscreen/mainstone-wm97xx.c       |    4 +-
+ drivers/input/touchscreen/zylonite-wm97xx.c        |    2 +-
+ drivers/isdn/capi/capidrv.c                        |    2 +-
+ drivers/isdn/hardware/eicon/di.c                   |    2 +-
+ drivers/isdn/hardware/eicon/maintidi.c             |    4 +-
+ drivers/isdn/hardware/mISDN/hfcsusb.c              |    2 +-
+ drivers/isdn/hardware/mISDN/hfcsusb.h              |    2 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c            |    2 +-
+ drivers/isdn/hisax/hfc_usb.c                       |    2 +-
+ drivers/isdn/i4l/isdn_ppp.c                        |    6 +-
+ drivers/isdn/i4l/isdn_ttyfax.c                     |    2 +-
+ drivers/isdn/mISDN/dsp_core.c                      |    2 +-
+ drivers/isdn/mISDN/tei.c                           |    2 +-
+ drivers/macintosh/therm_windtunnel.c               |    2 +-
+ drivers/media/common/saa7146_i2c.c                 |    2 +-
+ drivers/media/dvb/dvb-core/dvb_frontend.h          |    2 +-
+ drivers/media/dvb/dvb-usb/anysee.c                 |    2 +-
+ drivers/media/dvb/dvb-usb/dibusb-mb.c              |    2 +-
+ drivers/media/dvb/dvb-usb/dvb-usb-remote.c         |    2 +-
+ drivers/media/dvb/dvb-usb/usb-urb.c                |    4 +-
+ drivers/media/dvb/frontends/au8522_decoder.c       |    2 +-
+ drivers/media/dvb/frontends/cx24110.c              |    4 +-
+ drivers/media/dvb/frontends/cx24113.c              |    2 +-
+ drivers/media/dvb/frontends/dib3000mb.c            |    2 +-
+ drivers/media/dvb/frontends/lgdt330x.c             |    4 +-
+ drivers/media/dvb/frontends/stb0899_drv.c          |    2 +-
+ drivers/media/dvb/ttpci/av7110.c                   |    4 +-
+ drivers/media/dvb/ttpci/budget-patch.c             |    2 +-
+ drivers/media/radio/radio-mr800.c                  |    2 +-
+ drivers/media/video/cx231xx/cx231xx-avcore.c       |    8 ++-
+ drivers/media/video/cx23885/cx23885-dvb.c          |    2 +-
+ drivers/media/video/cx88/cx88-core.c               |    2 +-
+ drivers/media/video/davinci/dm355_ccdc.c           |    2 +-
+ drivers/media/video/davinci/vpss.c                 |    2 +-
+ drivers/media/video/gspca/sonixb.c                 |    2 +-
+ drivers/media/video/gspca/spca500.c                |    2 +-
+ drivers/media/video/gspca/spca501.c                |    6 +-
+ drivers/media/video/gspca/sunplus.c                |    2 +-
+ drivers/media/video/gspca/zc3xx.c                  |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h |    2 +-
+ drivers/media/video/s2255drv.c                     |    2 +-
+ drivers/media/video/zoran/zoran.h                  |    2 +-
+ drivers/message/i2o/i2o_block.c                    |    2 +-
+ drivers/message/i2o/iop.c                          |    4 +-
+ drivers/misc/sgi-gru/grufile.c                     |    2 +-
+ drivers/mmc/host/s3cmci.c                          |    2 +-
+ drivers/mtd/devices/slram.c                        |    2 +-
+ drivers/mtd/nand/diskonchip.c                      |    2 +-
+ drivers/mtd/nand/nand_ecc.c                        |    2 +-
+ drivers/mtd/nand/s3c2410.c                         |    2 +-
+ drivers/net/82596.c                                |    2 +-
+ drivers/net/amd8111e.c                             |    7 ++-
+ drivers/net/appletalk/cops.c                       |    2 +-
+ drivers/net/ariadne.h                              |    2 +-
+ drivers/net/atl1c/atl1c_main.c                     |    2 +-
+ drivers/net/benet/be_cmds.h                        |    2 +-
+ drivers/net/benet/be_main.c                        |    2 +-
+ drivers/net/bnx2x_reg.h                            |    2 +-
+ drivers/net/cxgb3/sge.c                            |    2 +-
+ drivers/net/e1000e/82571.c                         |    4 +-
+ drivers/net/e1000e/lib.c                           |    2 +-
+ drivers/net/ehea/ehea_ethtool.c                    |    4 +-
+ drivers/net/hamradio/baycom_ser_fdx.c              |    2 +-
+ drivers/net/iseries_veth.c                         |    2 +-
+ drivers/net/lasi_82596.c                           |    2 +-
+ drivers/net/lib82596.c                             |    2 +-
+ drivers/net/mlx4/en_rx.c                           |    2 +-
+ drivers/net/mlx4/en_tx.c                           |    2 +-
+ drivers/net/mlx4/mlx4_en.h                         |    2 +-
+ drivers/net/ps3_gelic_net.c                        |    2 +-
+ drivers/net/sfc/falcon.c                           |    2 +-
+ drivers/net/sis900.c                               |    4 +-
+ drivers/net/skfp/h/smc.h                           |    8 +-
+ drivers/net/skfp/skfddi.c                          |    2 +-
+ drivers/net/smsc911x.c                             |    2 +-
+ drivers/net/smsc911x.h                             |    2 +-
+ drivers/net/spider_net.c                           |    2 +-
+ drivers/net/stmmac/gmac.c                          |    2 +-
+ drivers/net/stmmac/gmac.h                          |    4 +-
+ drivers/net/tokenring/smctr.c                      |    2 +-
+ drivers/net/ucc_geth.c                             |    2 +-
+ drivers/net/ucc_geth.h                             |   20 +++---
+ drivers/net/usb/smsc95xx.c                         |    2 +-
+ drivers/net/wan/lmc/lmc_main.c                     |    2 +-
+ drivers/net/wimax/i2400m/rx.c                      |    2 +-
+ drivers/net/wireless/ath/ath5k/phy.c               |    6 +-
+ drivers/net/wireless/ath/ath9k/rc.c                |    2 +-
+ drivers/net/wireless/ipw2x00/ipw2100.c             |    6 +-
+ drivers/net/wireless/ipw2x00/ipw2200.c             |    8 +-
+ drivers/net/wireless/ipw2x00/libipw_module.c       |    2 +-
+ drivers/net/wireless/iwmc3200wifi/hal.c            |    2 +-
+ drivers/net/wireless/iwmc3200wifi/rx.c             |    2 +-
+ drivers/net/wireless/libertas/if_sdio.c            |    2 +-
+ drivers/net/wireless/prism54/isl_ioctl.c           |    4 +-
+ drivers/net/wireless/rt2x00/rt2400pci.h            |    2 +-
+ drivers/net/wireless/rt2x00/rt2500pci.h            |    2 +-
+ drivers/net/wireless/rt2x00/rt2500usb.h            |    2 +-
+ drivers/net/wireless/rt2x00/rt2800usb.h            |    2 +-
+ drivers/net/wireless/rt2x00/rt2x00usb.c            |    2 +-
+ drivers/net/wireless/rt2x00/rt61pci.h              |    2 +-
+ drivers/net/wireless/rt2x00/rt73usb.h              |    2 +-
+ drivers/net/wireless/wavelan_cs.c                  |    2 +-
+ drivers/net/wireless/zd1211rw/zd_mac.c             |    2 +-
+ drivers/parisc/ccio-dma.c                          |    2 +-
+ drivers/platform/x86/thinkpad_acpi.c               |    2 +-
+ drivers/pnp/pnpbios/rsparser.c                     |    8 +-
+ drivers/ps3/ps3-sys-manager.c                      |    2 +-
+ drivers/rtc/rtc-v3020.c                            |    2 +-
+ drivers/s390/char/fs3270.c                         |    2 +-
+ drivers/s390/cio/chp.c                             |    2 +-
+ drivers/s390/cio/cmf.c                             |    2 +-
+ drivers/sbus/char/envctrl.c                        |    4 +-
+ drivers/scsi/53c700.c                              |    2 +-
+ drivers/scsi/aacraid/aacraid.h                     |    6 +-
+ drivers/scsi/aacraid/comminit.c                    |    2 +-
+ drivers/scsi/aic7xxx/aic79xx.seq                   |    2 +-
+ drivers/scsi/aic7xxx/aic79xx_core.c                |    2 +-
+ drivers/scsi/aic7xxx/aic7xxx_core.c                |    2 +-
+ drivers/scsi/bfa/include/defs/bfa_defs_pport.h     |    2 +-
+ drivers/scsi/bfa/include/defs/bfa_defs_tsensor.h   |    2 +-
+ drivers/scsi/hptiop.c                              |    2 +-
+ drivers/scsi/libfc/fc_lport.c                      |    2 +-
+ drivers/scsi/libiscsi_tcp.c                        |    2 +-
+ drivers/scsi/lpfc/lpfc_attr.c                      |    4 +-
+ drivers/scsi/lpfc/lpfc_els.c                       |    4 +-
+ drivers/scsi/lpfc/lpfc_init.c                      |   62 ++++++++++----------
+ drivers/scsi/lpfc/lpfc_sli.c                       |   10 ++--
+ drivers/scsi/megaraid.h                            |    2 +-
+ drivers/scsi/megaraid/mbox_defs.h                  |    2 +-
+ drivers/scsi/megaraid/megaraid_mbox.c              |    2 +-
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c               |    2 +-
+ drivers/scsi/ncr53c8xx.c                           |    2 +-
+ drivers/scsi/pmcraid.c                             |    6 +-
+ drivers/scsi/pmcraid.h                             |    6 +-
+ drivers/scsi/scsi_netlink.c                        |    2 +-
+ drivers/scsi/scsi_transport_sas.c                  |    6 +-
+ drivers/scsi/sym53c8xx_2/sym_glue.c                |    2 +-
+ drivers/scsi/sym53c8xx_2/sym_hipd.c                |    2 +-
+ drivers/scsi/sym53c8xx_2/sym_hipd.h                |    2 +-
+ drivers/serial/8250_pnp.c                          |    4 +-
+ drivers/serial/pmac_zilog.h                        |    2 +-
+ drivers/serial/ucc_uart.c                          |    2 +-
+ drivers/staging/altpciechdma/altpciechdma.c        |    6 +-
+ .../comedi/drivers/addi-data/APCI1710_INCCPT.c     |    6 +-
+ .../comedi/drivers/addi-data/APCI1710_Tor.c        |    2 +-
+ .../staging/comedi/drivers/addi-data/addi_common.h |    2 +-
+ .../comedi/drivers/addi-data/hwdrv_apci3120.c      |    2 +-
+ .../comedi/drivers/addi-data/hwdrv_apci3501.c      |    2 +-
+ drivers/staging/comedi/drivers/cb_pcidio.c         |    4 +-
+ drivers/staging/comedi/drivers/me4000.c            |    2 +-
+ drivers/staging/comedi/drivers/pcl812.c            |    6 +-
+ drivers/staging/comedi/drivers/pcl816.c            |    4 +-
+ drivers/staging/comedi/drivers/pcl818.c            |   10 ++--
+ drivers/staging/dst/export.c                       |    2 +-
+ drivers/staging/et131x/et131x_adapter.h            |    2 +-
+ drivers/staging/hv/hv_api.h                        |    4 +-
+ drivers/staging/iio/accel/accel.h                  |    6 +-
+ drivers/staging/iio/accel/sca3000.h                |    4 +-
+ drivers/staging/iio/accel/sca3000_core.c           |    2 +-
+ drivers/staging/octeon/cvmx-pow.h                  |    2 +-
+ drivers/staging/octeon/ethernet-tx.c               |    2 +-
+ drivers/staging/otus/80211core/ccmd.c              |    4 +-
+ drivers/staging/otus/80211core/cmm.c               |    4 +-
+ drivers/staging/otus/80211core/cmmsta.c            |    4 +-
+ drivers/staging/otus/80211core/ctxrx.c             |    2 +-
+ drivers/staging/otus/80211core/pub_zfi.h           |    2 +-
+ drivers/staging/quatech_usb2/quatech_usb2.c        |    2 +-
+ drivers/staging/rar/rar_driver.c                   |    4 +-
+ drivers/staging/rt2860/common/cmm_data.c           |    4 +-
+ drivers/staging/rt2860/common/cmm_info.c           |   32 +++++-----
+ drivers/staging/rt2860/common/eeprom.c             |    4 +-
+ drivers/staging/rt2860/common/mlme.c               |   12 ++--
+ drivers/staging/rt2860/common/rtmp_init.c          |    4 +-
+ drivers/staging/rt2860/common/spectrum.c           |    6 +-
+ drivers/staging/rt2860/mlme.h                      |    2 +-
+ drivers/staging/rt2860/rt28xx.h                    |    2 +-
+ drivers/staging/rt2860/sta/connect.c               |    6 +-
+ drivers/staging/rt2860/sta/rtmp_data.c             |    2 +-
+ drivers/staging/rt2860/sta/wpa.c                   |    4 +-
+ drivers/staging/rt2860/sta_ioctl.c                 |    6 +-
+ drivers/staging/rt2870/common/rtusb_bulk.c         |    4 +-
+ drivers/staging/rt3090/chips/rt30xx.c              |    2 +-
+ drivers/staging/rt3090/chips/rt33xx.c              |    2 +-
+ drivers/staging/rt3090/common/cmm_data.c           |    4 +-
+ drivers/staging/rt3090/common/cmm_info.c           |   30 +++++-----
+ drivers/staging/rt3090/common/ee_prom.c            |    4 +-
+ drivers/staging/rt3090/common/igmp_snoop.c         |    4 +-
+ drivers/staging/rt3090/common/mlme.c               |   10 ++--
+ drivers/staging/rt3090/common/rtmp_init.c          |    4 +-
+ drivers/staging/rt3090/common/spectrum.c           |   14 ++--
+ drivers/staging/rt3090/mlme.h                      |    2 +-
+ drivers/staging/rt3090/rt_ate.c                    |    2 +-
+ drivers/staging/rt3090/rtmp_mac.h                  |    4 +-
+ drivers/staging/rt3090/sta/connect.c               |    6 +-
+ drivers/staging/rt3090/sta/rtmp_data.c             |    2 +-
+ drivers/staging/rt3090/sta_ioctl.c                 |   11 ++--
+ .../rtl8187se/ieee80211/ieee80211_softmac.c        |    6 +-
+ drivers/staging/rtl8187se/r8180.h                  |    2 +-
+ drivers/staging/rtl8187se/r8180_core.c             |   10 ++--
+ drivers/staging/rtl8187se/r8180_dm.c               |   12 ++--
+ drivers/staging/rtl8187se/r8180_rtl8225z2.c        |    2 +-
+ drivers/staging/rtl8187se/r8180_wx.c               |    2 +-
+ drivers/staging/rtl8187se/r8185b_init.c            |    4 +-
+ .../staging/rtl8192e/ieee80211/ieee80211_module.c  |    2 +-
+ .../staging/rtl8192e/ieee80211/ieee80211_softmac.c |    4 +-
+ drivers/staging/rtl8192e/r8190_rtl8256.c           |    2 +-
+ drivers/staging/rtl8192e/r8192E_core.c             |    6 +-
+ drivers/staging/rtl8192e/r8192E_dm.c               |   20 +++---
+ drivers/staging/rtl8192e/r8192E_wx.c               |    2 +-
+ drivers/staging/rtl8192e/r819xE_cmdpkt.c           |    2 +-
+ drivers/staging/rtl8192e/r819xE_phyreg.h           |    2 +-
+ .../staging/rtl8192su/ieee80211/ieee80211_module.c |    2 +-
+ .../rtl8192su/ieee80211/ieee80211_softmac.c        |    4 +-
+ drivers/staging/rtl8192su/ieee80211/readme         |    2 +-
+ drivers/staging/rtl8192su/r8192S_phy.c             |    4 +-
+ drivers/staging/rtl8192su/r8192S_phyreg.h          |    2 +-
+ drivers/staging/rtl8192su/r8192S_rtl6052.c         |    4 +-
+ drivers/staging/rtl8192su/r8192U_dm.c              |   10 ++--
+ drivers/staging/rtl8192su/r8192U_wx.c              |    2 +-
+ drivers/staging/rtl8192su/r819xU_cmdpkt.c          |    2 +-
+ drivers/staging/sep/sep_driver.c                   |    2 +-
+ drivers/staging/serqt_usb2/serqt_usb2.c            |    2 +-
+ drivers/staging/vt6655/device_main.c               |    2 +-
+ drivers/staging/vt6655/ioctl.c                     |    4 +-
+ drivers/staging/vt6655/mib.h                       |    4 +-
+ drivers/staging/vt6656/baseband.c                  |    2 +-
+ drivers/staging/vt6656/channel.c                   |    2 +-
+ drivers/staging/vt6656/ioctl.c                     |    4 +-
+ drivers/staging/vt6656/iwctl.c                     |    2 +-
+ drivers/staging/vt6656/main_usb.c                  |    2 +-
+ drivers/staging/vt6656/mib.h                       |    4 +-
+ drivers/staging/vt6656/wcmd.c                      |    2 +-
+ drivers/telephony/ixj.c                            |    4 +-
+ drivers/usb/atm/ueagle-atm.c                       |    2 +-
+ drivers/usb/class/usbtmc.c                         |    2 +-
+ drivers/usb/core/message.c                         |    2 +-
+ drivers/usb/gadget/f_acm.c                         |    2 +-
+ drivers/usb/gadget/pxa27x_udc.c                    |    2 +-
+ drivers/usb/host/fhci-sched.c                      |    2 +-
+ drivers/usb/wusbcore/crypto.c                      |    2 +-
+ drivers/usb/wusbcore/wa-xfer.c                     |    4 +-
+ drivers/uwb/i1480/dfu/usb.c                        |    2 +-
+ drivers/uwb/wlp/txrx.c                             |    2 +-
+ drivers/video/aty/atyfb_base.c                     |    4 +-
+ drivers/video/backlight/atmel-pwm-bl.c             |    2 +-
+ drivers/video/backlight/tosa_lcd.c                 |    2 +-
+ drivers/video/console/sticore.c                    |    2 +-
+ drivers/video/gbefb.c                              |    2 +-
+ drivers/video/stifb.c                              |    4 +-
+ drivers/video/tdfxfb.c                             |    2 +-
+ drivers/video/via/dvi.c                            |    4 +-
+ drivers/video/vt8623fb.c                           |    2 +-
+ drivers/watchdog/coh901327_wdt.c                   |    2 +-
+ drivers/watchdog/machzwd.c                         |    2 +-
+ drivers/watchdog/wdrtas.c                          |    6 +-
+ fs/binfmt_elf.c                                    |    2 +-
+ fs/bio.c                                           |    2 +-
+ fs/btrfs/extent_map.c                              |    2 +-
+ fs/cifs/README                                     |    2 +-
+ fs/cifs/cifsglob.h                                 |    2 +-
+ fs/cifs/inode.c                                    |    4 +-
+ fs/cifs/smbdes.c                                   |    2 +-
+ fs/dlm/plock.c                                     |    2 +-
+ fs/ext4/inode.c                                    |    6 +-
+ fs/ext4/mballoc.c                                  |    2 +-
+ fs/jffs2/compr.c                                   |    2 +-
+ fs/jffs2/readinode.c                               |    2 +-
+ fs/jffs2/xattr.c                                   |    2 +-
+ fs/jfs/jfs_dmap.c                                  |    4 +-
+ fs/ncpfs/ioctl.c                                   |    2 +-
+ fs/ntfs/compress.c                                 |    2 +-
+ fs/ntfs/file.c                                     |    4 +-
+ fs/ntfs/logfile.c                                  |    2 +-
+ fs/ocfs2/alloc.c                                   |    2 +-
+ fs/ocfs2/dlm/dlmmaster.c                           |    2 +-
+ fs/ocfs2/dlmglue.c                                 |    2 +-
+ fs/ocfs2/journal.c                                 |    2 +-
+ fs/ocfs2/refcounttree.c                            |    2 +-
+ fs/omfs/bitmap.c                                   |    2 +-
+ fs/ubifs/recovery.c                                |    2 +-
+ fs/xfs/quota/xfs_dquot.h                           |    2 +-
+ include/asm-generic/memory_model.h                 |    2 +-
+ include/asm-generic/unistd.h                       |    2 +-
+ include/linux/chio.h                               |    2 +-
+ include/linux/mfd/ezx-pcap.h                       |    4 +-
+ include/linux/pktcdvd.h                            |    2 +-
+ include/linux/serial_reg.h                         |    8 +-
+ include/linux/videodev2.h                          |    2 +-
+ include/net/sctp/structs.h                         |    2 +-
+ include/net/tcp.h                                  |    2 +-
+ include/net/wimax.h                                |    2 +-
+ include/sound/wm8993.h                             |    2 +-
+ kernel/perf_event.c                                |    4 +-
+ lib/Kconfig.debug                                  |    2 +-
+ lib/decompress_bunzip2.c                           |    2 +-
+ lib/dma-debug.c                                    |    2 +-
+ lib/swiotlb.c                                      |    2 +-
+ mm/filemap.c                                       |    2 +-
+ mm/memcontrol.c                                    |    4 +-
+ mm/memory-failure.c                                |    2 +-
+ net/ipv4/netfilter/ipt_ECN.c                       |    2 +-
+ net/irda/irlap.c                                   |   14 ++--
+ net/irda/irlap_event.c                             |    2 +-
+ net/irda/irlmp.c                                   |    4 +-
+ net/mac80211/mesh_pathtbl.c                        |    4 +-
+ net/netlabel/netlabel_domainhash.c                 |    2 +-
+ net/sctp/sm_sideeffect.c                           |    2 +-
+ net/sunrpc/xprtrdma/svc_rdma_sendto.c              |    2 +-
+ net/wimax/op-reset.c                               |    2 +-
+ scripts/kconfig/mconf.c                            |    2 +-
+ security/selinux/netlabel.c                        |    2 +-
+ security/selinux/ss/services.c                     |    2 +-
+ sound/Kconfig                                      |    2 +-
+ sound/isa/cs423x/cs4236.c                          |    2 +-
+ sound/isa/opti9xx/miro.c                           |    2 +-
+ sound/isa/opti9xx/opti92x-ad1848.c                 |    2 +-
+ sound/oss/dmasound/dmasound_paula.c                |    2 +-
+ sound/pci/ca0106/ca0106_proc.c                     |    2 +-
+ sound/pci/cs46xx/imgs/cwcdma.asp                   |    9 ++-
+ sound/pci/emu10k1/emu10k1x.c                       |    2 +-
+ sound/pci/hda/patch_cmedia.c                       |    2 +-
+ sound/pci/hda/patch_realtek.c                      |    2 +-
+ sound/pci/rme9652/hdspm.c                          |    4 +-
+ sound/soc/codecs/uda134x.c                         |    4 +-
+ sound/soc/codecs/wm8903.c                          |    6 +-
+ sound/soc/codecs/wm8993.c                          |    4 +-
+ sound/soc/s3c24xx/s3c24xx_simtec.c                 |    2 +-
+ sound/soc/s6000/s6000-pcm.c                        |    2 +-
+ sound/sound_core.c                                 |    2 +-
+ 441 files changed, 735 insertions(+), 726 deletions(-)
+
