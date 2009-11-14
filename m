@@ -1,52 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbZKNF0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZKNF1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752156AbZKNF0x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 00:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZKNF0w
+	id S1752411AbZKNF1r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 00:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZKNF1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 00:26:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45979 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751289AbZKNF0v (ORCPT
+	Sat, 14 Nov 2009 00:27:46 -0500
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:57063 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbZKNF1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 00:26:51 -0500
-Date: Fri, 13 Nov 2009 21:26:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: rostedt@goodmis.org
-Cc: lihong.hi@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: + recordmcount-stfu.patch added to -mm tree
-Message-Id: <20091113212645.3956bc85.akpm@linux-foundation.org>
-In-Reply-To: <1258174705.22249.236.camel@gandalf.stny.rr.com>
-References: <200911140356.nAE3utfU001939@imap1.linux-foundation.org>
-	<1258174705.22249.236.camel@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Nov 2009 00:27:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=w5zwkcc9VUlgwRczZhX8fqTAfoCZm92qv1Ud9quTDsuOobPQSDXErryeFNvuRaytZV
+         h7LVs/zwIjA36ef5VFTEsX1PiDITx2tHpkzK4qOrCQpGVCNdyFfPbjIRgF/nVevWVuN2
+         QuZCNH6A9eNA/oZXWg0qE8GRlqPUbCs2Um9qg=
+Message-ID: <4AFE3FD2.6030403@gmail.com>
+Date: Sat, 14 Nov 2009 00:27:46 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <20091002141407.30224.54207.stgit@dev.haskins.net>	<20091110115335.GC6989@redhat.com>	<4AF919020200005A000586A9@sinclair.provo.novell.com>	<20091110131722.GA19645@redhat.com>	<4AF9747E.8020408@novell.com>	<20091110143652.GB19645@redhat.com>	<4AF98A8C.9040201@novell.com>	<20091114011229.GA18580@gondor.apana.org.au>	<4AFE08EF.2030308@gmail.com>	<20091114022103.GA19020@gondor.apana.org.au>	<4AFE15AD.6000208@gmail.com> <20091113184503.13f6d447@s6510>
+In-Reply-To: <20091113184503.13f6d447@s6510>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBD4C5E956E6511524D237887"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Nov 2009 23:58:25 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBD4C5E956E6511524D237887
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> ...
->
-> Andrew, would something like this patch be sufficient?
-> 
-> ...
->
-> +	    "\tLocal function references are disabled.\n" .
-> +	    "\tTo disable this message, create the file FTRACE_QUIET\n" .
-> +	    "\tin the top level directory\n";
+Stephen Hemminger wrote:
+> On Fri, 13 Nov 2009 21:27:57 -0500
+> Gregory Haskins <gregory.haskins@gmail.com> wrote:
+>=20
+>> Herbert Xu wrote:
+>>> On Fri, Nov 13, 2009 at 08:33:35PM -0500, Gregory Haskins wrote:
+>>>> Well, not with respect to the overall protocol, of course not.  But =
+with
+>>>> respect to the buffer in question, it _has_ to be.  Or am I missing
+>>>> something?
+>>> sendfile() has never guaranteed that the kernel is finished with
+>>> the underlying pages when it returns.
+>>>
+>>> Cheers,
+>> Clearly there must be _some_ mechanism to synchronize (e.g.
+>> flush/barrier) though, right?  Otherwise, that interface would seem to=
 
-Dunno, really.  How many people are running old objdump, and do we want
-to retard the rate at which the stragglers will upgrade?
+>> be quite prone to races and would likely be unusable.   So what does
+>> said flush use to know when the buffer is free?
+>=20
+> No all the interfaces require a copy.
 
-I tend to be a late adopter ;) (for legit reasons, really - to catch
-things like this) so I'd be OK carrying that patch locally.
+I'm sorry, but I do not think that is correct.  As others have pointed
+out, that would not appear to be true for at least sendfile.
+
+> Actually, sendfile makes no guarantee about synchronization
+> because the receiver of said file could be arbitrarily slow, and any at=
+tempt at locking down
+> current contents of file is a denial of service exposure.
+
+I think you are inverting the problem space.  It is fully expected that
+changing the "file", or the pages that represent the file before the
+packet is queued would constitute the modification of the stream on the
+wire.
+
+I am more thinking about the applications of mmap+sendfile to implement
+a zero-copy interface.  As David mentions in another mail, it seems that
+there is no sync mechanism available, so this would not appear to be a
+viable use case today, unfortunately.
+
+>=20
+> People have tried doing copy-less send by page flipping, but the overhe=
+ad of the IPI to
+> invalidate the TLB exceeded the overhead of the copy. There was an Inte=
+l paper on this in
+> at Linux Symposium (Ottawa) several years ago.
+
+I think you are confusing copy-less tx with copy-less rx.  You can try
+to do copy-less rx with page flipping, which has the IPI/TLB thrashing
+properties you mention, and I agree is problematic.  We are talking
+about copy-less tx here, however, and therefore no page-flipping is
+involved.  Rather, we are just posting SG lists of pages directly to the
+NIC (assuming the nic supports HIGH_DMA, etc).  You do not need to flip
+the page, or invalidate the TLB (and thus IPI the other cores) to do
+this to my knowledge.
+
+Kind Regards,
+-Greg
 
 
-Emitting that warning 1000000000000000000000000000 times per build is a
-bit obnoxious.  Maybe find some way to restrict it to once per `make'?
 
+
+--------------enigBD4C5E956E6511524D237887
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkr+P9IACgkQP5K2CMvXmqGeQgCfcGrNp0qqn8q7EZPgFrlqL8xj
+mC4AnjODIB9KhzJUdZz2jmVTCsU8n7mL
+=SEAv
+-----END PGP SIGNATURE-----
+
+--------------enigBD4C5E956E6511524D237887--
