@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZKNAKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbZKNAMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZKNAKY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbZKNAKX
+	id S1757598AbZKNAMU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZKNAMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:10:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43139 "EHLO hera.kernel.org"
+	Fri, 13 Nov 2009 19:12:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54470 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757420AbZKNAKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:10:21 -0500
-Date: Sat, 14 Nov 2009 00:10:15 GMT
-From: tip-bot for Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mjg@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, mjg@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <1258142222-16092-3-git-send-email-mjg@redhat.com>
-References: <1258142222-16092-3-git-send-email-mjg@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/setup] vgacon: Add support for setting the default cursor state
-Message-ID: <tip-b434a680a29424856e0f40199daa9f65963c7cb4@git.kernel.org>
-Git-Commit-ID: b434a680a29424856e0f40199daa9f65963c7cb4
-X-Mailer: tip-git-log-daemon
+	id S1757381AbZKNAMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 19:12:18 -0500
+Date: Sat, 14 Nov 2009 01:10:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 3/3] Add get_signal tracepoint
+Message-ID: <20091114001020.GB24738@elte.hu>
+References: <20091113225226.15079.90813.stgit@harusame>
+ <20091113225240.15079.4863.stgit@harusame>
+ <20091113235333.0E3CC15E8@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091113235333.0E3CC15E8@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b434a680a29424856e0f40199daa9f65963c7cb4
-Gitweb:     http://git.kernel.org/tip/b434a680a29424856e0f40199daa9f65963c7cb4
-Author:     Matthew Garrett <mjg@redhat.com>
-AuthorDate: Fri, 13 Nov 2009 14:57:02 -0500
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 13 Nov 2009 15:55:02 -0800
 
-vgacon: Add support for setting the default cursor state
+* Roland McGrath <roland@redhat.com> wrote:
 
-Pass the vga cursor state to the vt layer, ensuring that we don't hide
-the cursor when the bootloader has deliberately disabled it.
+> This is orthogonal to the core-dump tracepoint, I don't see why you 
+> call them a unified patch series.
+> 
+> The proper name for this event is "signal delivery".  But since the 
+> proper name for "send_signal" is "signal generation", I suppose "get" 
+> is analogously improper to the existing "send" tracepoint.  ;-)
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-LKML-Reference: <1258142222-16092-3-git-send-email-mjg@redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- drivers/video/console/vgacon.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+I'd suggest to add include/trace/events/signal.h and put these 
+tracepoints there.
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 564643e..cc4bbbe 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -586,7 +586,10 @@ static void vgacon_init(struct vc_data *c, int init)
- 	if (!vgacon_uni_pagedir[0] && p)
- 		con_set_default_unimap(c);
- 
--	hide_boot_cursor(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
-+	/* Only set the default if the user didn't deliberately override it */
-+	if (global_cursor_default == -1)
-+		global_cursor_default =
-+			!(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
- }
- 
- static void vgacon_deinit(struct vc_data *c)
+> Especially if you call this "get" rather than "deliver", there is 
+> another place that should invoke this tracepoint (or perhaps a third 
+> one).  sys_rt_sigtimedwait "gets" a signal without delivering it.  In 
+> POSIX terminology this is called "accepting" the signal: the three 
+> things that can happen in the life of a signal are "generate", 
+> "deliver", and "accept".  If you are trying to match up what happened 
+> to a signal generated by kill() or whatnot, then you want to notice 
+> both delivery and acceptance as the complementary event.
+> 
+> (And again I have no clue why this signal stuff should be called 
+> "sched" at all.)
+
+it shouldnt be called 'sched' - it should go into 'events/signal.h'.
+
+But we also need fuller coverage than this. Coredumps and signal 
+delivery events are just a small part of all things signals, we also 
+want:
+
+ - signal generation events (send_sig*() variants)
+
+ - signal IPI/wakeup events
+
+ - signal loss events (queue overflow)
+
+ - [ optional: signal blocking/unblocking events ]
+
+ - [ optional: specific signal handler installation/deinstallation ]
+
+That's what we generally require of new events: they should form a 
+coherent whole, a logical set of events that 'make sense' and explain 
+the workings of a subsystem on a given level of detail.
+
+How finegrained or coarse the level of details is is an open question, 
+but if a given level of detail has been picked, we want completeness on 
+that level.
+
+So for example in the list above, the '[ optional ]' events are 
+finegrained ones that could be left out of the initial version.
+
+We've done this consistently for all subsystems that added tracepoints: 
+scheduling, locking, timers, workqueues, block IO, SLAB, IRQs, etc., and 
+we want a similar approach for newly covered subsystems (such as 
+signals) as well.
+
+Thanks,
+
+	Ingo
