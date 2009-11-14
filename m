@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZKNRbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750902AbZKNRhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbZKNRbv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 12:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZKNRbu
+	id S1750902AbZKNRhv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 12:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbZKNRhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 12:31:50 -0500
-Received: from h1047321.serverkompetenz.net ([85.214.67.163]:38861 "EHLO
-	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755420AbZKNRbt (ORCPT
+	Sat, 14 Nov 2009 12:37:50 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:38306 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZKNRht convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 12:31:49 -0500
-Message-ID: <4AFEE981.8060505@ahsoftware.de>
-Date: Sat, 14 Nov 2009 18:31:45 +0100
-From: Alexander Holler <holler@ahsoftware.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sat, 14 Nov 2009 12:37:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=T5KDVC/8SFk8sSt0+77aGJwqrcgGjN8E9Jhc+siGNtId5ERJnMA1er1gxcDXQLUV3O
+         wB5Kiby1TA/njLFVIPZiLNpF/x7wX/8q2CbiykODcRzYKtkDFxnEekupa/b4N7pmGYhT
+         fnRgG/xjtIt2muaPMV++idNtPWyqvzaeD6M8o=
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problems with p55-express and sleeping usb-hds
-References: <4AFDDDF6.4050907@ahsoftware.de> <4AFDED47.5070606@ahsoftware.de> <4AFE1B0D.3060404@ahsoftware.de> <200911141106.51948.oliver@neukum.org>
-In-Reply-To: <200911141106.51948.oliver@neukum.org>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1258216474.3299.24.camel@violet>
+References: <4fb5db50911121909h1619e483ga4aa395af8fc1161@mail.gmail.com>
+	 <1258082571.7715.13.camel@violet>
+	 <4fb5db50911140519q70bbdd00qb585153c4926df96@mail.gmail.com>
+	 <1258216474.3299.24.camel@violet>
+Date: Sat, 14 Nov 2009 23:07:54 +0530
+Message-ID: <4fb5db50911140937j278584e5nf9e4d5767a44a920@mail.gmail.com>
+Subject: Re: [patch 0/1] Adding radio type FM
+From: Janakiram Sistla <janakiram.sistla@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Marcel,
 
-Am 14.11.2009 11:06, schrieb Oliver Neukum:
-> You can recompile with CONFIG_USB_DEBUG and CONFIG_USB_STORAGE_DEBUG.
+I thought i would see the change first in include/linux/rfkill.h
+getting accepted and then i can add the change in core.c also.
 
-Here it comes. I've used 2.6.31.6 and turned usb-(storage-)debug on. 
-After mounting the two large encrypted files (loop and dmcrypt) from the 
-two connected usb-drives, I've started the rsync -n to compare both 
-partitions:
-
---------------------------------
-Nov 14 13:03:41 krabat kernel: [  164.474820] EXT4-fs (dm-1): mounted 
-filesystem with ordered data mode
-Nov 14 13:04:38 krabat kernel: [  220.963256]  3c da 00 00 10 00
-...
-(many lines with hex-numbers, nothing else)
-...
-Nov 14 14:18:49 krabat kernel: [ 4672.953175]  28 00 04 e8 3d da 00 00 
-10 00
-Nov 14 14:18:49 krabat kernel: [ 4672.960345]  00 f0 00 
-
-Nov 14 14:18:49 krabat kernel: [ 4672.966138]  00 
-
-Nov 14 14:18:50 krabat kernel: [ 4673.071643]  00 04 e8 50 da 00 00 10 
-00
-Nov 14 14:18:50 krabat kernel: [ 4673.077825]  00 
-
-Nov 14 14:18:50 krabat kernel: [ 4673.077833]  10 00 
-
-Nov 14 14:18:50 krabat kernel: [ 4673.336765]  00 f0 00 
-
-Nov 14 14:18:50 krabat kernel: [ 4673.342205]  28 00 05 3b 40 da 00 00 
-10 00
-Nov 14 14:18:50 krabat kernel: [ 4673.342230]  00 
-
-Nov 14 14:18:50 krabat kernel: [ 4673.342235] 
-
-Nov 14 14:18:51 krabat kernel: [ 4674.647846]  28 00 05 3c 15 da 00 00 
-10 00
-Nov 14 14:18:51 krabat kernel: [ 4674.822258] 
-
-Nov 14 14:18:51 krabat kernel: [ 4674.828338]  28 00 04 e9 6e ea 00 00 
-f0 00
-Nov 14 14:18:57 krabat kernel: [ 4680.042678]  54 da 00 00 10 00 
-
-Nov 14 14:18:59 krabat kernel: [ 4682.646818]  00 05 e2 0c da 00 00 10 
-00
-Nov 14 14:19:00 krabat kernel: [ 4683.516686]  00 f0 00 
-
-Nov 14 14:19:00 krabat kernel: [ 4683.522288]  28 00 05 e6 9f da 00 00 
-10 00
-Nov 14 14:19:07 krabat kernel: [ 4690.760331] 
-
-Nov 14 14:19:39 krabat kernel: [ 4722.339214] usb 9-1: reset high speed 
-USB device using ehci_hcd and address 4
-Nov 14 14:19:39 krabat kernel: [ 4722.591235] usb 9-7: reset high speed 
-USB device using ehci_hcd and address 3
-Nov 14 14:19:44 krabat kernel: [ 4727.491664] usb 9-1: device firmware 
-changed
-Nov 14 14:19:44 krabat kernel: [ 4727.491718] usb 9-1: USB disconnect, 
-address 4
-Nov 14 14:19:44 krabat kernel: [ 4727.493060] scsi 7:0:0:0: Device 
-offlined - not ready after error recovery
-Nov 14 14:19:44 krabat kernel: [ 4727.493069] scsi 7:0:0:0: [sdc] 
-Unhandled error code
-Nov 14 14:19:44 krabat kernel: [ 4727.493072] scsi 7:0:0:0: [sdc] 
-Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
-Nov 14 14:19:44 krabat kernel: [ 4727.493077] end_request: I/O error, 
-dev sdc, sector 317945322
-Nov 14 14:19:44 krabat kernel: [ 4727.493091] scsi 7:0:0:0: rejecting 
-I/O to offline device
-Nov 14 14:19:44 krabat kernel: [ 4727.493108] scsi 7:0:0:0: [sdc] 
-Unhandled error code
-Nov 14 14:19:44 krabat kernel: [ 4727.493110] scsi 7:0:0:0: [sdc] 
-Result: hostbyte=DID_NO_CONNECT driverbyte=DRIVER_OK
-Nov 14 14:19:44 krabat kernel: [ 4727.493114] end_request: I/O error, 
-dev sdc, sector 317945562
-Nov 14 14:19:44 krabat kernel: [ 4727.615743] EXT4-fs error (device 
-dm-1): ext4_find_entry: reading directory #1771 offset 0
-Nov 14 14:19:44 krabat kernel: [ 4727.616071] Buffer I/O error on device 
-dm-1, logical block 0
-...
-(many more io, buffer and ext4 errors)
-...
---------------------------------
+Let me know if i can push both in the same patch.
 
 Regards,
+Ram.
 
-Alexander
+On Sat, Nov 14, 2009 at 10:04 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Janakiram,
+>
+>> Resubmitting patch  adding Marcels Comments
+>>
+>> From f72e4bdef7c423259f2f8f0615d024a25294ea8f Mon Sep 17 00:00:00 2001
+>> From: Janakiram Sistla <janakiram.sistla@gmail.com>
+>> Date: Sat, 14 Nov 2009 18:42:35 +0530
+>> Subject: [PATCH 1/1] Adding radio type FM
+>>
+>> Adding radio type FM in RFKILL_TYPE_.FM also belongs to
+>> same class of with both TX/RX capability.
+>>
+>> Signed-off-by: Janakiram Sistla <janakiram.sistla@gmail.com>
+>> ---
+>>  include/linux/rfkill.h |    1 +
+>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+>> index 3392c59..03f5598 100644
+>> --- a/include/linux/rfkill.h
+>> +++ b/include/linux/rfkill.h
+>> @@ -45,6 +45,7 @@ enum rfkill_type {
+>>       RFKILL_TYPE_WIMAX,
+>>       RFKILL_TYPE_WWAN,
+>>       RFKILL_TYPE_GPS,
+>> +     RFKILL_TYPE_FM,
+>>       NUM_RFKILL_TYPES,
+>>  };
+>
+> and what about rfkill_get_type_str() changes?
+>
+> Regards
+>
+> Marcel
+>
+>
+>
