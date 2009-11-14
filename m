@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbZKNMwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751788AbZKNMvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751733AbZKNMwU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 07:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZKNMwT
+	id S1751788AbZKNMvx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 07:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZKNMvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 07:52:19 -0500
-Received: from sh.osrg.net ([192.16.179.4]:35839 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbZKNMwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 07:52:18 -0500
-Date: Sat, 14 Nov 2009 21:50:56 +0900
-To: hannes@cmpxchg.org
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       chrisw@sous-sol.org, wmw2@infradead.org, joerg.roedel@amd.com,
-       muli@il.ibm.com, akpm@linux-foundation.org, tj@kernel.org
-Subject: Re: [PATCH -v2 6/9] bootmem: add free_bootmem_late
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091110120053.GA14940@cmpxchg.org>
-References: <1257849980-22640-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1257849980-22640-7-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20091110120053.GA14940@cmpxchg.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 14 Nov 2009 07:51:52 -0500
+Received: from fallback3.mail.ru ([94.100.176.58]:53688 "EHLO
+	fallback3.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbZKNMvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 07:51:51 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+Subject: Three buttons reported on two-button touchpad
+Date: Sat, 14 Nov 2009 15:51:10 +0300
+User-Agent: KMail/1.12.90 (Linux/2.6.31.6-desktop-0.rc1.1mnb; KDE/4.3.73; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1855912.F8eKTYv1IE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091114215041W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 14 Nov 2009 21:50:59 +0900 (JST)
+Message-Id: <200911141551.14263.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for reviewing,
+--nextPart1855912.F8eKTYv1IE
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 10 Nov 2009 13:00:53 +0100
-Johannes Weiner <hannes@cmpxchg.org> wrote:
+Kernel 2.6.31.x
 
-> I find it a bit weird that free_all_bootmem() callers have to take
-> care of totalram_pages while this function does the accounting on its
-> own.
+dmesg:
+Synaptics Touchpad, model: 1, fw: 6.3, id: 0x1c0b1, caps: 0xa04751/0x0
 
-Ah, it might be consistent to make the callers take care of
-totalram_pages like free_all_bootmem.
+but /proc/bus/input/devices:
 
+I: Bus=3D0011 Vendor=3D0002 Product=3D0007 Version=3D01b1
+N: Name=3D"SynPS/2 Synaptics TouchPad"
+P: Phys=3Disa0060/serio1/input0
+S: Sysfs=3D/devices/platform/i8042/serio1/input/input15
+U: Uniq=3D
+H: Handlers=3Dmouse1 event2
+B: EV=3Db
+B: KEY=3D420 70000 0 0 0 0
+B: ABS=3D11000003
 
-> And I think the function is more logically placed right below
-> free_bootmem(), like you did in the header.
+So even when capabilities clear say only 2 buttons, driver claims there=20
+are 3 of them.
 
-However, if we do the above, we have:
+The reason most likely is initialization sequence.=20
+psmouse_switch_protocol() unconditionally sets supported buttons:
 
-unsigned long free_bootmem_late(unsigned long addr, unsigned long
-size)
+        input_dev->evbit[0] =3D BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
+        input_dev->keybit[BIT_WORD(BTN_MOUSE)] =3D BIT_MASK(BTN_LEFT) |
+                BIT_MASK(BTN_MIDDLE) | BIT_MASK(BTN_RIGHT);
+        input_dev->relbit[0] =3D BIT_MASK(REL_X) | BIT_MASK(REL_Y);
 
-Which looks inconsistent a bit with free_bootmem()?
+before even starting hardware detection and knowing real capabilities.=20
+Detection for specific hardware won't change it (possibly only extend).
+
+Is it OK to move button bits setting into ps2bare_detect()? This seems=20
+to agree with comments in psmouse_extensions() as well:
+
+/*
+ * Okay, all failed, we have a standard mouse here. The number of the=20
+buttons
+ * is still a question, though. We assume 3.
+ */
+
+All other detection routines seem to be setting those bits already.
+
+--nextPart1855912.F8eKTYv1IE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEUEABECAAYFAkr+p74ACgkQR6LMutpd94w3twCYjjvW30+2AlKT5ULtivr+Vowl
+4gCfUT6vyIpnWmdOSLhVrd/LzVcVIg4=
+=PzVJ
+-----END PGP SIGNATURE-----
+
+--nextPart1855912.F8eKTYv1IE--
