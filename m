@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZKNCAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZKNCDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZKNCAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 21:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZKNCAj
+	id S1753755AbZKNCDB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 21:03:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZKNCC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 21:00:39 -0500
-Received: from mail.digidescorp.com ([66.244.163.200]:13556 "EHLO
-	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbZKNCAj (ORCPT
+	Fri, 13 Nov 2009 21:02:59 -0500
+Received: from h1047321.serverkompetenz.net ([85.214.67.163]:56922 "EHLO
+	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753369AbZKNCC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 21:00:39 -0500
-X-Greylist: delayed 501 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Nov 2009 21:00:39 EST
-X-Spam-Processed: digidescorp.com, Fri, 13 Nov 2009 19:52:23 -0600
-X-Authenticated-Sender: steve@digidescorp.com
-X-MDRemoteIP: 99.142.47.27
-X-Return-Path: prvs=156933d12f=steve@digidescorp.com
-X-Envelope-From: steve@digidescorp.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-From: steve@digidescorp.com
-To: linux-kernel@vger.kernel.org
-Cc: "Steven J. Magnani" <steve@digidescorp.com>
-Subject: [PATCH] procfs: Use proper units for noMMU statm
-Date: Fri, 13 Nov 2009 19:52:14 -0600
-Message-Id: <1258163534-3617-1-git-send-email-steve@digidescorp.com>
-X-Mailer: git-send-email 1.6.0.6
+	Fri, 13 Nov 2009 21:02:58 -0500
+Message-ID: <4AFE0FCC.4020405@ahsoftware.de>
+Date: Sat, 14 Nov 2009 03:02:52 +0100
+From: Alexander Holler <holler@ahsoftware.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Problems with p55-express and sleeping usb-hds
+References: <4AFDDDF6.4050907@ahsoftware.de> <4AFDEB57.2050908@gmail.com>
+In-Reply-To: <4AFDEB57.2050908@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On no-MMU systems, sizes reported in /proc/n/statm have units of bytes. 
-Per Documentation/filesystems/proc.txt, these values should be in pages.
+Am 14.11.2009 00:27, schrieb Robert Hancock:
+>> (And here comes the problem)>
+>> Nov 13 19:47:34 krabat kernel: [ 2655.981980] usb 9-7: reset high speed
+>> USB device using ehci_hcd and address 3
+>> Nov 13 19:47:39 krabat kernel: [ 2661.120397] usb 9-7: device firmware
+>> changed
+>> Nov 13 19:47:39 krabat kernel: [ 2661.120489] usb 9-7: USB disconnect,
+>> address 3
+>
+> That sounds like the device started reporting a different firmware
+> string after it woke up, and the kernel decided it wasn't the same
+> device anymore and triggered a disconnect/reconnect..
+> --
 
-Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
----
-diff -uprN a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
---- a/fs/proc/task_nommu.c	2009-11-13 16:48:14.000000000 -0600
-+++ b/fs/proc/task_nommu.c	2009-11-13 16:51:09.000000000 -0600
-@@ -110,8 +110,11 @@ int task_statm(struct mm_struct *mm, int
- 		}
- 	}
- 
--	size += (*text = mm->end_code - mm->start_code);
--	size += (*data = mm->start_stack - mm->start_data);
-+	size >>= PAGE_SHIFT;
-+	*text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK))
-+		>> PAGE_SHIFT;
-+	*data = (mm->start_stack - mm->start_data) >> PAGE_SHIFT;
-+	size += *text + *data;
- 	up_read(&mm->mmap_sem);
- 	*resident = size;
- 	return size;
+I don't think it's a problem with the devices. I'm using them (more than 
+1) for some months now and never have had any problems. The problem 
+first started, when I've switched  to the box with the p55-express and I 
+still don't have any problems with these devices on other machines.
 
+Kind regards,
+
+Alexander Holler
