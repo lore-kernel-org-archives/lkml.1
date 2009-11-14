@@ -1,220 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751349AbZKNS4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751405AbZKNTJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751349AbZKNS4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 13:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZKNS4Q
+	id S1751405AbZKNTJs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 14:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZKNTJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 13:56:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51117 "EHLO ogre.sisk.pl"
+	Sat, 14 Nov 2009 14:09:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48481 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbZKNS4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 13:56:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Allow memory hotplug and hibernation in the same kernel
-Date: Sat, 14 Nov 2009 19:57:27 +0100
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc7-rjw; KDE/4.3.1; x86_64; ; )
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org, gerald.schaefer@de.ibm.com,
-       linux-kernel@vger.kernel.org
-References: <20091113105944.GA16028@basil.fritz.box> <200911132116.02659.rjw@sisk.pl> <20091114001509.GH30880@basil.fritz.box>
-In-Reply-To: <20091114001509.GH30880@basil.fritz.box>
+	id S1751371AbZKNTJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 14:09:47 -0500
+Date: Sat, 14 Nov 2009 14:09:48 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [PATCH] cfq-iosched: fix ncq detection code
+Message-ID: <20091114190948.GA31708@redhat.com>
+References: <200911141433.40440.czoccolo@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911141957.27340.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911141433.40440.czoccolo@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 November 2009, Andi Kleen wrote:
-> > This also is going to affect suspend to RAM, which kind of makes sense BTW,
-> > so I'd not put it under the #ifdef.  Also, the names should reflect the fact
-> > that suspend is affected too.  What about block|unblock_system_sleep()?
+On Sat, Nov 14, 2009 at 02:33:40PM +0100, Corrado Zoccolo wrote:
+> CFQ's detection of queueing devices assumes a non-queuing device and detects
+> if the queue depth reaches a certain threshold.
+
+Hi Corrado,
+
+In cfq_init_queue(), we init hw_tag = 1. So I think we start with the
+assumption that device supports NCQ.
+
+>  Under some workloads (e.g.
+> synchronous reads), CFQ effectively forces a unit queue depth, thus defeating
+> the detection logic.  This leads to poor performance on queuing hardware,
+> since the idle window remains enabled.
+
+Is it always the case that NCQ hardware performs better if we don't idle.
+I got a rotational disk which supports NCQ but if we don't idle, than it
+becomes seek bound and throughput drops.
+
+On SSD also, seeks are cheap but not free. So if workload is less, then
+we might prefer to idle and I think that's the purpose of this dynamic
+hw_tag thing. If non-idling kind of workload is sufficient, then disable
+idling otherwise in case of sync workloads, continue to idle.
+
+In fact, whether device supports NCQ or not, isn't this information
+statically available? I do a cat on "/sys/block/<sdd>/device/queue_depth"
+and on non queuing hardware it has been set to 1 and on queuing hardware
+it has been set to 31 by default after system boot. So I am assuming we
+statically have the information about device queuing capability? At least
+for the locally connected devices.
+
 > 
-> Here's a updated version with that rename.
+> Given this premise, switching to hw_tag = 0 after we have proved at
+> least once that the device is NCQ capable is not a good choice.
+
+If it is proven that NCQ always means that idling is not good. Not true
+for atleast locally connected media. But is probably true many a times
+for SSD and fast storage arrays.
+
+Thanks
+Vivek
+
 > 
-> -Andi
+> The new detection code starts in an indeterminate state, in which CFQ behaves
+> as if hw_tag = 1, and then, if for a long observation period we never saw
+> large depth, we switch to hw_tag = 0, otherwise we stick to hw_tag = 1,
+> without reconsidering it again.
 > 
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
 > ---
+>  block/cfq-iosched.c |   24 +++++++++++++++---------
+>  1 files changed, 15 insertions(+), 9 deletions(-)
 > 
-> Allow memory hotplug and hibernation in the same kernel v2
-> 
-> Memory hotplug and hibernation was excluded in Kconfig. This is obviously
-> a problem for distribution kernels who want to support both in the same
-> image.
-> 
-> After some discussions with Rafael and others the only problem is 
-> with parallel memory hotadd or removal while a hibernation operation
-> is in process. It was also working for s390 before.
-> 
-> This patch removes the Kconfig level exclusion, and simply
-> makes the memory add / remove functions grab the pm_mutex
-> to exclude against hibernation.
-> 
-> This is a 2.6.32 candidate.
-> 
-> v2: Rename lock_hibernation to lock_system_sleep
-> 
-> Cc: gerald.schaefer@de.ibm.com
-> Cc: rjw@sisk.pl
-
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-Thanks!
-
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  include/linux/suspend.h |   21 +++++++++++++++++++--
->  mm/Kconfig              |    5 +----
->  mm/memory_hotplug.c     |   21 +++++++++++++++++----
->  3 files changed, 37 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6.32-rc6-ak/include/linux/suspend.h
-> ===================================================================
-> --- linux-2.6.32-rc6-ak.orig/include/linux/suspend.h
-> +++ linux-2.6.32-rc6-ak/include/linux/suspend.h
-> @@ -301,6 +301,8 @@ static inline int unregister_pm_notifier
->  #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
->  #endif /* !CONFIG_PM_SLEEP */
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 1bcbd8c..6925ab9 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -191,8 +191,14 @@ struct cfq_data {
+>  	 */
+>  	int rq_queued;
+>  	int hw_tag;
+> -	int hw_tag_samples;
+> -	int rq_in_driver_peak;
+> +	/*
+> +	 * hw_tag can be
+> +	 * -1 => indeterminate, (cfq will behave as if NCQ is present, to allow better detection)
+> +	 *  1 => NCQ is present (hw_tag_est_depth is the estimated max depth)
+> +	 *  0 => no NCQ
+> +	 */
+> +	int hw_tag_est_depth;
+> +	unsigned int hw_tag_samples;
 >  
-> +extern struct mutex pm_mutex;
-> +
->  #ifndef CONFIG_HIBERNATION
->  static inline void register_nosave_region(unsigned long b, unsigned long e)
+>  	/*
+>  	 * idle window management
+> @@ -2527,8 +2533,11 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
 >  {
-> @@ -308,8 +310,23 @@ static inline void register_nosave_regio
->  static inline void register_nosave_region_late(unsigned long b, unsigned long e)
->  {
->  }
-> -#endif
+>  	struct cfq_queue *cfqq = cfqd->active_queue;
 >  
-> -extern struct mutex pm_mutex;
-> +static inline void lock_system_sleep(void) {}
-> +static inline void unlock_system_sleep(void) {}
+> -	if (rq_in_driver(cfqd) > cfqd->rq_in_driver_peak)
+> -		cfqd->rq_in_driver_peak = rq_in_driver(cfqd);
+> +	if (rq_in_driver(cfqd) > cfqd->hw_tag_est_depth)
+> +		cfqd->hw_tag_est_depth = rq_in_driver(cfqd);
 > +
-> +#else
-> +
-> +/* Let some subsystems like memory hotadd exclude hibernation */
-> +
-> +static inline void lock_system_sleep(void)
-> +{
-> +	mutex_lock(&pm_mutex);
-> +}
-> +
-> +static inline void unlock_system_sleep(void)
-> +{
-> +	mutex_unlock(&pm_mutex);
-> +}
-> +#endif
+> +	if (cfqd->hw_tag == 1)
+> +		return;
 >  
->  #endif /* _LINUX_SUSPEND_H */
-> Index: linux-2.6.32-rc6-ak/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.32-rc6-ak.orig/mm/Kconfig
-> +++ linux-2.6.32-rc6-ak/mm/Kconfig
-> @@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
->  config MEMORY_HOTPLUG
->  	bool "Allow for memory hot-add"
->  	depends on SPARSEMEM || X86_64_ACPI_NUMA
-> -	depends on HOTPLUG && !(HIBERNATION && !S390) && ARCH_ENABLE_MEMORY_HOTPLUG
-> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
->  	depends on (IA64 || X86 || PPC_BOOK3S_64 || SUPERH || S390)
+>  	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
+>  	    rq_in_driver(cfqd) <= CFQ_HW_QUEUE_MIN)
+> @@ -2547,13 +2556,10 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
+>  	if (cfqd->hw_tag_samples++ < 50)
+>  		return;
 >  
-> -comment "Memory hotplug is currently incompatible with Software Suspend"
-> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION && !S390
+> -	if (cfqd->rq_in_driver_peak >= CFQ_HW_QUEUE_MIN)
+> +	if (cfqd->hw_tag_est_depth >= CFQ_HW_QUEUE_MIN)
+>  		cfqd->hw_tag = 1;
+>  	else
+>  		cfqd->hw_tag = 0;
 > -
->  config MEMORY_HOTPLUG_SPARSE
->  	def_bool y
->  	depends on SPARSEMEM && MEMORY_HOTPLUG
-> Index: linux-2.6.32-rc6-ak/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.32-rc6-ak.orig/mm/memory_hotplug.c
-> +++ linux-2.6.32-rc6-ak/mm/memory_hotplug.c
-> @@ -26,6 +26,7 @@
->  #include <linux/migrate.h>
->  #include <linux/page-isolation.h>
->  #include <linux/pfn.h>
-> +#include <linux/suspend.h>
->  
->  #include <asm/tlbflush.h>
->  
-> @@ -484,14 +485,18 @@ int __ref add_memory(int nid, u64 start,
->  	struct resource *res;
->  	int ret;
->  
-> +	lock_system_sleep();
-> +
->  	res = register_memory_resource(start, size);
-> +	ret = -EEXIST;
->  	if (!res)
-> -		return -EEXIST;
-> +		goto out;
->  
->  	if (!node_online(nid)) {
->  		pgdat = hotadd_new_pgdat(nid, start);
-> +		ret = -ENOMEM;
->  		if (!pgdat)
-> -			return -ENOMEM;
-> +			goto out;
->  		new_pgdat = 1;
->  	}
->  
-> @@ -514,7 +519,8 @@ int __ref add_memory(int nid, u64 start,
->  		BUG_ON(ret);
->  	}
->  
-> -	return ret;
-> +	goto out;
-> +
->  error:
->  	/* rollback pgdat allocation and others */
->  	if (new_pgdat)
-> @@ -522,6 +528,8 @@ error:
->  	if (res)
->  		release_memory_resource(res);
->  
-> +out:
-> +	unlock_system_sleep();
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(add_memory);
-> @@ -758,6 +766,8 @@ int offline_pages(unsigned long start_pf
->  	if (!test_pages_in_a_zone(start_pfn, end_pfn))
->  		return -EINVAL;
->  
-> +	lock_system_sleep();
-> +
->  	zone = page_zone(pfn_to_page(start_pfn));
->  	node = zone_to_nid(zone);
->  	nr_pages = end_pfn - start_pfn;
-> @@ -765,7 +775,7 @@ int offline_pages(unsigned long start_pf
->  	/* set above range as isolated */
->  	ret = start_isolate_page_range(start_pfn, end_pfn);
->  	if (ret)
-> -		return ret;
-> +		goto out;
->  
->  	arg.start_pfn = start_pfn;
->  	arg.nr_pages = nr_pages;
-> @@ -843,6 +853,7 @@ repeat:
->  	writeback_set_ratelimit();
->  
->  	memory_notify(MEM_OFFLINE, &arg);
-> +	unlock_system_sleep();
->  	return 0;
->  
->  failed_removal:
-> @@ -852,6 +863,8 @@ failed_removal:
->  	/* pushback to free area */
->  	undo_isolate_page_range(start_pfn, end_pfn);
->  
-> +out:
-> +	unlock_system_sleep();
->  	return ret;
+> -	cfqd->hw_tag_samples = 0;
+> -	cfqd->rq_in_driver_peak = 0;
 >  }
 >  
+>  static void cfq_completed_request(struct request_queue *q, struct request *rq)
+> @@ -2960,7 +2966,7 @@ static void *cfq_init_queue(struct request_queue *q)
+>  	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+>  	cfqd->cfq_slice_idle = cfq_slice_idle;
+>  	cfqd->cfq_latency = 1;
+> -	cfqd->hw_tag = 1;
+> +	cfqd->hw_tag = -1;
+>  	cfqd->last_end_sync_rq = jiffies;
+>  	return cfqd;
+>  }
+> -- 
+> 1.6.2.5
 > 
-> 
-
