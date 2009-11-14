@@ -1,60 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZKNUoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZKNXIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZKNUoa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 15:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZKNUoa
+	id S1751657AbZKNXIW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 18:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKNXIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 15:44:30 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53738 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbZKNUo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 15:44:29 -0500
-Subject: Re: + recordmcount-stfu.patch added to -mm tree
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, lihong.hi@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091114092718.GA10969@elte.hu>
-References: <200911140356.nAE3utfU001939@imap1.linux-foundation.org>
-	 <1258174705.22249.236.camel@gandalf.stny.rr.com>
-	 <20091113212645.3956bc85.akpm@linux-foundation.org>
-	 <1258176822.22249.239.camel@gandalf.stny.rr.com>
-	 <20091114092718.GA10969@elte.hu>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Sat, 14 Nov 2009 15:44:26 -0500
-Message-Id: <1258231467.22249.438.camel@gandalf.stny.rr.com>
+	Sat, 14 Nov 2009 18:08:21 -0500
+Received: from vena.lwn.net ([206.168.112.25]:58949 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751613AbZKNXIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 18:08:21 -0500
+Date: Sat, 14 Nov 2009 16:08:24 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: [PATCH] Make struct videobuf_queue_ops constant
+Message-ID: <20091114160824.28266c03@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-11-14 at 10:27 +0100, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > On Fri, 2009-11-13 at 21:26 -0800, Andrew Morton wrote:
-> > 
-> > > Dunno, really.  How many people are running old objdump, and do we 
-> > > want to retard the rate at which the stragglers will upgrade?
-> > 
-> > I guess not, but by printing out a warning 
-> > 1000000000000000000000000000 times per build, it may encourage them to 
-> > upgrade ;-)
-> 
-> If that binutils version is still supported this is not the right 
-> method. People are in their full rights to be at any version within the 
-> supported versions interval, and we should not 'force' them.
+The videobuf_queue_ops function vector is not declared constant, but
+there's no need for the videobuf layer to ever change it.  Make it const so
+that videobuf users can make their operations const without warnings.
 
-It's not forcing them. The patch I posted gave a way to disable that
-warning.
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ drivers/media/video/videobuf-core.c       |    2 +-
+ drivers/media/video/videobuf-dma-contig.c |    2 +-
+ drivers/media/video/videobuf-dma-sg.c     |    2 +-
+ drivers/media/video/videobuf-vmalloc.c    |    2 +-
+ include/media/videobuf-core.h             |    4 ++--
+ include/media/videobuf-dma-contig.h       |    2 +-
+ include/media/videobuf-dma-sg.h           |    2 +-
+ include/media/videobuf-vmalloc.h          |    2 +-
+ 8 files changed, 9 insertions(+), 9 deletions(-)
 
-But I agree with Andrew, the correct approach is to have it warn just
-once. The posted patch was just an easier approach.
-
--- Steve
-
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index 8e93c6f..2fdc5b3 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -110,7 +110,7 @@ EXPORT_SYMBOL_GPL(videobuf_queue_to_vmalloc);
+ 
+ 
+ void videobuf_queue_core_init(struct videobuf_queue *q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 struct device *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+diff --git a/drivers/media/video/videobuf-dma-contig.c b/drivers/media/video/videobuf-dma-contig.c
+index 635ffc7..49650ca 100644
+--- a/drivers/media/video/videobuf-dma-contig.c
++++ b/drivers/media/video/videobuf-dma-contig.c
+@@ -428,7 +428,7 @@ static struct videobuf_qtype_ops qops = {
+ };
+ 
+ void videobuf_queue_dma_contig_init(struct videobuf_queue *q,
+-				    struct videobuf_queue_ops *ops,
++				    const struct videobuf_queue_ops *ops,
+ 				    struct device *dev,
+ 				    spinlock_t *irqlock,
+ 				    enum v4l2_buf_type type,
+diff --git a/drivers/media/video/videobuf-dma-sg.c b/drivers/media/video/videobuf-dma-sg.c
+index 032ebae..f50e6b5 100644
+--- a/drivers/media/video/videobuf-dma-sg.c
++++ b/drivers/media/video/videobuf-dma-sg.c
+@@ -702,7 +702,7 @@ void *videobuf_sg_alloc(size_t size)
+ }
+ 
+ void videobuf_queue_sg_init(struct videobuf_queue* q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 struct device *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+diff --git a/drivers/media/video/videobuf-vmalloc.c b/drivers/media/video/videobuf-vmalloc.c
+index 35f3900..99d646e 100644
+--- a/drivers/media/video/videobuf-vmalloc.c
++++ b/drivers/media/video/videobuf-vmalloc.c
+@@ -391,7 +391,7 @@ static struct videobuf_qtype_ops qops = {
+ };
+ 
+ void videobuf_queue_vmalloc_init(struct videobuf_queue* q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 void *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
+index 1c5946c..316fdcc 100644
+--- a/include/media/videobuf-core.h
++++ b/include/media/videobuf-core.h
+@@ -166,7 +166,7 @@ struct videobuf_queue {
+ 	enum v4l2_field            field;
+ 	enum v4l2_field            last;   /* for field=V4L2_FIELD_ALTERNATE */
+ 	struct videobuf_buffer     *bufs[VIDEO_MAX_FRAME];
+-	struct videobuf_queue_ops  *ops;
++	const struct videobuf_queue_ops  *ops;
+ 	struct videobuf_qtype_ops  *int_ops;
+ 
+ 	unsigned int               streaming:1;
+@@ -195,7 +195,7 @@ void *videobuf_queue_to_vmalloc (struct videobuf_queue* q,
+ 				 struct videobuf_buffer *buf);
+ 
+ void videobuf_queue_core_init(struct videobuf_queue *q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 struct device *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+diff --git a/include/media/videobuf-dma-contig.h b/include/media/videobuf-dma-contig.h
+index 5493866..ebaa9bc 100644
+--- a/include/media/videobuf-dma-contig.h
++++ b/include/media/videobuf-dma-contig.h
+@@ -17,7 +17,7 @@
+ #include <media/videobuf-core.h>
+ 
+ void videobuf_queue_dma_contig_init(struct videobuf_queue *q,
+-				    struct videobuf_queue_ops *ops,
++				    const struct videobuf_queue_ops *ops,
+ 				    struct device *dev,
+ 				    spinlock_t *irqlock,
+ 				    enum v4l2_buf_type type,
+diff --git a/include/media/videobuf-dma-sg.h b/include/media/videobuf-dma-sg.h
+index dda47f0..53e72f7 100644
+--- a/include/media/videobuf-dma-sg.h
++++ b/include/media/videobuf-dma-sg.h
+@@ -103,7 +103,7 @@ struct videobuf_dmabuf *videobuf_to_dma (struct videobuf_buffer *buf);
+ void *videobuf_sg_alloc(size_t size);
+ 
+ void videobuf_queue_sg_init(struct videobuf_queue* q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 struct device *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+diff --git a/include/media/videobuf-vmalloc.h b/include/media/videobuf-vmalloc.h
+index e87222c..1ffdb66 100644
+--- a/include/media/videobuf-vmalloc.h
++++ b/include/media/videobuf-vmalloc.h
+@@ -30,7 +30,7 @@ struct videobuf_vmalloc_memory
+ };
+ 
+ void videobuf_queue_vmalloc_init(struct videobuf_queue* q,
+-			 struct videobuf_queue_ops *ops,
++			 const struct videobuf_queue_ops *ops,
+ 			 void *dev,
+ 			 spinlock_t *irqlock,
+ 			 enum v4l2_buf_type type,
+-- 
+1.6.2.5
 
