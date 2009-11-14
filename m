@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbZKNACs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbZKNABj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596AbZKNACs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbZKNACr
+	id S932580AbZKNABj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbZKNABh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:02:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39513 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932514AbZKNACr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:02:47 -0500
-Date: Sat, 14 Nov 2009 01:02:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 2/3] Add coredump tracepoint
-Message-ID: <20091114000234.GA24738@elte.hu>
-References: <20091113225226.15079.90813.stgit@harusame>
- <20091113225233.15079.41600.stgit@harusame>
- <20091113233912.192A3100E@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091113233912.192A3100E@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Fri, 13 Nov 2009 19:01:37 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42690 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932504AbZKNABg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 19:01:36 -0500
+Date: Sat, 14 Nov 2009 00:03:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+Message-ID: <20091114000329.5d224cdc@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911132358.45137.bzolnier@gmail.com>
+References: <4AFCC0D4.9020708@gmail.com>
+	<200911132317.35088.bzolnier@gmail.com>
+	<20091113224251.766c7910@lxorguk.ukuu.org.uk>
+	<200911132358.45137.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Nov 2009 23:58:45 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-* Roland McGrath <roland@redhat.com> wrote:
+> On Friday 13 November 2009 23:42:51 Alan Cox wrote:
+> > 
+> > > 	http://article.gmane.org/gmane.linux.ide/43136
+> > > 
+> > > [ it has still unfixed problems.. ]
+> > 
+> > Which of course you haven't bothered to point out or explain.
+> 
+> I meant problems reported by Mikulas:
+> 
+> 	http://thread.gmane.org/gmane.linux.ide/43069/focus=43136
+> 
+> Maybe they were fixed in your local tree but how would anyone know that given
+> that there haven't been any updates on the problem for the last two weeks..
 
-> I can't really see what this has to do with "sched" to warrant that 
-> name. But, whatever.
+Yeah its fixed - well I think so. I've not chased it up further yet
+because I've been working on far more important things than an anicent IDE
+controller patch that isn't an -rc candidate anyway.
 
-That's a misnomer indeed. I'd suggest to introduce a separate 'signal' 
-subsystem category.
+(basically you need to also set priv->dma_live if you are the only device
+or nothing is live but doing DMA)
 
-> Note that you put the tracepoint where it won't get called in the 
-> various cases where no dump is really being made because of 
-> RLIMIT_CORE or file failures.  I suspect you would like to get those 
-> reported.  (Perhaps especially so, since there won't be any file 
-> around to notice later.)
-
-Yeah, good point.
-
-> Also, it seems nice to give the tracepoint the chance to look at the 
-> actual open file in case a fancy one wants to do that.
-
-Oh, so SystemTap is the motivator of these tracepoints? Do you know 
-about exact usecases where these tracepoints would be utilized? Would be 
-interesting (and relevant) to list them.
-
-	Ingo
+Alan
