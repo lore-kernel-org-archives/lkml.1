@@ -1,213 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZKNAPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbZKNANW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757661AbZKNAPK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 19:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbZKNAPH
+	id S932539AbZKNANW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 19:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbZKNANU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 19:15:07 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48404 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757559AbZKNAPE (ORCPT
+	Fri, 13 Nov 2009 19:13:20 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50390 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757558AbZKNANT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 19:15:04 -0500
-Date: Sat, 14 Nov 2009 01:15:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, gerald.schaefer@de.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow memory hotplug and hibernation in the same kernel
-Message-ID: <20091114001509.GH30880@basil.fritz.box>
-References: <20091113105944.GA16028@basil.fritz.box> <200911132116.02659.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911132116.02659.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 13 Nov 2009 19:13:19 -0500
+Date: Sat, 14 Nov 2009 00:15:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+Message-ID: <20091114001510.2dd0ab5d@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911140046.29450.bzolnier@gmail.com>
+References: <4AFCC0D4.9020708@gmail.com>
+	<200911131715.24377.bzolnier@gmail.com>
+	<20091113182515.38fb3793@lxorguk.ukuu.org.uk>
+	<200911140046.29450.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This also is going to affect suspend to RAM, which kind of makes sense BTW,
-> so I'd not put it under the #ifdef.  Also, the names should reflect the fact
-> that suspend is affected too.  What about block|unblock_system_sleep()?
+On Sat, 14 Nov 2009 00:46:29 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-Here's a updated version with that rename.
+> On Friday 13 November 2009 19:25:15 Alan Cox wrote:
+> > > Fine but please update status of following host drivers that were
+> > > marked as "stable" prematurely by commit e3389cb first:
+> > > 
+> > > PATA_PDC_OLD: needs to be marked as EXPERIMENTAL (or just BROKEN)
+> > > - known reliability problems with UDMA
+> > 
+> > A few odd reports apparently linked to specific chip revs. It's at
+> > least as stable as the old IDE one which doesn't work on my hardware. I'd
+> 
+> Skipping the technical merit of the quoted text for the moment -- I find
 
--Andi
+You mean the content ?
 
----
+> the fact that you keep calling the present IDE host drivers (that many
+> developers helped to fix) as "old" ones or "buggy" ones rather degrading
 
-Allow memory hotplug and hibernation in the same kernel v2
+As you quoted the old PDC202xx driver does not work on my test hardware.
+The libata one does. That is what is popularly known as a "fact". I'm not
+entirely happy with either PDC driver for older chips and I've spent
+considerable time grovelling through old drivers, alternate drivers and
+what little documentation exists to try and figure it out in more detail.
 
-Memory hotplug and hibernation was excluded in Kconfig. This is obviously
-a problem for distribution kernels who want to support both in the same
-image.
+The lost IRQ recovery patches seem to have helped a fair bit, and your
+UDMA33 fix likewise.
 
-After some discussions with Rafael and others the only problem is 
-with parallel memory hotadd or removal while a hibernation operation
-is in process. It was also working for s390 before.
+> for their (this includes me of course) hard work.
 
-This patch removes the Kconfig level exclusion, and simply
-makes the memory add / remove functions grab the pm_mutex
-to exclude against hibernation.
+All because you wouldn't work on the libata ones which had a future. You
+are forgetting of course to mention that a good deal of analysis went
+into deciding to switch to libata and teach libata to do PATA devices.
+Stuff I'd say has proved to be bang on the mark as every PC class system
+now has SATA, already has the SATA stack and in many cases have devices
+where the PATA and SATA ports interact so must be driven by the same
+stack. Now that CF is dying I'd say its pretty much proven the right
+choice.
 
-This is a 2.6.32 candidate.
+I am *really* glad to see that with the wireless you are contributing
+heavily to both the old and new. If only you'd done that with PATA we
+would all have been better off.
 
-v2: Rename lock_hibernation to lock_system_sleep
-
-Cc: gerald.schaefer@de.ibm.com
-Cc: rjw@sisk.pl
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- include/linux/suspend.h |   21 +++++++++++++++++++--
- mm/Kconfig              |    5 +----
- mm/memory_hotplug.c     |   21 +++++++++++++++++----
- 3 files changed, 37 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.32-rc6-ak/include/linux/suspend.h
-===================================================================
---- linux-2.6.32-rc6-ak.orig/include/linux/suspend.h
-+++ linux-2.6.32-rc6-ak/include/linux/suspend.h
-@@ -301,6 +301,8 @@ static inline int unregister_pm_notifier
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
- #endif /* !CONFIG_PM_SLEEP */
- 
-+extern struct mutex pm_mutex;
-+
- #ifndef CONFIG_HIBERNATION
- static inline void register_nosave_region(unsigned long b, unsigned long e)
- {
-@@ -308,8 +310,23 @@ static inline void register_nosave_regio
- static inline void register_nosave_region_late(unsigned long b, unsigned long e)
- {
- }
--#endif
- 
--extern struct mutex pm_mutex;
-+static inline void lock_system_sleep(void) {}
-+static inline void unlock_system_sleep(void) {}
-+
-+#else
-+
-+/* Let some subsystems like memory hotadd exclude hibernation */
-+
-+static inline void lock_system_sleep(void)
-+{
-+	mutex_lock(&pm_mutex);
-+}
-+
-+static inline void unlock_system_sleep(void)
-+{
-+	mutex_unlock(&pm_mutex);
-+}
-+#endif
- 
- #endif /* _LINUX_SUSPEND_H */
-Index: linux-2.6.32-rc6-ak/mm/Kconfig
-===================================================================
---- linux-2.6.32-rc6-ak.orig/mm/Kconfig
-+++ linux-2.6.32-rc6-ak/mm/Kconfig
-@@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
- config MEMORY_HOTPLUG
- 	bool "Allow for memory hot-add"
- 	depends on SPARSEMEM || X86_64_ACPI_NUMA
--	depends on HOTPLUG && !(HIBERNATION && !S390) && ARCH_ENABLE_MEMORY_HOTPLUG
-+	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
- 	depends on (IA64 || X86 || PPC_BOOK3S_64 || SUPERH || S390)
- 
--comment "Memory hotplug is currently incompatible with Software Suspend"
--	depends on SPARSEMEM && HOTPLUG && HIBERNATION && !S390
--
- config MEMORY_HOTPLUG_SPARSE
- 	def_bool y
- 	depends on SPARSEMEM && MEMORY_HOTPLUG
-Index: linux-2.6.32-rc6-ak/mm/memory_hotplug.c
-===================================================================
---- linux-2.6.32-rc6-ak.orig/mm/memory_hotplug.c
-+++ linux-2.6.32-rc6-ak/mm/memory_hotplug.c
-@@ -26,6 +26,7 @@
- #include <linux/migrate.h>
- #include <linux/page-isolation.h>
- #include <linux/pfn.h>
-+#include <linux/suspend.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -484,14 +485,18 @@ int __ref add_memory(int nid, u64 start,
- 	struct resource *res;
- 	int ret;
- 
-+	lock_system_sleep();
-+
- 	res = register_memory_resource(start, size);
-+	ret = -EEXIST;
- 	if (!res)
--		return -EEXIST;
-+		goto out;
- 
- 	if (!node_online(nid)) {
- 		pgdat = hotadd_new_pgdat(nid, start);
-+		ret = -ENOMEM;
- 		if (!pgdat)
--			return -ENOMEM;
-+			goto out;
- 		new_pgdat = 1;
- 	}
- 
-@@ -514,7 +519,8 @@ int __ref add_memory(int nid, u64 start,
- 		BUG_ON(ret);
- 	}
- 
--	return ret;
-+	goto out;
-+
- error:
- 	/* rollback pgdat allocation and others */
- 	if (new_pgdat)
-@@ -522,6 +528,8 @@ error:
- 	if (res)
- 		release_memory_resource(res);
- 
-+out:
-+	unlock_system_sleep();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(add_memory);
-@@ -758,6 +766,8 @@ int offline_pages(unsigned long start_pf
- 	if (!test_pages_in_a_zone(start_pfn, end_pfn))
- 		return -EINVAL;
- 
-+	lock_system_sleep();
-+
- 	zone = page_zone(pfn_to_page(start_pfn));
- 	node = zone_to_nid(zone);
- 	nr_pages = end_pfn - start_pfn;
-@@ -765,7 +775,7 @@ int offline_pages(unsigned long start_pf
- 	/* set above range as isolated */
- 	ret = start_isolate_page_range(start_pfn, end_pfn);
- 	if (ret)
--		return ret;
-+		goto out;
- 
- 	arg.start_pfn = start_pfn;
- 	arg.nr_pages = nr_pages;
-@@ -843,6 +853,7 @@ repeat:
- 	writeback_set_ratelimit();
- 
- 	memory_notify(MEM_OFFLINE, &arg);
-+	unlock_system_sleep();
- 	return 0;
- 
- failed_removal:
-@@ -852,6 +863,8 @@ failed_removal:
- 	/* pushback to free area */
- 	undo_isolate_page_range(start_pfn, end_pfn);
- 
-+out:
-+	unlock_system_sleep();
- 	return ret;
- }
- 
+Alan
