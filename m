@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbZKNDXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZKNDkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932214AbZKNDXK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 22:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZKNDXK
+	id S1757020AbZKNDkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 22:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZKNDkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 22:23:10 -0500
-Received: from rtr.ca ([76.10.145.34]:59533 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755260AbZKNDXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 22:23:09 -0500
-Message-ID: <4AFE22A1.4050707@rtr.ca>
-Date: Fri, 13 Nov 2009 22:23:13 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 13 Nov 2009 22:40:51 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:59899 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755465AbZKNDku (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Nov 2009 22:40:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lR+K2LxwgQa3uYJqC4EK8s6UwL1ymSPV9lPPmZ6mFT+zuxfx9Rh8CjxzllCu9gk+Gg
+         ByQjfnDXC2HHlpr5Avb36TjNu09F/FgHZlqG8RH3pd2+qIOtdhmQcx1go6hlZnbg4+An
+         7IAMXw+9CEZNZ4qCa92GkCDgcidiDqLXQMsEc=
+Message-ID: <4AFE26C5.5080402@lwfinger.net>
+Date: Fri, 13 Nov 2009 21:40:53 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Thiago Farina <tfransosi@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, mlord@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
-References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com>	 <4AF8F363.3010806@rtr.ca> <200911101651.24912.bzolnier@gmail.com>	 <84144f020911100808y55f5bfa2v5c203b356583a7b5@mail.gmail.com>	 <4AFB3C9D.4020609@rtr.ca>	 <a4c8a6d00911111450y7e451071h3f0ede0a1003678b@mail.gmail.com>	 <4AFC9FEC.8030304@rtr.ca> <4AFCA75C.8000101@pobox.com> <a4c8a6d00911121641k13288cb3s696a876901c68eb3@mail.gmail.com>
-In-Reply-To: <a4c8a6d00911121641k13288cb3s696a876901c68eb3@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Michael Buesch <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 64-bit DMA problems with BCM4312 using b43
+References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org> <200911132144.24110.mb@bu3sch.de> <4AFDCA0E.4080007@lwfinger.net> <20091113211306.GA6600@srcf.ucam.org>
+In-Reply-To: <20091113211306.GA6600@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thiago Farina wrote:
-> On Thu, Nov 12, 2009 at 10:25 PM, Jeff Garzik <jgarzik@pobox.com> wrote:
->> On 11/12/2009 06:53 PM, Mark Lord wrote:
->>> Thiago Farina wrote:
->>>> On Wed, Nov 11, 2009 at 8:37 PM, Mark Lord <liml@rtr.ca> wrote:
->>>>> Looks like unnecessary churn and obfuscation to me.
->>>> Obfuscation? Are you saying that just because you wrote this code? So
->>>> what is the usage of a macro? I think you are having a defensive
->>>> position here.
->>> ..
->>>
->>> No, actually I believe Jeff wrote that particular line of code.
->> You know, Linus actually invented a command for people who enjoy this
->> game...  ;)
->>
->>        git blame drivers/ata/sata_mv.c
->>
->> shows each line of code, and metadata about each line such as commit id and
->> author name.
+On 11/13/2009 03:13 PM, Matthew Garrett wrote:
+> On Fri, Nov 13, 2009 at 03:05:18PM -0600, Larry Finger wrote:
 > 
-> Sure, and I ran this command before saying that Mark wrote this code.
-..
+>> I'm in the process of creating a patch to set the latency to 200 usec. The
+>> default is 2000. On my fast prosessors, it should not be anything nearly that
+>> slow. If we determine this to be the problem, then we can try tuning.
+> 
+> The latency is the amount of time it takes to get out of deep C states 
+> and into C0. That's a function of the processor design rather than the 
+> frequency.
 
-I'm probably just the last chap to change the indentation on it.
-It really doesn't look like my style to me.  ;)
+Thanks for your suggestion. The value of 200 fixed one of the two machines and
+greatly improved the other. He is currently testing with a value of 150, and
+will try 100 if that still fails.
 
-There were two authors before me there, and that line looks like one of theirs. :)
+Larry
 
-Cheers
+
