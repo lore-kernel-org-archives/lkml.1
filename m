@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZKNDEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZKNDGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZKNDEZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 22:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbZKNDEW
+	id S1757379AbZKNDGn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 22:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbZKNDGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 22:04:22 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51257
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753602AbZKNDEW (ORCPT
+	Fri, 13 Nov 2009 22:06:41 -0500
+Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:37004 "HELO
+	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756662AbZKNDGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 22:04:22 -0500
-Date: Fri, 13 Nov 2009 19:04:38 -0800 (PST)
-Message-Id: <20091113.190438.78469912.davem@davemloft.net>
-To: gregory.haskins@gmail.com
-Cc: herbert@gondor.apana.org.au, ghaskins@novell.com, mst@redhat.com,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AFE08EF.2030308@gmail.com>
-References: <4AF98A8C.9040201@novell.com>
-	<20091114011229.GA18580@gondor.apana.org.au>
-	<4AFE08EF.2030308@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 13 Nov 2009 22:06:40 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: s1FL2c8VM1mZXyrimQZye8VPvArotQCdfZkwWjStnwcpVTYXvPTo36ausVHvkm8iwi2Mv.HpQ3deFBcFLDFvCEfZVgsO6Mvt4frrn1gO7BZwHjZ9N.QbyJslG1xorLHBuwZP8QCTWZQGxnAxeadJx3dz1EFMHjKwadjunpn_Vh3yzO9FDSB.fC0R1KVP5HtaC5xm.Q430Pk.96p4OrxpwOXmYy4WH6BsP45ygCX3U13T86ZjCbkZ3Ncoc15wa4HRURz7Jm5r13aLEX5G_2I69iwadLoiW4.06zjt5dhnQaPkEmnTTH6hjyDpbdm.bLvZippY9rTpls3ev5.BQJ4-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AFE1EA9.60102@schaufler-ca.com>
+Date: Fri, 13 Nov 2009 19:06:17 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: James Morris <jmorris@namei.org>, Julia Lawall <julia@diku.dk>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <alpine.LRH.2.00.0911121857110.31071@tundra.namei.org> <20091112145314.GA24682@us.ibm.com> <Pine.LNX.4.64.0911121556390.19779@ask.diku.dk> <4AFC3620.2020809@schaufler-ca.com> <alpine.LRH.2.00.0911130833220.5497@tundra.namei.org>            <4AFCC06B.1030302@schaufler-ca.com> <19857.1258147396@turing-police.cc.vt.edu>
+In-Reply-To: <19857.1258147396@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gregory Haskins <gregory.haskins@gmail.com>
-Date: Fri, 13 Nov 2009 20:33:35 -0500
+Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 12 Nov 2009 18:11:55 PST, Casey Schaufler said:
+>   
+>> James Morris wrote:
+>>     
+>>> Do you see potential for a buffer overrun in this case?
+>>>       
+>
+>   
+>> No, but I hate arguing with people who think that every time
+>> they see strcmp that they have found a security flaw.
+>>     
+>
+> How do you feel about people who think every time they see strcmp()
+> "Oh crap, something that needs auditing"? ;)
+>   
 
-> Well, not with respect to the overall protocol, of course not.  But with
-> respect to the buffer in question, it _has_ to be.  Or am I missing
-> something?
+They have my deep sympathy. Which is why I'm advocating leaving
+the perfectly functional and correct use of strncmp() as it is.
 
-sendfile() absolutely, and positively, is not.
+> The biggest problem with strcmp() is that even if it got audited when that code
+> went in, it's prone to unaudited breakage when somebody changes something in
+> some other piece of code, quite often in some other .c file in some other
+> directory.
+>
+> Julia, is there a way to use coccinelle to detect unsafe changes like that?  Or
+> is expressing those semantics too difficult?
+>
+>
+>   
 
-Any entity can write to the pages being send via sendfile(), at will,
-and those writes will show up in the packet stream if they occur
-before the NIC DMA's the memory backed by those pages into it's
-buffer.
-
-There is zero data synchronization whatsoever, we don't lock the
-pages, we don't block their usage while they are queued up in the
-socket send queue, nothing like that.
-
-The user returns long before it every hits the wire and there is zero
-"notification" to the user that the pages in question for the
-sendfile() request are no longer in use.
-
-It seems that your understanding of how buffering and synchronization
-works in the TCP stack has come out of a fairy tale :-)
