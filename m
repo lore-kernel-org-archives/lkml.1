@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZKNJCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbZKNJJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbZKNJCO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 04:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbZKNJCN
+	id S1755042AbZKNJJv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 04:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZKNJJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 04:02:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38985 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751439AbZKNJCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 04:02:12 -0500
-Message-ID: <4AFE7200.5040601@kernel.org>
-Date: Sat, 14 Nov 2009 18:01:52 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Sat, 14 Nov 2009 04:09:49 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:49264 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754788AbZKNJJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 04:09:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=d9eQ+TuTW6v6k6GODApPEJHdrxw23LXKZPc1Tj8DcDvS1Q2ltfDgOG/6uBcOCUCzYy
+         xPC0Dr3pKQCfmP5e4BloMmimSUJRyZcnUYnDTSDu0XnUKBBc2G+kEFaA6nvjS3DMwpQc
+         TKp7t5pcdiqxc4crLIsD9il64gclXdAk3uix4=
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Ingo Molnar <mingo@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.32-rc6] workqueue: fix race condition in	schedule_on_each_cpu()
-References: <4AFD26F5.809@kernel.org> <20091113153827.GA6475@redhat.com>
-In-Reply-To: <20091113153827.GA6475@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Sat, 14 Nov 2009 17:09:53 +0800
+Message-ID: <e5b1e8d40911140109k78721b1er7b167d05d6f2e26e@mail.gmail.com>
+Subject: [stk-webcam] change constants to work better on FreeBSD
+From: Buganini <buganini@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary=000e0cd5f6fab6ef62047851234e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Oleg.
+--000e0cd5f6fab6ef62047851234e
+Content-Type: text/plain; charset=UTF-8
 
-11/14/2009 12:38 AM, Oleg Nesterov wrote:
-> A very minor nit, schedule_on_each_cpu() still checks "orig" twice,
-> perhaps it makes sense to do
-> 
-> 	for_each_online_cpu(cpu) {
-> 		struct work_struct *work = per_cpu_ptr(works, cpu);
-> 
-> 		INIT_WORK(work, func);
-> 
-> 		if (likely(cpu != orig))
-> 			schedule_work_on(cpu, work);
-> 		else
-> 			func(work);
-> 	}
+Suggested by hselasky@FreeBSD.org, tested by me on FreeBSD.
+With original value it hangs a lot.
 
-The intention was to schedule works on all other cpus first and then
-execute it on local cpu so that if it takes some time, it doesn't have
-to go through the latency twice.
+I dont fully understand background knowledge,
+it's said that the default value is not enough for high speed transfer.
 
-Thanks.
 
--- 
-tejun
+--Buganini
+
+--000e0cd5f6fab6ef62047851234e
+Content-Type: application/octet-stream; name="stk-webcam.h.patch"
+Content-Disposition: attachment; filename="stk-webcam.h.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
+
+LS0tIGxpbnV4L2RyaXZlcnMvbWVkaWEvdmlkZW8vc3RrLXdlYmNhbS5oLm9yaWcJMjAwOS0xMS0x
+MiAyMjoyMTowNS4wMDAwMDAwMDAgKzA4MDAKKysrIGxpbnV4L2RyaXZlcnMvbWVkaWEvdmlkZW8v
+c3RrLXdlYmNhbS5oCTIwMDktMTEtMTIgMDI6NDI6NDUuNjE2NjAzMzc5ICswODAwCkBAIC0yOCw4
+ICsyOCw4IEBACiAjZGVmaW5lIERSSVZFUl9WRVJTSU9OCQkidjAuMC4xIgogI2RlZmluZSBEUklW
+RVJfVkVSU0lPTl9OVU0JMHgwMDAwMDEKIAotI2RlZmluZSBNQVhfSVNPX0JVRlMJCTMKLSNkZWZp
+bmUgSVNPX0ZSQU1FU19QRVJfREVTQwkxNgorI2RlZmluZSBNQVhfSVNPX0JVRlMJCTIKKyNkZWZp
+bmUgSVNPX0ZSQU1FU19QRVJfREVTQwk2NAogI2RlZmluZSBJU09fTUFYX0ZSQU1FX1NJWkUJMyAq
+IDEwMjQKICNkZWZpbmUgSVNPX0JVRkZFUl9TSVpFCQkoSVNPX0ZSQU1FU19QRVJfREVTQyAqIElT
+T19NQVhfRlJBTUVfU0laRSkKIAo=
+--000e0cd5f6fab6ef62047851234e--
