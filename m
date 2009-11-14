@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZKNDkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbZKNDoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbZKNDkw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 22:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZKNDkv
+	id S932252AbZKNDoK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 22:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZKNDoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 22:40:51 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:59899 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755465AbZKNDku (ORCPT
+	Fri, 13 Nov 2009 22:44:09 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:41360 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756373AbZKNDoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 22:40:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lR+K2LxwgQa3uYJqC4EK8s6UwL1ymSPV9lPPmZ6mFT+zuxfx9Rh8CjxzllCu9gk+Gg
-         ByQjfnDXC2HHlpr5Avb36TjNu09F/FgHZlqG8RH3pd2+qIOtdhmQcx1go6hlZnbg4+An
-         7IAMXw+9CEZNZ4qCa92GkCDgcidiDqLXQMsEc=
-Message-ID: <4AFE26C5.5080402@lwfinger.net>
-Date: Fri, 13 Nov 2009 21:40:53 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Michael Buesch <mb@bu3sch.de>, bcm43xx-dev@lists.berlios.de,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 64-bit DMA problems with BCM4312 using b43
-References: <4AFD958E.1000303@lwfinger.net> <20091113201112.GA5540@srcf.ucam.org> <200911132144.24110.mb@bu3sch.de> <4AFDCA0E.4080007@lwfinger.net> <20091113211306.GA6600@srcf.ucam.org>
-In-Reply-To: <20091113211306.GA6600@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Nov 2009 22:44:09 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+Date: Sat, 14 Nov 2009 03:44:14 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hdl92e$srv$1@taverner.cs.berkeley.edu>
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <4AFCC06B.1030302@schaufler-ca.com> <19857.1258147396@turing-police.cc.vt.edu> <4AFE1EA9.60102@schaufler-ca.com>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1258170254 29567 128.32.168.222 (14 Nov 2009 03:44:14 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sat, 14 Nov 2009 03:44:14 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/13/2009 03:13 PM, Matthew Garrett wrote:
-> On Fri, Nov 13, 2009 at 03:05:18PM -0600, Larry Finger wrote:
-> 
->> I'm in the process of creating a patch to set the latency to 200 usec. The
->> default is 2000. On my fast prosessors, it should not be anything nearly that
->> slow. If we determine this to be the problem, then we can try tuning.
-> 
-> The latency is the amount of time it takes to get out of deep C states 
-> and into C0. That's a function of the processor design rather than the 
-> frequency.
+Casey Schaufler  wrote:
+> No, but I hate arguing with people who think that every time
+> they see strcmp that they have found a security flaw.
 
-Thanks for your suggestion. The value of 200 fixed one of the two machines and
-greatly improved the other. He is currently testing with a value of 150, and
-will try 100 if that still fails.
+Valdis.Kletnieks@vt.edu wrote:
+> How do you feel about people who think every time they see strcmp()
+> "Oh crap, something that needs auditing"? ;)
 
-Larry
+Casey Schaufler  wrote:
+> They have my deep sympathy. Which is why I'm advocating leaving
+> the perfectly functional and correct use of strncmp() as it is.
 
+Personally, I think this is catering to irrational kneejerk responses,
+from hypothetical people who may or may not exist.  I have yet to see a
+single person stand up on the linux-kernel mailing list, endorse such
+a position, and put their own name behind it.  That's no surprise,
+because it looks to me like an illogical and unjustified position that
+would reflect poorly on anyone who adopted such a position in this case.
+I do not think it makes sense to make a decision based upon the hypothesis
+that maybe unidentified others will think that way, particularly when
+no one can put forward a convincing argument that "thinking that way"
+is reasonable in light of the technical facts.
 
+I personally don't find
+    strncmp(foo, "constant", sizeof("constant"))        // first snippet
+to be more readable, auditable, or obviously correct than
+    strcmp(foo, "constant").                            // second snippet
+Do you?  Does anyone?
+
+Of course, those two code snippets have exactly the same behavior, so
+there is no difference in their actual security properties.  The only
+possible difference I can imagine would be if one code snippet is
+more readable, intuitive, or obviously correct than the other -- but I
+would think strcmp() is no worse under those criteria, and if anything
+modestly better.  Is there a technical basis for arguing that the first
+snippet is better than the second snippet?
