@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZKNEUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZKNEce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712AbZKNEUp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 23:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757455AbZKNEUp
+	id S1757794AbZKNEce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 23:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbZKNEcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 23:20:45 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38124 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757338AbZKNEUo (ORCPT
+	Fri, 13 Nov 2009 23:32:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48544
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757424AbZKNEcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 23:20:44 -0500
-X-Sasl-enc: MiNoA3tc91axTLYSZ8f1OHAWTwu5BHg7clm+gfQxTHoG 1258172449
-Date: Sat, 14 Nov 2009 02:20:47 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: [ibm-acpi-devel] [PATCH v4 12/12] tree-wide: convert open
- calls to remove spaces to skip_spaces() lib function
-Message-ID: <20091114042047.GF18847@khazad-dum.debian.net>
-References: <cover.1257602781.git.andre.goddard@gmail.com>
- <7d5883637aa976b54e944998f635d47a41618a75.1257602781.git.andre.goddard@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7d5883637aa976b54e944998f635d47a41618a75.1257602781.git.andre.goddard@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 13 Nov 2009 23:32:32 -0500
+Date: Fri, 13 Nov 2009 20:32:48 -0800 (PST)
+Message-Id: <20091113.203248.84989794.davem@davemloft.net>
+To: andrew.hendry@gmail.com
+Cc: netdev@vger.kernel.org, linux-x25@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X25: Enable setting of cause and diagnostic fields
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d45a3acc0911111613v38fa9df4jed21876ce6309097@mail.gmail.com>
+References: <d45a3acc0911111613v38fa9df4jed21876ce6309097@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Nov 2009, André Goddard Rosa wrote:
-> Also, while at it, if we see (*str && isspace(*str)), we can be sure to
-> remove the first condition (*str) as the second one (isspace(*str)) also
-> evaluates to 0 whenever *str == 0, making it redundant. In other words,
-> "a char equals zero is never a space".
+From: andrew hendry <andrew.hendry@gmail.com>
+Date: Thu, 12 Nov 2009 11:13:27 +1100
 
-You didn't document in isspace() that it must return false for NUL.  Please
-do that before you remove any such checks.
+> Adds SIOCX25SCAUSEDIAG, allowing X.25 programs to set the cause and
+> diagnostic fields.
+> Normally used to indicate status upon closing connections.
+> 
+> Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+This change is incomplete.
+
+You need to add handling to compat_x25_ioctl().
