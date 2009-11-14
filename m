@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZKNBDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZKNBJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbZKNBDm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 20:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZKNBDk
+	id S1753380AbZKNBJi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 20:09:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZKNBJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 20:03:40 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57181 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbZKNBDj convert rfc822-to-8bit (ORCPT
+	Fri, 13 Nov 2009 20:09:37 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:2542 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZKNBJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 20:03:39 -0500
+	Fri, 13 Nov 2009 20:09:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CZstthjaiGaawpS6WB4N2dRODcZJ1z3//DZ3OYB0+r20NAJtbZtIsxIN+yGuvVB7aj
-         sHcZDhfoiW2+g9NDt/EgMYz+HIXHI3akgO+muLo1SqBsyn+7O/PgPVETx9y27HwwmX1q
-         2Pz2QPiEkKI1NBdF87Z+pYaOCRKBsNblJ9e6g=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=ceMCeZSbzpki3p446WX2YihiyKzJBF21u5CYz5/Y7Ferg3KavptjONIjsKjSV2lL4d
+         bzo+DlMp6/NUYQwRifjhUv6Xf5BLFa7gRlBEV9hyL0RR+cM5J945u/QlOIbFE/MPGaer
+         Ic6Neq9qvEcY/Ixju8I6AWi/V9WFWm5ZbX94A=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+Date: Sat, 14 Nov 2009 02:08:29 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
+       Jonathan Corbet <corbet@lwn.net>
+References: <4AFCC0D4.9020708@gmail.com> <200911140046.29450.bzolnier@gmail.com> <20091114001510.2dd0ab5d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091114001510.2dd0ab5d@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <tip-0388423dba2217b4e5b6c61690b0506d13b25a49@git.kernel.org>
-References: <20091113203000.GA19160@redhat.com>
-	 <tip-0388423dba2217b4e5b6c61690b0506d13b25a49@git.kernel.org>
-Date: Fri, 13 Nov 2009 17:03:44 -0800
-Message-ID: <86802c440911131703y35520496pfbdaa4e0bd8f8609@mail.gmail.com>
-Subject: Re: [tip:x86/debug] x86: Minimise printk spew from per-vendor init 
-	code
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, davej@redhat.com, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Message-Id: <200911140208.29888.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 4:33 PM, tip-bot for Dave Jones
-<davej@redhat.com> wrote:
-> Commit-ID:  0388423dba2217b4e5b6c61690b0506d13b25a49
-> Gitweb:     http://git.kernel.org/tip/0388423dba2217b4e5b6c61690b0506d13b25a49
-> Author:     Dave Jones <davej@redhat.com>
-> AuthorDate: Fri, 13 Nov 2009 15:30:00 -0500
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sat, 14 Nov 2009 01:18:05 +0100
->
-> x86: Minimise printk spew from per-vendor init code
->
-> In the default case where the kernel supports all CPU vendors,
-> we currently print out a bunch of not useful messages on every
-> system.
->
-> 32-bit:
-> KERNEL supported cpus:
->  Intel GenuineIntel
->  AMD AuthenticAMD
->  NSC Geode by NSC
->  Cyrix CyrixInstead
->  Centaur CentaurHauls
->  Transmeta GenuineTMx86
->  Transmeta TransmetaCPU
->  UMC UMC UMC UMC
->
-> 64-bit:
-> KERNEL supported cpus:
->  Intel GenuineIntel
->  AMD AuthenticAMD
->  Centaur CentaurHauls
->
-> Given that "what CPUs does the kernel support" isn't useful for
-> the "support everything" case, we can suppress these printk's.
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> LKML-Reference: <20091113203000.GA19160@redhat.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/cpu/common.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index cc25c2b..617a29f 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -656,6 +656,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
->
->  void __init early_cpu_init(void)
->  {
-> +#ifdef PROCESSOR_SELECT
->        const struct cpu_dev *const *cdev;
->        int count = 0;
->
-> @@ -676,7 +677,7 @@ void __init early_cpu_init(void)
->                                cpudev->c_ident[j]);
->                }
->        }
-> -
-> +#endif
->        early_identify_cpu(&boot_cpu_data);
->  }
+On Saturday 14 November 2009 01:15:10 Alan Cox wrote:
+> On Sat, 14 Nov 2009 00:46:29 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > On Friday 13 November 2009 19:25:15 Alan Cox wrote:
+> > > > Fine but please update status of following host drivers that were
+> > > > marked as "stable" prematurely by commit e3389cb first:
+> > > > 
+> > > > PATA_PDC_OLD: needs to be marked as EXPERIMENTAL (or just BROKEN)
+> > > > - known reliability problems with UDMA
+> > > 
+> > > A few odd reports apparently linked to specific chip revs. It's at
+> > > least as stable as the old IDE one which doesn't work on my hardware. I'd
+> > 
+> > Skipping the technical merit of the quoted text for the moment -- I find
+> 
+> You mean the content ?
+> 
+> > the fact that you keep calling the present IDE host drivers (that many
+> > developers helped to fix) as "old" ones or "buggy" ones rather degrading
+> 
+> As you quoted the old PDC202xx driver does not work on my test hardware.
+> The libata one does. That is what is popularly known as a "fact". I'm not
 
-NACK.
+You want facts?  Here we go:
 
-the function is initializing cpu_devs array.
+https://bugzilla.redhat.com/show_bug.cgi?id=250349
+https://bugzilla.novell.com/show_bug.cgi?id=457037
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/399616
 
-YH
+> entirely happy with either PDC driver for older chips and I've spent
+> considerable time grovelling through old drivers, alternate drivers and
+> what little documentation exists to try and figure it out in more detail.
+> 
+> The lost IRQ recovery patches seem to have helped a fair bit, and your
+> UDMA33 fix likewise.
+
+I regret this work -- because of it I share the blame for the new driver
+and keep getting complains about it..
+
+> > for their (this includes me of course) hard work.
+> 
+> All because you wouldn't work on the libata ones which had a future. You
+
+The rest of your mail is "the same good old straw-man" to put me back
+into specially created for me by you & co. "difficult to work with" box.
+
+Guys, "the devil" has been long out of the box.. :)
+
+-- 
+Bartlomiej Zolnierkiewicz
