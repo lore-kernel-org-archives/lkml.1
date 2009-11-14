@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZKNHod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbZKNIRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZKNHod (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 02:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZKNHod
+	id S1754210AbZKNIRh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 03:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZKNIRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 02:44:33 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:54375 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbZKNHoc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 02:44:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=PjsJvXuhUVLSBiYMFsmYoERFsTjRZWcAUOnA1qkEf8TOCrF75l7OC176a4lYkHKEMu
-         xVOerwMdMBNrGPmeCs/muD6SACNXuVoP/xb5L9qP4AZM+VEShdBPs8/rIlzUertabBNE
-         m7ymPDsiN94DYs1H1Ou6VgLcvaz9GgwxB/YLs=
+	Sat, 14 Nov 2009 03:17:36 -0500
+Received: from gate1.ipvision.dk ([94.127.49.2]:39088 "EHLO gate1.ipvision.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752954AbZKNIRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 03:17:35 -0500
+X-Greylist: delayed 1387 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Nov 2009 03:17:35 EST
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-media@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] DVB: firedtv: port to new firewire driver stack
+References: <tkrat.ce889fb60854a648@s5r6.in-berlin.de>
+	<tkrat.f5c6b067dba96030@s5r6.in-berlin.de>
+Date: Sat, 14 Nov 2009 08:54:30 +0100
+In-Reply-To: <tkrat.f5c6b067dba96030@s5r6.in-berlin.de> (Stefan Richter's
+	message of "Thu, 12 Nov 2009 02:44:52 +0100 (CET)")
+Message-ID: <m3my2pbky1.fsf@ursa.amorsen.dk>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20091114042047.GF18847@khazad-dum.debian.net>
-References: <cover.1257602781.git.andre.goddard@gmail.com> 
-	<7d5883637aa976b54e944998f635d47a41618a75.1257602781.git.andre.goddard@gmail.com> 
-	<20091114042047.GF18847@khazad-dum.debian.net>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sat, 14 Nov 2009 16:44:18 +0900
-Message-ID: <b8bf37780911132344i5eea1796j18b9170587ff5cb1@mail.gmail.com>
-Subject: Re: [ibm-acpi-devel] [PATCH v4 12/12] tree-wide: convert open calls 
-	to remove spaces to skip_spaces() lib function
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-kernel@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Spam-Score: -5.8 (-----)
+X-Spam-Report: ALL_TRUSTED=-3.3, AWL=0.596, BAYES_00=-3.099
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 14, 2009 at 1:20 PM, Henrique de Moraes Holschuh
-<hmh@hmh.eng.br> wrote:
-> On Sat, 07 Nov 2009, André Goddard Rosa wrote:
->> Also, while at it, if we see (*str && isspace(*str)), we can be sure to
->> remove the first condition (*str) as the second one (isspace(*str)) also
->> evaluates to 0 whenever *str == 0, making it redundant. In other words,
->> "a char equals zero is never a space".
->
-> You didn't document in isspace() that it must return false for NUL.  Please
-> do that before you remove any such checks.
->
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 
-Good idea Henrique, I will do it!
+> These patches are now also available in the v2.6.31 based "firedtv"
+> branch at
+>
+>     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git firedtv
+>
+> This branch is also merged into linux1394-2.6.git for-next and thereby
+> linux-next.git.
 
-Thank you,
-André
+It works beautifully! Tested on a FireDTV C/CI.
+
+
+/Benny
+
