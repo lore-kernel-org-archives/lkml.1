@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZKNKTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbZKNKUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbZKNKTx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 05:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZKNKTw
+	id S1755695AbZKNKUA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 05:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZKNKT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 05:19:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37667 "EHLO hera.kernel.org"
+	Sat, 14 Nov 2009 05:19:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37672 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755552AbZKNKTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 05:19:51 -0500
-Date: Sat, 14 Nov 2009 10:19:11 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12581706991966-git-send-email->
-References: <12581706991966-git-send-email->
+	id S1754898AbZKNKTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 05:19:54 -0500
+Date: Sat, 14 Nov 2009 10:19:27 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, davej@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, davej@redhat.com, mingo@elte.hu
+In-Reply-To: <20091113203000.GA19160@redhat.com>
+References: <20091113203000.GA19160@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Eliminate __rcu_pending() false positives
-Message-ID: <tip-2f51f9884f6a36b0fe9636d5a1937e5cbd25723b@git.kernel.org>
-Git-Commit-ID: 2f51f9884f6a36b0fe9636d5a1937e5cbd25723b
+Subject: [tip:x86/debug] x86: Fix cpu_devs[] initialization in early_cpu_init()
+Message-ID: <tip-31c997cac76e62918858a432fff6e43fd48425f9@git.kernel.org>
+Git-Commit-ID: 31c997cac76e62918858a432fff6e43fd48425f9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,73 +29,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2f51f9884f6a36b0fe9636d5a1937e5cbd25723b
-Gitweb:     http://git.kernel.org/tip/2f51f9884f6a36b0fe9636d5a1937e5cbd25723b
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Fri, 13 Nov 2009 19:51:39 -0800
+Commit-ID:  31c997cac76e62918858a432fff6e43fd48425f9
+Gitweb:     http://git.kernel.org/tip/31c997cac76e62918858a432fff6e43fd48425f9
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 14 Nov 2009 10:34:41 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 14 Nov 2009 10:31:42 +0100
+CommitDate: Sat, 14 Nov 2009 10:36:50 +0100
 
-rcu: Eliminate __rcu_pending() false positives
+x86: Fix cpu_devs[] initialization in early_cpu_init()
 
-Now that there are both ->gpnum and ->completed fields in the
-rcu_node structure, __rcu_pending() should check rdp->gpnum and
-rdp->completed against rnp->gpnum and rdp->completed, respectively,
-instead of the prior comparison against the rcu_state fields
-rsp->gpnum and rsp->completed.
+Yinghai Lu noticed that this commit:
 
-Given the old comparison, __rcu_pending() could return 1, resulting
-in a needless raise_softirq(RCU_SOFTIRQ).  This useless work would
-happen if RCU responded to a scheduling-clock interrupt after the
-rcu_state fields had been updated, but before the rcu_node fields
-had been updated.
+  0388423: x86: Minimise printk spew from per-vendor init code
 
-Changing the comparison from the rcu_state fields to the rcu_node
-fields prevents this useless work from happening.
+mistakenly left out the initialization of cpu_devs[] in the
+!PROCESSOR_SELECT case. Fix it.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-LKML-Reference: <12581706991966-git-send-email->
+Reported-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Dave Jones <davej@redhat.com>
+LKML-Reference: <20091113203000.GA19160@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/rcutree.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/x86/kernel/cpu/common.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 24bbf2c..9b36d6d 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -1403,6 +1403,8 @@ EXPORT_SYMBOL_GPL(call_rcu_bh);
-  */
- static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 9db1e24..61242a5 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -651,28 +651,34 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
+ 
+ void __init early_cpu_init(void)
  {
-+	struct rcu_node *rnp = rdp->mynode;
+-#ifdef PROCESSOR_SELECT
+ 	const struct cpu_dev *const *cdev;
+ 	int count = 0;
+ 
++#ifdef PROCESSOR_SELECT
+ 	printk(KERN_INFO "KERNEL supported cpus:\n");
++#endif
 +
- 	rdp->n_rcu_pending++;
+ 	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
+ 		const struct cpu_dev *cpudev = *cdev;
+-		unsigned int j;
  
- 	/* Check for CPU stalls, if enabled. */
-@@ -1427,13 +1429,13 @@ static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
- 	}
+ 		if (count >= X86_VENDOR_NUM)
+ 			break;
+ 		cpu_devs[count] = cpudev;
+ 		count++;
  
- 	/* Has another RCU grace period completed?  */
--	if (ACCESS_ONCE(rsp->completed) != rdp->completed) { /* outside lock */
-+	if (ACCESS_ONCE(rnp->completed) != rdp->completed) { /* outside lock */
- 		rdp->n_rp_gp_completed++;
- 		return 1;
- 	}
+-		for (j = 0; j < 2; j++) {
+-			if (!cpudev->c_ident[j])
+-				continue;
+-			printk(KERN_INFO "  %s %s\n", cpudev->c_vendor,
+-				cpudev->c_ident[j]);
++#ifdef PROCESSOR_SELECT
++		{
++			unsigned int j;
++
++			for (j = 0; j < 2; j++) {
++				if (!cpudev->c_ident[j])
++					continue;
++				printk(KERN_INFO "  %s %s\n", cpudev->c_vendor,
++					cpudev->c_ident[j]);
++			}
+ 		}
+-	}
+ #endif
++	}
+ 	early_identify_cpu(&boot_cpu_data);
+ }
  
- 	/* Has a new RCU grace period started? */
--	if (ACCESS_ONCE(rsp->gpnum) != rdp->gpnum) { /* outside lock */
-+	if (ACCESS_ONCE(rnp->gpnum) != rdp->gpnum) { /* outside lock */
- 		rdp->n_rp_gp_started++;
- 		return 1;
- 	}
