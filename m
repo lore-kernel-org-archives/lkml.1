@@ -1,154 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZKNE6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbZKNFIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbZKNE6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 23:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbZKNE6V
+	id S1751929AbZKNFIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 00:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZKNFIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 23:58:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51350 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757781AbZKNE6U (ORCPT
+	Sat, 14 Nov 2009 00:08:24 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:58965 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbZKNFIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 23:58:20 -0500
-Subject: Re: + recordmcount-stfu.patch added to -mm tree
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, lihong.hi@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200911140356.nAE3utfU001939@imap1.linux-foundation.org>
-References: <200911140356.nAE3utfU001939@imap1.linux-foundation.org>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Fri, 13 Nov 2009 23:58:25 -0500
-Message-Id: <1258174705.22249.236.camel@gandalf.stny.rr.com>
+	Sat, 14 Nov 2009 00:08:24 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+In-Reply-To: Your message of "Sat, 14 Nov 2009 00:41:15 GMT."
+             <hdkubb$rdb$1@taverner.cs.berkeley.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <19857.1258147396@turing-police.cc.vt.edu> <Pine.LNX.4.64.0911132224370.6325@ask.diku.dk> <24306.1258153693@turing-police.cc.vt.edu>
+            <hdkubb$rdb$1@taverner.cs.berkeley.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: multipart/signed; boundary="==_Exmh_1258175307_3884P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sat, 14 Nov 2009 00:08:27 -0500
+Message-ID: <9337.1258175307@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.34.103 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020203.4AFE3B4C.0052,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-13 at 19:56 -0800, akpm@linux-foundation.org wrote:
-> The patch titled
->      recordmcount-stfu
-> has been added to the -mm tree.  Its filename is
->      recordmcount-stfu.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: recordmcount-stfu
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> oy, people are trying to get work done here.
-> 
-> Cc: Li Hong <lihong.hi@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  scripts/recordmcount.pl |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff -puN scripts/recordmcount.pl~recordmcount-stfu scripts/recordmcount.pl
-> --- a/scripts/recordmcount.pl~recordmcount-stfu
-> +++ a/scripts/recordmcount.pl
-> @@ -180,9 +180,9 @@ sub check_objcopy
->      close (IN);
->  
->      if (!$can_use_local) {
-> -	print STDERR "WARNING: could not find objcopy version or version " .
-> -	    "is less than 2.17.\n" .
-> -	    "\tLocal function references is disabled.\n";
-> +#	print STDERR "WARNING: could not find objcopy version or version " .
-> +#	    "is less than 2.17.\n" .
-> +#	    "\tLocal function references is disabled.\n";
->      }
->  }
->  
+--==_Exmh_1258175307_3884P
+Content-Type: text/plain; charset=us-ascii
 
-Andrew, would something like this patch be sufficient?
+On Sat, 14 Nov 2009 00:41:15 GMT, David Wagner said:
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 3ffa502..4b8293f 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1785,9 +1785,9 @@ rb_reset_tail(struct ring_buffer_per_cpu *cpu_buffer,
- static struct ring_buffer_event *
- rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
- 	     unsigned long length, unsigned long tail,
--	     struct buffer_page *commit_page,
- 	     struct buffer_page *tail_page, u64 *ts)
- {
-+	struct buffer_page *commit_page = cpu_buffer->commit_page;
- 	struct ring_buffer *buffer = cpu_buffer->buffer;
- 	struct buffer_page *next_page;
- 	int ret;
-@@ -1890,13 +1890,10 @@ static struct ring_buffer_event *
- __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		  unsigned type, unsigned long length, u64 *ts)
- {
--	struct buffer_page *tail_page, *commit_page;
-+	struct buffer_page *tail_page;
- 	struct ring_buffer_event *event;
- 	unsigned long tail, write;
- 
--	commit_page = cpu_buffer->commit_page;
--	/* we just need to protect against interrupts */
--	barrier();
- 	tail_page = cpu_buffer->tail_page;
- 	write = local_add_return(length, &tail_page->write);
- 
-@@ -1907,7 +1904,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 	/* See if we shot pass the end of this buffer page */
- 	if (write > BUF_PAGE_SIZE)
- 		return rb_move_tail(cpu_buffer, length, tail,
--				    commit_page, tail_page, ts);
-+				    tail_page, ts);
- 
- 	/* We reserved something on the buffer */
- 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index a4e2435..ac4fa2d 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -162,6 +162,10 @@ my $alignment;		# The .align value to use for $mcount_section
- my $section_type;	# Section header plus possible alignment command
- my $can_use_local = 0; 	# If we can use local function references
- 
-+# Shut up recordmcount if user has older objcopy
-+my $print_warning = 1;
-+$print_warning = 0 if ( -f "FTRACE_QUIET");
-+
- ##
- # check_objcopy - whether objcopy supports --globalize-symbols
- #
-@@ -179,10 +183,12 @@ sub check_objcopy
-     }
-     close (IN);
- 
--    if (!$can_use_local) {
-+    if (!$can_use_local && $print_warning) {
- 	print STDERR "WARNING: could not find objcopy version or version " .
- 	    "is less than 2.17.\n" .
--	    "\tLocal function references is disabled.\n";
-+	    "\tLocal function references are disabled.\n" .
-+	    "\tTo disable this message, create the file FTRACE_QUIET\n" .
-+	    "\tin the top level directory\n";
-     }
- }
- 
+> 1) The particular code snippets under discussion here were of the
+> form
+>     strncmp(foo, "constant", sizeof("constant"))
+> And the proposal is to replace this code with
+>     strcmp(foo, "constant")
+> Do you really mean to object to this proposal?
 
+No, in that particular case strcmp() is Obviously Safe.
+
+> 2) More generally, you seem to be concerned about bugs where one
+> piece of code fails to '\0'-terminate a string, and another piece of
+> code invokes some library function that relies upon '\0'-termination.
+
+Exactly.
+
+> That is not specifically a strcmp() issue; this is an issue with using
+> any string library that assumes '\0'-termination, where the string is not
+> '\0'-terminated.  That's a much broader issue that should be addressed by
+> other means.
+
+I know that - which is why I asked Julia if Cocinelle is able to do anything
+in this area.  An awful lot of our \0-terminated strings end up that way
+implicitly because somebody does a kzalloc() or bzero() of an entire
+structure, which can be fragile if code is refactored.
+
+By the same token, that implicit behavior means that it's probably quite
+difficult for any programmatic correctness checkers to follow the behavior.
+
+>              Saying "strcmp() is bad" is a poor response to this risk.
+
+I didn't say "strcmp() is bad". I said it needs auditing.  The strn-
+versions of functions have a guaranteed termination condition right there
+in the call. For strcmp() and strcpy(), the termination guarantee is
+often elsewhere, which is why code using them tends to be brittle and
+is harder to audit.
+
+
+--==_Exmh_1258175307_3884P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFK/jtLcC3lWbTT17ARAr+tAKC59xssObMY4DFCm8/INiA8kZkO5wCeK/i1
+6K2RfI6TL1bJV2r65RvwlG8=
+=1ewX
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1258175307_3884P--
 
