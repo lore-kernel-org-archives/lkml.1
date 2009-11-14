@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZKNSUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbZKNS1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbZKNSUA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 13:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbZKNST7
+	id S1751259AbZKNS1p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 13:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZKNS1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 13:19:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:54021 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbZKNST7 (ORCPT
+	Sat, 14 Nov 2009 13:27:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46495 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbZKNS1o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 13:19:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=VVy4D2y4Ds37bTk3eUQAU1/W6xqfba3fVen96NNP6S1s2d9imfiRpS4wLGmPUMdjI8
-         KQwJhgMODTZMh3anJtOlsQId+fggi6aatH0rNKj6fhpXLXZ3vlMIrmN7wMRnL2TH5b9k
-         jybYC81PyzTN8BKrT8Y0m2999GkumlfIAHGns=
-MIME-Version: 1.0
-Date: Sat, 14 Nov 2009 18:20:04 +0000
-Message-ID: <6278d2220911141020i62a721eg9448a7c8ef08640c@mail.gmail.com>
-Subject: [patch] Dell Studio 1557 hd-audio quirk...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 14 Nov 2009 13:27:44 -0500
+Date: Sat, 14 Nov 2009 10:29:19 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: venu <vjosyula@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       Philip Downer <phil@csldevices.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: firmware loading interface
+Message-ID: <20091114102919.54606831@infradead.org>
+In-Reply-To: <51f3faa70911141019y1248fb27k5f7edb3729f72375@mail.gmail.com>
+References: <4AFD971C.3090204@csldevices.co.uk>
+	<4AFD9BAF.1010200@csldevices.co.uk>
+	<aday6mac5ai.fsf@roland-alpha.cisco.com>
+	<4AFED614.1050109@gmail.com>
+	<53ea87da0911140855u7993989aod746bcaf18ee4c31@mail.gmail.com>
+	<51f3faa70911141019y1248fb27k5f7edb3729f72375@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the Dell Studio 15 (model 1557, Core i7) laptop to the hd-audio
-quirk list, enabling audio.
+On Sat, 14 Nov 2009 12:19:13 -0600
+Robert Hancock <hancockrwd@gmail.com> wrote:
 
-Signed-off-by: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: stable@kernel.org
+> On Sat, Nov 14, 2009 at 10:55 AM, venu <vjosyula@gmail.com> wrote:
+> >  who triggers this upgrade from userspace ? I understand it is a
+> > naivee / beginers questions but i hope somebody explains me how ?
+> 
+> The request_firmware interface probably isn't suitable for that..
+> using an ioctl or read/write-based interface, possibly on a separate
+> device node, would likely be the way to go..
+> 
 
----
-diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
-index 6990cfc..285b1e2 100644
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -1817,6 +1817,8 @@ static struct snd_pci_quirk stac92hd73xx_cfg_tbl[] = {
- 				"Dell Studio 17", STAC_DELL_M6_DMIC),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02be,
- 				"Dell Studio 1555", STAC_DELL_M6_DMIC),
-+	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02bd,
-+				"Dell Studio 1557", STAC_DELL_M6_DMIC),
- 	{} /* terminator */
- };
+it's not unusual to have a sysfs attribute that, when written to, will
+just do a request_firmware().
+It's not pretty, but it's cleaner than the alternatives....
+
 
 -- 
-Daniel J Blueman
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
