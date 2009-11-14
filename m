@@ -1,432 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZKNC5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZKNDCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZKNC5j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Nov 2009 21:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbZKNC5i
+	id S1757275AbZKNDCz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Nov 2009 22:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZKNDCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Nov 2009 21:57:38 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:46514 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753908AbZKNC5h (ORCPT
+	Fri, 13 Nov 2009 22:02:53 -0500
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:50609 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753908AbZKNDCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Nov 2009 21:57:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=OH7MRql6I4RbCyjAlN7FlE/2sEBEKscomkk1PBJr+wl0DiYcu3XEC4IgXt3vKQgk2V
-         AKMWbLyLWDcHCtHf592VurJgKi00VDPaUBxmsBHk6ufx3MM6ksrl+7OhFClYE3DSgMpc
-         +jEcWpdvFRhWobl6iHb9o66vE6oTXcGSs72So=
-Date: Fri, 13 Nov 2009 18:57:38 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linux Input <linux-input@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jim Paradis <jparadis@redhat.com>
-Subject: [PATCH] Input: keyboard - fix lack of locking when traversing
-	handler->h_list
-Message-ID: <20091114025737.GC3587@core.coreip.homeip.net>
+	Fri, 13 Nov 2009 22:02:52 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/HU4XF2NJXKRZ3/YLnQROW
+Date: Fri, 13 Nov 2009 19:02:49 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       vikram pandita <vikram.pandita@ti.com>, linux-omap@atomide.com
+Subject: Re: linux-next: manual merge of the sound tree with the omap tree
+Message-ID: <20091114030248.GL3684@atomide.com>
+References: <20091113131947.03d1b259.sfr@canb.auug.org.au>
+ <20091113123901.GB30966@sirena.org.uk>
+ <s5h1vk2po9n.wl%tiwai@suse.de>
+ <20091113131148.GC21516@rakim.wolfsonmicro.main>
+ <s5hzl6qo9c9.wl%tiwai@suse.de>
+ <20091113204429.GE3684@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091113204429.GE3684@atomide.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keyboard handler should not attempt to traverse handler->h_list on
-its own, without any locking, otherwise it races with registering
-and unregistering of input handles which leads to crashes.
+* Tony Lindgren <tony@atomide.com> [091113 12:44]:
+> * Takashi Iwai <tiwai@suse.de> [091113 05:13]:
+> > At Fri, 13 Nov 2009 13:11:48 +0000,
+> > Mark Brown wrote:
+> > > 
+> > > On Fri, Nov 13, 2009 at 02:06:44PM +0100, Takashi Iwai wrote:
+> > > > Mark Brown wrote:
+> > > 
+> > > > > into the OMAP tree to resolve this.  There's some older ASoC changes in
+> > > > > there to ensure the patches applied but I'm happy for you to carry those
+> > > > > providing Takashi is.
+> > > 
+> > > > I can merge the tree above to for-next branch of sound git tree, too.
+> > > > In that way, we can keep asoc branches clean.
+> > > 
+> > > I believe that creates the same problem both ways :/ .  If we merge
+> > > OMAP->sound we may as well put it on the ASoC topic branch, it'll
+> > > probably be helpful for people doing OMAP work anyway.
+> > 
+> > OK, in both ways I don't care...
+> 
+> I think this should get resolved if I git cherry-pick the following
+> commits to linux-omap for-next:
+> 
+> MFD: twl4030: add twl4030_codec MFD as a new child to the core
+> 0b83ddebc6e884dc0221358cf68c461520fbdd8e
+> 
+> OMAP: Platform support for twl4030_codec MFD
+> f8d9aad96d0d7b57d0bf2e4de21fdda3a42f4449
+> 
+> OMAP: Configure audio_mclk for twl4030-codec MFD
+> 953e2f3d272db9db6671ad4f4244820557a71cf7
+> 
+> Then I can tweak the sdp and zoom patches accordingly. So let's try
+> that first, I'll try it out today.
 
-Introduce input_handler_for_each_handle() helper that allows safely
-iterate over all handles attached to a particular handler and switch
-keyboard handler to use it.
+OK, I ended up cherry-picking the following MFD commits to keep things
+compiling:
 
-Reported-by: Jim Paradis <jparadis@redhat.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+$ git cherry-pick 0b83ddebc6e884dc0221358cf68c461520fbdd8e
+$ git cherry-pick f8d9aad96d0d7b57d0bf2e4de21fdda3a42f4449
+$ git cherry-pick cfd5324e699a2e74a44642d43dcf03d581f2a7db
+$ git cherry-pick 953e2f3d272db9db6671ad4f4244820557a71cf7
+$ git cherry-pick f9b4639e045c750e2bad37462476403995508350
 
- drivers/char/keyboard.c |  189 ++++++++++++++++++++++++-----------------------
- drivers/input/input.c   |   37 +++++++++
- include/linux/input.h   |   10 ++
- 3 files changed, 140 insertions(+), 96 deletions(-)
+Then I made the following changes to linux-omap for-next branch.
+I will revert these changes as a fix after the merge window.
 
+Without the patch below, there will still be conflicts. And
+git mergetool ends up adding back the non-compiling entries
+to board-zoom2.c.
 
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index 737be95..8847ea6 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -46,8 +46,6 @@
+But with the patch things work. So pulling
+
+git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound-2.6 twl4030-mfd
+
+to linux-omap for-next branch does not cause conflicts. So hopefully
+it now works for Stephen too.
+
+Regards,
+
+Tony
+
+--- b/arch/arm/mach-omap2/board-omap3evm.c
++++ a/arch/arm/mach-omap2/board-omap3evm.c
+@@ -308,8 +308,6 @@ static struct twl4030_platform_data omap3evm_twldata = {
+ 	.usb		= &omap3evm_usb_data,
+ 	.gpio		= &omap3evm_gpio_data,
+ 	.codec		= &omap3evm_codec_data,
+-	.vmmc1		= &omap3evm_vmmc1,
+-	.vsim		= &omap3evm_vsim,
+ };
  
- extern void ctrl_alt_del(void);
+ static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
+@@ -323,6 +321,13 @@ static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
  
--#define to_handle_h(n) container_of(n, struct input_handle, h_node)
--
- /*
-  * Exported functions/variables
-  */
-@@ -190,78 +188,85 @@ EXPORT_SYMBOL_GPL(unregister_keyboard_notifier);
-  *  etc.). So this means that scancodes for the extra function keys won't
-  *  be valid for the first event device, but will be for the second.
-  */
+ static int __init omap3_evm_i2c_init(void)
+ {
++	/*
++	 * REVISIT: These entries can be set in omap3evm_twl_data
++	 * after a merge with MFD tree
++	 */
++	omap3evm_twldata.vmmc1 = &omap3evm_vmmc1;
++	omap3evm_twldata.vsim = &omap3evm_vsim;
 +
-+struct getset_keycode_data {
-+	unsigned int scancode;
-+	unsigned int keycode;
-+	int error;
+ 	omap_register_i2c_bus(1, 2600, omap3evm_i2c_boardinfo,
+ 			ARRAY_SIZE(omap3evm_i2c_boardinfo));
+ 	omap_register_i2c_bus(2, 400, NULL, 0);
+diff --git b/arch/arm/mach-omap2/board-zoom2.c a/arch/arm/mach-omap2/board-zoom2.c
+index 3e88fcc..f2e66f3 100644
+--- b/arch/arm/mach-omap2/board-zoom2.c
++++ a/arch/arm/mach-omap2/board-zoom2.c
+@@ -36,6 +36,31 @@ static void __init omap_zoom2_init_irq(void)
+ 	omap_gpio_init();
+ }
+ 
++/* REVISIT: These audio entries can be removed once MFD code is merged */
++#if 0
++
++static struct twl4030_madc_platform_data zoom2_madc_data = {
++	.irq_line	= 1,
 +};
 +
-+static int getkeycode_helper(struct input_handle *handle, void *data)
-+{
-+	struct getset_keycode_data *d = data;
++static struct twl4030_platform_data zoom2_twldata = {
++	.irq_base	= TWL4030_IRQ_BASE,
++	.irq_end	= TWL4030_IRQ_END,
 +
-+	d->error = input_get_keycode(handle->dev, d->scancode, &d->keycode);
++	/* platform_data for children goes here */
++	.bci		= &zoom2_bci_data,
++	.madc		= &zoom2_madc_data,
++	.usb		= &zoom2_usb_data,
++	.gpio		= &zoom2_gpio_data,
++	.keypad		= &zoom2_kp_twl4030_data,
++	.vmmc1          = &zoom2_vmmc1,
++	.vmmc2          = &zoom2_vmmc2,
++	.vsim           = &zoom2_vsim,
 +
-+	return d->error == 0; /* stop as soon as we successfully get one */
-+}
++};
 +
- int getkeycode(unsigned int scancode)
- {
--	struct input_handle *handle;
--	int keycode;
--	int error = -ENODEV;
-+	struct getset_keycode_data d = { scancode, 0, -ENODEV };
++#endif
++
+ extern int __init omap_zoom2_debugboard_init(void);
+ extern void __init zoom_peripherals_init(void);
  
--	list_for_each_entry(handle, &kbd_handler.h_list, h_node) {
--		error = input_get_keycode(handle->dev, scancode, &keycode);
--		if (!error)
--			return keycode;
--	}
-+	input_handler_for_each_handle(&kbd_handler, &d, getkeycode_helper);
- 
--	return error;
-+	return d.error;
-+}
-+
-+static int setkeycode_helper(struct input_handle *handle, void *data)
-+{
-+	struct getset_keycode_data *d = data;
-+
-+	d->error = input_set_keycode(handle->dev, d->scancode, d->keycode);
-+
-+	return d->error == 0; /* stop as soon as we successfully set one */
- }
- 
- int setkeycode(unsigned int scancode, unsigned int keycode)
- {
--	struct input_handle *handle;
--	int error = -ENODEV;
-+	struct getset_keycode_data d = { scancode, keycode, -ENODEV };
- 
--	list_for_each_entry(handle, &kbd_handler.h_list, h_node) {
--		error = input_set_keycode(handle->dev, scancode, keycode);
--		if (!error)
--			break;
--	}
-+	input_handler_for_each_handle(&kbd_handler, &d, setkeycode_helper);
- 
--	return error;
-+	return d.error;
- }
- 
- /*
-  * Making beeps and bells.
-  */
--static void kd_nosound(unsigned long ignored)
-+
-+static int kd_sound_helper(struct input_handle *handle, void *data)
- {
--	struct input_handle *handle;
-+	unsigned int *hz = data;
-+	struct input_dev *dev = handle->dev;
- 
--	list_for_each_entry(handle, &kbd_handler.h_list, h_node) {
--		if (test_bit(EV_SND, handle->dev->evbit)) {
--			if (test_bit(SND_TONE, handle->dev->sndbit))
--				input_inject_event(handle, EV_SND, SND_TONE, 0);
--			if (test_bit(SND_BELL, handle->dev->sndbit))
--				input_inject_event(handle, EV_SND, SND_BELL, 0);
--		}
-+	if (test_bit(EV_SND, dev->evbit)) {
-+		if (test_bit(SND_TONE, dev->sndbit))
-+			input_inject_event(handle, EV_SND, SND_TONE, *hz);
-+		if (test_bit(SND_BELL, handle->dev->sndbit))
-+			input_inject_event(handle, EV_SND, SND_BELL, *hz ? 1 : 0);
- 	}
-+
-+	return 0;
-+}
-+
-+static void kd_nosound(unsigned long ignored)
-+{
-+	static unsigned int zero;
-+
-+	input_handler_for_each_handle(&kbd_handler, &zero, kd_sound_helper);
- }
- 
- static DEFINE_TIMER(kd_mksound_timer, kd_nosound, 0, 0);
- 
- void kd_mksound(unsigned int hz, unsigned int ticks)
- {
--	struct list_head *node;
-+	del_timer_sync(&kd_mksound_timer);
- 
--	del_timer(&kd_mksound_timer);
-+	input_handler_for_each_handle(&kbd_handler, &hz, kd_sound_helper);
- 
--	if (hz) {
--		list_for_each_prev(node, &kbd_handler.h_list) {
--			struct input_handle *handle = to_handle_h(node);
--			if (test_bit(EV_SND, handle->dev->evbit)) {
--				if (test_bit(SND_TONE, handle->dev->sndbit)) {
--					input_inject_event(handle, EV_SND, SND_TONE, hz);
--					break;
--				}
--				if (test_bit(SND_BELL, handle->dev->sndbit)) {
--					input_inject_event(handle, EV_SND, SND_BELL, 1);
--					break;
--				}
--			}
--		}
--		if (ticks)
--			mod_timer(&kd_mksound_timer, jiffies + ticks);
--	} else
--		kd_nosound(0);
-+	if (hz && ticks)
-+		mod_timer(&kd_mksound_timer, jiffies + ticks);
- }
- EXPORT_SYMBOL(kd_mksound);
- 
-@@ -269,30 +274,33 @@ EXPORT_SYMBOL(kd_mksound);
-  * Setting the keyboard rate.
-  */
- 
--int kbd_rate(struct kbd_repeat *rep)
-+static int kbd_rate_helper(struct input_handle *handle, void *data)
- {
--	struct list_head *node;
-+	struct input_dev *dev = handle->dev;
-+	struct kbd_repeat *rep = data;
- 	unsigned int d = 0;
- 	unsigned int p = 0;
- 
--	list_for_each(node, &kbd_handler.h_list) {
--		struct input_handle *handle = to_handle_h(node);
--		struct input_dev *dev = handle->dev;
--
--		if (test_bit(EV_REP, dev->evbit)) {
--			if (rep->delay > 0)
--				input_inject_event(handle, EV_REP, REP_DELAY, rep->delay);
--			if (rep->period > 0)
--				input_inject_event(handle, EV_REP, REP_PERIOD, rep->period);
--			d = dev->rep[REP_DELAY];
--			p = dev->rep[REP_PERIOD];
--		}
-+	if (test_bit(EV_REP, dev->evbit)) {
-+		if (rep->delay > 0)
-+			input_inject_event(handle, EV_REP, REP_DELAY, rep->delay);
-+		if (rep->period > 0)
-+			input_inject_event(handle, EV_REP, REP_PERIOD, rep->period);
-+		d = dev->rep[REP_DELAY];
-+		p = dev->rep[REP_PERIOD];
- 	}
-+
- 	rep->delay  = d;
- 	rep->period = p;
-+
- 	return 0;
- }
- 
-+int kbd_rate(struct kbd_repeat *rep)
-+{
-+	return input_handler_for_each_handle(&kbd_handler, rep, kbd_rate_helper);
-+}
-+
- /*
-  * Helper Functions.
-  */
-@@ -997,36 +1005,36 @@ static inline unsigned char getleds(void)
- 	return leds;
- }
- 
-+static int kbd_update_leds_helper(struct input_handle *handle, void *data)
-+{
-+	unsigned char leds = *(unsigned char *)data;
-+
-+	if (test_bit(EV_LED, handle->dev->evbit)) {
-+		input_inject_event(handle, EV_LED, LED_SCROLLL, !!(leds & 0x01));
-+		input_inject_event(handle, EV_LED, LED_NUML,    !!(leds & 0x02));
-+		input_inject_event(handle, EV_LED, LED_CAPSL,   !!(leds & 0x04));
-+		input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
-+	}
-+
-+	return 0;
-+}
-+
- /*
-- * This routine is the bottom half of the keyboard interrupt
-- * routine, and runs with all interrupts enabled. It does
-- * console changing, led setting and copy_to_cooked, which can
-- * take a reasonably long time.
-- *
-- * Aside from timing (which isn't really that important for
-- * keyboard interrupts as they happen often), using the software
-- * interrupt routines for this thing allows us to easily mask
-- * this when we don't want any of the above to happen.
-- * This allows for easy and efficient race-condition prevention
-- * for kbd_start => input_inject_event(dev, EV_LED, ...) => ...
-+ * This is the tasklet that updates LED state on all keyboards
-+ * attached to the box. he reason we use tasklet is that we
-+ * need to handle the scenario when keyboard handler is not
-+ * registered yet but we already getting updates form VT to
-+ * update led state.
-  */
--
- static void kbd_bh(unsigned long dummy)
- {
--	struct list_head *node;
- 	unsigned char leds = getleds();
- 
- 	if (leds != ledstate) {
--		list_for_each(node, &kbd_handler.h_list) {
--			struct input_handle *handle = to_handle_h(node);
--			input_inject_event(handle, EV_LED, LED_SCROLLL, !!(leds & 0x01));
--			input_inject_event(handle, EV_LED, LED_NUML,    !!(leds & 0x02));
--			input_inject_event(handle, EV_LED, LED_CAPSL,   !!(leds & 0x04));
--			input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
--		}
-+		input_handler_for_each_handle(&kbd_handler, &leds,
-+					      kbd_update_leds_helper);
-+		ledstate = leds;
- 	}
--
--	ledstate = leds;
- }
- 
- DECLARE_TASKLET_DISABLED(keyboard_tasklet, kbd_bh, 0);
-@@ -1300,6 +1308,7 @@ static void kbd_event(struct input_handle *handle, unsigned int event_type,
- 		kbd_rawcode(value);
- 	if (event_type == EV_KEY)
- 		kbd_keycode(event_code, value, HW_RAW(handle->dev));
-+
- 	tasklet_schedule(&keyboard_tasklet);
- 	do_poke_blanked_console = 1;
- 	schedule_console_callback();
-@@ -1363,15 +1372,11 @@ static void kbd_disconnect(struct input_handle *handle)
-  */
- static void kbd_start(struct input_handle *handle)
- {
--	unsigned char leds = ledstate;
--
- 	tasklet_disable(&keyboard_tasklet);
--	if (leds != 0xff) {
--		input_inject_event(handle, EV_LED, LED_SCROLLL, !!(leds & 0x01));
--		input_inject_event(handle, EV_LED, LED_NUML,    !!(leds & 0x02));
--		input_inject_event(handle, EV_LED, LED_CAPSL,   !!(leds & 0x04));
--		input_inject_event(handle, EV_SYN, SYN_REPORT, 0);
--	}
-+
-+	if (ledstate != 0xff)
-+		kbd_update_leds_helper(handle, &ledstate);
-+
- 	tasklet_enable(&keyboard_tasklet);
- }
- 
-diff --git a/drivers/input/input.c b/drivers/input/input.c
-index 77b6efe..b991e64 100644
---- a/drivers/input/input.c
-+++ b/drivers/input/input.c
-@@ -1664,6 +1664,38 @@ void input_unregister_handler(struct input_handler *handler)
- EXPORT_SYMBOL(input_unregister_handler);
- 
- /**
-+ * input_handler_for_each_handle - handle iterator
-+ * @handler: input handler to iterate
-+ * @data: data for the callback
-+ * @fn: function to be called for each handle
-+ *
-+ * Iterate over @bus's list of devices, and call @fn for each, passing
-+ * it @data and stop when @fn returns a non-zero value. The function is
-+ * using RCU to traverse the list and therefore may be usind in atonic
-+ * contexts. The @fn callback is invoked from RCU critical section and
-+ * thus must not sleep.
-+ */
-+int input_handler_for_each_handle(struct input_handler *handler, void *data,
-+				  int (*fn)(struct input_handle *, void *))
-+{
-+	struct input_handle *handle;
-+	int retval = 0;
-+
-+	rcu_read_lock();
-+
-+	list_for_each_entry_rcu(handle, &handler->h_list, h_node) {
-+		retval = fn(handle, data);
-+		if (retval)
-+			break;
-+	}
-+
-+	rcu_read_unlock();
-+
-+	return retval;
-+}
-+EXPORT_SYMBOL(input_handler_for_each_handle);
-+
-+/**
-  * input_register_handle - register a new input handle
-  * @handle: handle to register
-  *
-@@ -1696,7 +1728,7 @@ int input_register_handle(struct input_handle *handle)
- 	 * we can't be racing with input_unregister_handle()
- 	 * and so separate lock is not needed here.
- 	 */
--	list_add_tail(&handle->h_node, &handler->h_list);
-+	list_add_tail_rcu(&handle->h_node, &handler->h_list);
- 
- 	if (handler->start)
- 		handler->start(handle);
-@@ -1719,7 +1751,7 @@ void input_unregister_handle(struct input_handle *handle)
- {
- 	struct input_dev *dev = handle->dev;
- 
--	list_del_init(&handle->h_node);
-+	list_del_rcu(&handle->h_node);
- 
- 	/*
- 	 * Take dev->mutex to prevent race with input_release_device().
-@@ -1727,6 +1759,7 @@ void input_unregister_handle(struct input_handle *handle)
- 	mutex_lock(&dev->mutex);
- 	list_del_rcu(&handle->d_node);
- 	mutex_unlock(&dev->mutex);
-+
- 	synchronize_rcu();
- }
- EXPORT_SYMBOL(input_unregister_handle);
-diff --git a/include/linux/input.h b/include/linux/input.h
-index 4637f90..8693bc6 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -1021,9 +1021,12 @@ struct ff_effect {
-  * @keycodesize: size of elements in keycode table
-  * @keycode: map of scancodes to keycodes for this device
-  * @setkeycode: optional method to alter current keymap, used to implement
-- *	sparse keymaps. If not supplied default mechanism will be used
-+ *	sparse keymaps. If not supplied default mechanism will be used.
-+ *	The methid is being called while holding event_lock and thus must
-+ *	not sleep.
-  * @getkeycode: optional method to retrieve current keymap. If not supplied
-- *	default mechanism will be used
-+ *	default mechanism will be used. The method is being called while
-+ *	holding event_lock and thus must not sleep.
-  * @ff: force feedback structure associated with the device if device
-  *	supports force feedback effects
-  * @repeat_key: stores key code of the last key pressed; used to implement
-@@ -1295,6 +1298,9 @@ void input_unregister_device(struct input_dev *);
- int __must_check input_register_handler(struct input_handler *);
- void input_unregister_handler(struct input_handler *);
- 
-+int input_handler_for_each_handle(struct input_handler *, void *data,
-+				  int (*fn)(struct input_handle *, void *));
-+
- int input_register_handle(struct input_handle *);
- void input_unregister_handle(struct input_handle *);
- 
--- 
-Dmitry
