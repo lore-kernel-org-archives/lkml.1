@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbZKNFIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752321AbZKNFNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751929AbZKNFIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 00:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZKNFIY
+	id S1752321AbZKNFNN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 00:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZKNFNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 00:08:24 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:58965 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZKNFIY (ORCPT
+	Sat, 14 Nov 2009 00:13:13 -0500
+Received: from smtp107.prem.mail.sp1.yahoo.com ([98.136.44.62]:32370 "HELO
+	smtp107.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751509AbZKNFNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 00:08:24 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
-Cc: linux-kernel@vger.kernel.org
+	Sat, 14 Nov 2009 00:13:12 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: dHxmVgkVM1lXmzZT.dy5npQmqo6g_yIXFYwHv3gV9IKYraIQaT14q3nRW7w1jgWilTqJID4C6DTfAxqWNmK2DIzgBNtiUpk9M.NMl8MssZKdeoUoUvF_QMl2uU5eqnl4ApzBWaGpfCUxv2WqDO_e6WicDw9Jjc60a9Yr7mOo0BAuUBh4K.7qlPyV_eUIabMQI_sC29umZ8_oTFwlndrzwL0WLVmCtsR0m4qXatU8SOOOXva9OikK.sC1gemc06_0Nxt9_OdHR1rIiAE.Uxzc3joY_SCxdwgt_sFlIzdipxXzMS.MatjbIRvKbHrLFlSsxJtkmz4Eq5EqwlKC7zo-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AFE3C53.70709@schaufler-ca.com>
+Date: Fri, 13 Nov 2009 21:12:51 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: David Wagner <daw-news@taverner.cs.berkeley.edu>,
+       linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>
 Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-In-Reply-To: Your message of "Sat, 14 Nov 2009 00:41:15 GMT."
-             <hdkubb$rdb$1@taverner.cs.berkeley.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk> <19857.1258147396@turing-police.cc.vt.edu> <Pine.LNX.4.64.0911132224370.6325@ask.diku.dk> <24306.1258153693@turing-police.cc.vt.edu>
-            <hdkubb$rdb$1@taverner.cs.berkeley.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1258175307_3884P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>	 <4AFCC06B.1030302@schaufler-ca.com>	 <19857.1258147396@turing-police.cc.vt.edu>	 <4AFE1EA9.60102@schaufler-ca.com>  <hdl92e$srv$1@taverner.cs.berkeley.edu> <1258170491.16857.142.camel@Joe-Laptop.home>
+In-Reply-To: <1258170491.16857.142.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Sat, 14 Nov 2009 00:08:27 -0500
-Message-ID: <9337.1258175307@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.34.103 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020203.4AFE3B4C.0052,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1258175307_3884P
-Content-Type: text/plain; charset=us-ascii
+Joe Perches wrote:
+> On Sat, 2009-11-14 at 03:44 +0000, David Wagner wrote:
+>   
+>> I personally don't find
+>>     strncmp(foo, "constant", sizeof("constant"))        // first snippet
+>> to be more readable, auditable, or obviously correct than
+>>     strcmp(foo, "constant").                            // second snippet
+>> Is there a technical basis for arguing that the first
+>> snippet is better than the second snippet?
+>>     
+>
+> I don't think there is.
+>   
 
-On Sat, 14 Nov 2009 00:41:15 GMT, David Wagner said:
+And you're exactly correct. Now please go convince all the whingers
+who think that even though because their tool found a "bad" thing
+there is nothing to worry about. But that's beside the point. There
+really is no point here. This whole discussion is around a gratuitous
+change that has no net effect on the behavior of the system. Unless
+you are talking about the original change proposal, which would have
+broken certain cases.
 
-> 1) The particular code snippets under discussion here were of the
-> form
->     strncmp(foo, "constant", sizeof("constant"))
-> And the proposal is to replace this code with
->     strcmp(foo, "constant")
-> Do you really mean to object to this proposal?
-
-No, in that particular case strcmp() is Obviously Safe.
-
-> 2) More generally, you seem to be concerned about bugs where one
-> piece of code fails to '\0'-terminate a string, and another piece of
-> code invokes some library function that relies upon '\0'-termination.
-
-Exactly.
-
-> That is not specifically a strcmp() issue; this is an issue with using
-> any string library that assumes '\0'-termination, where the string is not
-> '\0'-terminated.  That's a much broader issue that should be addressed by
-> other means.
-
-I know that - which is why I asked Julia if Cocinelle is able to do anything
-in this area.  An awful lot of our \0-terminated strings end up that way
-implicitly because somebody does a kzalloc() or bzero() of an entire
-structure, which can be fragile if code is refactored.
-
-By the same token, that implicit behavior means that it's probably quite
-difficult for any programmatic correctness checkers to follow the behavior.
-
->              Saying "strcmp() is bad" is a poor response to this risk.
-
-I didn't say "strcmp() is bad". I said it needs auditing.  The strn-
-versions of functions have a guaranteed termination condition right there
-in the call. For strcmp() and strcpy(), the termination guarantee is
-often elsewhere, which is why code using them tends to be brittle and
-is harder to audit.
+I am advocating that the code be left as is. It works fine (for what it
+is intended to do, of course) and the "corrected" change is just plain
+unnecessary. It is no clearer and no less clear than the original. Leave
+it alone unless there is a good reason to change it. What, are y'all
+getting paid by the patch or something?
 
 
---==_Exmh_1258175307_3884P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFK/jtLcC3lWbTT17ARAr+tAKC59xssObMY4DFCm8/INiA8kZkO5wCeK/i1
-6K2RfI6TL1bJV2r65RvwlG8=
-=1ewX
------END PGP SIGNATURE-----
-
---==_Exmh_1258175307_3884P--
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
 
