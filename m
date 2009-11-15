@@ -1,116 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZKOOEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZKOOOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbZKOOEy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 09:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZKOOEx
+	id S1753077AbZKOOOs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 09:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKOOOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 09:04:53 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:33349 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbZKOOEx (ORCPT
+	Sun, 15 Nov 2009 09:14:47 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:40144 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZKOOOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 09:04:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e47VIMxO+BxOB5VTPgRQuE+H2jPGTwxk90BIg1D0BXvXMVFWp0us8KYMD/1sS0iab2
-         DjoxPDdQQe0cB+M8duOaNd6m0boeZY868AXTzrhYVhRtOyZrXv4i7bjDaRFA1z5Szl9p
-         jpLttfntiXgjuT/VwtigPbJBIo6MAmtiCbu4E=
-Date: Sun, 15 Nov 2009 12:05:08 -0200
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+	Sun, 15 Nov 2009 09:14:47 -0500
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: perf stat output
-Message-ID: <20091115140507.GB21561@skywalker.lan>
-References: <193b0f820911121403w35c57158kf3721309e1f2ebd7@mail.gmail.com>
- <20091115091343.GA17358@elte.hu>
+Cc: Joe Perches <joe@perches.com>, Am??rico Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to &proc_dointvec,
+References: <1258249925.16857.198.camel@Joe-Laptop.home>
+	<20091115065958.GA2459@hack> <20091115081126.GD15432@elte.hu>
+	<1258273714.21668.13.camel@Joe-Laptop.home>
+	<20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org>
+	<20091115103307.GB24931@elte.hu> <m11vk0m0np.fsf@fess.ebiederm.org>
+	<20091115135705.GA9329@elte.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 15 Nov 2009 06:14:45 -0800
+In-Reply-To: <20091115135705.GA9329@elte.hu> (Ingo Molnar's message of "Sun\, 15 Nov 2009 14\:57\:05 +0100")
+Message-ID: <m1bpj3lvsa.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091115091343.GA17358@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, following the tested patch you asked. It's a bit different of what you
-sent because branch-misses is counted in another struct.
+Ingo Molnar <mingo@elte.hu> writes:
 
+> The preferred flow is for you to just work against Linus's latest tree - 
+> and everyone will deal with the (mostly trivial) conflicts when they 
+> happen. Linus prefers to resolve conflicts himself when he pulls, 
+> because people mixing their trees (such as you basing on net-next for 
+> example) leads to various dependency problems.
 
-Lucas De Marchi
+Sounds right.
 
---
-commit 70e98c814153f0026a683c5d19674ed8185d02fa
-Author: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date:   Sun Nov 15 11:20:56 2009 -0200
+I'm still getting up the courage to conflict.  I was wondering if I
+could cherry pick a patch or two to avoid those.
 
-    Do not print ratio when task-clock event is not counted
-    
-    The ratio between the number of events and the time elapsed makes sense only
-    if task-clock event is counted. Otherwise it will be simply a (confusing)
-    
-    	#      0.000 M/sec
-    
-    This patch outputs the ratio only if task-clock event is counted. Some test
-    examples of before and after:
-    
-    Before:
-    
-    	[lucas@skywalker linux.trees.git]$ sudo perf stat -e branch-misses -a -- sleep 1
-    
-    	 Performance counter stats for 'sleep 1':
-    
-    		1367818  branch-misses            #      0.000 M/sec
-    
-    	    1.001494325  seconds time elapsed
-    
-    After (without task-clock):
-    
-    	[lucas@skywalker perf]$ sudo ./perf stat -e branch-misses -a -- sleep 1
-    
-    	 Performance counter stats for 'sleep 1':
-    
-    		1135044  branch-misses
-    
-    	    1.001370775  seconds time elapsed
-    
-    After (with task-clock):
-    
-    	[lucas@skywalker perf]$ sudo ./perf stat -e branch-misses -e task-clock -a -- sleep 1
-    
-    	 Performance counter stats for 'sleep 1':
-    
-    		1070111  branch-misses            #      0.534 M/sec
-    	    2002.730893  task-clock-msecs         #      1.999 CPUs
-    
-    	    1.001640292  seconds time elapsed
-    
-    Signed-off-by: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Right now in the net tree there is one new sysctl and one bug fix to a
+sysctl strategy routine I intend to delete.
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index c6df377..c70d720 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -357,7 +357,8 @@ static void abs_printout(int counter, double avg)
- 			ratio = avg / total;
- 
- 		fprintf(stderr, " # %10.3f IPC  ", ratio);
--	} else if (MATCH_EVENT(HARDWARE, HW_BRANCH_MISSES, counter)) {
-+	} else if (MATCH_EVENT(HARDWARE, HW_BRANCH_MISSES, counter) &&
-+			runtime_branches_stats.n != 0) {
- 		total = avg_stats(&runtime_branches_stats);
- 
- 		if (total)
-@@ -365,7 +366,7 @@ static void abs_printout(int counter, double avg)
- 
- 		fprintf(stderr, " # %10.3f %%    ", ratio);
- 
--	} else {
-+	} else if (runtime_nsecs_stats.n != 0) {
- 		total = avg_stats(&runtime_nsecs_stats);
- 
- 		if (total)
+The core or my changes are in.  This is just purging dead code.
 
+It looks like those two changes may actually be single patches so I
+could cherry pick them and in theory have no conflicts.
+
+At the very least I'm going to wait for one more build of net-next with
+everything but my network stack changes before I add those.
+
+So far the conflicts are pretty minimal so I guess it doesn't matter
+much.
+
+Eric
