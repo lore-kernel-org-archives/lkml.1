@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752098AbZKOIIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZKOILd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752098AbZKOIIq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 03:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZKOIIp
+	id S1752118AbZKOILd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 03:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZKOILd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 03:08:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53025 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Nov 2009 03:11:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60161 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbZKOIIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 03:08:44 -0500
-Date: Sun, 15 Nov 2009 09:08:33 +0100
+	id S1751979AbZKOILc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 03:11:32 -0500
+Date: Sun, 15 Nov 2009 09:11:26 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf tools: New function to parse string representing
- size in bytes
-Message-ID: <20091115080833.GC15432@elte.hu>
-References: <1258257045-1363-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <20091115051155.GB5427@nowhere>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
+ &proc_dointvec,
+Message-ID: <20091115081126.GD15432@elte.hu>
+References: <1258249925.16857.198.camel@Joe-Laptop.home>
+ <20091115065958.GA2459@hack>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091115051155.GB5427@nowhere>
+In-Reply-To: <20091115065958.GA2459@hack>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -36,62 +36,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Am??rico Wang <xiyou.wangcong@gmail.com> wrote:
 
-> On Sun, Nov 15, 2009 at 12:50:45PM +0900, Hitoshi Mitake wrote:
-> > This patch modifies util/string.[ch] to add new function: bytesexp2int()
-> > to parse string representing size in bytes.
-> > 
-> > Below is the description of bytesexp2int().
-> > 
-> > Parse (\d+)(b|B|kb|KB|mb|MB|gb|GB) (e.g. "256MB")
-> > and return its numeric value. (e.g. 268435456)
-> > 
-> > The parameter str is not changed before and after calling,
-> > but it changed temporally and internally for atoi().
-> > So type of str is char *, not const char *.
-> > 
-> > Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  tools/perf/util/string.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  tools/perf/util/string.h |    1 +
-> >  2 files changed, 90 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
-> > index 04743d3..bbedb06 100644
-> > --- a/tools/perf/util/string.c
-> > +++ b/tools/perf/util/string.c
-> > @@ -1,4 +1,5 @@
-> >  #include <string.h>
-> > +#include <stdlib.h>
-> >  #include "string.h"
-> >  
-> >  static int hex(char ch)
-> > @@ -43,3 +44,91 @@ char *strxfrchar(char *s, char from, char to)
-> >  
-> >  	return s;
-> >  }
-> > +
-> > +static int digit(char ch)
-> > +{
-> > +	if ('0' <= ch && ch <= '9')
-> > +		return 1;
-> > +	return 0;
-> > +}
+> On Sat, Nov 14, 2009 at 05:52:05PM -0800, Joe Perches wrote:
+> >Seems to be a typo.
+> >
 > 
+> Well, in this case, proc_dointvec == &proc_dointvec,
+> both of them are the same function pointer.
 > 
+> But yes, &proc_dointvec looks more readable.
 > 
-> We have a "isdigit" macro in util.h already, despite the even already 
-> existing isdigit from the libc. I don't know why we have that. I guess 
-> it comes from git sources but I'm not sure why it has been 
-> reimplemented.
+> >Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Git tends to be a lot saner when it comes to keeping library functions 
-sane, so i'd prefer if we kept and used the Git version.
+(Cc:-ed Eric who is running the sysctl tree these days)
 
-Thanks,
+Almost everywhere in the kernel we use the shorter version, so all of 
+sysctl.c should eventually change to that variant.
 
 	Ingo
