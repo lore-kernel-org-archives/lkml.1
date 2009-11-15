@@ -1,113 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbZKOM3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZKONaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbZKOM3c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 07:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZKOM3c
+	id S1752877AbZKONaG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 08:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZKONaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 07:29:32 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:47767 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752632AbZKOM3b (ORCPT
+	Sun, 15 Nov 2009 08:30:06 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:61626 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbZKONaF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 07:29:31 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joe Perches <joe@perches.com>, Am??rico Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to &proc_dointvec,
-References: <1258249925.16857.198.camel@Joe-Laptop.home>
-	<20091115065958.GA2459@hack> <20091115081126.GD15432@elte.hu>
-	<1258273714.21668.13.camel@Joe-Laptop.home>
-	<20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org>
-	<20091115103307.GB24931@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 15 Nov 2009 04:29:30 -0800
-In-Reply-To: <20091115103307.GB24931@elte.hu> (Ingo Molnar's message of "Sun\, 15 Nov 2009 11\:33\:07 +0100")
-Message-ID: <m11vk0m0np.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 15 Nov 2009 08:30:05 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+Date: Sun, 15 Nov 2009 14:30:09 +0100
+Message-ID: <40e92d5b0911150530y67878707yed776478a51a34c@mail.gmail.com>
+Subject: consolechars switches tty since 8b92e87 vt: add an event interface
+From: =?UTF-8?Q?Przemys=C5=82aw_Pawe=C5=82czyk?= 
+	<przemyslaw@pawelczyk.it>
+To: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Hi,
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> Ingo Molnar <mingo@elte.hu> writes:
->> 
->> > * Joe Perches <joe@perches.com> wrote:
->> >
->> >> On Sun, 2009-11-15 at 09:11 +0100, Ingo Molnar wrote:
->> >> > * Am??rico Wang <xiyou.wangcong@gmail.com> wrote:
->> >> > > On Sat, Nov 14, 2009 at 05:52:05PM -0800, Joe Perches wrote:
->> >> > > >Seems to be a typo.
->> >> > > Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
->> >> > (Cc:-ed Eric who is running the sysctl tree these days)
->> >> > Almost everywhere in the kernel we use the shorter version, so all of 
->> >> > sysctl.c should eventually change to that variant.
->> >> 
->> >> It's closer to 50/50, but it's 1 vs 133 in that file.
->> >> 
->> >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*&\s*\w+' * | wc -l
->> >> 339
->> >> 
->> >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*[^&]\s*\w+' * | wc -l
->> >> 432
->> >
->> > I did not mean this specific initialization method of proc_handler, i 
->> > meant pointers to functions in general.
->> 
->> 
->> There was an argument put forward by Alexy (I think) a while ago.  
->> That argued for the form without the address of operator.
->> 
->> The reason being that without it you can do:
->> #define proc_dointvec NULL
->> 
->> in a header when sysctl support it compiled out.  Using address of
->> you wind up with stub functions in sysctl.c to handle the case when
->> sysctl is compiled out.
->> 
->> It isn't a strong case but since not using & is also shorter and as 
->> Ingo pointed out more common I think no & wins.
->
-> I can think of another reason as well: the & operator can be dangerous 
-> if code is changed from functions to function pointers.
->
-> The short form:
->
->   val = do_my_func;
->
-> will work just fine if 'my_func' is changed to a function pointer, as it 
-> will evaluate to the value of the function pointer - i.e. the address of 
-> the function.
->
-> The longer form:
->
->   val = &do_my_func;
->
-> might break in a subtle way, because it will now become the address of 
-> the function pointer - not the function address.
->
-> Combined the shortness, the NULL init, the function pointer invariance, 
-> plus existing in-kernel practice all suggest that the short form should 
-> be used.
->
-> ( i didnt want to turn this small issue into a long argument - it's just
->   that the code was going in the wrong direction. )
+I found (using git bisect) that following commit:
 
-No problem here.  I'm still working through how to keep my tree from
-conflicting with the net tree, big sweeping tend to have that problem,
-but if someone wants to generate the & removal patches (against my
-tree) and send them to me I will be happy to host them.  I am already
-touching practically every sysctl table in the tree.
+commit 8b92e87d39bfd046e7581e1fe0f40eac40f88608
+Author: Alan Cox <alan@linux.intel.com>
+Date:   Sat Sep 19 13:13:24 2009 -0700
 
-Eric
+    vt: add an event interface
 
+    This is needed and requested in various forms for ConsoleKit, screenblank
+    handling and the like so do the job with a single interface. Also build the
+    interface so that unlike VT_WAITACTIVE and friends it won't miss events.
 
+    FIXME: Should this be a waitactive ioctl or a new device file you can poll
+    and read events from. We need the code anyway to fix up the existing broken
+    wait for console switch logic but the ConsoleKit people would prefer the
+    new device to the ioctl we have here
+
+    Signed-off-by: Alan Cox <alan@linux.intel.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+M       drivers/char/vt.c
+M       drivers/char/vt_ioctl.c
+M       include/linux/vt.h
+M       include/linux/vt_kern.h
+
+is the perpetrator of changing consolechars (and probably other
+tty-related apps) behavior.
+
+[ In Debian before the end of the S runlevel (boot) console-screen.sh
+is executed (it is not the last script though), where consolechars is
+used for loading console screen font for each tty. In my case it
+evaluates to:
+
+    /usr/bin/consolechars --tty=/dev/ttyX -f lat0-sun16
+
+Similarly consolechars is used in setupcon script invoked by
+console-setup (processed after console-screen.sh) to set a font chosen
+by user. ]
+
+The problem is that since 8b92e87 running consolechars switches tty to
+the one provided with --tty option. Last commit I have tested,
+a9366e6, is still affected.
+
+( Back then there was also another problem with "INIT:
+open(/dev/console): Input/output error" introduced in b50989d and
+fixed in f278a2f. )
+
+Result? Messages starting from "INIT: Switching to runlevel: 2" don't
+go to tty1 as they should and tty1 is not the tty I see when login
+prompt shows up.
+
+I tried to found out whether this issue was already brought to light,
+but without success. Maybe this is an obvious and intentional
+consequence of the patch for people familiar with tty/vt --
+unfortunately I am not among them.
+
+Thanks.
+
+-- 
+Przemysław Pawełczyk
