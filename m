@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZKOVeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751888AbZKOVvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751882AbZKOVeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 16:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZKOVeI
+	id S1751888AbZKOVvo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 16:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZKOVvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 16:34:08 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:43631 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751090AbZKOVeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 16:34:08 -0500
-Date: Sun, 15 Nov 2009 22:34:10 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Joe Perches <joe@perches.com>
-Cc: Andy Whitcroft <apw@canonical.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Am??rico Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
- &proc_dointvec,
-In-Reply-To: <1258319614.21668.115.camel@Joe-Laptop.home>
-Message-ID: <Pine.LNX.4.64.0911152232090.30372@ask.diku.dk>
-References: <1258249925.16857.198.camel@Joe-Laptop.home>  <20091115065958.GA2459@hack>
- <20091115081126.GD15432@elte.hu>  <1258273714.21668.13.camel@Joe-Laptop.home>
-  <20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org> 
- <20091115103307.GB24931@elte.hu>  <1258306299.21668.30.camel@Joe-Laptop.home>
-  <Pine.LNX.4.64.0911151916100.27042@ask.diku.dk>  <1258313031.21668.73.camel@Joe-Laptop.home>
-  <Pine.LNX.4.64.0911152139020.30372@ask.diku.dk> <1258319614.21668.115.camel@Joe-Laptop.home>
+	Sun, 15 Nov 2009 16:51:44 -0500
+Received: from de01.mail.all-tld.net ([195.140.232.8]:56540 "EHLO
+	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbZKOVvn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 16:51:43 -0500
+Date: Sun, 15 Nov 2009 22:51:30 +0100
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: [PATCH v5 10/12] string: factorize skip_spaces and export it to
+ be generally available
+To: Anonymous <aim0shei@lavabit.com>
+Cc: =?iso-8859-1?b?QW5kcuk=?= Goddard Rosa <andre.goddard@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20091115200215.GA25351@machine> (from aim0shei@lavabit.com on
+	Sun Nov 15 21:02:15 2009)
+X-Mailer: Balsa 2.3.21
+Message-Id: <1258321890l.9645l.1l@oscar.alarsen.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+References: <20091115200215.GA25351@machine>
+X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
+X-ALL-TLD-GmbH-VirusScanner: Found to be clean
+X-ALL-TLD-GmbH-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Nov 2009, Joe Perches wrote:
+On 2009-11-15 21:02:15, Anonymous wrote:
+> On Sun, Nov 15, 2009 at 08:33:29PM +0100, Anders Larsen wrote:
+> > On 2009-11-15 08:15:03, André Goddard Rosa wrote:
+> > >+char *skip_spaces(const char *str)
+> > >+{
+> > >+	while (isspace(*str))
+> > >+		++str;
+> > >+	return (char *)str;
+> > >+}
+> >> Is there a good reason why the parameter 'str' is declared 'const'
+> > when skip_spaces() returns a non-const pointer into str ?
+> >Declaring return value as const won't let us modificate string after
+> skipping spaces. Declaring parameter as non-const won't let us
+> giving (const char *) to this function. So i think it is ok.
 
-> On Sun, 2009-11-15 at 21:40 +0100, Julia Lawall wrote:
-> > On Sun, 15 Nov 2009, Joe Perches wrote:
-> > > On Sun, 2009-11-15 at 19:20 +0100, Julia Lawall wrote:
-> > > > Searching for things that are declared as functions (either a definition 
-> > > > or a prototype), and then referenced as &f gives over 2000 results in 
-> > > > almost 600 files.
-> > > Just curious, do you know how many are referenced
-> > > without the &?
-> > I got over 95000 (not checked in detail, though).
-> 
-> Thanks.
-> 
-> I think that ~25+:1 ratio makes a good case for an
-> eventual conversion of the remaining uses.
+skip_spaces() _implicitly_ casts away the 'const' of the parameter,
+which may come as a (nasty) surprise to users of the function.
 
-OK, I will try to look into it sometime soon.
+Consider this (contrieved and buggy) example:
 
-> > > If what is desired is kernel wide consistent use, yes.
-> > > What I would like is file/subsystem consistent use.
-> > > 
-> > > Looking at sysctl.c and seeing that different use
-> > > stand out was odd.
-> > 
-> > It would be possible to count the number of occurrences in a given file, 
-> > and then change the ones that have the less popular format, or a format 
-> > that occurs less than some percentage of time.
-> 
-> Maybe it'd be useful to add a coccinelle/spatch
-> directory in scripts and add these scripts so
-> that files and subsystems can updated over time.
-> 
-> I can not find a directory of coccinelle input
-> scripts for linux at:
-> http://coccinelle.lip6.fr/download.php
-> Is there a list somewhere?
+	const char* my_string = " do not modify me! ";
+	char* result = strcat(skip_spaces(my_string, "boom!"));
 
-At the bottom of the download page there is a tool called coccicheck that 
-runs Coccinelle on a set of semantic patches.  It comes with a set of 
-examples.
+The proposed implementation of skip_spaces() effectively prevents
+the compiler from catching this obvious bug.
 
-http://coccinelle.lip6.fr/distrib/coccicheck-0.1.tgz
-
-julia
-
-> Perhaps add a checkpatch test as well though
-> that might be an interesting test to write in
-> perl.
-> 
-> 
-> 
+Cheers
+Anders
