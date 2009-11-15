@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZKOK3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbZKOK35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZKOK3D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 05:29:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZKOK3B
+	id S1752773AbZKOK35 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 05:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZKOK34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 05:29:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59678 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Nov 2009 05:29:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46989 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbZKOK3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 05:29:01 -0500
-Date: Sun, 15 Nov 2009 11:28:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH v3] perf tools: New function to parse string representing
- size in bytes
-Message-ID: <20091115102859.GA24931@elte.hu>
-References: <20091115.185220.212229853.mitake@dcl.info.waseda.ac.jp>
- <1258280343-4359-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	id S1752670AbZKOK3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 05:29:53 -0500
+Date: Sun, 15 Nov 2009 10:29:08 GMT
+From: tip-bot for Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tj@kernel.org, tglx@linutronix.de,
+       avi@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tj@kernel.org, tglx@linutronix.de,
+       avi@redhat.com, mingo@elte.hu
+In-Reply-To: <4AFD2801.7020900@kernel.org>
+References: <4AFD2801.7020900@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched, kvm: Fix race condition involving sched_in_preempt_notifers
+Message-ID: <tip-498657a478c60be092208422fefa9c7b248729c2@git.kernel.org>
+Git-Commit-ID: 498657a478c60be092208422fefa9c7b248729c2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1258280343-4359-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  498657a478c60be092208422fefa9c7b248729c2
+Gitweb:     http://git.kernel.org/tip/498657a478c60be092208422fefa9c7b248729c2
+Author:     Tejun Heo <tj@kernel.org>
+AuthorDate: Fri, 13 Nov 2009 18:33:53 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 15 Nov 2009 09:59:54 +0100
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+sched, kvm: Fix race condition involving sched_in_preempt_notifers
 
-> + * bytesexp2int()
+In finish_task_switch(), fire_sched_in_preempt_notifiers() is
+called after finish_lock_switch().
 
-i suspect this could be named 'bytestring2ll' ? Is 'bytesexp' an 
-existing naming in other libraries?
+However, depending on architecture, preemption can be enabled after
+finish_lock_switch() which breaks the semantics of preempt
+notifiers.
 
-> + * Parse (\d+)(b|B|kb|KB|mb|MB|gb|GB|tb|TB) (e.g. "256MB")
-> + * and return its numeric value
-> + */
-> +long long int bytesexp2int(const char *str)
+So move it before finish_arch_switch(). This also makes the in-
+notifiers symmetric to out- notifiers in terms of locking - now
+both are called under rq lock.
 
-we have type shortcuts for 'long long': s64.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <4AFD2801.7020900@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +{
-> +	unsigned int i;
-> +	long long int length = -1, unit = 1;
-
-s64 too i suspect.
-
-> +tera:
-> +			unit = (long long int)K * K * K * K;
-
-Note, you can probably avoid this type cast if you define the 'K' 
-literal as 1024LL or so.
-
-> +	length = atoll(str) * unit;
-
-we might want to take a naming clue here and name this new function as 
-atoll_exp(), to signal that it works like atoll, just with an extension 
-for KB/MB/GB/etc. expressions?
-
-	Ingo
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 701eca4..cea2bea 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2758,9 +2758,9 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	perf_event_task_sched_in(current, cpu_of(rq));
++	fire_sched_in_preempt_notifiers(current);
+ 	finish_lock_switch(rq, prev);
+ 
+-	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
