@@ -1,161 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbZKOLg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZKOMJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752343AbZKOLg4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 06:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZKOLgz
+	id S1752607AbZKOMJT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 07:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZKOMJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 06:36:55 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60833 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbZKOLgz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 06:36:55 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH v4] perf tools: New function to parse string representing size in bytes
-Date: Sun, 15 Nov 2009 20:36:53 +0900
-Message-Id: <1258285013-4759-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <20091115.203228.50774015.mitake@dcl.info.waseda.ac.jp>
-References: <20091115.203228.50774015.mitake@dcl.info.waseda.ac.jp>
+	Sun, 15 Nov 2009 07:09:18 -0500
+Received: from lo.gmane.org ([80.91.229.12]:60858 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752235AbZKOMJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 07:09:18 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: Does a kernel assisted file system reorder make sense?
+Date: Sun, 15 Nov 2009 11:38:47 +0000
+Message-ID: <7r55t6-9up.ln1@chipmunk.wormnet.eu>
+References: <4AFFDA7C.6010907@cv-sv.de>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: chipmunk.wormnet.eu
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-2-sparc64-smp (sparc64))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies util/string.[ch] to add new function: perf_atoll()
-to parse string representing size in bytes.
+Christian Volkmann <haveaniceday@cv-sv.de> wrote:
+> 
+> I just have read some articles about faster booting systems
+> (Ubuntu 9.10) , SSD, hard disks, latency and seek times...
+> 
+> Due to this I have some ideas which I like to discuss.
+> I am for sure not the first with this idea, but I do not
+> find any discussion about it. :)
+> 
+> [snipped]
+> 
+> But this would only make sense if a system boot is delayed by
+> hard disk seek times. I have no SSD to check if a SSD boots
+> faster. Does anyone have the experience if a SSD boots faster?
+> 
+...be faster still just to suspend/resume to RAM or disk surely?
 
-This patch is version 4. According to Ingo's advice,
-I fixed some points which violate kernel coding rule.
-And renamed new function to more general style.
+I like to reduce my boot time by...erm...not booting :)
 
-This function parse (\d+)(b|B|kb|KB|mb|MB|gb|GB) (e.g. "256MB")
-and return its numeric value. (e.g. 268435456)
+Cheers
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
----
- tools/perf/util/string.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/string.h |    1 +
- 2 files changed, 85 insertions(+), 0 deletions(-)
-
-diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
-index 04743d3..2270435 100644
---- a/tools/perf/util/string.c
-+++ b/tools/perf/util/string.c
-@@ -1,5 +1,7 @@
- #include <string.h>
-+#include <stdlib.h>
- #include "string.h"
-+#include "util.h"
- 
- static int hex(char ch)
- {
-@@ -43,3 +45,85 @@ char *strxfrchar(char *s, char from, char to)
- 
- 	return s;
- }
-+
-+#define K 1024LL
-+/*
-+ * perf_atoll()
-+ * Parse (\d+)(b|B|kb|KB|mb|MB|gb|GB|tb|TB) (e.g. "256MB")
-+ * and return its numeric value
-+ */
-+s64 perf_atoll(const char *str)
-+{
-+	unsigned int i;
-+	s64 length = -1, unit = 1;
-+
-+	if (!isdigit(str[0]))
-+		goto out_err;
-+
-+	for (i = 1; i < strlen(str); i++) {
-+		switch (str[i]) {
-+		case 'B':
-+		case 'b':
-+			break;
-+		case 'K':
-+			if (str[i + 1] != 'B')
-+				goto out_err;
-+			else
-+				goto kilo;
-+		case 'k':
-+			if (str[i + 1] != 'b')
-+				goto out_err;
-+kilo:
-+			unit = K;
-+			break;
-+		case 'M':
-+			if (str[i + 1] != 'B')
-+				goto out_err;
-+			else
-+				goto mega;
-+		case 'm':
-+			if (str[i + 1] != 'b')
-+				goto out_err;
-+mega:
-+			unit = K * K;
-+			break;
-+		case 'G':
-+			if (str[i + 1] != 'B')
-+				goto out_err;
-+			else
-+				goto giga;
-+		case 'g':
-+			if (str[i + 1] != 'b')
-+				goto out_err;
-+giga:
-+			unit = K * K * K;
-+			break;
-+		case 'T':
-+			if (str[i + 1] != 'B')
-+				goto out_err;
-+			else
-+				goto tera;
-+		case 't':
-+			if (str[i + 1] != 'b')
-+				goto out_err;
-+tera:
-+			unit = K * K * K * K;
-+			break;
-+		case '\0':	/* only specified figures */
-+			unit = 1;
-+			break;
-+		default:
-+			if (!isdigit(str[i]))
-+				goto out_err;
-+			break;
-+		}
-+	}
-+
-+	length = atoll(str) * unit;
-+	goto out;
-+
-+out_err:
-+	length = -1;
-+out:
-+	return length;
-+}
-diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
-index 2c84bf6..e50b07f 100644
---- a/tools/perf/util/string.h
-+++ b/tools/perf/util/string.h
-@@ -5,6 +5,7 @@
- 
- int hex2u64(const char *ptr, u64 *val);
- char *strxfrchar(char *s, char from, char to);
-+s64 perf_atoll(const char *str);
- 
- #define _STR(x) #x
- #define STR(x) _STR(x)
 -- 
-1.6.5.2
+Alexander Clouter
+.sigmonster says: It is the wise bird who builds his nest in a tree.
 
