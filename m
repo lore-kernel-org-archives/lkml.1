@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751888AbZKOVvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbZKOWOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751888AbZKOVvo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 16:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZKOVvo
+	id S1752097AbZKOWOK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 17:14:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZKOWOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 16:51:44 -0500
-Received: from de01.mail.all-tld.net ([195.140.232.8]:56540 "EHLO
-	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZKOVvn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 16:51:43 -0500
-Date: Sun, 15 Nov 2009 22:51:30 +0100
-From: Anders Larsen <al@alarsen.net>
-Subject: Re: [PATCH v5 10/12] string: factorize skip_spaces and export it to
- be generally available
-To: Anonymous <aim0shei@lavabit.com>
-Cc: =?iso-8859-1?b?QW5kcuk=?= Goddard Rosa <andre.goddard@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091115200215.GA25351@machine> (from aim0shei@lavabit.com on
-	Sun Nov 15 21:02:15 2009)
-X-Mailer: Balsa 2.3.21
-Message-Id: <1258321890l.9645l.1l@oscar.alarsen.net>
+	Sun, 15 Nov 2009 17:14:09 -0500
+Received: from mail.lang.hm ([64.81.33.126]:48433 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbZKOWOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 17:14:09 -0500
+Date: Sun, 15 Nov 2009 14:13:56 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Andi Kleen <andi@firstfloor.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       John Johansen <john.johansen@canonical.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 07/12] AppArmor: userspace interfaces
+In-Reply-To: <87pr7qjpn8.fsf@basil.nowhere.org>
+Message-ID: <alpine.DEB.2.00.0911151413280.6163@asgard.lang.hm>
+References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com> <1257869585-7092-8-git-send-email-john.johansen@canonical.com> <84144f020911100829k515c7f73w84df942162a49a30@mail.gmail.com> <87pr7qjpn8.fsf@basil.nowhere.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-References: <20091115200215.GA25351@machine>
-X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
-X-ALL-TLD-GmbH-VirusScanner: Found to be clean
-X-ALL-TLD-GmbH-SpamCheck: 
-X-MailScanner-From: al@alarsen.net
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-658448519-1258323240=:6163"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-11-15 21:02:15, Anonymous wrote:
-> On Sun, Nov 15, 2009 at 08:33:29PM +0100, Anders Larsen wrote:
-> > On 2009-11-15 08:15:03, André Goddard Rosa wrote:
-> > >+char *skip_spaces(const char *str)
-> > >+{
-> > >+	while (isspace(*str))
-> > >+		++str;
-> > >+	return (char *)str;
-> > >+}
-> >> Is there a good reason why the parameter 'str' is declared 'const'
-> > when skip_spaces() returns a non-const pointer into str ?
-> >Declaring return value as const won't let us modificate string after
-> skipping spaces. Declaring parameter as non-const won't let us
-> giving (const char *) to this function. So i think it is ok.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-skip_spaces() _implicitly_ casts away the 'const' of the parameter,
-which may come as a (nasty) surprise to users of the function.
+--680960-658448519-1258323240=:6163
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Consider this (contrieved and buggy) example:
+On Tue, 10 Nov 2009, Andi Kleen wrote:
 
-	const char* my_string = " do not modify me! ";
-	char* result = strcat(skip_spaces(my_string, "boom!"));
+> Pekka Enberg <penberg@cs.helsinki.fi> writes:
+>
+>> On Tue, Nov 10, 2009 at 6:13 PM, John Johansen
+>> <john.johansen@canonical.com> wrote:
+>>> The current apparmorfs interface is compatible with previous versions
+>>> of AppArmor.  The plans are to deprecate it (hence the config option
+>>> APPARMOR_COMPAT_24) and replace it with a more sysfs style single
+>>> entry per file interface.
+>>
+>> We don't usually merge compatibility code to handle ABIs that were
+>> developed out-of-tree. Why should we treat AppArmor differently?
+>
+> I would say that always depends on the deployed base of the old ABI.
+> If there's a lot of users who would get broken I think there's a
+> good case for merging compat code (I don't know if that is or
+> isn't the case here).
+>
+> A widely used distribution release with the old user land would
+> probably count.
 
-The proposed implementation of skip_spaces() effectively prevents
-the compiler from catching this obvious bug.
+ubuntu has shipped with AppArmor for the last few releases.
 
-Cheers
-Anders
+David Lang
+--680960-658448519-1258323240=:6163--
