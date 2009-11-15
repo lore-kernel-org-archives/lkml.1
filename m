@@ -1,37 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZKOXWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZKOXXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZKOXWF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 18:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZKOXWE
+	id S1751891AbZKOXXL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 18:23:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZKOXXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 18:22:04 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43433 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750765AbZKOXWD (ORCPT
+	Sun, 15 Nov 2009 18:23:10 -0500
+Received: from mga05.intel.com ([192.55.52.89]:25009 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750895AbZKOXXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 18:22:03 -0500
-Date: Sun, 15 Nov 2009 23:23:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Iban =?ISO-8859-14?B?Um9kcu1ndWV6?= <iban.rodriguez@ono.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: intelfb maintainer
-Message-ID: <20091115232359.06ca76a6@lxorguk.ukuu.org.uk>
-In-Reply-To: <21d7e9970911151519h535f6063t4924ccf71286cdee@mail.gmail.com>
-References: <1258319857.6556.59.camel@invitado-laptop>
-	<21d7e9970911151519h535f6063t4924ccf71286cdee@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Nov 2009 18:23:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,747,1249282800"; 
+   d="scan'208";a="514122686"
+Date: Mon, 16 Nov 2009 00:25:02 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: pcf50633 - fix error handling during probe
+Message-ID: <20091115232501.GF8367@sortiz.org>
+References: <20091109092447.29634.79364.stgit@localhost.localdomain>
+ <20091109092516.29634.32640.stgit@localhost.localdomain>
+ <4B008A22.80909@metafoo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B008A22.80909@metafoo.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> linux-fbdev-devel@lists.sf.net is probably the best plaec to send stuff.
-> (but don't be surprised if nobody really cares).
+On Mon, Nov 16, 2009 at 12:09:22AM +0100, Lars-Peter Clausen wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Dmitry Torokhov wrote:
+> > The pcf50633 is very naive - it assumes that all driver core
+> > operations will succeed and will fail badly if one of them
+> > errors out. Implement proper error handling and make sure we
+> > release any and all resources that have been allocated prior
+> > to failure.
+> >
+> > Also avoid memory leak when using platform_device_add_data()
+> > which clones the supplied data structure for use by the device.
+> > The original copy, if allocated dynamically, needs to be freed
+> > by the caller; switch to using on-stack variable (the size of
+> > the structure in question is quite small) instead.
+> >
+> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> Hi
+> 
+> Most of the issues addressed in this patch have already been fixed.
+> Please check the for-next branch in the mfd tree.
+Oops, thanks for refreshing our memories Lars...
 
-And if you get no response after a while send it to Linus with a note
-indicating what Dave said. If there is no maintainer to go around then
-sometimes you have to go directly unless anyone sees a problem with the
-patch (or become maintainer ...)
+Cheers,
+Samuel.
+
+ 
+> - - Lars
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.9 (GNU/Linux)
+> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+> 
+> iEYEARECAAYFAksAiiIACgkQBX4mSR26RiNJbACfYs4UhLSrlYuNqynJ/Mguw+oj
+> FxQAn2xmUh8QZttY4jxKUsdg+6p/pXNT
+> =yCtL
+> -----END PGP SIGNATURE-----
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
