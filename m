@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbZKOXTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZKOXTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751648AbZKOXTS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 18:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZKOXTR
+	id S1752184AbZKOXTf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 18:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZKOXTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 18:19:17 -0500
-Received: from mailhost.informatik.uni-hamburg.de ([134.100.9.70]:43684 "EHLO
-	mailhost.informatik.uni-hamburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751444AbZKOXTR (ORCPT
+	Sun, 15 Nov 2009 18:19:34 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:55082 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbZKOXTX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 18:19:17 -0500
-X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Nov 2009 18:19:17 EST
-Message-ID: <4B008A22.80909@metafoo.de>
-Date: Mon, 16 Nov 2009 00:09:22 +0100
-From: Lars-Peter Clausen <lars@metafoo.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	Sun, 15 Nov 2009 18:19:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CRpj/ezrOWaN3Mv+p9LEaVh8Zhh0ptMrltvhXRkxLdGyBPUQhuiBUu/A5m8iR+7gBs
+         fAKN7L69zZ4DPZR2IQtlgOzFRlu2KsD9v3YmawS/l2B7keaklNGYoMN6QuCy39WsDmBA
+         K7dorLlyWtqdaKQPs4f+o+zuP4iDecel+pOGI=
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mfd: pcf50633 - fix error handling during probe
-References: <20091109092447.29634.79364.stgit@localhost.localdomain> <20091109092516.29634.32640.stgit@localhost.localdomain>
-In-Reply-To: <20091109092516.29634.32640.stgit@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1258319857.6556.59.camel@invitado-laptop>
+References: <1258319857.6556.59.camel@invitado-laptop>
+Date: Mon, 16 Nov 2009 09:19:28 +1000
+Message-ID: <21d7e9970911151519h535f6063t4924ccf71286cdee@mail.gmail.com>
+Subject: Re: intelfb maintainer
+From: Dave Airlie <airlied@gmail.com>
+To: =?ISO-8859-1?Q?Iban_Rodr=EDguez?= <iban.rodriguez@ono.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Dmitry Torokhov wrote:
-> The pcf50633 is very naive - it assumes that all driver core
-> operations will succeed and will fail badly if one of them
-> errors out. Implement proper error handling and make sure we
-> release any and all resources that have been allocated prior
-> to failure.
+2009/11/16 Iban Rodríguez <iban.rodriguez@ono.com>:
 >
-> Also avoid memory leak when using platform_device_add_data()
-> which clones the supplied data structure for use by the device.
-> The original copy, if allocated dynamically, needs to be freed
-> by the caller; switch to using on-stack variable (the size of
-> the structure in question is quite small) instead.
+>    Hello,
 >
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-Hi
+>    I have found a problem in the intelfb driver. I've tried to send an
+> e-mail to Sylvain Meyer (maintainer) but I've received the mail back
+> because of 'user unknown'. Could you tell me who I can send the report?
+>
 
-Most of the issues addressed in this patch have already been fixed.
-Please check the for-next branch in the mfd tree.
+intelfb is mostly deprecated in favour of kernel modesetting drivers,
 
-- - Lars
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+I also used to help maintain it, but its mostly to be left for dead,
 
-iEYEARECAAYFAksAiiIACgkQBX4mSR26RiNJbACfYs4UhLSrlYuNqynJ/Mguw+oj
-FxQAn2xmUh8QZttY4jxKUsdg+6p/pXNT
-=yCtL
------END PGP SIGNATURE-----
+linux-fbdev-devel@lists.sf.net is probably the best plaec to send stuff.
+(but don't be surprised if nobody really cares).
 
+Dave.
+
+>    Thank you very much.
+>
+>    Iban Rodríguez.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
