@@ -1,112 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZKOSUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZKOSoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZKOSUk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 13:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZKOSUj
+	id S1752624AbZKOSoc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 13:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZKOSob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 13:20:39 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:41378 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbZKOSUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 13:20:39 -0500
-Date: Sun, 15 Nov 2009 19:20:40 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Joe Perches <joe@perches.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Am??rico Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
- &proc_dointvec,
-In-Reply-To: <1258306299.21668.30.camel@Joe-Laptop.home>
-Message-ID: <Pine.LNX.4.64.0911151916100.27042@ask.diku.dk>
-References: <1258249925.16857.198.camel@Joe-Laptop.home>  <20091115065958.GA2459@hack>
- <20091115081126.GD15432@elte.hu>  <1258273714.21668.13.camel@Joe-Laptop.home>
-  <20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org> 
- <20091115103307.GB24931@elte.hu> <1258306299.21668.30.camel@Joe-Laptop.home>
+	Sun, 15 Nov 2009 13:44:31 -0500
+Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:40028 "HELO
+	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751832AbZKOSob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 13:44:31 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 32zBtqEVM1lIoQ7NJ_pXFktN1i27bkDDWmeX4KfPaRCIK_1TJBlfpC2yz1yHReuT1e.cL.6Mi9RGdNXtJ18FptjL4JMklMaM0Qsb15Kps6xOzVt5fAiXaxljKh6I7epXxv0JdBFwv_YU4XKb1OAVsVGoduVyqBZnjAoA0dcFByfcBIYq1TxpJwftENAfiEyrIkvlA.QXhWHes0RlNLb4pm8luATP.tFHIRVgcL6T7simR5FoUaHBBLm91gK7HRT4.w5iJqoqsIf4RVZQQOAzADV7_jwPRC9oOFStbeVJ2r5KG8Ia53CscIBVpoyOA5NIMlgmoEM2tw3W8E6v.p2l
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B004C11.8020609@schaufler-ca.com>
+Date: Sun, 15 Nov 2009 10:44:33 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Raja R Harinath <harinath@hurrynot.org>
+CC: linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
+References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>	<4AFCC06B.1030302@schaufler-ca.com>	<19857.1258147396@turing-police.cc.vt.edu>	<4AFE1EA9.60102@schaufler-ca.com>	<hdl92e$srv$1@taverner.cs.berkeley.edu>	<1258170491.16857.142.camel@Joe-Laptop.home>	<4AFE3C53.70709@schaufler-ca.com>	<1258176381.16857.155.camel@Joe-Laptop.home>	<4AFE5A20.20608@schaufler-ca.com> <87y6m8s03l.fsf@hariville.hurrynot.org>
+In-Reply-To: <87y6m8s03l.fsf@hariville.hurrynot.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Nov 2009, Joe Perches wrote:
+Raja R Harinath wrote:
+> Hi,
+>
+> Casey Schaufler <casey@schaufler-ca.com> writes:
+>
+>   
+>> Joe Perches wrote:
+>>     
+> [snip]
+>   
+>>> I assert that code should be made as readable
+>>> as possible and that the code used fit the
+>>> reader's expectations.
+>>>
+>>> strcmp(foo, "BAR") is natural.
+>>> strncmp(foo, "BAR", sizeof("BAR")) is unnatural
+>>> and should not be used.
+>>>       
+>> Oh good gravy. I've been writing C code since the 1970's and
+>> have seen enough "unnatural" code to make most people think that
+>> PASCAL was a good idea. This is not unnatural code. This is an
+>> argument over which side of the head of the pin the odd angel
+>> should dance on. Give it up. You're advocating a gratuitous
+>> change. Can't y'all go find some questionable casts to expunge?
+>> That might actually be useful.
+>>     
+>
+> I think the point is that
+>
+>     strncmp(foo, "BAR", sizeof("BAR"))
+>
+> is exceedingly similar to
+>
+>     strncmp(foo, "BAR", strlen("BAR"))
+>
+> which mean different things.  The point of this series was the suspicion
+> that people who intended the "strlen" variant might have used the
+> "sizeof" variant.
+>   
 
-> On Sun, 2009-11-15 at 11:33 +0100, Ingo Molnar wrote:
-> > * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> > > Ingo Molnar <mingo@elte.hu> writes:
-> > > > * Joe Perches <joe@perches.com> wrote:
-> > > >> On Sun, 2009-11-15 at 09:11 +0100, Ingo Molnar wrote:
-> > > >> > * Am??rico Wang <xiyou.wangcong@gmail.com> wrote:
-> > > >> > > On Sat, Nov 14, 2009 at 05:52:05PM -0800, Joe Perches wrote:
-> > > >> > > >Seems to be a typo.
-> > > >> > > Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-> > > >> > (Cc:-ed Eric who is running the sysctl tree these days)
-> > > >> > Almost everywhere in the kernel we use the shorter version, so all of 
-> > > >> > sysctl.c should eventually change to that variant.
-> > > >> It's closer to 50/50, but it's 1 vs 133 in that file.
-> > > >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*&\s*\w+' * | wc -l
-> > > >> 339
-> > > >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*[^&]\s*\w+' * | wc -l
-> > > >> 432
-> > > > I did not mean this specific initialization method of proc_handler, i 
-> > > > meant pointers to functions in general.
-> > > There was an argument put forward by Alexy (I think) a while ago.  
-> > > That argued for the form without the address of operator.
-> > > The reason being that without it you can do:
-> > > #define proc_dointvec NULL
-> > > in a header when sysctl support it compiled out.  Using address of
-> > > you wind up with stub functions in sysctl.c to handle the case when
-> > > sysctl is compiled out.
-> > > It isn't a strong case but since not using & is also shorter and as 
-> > > Ingo pointed out more common I think no & wins.
-> > I can think of another reason as well: the & operator can be dangerous 
-> > if code is changed from functions to function pointers.
-> > 
-> > The short form:
-> > 
-> >   val = do_my_func;
-> > 
-> > will work just fine if 'my_func' is changed to a function pointer, as it 
-> > will evaluate to the value of the function pointer - i.e. the address of 
-> > the function.
-> > 
-> > The longer form:
-> > 
-> >   val = &do_my_func;
-> > 
-> > might break in a subtle way, because it will now become the address of 
-> > the function pointer - not the function address.
-> > 
-> > Combined the shortness, the NULL init, the function pointer invariance, 
-> > plus existing in-kernel practice all suggest that the short form should 
-> > be used.
-> > 
-> > ( i didnt want to turn this small issue into a long argument - it's just
-> >   that the code was going in the wrong direction. )
-> 
-> That sounds like something coccinelle would do well,
-> so I've cc'd Julia Lawall.
-> 
-> http://lkml.org/lkml/2009/11/15/55
+The point is that the code is correct as written. The change
+suggested, changing the sizeof to strlen, would result in
+incorrect behavior in the case where foo is "BAR-BAR-BA-RAN".
+The other change suggested, which is to change strncmp to
+strcmp, would be functionally correct but offers no value,
+might be considered less safe in certain circles, and requires
+a change that, like any change, adds a trivial amount of risk.
 
-Searching for things that are declared as functions (either a definition 
-or a prototype), and then referenced as &f gives over 2000 results in 
-almost 600 files.  Here are a couple of typical examples:
+> And, since this confusion exists, it is probably better to use two
+> canonical forms for the two different meanings
+>
+>    strcmp(foo, "BAR")
+>    strncmp(foo, "BAR", strlen("BAR"))
+>
+> and avoid other equivalent formulations.
+>
+> - Hari
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
 
-arch/arm/mach-omap1/clock.c:
-
-static const struct clkops clkops_dspck = {
-       .enable         = &omap1_clk_enable_dsp_domain,
-       .disable        = &omap1_clk_disable_dsp_domain,
- };
-
-
-arch/arm/mach-omap1/serial.c:
-
-       ret = request_irq(gpio_to_irq(gpio_nr), &omap_serial_wake_interrupt,
-                          IRQF_TRIGGER_RISING, "serial wakeup", NULL);
-
-Should both cases lose the initial &?
-
-julia
