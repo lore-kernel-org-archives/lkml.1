@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbZKOKEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZKOKHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbZKOKEZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 05:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZKOKEY
+	id S1752607AbZKOKHY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 05:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZKOKHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 05:04:24 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:36740 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbZKOKEX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 05:04:23 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Joe Perches <joe@perches.com>, Am??rico Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to &proc_dointvec,
-References: <1258249925.16857.198.camel@Joe-Laptop.home>
-	<20091115065958.GA2459@hack> <20091115081126.GD15432@elte.hu>
-	<1258273714.21668.13.camel@Joe-Laptop.home>
-	<20091115083951.GA27393@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 15 Nov 2009 02:04:23 -0800
-In-Reply-To: <20091115083951.GA27393@elte.hu> (Ingo Molnar's message of "Sun\, 15 Nov 2009 09\:39\:51 +0100")
-Message-ID: <m1hbswm7dk.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 15 Nov 2009 05:07:24 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54203 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752555AbZKOKHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 05:07:23 -0500
+X-Authenticated: #3373616
+X-Provags-ID: V01U2FsdGVkX1+jB2sKigOjA/26uVXSJCQRMoUElGMar6jj/wRpUm
+	/IeYj8ZMxdFrUt
+Message-ID: <4AFFD2B8.5060400@gmx.de>
+Date: Sun, 15 Nov 2009 20:06:48 +1000
+From: =?UTF-8?B?U2ltb24gS8OkbXBmbGVpbg==?= <s.kaempflein@gmx.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: linux-kernel@vger.kernel.org
+Subject: Re: perf counters: problem with perf record
+References: <4AFEE55B.3000906@gmx.de> <1258227980.30187.512.camel@laptop>
+In-Reply-To: <1258227980.30187.512.camel@laptop>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Peter Zijlstra schrieb:
+> On Sun, 2009-11-15 at 03:14 +1000, Simon Kämpflein wrote:
+>> Hello,
+>>
+>> I have a problem with the new kernel perf tools in kernel 2.6.31.6 (very
+>> nice tools by the way). I like to monitor the cache-misses of a program.
+>> "perf stat -e cache-misses program" works without problems, but I can't
+>> get "perf record -e cache-misses program" working (even running as root
+>> and CONFIG_PERF_COUNTERS=y):
+>>
+>> Error: perfcounter syscall returned with -1 (Operation not supported)
+>> Fatal: No CONFIG_PERF_COUNTERS=y kernel support configured?
+>>
+>> My CPU is a "Intel(R) Pentium(R) M processor 1.80GHz":
+> 
+> Does the bootlog perchance contain the output of?
+> 
+>         if (!cpu_has_apic) {
+>                 pr_info("no APIC, boot with the \"lapic\" boot parameter
+> to force-enable it.\n");
+>                 pr_info("no hardware sampling interrupt available.\n");
+>                 x86_pmu.apic = 0;
+>         }
 
-> * Joe Perches <joe@perches.com> wrote:
->
->> On Sun, 2009-11-15 at 09:11 +0100, Ingo Molnar wrote:
->> > * Am??rico Wang <xiyou.wangcong@gmail.com> wrote:
->> > > On Sat, Nov 14, 2009 at 05:52:05PM -0800, Joe Perches wrote:
->> > > >Seems to be a typo.
->> > > Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
->> > (Cc:-ed Eric who is running the sysctl tree these days)
->> > Almost everywhere in the kernel we use the shorter version, so all of 
->> > sysctl.c should eventually change to that variant.
->> 
->> It's closer to 50/50, but it's 1 vs 133 in that file.
->> 
->> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*&\s*\w+' * | wc -l
->> 339
->> 
->> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*[^&]\s*\w+' * | wc -l
->> 432
->
-> I did not mean this specific initialization method of proc_handler, i 
-> meant pointers to functions in general.
+Yes. I didn't realize that it has something to do with the Performance
+Counters because I didn't see that it belongs to the Performance Counter
+output.
+Maybe it's a good idea to add another comment making it clear that the
+performance counters are not fully working in this case. Or detect this
+case in "perf-record" and output a message relating to that.
 
+> And does booting with the suggested lapic parameter cure your problems?
+> 
 
-There was an argument put forward by Alexy (I think) a while ago.  That
-argued for the form without the address of operator.
+Yes, thank you!
 
-The reason being that without it you can do:
-#define proc_dointvec NULL
+Regars,
+Simon
 
-in a header when sysctl support it compiled out.  Using address of
-you wind up with stub functions in sysctl.c to handle the case when
-sysctl is compiled out.
-
-It isn't a strong case but since not using & is also shorter and
-as Ingo pointed out more common I think no & wins.
-
-Eric
