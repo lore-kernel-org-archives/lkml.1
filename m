@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZKOURG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZKOUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbZKOURG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 15:17:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZKOURF
+	id S1753724AbZKOUkX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 15:40:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZKOUkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 15:17:05 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46409 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753531AbZKOURE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 15:17:04 -0500
-Date: Sun, 15 Nov 2009 20:18:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?UHJ6ZW15c8WCYXcgUGF3ZcWCY3p5aw==?= 
-	<przemyslaw@pawelczyk.it>
-Cc: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: consolechars switches tty since 8b92e87 vt: add an event 
- interface
-Message-ID: <20091115201855.2e046427@lxorguk.ukuu.org.uk>
-In-Reply-To: <40e92d5b0911151121l68ef89e5s315b6c2b017bfaad@mail.gmail.com>
-References: <40e92d5b0911150530y67878707yed776478a51a34c@mail.gmail.com>
-	<20091115170339.59528e49@lxorguk.ukuu.org.uk>
-	<40e92d5b0911151121l68ef89e5s315b6c2b017bfaad@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Nov 2009 15:40:23 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:48053 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753702AbZKOUkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 15:40:22 -0500
+Date: Sun, 15 Nov 2009 21:40:25 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Joe Perches <joe@perches.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Am??rico Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
+ &proc_dointvec,
+In-Reply-To: <1258313031.21668.73.camel@Joe-Laptop.home>
+Message-ID: <Pine.LNX.4.64.0911152139020.30372@ask.diku.dk>
+References: <1258249925.16857.198.camel@Joe-Laptop.home>  <20091115065958.GA2459@hack>
+ <20091115081126.GD15432@elte.hu>  <1258273714.21668.13.camel@Joe-Laptop.home>
+  <20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org> 
+ <20091115103307.GB24931@elte.hu>  <1258306299.21668.30.camel@Joe-Laptop.home>
+  <Pine.LNX.4.64.0911151916100.27042@ask.diku.dk> <1258313031.21668.73.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ioctl(3, VIDIOC_G_COMP or VT_ACTIVATE, 0x2) = 0
+On Sun, 15 Nov 2009, Joe Perches wrote:
 
-Switch to VT 2
-> ioctl(3, VIDIOC_S_COMP or VT_WAITACTIVE, 0x2) = 0
+> On Sun, 2009-11-15 at 19:20 +0100, Julia Lawall wrote:
+> > Searching for things that are declared as functions (either a definition 
+> > or a prototype), and then referenced as &f gives over 2000 results in 
+> > almost 600 files.
+> 
+> Just curious, do you know how many are referenced
+> without the &?
 
-Wait for VT 2 to activate
+I got over 95000 (not checked in detail, though).
 
-> ioctl(3, PIO_UNIMAPCLR, 0x7fff042a0160) = 0
-> ioctl(3, PIO_UNIMAP, 0x7fff042a0730)    = 0
+> > Here are a couple of typical examples:
+> > 
+> > arch/arm/mach-omap1/clock.c:
+> > 
+> > static const struct clkops clkops_dspck = {
+> >        .enable         = &omap1_clk_enable_dsp_domain,
+> >        .disable        = &omap1_clk_disable_dsp_domain,
+> >  };
+> > 
+> > arch/arm/mach-omap1/serial.c:
+> > 
+> >        ret = request_irq(gpio_to_irq(gpio_nr), &omap_serial_wake_interrupt,
+> >                           IRQF_TRIGGER_RISING, "serial wakeup", NULL);
+> > 
+> > Should both cases lose the initial &?
+> 
+> If what is desired is kernel wide consistent use, yes.
+> What I would like is file/subsystem consistent use.
+> 
+> Looking at sysctl.c and seeing that different use
+> stand out was odd.
 
-Set maps
+It would be possible to count the number of occurrences in a given file, 
+and then change the ones that have the less popular format, or a format 
+that occurs less than some percentage of time.
 
-> ioctl(3, VIDIOC_G_COMP or VT_ACTIVATE, 0x1) = 0
-
-Switch back to VT 1
-
-> ioctl(3, VIDIOC_S_COMP or VT_WAITACTIVE, 0x1) = 0
-
-Wait for VT1 to activate.
-
-Nothing odd there, definitely looks like a kernel problem.
-
-> I have one thing to add. It looks like that is not fully deterministic
-> behavior, at least not at f278a2f^ I'm using now. Occasionally tty
-> isn't switched. I wasn't aware of this before.
-
-The console switch is asynchronously handled so a race or a bug in the
-handling of the event wait which is what I suspect would indeed show up
-that behaviour. X and other apps don't do sudden fast switch and switch
-backs which would hide such a bug.
- 
-> I just booted that f278a2f^ (i.e. 569ec4c) while consolechars were
-> limited only to console-setup script, but this time tty1 remained on
-> the screen and I didn't get "INIT: open(/dev/console): Input/output
-> error" I was seeing before. I'm not sure whether it is relevant here.
-
-The I/O error is a different bug (technically a user space one), but the
-new behaviour was different, not at all expected and was fixed back to
-the old sane behaviour.
+julia
