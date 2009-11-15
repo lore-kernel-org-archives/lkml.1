@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZKPABM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZKOX6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbZKPABM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 19:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZKOX6s
+	id S1752184AbZKOX6a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 18:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZKOX63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 18:58:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54439 "EHLO ogre.sisk.pl"
+	Sun, 15 Nov 2009 18:58:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54433 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbZKOX6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 18:58:33 -0500
+	id S1751094AbZKOX62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 18:58:28 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH 2/10] PCI PM: Add function for checking PME status of devices
-Date: Mon, 16 Nov 2009 00:50:36 +0100
+Subject: [RFC][PATCH 3/10] PCI / PM: Propagate wake-up enable for PCIe devices too
+Date: Mon, 16 Nov 2009 00:51:20 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
@@ -27,81 +27,53 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911160050.36624.rjw@sisk.pl>
+Message-Id: <200911160051.20362.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add function pci_check_pme_status() that will check the PME status
-bit of given device and clear it along with the PME enable bit.  It
-will be used for PCI run-time power management.
-
-Based on a patch from Shaohua Li <shaohua.li@intel.com>
+Having read the PM part of the PCIe 2.0 specification more carefully
+I think that it was a mistake to restrict the wake-up enable
+propagation to non-PCIe devices, because if we do not request
+control of the root ports' PME registers via OSC, PCIe PME is
+supposed to be handled by the platform, just like the non-PCIe PME.
+Even if we do that, the wake-up propagation is done to allow the
+devices to wake up the system from sleep states which involves the
+platform anyway, so it won't hurt.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
- drivers/pci/pci.h |    1 +
- 2 files changed, 36 insertions(+)
+ drivers/pci/pci-acpi.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.h
+Index: linux-2.6/drivers/pci/pci-acpi.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
- extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
- extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
- extern void pci_disable_enabled_device(struct pci_dev *dev);
-+extern bool pci_check_pme_status(struct pci_dev *dev);
- extern void pci_pm_init(struct pci_dev *dev);
- extern void platform_pci_wakeup_init(struct pci_dev *dev);
- extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1167,6 +1167,41 @@ int pci_set_pcie_reset_state(struct pci_
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -112,11 +112,7 @@ static bool acpi_pci_can_wakeup(struct p
+ static void acpi_pci_propagate_wakeup_enable(struct pci_bus *bus, bool enable)
+ {
+ 	while (bus->parent) {
+-		struct pci_dev *bridge = bus->self;
+-		int ret;
+-
+-		ret = acpi_pm_device_sleep_wake(&bridge->dev, enable);
+-		if (!ret || bridge->is_pcie)
++		if (!acpi_pm_device_sleep_wake(&bus->self->dev, enable))
+ 			return;
+ 		bus = bus->parent;
+ 	}
+@@ -131,9 +127,7 @@ static int acpi_pci_sleep_wake(struct pc
+ 	if (acpi_pci_can_wakeup(dev))
+ 		return acpi_pm_device_sleep_wake(&dev->dev, enable);
+ 
+-	if (!dev->is_pcie)
+-		acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+-
++	acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+ 	return 0;
  }
  
- /**
-+ * pci_check_pme_status - Check if given device has generated PME.
-+ * @dev: Device to check.
-+ *
-+ * Check the PME status of the device and if set, clear it and clear PME enable
-+ * (if set).  Return 'true' if PME status and PME enable were both set or
-+ * 'false' otherwise.
-+ */
-+bool pci_check_pme_status(struct pci_dev *dev)
-+{
-+	int pmcsr_pos;
-+	u16 pmcsr;
-+	bool ret = false;
-+
-+	if (!dev->pm_cap)
-+		return false;
-+
-+	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
-+	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
-+	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
-+		return false;
-+
-+	/* Clear PME status. */
-+	pmcsr |= PCI_PM_CTRL_PME_STATUS;
-+	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
-+		/* Disable PME to avoid interrupt flood. */
-+		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
-+		ret = true;
-+	}
-+
-+	pci_write_config_word(dev, pmcsr_pos, pmcsr);
-+
-+	return ret;
-+}
-+
-+/**
-  * pci_pme_capable - check the capability of PCI device to generate PME#
-  * @dev: PCI device to handle.
-  * @state: PCI state from which device will issue PME#.
 
