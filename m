@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZKOR1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZKORbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZKOR1S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 12:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZKOR1S
+	id S1753370AbZKORbh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 12:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZKORbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 12:27:18 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:34773 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZKOR1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 12:27:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=aKFZy8Mg9l00QiVrXCGXSlosejyqm+knQrIBgJnPpLOeIdXis9UV2oezLz8kxVgjHn
-         cMaGGZ1h0FjqYphZj7LvCeyWsaUVdAvgSuS1t+mz0eegVTAMKoaBpMQmMzoBpOqHeadY
-         g3cTxMIDtFF7B7qBRvmzL2bLXRpYKxKeA1qLg=
-MIME-Version: 1.0
-In-Reply-To: <1258305351.6428.8.camel@desktop>
-References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-4-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-5-git-send-email-felipe.contreras@gmail.com>
-	 <1252936556.28368.215.camel@desktop>
-	 <94a0d4530909140734q51779b76g2ddc7211ece87171@mail.gmail.com>
-	 <1252940549.28368.255.camel@desktop>
-	 <94a0d4530911111623h1ae3463dte8a3f83ec0ad1f75@mail.gmail.com>
-	 <1258134207.6411.0.camel@c-dwalke-linux.qualcomm.com>
-	 <94a0d4530911131228s6b6b6221o7b24002ca03373e5@mail.gmail.com>
-	 <1258305351.6428.8.camel@desktop>
-Date: Sun, 15 Nov 2009 19:27:22 +0200
-Message-ID: <94a0d4530911150927l3224e815ha6ff17aab6f19251@mail.gmail.com>
-Subject: Re: [PATCH 4/5] acpi: fix trivial warning
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>,
-       Bob Moore <robert.moore@intel.com>, Andi Kleen <ak@linux.intel.com>,
-       linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sun, 15 Nov 2009 12:31:36 -0500
+Received: from mail.perches.com ([173.55.12.10]:1071 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752803AbZKORbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 12:31:35 -0500
+Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
+ &proc_dointvec,
+From: Joe Perches <joe@perches.com>
+To: Ingo Molnar <mingo@elte.hu>, julia Lawall <julia@diku.dk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Am??rico Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091115103307.GB24931@elte.hu>
+References: <1258249925.16857.198.camel@Joe-Laptop.home>
+	 <20091115065958.GA2459@hack> <20091115081126.GD15432@elte.hu>
+	 <1258273714.21668.13.camel@Joe-Laptop.home>
+	 <20091115083951.GA27393@elte.hu> <m1hbswm7dk.fsf@fess.ebiederm.org>
+	 <20091115103307.GB24931@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 15 Nov 2009 09:31:39 -0800
+Message-ID: <1258306299.21668.30.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 15, 2009 at 7:15 PM, Daniel Walker <dwalker@fifo99.com> wrote:
-> On Fri, 2009-11-13 at 22:28 +0200, Felipe Contreras wrote:
->> That doesn't seem too positive. Or at least there's no indication that
->> somebody will pick it up.
->
-> I'd re-submit with a better description of the patch. You should always
-> try to describe what your doing as accurately as possible so the
-> maintainer doesn't have to work very hard to know what your doing.
+On Sun, 2009-11-15 at 11:33 +0100, Ingo Molnar wrote:
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> > Ingo Molnar <mingo@elte.hu> writes:
+> > > * Joe Perches <joe@perches.com> wrote:
+> > >> On Sun, 2009-11-15 at 09:11 +0100, Ingo Molnar wrote:
+> > >> > * Am??rico Wang <xiyou.wangcong@gmail.com> wrote:
+> > >> > > On Sat, Nov 14, 2009 at 05:52:05PM -0800, Joe Perches wrote:
+> > >> > > >Seems to be a typo.
+> > >> > > Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+> > >> > (Cc:-ed Eric who is running the sysctl tree these days)
+> > >> > Almost everywhere in the kernel we use the shorter version, so all of 
+> > >> > sysctl.c should eventually change to that variant.
+> > >> It's closer to 50/50, but it's 1 vs 133 in that file.
+> > >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*&\s*\w+' * | wc -l
+> > >> 339
+> > >> $ grep -Pr --include=*.[ch] '\.proc_handler\s*=\s*[^&]\s*\w+' * | wc -l
+> > >> 432
+> > > I did not mean this specific initialization method of proc_handler, i 
+> > > meant pointers to functions in general.
+> > There was an argument put forward by Alexy (I think) a while ago.  
+> > That argued for the form without the address of operator.
+> > The reason being that without it you can do:
+> > #define proc_dointvec NULL
+> > in a header when sysctl support it compiled out.  Using address of
+> > you wind up with stub functions in sysctl.c to handle the case when
+> > sysctl is compiled out.
+> > It isn't a strong case but since not using & is also shorter and as 
+> > Ingo pointed out more common I think no & wins.
+> I can think of another reason as well: the & operator can be dangerous 
+> if code is changed from functions to function pointers.
+> 
+> The short form:
+> 
+>   val = do_my_func;
+> 
+> will work just fine if 'my_func' is changed to a function pointer, as it 
+> will evaluate to the value of the function pointer - i.e. the address of 
+> the function.
+> 
+> The longer form:
+> 
+>   val = &do_my_func;
+> 
+> might break in a subtle way, because it will now become the address of 
+> the function pointer - not the function address.
+> 
+> Combined the shortness, the NULL init, the function pointer invariance, 
+> plus existing in-kernel practice all suggest that the short form should 
+> be used.
+> 
+> ( i didnt want to turn this small issue into a long argument - it's just
+>   that the code was going in the wrong direction. )
 
-There's nothing to add. It's a patch to cleanup the coding style, that's it.
+That sounds like something coccinelle would do well,
+so I've cc'd Julia Lawall.
 
-> That
-> particular patch just has a one liner description that wasn't very
-> informative .. Either that or re-submit your series without that patch
-> if you don't have confidence in it.
+http://lkml.org/lkml/2009/11/15/55
 
-All of my patches have been picked up, except the ones for ACPI. I
-haven't received a single comment from them, which would explain the
-current state of the code.
-
-If somebody raised the hand and said; I'll merge this, please resend,
-I'd do that, otherwise I think it's a waste of time.
-
--- 
-Felipe Contreras
