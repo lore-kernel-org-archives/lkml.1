@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZKOXaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZKOXhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZKOXaK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 18:30:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZKOXaJ
+	id S1752050AbZKOXhD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 18:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZKOXhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 18:30:09 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50975 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751156AbZKOXaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 18:30:08 -0500
-Date: Mon, 16 Nov 2009 10:30:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Aristeu Rozanski <aris@redhat.com>
-Subject: Re: linux-next: i7core_edac tree build failure
-Message-Id: <20091116103002.82e8a2bb.sfr@canb.auug.org.au>
-In-Reply-To: <20091113105435.1b9b0060.sfr@canb.auug.org.au>
-References: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
-	<200911122340.26317.rusty@rustcorp.com.au>
-	<20091113105435.1b9b0060.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN"
+	Sun, 15 Nov 2009 18:37:02 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:35948 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbZKOXhB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 18:37:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=T9kZDryHDh7ThIwA4IJyM//fEFBSGUFbKSWLPmX2RNlybnSDMNEGjsIS8izQd026KF
+         t+hfU+Bb3g0sbeEebYF1hwEM9GJgk8zSo/V+vGerv8C3h5Ocodjsx4XR9vVX9o/Cldvz
+         s2ZPllOZJX1atHizWQlzbZpc86e4WWeyrkxDI=
+Date: Mon, 16 Nov 2009 00:37:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on
+	resume (was: Re: Help needed: Resume problems in 2.6.32-rc, perhaps
+	related to preempt_count leakage in keventd)
+Message-ID: <20091115233703.GA6090@nowhere>
+References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl> <alpine.LFD.2.01.0911091339290.31845@localhost.localdomain> <200911100119.38019.rjw@sisk.pl> <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain> <20091111171703.GA28506@redhat.com> <alpine.LFD.2.00.0911121821370.24119@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911121821370.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Nov 12, 2009 at 06:33:00PM +0100, Thomas Gleixner wrote:
+> @@ -145,6 +255,7 @@ static void __queue_work(struct cpu_work
+>  {
+>  	unsigned long flags;
+>  
+> +	debug_work_activate(work);
+>  	spin_lock_irqsave(&cwq->lock, flags);
+>  	insert_work(cwq, work, &cwq->worklist);
 
-Hi Mauro,
 
-On Fri, 13 Nov 2009 10:54:35 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Yeah, the i7core_edac fix needs to stay in my tree as it is an
-> interaction between two trees in linux-next.  The others should be
-> applied to the powerpc and sparc trees, as you say, since they fix the
-> current code in those trees.
 
-Actually, Mauro, this patch should be applied to the i7core_edac as that
-symbol never needed to be exported and the patch to export it is in that
-tree.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Since you are doing that from insert_wq_barrier too, which
+endpoint is also insert_work(), why not put debug_work_activate
+there instead? Or may be you really prefer to do this outside
+the spinlock (which in off-case is zero-overhead). May be that
+can sleep or?
 
---Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksAjvoACgkQjjKRsyhoI8z8MgCdG5KD7u75fcF+Q9F3ldMMKg2B
-0dkAoLJcIUPCyajcgaPUWjAwU5j6D/yy
-=CmpW
------END PGP SIGNATURE-----
-
---Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN--
