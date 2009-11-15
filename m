@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbZKOIjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbZKOHsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbZKOIjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 03:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZKOIjP
+	id S1751969AbZKOHsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 02:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZKOHsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 03:39:15 -0500
-Received: from lo.gmane.org ([80.91.229.12]:33127 "EHLO lo.gmane.org"
+	Sun, 15 Nov 2009 02:48:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40765 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbZKOIjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 03:39:14 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Raja R Harinath <harinath@hurrynot.org>
-Subject: Re: [PATCH 3/4] security/selinux: decrement sizeof size in strncmp
-Date: Sun, 15 Nov 2009 13:15:02 +0530
-Message-ID: <87y6m8s03l.fsf@hariville.hurrynot.org>
-References: <Pine.LNX.4.64.0911120849050.16627@ask.diku.dk>
-	<4AFCC06B.1030302@schaufler-ca.com>
-	<19857.1258147396@turing-police.cc.vt.edu>
-	<4AFE1EA9.60102@schaufler-ca.com>
-	<hdl92e$srv$1@taverner.cs.berkeley.edu>
-	<1258170491.16857.142.camel@Joe-Laptop.home>
-	<4AFE3C53.70709@schaufler-ca.com>
-	<1258176381.16857.155.camel@Joe-Laptop.home>
-	<4AFE5A20.20608@schaufler-ca.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 59.92.163.37
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-Cancel-Lock: sha1:OUZ1XB++ZTD1ptbEllxbmzqcx8M=
+	id S1751547AbZKOHsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 02:48:14 -0500
+Message-ID: <4AFFB1E6.9040300@kernel.org>
+Date: Sat, 14 Nov 2009 23:46:46 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Yu Zhao <yu.zhao@intel.com>, Matthew Wilcox <willy@linux.intel.com>
+Subject: [PATCH] x86/pci: claim SR-IOV bar in pcibios_allocate_resource
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Casey Schaufler <casey@schaufler-ca.com> writes:
+so use correct allocation from BIOS, instead of later assign another one.
 
-> Joe Perches wrote:
-[snip]
->> I assert that code should be made as readable
->> as possible and that the code used fit the
->> reader's expectations.
->>
->> strcmp(foo, "BAR") is natural.
->> strncmp(foo, "BAR", sizeof("BAR")) is unnatural
->> and should not be used.
->
-> Oh good gravy. I've been writing C code since the 1970's and
-> have seen enough "unnatural" code to make most people think that
-> PASCAL was a good idea. This is not unnatural code. This is an
-> argument over which side of the head of the pin the odd angel
-> should dance on. Give it up. You're advocating a gratuitous
-> change. Can't y'all go find some questionable casts to expunge?
-> That might actually be useful.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I think the point is that
+---
+ arch/x86/pci/i386.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-    strncmp(foo, "BAR", sizeof("BAR"))
-
-is exceedingly similar to
-
-    strncmp(foo, "BAR", strlen("BAR"))
-
-which mean different things.  The point of this series was the suspicion
-that people who intended the "strlen" variant might have used the
-"sizeof" variant.
-
-And, since this confusion exists, it is probably better to use two
-canonical forms for the two different meanings
-
-   strcmp(foo, "BAR")
-   strncmp(foo, "BAR", strlen("BAR"))
-
-and avoid other equivalent formulations.
-
-- Hari
-
+Index: linux-2.6/arch/x86/pci/i386.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/i386.c
++++ linux-2.6/arch/x86/pci/i386.c
+@@ -155,7 +155,9 @@ static void __init pcibios_allocate_reso
+ 
+ 	for_each_pci_dev(dev) {
+ 		pci_read_config_word(dev, PCI_COMMAND, &command);
+-		for (idx = 0; idx < PCI_ROM_RESOURCE; idx++) {
++		for (idx = 0; idx < PCI_BRIDGE_RESOURCES; idx++) {
++			if (idx == PCI_ROM_RESOURCE)
++				continue;
+ 			r = &dev->resource[idx];
+ 			if (r->parent)		/* Already allocated */
+ 				continue;
