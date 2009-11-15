@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZKOS7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZKOTEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbZKOS7J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 13:59:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZKOS7J
+	id S1753463AbZKOTEw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 14:04:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZKOTEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 13:59:09 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48988 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbZKOS7I (ORCPT
+	Sun, 15 Nov 2009 14:04:52 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55424 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752895AbZKOTEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 13:59:08 -0500
-Date: Sun, 15 Nov 2009 11:00:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091115110043.6cafc221@infradead.org>
-In-Reply-To: <4AFA2293.5080803@cn.fujitsu.com>
-References: <20091025225342.007138f5@infradead.org>
-	<4AFA2293.5080803@cn.fujitsu.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 15 Nov 2009 14:04:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:message-id:x-mailer;
+        b=uL2BE6xEV8Gwd6elkv5vu42am1cr/e6EjZdISJCTygPxNR0D1MpX+1gdV4Qi7F1zl9
+         tKLLhCD+1zdVQjncsSMCnStvLR/qU+0AkbJ11YTXJheoJrRY70G81IqKYNEp+shOwjXF
+         mub6MkkhPJRLq6CskFVrDoM7HNizDEh5tBshY=
+From: Stijn Devriendt <highguy@gmail.com>
+To: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH] sched_wait_block: wait for blocked threads
+Date: Sun, 15 Nov 2009 20:04:18 +0100
+Message-Id: <1258311859-6189-1-git-send-email-HIGHGuY@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 10:33:55 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> This will leave __entry->comm, __entry->file and __entry->dev
-> uninitialized in the "else" case..
+Hi Ingo, Peter, all,
 
-I would expect the struct to be zeroed before.... is it?
-(the TP_ stuff is so obscure I find it hard to figure out where it ends
-up)
+The attached patch is a prototype for a new system call which
+allows threads to wait for other threads being blocked.
 
+Its main use is to allow threading libraries to resume
+executing more CPU-bound work when one of its threads is
+blocked while not having to over-allocating threads in a 
+normal situation. 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Benefit over asynchronous I/O is that a threadpool
+thread that performs asynchronous I/O might not have
+work enough in one item to keep the CPU busy during the
+whole asynchronous operation and that not all operations
+are async capable.
+Giving control back to the library through a thread
+waiting for the blocked one allows new workitems to be
+executed as long as the former is blocked.
+
+Code performing this wait could look like:
+  pid_t parent = ...;
+  while (waitpid(parent, NULL, WNOHANG) != 0)
+  {
+    if (sched_wait_block(parent, NULL) == 0)
+		{
+      // do work, possibly notify threadpool manager
+			// to start another thread blocked on this one
+			// first
+		}
+  }
+
+Any feedback on the concept is much appreciated.
+
+Regards,
+	Stijn Devriendt
+
