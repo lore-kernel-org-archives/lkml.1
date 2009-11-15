@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbZKOJqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbZKOJsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494AbZKOJqa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 04:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZKOJq3
+	id S1752528AbZKOJsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 04:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZKOJsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 04:46:29 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:53909 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbZKOJq2 (ORCPT
+	Sun, 15 Nov 2009 04:48:13 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:39701 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbZKOJsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 04:46:28 -0500
-Date: Sun, 15 Nov 2009 10:46:32 +0100
-From: Heinz Diehl <htd@fancy-poultry.org>
+	Sun, 15 Nov 2009 04:48:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=subject:to:cc:from:reply-to:date:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=qDNvDl8PshidLTY+wy0zwuY2C/nKMxV+NXP/IzmSnWtYSx2VfErD0qPA9+ZElEE68F
+         P2PV4eoaf/jJPUsZeZ0ph98gCshycwk+1SCAXK85wTJXzUBzVvl77EiCJtDEl2fQUd2m
+         QHDkVTSDQdiYItaOxv1TkloEvDLvSdp1MRj78=
+Subject: [regression] [drm:i915_gem_execbuffer] *ERROR* Execbuf while wedged
 To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jiri Kosina <jkosina@suse.cz>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc5: surprise removal of USB mass storage, and whole
- system goes to hell
-Message-ID: <20091115094632.GB11463@fancy-poultry.org>
-Reply-To: linux-kernel@vger.kernel.org
+Cc: Zhenyu Wang <zhenyu.z.wang@intel.com>,
+       David Woodhouse <David.Woodhouse@intel.com>
+From: Michael <schnitzelkuchen@googlemail.com>
+Reply-To: schnitzelkuchen@googlemail.com
+Date: Sun, 15 Nov 2009 10:48:13 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091029083820.GZ10727@kernel.dk>
-X-Accept-Language: no,dk,se,en,de
-Organization: private site
-X-OpenPGP-KeyID: 0x3FAF957D
-X-OpenPGP-Fingerprint: 0BAE BB83 8B8A 3DE4 08F3  CEB9 DA0F CCBB 3FAF 957D
-X-OpenPGP-URL: http://www.fritha.org/htd.asc
-User-Agent: Mutt/1.5.20+20091108 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX19U3qksbpqu4DDQ7Myp4Z68W1HRDosENmkAFTy
- ZdJ+HcXlK7p6kLVuCB97CMtBa/5FtNQkLNBu07tcbxBEeu7tp2
- 9KFuJleV/m/cBOGYr5FUg==
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911151048.13777.schnitzelkuchen@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29.10.2009, Jens Axboe wrote: 
+Hello everyone.
 
-I had the same problem which has been discussed in this thread, 
-and can confirm that this patch from Jens Axboe (which is already merged into 2.6.32-rc7) 
-fixes it for me.
+I tried 2.6.32-rc6 with my Dell Inspiron 1525, but the KDM didnt
+display right - It was mostly black with only the cursor displayed.
+Other things which use X dont work with the kernel, too.
 
-> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-> index 4f53a6d..756c31b 100644
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-> @@ -614,6 +616,18 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
->  		kthread_stop(wb->task);
->  }
->  
-> +static void bdi_prune_sb(struct backing_dev_info *bdi)
-> +{
-> +	struct super_block *sb;
-> +
-> +	spin_lock(&sb_lock);
-> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> +		if (sb->s_bdi == bdi)
-> +			sb->s_bdi = NULL;
-> +	}
-> +	spin_unlock(&sb_lock);
-> +}
-> +
->  void bdi_unregister(struct backing_dev_info *bdi)
->  {
->  	if (bdi->dev) {
-> @@ -624,6 +638,8 @@ void bdi_unregister(struct backing_dev_info *bdi)
->  		device_unregister(bdi->dev);
->  		bdi->dev = NULL;
->  	}
-> +
-> +	bdi_prune_sb(bdi);
->  }
->  EXPORT_SYMBOL(bdi_unregister);
+dmesg shows the following:
+
+i915: Waking up sleeping processes
+[drm:i915_wait_request] *ERROR* i915_wait_request returns -5 (awaiting 5 at 3)
+[drm:i915_gem_execbuffer] *ERROR* Execbuf while wedged
+[drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
+render error detected, EIR: 0x00000000
+i915: Waking up sleeping processes
+[drm:i915_wait_request] *ERROR* i915_wait_request returns -5 (awaiting 12 at 
+6)
+[drm:i915_gem_execbuffer] *ERROR* Execbuf while wedged
+eth0: no IPv6 routers present
+[drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
+render error detected, EIR: 0x00000000
+i915: Waking up sleeping processes
+(...)
+i915: Waking up sleeping processes
+[drm:i915_wait_request] *ERROR* i915_wait_request returns -5 (awaiting
+1161 at 1153)
+[drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
+render error detected, EIR: 0x00000000
+i915: Waking up sleeping processes
+[drm:i915_wait_request] *ERROR* i915_wait_request returns -5 (awaiting
+1163 at 1162)
+
+
+GFX-Hardware is: Intel GM965/GL960 (rev0c)
+
+
+After bisecting i got to the following commit:
+
+176616814d700f19914d8509d9f65dec51a6ebf7 is the first bad commit
+commit 176616814d700f19914d8509d9f65dec51a6ebf7
+Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Date:   Mon Jul 27 12:59:57 2009 +0100
+
+    intel_agp: Use PCI DMA API correctly on chipsets new enough to have IOMMU
+
+    When graphics dma remapping engine is active, we must fill
+    gart table with dma address from dmar engine, as now graphics
+    device access to graphics memory must go through dma remapping
+    table to get real physical address.
+
+    Add this support to all drivers which use intel_i915_insert_entries()
+
+    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+:040000 040000 2e225bb921aba5b816886d0d8ada8fd81e00e7a7
+03d1ce91543e61975802c3a26df1ae5b75902b51 M	drivers
+
+
+
+If you have any more questions, feel free to ask. (CC'ing would be a
+good idea ;) )
+
+
+Thanks everyone for the work for linux so far,
+
+Michael
