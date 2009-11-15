@@ -1,70 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZKOGhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZKOGvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751849AbZKOGhe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 01:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZKOGhe
+	id S1751882AbZKOGvv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 01:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZKOGvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 01:37:34 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:65396 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbZKOGhd convert rfc822-to-8bit (ORCPT
+	Sun, 15 Nov 2009 01:51:50 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:53803 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751819AbZKOGvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 01:37:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type:content-transfer-encoding;
-        b=Z80pXDFwvRRg9XL5aWX5+pNbvV3zsGoDOpFgYlpoA88w4vv+sKPDXhui07wXaoOY/i
-         tm6d8ig3B6gfcmn6jyJeH5fpONECl1qjjLdZVNFCP2NP0tvgCxnT3jKKS1i8iDKUlHzx
-         Fyc5oJiHcjJpRKvwaBjeb2ezNsSsGeXLuZ3cI=
-MIME-Version: 1.0
-In-Reply-To: <20091108184722.GA1647@mit.edu>
-References: <cover.1257602781.git.andre.goddard@gmail.com> 
-	<7d5883637aa976b54e944998f635d47a41618a75.1257602781.git.andre.goddard@gmail.com> 
-	<20091108184722.GA1647@mit.edu>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Sun, 15 Nov 2009 04:37:19 -0200
-Message-ID: <b8bf37780911142237v76025e5aia8a85fa01c2b5138@mail.gmail.com>
-Subject: Re: [PATCH v4 12/12] tree-wide: convert open calls to remove spaces 
-	to skip_spaces() lib function
-To: Theodore Tso <tytso@mit.edu>, linux list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 15 Nov 2009 01:51:50 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAD8u/0pGGN1W/2dsb2JhbACBTNA3hDwE
+Date: Sun, 15 Nov 2009 01:51:53 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Debugfs: fix create mutex racy fops and private data
+Message-ID: <20091115065153.GA29928@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 01:50:07 up 88 days, 17:39,  4 users,  load average: 0.72, 0.33,
+	0.19
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[trimmed very long cc: line]
+Setting fops and private data outside of the mutex at debugfs file creation
+introduces a race where the files can be opened with the wrong file operations
+and private data. It is easy to trigger with a process waiting on file
+creation notification.
 
-On Sun, Nov 8, 2009 at 4:47 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Sat, Nov 07, 2009 at 01:16:20PM -0200, André Goddard Rosa wrote:
->> Makes use of skip_spaces() defined in lib/string.c for removing leading
->> spaces from strings all over the tree.
->>
->> Also, while at it, if we see (*str && isspace(*str)), we can be sure to
->> remove the first condition (*str) as the second one (isspace(*str)) also
->> evaluates to 0 whenever *str == 0, making it redundant. In other words,
->> "a char equals zero is never a space".
->
-> There are a number of places that have the pattern of skipping
-> whitespace, calling simpler_strtoul(), and then skipping whitespace
-> afterwards.  And thinkpad_acpi.c and fs/ext4/super.c both have an
-> indentical function, parse_strotul(), which basically does this plus
-> doing actual error checking (a number of callers of simple_strtoul
-> aren't checking to see if the user passed in a valid number or not,
-> boo.)
->
-> I would suggest that we should lift parse_strtoul() into lib/, both to
-> save a bit of code, as well as encouraging people to do proper input
-> validation, while we are doing this tree-wide cleanup.
->
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Greg Kroah-Hartman <greg@kroah.com>
+---
+ fs/debugfs/inode.c |   55 ++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 32 insertions(+), 23 deletions(-)
 
-Hi, Ted!
+Index: linux-2.6-lttng/fs/debugfs/inode.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/debugfs/inode.c	2009-11-15 01:22:59.000000000 -0500
++++ linux-2.6-lttng/fs/debugfs/inode.c	2009-11-15 01:42:46.000000000 -0500
+@@ -32,7 +32,9 @@ static struct vfsmount *debugfs_mount;
+ static int debugfs_mount_count;
+ static bool debugfs_registered;
+ 
+-static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev)
++static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev,
++				       void *data, const struct file_operations *fops)
++
+ {
+ 	struct inode *inode = new_inode(sb);
+ 
+@@ -44,14 +46,18 @@ static struct inode *debugfs_get_inode(s
+ 			init_special_inode(inode, mode, dev);
+ 			break;
+ 		case S_IFREG:
+-			inode->i_fop = &debugfs_file_operations;
++			inode->i_fop = fops ? fops : &debugfs_file_operations;
++			inode->i_private = data;
+ 			break;
+ 		case S_IFLNK:
+ 			inode->i_op = &debugfs_link_operations;
++			inode->i_fop = fops;
++			inode->i_private = data;
+ 			break;
+ 		case S_IFDIR:
+ 			inode->i_op = &simple_dir_inode_operations;
+-			inode->i_fop = &simple_dir_operations;
++			inode->i_fop = fops ? fops : &simple_dir_operations;
++			inode->i_private = data;
+ 
+ 			/* directory inodes start off with i_nlink == 2
+ 			 * (for "." entry) */
+@@ -64,7 +70,8 @@ static struct inode *debugfs_get_inode(s
+ 
+ /* SMP-safe */
+ static int debugfs_mknod(struct inode *dir, struct dentry *dentry,
+-			 int mode, dev_t dev)
++			 int mode, dev_t dev, void *data,
++			 const struct file_operations *fops)
+ {
+ 	struct inode *inode;
+ 	int error = -EPERM;
+@@ -72,7 +79,7 @@ static int debugfs_mknod(struct inode *d
+ 	if (dentry->d_inode)
+ 		return -EEXIST;
+ 
+-	inode = debugfs_get_inode(dir->i_sb, mode, dev);
++	inode = debugfs_get_inode(dir->i_sb, mode, dev, data, fops);
+ 	if (inode) {
+ 		d_instantiate(dentry, inode);
+ 		dget(dentry);
+@@ -81,12 +88,13 @@ static int debugfs_mknod(struct inode *d
+ 	return error;
+ }
+ 
+-static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++static int debugfs_mkdir(struct inode *dir, struct dentry *dentry, int mode,
++			 void *data, const struct file_operations *fops)
+ {
+ 	int res;
+ 
+ 	mode = (mode & (S_IRWXUGO | S_ISVTX)) | S_IFDIR;
+-	res = debugfs_mknod(dir, dentry, mode, 0);
++	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
+ 	if (!res) {
+ 		inc_nlink(dir);
+ 		fsnotify_mkdir(dir, dentry);
+@@ -94,18 +102,20 @@ static int debugfs_mkdir(struct inode *d
+ 	return res;
+ }
+ 
+-static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode)
++static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode,
++			void *data, const struct file_operations *fops)
+ {
+ 	mode = (mode & S_IALLUGO) | S_IFLNK;
+-	return debugfs_mknod(dir, dentry, mode, 0);
++	return debugfs_mknod(dir, dentry, mode, 0, data, fops);
+ }
+ 
+-static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode)
++static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode,
++			  void *data, const struct file_operations *fops)
+ {
+ 	int res;
+ 
+ 	mode = (mode & S_IALLUGO) | S_IFREG;
+-	res = debugfs_mknod(dir, dentry, mode, 0);
++	res = debugfs_mknod(dir, dentry, mode, 0, data, fops);
+ 	if (!res)
+ 		fsnotify_create(dir, dentry);
+ 	return res;
+@@ -139,7 +149,9 @@ static struct file_system_type debug_fs_
+ 
+ static int debugfs_create_by_name(const char *name, mode_t mode,
+ 				  struct dentry *parent,
+-				  struct dentry **dentry)
++				  struct dentry **dentry,
++				  void *data,
++				  const struct file_operations *fops)
+ {
+ 	int error = 0;
+ 
+@@ -164,13 +176,16 @@ static int debugfs_create_by_name(const 
+ 	if (!IS_ERR(*dentry)) {
+ 		switch (mode & S_IFMT) {
+ 		case S_IFDIR:
+-			error = debugfs_mkdir(parent->d_inode, *dentry, mode);
++			error = debugfs_mkdir(parent->d_inode, *dentry, mode,
++					      data, fops);
+ 			break;
+ 		case S_IFLNK:
+-			error = debugfs_link(parent->d_inode, *dentry, mode);
++			error = debugfs_link(parent->d_inode, *dentry, mode,
++					     data, fops);
+ 			break;
+ 		default:
+-			error = debugfs_create(parent->d_inode, *dentry, mode);
++			error = debugfs_create(parent->d_inode, *dentry, mode,
++					       data, fops);
+ 			break;
+ 		}
+ 		dput(*dentry);
+@@ -221,19 +236,13 @@ struct dentry *debugfs_create_file(const
+ 	if (error)
+ 		goto exit;
+ 
+-	error = debugfs_create_by_name(name, mode, parent, &dentry);
++	error = debugfs_create_by_name(name, mode, parent, &dentry,
++				       data, fops);
+ 	if (error) {
+ 		dentry = NULL;
+ 		simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+ 		goto exit;
+ 	}
+-
+-	if (dentry->d_inode) {
+-		if (data)
+-			dentry->d_inode->i_private = data;
+-		if (fops)
+-			dentry->d_inode->i_fop = fops;
+-	}
+ exit:
+ 	return dentry;
+ }
 
-    I took a look at it but couldn't find use for it much besides the
-ones you've
-pointed out, so I'm not sure it really deserves a lib function. Most calls to
-simple_strtoul() does not skips spaces.
-
-Thanks,
-André
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
