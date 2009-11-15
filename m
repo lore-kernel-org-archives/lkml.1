@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZKONaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZKONhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZKONaG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 08:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZKONaG
+	id S1752922AbZKONhd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 08:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZKONhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 08:30:06 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:61626 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZKONaF convert rfc822-to-8bit (ORCPT
+	Sun, 15 Nov 2009 08:37:32 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49753 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbZKONhb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 08:30:05 -0500
+	Sun, 15 Nov 2009 08:37:31 -0500
+To: Christian Volkmann <haveaniceday@cv-sv.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Does a kernel assisted file system reorder make sense?
+From: Andi Kleen <andi@firstfloor.org>
+References: <4AFFDA7C.6010907@cv-sv.de>
+Date: Sun, 15 Nov 2009 14:37:28 +0100
+In-Reply-To: <4AFFDA7C.6010907@cv-sv.de> (Christian Volkmann's message of "Sun, 15 Nov 2009 11:39:56 +0100")
+Message-ID: <87bpj36h9j.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Date: Sun, 15 Nov 2009 14:30:09 +0100
-Message-ID: <40e92d5b0911150530y67878707yed776478a51a34c@mail.gmail.com>
-Subject: consolechars switches tty since 8b92e87 vt: add an event interface
-From: =?UTF-8?Q?Przemys=C5=82aw_Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>
-To: Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Christian Volkmann <haveaniceday@cv-sv.de> writes:
 
-I found (using git bisect) that following commit:
+> Hi,
+>
+> I just have read some articles about faster booting systems
+> (Ubuntu 9.10) , SSD, hard disks, latency and seek times...
+>
+> Due to this I have some ideas which I like to discuss.
+> I am for sure not the first with this idea, but I do not
+> find any discussion about it. :)
 
-commit 8b92e87d39bfd046e7581e1fe0f40eac40f88608
-Author: Alan Cox <alan@linux.intel.com>
-Date:   Sat Sep 19 13:13:24 2009 -0700
+Most modern distributions these days use some variant of prefetch at
+boot.
 
-    vt: add an event interface
+> Shouldn't it be possible for the kernel to provide an ordered
+> loaded block list read from disk ? This could be used for a kind
+> of "forced reorder" for a file system tool.
 
-    This is needed and requested in various forms for ConsoleKit, screenblank
-    handling and the like so do the job with a single interface. Also build the
-    interface so that unlike VT_WAITACTIVE and friends it won't miss events.
+Typically it's enough to just collect all the blocks read at boot and
+then prefetch them in order to minimize seeks. That's what various
+distributions do, typically by using blktrace to generate these lists
+and then suitable prefetch daemons. Sometimes it's also just done at
+the file level, because that's often also good enough.
 
-    FIXME: Should this be a waitactive ioctl or a new device file you can poll
-    and read events from. We need the code anyway to fix up the existing broken
-    wait for console switch logic but the ConsoleKit people would prefer the
-    new device to the ioctl we have here
+The suse preload package also has a e2remapblocks for remapping inside
+individual files, but I don't think it helps all that much. At least
+it's not used by default.
 
-    Signed-off-by: Alan Cox <alan@linux.intel.com>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+-Andi
 
-M       drivers/char/vt.c
-M       drivers/char/vt_ioctl.c
-M       include/linux/vt.h
-M       include/linux/vt_kern.h
-
-is the perpetrator of changing consolechars (and probably other
-tty-related apps) behavior.
-
-[ In Debian before the end of the S runlevel (boot) console-screen.sh
-is executed (it is not the last script though), where consolechars is
-used for loading console screen font for each tty. In my case it
-evaluates to:
-
-    /usr/bin/consolechars --tty=/dev/ttyX -f lat0-sun16
-
-Similarly consolechars is used in setupcon script invoked by
-console-setup (processed after console-screen.sh) to set a font chosen
-by user. ]
-
-The problem is that since 8b92e87 running consolechars switches tty to
-the one provided with --tty option. Last commit I have tested,
-a9366e6, is still affected.
-
-( Back then there was also another problem with "INIT:
-open(/dev/console): Input/output error" introduced in b50989d and
-fixed in f278a2f. )
-
-Result? Messages starting from "INIT: Switching to runlevel: 2" don't
-go to tty1 as they should and tty1 is not the tty I see when login
-prompt shows up.
-
-I tried to found out whether this issue was already brought to light,
-but without success. Maybe this is an obvious and intentional
-consequence of the patch for people familiar with tty/vt --
-unfortunately I am not among them.
-
-Thanks.
 
 -- 
-Przemysław Pawełczyk
+ak@linux.intel.com -- Speaking for myself only.
