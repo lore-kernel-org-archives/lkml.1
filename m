@@ -1,51 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbZKOMDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbZKOLg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbZKOMDL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 07:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZKOMDL
+	id S1752343AbZKOLg4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 06:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZKOLgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 07:03:11 -0500
-Received: from smtp1.extricom.com ([212.235.17.194]:52770 "HELO
-	smtp.extricom.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752164AbZKOMDK (ORCPT
+	Sun, 15 Nov 2009 06:36:55 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60833 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbZKOLgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 07:03:10 -0500
-X-Greylist: delayed 1204 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Nov 2009 07:03:09 EST
-Message-ID: <4AFFE7B1.2010908@extricom.com>
-Date: Sun, 15 Nov 2009 13:36:17 +0200
-From: Eran Liberty <liberty@extricom.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial_core: avoid Break bouncing
-References: <20091112140504.6daf3824@pedra.chehab.org>	<20091112175649.145cbf18@lxorguk.ukuu.org.uk>	<20091112162120.45b33ecf@pedra.chehab.org> <20091112200212.0f2d1e40@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091112200212.0f2d1e40@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Nov 2009 06:36:55 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH v4] perf tools: New function to parse string representing size in bytes
+Date: Sun, 15 Nov 2009 20:36:53 +0900
+Message-Id: <1258285013-4759-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091115.203228.50774015.mitake@dcl.info.waseda.ac.jp>
+References: <20091115.203228.50774015.mitake@dcl.info.waseda.ac.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> I'll do a deeper analysis and come back with a patch only if I discover
->> something new about this issue.
->>     
->
-> I'll forward you the end of the previous discussion
->   
+This patch modifies util/string.[ch] to add new function: perf_atoll()
+to parse string representing size in bytes.
 
-Tried, unsuccessfully , to dig up the end of the original thread. In the 
-end my patch was deemed unworthy for:
-1. Creating a security whole. I am not a security expert so I just 
-accepted it as is.
-2. Trying to fix something that is not broken. i.e. multiple entry to 
-uart_handle_break() upon break trigger is a localized problem to my 
-hardware.
+This patch is version 4. According to Ingo's advice,
+I fixed some points which violate kernel coding rule.
+And renamed new function to more general style.
 
-If something changed and you need my help I will be more then happy to 
-extend it.
+This function parse (\d+)(b|B|kb|KB|mb|MB|gb|GB) (e.g. "256MB")
+and return its numeric value. (e.g. 268435456)
 
--- Liberty
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ tools/perf/util/string.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/string.h |    1 +
+ 2 files changed, 85 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
+index 04743d3..2270435 100644
+--- a/tools/perf/util/string.c
++++ b/tools/perf/util/string.c
+@@ -1,5 +1,7 @@
+ #include <string.h>
++#include <stdlib.h>
+ #include "string.h"
++#include "util.h"
+ 
+ static int hex(char ch)
+ {
+@@ -43,3 +45,85 @@ char *strxfrchar(char *s, char from, char to)
+ 
+ 	return s;
+ }
++
++#define K 1024LL
++/*
++ * perf_atoll()
++ * Parse (\d+)(b|B|kb|KB|mb|MB|gb|GB|tb|TB) (e.g. "256MB")
++ * and return its numeric value
++ */
++s64 perf_atoll(const char *str)
++{
++	unsigned int i;
++	s64 length = -1, unit = 1;
++
++	if (!isdigit(str[0]))
++		goto out_err;
++
++	for (i = 1; i < strlen(str); i++) {
++		switch (str[i]) {
++		case 'B':
++		case 'b':
++			break;
++		case 'K':
++			if (str[i + 1] != 'B')
++				goto out_err;
++			else
++				goto kilo;
++		case 'k':
++			if (str[i + 1] != 'b')
++				goto out_err;
++kilo:
++			unit = K;
++			break;
++		case 'M':
++			if (str[i + 1] != 'B')
++				goto out_err;
++			else
++				goto mega;
++		case 'm':
++			if (str[i + 1] != 'b')
++				goto out_err;
++mega:
++			unit = K * K;
++			break;
++		case 'G':
++			if (str[i + 1] != 'B')
++				goto out_err;
++			else
++				goto giga;
++		case 'g':
++			if (str[i + 1] != 'b')
++				goto out_err;
++giga:
++			unit = K * K * K;
++			break;
++		case 'T':
++			if (str[i + 1] != 'B')
++				goto out_err;
++			else
++				goto tera;
++		case 't':
++			if (str[i + 1] != 'b')
++				goto out_err;
++tera:
++			unit = K * K * K * K;
++			break;
++		case '\0':	/* only specified figures */
++			unit = 1;
++			break;
++		default:
++			if (!isdigit(str[i]))
++				goto out_err;
++			break;
++		}
++	}
++
++	length = atoll(str) * unit;
++	goto out;
++
++out_err:
++	length = -1;
++out:
++	return length;
++}
+diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
+index 2c84bf6..e50b07f 100644
+--- a/tools/perf/util/string.h
++++ b/tools/perf/util/string.h
+@@ -5,6 +5,7 @@
+ 
+ int hex2u64(const char *ptr, u64 *val);
+ char *strxfrchar(char *s, char from, char to);
++s64 perf_atoll(const char *str);
+ 
+ #define _STR(x) #x
+ #define STR(x) _STR(x)
+-- 
+1.6.5.2
+
