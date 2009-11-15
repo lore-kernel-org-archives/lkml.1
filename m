@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbZKOWwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbZKOWyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752228AbZKOWwM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 17:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZKOWwL
+	id S1752049AbZKOWyX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 17:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZKOWyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 17:52:11 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53141 "EHLO smtps.tip.net.au"
+	Sun, 15 Nov 2009 17:54:22 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:48044 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZKOWwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 17:52:11 -0500
-Date: Mon, 16 Nov 2009 09:52:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Travis <travis@sgi.com>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: PULL request for linux-next
-Message-Id: <20091116095210.d518396a.sfr@canb.auug.org.au>
-In-Reply-To: <4B002DBE.3010307@kernel.org>
-References: <4B002DBE.3010307@kernel.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__16_Nov_2009_09_52_10_+1100_nOHiAbXdhp6PI_dl"
+	id S1751144AbZKOWyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 17:54:21 -0500
+Date: Sun, 15 Nov 2009 23:54:25 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Joe Perches <joe@perches.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Am??rico Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
+ &proc_dointvec,
+In-Reply-To: <200911152053.35292.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0911152351530.30372@ask.diku.dk>
+References: <1258249925.16857.198.camel@Joe-Laptop.home>
+ <1258313031.21668.73.camel@Joe-Laptop.home> <Pine.LNX.4.64.0911152139020.30372@ask.diku.dk>
+ <200911152053.35292.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__16_Nov_2009_09_52_10_+1100_nOHiAbXdhp6PI_dl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 15 Nov 2009, Arnd Bergmann wrote:
 
-Hi Tejun,
+> On Sunday 15 November 2009 20:40:25 Julia Lawall wrote:
+> > It would be possible to count the number of occurrences in a given file, 
+> > and then change the ones that have the less popular format, or a format 
+> > that occurs less than some percentage of time.
+> 
+> How many of the 600 files use both formats?
 
-On Mon, 16 Nov 2009 01:35:10 +0900 Tejun Heo <tj@kernel.org> wrote:
->
-> Can you please pull the following tree into linux-next?
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-next
->=20
-> Currently, it only contains single patch from Thomas Gleixner to add
-> debugobject support in workqueue but I'm planning on pushing
-> concurrency managed workqueue patches through the above tree soonish.
+This time I considered only cases where the function is defined in the 
+same file, not where the function is presented only as a prototype.  I 
+get:
 
-Added to linux-next from today.
+502 files that use both options
+83 files that only use & for function pointers
+9374 files that never use & for function pointers
 
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
+(Only files that use at least one of the options are considered.)
 
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
-
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Mon__16_Nov_2009_09_52_10_+1100_nOHiAbXdhp6PI_dl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksAhhoACgkQjjKRsyhoI8xGHgCfbTnnD+rOU3AdXa7epYH7f0eX
-0n8AoIOqWXy7K0qJH66a2ZJF2wQtZbQP
-=p9Rt
------END PGP SIGNATURE-----
-
---Signature=_Mon__16_Nov_2009_09_52_10_+1100_nOHiAbXdhp6PI_dl--
+julia
