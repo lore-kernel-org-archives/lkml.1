@@ -1,158 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZKNXIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbZKOBUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751657AbZKNXIW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 18:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKNXIV
+	id S1751643AbZKOBUN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 20:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZKOBUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 18:08:21 -0500
-Received: from vena.lwn.net ([206.168.112.25]:58949 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZKNXIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 18:08:21 -0500
-Date: Sat, 14 Nov 2009 16:08:24 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
-Subject: [PATCH] Make struct videobuf_queue_ops constant
-Message-ID: <20091114160824.28266c03@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Sat, 14 Nov 2009 20:20:12 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:56230 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313AbZKOBUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 20:20:11 -0500
+Date: Sun, 15 Nov 2009 10:20:11 +0900 (JST)
+Message-Id: <20091115.102011.227780670.mitake@dcl.info.waseda.ac.jp>
+To: fweisbec@gmail.com
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Measuring term of acquiring spinlock
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20091113105126.GC5243@nowhere>
+References: <20091112073909.GB31719@elte.hu>
+	<20091113.132125.468378199533086916.mitake@dcl.info.waseda.ac.jp>
+	<20091113105126.GC5243@nowhere>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The videobuf_queue_ops function vector is not declared constant, but
-there's no need for the videobuf layer to ever change it.  Make it const so
-that videobuf users can make their operations const without warnings.
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][RFC] Measuring term of acquiring spinlock
+Date: Fri, 13 Nov 2009 11:51:27 +0100
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- drivers/media/video/videobuf-core.c       |    2 +-
- drivers/media/video/videobuf-dma-contig.c |    2 +-
- drivers/media/video/videobuf-dma-sg.c     |    2 +-
- drivers/media/video/videobuf-vmalloc.c    |    2 +-
- include/media/videobuf-core.h             |    4 ++--
- include/media/videobuf-dma-contig.h       |    2 +-
- include/media/videobuf-dma-sg.h           |    2 +-
- include/media/videobuf-vmalloc.h          |    2 +-
- 8 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> On Fri, Nov 13, 2009 at 01:21:25PM +0900, Hitoshi Mitake wrote:
+> > > Might make sense to put it into 'perf lock' kind of tool. I think 
+> > > Frederic had such plans.
+> > 
+> > If you want a tester for 'perf lock', please call me, Frederic :)
+> 
+> 
+> Thanks :)
+> I haven't started it yet, because of some other things I need to finish.
+> 
+> Would you be interested in starting it?
 
-diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
-index 8e93c6f..2fdc5b3 100644
---- a/drivers/media/video/videobuf-core.c
-+++ b/drivers/media/video/videobuf-core.c
-@@ -110,7 +110,7 @@ EXPORT_SYMBOL_GPL(videobuf_queue_to_vmalloc);
- 
- 
- void videobuf_queue_core_init(struct videobuf_queue *q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 struct device *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
-diff --git a/drivers/media/video/videobuf-dma-contig.c b/drivers/media/video/videobuf-dma-contig.c
-index 635ffc7..49650ca 100644
---- a/drivers/media/video/videobuf-dma-contig.c
-+++ b/drivers/media/video/videobuf-dma-contig.c
-@@ -428,7 +428,7 @@ static struct videobuf_qtype_ops qops = {
- };
- 
- void videobuf_queue_dma_contig_init(struct videobuf_queue *q,
--				    struct videobuf_queue_ops *ops,
-+				    const struct videobuf_queue_ops *ops,
- 				    struct device *dev,
- 				    spinlock_t *irqlock,
- 				    enum v4l2_buf_type type,
-diff --git a/drivers/media/video/videobuf-dma-sg.c b/drivers/media/video/videobuf-dma-sg.c
-index 032ebae..f50e6b5 100644
---- a/drivers/media/video/videobuf-dma-sg.c
-+++ b/drivers/media/video/videobuf-dma-sg.c
-@@ -702,7 +702,7 @@ void *videobuf_sg_alloc(size_t size)
- }
- 
- void videobuf_queue_sg_init(struct videobuf_queue* q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 struct device *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
-diff --git a/drivers/media/video/videobuf-vmalloc.c b/drivers/media/video/videobuf-vmalloc.c
-index 35f3900..99d646e 100644
---- a/drivers/media/video/videobuf-vmalloc.c
-+++ b/drivers/media/video/videobuf-vmalloc.c
-@@ -391,7 +391,7 @@ static struct videobuf_qtype_ops qops = {
- };
- 
- void videobuf_queue_vmalloc_init(struct videobuf_queue* q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 void *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
-diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
-index 1c5946c..316fdcc 100644
---- a/include/media/videobuf-core.h
-+++ b/include/media/videobuf-core.h
-@@ -166,7 +166,7 @@ struct videobuf_queue {
- 	enum v4l2_field            field;
- 	enum v4l2_field            last;   /* for field=V4L2_FIELD_ALTERNATE */
- 	struct videobuf_buffer     *bufs[VIDEO_MAX_FRAME];
--	struct videobuf_queue_ops  *ops;
-+	const struct videobuf_queue_ops  *ops;
- 	struct videobuf_qtype_ops  *int_ops;
- 
- 	unsigned int               streaming:1;
-@@ -195,7 +195,7 @@ void *videobuf_queue_to_vmalloc (struct videobuf_queue* q,
- 				 struct videobuf_buffer *buf);
- 
- void videobuf_queue_core_init(struct videobuf_queue *q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 struct device *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
-diff --git a/include/media/videobuf-dma-contig.h b/include/media/videobuf-dma-contig.h
-index 5493866..ebaa9bc 100644
---- a/include/media/videobuf-dma-contig.h
-+++ b/include/media/videobuf-dma-contig.h
-@@ -17,7 +17,7 @@
- #include <media/videobuf-core.h>
- 
- void videobuf_queue_dma_contig_init(struct videobuf_queue *q,
--				    struct videobuf_queue_ops *ops,
-+				    const struct videobuf_queue_ops *ops,
- 				    struct device *dev,
- 				    spinlock_t *irqlock,
- 				    enum v4l2_buf_type type,
-diff --git a/include/media/videobuf-dma-sg.h b/include/media/videobuf-dma-sg.h
-index dda47f0..53e72f7 100644
---- a/include/media/videobuf-dma-sg.h
-+++ b/include/media/videobuf-dma-sg.h
-@@ -103,7 +103,7 @@ struct videobuf_dmabuf *videobuf_to_dma (struct videobuf_buffer *buf);
- void *videobuf_sg_alloc(size_t size);
- 
- void videobuf_queue_sg_init(struct videobuf_queue* q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 struct device *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
-diff --git a/include/media/videobuf-vmalloc.h b/include/media/videobuf-vmalloc.h
-index e87222c..1ffdb66 100644
---- a/include/media/videobuf-vmalloc.h
-+++ b/include/media/videobuf-vmalloc.h
-@@ -30,7 +30,7 @@ struct videobuf_vmalloc_memory
- };
- 
- void videobuf_queue_vmalloc_init(struct videobuf_queue* q,
--			 struct videobuf_queue_ops *ops,
-+			 const struct videobuf_queue_ops *ops,
- 			 void *dev,
- 			 spinlock_t *irqlock,
- 			 enum v4l2_buf_type type,
--- 
-1.6.2.5
+Yes, I'm very interested in it!
+
+> 
+> The lock tracepoints are:
+> 
+> - lock_acquire: the lock is requested but not yet "acquired"
+> - lock_release
+> - lock_contended: we can't get the lock yet because someone already
+>   holds it.
+> - lock_acquired: we got the lock
+> 
+> 
+> So, the point would be to develop a state machine that is
+> able to give us statistics on a per lock granularity
+> basis:
+> 
+> 
+> - the total/average/maximum time a lock is contended,
+>   waited before being acquired (probably
+>   lock_acquired time - lock_acquire time)
+> 
+> - the ratio of contention versus immediate availability
+>   => Sequence acquire - acquired means immediate
+>      availability. If we have a contended event inside
+>      it means it had to wait because of the contention.
+> 
+> - the total/average/maximum time a lock is held.
+>   It would be very nice to also add an option to see the
+>   callsites sorted from max to min, if possible with a per
+>   boundary granularity: the couple (lock callsite, unlock callsite),
+>   still on a per lock basis.
+> 
+> - any idea you could have...
+> 
+> 
+> Such a tool would be very useful to profile the kernel locking.
+> 
+> It would be nice to use design close to what perf sched does:
+> having an lock event structure that provides callbacks for each
+> lock events so that we can easily plug various plugin inside.
+> 
+> It's just a suggestion in case you are interested and have time
+> for that. Otherwise I'll do it later.
+> 
+> Hm?
+
+I'd like to do that.
+But I'm an only newbie, so it may take a week (or more).
+So If you finish this work, please post and disregard me :)
+
+   Hitoshi
 
