@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZKOWQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbZKOWUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbZKOWQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 17:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZKOWQ0
+	id S1752361AbZKOWUp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 17:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZKOWUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 17:16:26 -0500
-Received: from mga10.intel.com ([192.55.52.92]:53272 "EHLO
+	Sun, 15 Nov 2009 17:20:44 -0500
+Received: from mga10.intel.com ([192.55.52.92]:6473 "EHLO
 	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751881AbZKOWQZ (ORCPT
+	with ESMTP id S1751775AbZKOWUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 17:16:25 -0500
+	Sun, 15 Nov 2009 17:20:43 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,747,1249282800"; 
-   d="scan'208";a="514110938"
-Date: Sun, 15 Nov 2009 23:18:18 +0100
+   d="scan'208";a="747219374"
+Date: Sun, 15 Nov 2009 23:22:36 +0100
 From: Samuel Ortiz <sameo@linux.intel.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Balaji Rao <balajirrao@openmoko.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mfd: pcf50633 - fix error handling during probe
-Message-ID: <20091115221816.GA8367@sortiz.org>
+Subject: Re: [PATCH 2/2] mfd: pcf50633 - use threaded interrupts
+Message-ID: <20091115222235.GB8367@sortiz.org>
 References: <20091109092447.29634.79364.stgit@localhost.localdomain>
- <20091109092516.29634.32640.stgit@localhost.localdomain>
+ <20091109092521.29634.17236.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091109092516.29634.32640.stgit@localhost.localdomain>
+In-Reply-To: <20091109092521.29634.17236.stgit@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,23 +33,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Dmitry,
 
-On Mon, Nov 09, 2009 at 01:25:16AM -0800, Dmitry Torokhov wrote:
-> The pcf50633 is very naive - it assumes that all driver core
-> operations will succeed and will fail badly if one of them
-> errors out. Implement proper error handling and make sure we
-> release any and all resources that have been allocated prior
-> to failure.
-> 
-> Also avoid memory leak when using platform_device_add_data()
-> which clones the supplied data structure for use by the device.
-> The original copy, if allocated dynamically, needs to be freed
-> by the caller; switch to using on-stack variable (the size of
-> the structure in question is quite small) instead.
-I agree these fixes are needed, but this patch also contains some janitorial
-cleanup and additional code restructuring. Your second patch also has the same
-issue.
-Could you please split those patches so that all the cleanup pieces are part
-of a separate patch ?
+On Mon, Nov 09, 2009 at 01:25:21AM -0800, Dmitry Torokhov wrote:
+> Switch to using theraded IRQs instead of implementing custom solution
+> with regular inettrup dandler and a custom workqueue.
+Same as the first patch, this one contains both a fairly intrusibe change
+along with comment and whitespace cleanups. I'd appreciate if you could remove
+those cleanup parts from this patch.
+
+Also, Balaji could you please give this patch a try before I apply it ?
 
 Cheers,
 Samuel.
@@ -57,380 +49,248 @@ Samuel.
 > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 > ---
 > 
->  drivers/mfd/pcf50633-adc.c        |    2 
->  drivers/mfd/pcf50633-core.c       |  200 +++++++++++++++++++++++--------------
->  drivers/power/pcf50633-charger.c  |    6 +
->  include/linux/mfd/pcf50633/core.h |   12 +-
->  4 files changed, 139 insertions(+), 81 deletions(-)
+>  drivers/mfd/pcf50633-core.c       |   87 +++++++++++--------------------------
+>  include/linux/mfd/pcf50633/core.h |    6 +--
+>  2 files changed, 29 insertions(+), 64 deletions(-)
 > 
-> diff --git a/drivers/mfd/pcf50633-adc.c b/drivers/mfd/pcf50633-adc.c
-> index 3d31e97..851b014 100644
-> --- a/drivers/mfd/pcf50633-adc.c
-> +++ b/drivers/mfd/pcf50633-adc.c
-> @@ -52,7 +52,7 @@ struct pcf50633_adc {
->  
->  static inline struct pcf50633_adc *__to_adc(struct pcf50633 *pcf)
->  {
-> -	return platform_get_drvdata(pcf->adc_pdev);
-> +	return platform_get_drvdata(pcf->pdevs[PCF50633_PDEV_ADC_IDX]);
->  }
->  
->  static void adc_setup(struct pcf50633 *pcf, int channel, int avg)
 > diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-> index d26d774..a3d0226 100644
+> index a3d0226..4aeefa2 100644
 > --- a/drivers/mfd/pcf50633-core.c
 > +++ b/drivers/mfd/pcf50633-core.c
-> @@ -2,7 +2,7 @@
->   *
->   * (C) 2006-2008 by Openmoko, Inc.
->   * Author: Harald Welte <laforge@openmoko.org>
-> - * 	   Balaji Rao <balajirrao@openmoko.org>
-> + *	   Balaji Rao <balajirrao@openmoko.org>
->   * All rights reserved.
->   *
->   *  This program is free software; you can redistribute  it and/or modify it
-> @@ -28,7 +28,7 @@
->  /* Two MBCS registers used during cold start */
->  #define PCF50633_REG_MBCS1		0x4b
->  #define PCF50633_REG_MBCS2		0x4c
-> -#define PCF50633_MBCS1_USBPRES 		0x01
-> +#define PCF50633_MBCS1_USBPRES		0x01
->  #define PCF50633_MBCS1_ADAPTPRES	0x01
+> @@ -126,7 +126,6 @@ int pcf50633_reg_set_bit_mask(struct pcf50633 *pcf, u8 reg, u8 mask, u8 val)
 >  
->  static int __pcf50633_read(struct pcf50633 *pcf, u8 reg, int num, u8 *data)
-> @@ -449,36 +449,84 @@ static irqreturn_t pcf50633_irq(int irq, void *data)
+>  out:
+>  	mutex_unlock(&pcf->lock);
+> -
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(pcf50633_reg_set_bit_mask);
+> @@ -324,13 +323,13 @@ static void pcf50633_irq_call_handler(struct pcf50633 *pcf, int irq)
+>  /* Maximum amount of time ONKEY is held before emergency action is taken */
+>  #define PCF50633_ONKEY1S_TIMEOUT 8
+>  
+> -static void pcf50633_irq_worker(struct work_struct *work)
+> +static irqreturn_t pcf50633_irq(int irq, void *data)
+>  {
+> -	struct pcf50633 *pcf;
+> +	struct pcf50633 *pcf = data;
+>  	int ret, i, j;
+>  	u8 pcf_int[5], chgstat;
+>  
+> -	pcf = container_of(work, struct pcf50633, irq_work);
+> +	dev_dbg(pcf->dev, "pcf50633_irq\n");
+>  
+>  	/* Read the 5 INT regs in one transaction */
+>  	ret = pcf50633_read_block(pcf, PCF50633_REG_INT1,
+> @@ -345,8 +344,10 @@ static void pcf50633_irq_worker(struct work_struct *work)
+>  		goto out;
+>  	}
+>  
+> -	/* We immediately read the usb and adapter status. We thus make sure
+> -	 * only of USBINS/USBREM IRQ handlers are called */
+> +	/*
+> +	 * We immediately read the usb and adapter status. We thus make sure
+> +	 * only of USBINS/USBREM IRQ handlers are called
+> +	 */
+>  	if (pcf_int[0] & (PCF50633_INT1_USBINS | PCF50633_INT1_USBREM)) {
+>  		chgstat = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
+>  		if (chgstat & (0x3 << 4))
+> @@ -364,15 +365,17 @@ static void pcf50633_irq_worker(struct work_struct *work)
+>  			pcf_int[0] &= ~(1 << PCF50633_INT1_ADPINS);
+>  	}
+>  
+> -	dev_dbg(pcf->dev, "INT1=0x%02x INT2=0x%02x INT3=0x%02x "
+> -			"INT4=0x%02x INT5=0x%02x\n", pcf_int[0],
+> -			pcf_int[1], pcf_int[2], pcf_int[3], pcf_int[4]);
+> +	dev_dbg(pcf->dev,
+> +		"INT1=0x%02x INT2=0x%02x INT3=0x%02x INT4=0x%02x INT5=0x%02x\n",
+> +		pcf_int[0], pcf_int[1], pcf_int[2], pcf_int[3], pcf_int[4]);
+>  
+> -	/* Some revisions of the chip don't have a 8s standby mode on
+> -	 * ONKEY1S press. We try to manually do it in such cases. */
+> +	/*
+> +	 * Some revisions of the chip don't have a 8s standby mode on
+> +	 * ONKEY1S press. We try to manually do it in such cases.
+> +	 */
+>  	if ((pcf_int[0] & PCF50633_INT1_SECOND) && pcf->onkey1s_held) {
+> -		dev_info(pcf->dev, "ONKEY1S held for %d secs\n",
+> -							pcf->onkey1s_held);
+> +		dev_info(pcf->dev,
+> +			 "ONKEY1S held for %d secs\n", pcf->onkey1s_held);
+>  		if (pcf->onkey1s_held++ == PCF50633_ONKEY1S_TIMEOUT)
+>  			if (pcf->pdata->force_shutdown)
+>  				pcf->pdata->force_shutdown(pcf);
+> @@ -409,8 +412,8 @@ static void pcf50633_irq_worker(struct work_struct *work)
+>  	}
+>  
+>  	/* Have we just resumed ? */
+> -	if (pcf->is_suspended) {
+> -		pcf->is_suspended = 0;
+> +	if (unlikely(pcf->is_suspended)) {
+> +		pcf->is_suspended = false;
+>  
+>  		/* Set the resume reason filtering out non resumers */
+>  		for (i = 0; i < ARRAY_SIZE(pcf_int); i++)
+> @@ -432,20 +435,6 @@ static void pcf50633_irq_worker(struct work_struct *work)
+>  	}
+>  
+>  out:
+> -	put_device(pcf->dev);
+> -	enable_irq(pcf->irq);
+> -}
+> -
+> -static irqreturn_t pcf50633_irq(int irq, void *data)
+> -{
+> -	struct pcf50633 *pcf = data;
+> -
+> -	dev_dbg(pcf->dev, "pcf50633_irq\n");
+> -
+> -	get_device(pcf->dev);
+> -	disable_irq_nosync(pcf->irq);
+> -	queue_work(pcf->work_queue, &pcf->irq_work);
+> -
 >  	return IRQ_HANDLED;
 >  }
 >  
-> -static void
-> -pcf50633_client_dev_register(struct pcf50633 *pcf, const char *name,
-> -						struct platform_device **pdev)
-> +static int pcf50633_regulator_dev_register(struct pcf50633 *pcf,
-> +					   unsigned int num)
+> @@ -538,13 +527,9 @@ static int pcf50633_suspend(struct device *dev, pm_message_t state)
+>  
+>  	pcf = dev_get_drvdata(dev);
+>  
+> -	/* Make sure our interrupt handlers are not called
+> -	 * henceforth */
+> +	/* Make sure our interrupt handlers are not called henceforth. */
+>  	disable_irq(pcf->irq);
+>  
+> -	/* Make sure that any running IRQ worker has quit */
+> -	cancel_work_sync(&pcf->irq_work);
+> -
+>  	/* Save the masks */
+>  	ret = pcf50633_read_block(pcf, PCF50633_REG_INT1M,
+>  				ARRAY_SIZE(pcf->suspend_irq_masks),
+> @@ -565,7 +550,7 @@ static int pcf50633_suspend(struct device *dev, pm_message_t state)
+>  		goto out;
+>  	}
+>  
+> -	pcf->is_suspended = 1;
+> +	pcf->is_suspended = true;
+>  
+>  out:
+>  	return ret;
+> @@ -573,11 +558,9 @@ out:
+>  
+>  static int pcf50633_resume(struct device *dev)
 >  {
-> -	struct pcf50633_subdev_pdata *subdev_pdata;
-> -	int ret;
-> +	struct platform_device *pdev;
-> +	int error;
+> -	struct pcf50633 *pcf;
+> +	struct pcf50633 *pcf = dev_get_drvdata(dev);
+>  	int ret;
 >  
-> -	*pdev = platform_device_alloc(name, -1);
-> -	if (!*pdev) {
-> -		dev_err(pcf->dev, "Falied to allocate %s\n", name);
-> -		return;
-> +	pdev = platform_device_alloc("pcf50633-regltr", num);
-> +	if (!pdev) {
-> +		dev_err(pcf->dev,
-> +			"Not enough memory for regulator device %d\n", num);
-> +		return -ENOMEM;
->  	}
+> -	pcf = dev_get_drvdata(dev);
+> -
+>  	/* Write the saved mask registers */
+>  	ret = pcf50633_write_block(pcf, PCF50633_REG_INT1M,
+>  				ARRAY_SIZE(pcf->suspend_irq_masks),
+> @@ -585,16 +568,11 @@ static int pcf50633_resume(struct device *dev)
+>  	if (ret < 0)
+>  		dev_err(pcf->dev, "Error restoring saved suspend masks\n");
 >  
-> -	subdev_pdata = kmalloc(sizeof(*subdev_pdata), GFP_KERNEL);
-> -	if (!subdev_pdata) {
-> -		dev_err(pcf->dev, "Error allocating subdev pdata\n");
-> -		platform_device_put(*pdev);
-> +	pdev->dev.parent = pcf->dev;
-> +	pdev->dev.platform_data = &pcf->pdata->reg_init_data[num];
-> +	platform_set_drvdata(pdev, pcf);
-> +
-> +	error = platform_device_add(pdev);
-> +	if (error) {
-> +		dev_err(pcf->dev, "Failed to register %s: %d\n",
-> +			dev_name(&pdev->dev), error);
-> +		goto err_free_dev;
->  	}
+> -	/* Restore regulators' state */
+> -
+> -
+> -	get_device(pcf->dev);
+> -
+>  	/*
+>  	 * Clear any pending interrupts and set resume reason if any.
+> -	 * This will leave with enable_irq()
+>  	 */
+> -	pcf50633_irq_worker(&pcf->irq_work);
+> +	pcf50633_irq(pcf->irq, pcf);
+> +	enable_irq(pcf->irq);
 >  
-> -	subdev_pdata->pcf = pcf;
-> -	platform_device_add_data(*pdev, subdev_pdata, sizeof(*subdev_pdata));
-> +	pcf->pdevs[num] = pdev;
-> +	return 0;
-> +
-> + err_free_dev:
-> +	platform_device_put(pdev);
-> +	return error;
-> +}
->  
-> -	(*pdev)->dev.parent = pcf->dev;
-> +static int pcf50633_client_dev_register(struct pcf50633 *pcf,
-> +					const char *name, unsigned int num)
-> +{
-> +	struct pcf50633_subdev_pdata subdev_pdata = { /* small enough to be on stack */
-> +		.pcf = pcf,
-> +	};
-> +	struct platform_device *pdev;
-> +	int error;
->  
-> -	ret = platform_device_add(*pdev);
-> -	if (ret) {
-> -		dev_err(pcf->dev, "Failed to register %s: %d\n", name, ret);
-> -		platform_device_put(*pdev);
-> -		*pdev = NULL;
-> +	pdev = platform_device_alloc(name, -1);
-> +	if (!pdev) {
-> +		dev_err(pcf->dev, "Falied to allocate %s\n", name);
-> +		return -ENOMEM;
->  	}
-> +
-> +	error = platform_device_add_data(pdev,
-> +					 &subdev_pdata, sizeof(subdev_pdata));
-> +	if (error) {
-> +		dev_err(pcf->dev, "Failed to add platform data for %s: %d\n",
-> +			name, error);
-> +		goto err_free_dev;
-> +	}
-> +
-> +	pdev->dev.parent = pcf->dev;
-> +
-> +	error = platform_device_add(pdev);
-> +	if (error) {
-> +		dev_err(pcf->dev, "Failed to register %s: %d\n", name, error);
-> +		goto err_free_dev;
-> +	}
-> +
-> +	pcf->pdevs[num] = pdev;
-> +	return 0;
-> +
-> + err_free_dev:
-> +	platform_device_put(pdev);
-> +	return error;
-> +}
-> +
-> +static void pcf50633_unregister_sub_devices(struct pcf50633 *pcf)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < PCF50633_NUM_PLATFORM_DEVICES; i++)
-> +		if (pcf->pdevs[i])
-> +			platform_device_unregister(pcf->pdevs[i]);
+>  	return 0;
 >  }
->  
->  #ifdef CONFIG_PM
-> @@ -560,9 +608,14 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  {
->  	struct pcf50633 *pcf;
->  	struct pcf50633_platform_data *pdata = client->dev.platform_data;
-> -	int i, ret = 0;
-> +	int i, error;
->  	int version, variant;
->  
-> +	if (client->irq) {
-> +		dev_err(&client->dev, "No IRQ configured\n");
-> +		return -EINVAL;
-> +	}
-> +
->  	pcf = kzalloc(sizeof(*pcf), GFP_KERNEL);
->  	if (!pcf)
->  		return -ENOMEM;
-> @@ -571,11 +624,16 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  
->  	mutex_init(&pcf->lock);
->  
-> -	i2c_set_clientdata(client, pcf);
->  	pcf->dev = &client->dev;
+> @@ -628,21 +606,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
 >  	pcf->i2c_client = client;
 >  	pcf->irq = client->irq;
-> +
->  	pcf->work_queue = create_singlethread_workqueue("pcf50633");
-> +	if (!pcf->work_queue) {
-> +		dev_err(pcf->dev, "Failed to create workqueue\n");
-> +		error = -ENOMEM;
-> +		goto err_free_mem;
-> +	}
 >  
->  	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
->  
-> @@ -583,13 +641,12 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+> -	pcf->work_queue = create_singlethread_workqueue("pcf50633");
+> -	if (!pcf->work_queue) {
+> -		dev_err(pcf->dev, "Failed to create workqueue\n");
+> -		error = -ENOMEM;
+> -		goto err_free_mem;
+> -	}
+> -
+> -	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
+> -
+>  	version = pcf50633_reg_read(pcf, 0);
 >  	variant = pcf50633_reg_read(pcf, 1);
 >  	if (version < 0 || variant < 0) {
 >  		dev_err(pcf->dev, "Unable to probe pcf50633\n");
-> -		ret = -ENODEV;
-> -		goto err;
-> +		error = -ENODEV;
-> +		goto err_destroy_wq;
+>  		error = -ENODEV;
+> -		goto err_destroy_wq;
+> +		goto err_free_mem;
 >  	}
 >  
 >  	dev_info(pcf->dev, "Probed device version %d variant %d\n",
->  							version, variant);
-> -
->  	/* Enable all interrupts except RTC SECOND */
->  	pcf->mask_regs[0] = 0x80;
->  	pcf50633_reg_write(pcf, PCF50633_REG_INT1M, pcf->mask_regs[0]);
-> @@ -599,80 +656,77 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
->  	pcf50633_reg_write(pcf, PCF50633_REG_INT5M, 0x00);
->  
->  	/* Create sub devices */
-> -	pcf50633_client_dev_register(pcf, "pcf50633-input",
-> -						&pcf->input_pdev);
-> -	pcf50633_client_dev_register(pcf, "pcf50633-rtc",
-> -						&pcf->rtc_pdev);
-> -	pcf50633_client_dev_register(pcf, "pcf50633-mbc",
-> -						&pcf->mbc_pdev);
-> -	pcf50633_client_dev_register(pcf, "pcf50633-adc",
-> -						&pcf->adc_pdev);
-> +	error = pcf50633_client_dev_register(pcf, "pcf50633-input",
-> +						PCF50633_PDEV_INPUT_IDX);
-> +	if (error)
-> +		goto err_free_pdevs;
-> +
-> +	error = pcf50633_client_dev_register(pcf, "pcf50633-rtc",
-> +						PCF50633_PDEV_RTC_IDX);
-> +	if (error)
-> +		goto err_free_pdevs;
-> +
-> +	error = pcf50633_client_dev_register(pcf, "pcf50633-mbc",
-> +						PCF50633_PDEV_MBC_IDX);
-> +	if (error)
-> +		goto err_free_pdevs;
-> +
-> +	error = pcf50633_client_dev_register(pcf, "pcf50633-adc",
-> +						PCF50633_PDEV_ADC_IDX);
-> +	if (error)
-> +		goto err_free_pdevs;
->  
->  	for (i = 0; i < PCF50633_NUM_REGULATORS; i++) {
-> -		struct platform_device *pdev;
-> -
-> -		pdev = platform_device_alloc("pcf50633-regltr", i);
-> -		if (!pdev) {
-> -			dev_err(pcf->dev, "Cannot create regulator\n");
-> -			continue;
-> -		}
-> -
-> -		pdev->dev.parent = pcf->dev;
-> -		pdev->dev.platform_data = &pdata->reg_init_data[i];
-> -		dev_set_drvdata(&pdev->dev, pcf);
-> -		pcf->regulator_pdev[i] = pdev;
-> -
-> -		platform_device_add(pdev);
-> +		error = pcf50633_regulator_dev_register(pcf, i);
-> +		if (error)
-> +			goto err_free_pdevs;
+> @@ -682,8 +651,9 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+>  			goto err_free_pdevs;
 >  	}
 >  
-> -	if (client->irq) {
-> -		ret = request_irq(client->irq, pcf50633_irq,
-> -				IRQF_TRIGGER_LOW, "pcf50633", pcf);
-> -
-> -		if (ret) {
-> -			dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
-> -			goto err;
-> -		}
-> -	} else {
-> -		dev_err(pcf->dev, "No IRQ configured\n");
-> -		goto err;
-> +	error = request_irq(client->irq, pcf50633_irq,
-> +			    IRQF_TRIGGER_LOW, "pcf50633", pcf);
-> +	if (error) {
-> +		dev_err(pcf->dev, "Failed to request IRQ %d\n", error);
-> +		goto err_free_pdevs;
->  	}
->  
->  	if (enable_irq_wake(client->irq) < 0)
->  		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
->  			"in this hardware revision", client->irq);
->  
-> -	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
-> -	if (ret)
-> +	error = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
-> +	if (error) {
->  		dev_err(pcf->dev, "error creating sysfs entries\n");
-> +		goto err_free_irq;
-> +	}
->  
->  	if (pdata->probe_done)
->  		pdata->probe_done(pcf);
->  
-> +	i2c_set_clientdata(client, pcf);
->  	return 0;
->  
-> -err:
-> +err_free_irq:
-> +	free_irq(pcf->irq, pcf);
-> +err_free_pdevs:
-> +	pcf50633_unregister_sub_devices(pcf);
-> +err_destroy_wq:
->  	destroy_workqueue(pcf->work_queue);
-> +err_free_mem:
+> -	error = request_irq(client->irq, pcf50633_irq,
+> -			    IRQF_TRIGGER_LOW, "pcf50633", pcf);
+> +	error = request_threaded_irq(client->irq, NULL, pcf50633_irq,
+> +				     IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+> +				     "pcf50633", pcf);
+>  	if (error) {
+>  		dev_err(pcf->dev, "Failed to request IRQ %d\n", error);
+>  		goto err_free_pdevs;
+> @@ -709,8 +679,6 @@ err_free_irq:
+>  	free_irq(pcf->irq, pcf);
+>  err_free_pdevs:
+>  	pcf50633_unregister_sub_devices(pcf);
+> -err_destroy_wq:
+> -	destroy_workqueue(pcf->work_queue);
+>  err_free_mem:
 >  	kfree(pcf);
-> -	return ret;
-> +	return error;
->  }
+>  	return error;
+> @@ -722,7 +690,6 @@ static int __devexit pcf50633_remove(struct i2c_client *client)
 >  
->  static int __devexit pcf50633_remove(struct i2c_client *client)
->  {
->  	struct pcf50633 *pcf = i2c_get_clientdata(client);
-> -	int i;
-> +
 >  
 >  	free_irq(pcf->irq, pcf);
->  	destroy_workqueue(pcf->work_queue);
+> -	destroy_workqueue(pcf->work_queue);
 >  
-> -	platform_device_unregister(pcf->input_pdev);
-> -	platform_device_unregister(pcf->rtc_pdev);
-> -	platform_device_unregister(pcf->mbc_pdev);
-> -	platform_device_unregister(pcf->adc_pdev);
-> -
-> -	for (i = 0; i < PCF50633_NUM_REGULATORS; i++)
-> -		platform_device_unregister(pcf->regulator_pdev[i]);
-> +	pcf50633_unregister_sub_devices(pcf);
+>  	pcf50633_unregister_sub_devices(pcf);
 >  
-> +	i2c_set_clientdata(client, NULL);
->  	kfree(pcf);
->  
->  	return 0;
-> diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
-> index e8b278f..8dbf3f1 100644
-> --- a/drivers/power/pcf50633-charger.c
-> +++ b/drivers/power/pcf50633-charger.c
-> @@ -42,7 +42,8 @@ struct pcf50633_mbc {
->  
->  int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
->  {
-> -	struct pcf50633_mbc *mbc = platform_get_drvdata(pcf->mbc_pdev);
-> +	struct pcf50633_mbc *mbc =
-> +		platform_get_drvdata(pcf->pdevs[PCF50633_PDEV_ADC_IDX]);
->  	int ret = 0;
->  	u8 bits;
->  	int charging_start = 1;
-> @@ -90,7 +91,8 @@ EXPORT_SYMBOL_GPL(pcf50633_mbc_usb_curlim_set);
->  
->  int pcf50633_mbc_get_status(struct pcf50633 *pcf)
->  {
-> -	struct pcf50633_mbc *mbc  = platform_get_drvdata(pcf->mbc_pdev);
-> +	struct pcf50633_mbc *mbc =
-> +		platform_get_drvdata(pcf->pdevs[PCF50633_PDEV_ADC_IDX]);
->  	int status = 0;
->  
->  	if (mbc->usb_online)
 > diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
-> index 9aba7b7..0c21222 100644
+> index 0c21222..04990c4 100644
 > --- a/include/linux/mfd/pcf50633/core.h
 > +++ b/include/linux/mfd/pcf50633/core.h
-> @@ -128,6 +128,12 @@ enum {
->  	PCF50633_NUM_IRQ,
->  };
+> @@ -13,8 +13,8 @@
+>  #ifndef __LINUX_MFD_PCF50633_CORE_H
+>  #define __LINUX_MFD_PCF50633_CORE_H
 >  
-> +#define PCF50633_PDEV_INPUT_IDX		(PCF50633_NUM_REGULATORS + 0)
-> +#define PCF50633_PDEV_RTC_IDX		(PCF50633_NUM_REGULATORS + 1)
-> +#define PCF50633_PDEV_MBC_IDX		(PCF50633_NUM_REGULATORS + 2)
-> +#define PCF50633_PDEV_ADC_IDX		(PCF50633_NUM_REGULATORS + 3)
-> +#define PCF50633_NUM_PLATFORM_DEVICES	(PCF50633_NUM_REGULATORS + 4)
-> +
->  struct pcf50633 {
->  	struct device *dev;
->  	struct i2c_client *i2c_client;
-> @@ -147,11 +153,7 @@ struct pcf50633 {
+> +#include <linux/types.h>
+>  #include <linux/i2c.h>
+> -#include <linux/workqueue.h>
+>  #include <linux/regulator/driver.h>
+>  #include <linux/regulator/machine.h>
+>  #include <linux/power_supply.h>
+> @@ -141,15 +141,13 @@ struct pcf50633 {
+>  	struct pcf50633_platform_data *pdata;
+>  	int irq;
+>  	struct pcf50633_irq irq_handler[PCF50633_NUM_IRQ];
+> -	struct work_struct irq_work;
+> -	struct workqueue_struct *work_queue;
+>  	struct mutex lock;
+>  
+>  	u8 mask_regs[5];
+>  
+>  	u8 suspend_irq_masks[5];
+>  	u8 resume_reason[5];
+> -	int is_suspended;
+> +	bool is_suspended;
 >  
 >  	int onkey1s_held;
 >  
-> -	struct platform_device *rtc_pdev;
-> -	struct platform_device *mbc_pdev;
-> -	struct platform_device *adc_pdev;
-> -	struct platform_device *input_pdev;
-> -	struct platform_device *regulator_pdev[PCF50633_NUM_REGULATORS];
-> +	struct platform_device *pdevs[PCF50633_NUM_PLATFORM_DEVICES];
->  };
->  
->  enum pcf50633_reg_int1 {
 > 
 
 -- 
