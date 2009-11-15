@@ -1,237 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZKOQEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZKOQEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZKOQEN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 11:04:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZKOQEL
+	id S1753389AbZKOQEn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 11:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZKOQEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 11:04:11 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:65079 "EHLO
+	Sun, 15 Nov 2009 11:04:12 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:64736 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbZKOQEJ (ORCPT
+	with ESMTP id S1753224AbZKOQEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 15 Nov 2009 11:04:09 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: Arnd Bergmann <arnd@arndb.de>
-Subject: [RFC 1/4] compat_ioctl: inline all conversion handlers
-Date: Sun, 15 Nov 2009 16:04:07 +0000
-Message-Id: <1258301050-26900-2-git-send-email-arnd@arndb.de>
+Subject: [RFC 2/4] compat_ioctl: simplify calling of handlers
+Date: Sun, 15 Nov 2009 16:04:08 +0000
+Message-Id: <1258301050-26900-3-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1258301050-26900-1-git-send-email-arnd@arndb.de>
 References: <1258301050-26900-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/UYAVGWi5BiE42xZvBS/3RGrWETmzKECmQHeg
- zpVSST4Jk0TJm2MzDZCxhaiFAqNmyTn7QVKWzqpDoApWQu1GJZ
- ZNFfNbsFGeTjF6MaDNndw==
+X-Provags-ID: V01U2FsdGVkX1/mjO6h4pgvRNG9zgF8B5kKoEeoH7UCM7zyKTo
+ C3ZDMAeySyZDHobo02C9i658gc978tkoVGHKQezJZdR9pPGRA1
+ JqplY/g3CkcTqcn+JBqDQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes all ioctl conversion handlers called from
-a single switch statement, leaving only COMPATIBLE_IOCTL
-and ULONG_IOCTL statements in the table. This is somewhat
-more space efficient and also lets us simplify the
-handling of the lookup table significantly.
+The compat_ioctl array now contains only entries for ioctl numbers
+that do not require a separate handler. By special-casing the
+ULONG_IOCTL case in the do_ioctl_trans function, we can kill the
+final use of a function pointer in the array.
 
-before:
    text    data     bss     dec     hex filename
-   7619   14024    2080   23723    5cab obj/fs/compat_ioctl.o
-after:
-   7567   13352    2080   22999    59d7 obj/fs/compat_ioctl.o
+   7539   13352    2080   22971    59bb before/fs/compat_ioctl.o
+   7910    8552    2080   18542    486e after/fs/compat_ioctl.o
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- fs/compat_ioctl.c |  135 ++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 81 insertions(+), 54 deletions(-)
+ fs/compat_ioctl.c |   86 ++++++++++++++++++++++++-----------------------------
+ 1 files changed, 39 insertions(+), 47 deletions(-)
 
 diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index f83db2a..4fa5313 100644
+index 4fa5313..d8039c3 100644
 --- a/fs/compat_ioctl.c
 +++ b/fs/compat_ioctl.c
-@@ -635,12 +635,6 @@ static int do_smb_getmountuid(unsigned int fd, unsigned int cmd, unsigned long a
- 	return err;
- }
+@@ -115,12 +115,6 @@
+ #include <asm/fbio.h>
+ #endif
  
--static __used int
--ret_einval(unsigned int fd, unsigned int cmd, unsigned long arg)
+-static int do_ioctl32_pointer(unsigned int fd, unsigned int cmd,
+-			      unsigned long arg, struct file *f)
 -{
--	return -EINVAL;
+-	return sys_ioctl(fd, cmd, (unsigned long)compat_ptr(arg));
 -}
 -
- static int ioc_settimeout(unsigned int fd, unsigned int cmd, unsigned long arg)
+ static int w_long(unsigned int fd, unsigned int cmd, unsigned long arg)
  {
- 	return rw_long(fd, AUTOFS_IOC_SETTIMEOUT, arg);
-@@ -1241,6 +1235,8 @@ COMPATIBLE_IOCTL(MTIOCTOP)
- /* Socket level stuff */
- COMPATIBLE_IOCTL(FIOQSIZE)
+ 	mm_segment_t old_fs = get_fs();
+@@ -1055,25 +1049,13 @@ static int compat_ioctl_preallocate(struct file *file, unsigned long arg)
+ #endif
+ 
+ 
+-typedef int (*ioctl_trans_handler_t)(unsigned int, unsigned int,
+-					unsigned long, struct file *);
+-
+ struct ioctl_trans {
+ 	unsigned long cmd;
+-	ioctl_trans_handler_t handler;
+ 	struct ioctl_trans *next;
+ };
+ 
+-#define HANDLE_IOCTL(cmd,handler) \
+-	{ (cmd), (ioctl_trans_handler_t)(handler) },
+-
+ /* pointer to compatible structure or no argument */
+-#define COMPATIBLE_IOCTL(cmd) \
+-	{ (cmd), do_ioctl32_pointer },
+-
+-/* argument is an unsigned long integer, not a pointer */
+-#define ULONG_IOCTL(cmd) \
+-	{ (cmd), (ioctl_trans_handler_t)sys_ioctl },
++#define COMPATIBLE_IOCTL(cmd) { (cmd), },
+ 
+ /* ioctl should not be warned about even if it's not implemented.
+    Valid reasons to use this:
+@@ -1095,7 +1077,6 @@ COMPATIBLE_IOCTL(TCSETA)
+ COMPATIBLE_IOCTL(TCSETAW)
+ COMPATIBLE_IOCTL(TCSETAF)
+ COMPATIBLE_IOCTL(TCSBRK)
+-ULONG_IOCTL(TCSBRKP)
+ COMPATIBLE_IOCTL(TCXONC)
+ COMPATIBLE_IOCTL(TCFLSH)
+ COMPATIBLE_IOCTL(TCGETS)
+@@ -1105,7 +1086,6 @@ COMPATIBLE_IOCTL(TCSETSF)
+ COMPATIBLE_IOCTL(TIOCLINUX)
+ COMPATIBLE_IOCTL(TIOCSBRK)
+ COMPATIBLE_IOCTL(TIOCCBRK)
+-ULONG_IOCTL(TIOCMIWAIT)
+ COMPATIBLE_IOCTL(TIOCGICOUNT)
+ /* Little t */
+ COMPATIBLE_IOCTL(TIOCGETD)
+@@ -1127,7 +1107,6 @@ COMPATIBLE_IOCTL(TIOCSTI)
+ COMPATIBLE_IOCTL(TIOCOUTQ)
+ COMPATIBLE_IOCTL(TIOCSPGRP)
+ COMPATIBLE_IOCTL(TIOCGPGRP)
+-ULONG_IOCTL(TIOCSCTTY)
+ COMPATIBLE_IOCTL(TIOCGPTN)
+ COMPATIBLE_IOCTL(TIOCSPTLCK)
+ COMPATIBLE_IOCTL(TIOCSERGETLSR)
+@@ -1158,32 +1137,21 @@ COMPATIBLE_IOCTL(PRINT_RAID_DEBUG)
+ COMPATIBLE_IOCTL(RAID_AUTORUN)
+ COMPATIBLE_IOCTL(CLEAR_ARRAY)
+ COMPATIBLE_IOCTL(ADD_NEW_DISK)
+-ULONG_IOCTL(HOT_REMOVE_DISK)
+ COMPATIBLE_IOCTL(SET_ARRAY_INFO)
+ COMPATIBLE_IOCTL(SET_DISK_INFO)
+ COMPATIBLE_IOCTL(WRITE_RAID_INFO)
+ COMPATIBLE_IOCTL(UNPROTECT_ARRAY)
+ COMPATIBLE_IOCTL(PROTECT_ARRAY)
+-ULONG_IOCTL(HOT_ADD_DISK)
+-ULONG_IOCTL(SET_DISK_FAULTY)
+ COMPATIBLE_IOCTL(RUN_ARRAY)
+ COMPATIBLE_IOCTL(STOP_ARRAY)
+ COMPATIBLE_IOCTL(STOP_ARRAY_RO)
+ COMPATIBLE_IOCTL(RESTART_ARRAY_RW)
+ COMPATIBLE_IOCTL(GET_BITMAP_FILE)
+-ULONG_IOCTL(SET_BITMAP_FILE)
+-/* Keyboard -- can be removed once tty3270 uses ops->compat_ioctl */
+-ULONG_IOCTL(KDSIGACCEPT)
+ COMPATIBLE_IOCTL(KDGETKEYCODE)
+ COMPATIBLE_IOCTL(KDSETKEYCODE)
+-ULONG_IOCTL(KIOCSOUND)
+-ULONG_IOCTL(KDMKTONE)
+ COMPATIBLE_IOCTL(KDGKBTYPE)
+-ULONG_IOCTL(KDSETMODE)
+ COMPATIBLE_IOCTL(KDGETMODE)
+-ULONG_IOCTL(KDSKBMODE)
+ COMPATIBLE_IOCTL(KDGKBMODE)
+-ULONG_IOCTL(KDSKBMETA)
+ COMPATIBLE_IOCTL(KDGKBMETA)
+ COMPATIBLE_IOCTL(KDGKBENT)
+ COMPATIBLE_IOCTL(KDSKBENT)
+@@ -1193,9 +1161,7 @@ COMPATIBLE_IOCTL(KDGKBDIACR)
+ COMPATIBLE_IOCTL(KDSKBDIACR)
+ COMPATIBLE_IOCTL(KDKBDREP)
+ COMPATIBLE_IOCTL(KDGKBLED)
+-ULONG_IOCTL(KDSKBLED)
+ COMPATIBLE_IOCTL(KDGETLED)
+-ULONG_IOCTL(KDSETLED)
  #ifdef CONFIG_BLOCK
-+/* loop */
-+IGNORE_IOCTL(LOOP_CLR_FD)
- /* SG stuff */
+ /* Big S */
+ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_IDLUN)
+@@ -1241,7 +1207,6 @@ IGNORE_IOCTL(LOOP_CLR_FD)
  COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
  COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
-@@ -1699,35 +1695,6 @@ COMPATIBLE_IOCTL(JSIOCGAXES)
- COMPATIBLE_IOCTL(JSIOCGBUTTONS)
- COMPATIBLE_IOCTL(JSIOCGNAME(0))
- 
--/* now things that need handlers */
--#ifdef CONFIG_BLOCK
--HANDLE_IOCTL(SG_IO,sg_ioctl_trans)
--HANDLE_IOCTL(SG_GET_REQUEST_TABLE, sg_grt_trans)
--#endif
--HANDLE_IOCTL(PPPIOCGIDLE32, ppp_ioctl_trans)
--HANDLE_IOCTL(PPPIOCSCOMPRESS32, ppp_ioctl_trans)
--HANDLE_IOCTL(PPPIOCSPASS32, ppp_sock_fprog_ioctl_trans)
--HANDLE_IOCTL(PPPIOCSACTIVE32, ppp_sock_fprog_ioctl_trans)
--#ifdef CONFIG_BLOCK
--HANDLE_IOCTL(MTIOCGET32, mt_ioctl_trans)
--HANDLE_IOCTL(MTIOCPOS32, mt_ioctl_trans)
--#endif
--#define AUTOFS_IOC_SETTIMEOUT32 _IOWR(0x93,0x64,unsigned int)
--HANDLE_IOCTL(AUTOFS_IOC_SETTIMEOUT32, ioc_settimeout)
--/* One SMB ioctl needs translations. */
--#define SMB_IOC_GETMOUNTUID_32 _IOR('u', 1, compat_uid_t)
--HANDLE_IOCTL(SMB_IOC_GETMOUNTUID_32, do_smb_getmountuid)
--/* block stuff */
--#ifdef CONFIG_BLOCK
--/* loop */
--IGNORE_IOCTL(LOOP_CLR_FD)
--/* Raw devices */
--HANDLE_IOCTL(RAW_SETBIND, raw_ioctl)
--HANDLE_IOCTL(RAW_GETBIND, raw_ioctl)
--#endif
--/* Serial */
--HANDLE_IOCTL(TIOCGSERIAL, serial_struct_ioctl)
--HANDLE_IOCTL(TIOCSSERIAL, serial_struct_ioctl)
- #ifdef TIOCGLTC
- COMPATIBLE_IOCTL(TIOCGLTC)
- COMPATIBLE_IOCTL(TIOCSLTC)
-@@ -1743,24 +1710,7 @@ COMPATIBLE_IOCTL(TIOCSTART)
- COMPATIBLE_IOCTL(TIOCSTOP)
- #endif
- /* Usbdevfs */
--HANDLE_IOCTL(USBDEVFS_CONTROL32, do_usbdevfs_control)
--HANDLE_IOCTL(USBDEVFS_BULK32, do_usbdevfs_bulk)
--HANDLE_IOCTL(USBDEVFS_DISCSIGNAL32, do_usbdevfs_discsignal)
- COMPATIBLE_IOCTL(USBDEVFS_IOCTL32)
--/* i2c */
--HANDLE_IOCTL(I2C_FUNCS, w_long)
--HANDLE_IOCTL(I2C_RDWR, do_i2c_rdwr_ioctl)
--HANDLE_IOCTL(I2C_SMBUS, do_i2c_smbus_ioctl)
--/* Not implemented in the native kernel */
--HANDLE_IOCTL(RTC_IRQP_READ32, rtc_ioctl)
--HANDLE_IOCTL(RTC_IRQP_SET32, rtc_ioctl)
--HANDLE_IOCTL(RTC_EPOCH_READ32, rtc_ioctl)
--HANDLE_IOCTL(RTC_EPOCH_SET32, rtc_ioctl)
--
--/* dvb */
--HANDLE_IOCTL(VIDEO_GET_EVENT, do_video_get_event)
--HANDLE_IOCTL(VIDEO_STILLPICTURE, do_video_stillpicture)
--HANDLE_IOCTL(VIDEO_SET_SPU_PALETTE, do_video_set_spu_palette)
- 
- /* parport */
- COMPATIBLE_IOCTL(LPTIME)
-@@ -1774,7 +1724,6 @@ COMPATIBLE_IOCTL(LPGETSTATUS)
- COMPATIBLE_IOCTL(LPRESET)
- /*LPGETSTATS not implemented, but no kernels seem to compile it in anyways*/
- COMPATIBLE_IOCTL(LPGETFLAGS)
--HANDLE_IOCTL(LPSETTIMEOUT, lp_timeout_trans)
- 
- /* fat 'r' ioctls. These are handled by fat with ->compat_ioctl,
-    but we don't want warnings on other file systems. So declare
-@@ -1810,6 +1759,83 @@ static inline unsigned long ioctl32_hash(unsigned long cmd)
- 	return (((cmd >> 6) ^ (cmd >> 4) ^ cmd)) % IOCTL_HASHSIZE;
+ COMPATIBLE_IOCTL(SG_EMULATED_HOST)
+-ULONG_IOCTL(SG_SET_TRANSFORM)
+ COMPATIBLE_IOCTL(SG_GET_TRANSFORM)
+ COMPATIBLE_IOCTL(SG_SET_RESERVED_SIZE)
+ COMPATIBLE_IOCTL(SG_GET_RESERVED_SIZE)
+@@ -1478,8 +1443,6 @@ COMPATIBLE_IOCTL(SOUND_MIXER_GETLEVELS)
+ COMPATIBLE_IOCTL(SOUND_MIXER_SETLEVELS)
+ COMPATIBLE_IOCTL(OSS_GETVERSION)
+ /* AUTOFS */
+-ULONG_IOCTL(AUTOFS_IOC_READY)
+-ULONG_IOCTL(AUTOFS_IOC_FAIL)
+ COMPATIBLE_IOCTL(AUTOFS_IOC_CATATONIC)
+ COMPATIBLE_IOCTL(AUTOFS_IOC_PROTOVER)
+ COMPATIBLE_IOCTL(AUTOFS_IOC_EXPIRE)
+@@ -1588,14 +1551,10 @@ COMPATIBLE_IOCTL(USBDEVFS_REAPURB32)
+ COMPATIBLE_IOCTL(USBDEVFS_REAPURBNDELAY32)
+ COMPATIBLE_IOCTL(USBDEVFS_CLEAR_HALT)
+ /* NBD */
+-ULONG_IOCTL(NBD_SET_SOCK)
+-ULONG_IOCTL(NBD_SET_BLKSIZE)
+-ULONG_IOCTL(NBD_SET_SIZE)
+ COMPATIBLE_IOCTL(NBD_DO_IT)
+ COMPATIBLE_IOCTL(NBD_CLEAR_SOCK)
+ COMPATIBLE_IOCTL(NBD_CLEAR_QUE)
+ COMPATIBLE_IOCTL(NBD_PRINT_DEBUG)
+-ULONG_IOCTL(NBD_SET_SIZE_BLOCKS)
+ COMPATIBLE_IOCTL(NBD_DISCONNECT)
+ /* i2c */
+ COMPATIBLE_IOCTL(I2C_SLAVE)
+@@ -1833,6 +1792,43 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
+ 	case LPSETTIMEOUT:
+ 		return lp_timeout_trans(fd, cmd, arg);
+ 	}
++
++	/*
++	 * These take an integer instead of a pointer as 'arg',
++	 * so we must not do a compat_ptr() translation.
++	 */
++	switch (cmd) {
++	/* Big T */
++	case TCSBRKP:
++	case TIOCMIWAIT:
++	case TIOCSCTTY:
++	/* RAID */
++	case HOT_REMOVE_DISK:
++	case HOT_ADD_DISK:
++	case SET_DISK_FAULTY:
++	case SET_BITMAP_FILE:
++	/* Big K */
++	case KDSIGACCEPT:
++	case KIOCSOUND:
++	case KDMKTONE:
++	case KDSETMODE:
++	case KDSKBMODE:
++	case KDSKBMETA:
++	case KDSKBLED:
++	case KDSETLED:
++	/* SG stuff */
++	case SG_SET_TRANSFORM:
++	/* AUTOFS */
++	case AUTOFS_IOC_READY:
++	case AUTOFS_IOC_FAIL:
++	/* NBD */
++	case NBD_SET_SOCK:
++	case NBD_SET_BLKSIZE:
++	case NBD_SET_SIZE:
++	case NBD_SET_SIZE_BLOCKS:
++		return do_vfs_ioctl(file, fd, cmd, arg);
++	}
++
+ 	return -ENOIOCTLCMD;
  }
  
-+/*
-+ * Convert common ioctl arguments based on their command number
-+ *
-+ * Please do not add any code in here. Instead, implement
-+ * a compat_ioctl operation in the place that handleѕ the
-+ * ioctl for the native case.
-+ */
-+static long do_ioctl_trans(int fd, unsigned int cmd,
-+		 unsigned long arg, struct file *file)
-+{
-+	switch (cmd) {
-+	case PPPIOCGIDLE32:
-+	case PPPIOCSCOMPRESS32:
-+		return ppp_ioctl_trans(fd, cmd, arg);
-+	case PPPIOCSPASS32:
-+	case PPPIOCSACTIVE32:
-+		return ppp_sock_fprog_ioctl_trans(fd, cmd, arg);
-+#ifdef CONFIG_BLOCK
-+	case SG_IO:
-+		return sg_ioctl_trans(fd, cmd, arg);
-+	case SG_GET_REQUEST_TABLE:
-+		return sg_grt_trans(fd, cmd, arg);
-+	case MTIOCGET32:
-+	case MTIOCPOS32:
-+		return mt_ioctl_trans(fd, cmd, arg);
-+	/* Raw devices */
-+	case RAW_SETBIND:
-+	case RAW_GETBIND:
-+		return raw_ioctl(fd, cmd, arg);
-+#endif
-+#define AUTOFS_IOC_SETTIMEOUT32 _IOWR(0x93,0x64,unsigned int)
-+	case AUTOFS_IOC_SETTIMEOUT32:
-+		return ioc_settimeout(fd, cmd, arg);
-+	/* One SMB ioctl needs translations. */
-+#define SMB_IOC_GETMOUNTUID_32 _IOR('u', 1, compat_uid_t)
-+	case SMB_IOC_GETMOUNTUID_32:
-+		return do_smb_getmountuid(fd, cmd, arg);
-+	/* Serial */
-+	case TIOCGSERIAL:
-+	case TIOCSSERIAL:
-+		return serial_struct_ioctl(fd, cmd, arg);
-+	/* Usbdevfs */
-+	case USBDEVFS_CONTROL32:
-+		return do_usbdevfs_control(fd, cmd, arg);
-+	case USBDEVFS_BULK32:
-+		return do_usbdevfs_bulk(fd, cmd, arg);
-+	case USBDEVFS_DISCSIGNAL32:
-+		return do_usbdevfs_discsignal(fd, cmd, arg);
-+	/* i2c */
-+	case I2C_FUNCS:
-+		return w_long(fd, cmd, arg);
-+	case I2C_RDWR:
-+		return do_i2c_rdwr_ioctl(fd, cmd, arg);
-+	case I2C_SMBUS:
-+		return do_i2c_smbus_ioctl(fd, cmd, arg);
-+	/* Not implemented in the native kernel */
-+	case RTC_IRQP_READ32:
-+	case RTC_IRQP_SET32:
-+	case RTC_EPOCH_READ32:
-+	case RTC_EPOCH_SET32:
-+		return rtc_ioctl(fd, cmd, arg);
-+
-+	/* dvb */
-+	case VIDEO_GET_EVENT:
-+		return do_video_get_event(fd, cmd, arg);
-+	case VIDEO_STILLPICTURE:
-+		return do_video_stillpicture(fd, cmd, arg);
-+	case VIDEO_SET_SPU_PALETTE:
-+		return do_video_set_spu_palette(fd, cmd, arg);
-+
-+	/* lp */
-+	case LPSETTIMEOUT:
-+		return lp_timeout_trans(fd, cmd, arg);
-+	}
-+	return -ENOIOCTLCMD;
-+}
-+
- static void compat_ioctl_error(struct file *filp, unsigned int fd,
- 		unsigned int cmd, unsigned long arg)
- {
-@@ -1906,7 +1932,8 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
- 			goto found_handler;
- 	}
+@@ -1944,11 +1940,7 @@ asmlinkage long compat_sys_ioctl(unsigned int fd, unsigned int cmd,
+ 	goto out_fput;
  
--	{
-+	error = do_ioctl_trans(fd, cmd, arg, filp);
-+	if (error == -ENOIOCTLCMD) {
- 		static int count;
- 
- 		if (++count <= 50)
+  found_handler:
+-	if (t->handler) {
+-		error = t->handler(fd, cmd, arg, filp);
+-		goto out_fput;
+-	}
+-
++	arg = (unsigned long)compat_ptr(arg);
+  do_ioctl:
+ 	error = do_vfs_ioctl(filp, fd, cmd, arg);
+  out_fput:
 -- 
 1.6.3.3
 
