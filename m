@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbZKOMHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZKOMXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752673AbZKOMHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 07:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZKOMHX
+	id S1752810AbZKOMXU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 07:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZKOMXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 07:07:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:43847 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbZKOMHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 07:07:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cK4DM3cIzguSFfnzlanAOGgW8oUhqABXF0To4Yjzhna/vkyJpYgptxR4sjBiODHMT+
-         NmjxcbVXU+YlwXwp24XMwjEnbgrG1OJ5hFcjvqUMv98/WWrSUA1Dbq2B0+exfry2+I9w
-         A046C4lB7sStF2nW7pO6NN1nZ5Jxd8s2yiB4k=
-Date: Sun, 15 Nov 2009 13:07:21 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/5] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091115120721.GA7557@bizet.domek.prywatny>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258054235-3208-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 15 Nov 2009 07:23:04 -0500
+Received: from sh.osrg.net ([192.16.179.4]:46551 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752632AbZKOMXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 07:23:03 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, muli@il.ibm.com,
+       joerg.roedel@amd.com
+Subject: [PATCH 0/3] x86: kill global bad_dma_address variable
+Date: Sun, 15 Nov 2009 21:19:51 +0900
+Message-Id: <1258287594-8777-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 15 Nov 2009 21:22:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 07:30:30PM +0000, Mel Gorman wrote:
+This is against -tip.
 
-> [Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
+This patchset kills bad_dma_address variable, the old mechanism to
+enable IOMMU drivers to make dma_mapping_error() work in IOMMU's
+specific way.
 
-> Patches 1-3 should be tested first. The testing I've done shows that the
-> page allocator and behaviour of congestion_wait() is more in line with
-> 2.6.30 than the vanilla kernels.
-> 
-> It'd be nice to have 2 more tests, applying each patch on top noting any
-> behaviour change. i.e. ideally there would be results for
-> 
->  o patches 1+2+3
->  o patches 1+2+3+4
->  o patches 1+2+3+4+5
-> 
-> Of course, any tests results are welcome. The rest of the mail is the
-> results of my own tests.
+bad_dma_address variable was introduced to enable IOMMU drivers to
+make dma_mapping_error() work in IOMMU's specific way. However, it
+can't handle systems that use both swiotlb and HW IOMMU. SO we
+introduced dma_map_ops->mapping_error to solve that case.
 
-I've tried testing 3+4+5 against 2.6.32-rc7 (1+2 seem to be in
-mainline) and got failure.  I've noticed something strange (I think).
-I was unable to trigger failures when system was under heavy memory
-pressure (i.e. my testing - gitk, firefoxes, etc.).  When I killed
-almost all memory hogs, put system into sleep and resumed -- it
-failed.  free(1) showed:
+Keeping those two mechanisms is pointless. Let's remove the old one.
 
-             total       used       free     shared    buffers     cached
-Mem:        255240     194052      61188          0       4040      49364
--/+ buffers/cache:     140648     114592
-Swap:       514040      72712     441328
+=
+ arch/x86/include/asm/dma-mapping.h |    5 +++--
+ arch/x86/kernel/amd_iommu.c        |   21 ++++++++++-----------
+ arch/x86/kernel/pci-calgary_64.c   |   31 +++++++++++++------------------
+ arch/x86/kernel/pci-dma.c          |    3 ---
+ arch/x86/kernel/pci-gart_64.c      |   18 +++++++++++++-----
+ arch/x86/kernel/pci-nommu.c        |    2 +-
+ 6 files changed, 40 insertions(+), 40 deletions(-)
 
 
-Is that ok?  Wild guess -- maybe kswapd doesn't take fragmentation (or
-other factors) into account as hard as it used to in 2.6.30?
 
-Thanks.
