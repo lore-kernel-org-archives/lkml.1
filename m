@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbZKOBwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736AbZKOBx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751696AbZKOBwB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Nov 2009 20:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZKOBwB
+	id S1751736AbZKOBx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Nov 2009 20:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZKOBx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Nov 2009 20:52:01 -0500
-Received: from mail.perches.com ([173.55.12.10]:1059 "EHLO mail.perches.com"
+	Sat, 14 Nov 2009 20:53:56 -0500
+Received: from thunk.org ([69.25.196.29]:38463 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628AbZKOBwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Nov 2009 20:52:00 -0500
-Subject: [PATCH] sysctl.c: Change a .proc_handler = proc_dointvec to
- &proc_dointvec,
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 14 Nov 2009 17:52:05 -0800
-Message-ID: <1258249925.16857.198.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751661AbZKOBxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Nov 2009 20:53:55 -0500
+Date: Sat, 14 Nov 2009 20:53:52 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Julia Lawall <julia@diku.dk>
+Cc: sandeen@redhat.com, cmm@us.ibm.com, Andreas Dilger <adilger@sun.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] fs/ext4: test the i_flags field of the right structure
+Message-ID: <20091115015352.GA4323@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Julia Lawall <julia@diku.dk>, sandeen@redhat.com, cmm@us.ibm.com,
+	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0911022158190.4930@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0911022158190.4930@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems to be a typo.
+On Mon, Nov 02, 2009 at 09:58:47PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Elsewhere, EXT4_EXTENTS_FL is combined with EXT4_I(inode)->i_flags, rather
+> than inode->i_flags.
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Applied to the ext4 patch queue, thanks.
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 0d949c5..d0bf4eb 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1605,7 +1605,7 @@ static struct ctl_table debug_table[] = {
- 		.data		= &show_unhandled_signals,
- 		.maxlen		= sizeof(int),
- 		.mode		= 0644,
--		.proc_handler	= proc_dointvec
-+		.proc_handler	= &proc_dointvec,
- 	},
- #endif
- 	{ .ctl_name = 0 }
-
-
+							- Ted
