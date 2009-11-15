@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751329AbZKOFLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751767AbZKOGTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751329AbZKOFLw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 00:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbZKOFLv
+	id S1751767AbZKOGTU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 01:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZKOGTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 00:11:51 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:64604 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbZKOFLu (ORCPT
+	Sun, 15 Nov 2009 01:19:20 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:60517 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbZKOGTT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 00:11:50 -0500
+	Sun, 15 Nov 2009 01:19:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GwqSa2XGcNZtfQ57xDq0PFoBCmteJvAKQrH93hQ9K1XKB4txwXKIIzTwAkYDGVqoAU
-         VVXcldzuQ6dtBUDTALLoC+7nHglGNl2jZeBa4mgnvCMCGpoFwH9QLB09YTclt+ldg1dK
-         zedPWr2tvL0sqxG92ykMG8HodqvR3yn1TVFX8=
-Date: Sun, 15 Nov 2009 06:11:57 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf tools: New function to parse string representing
-	size in bytes
-Message-ID: <20091115051155.GB5427@nowhere>
-References: <1258257045-1363-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=wj0SkU1yFLtaRw8QfeG6WUkD+6Y+6kXih9b54WhsrtbxipD2Jk6usVM/dXIDaxiI4A
+         aTQumOOeEdnoHJ676nLRQZMOjQ88WaPWtMv0IDrcEHSrAlroBnRDxSdoc+ZwwnhBuddx
+         PgbvEqwQSgGtDBUC7qvszlPj+lkh/0XsEBlJw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258257045-1363-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0911082103000.8143@ask.diku.dk>
+References: <cover.1257602781.git.andre.goddard@gmail.com> 
+	<7d5883637aa976b54e944998f635d47a41618a75.1257602781.git.andre.goddard@gmail.com> 
+	<20091108184722.GA1647@mit.edu> <Pine.LNX.4.64.0911082103000.8143@ask.diku.dk>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Sun, 15 Nov 2009 04:19:04 -0200
+Message-ID: <b8bf37780911142219qf46108eo1427891ce0c2800a@mail.gmail.com>
+Subject: Re: [PATCH v4 12/12] tree-wide: convert open calls to remove spaces 
+	to skip_spaces() lib function
+To: Julia Lawall <julia@diku.dk>
+Cc: linux list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 15, 2009 at 12:50:45PM +0900, Hitoshi Mitake wrote:
-> This patch modifies util/string.[ch] to add new function: bytesexp2int()
-> to parse string representing size in bytes.
-> 
-> Below is the description of bytesexp2int().
-> 
-> Parse (\d+)(b|B|kb|KB|mb|MB|gb|GB) (e.g. "256MB")
-> and return its numeric value. (e.g. 268435456)
-> 
-> The parameter str is not changed before and after calling,
-> but it changed temporally and internally for atoi().
-> So type of str is char *, not const char *.
-> 
-> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  tools/perf/util/string.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++
->  tools/perf/util/string.h |    1 +
->  2 files changed, 90 insertions(+), 0 deletions(-)
-> 
-> diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
-> index 04743d3..bbedb06 100644
-> --- a/tools/perf/util/string.c
-> +++ b/tools/perf/util/string.c
-> @@ -1,4 +1,5 @@
->  #include <string.h>
-> +#include <stdlib.h>
->  #include "string.h"
->  
->  static int hex(char ch)
-> @@ -43,3 +44,91 @@ char *strxfrchar(char *s, char from, char to)
->  
->  	return s;
->  }
-> +
-> +static int digit(char ch)
-> +{
-> +	if ('0' <= ch && ch <= '9')
-> +		return 1;
-> +	return 0;
-> +}
+[stripped very long cc: line]
 
+On Sun, Nov 8, 2009 at 6:23 PM, Julia Lawall <julia@diku.dk> wrote:
+>> > Also, while at it, if we see (*str && isspace(*str)), we can be sure to
+>> > remove the first condition (*str) as the second one (isspace(*str)) also
+>> > evaluates to 0 whenever *str == 0, making it redundant. In other words,
+>> > "a char equals zero is never a space".
+>
+> I tried the following semantic patch (http://coccinelle.lip6.fr), and got
+> the results below.
+>
+> @@
+> expression str;
+> @@
+>
+> ( // ignore skip_spaces cases
+>  while (*str &&  isspace(*str)) { \(str++;\|++str;\) }
+> |
+> - *str &&
+>  isspace(*str)
+> )
+>
+> I haven't checked the results in any way, however.
+>
+> julia
+>
 
+Hi, Julia!
 
-We have a "isdigit" macro in util.h already, despite the even already
-existing isdigit from the libc. I don't know why we have that. I guess
-it comes from git sources but I'm not sure why it has been reimplemented.
+    Your patch looks good, but it conflicted at the following files
+when I tried to apply it:
 
+> diff -u -p a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+> diff -u -p a/drivers/video/display/display-sysfs.c b/drivers/video/display/display-sysfs.c
+
+    That's because I had changed them as well.
+    The other ones you spotted I haven't seen originally:
+
+> diff -u -p a/drivers/leds/led-class.c b/drivers/leds/led-class.c
+> diff -u -p a/drivers/leds/ledtrig-timer.c b/drivers/leds/ledtrig-timer.c
+> diff -u -p a/drivers/video/output.c b/drivers/video/output.c
+
+    Do you mind sending another patch or do you want me folding these in?
+
+Thank you,
+André
