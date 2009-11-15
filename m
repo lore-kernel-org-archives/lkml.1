@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZKOQBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZKOQEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbZKOQBh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 11:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZKOQBg
+	id S1753285AbZKOQEK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 11:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZKOQEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 11:01:36 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:2557 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbZKOQBf (ORCPT
+	Sun, 15 Nov 2009 11:04:09 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:59717 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbZKOQEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 11:01:35 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -12.589
-Message-ID: <4B0025DE.8050402@tremplin-utc.net>
-Date: Sun, 15 Nov 2009 17:01:34 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Samu Onkalo <samu.p.onkalo@nokia.com>, daniel@caiaq.de, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v2 00/10] LIS3: Feature updates and corrections
-References: <1257856872-11612-1-git-send-email-samu.p.onkalo@nokia.com>
-In-Reply-To: <1257856872-11612-1-git-send-email-samu.p.onkalo@nokia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Nov 2009 11:04:08 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
+Subject: [RFC 0/4] compat-ioctl.c diet
+Date: Sun, 15 Nov 2009 16:04:06 +0000
+Message-Id: <1258301050-26900-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.3.3
+X-Provags-ID: V01U2FsdGVkX18Z8Jmncb5fm+G3gaZGyncu/D3VGwgk8TYvPlq
+ s4Bv9aKZabSf18YRcFtlgVkUogbJ6vnU05IzdbII5gp2KVgZdf
+ nHOsym+UV1KlrmT7WTNug==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 10-11-09 13:41, Samu Onkalo schreef:
-> This patch set has earlier been sent to lm-sensors list (thus patch v2).
-> No changes after that except to patch 0006 to make it applicable to
-> 2.6.32-rc6 (no functional changes).
-:
-> 
-> I have possibility to test these changes only with 8 bit version (lis302d).
-> Since part of the changes are specific to 12 bit device, I would appreciate
-> if someone could try these on 12 bit device.
-I've just tested them on a 12-bit device and it seems to go fine
-(excepted the rate setting in patch 8).
-
-Andrew, maybe you could already queue the first 5 patches, as they all
-look fine and are fixing bugs. So we are sure they are there for 2.6.33
-:-) The rest of the patch series is useful but just "new feature" and
-some need more work.
-
-Thanks,
-Eric
+I've spent some time on making the compat ioctl code significantly smaller.
+Removing the tty and socket level ioctl handling from common code
+in linux-next helps a bit, but mostly just moves code to other places
+but does not save much in an allyesconfig.
 
 
-> 
-> 0001:
-> Sync event is sent after each measurement. This helps user space
-> applications to detect which 3 reported values belongs to
-> one atomic measurement.
-> 
-> 0002:
-> polled input device was not totally released in module unload.
-> This corrects memory leak. 
-> 
-> 0003:
-> This patch is originally from Eric Piel. 
-> Updates documentation and chip ID handling
-> 
-> 0004:
-> This patch is originally from Eric Piel.
-> Correction to sampling rate handling for 8 bit devices
-> 
-> 0005:
-> Chip power on sequence was not waiting for chip to be ready.
-> This caused incorrect values right after the power on.
+This is the output of /usr/bin/size on the fs/compat_ioctl.o
+file in different versions:
+
+2.6.32-rc7:
+   text    data     bss     dec     hex filename
+  13335   17792    2080   33207    81b7 obj/fs/compat_ioctl.o
+linux-next:
+   8877   14696    2080   25653    6435 obj/fs/compat_ioctl.o
+Simplifying the remaining code (this series):
+   7572    2144       4    9720    25f8 obj/fs/compat_ioctl.o
+Moving more handlers directly into driver (future series):
+   4817    1740       4    6561    19a1 obj/fs/compat_ioctl.o
+
+There are a few dependencies on code in other trees, so this
+series doesn't currently apply cleanly anywhere except my
+own tree.
+
+The final series of patches that I'll post separately
+depends on this one as well and touches most of the drivers
+that currently require a conversion function in fs/compat_ioctl.c
+that no other driver uses. Moving those conversions into
+the drivers simplifies the common code and keeps the
+native and compat versions closer.
+
+	Arnd <><
+
+---
+
+Arnd Bergmann (4):
+  compat_ioctl: inline all conversion handlers
+  compat_ioctl: simplify calling of handlers
+  compat_ioctl: simplify lookup table
+  compat_ioctl: pass compat pointer directly to handlers
+
+ fs/compat_ioctl.c |  471 +++++++++++++++++++++++++----------------------------
+ 1 files changed, 220 insertions(+), 251 deletions(-)
+
