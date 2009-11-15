@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZKOXXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZKOXaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbZKOXXL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 18:23:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZKOXXK
+	id S1751962AbZKOXaK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 18:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZKOXaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 18:23:10 -0500
-Received: from mga05.intel.com ([192.55.52.89]:25009 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750895AbZKOXXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 18:23:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,747,1249282800"; 
-   d="scan'208";a="514122686"
-Date: Mon, 16 Nov 2009 00:25:02 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mfd: pcf50633 - fix error handling during probe
-Message-ID: <20091115232501.GF8367@sortiz.org>
-References: <20091109092447.29634.79364.stgit@localhost.localdomain>
- <20091109092516.29634.32640.stgit@localhost.localdomain>
- <4B008A22.80909@metafoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B008A22.80909@metafoo.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 15 Nov 2009 18:30:09 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50975 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751156AbZKOXaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 18:30:08 -0500
+Date: Mon, 16 Nov 2009 10:30:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Aristeu Rozanski <aris@redhat.com>
+Subject: Re: linux-next: i7core_edac tree build failure
+Message-Id: <20091116103002.82e8a2bb.sfr@canb.auug.org.au>
+In-Reply-To: <20091113105435.1b9b0060.sfr@canb.auug.org.au>
+References: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
+	<200911122340.26317.rusty@rustcorp.com.au>
+	<20091113105435.1b9b0060.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 12:09:22AM +0100, Lars-Peter Clausen wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Dmitry Torokhov wrote:
-> > The pcf50633 is very naive - it assumes that all driver core
-> > operations will succeed and will fail badly if one of them
-> > errors out. Implement proper error handling and make sure we
-> > release any and all resources that have been allocated prior
-> > to failure.
-> >
-> > Also avoid memory leak when using platform_device_add_data()
-> > which clones the supplied data structure for use by the device.
-> > The original copy, if allocated dynamically, needs to be freed
-> > by the caller; switch to using on-stack variable (the size of
-> > the structure in question is quite small) instead.
-> >
-> > Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> Hi
-> 
-> Most of the issues addressed in this patch have already been fixed.
-> Please check the for-next branch in the mfd tree.
-Oops, thanks for refreshing our memories Lars...
+--Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Mauro,
+
+On Fri, 13 Nov 2009 10:54:35 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Yeah, the i7core_edac fix needs to stay in my tree as it is an
+> interaction between two trees in linux-next.  The others should be
+> applied to the powerpc and sparc trees, as you say, since they fix the
+> current code in those trees.
+
+Actually, Mauro, this patch should be applied to the i7core_edac as that
+symbol never needed to be exported and the patch to export it is in that
+tree.
+--=20
 Cheers,
-Samuel.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- 
-> - - Lars
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.9 (GNU/Linux)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-> 
-> iEYEARECAAYFAksAiiIACgkQBX4mSR26RiNJbACfYs4UhLSrlYuNqynJ/Mguw+oj
-> FxQAn2xmUh8QZttY4jxKUsdg+6p/pXNT
-> =yCtL
-> -----END PGP SIGNATURE-----
-> 
+--Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN
+Content-Type: application/pgp-signature
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksAjvoACgkQjjKRsyhoI8z8MgCdG5KD7u75fcF+Q9F3ldMMKg2B
+0dkAoLJcIUPCyajcgaPUWjAwU5j6D/yy
+=CmpW
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__16_Nov_2009_10_30_02_+1100_Dp9Xi_pcN.wW+IZN--
