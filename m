@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZKPW4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZKPWzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZKPW4z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 17:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbZKPW4x
+	id S1755076AbZKPWzX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 17:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZKPWzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 17:56:53 -0500
-Received: from solo.fdn.fr ([80.67.169.19]:33349 "EHLO solo.fdn.fr"
+	Mon, 16 Nov 2009 17:55:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35531 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754955AbZKPWyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 17:54:24 -0500
-Date: Mon, 16 Nov 2009 23:54:29 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, alan@lxorguk.ukuu.org.uk,
-       mgarski@post.pl
-Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for non-ASCII
-Message-ID: <20091116225429.GB4764@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, hpa@zytor.com,
-	alan@lxorguk.ukuu.org.uk, mgarski@post.pl
-References: <20091116135114.GA2719@x200> <20091116190739.GJ4764@const.famille.thibault.fr> <20091116195313.GB4462@x200> <20091116222738.GQ4764@const.famille.thibault.fr>
+	id S1754240AbZKPWzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 17:55:19 -0500
+Date: Mon, 16 Nov 2009 23:55:22 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Mahoney <jeffm@suse.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: [Bug #14467] Linker errors on ia64 with NR_CPUS=4096
+In-Reply-To: <xXQGFmujPl.A.KbH.ZTdALB@chimera>
+Message-ID: <alpine.LSU.2.00.0911162354140.15039@wotan.suse.de>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.KbH.ZTdALB@chimera>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091116222738.GQ4764@const.famille.thibault.fr>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault, le Mon 16 Nov 2009 23:27:38 +0100, a écrit :
-> > My keymap contains
-> > 
-> > 				keycode 44 = +z
-> > 		shift           keycode 44 = +Z
-> > 	altgr                   keycode 44 = U+044F        # CYRILLIC SMALL LETTER YA
-> > 	altgr   shift           keycode 44 = U+042F        # CYRILLIC CAPITAL LETTER YA
+On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
+
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> And U+044F / U+042F is not KT_LETTER.
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Yes, there's no way you can express a unicode character in KT_LETTER.
-> Limited interface, but that's not a reason to break other interfaces.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14467
+> Subject		: Linker errors on ia64 with NR_CPUS=4096
+> Submitter	: Jeff Mahoney <jeffm@suse.com>
+> Date		: 2009-10-18 22:28 (30 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=34d76c41554a05425613d16efebb3069c4c545f0
+> References	: http://marc.info/?l=linux-kernel&m=125590493116720&w=4
 
-One way to go would be to decrete that keysyms between 0xD800 and 0xE000
-(unused anyway) are "KT_LETTER" versions of the unicode 0x0000 - 0x0800.
-That however covers only part of Unicode and doesn't solve the case of
-keyboards where the upper case of a letter is not simply at the shifted
-position.
+Fixed by the following two commits
 
-The real correct solution is really to have kbd use modifiers just like
-console-setup and provide a way for them to configure which leds should
-be lit when some modifier is locked.  That way building a keymap becomes
-just orthogonal, no need to upload a table of lower/upper pairs (which
-depend on the locale see for instance i/I vs i/İ).
 
-Samuel
+commit 4a6cc4bd32e580722882115d4c8b964d732c11e4
+Author: Jiri Kosina <jkosina@suse.cz>
+Date:   Thu Oct 29 00:26:00 2009 +0900
+
+    sched: move rq_weight data array out of .percpu
+
+commit 403a91b1659cb149dbddc5885f892734ae4542d8
+Author: Jiri Kosina <jkosina@suse.cz>
+Date:   Thu Oct 29 00:25:59 2009 +0900
+
+    percpu: allow pcpu_alloc() to be called with IRQs off
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
