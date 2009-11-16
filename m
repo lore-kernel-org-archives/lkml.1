@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbZKPPVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbZKPPXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752813AbZKPPVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZKPPVS
+	id S1752738AbZKPPXx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZKPPXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:21:18 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:51148 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbZKPPVR (ORCPT
+	Mon, 16 Nov 2009 10:23:52 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:56534 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbZKPPXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:21:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=R5JEBSf3aZ0SChe1IcUpEcCX6b79HYiJ2qeqveam8KKOJIF1dY7lm6OGx/KnTXUD9/
-         YffOBsWfhtO7YF1gI1McUSAyWy6KYpEND5mm0YDuPJVAo7sqljoiHxp0+DeDqe2w4HIM
-         vxviFnV0pFB6RBWtRZ2b5ysGsYcYcH0qLUbfU=
-Subject: Re: [PATCH v8 01/16] tracing: convert trace_clock_local() as weak
- function
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
-       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
-In-Reply-To: <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
-References: <cover.1258177321.git.wuzhangjin@gmail.com>
-	 <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
-	 <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 16 Nov 2009 23:21:08 +0800
-Message-ID: <1258384868.15821.9.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 10:23:51 -0500
+Date: Mon, 16 Nov 2009 15:23:55 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Phil Carmody <ext-phil.2.carmody@nokia.com>
+Cc: ext Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "Leukkunen Lauri (Nokia-D/Helsinki)" <lauri.leukkunen@nokia.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>,
+       "Doyu Hiroshi (Nokia-D/Helsinki)" <hiroshi.doyu@nokia.com>,
+       "Kauppi Ari (EXT-Ixonos/Oulu)" <ext-ari.kauppi@nokia.com>,
+       Jarkko Nikula <jhnikula@gmail.com>,
+       "Nurkkala Eero.An (EXT-Offcode/Oulu)" <ext-Eero.Nurkkala@nokia.com>,
+       "Tereshonkov Roman (Nokia-D/Helsinki)" <roman.tereshonkov@nokia.com>
+Subject: Re: [PATCH v2 1/2] input: touchscreen: introduce tsc2005 driver
+Message-ID: <20091116152354.GA29479@sirena.org.uk>
+References: <1257340982-22814-1-git-send-email-aaro.koskinen@nokia.com> <20091114060332.GG4463@core.coreip.homeip.net> <20091116123748.GC28963@pcarmody-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091116123748.GC28963@pcarmody-desktop>
+X-Cookie: Stay away from hurricanes for a while.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-16 at 16:07 +0100, Thomas Gleixner wrote:
-> On Sat, 14 Nov 2009, Wu Zhangjin wrote:
-> 
-> > From: Wu Zhangjin <wuzhangjin@gmail.com>
-> > 
-> > trace_clock_local() is based on the arch-specific sched_clock(), in X86,
-> > it is tsc(64bit) based, which can give very high precision(about 1ns
-> > with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
-> > give only 10ms precison with 1000 HZ. which is not enough for tracing,
-> > especially for Real Time system.
-> > 
-> > so, we need to implement a MIPS specific sched_clock() to get higher
-> > precision. There is a tsc like clock counter register in MIPS, whose
-> > frequency is half of the processor, so, if the cpu frequency is 800MHz,
-> > the time precision reaches 2.5ns, which is very good for tracing, even
-> > for Real Time system.
-> > 
-> > but 'Cause it is only 32bit long, which will rollover quickly, so, such
-> > a sched_clock() will bring with extra load, which is not good for the
-> > whole system. so, we only need to implement a arch-specific
-> > trace_clock_local() for tracing. as a preparation, we convert it as a
-> > weak function.
-> 
-> Hmm, I'm not convinced that this is really a huge overhead. 
-> 
-> First of all the rollover happens once every 10 seconds on a 800MHz
-> machine. 
-> 
-> Secondly we have a lockless implementation of extending 32bit counters
-> to 63 bit which is used at least by ARM to provide a high resolution
-> sched_clock implementation. See include/linux/cnt32_63.h and the users
-> in arch/
-> 
-> But that's a problem which can be discussed seperately and does not
-> affect the rest of the tracing infrastructure. I really would
-> recommend that you implement a sched_clock for the r4k machines based
-> on cnt32_63 and measure the overhead. Having a fine granular
-> sched_clock in general is probably not a bad thing.
-> 
+On Mon, Nov 16, 2009 at 02:37:48PM +0200, Phil Carmody wrote:
+> On 14/11/09 07:03 +0100, ext Dmitry Torokhov wrote:
 
-Thanks very much for your prompt, 
+> > Do we really need to do filtering and averaging in kernel? What about
+> > tslib?
 
-Will have a look at cnt32_to_63() in include/linux/cnt32_to_63.h later.
+> Not everyone uses tslib. There's already some filtering in the tsc2005 
+> already, but it's not really enough. This averaging also has the
+> pleasant side-effect of reducing the number of input events. The
+> fudging that takes place later has slightly different smoothing
+> behaviour, and isn't a substitute.
 
-Thanks & Regards,
-	Wu Zhangjin
-
+If we do want to be doing filtering and averaging in kernel then it
+really ought to be some sort of generic framework rather than driver
+specific code since otherwise there will be duplication of effort.  The
+OpenMoko guys were pushing a framework for doing that, I'm not sure what
+the current status is.
