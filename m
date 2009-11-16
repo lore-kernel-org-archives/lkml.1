@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZKPVIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZKPVID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZKPVIr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZKPVIq
+	id S1754232AbZKPVID (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZKPVIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:08:46 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:40218 "EHLO relay.sgi.com"
+	Mon, 16 Nov 2009 16:08:01 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:40233 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753981AbZKPVHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:07:25 -0500
-Message-Id: <20091116210730.101217000@alcatraz.americas.sgi.com>
+	id S1753945AbZKPVHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 16:07:31 -0500
+Message-Id: <20091116210731.022435000@alcatraz.americas.sgi.com>
 References: <20091116210718.412792000@alcatraz.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 16 Nov 2009 15:07:23 -0600
+Date: Mon, 16 Nov 2009 15:07:24 -0600
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -27,60 +27,59 @@ Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Jack Steiner <steiner@sgi.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] sched: Limit the number of scheduler debug messages
-Content-Disposition: inline; filename=limit_sched_debug_messages
+Subject: [PATCH 6/6] x86: Limit number of per cpu TSC sync messages
+Content-Disposition: inline; filename=limit_tsc_sync_messages
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the verbose scheduler debug messages unless kernel parameter
-"sched_debug" set.  /proc/sched_debug unchanged.
+Limit the number of per cpu TSC sync messages by only printing
+to the console if an error occurs, otherwise print as a DEBUG
+message.
+
+The info message "Skipping synchronization ..." is only printed
+after the last cpu has booted.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- Documentation/kernel-parameters.txt |    2 ++
- kernel/sched.c                      |   13 +++++++++++++
- 2 files changed, 15 insertions(+)
+ arch/x86/kernel/tsc_sync.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---- linux.orig/Documentation/kernel-parameters.txt
-+++ linux/Documentation/kernel-parameters.txt
-@@ -2182,6 +2182,8 @@
- 
- 	sbni=		[NET] Granch SBNI12 leased line adapter
- 
-+	sched_debug	[KNL] Enables verbose scheduler debug messages.
-+
- 	sc1200wdt=	[HW,WDT] SC1200 WDT (watchdog) driver
- 			Format: <io>[,<timeout>[,<isapnp>]]
- 
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -7743,6 +7743,16 @@
- 
- #ifdef CONFIG_SCHED_DEBUG
- 
-+static __read_mostly int sched_domain_debug_enabled;
-+
-+static int __init sched_domain_debug_setup(char *str)
-+{
-+	sched_domain_debug_enabled = 1;
-+
-+	return 0;
-+}
-+early_param("sched_debug", sched_domain_debug_setup);
-+
- static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 				  struct cpumask *groupmask)
- {
-@@ -7829,6 +7839,9 @@
- 	cpumask_var_t groupmask;
- 	int level = 0;
- 
-+	if (!sched_domain_debug_enabled)
-+		return;
-+
- 	if (!sd) {
- 		printk(KERN_DEBUG "CPU%d attaching NULL sched-domain.\n", cpu);
+--- linux.orig/arch/x86/kernel/tsc_sync.c
++++ linux/arch/x86/kernel/tsc_sync.c
+@@ -114,13 +114,12 @@
  		return;
+ 
+ 	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE)) {
+-		printk_once(KERN_INFO "Skipping synchronization checks as TSC is reliable.\n");
++		if (cpu == (nr_cpu_ids-1) || system_state != SYSTEM_BOOTING)
++			pr_info(
++			"Skipped synchronization checks as TSC is reliable.\n");
+ 		return;
+ 	}
+ 
+-	pr_info("checking TSC synchronization [CPU#%d -> CPU#%d]:",
+-		smp_processor_id(), cpu);
+-
+ 	/*
+ 	 * Reset it - in case this is a second bootup:
+ 	 */
+@@ -142,12 +141,14 @@
+ 		cpu_relax();
+ 
+ 	if (nr_warps) {
+-		printk("\n");
++		pr_warning("TSC synchronization [CPU#%d -> CPU#%d]:\n",
++			smp_processor_id(), cpu);
+ 		pr_warning("Measured %Ld cycles TSC warp between CPUs, "
+ 			   "turning off TSC clock.\n", max_warp);
+ 		mark_tsc_unstable("check_tsc_sync_source failed");
+ 	} else {
+-		printk(" passed.\n");
++		pr_debug("TSC synchronization [CPU#%d -> CPU#%d]: passed\n",
++			smp_processor_id(), cpu);
+ 	}
+ 
+ 	/*
 
 -- 
