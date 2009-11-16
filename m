@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZKPJw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbZKPKHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbZKPJw5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 04:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZKPJw4
+	id S1752028AbZKPKHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 05:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZKPKHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 04:52:56 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:60222 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbZKPJw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 04:52:56 -0500
-Date: Mon, 16 Nov 2009 09:52:58 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/5] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091116095258.GS29804@csn.ul.ie>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <20091115120721.GA7557@bizet.domek.prywatny>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091115120721.GA7557@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 16 Nov 2009 05:07:21 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:54977 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751514AbZKPKHT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 05:07:19 -0500
+Subject: Re: linux-next: manual merge of the omap_dss2 tree with the omap
+ tree
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       ext Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091116160402.deb0cc82.sfr@canb.auug.org.au>
+References: <20091116160402.deb0cc82.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 16 Nov 2009 12:06:41 +0200
+Message-ID: <1258366001.2384.25.camel@tubuntu.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Nov 2009 10:06:46.0737 (UTC) FILETIME=[8188B410:01CA66A4]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 15, 2009 at 01:07:21PM +0100, Karol Lewandowski wrote:
-> On Thu, Nov 12, 2009 at 07:30:30PM +0000, Mel Gorman wrote:
+On Mon, 2009-11-16 at 06:04 +0100, ext Stephen Rothwell wrote:
+> Hi Tomi,
 > 
-> > [Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
+> Today's linux-next merge of the omap_dss2 tree got a conflict in
+> arch/arm/configs/omap_3430sdp_defconfig between the omap tree and the
+> omap_dss2 tree.
 > 
-> > Patches 1-3 should be tested first. The testing I've done shows that the
-> > page allocator and behaviour of congestion_wait() is more in line with
-> > 2.6.30 than the vanilla kernels.
-> > 
-> > It'd be nice to have 2 more tests, applying each patch on top noting any
-> > behaviour change. i.e. ideally there would be results for
-> > 
-> >  o patches 1+2+3
-> >  o patches 1+2+3+4
-> >  o patches 1+2+3+4+5
-> > 
-> > Of course, any tests results are welcome. The rest of the mail is the
-> > results of my own tests.
-> 
-> I've tried testing 3+4+5 against 2.6.32-rc7 (1+2 seem to be in
-> mainline) and got failure.  I've noticed something strange (I think).
-> I was unable to trigger failures when system was under heavy memory
-> pressure (i.e. my testing - gitk, firefoxes, etc.).  When I killed
-> almost all memory hogs, put system into sleep and resumed -- it
-> failed.  free(1) showed:
-> 
->              total       used       free     shared    buffers     cached
-> Mem:        255240     194052      61188          0       4040      49364
-> -/+ buffers/cache:     140648     114592
-> Swap:       514040      72712     441328
-> 
-> 
-> Is that ok?  Wild guess -- maybe kswapd doesn't take fragmentation (or
-> other factors) into account as hard as it used to in 2.6.30?
-> 
+> I just used the version from the omap tree as I can't figure out anything
+> better, sorry.
 
-That's a lot of memory free. I take it the order-5 GFP_ATOMIC allocation
-failed. What was the dmesg for it please?
+Tony, 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+These patches in omap tree seem to cause the conflicts. Are they stable,
+ie. can I cherry pick them to my for-next tree, and put my patches on
+top of them?
+
+b30dcf5f37023d591caee80c233bf33706bc5a21
+omap3: 3430sdp: Enable Linux Regulator framework
+
+fc89f86e06c11b8828ce1d6c669f724877546c03
+ARM: OMAP3: Fix 3430SDP defconfig
+
+ Tomi
+
+
