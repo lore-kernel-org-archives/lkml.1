@@ -1,402 +1,707 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZKPNGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZKPNMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbZKPNGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 08:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZKPNGg
+	id S1752842AbZKPNMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 08:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZKPNMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 08:06:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50310 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752481AbZKPNGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 08:06:35 -0500
-Date: Mon, 16 Nov 2009 08:05:43 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
-Subject: Re: [PATCH 04/16] blkio: Implement per cfq group latency target
-	and busy queue avg
-Message-ID: <20091116130543.GB13235@redhat.com>
-References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com> <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
+	Mon, 16 Nov 2009 08:12:12 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:17070 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbZKPNMK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 08:12:10 -0500
+Message-ID: <4B014F95.8000906@chelsio.com>
+Date: Mon, 16 Nov 2009 18:41:49 +0530
+From: Rakesh Ranjan <rakesh@chelsio.com>
+Organization: Chelsio Communications
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Mike Christie <michaelc@cs.wisc.edu>
+CC: "open-iscsi@googlegroups.com" <open-iscsi@googlegroups.com>,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@suse.de>, Karen Xie <kxie@chelsio.com>,
+       Rakesh Ranjan <rakesh@chelsio.com>
+Subject: [RFC-PATCH] libiscsi dhcp handler
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/mixed;
+ boundary="------------080408000900090107090600"
+X-OriginalArrivalTime: 16 Nov 2009 13:14:09.0015 (UTC) FILETIME=[AE743070:01CA66BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 12:40:03PM -0500, Vivek Goyal wrote:
-> o So far we had 300ms soft target latency system wide. Now with the
->   introduction of cfq groups, divide that latency by number of groups so
->   that one can come up with group target latency which will be helpful
->   in determining the workload slice with-in group and also the dynamic
->   slice length of the cfq queue.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+This is a multi-part message in MIME format.
+--------------080408000900090107090600
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Regenerated the patch with group_target_lat renamed to group_slice.
-Corrado mentioned that group_target_lat can be confusing here.
+Hi mike,
 
-o So far we had 300ms soft target latency system wide. Now with the
-  introduction of cfq groups, divide that latency by number of groups so
-  that one can come up with group target latency which will be helpful
-  in determining the workload slice with-in group and also the dynamic
-  slice length of the cfq queue.
+Herein attached patches to support dhcp based provisioning for iSCSI
+offload capable cards. I have made dhcp code as generic as possible,
+please go through the code. Based on the feedback I will submit final
+version of these patches.
 
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+Regards
+Rakesh Ranjan
+
+--------------080408000900090107090600
+Content-Type: text/x-patch;
+ name="0001-Required-changes-for-libiscsi-to-support-dhcp-based.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Required-changes-for-libiscsi-to-support-dhcp-based.pat";
+ filename*1="ch"
+
+>From 472d53f2ca0122b7fbfeabbcbde2c9a15499042b Mon Sep 17 00:00:00 2001
+From: Rakesh Ranjan <rakesh@chelsio.com>
+Date: Mon, 16 Nov 2009 18:11:56 +0530
+Subject: [PATCH 1/2] Required changes for libiscsi to support dhcp based provisioning for offload capable cards.
+
+These changes adds ISCSI_UEVENT_REQ_IPCONF message to invoke dhcp handler.
+
+Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
 ---
- block/cfq-iosched.c |   65 ++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 45 insertions(+), 20 deletions(-)
+ Makefile                            |    3 ++-
+ include/scsi/iscsi_if.h             |    4 ++++
+ include/scsi/libiscsi.h             |   20 ++++++++++++++++++++
+ include/scsi/scsi_transport_iscsi.h |    1 +
+ scsi_transport_iscsi.c              |   25 +++++++++++++++++++++++++
+ 5 files changed, 52 insertions(+), 1 deletions(-)
 
-Index: linux7/block/cfq-iosched.c
-===================================================================
---- linux7.orig/block/cfq-iosched.c	2009-11-13 12:03:54.000000000 -0500
-+++ linux7/block/cfq-iosched.c	2009-11-16 07:47:12.000000000 -0500
-@@ -78,6 +78,7 @@ struct cfq_rb_root {
- 	struct rb_node *left;
- 	unsigned count;
- 	u64 min_vdisktime;
-+	unsigned total_weight;
+diff --git a/Makefile b/Makefile
+index 26d33e5..3e5d461 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,10 +2,11 @@
+ # libiscsi modules
+ #
+ ifneq ($(KERNELRELEASE),)
+-	obj-m += libiscsi.o
+ 	obj-m += libiscsi_tcp.o
+ 	obj-m += scsi_transport_iscsi.o
+ 	obj-m += iscsi_tcp.o
++	obj-m += libiscsi.o
++	obj-m += libiscsi_ipconfig.o
+ 	EXTRA_CFLAGS += -I$(src)/include
+ 	
+ else
+diff --git a/include/scsi/iscsi_if.h b/include/scsi/iscsi_if.h
+index d67dda2..135f229 100644
+--- a/include/scsi/iscsi_if.h
++++ b/include/scsi/iscsi_if.h
+@@ -59,6 +59,7 @@ enum iscsi_uevent_e {
+ 	ISCSI_UEVENT_TRANSPORT_EP_CONNECT_THROUGH_HOST	= UEVENT_BASE + 19,
+ 
+ 	ISCSI_UEVENT_PATH_UPDATE	= UEVENT_BASE + 20,
++	ISCSI_UEVENT_REQ_IPCONF		= UEVENT_BASE + 21,
+ 
+ 	/* up events */
+ 	ISCSI_KEVENT_RECV_PDU		= KEVENT_BASE + 1,
+@@ -172,6 +173,9 @@ struct iscsi_uevent {
+ 		struct msg_set_path {
+ 			uint32_t	host_no;
+ 		} set_path;
++		struct mag_req_ipconf {
++			uint32_t	host_no;
++		} req_ipconf;
+ 	} u;
+ 	union {
+ 		/* messages k -> u */
+diff --git a/include/scsi/libiscsi.h b/include/scsi/libiscsi.h
+index a72edd4..a9af95e 100644
+--- a/include/scsi/libiscsi.h
++++ b/include/scsi/libiscsi.h
+@@ -330,6 +330,18 @@ struct iscsi_host {
+ 	char			workq_name[20];
  };
- #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
  
-@@ -167,6 +168,8 @@ struct cfq_group {
- 	/* number of cfqq currently on this group */
- 	int nr_cfqq;
++/* libiscsi ipconfig */
++struct dhcp_info {
++	__be32 ltime;
++	__be32 serverid;
++	__be32 ipaddr;
++	__be32 netmask;
++	__be32 dnsaddr;
++	__be32 gipaddr;
++	__u8 *mac_addr;
++};
++
++
+ /*
+  * scsi host template
+  */
+@@ -427,6 +439,14 @@ extern void iscsi_pool_free(struct iscsi_pool *);
+ extern int iscsi_pool_init(struct iscsi_pool *, int, void ***, int);
  
-+	/* Per group busy queus average. Useful for workload slice calc. */
-+	unsigned int busy_queues_avg[2];
- 	/*
- 	 * rr lists of queues with requests, onle rr for each priority class.
- 	 * Counts are embedded in the cfq_rb_root
-@@ -184,6 +187,8 @@ struct cfq_data {
- 	/* Root service tree for cfq_groups */
- 	struct cfq_rb_root grp_service_tree;
- 	struct cfq_group root_group;
-+	/* Number of active cfq groups on group service tree */
-+	int nr_groups;
+ /*
++ * libiscsi ipconfig helpers
++ */
++extern int libiscsi_do_ipconf(struct net_device *ndev,
++				struct dhcp_info *dinfo);
++extern int libiscsi_ipconfig_recv(struct net_device *ndev,
++					struct sk_buff *skb);
++
++/*
+  * inline functions to deal with padding.
+  */
+ static inline unsigned int
+diff --git a/include/scsi/scsi_transport_iscsi.h b/include/scsi/scsi_transport_iscsi.h
+index 349c7f3..3e5fd96 100644
+--- a/include/scsi/scsi_transport_iscsi.h
++++ b/include/scsi/scsi_transport_iscsi.h
+@@ -134,6 +134,7 @@ struct iscsi_transport {
+ 	int (*tgt_dscvr) (struct Scsi_Host *shost, enum iscsi_tgt_dscvr type,
+ 			  uint32_t enable, struct sockaddr *dst_addr);
+ 	int (*set_path) (struct Scsi_Host *shost, struct iscsi_path *params);
++	int (*req_ipconf) (struct Scsi_Host *shost);
+ };
  
- 	/*
- 	 * The priority currently being served
-@@ -201,7 +206,6 @@ struct cfq_data {
- 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
- 
- 	unsigned int busy_queues;
--	unsigned int busy_queues_avg[2];
- 
- 	int rq_in_driver[2];
- 	int sync_flight;
-@@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct c
- 	return SYNC_WORKLOAD;
+ /*
+diff --git a/scsi_transport_iscsi.c b/scsi_transport_iscsi.c
+index ad897df..4897a3f 100644
+--- a/scsi_transport_iscsi.c
++++ b/scsi_transport_iscsi.c
+@@ -1508,6 +1508,28 @@ iscsi_set_path(struct iscsi_transport *transport, struct iscsi_uevent *ev)
  }
  
--static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
-+static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
-+					struct cfq_data *cfqd,
-+					struct cfq_group *cfqg)
- {
--	struct cfq_group *cfqg = &cfqd->root_group;
--
- 	if (wl == IDLE_WORKLOAD)
- 		return cfqg->service_tree_idle.count;
- 
-@@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd,
-  * to quickly follows sudden increases and decrease slowly
-  */
- 
--static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
-+static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
-+					struct cfq_group *cfqg, bool rt)
- {
- 	unsigned min_q, max_q;
- 	unsigned mult  = cfq_hist_divisor - 1;
- 	unsigned round = cfq_hist_divisor / 2;
--	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
-+	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
- 
--	min_q = min(cfqd->busy_queues_avg[rt], busy);
--	max_q = max(cfqd->busy_queues_avg[rt], busy);
--	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
-+	min_q = min(cfqg->busy_queues_avg[rt], busy);
-+	max_q = max(cfqg->busy_queues_avg[rt], busy);
-+	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
- 		cfq_hist_divisor;
--	return cfqd->busy_queues_avg[rt];
-+	return cfqg->busy_queues_avg[rt];
+ static int
++iscsi_req_ipconf(struct iscsi_transport *transport, struct iscsi_uevent *ev)
++{
++	struct Scsi_Host *shost;
++	int err;
++
++	if (!transport->req_ipconf)
++		return -ENOSYS;
++
++	shost = scsi_host_lookup(ev->u.req_ipconf.host_no);
++	if (!shost) {
++		printk(KERN_ERR "ipconf req could not find host no %u\n",
++				ev->u.req_ipconf.host_no);
++		return -ENODEV;
++	}
++
++	err = transport->req_ipconf(shost);
++
++	scsi_host_put(shost);
++	return err;
 +}
 +
-+static inline unsigned
-+cfq_group_slice(struct cfq_data *cfqd, struct cfq_group *cfqg)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+
-+	return cfq_target_latency * cfqg->weight / st->total_weight;
- }
- 
- static inline void
-@@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd
++static int
+ iscsi_if_recv_msg(struct sk_buff *skb, struct nlmsghdr *nlh, uint32_t *group)
  {
- 	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
- 	if (cfqd->cfq_latency) {
--		/* interested queues (we consider only the ones with the same
--		 * priority class) */
--		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-+		/*
-+		 * interested queues (we consider only the ones with the same
-+		 * priority class in the cfq group)
-+		 */
-+		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
-+						cfq_class_rt(cfqq));
- 		unsigned sync_slice = cfqd->cfq_slice[1];
- 		unsigned expect_latency = sync_slice * iq;
--		if (expect_latency > cfq_target_latency) {
-+		unsigned group_slice = cfq_group_slice(cfqd, cfqq->cfqg);
+ 	int err = 0;
+@@ -1627,6 +1649,9 @@ iscsi_if_recv_msg(struct sk_buff *skb, struct nlmsghdr *nlh, uint32_t *group)
+ 	case ISCSI_UEVENT_PATH_UPDATE:
+ 		err = iscsi_set_path(transport, ev);
+ 		break;
++	case ISCSI_UEVENT_REQ_IPCONF:
++		err = iscsi_req_ipconf(transport, ev);
++		break;
+ 	default:
+ 		err = -ENOSYS;
+ 		break;
+-- 
+1.6.0.6
+
+
+--------------080408000900090107090600
+Content-Type: text/x-patch;
+ name="0002-dhcp-handler-for-libiscsi-to-support-dhcp-provisioni.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0002-dhcp-handler-for-libiscsi-to-support-dhcp-provisioni.pa";
+ filename*1="tch"
+
+>From 8df0fd4d0a972bd76bb71d7fdac274b273cec50d Mon Sep 17 00:00:00 2001
+From: Rakesh Ranjan <rakesh@chelsio.com>
+Date: Mon, 16 Nov 2009 18:32:57 +0530
+Subject: [PATCH 2/2] dhcp handler for libiscsi to support dhcp provisioning for offload capable cards.
+
+This module contains a compact dhcp handler to support dhcp based provisioning for
+offload capable cards.
+
+Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
+---
+ libiscsi_ipconfig.c |  466 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 466 insertions(+), 0 deletions(-)
+ create mode 100644 libiscsi_ipconfig.c
+
+diff --git a/libiscsi_ipconfig.c b/libiscsi_ipconfig.c
+new file mode 100644
+index 0000000..4057aae
+--- /dev/null
++++ b/libiscsi_ipconfig.c
+@@ -0,0 +1,466 @@
++/* libiscsi_ipconfig.c: libiscsi dhcp client.
++ *
++ * Copyright (c) 2009 Chelsio Communications, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation.
++ *
++ * Written by: Rakesh Ranjan (rakesh@chelsio.com)
++ */
 +
-+		if (expect_latency > group_slice) {
- 			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
- 			/* scale low_slice according to IO priority
- 			 * and sync vs async */
-@@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd
- 				min(slice, base_low_slice * slice / sync_slice);
- 			/* the adapted slice value is scaled to fit all iqs
- 			 * into the target latency */
--			slice = max(slice * cfq_target_latency / expect_latency,
-+			slice = max(slice * group_slice / expect_latency,
- 				    low_slice);
- 		}
- 	}
-@@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_da
- 
- 	__cfq_group_service_tree_add(st, cfqg);
- 	cfqg->on_st = true;
-+	cfqd->nr_groups++;
-+	st->total_weight += cfqg->weight;
- }
- 
- static void
-@@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_da
- 		return;
- 
- 	cfqg->on_st = false;
-+	cfqd->nr_groups--;
-+	st->total_weight -= cfqg->weight;
- 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
- 		cfq_rb_erase(&cfqg->rb_node, st);
- }
-@@ -1592,6 +1614,7 @@ static void choose_service_tree(struct c
- 	unsigned slice;
- 	unsigned count;
- 	struct cfq_rb_root *st;
-+	unsigned group_slice;
- 
- 	if (!cfqg) {
- 		cfqd->serving_prio = IDLE_WORKLOAD;
-@@ -1600,9 +1623,9 @@ static void choose_service_tree(struct c
- 	}
- 
- 	/* Choose next priority. RT > BE > IDLE */
--	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
-+	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
- 		cfqd->serving_prio = RT_WORKLOAD;
--	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
-+	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
- 		cfqd->serving_prio = BE_WORKLOAD;
- 	else {
- 		cfqd->serving_prio = IDLE_WORKLOAD;
-@@ -1640,9 +1663,11 @@ static void choose_service_tree(struct c
- 	 * proportional to the number of queues in that workload, over
- 	 * all the queues in the same priority class
- 	 */
--	slice = cfq_target_latency * count /
--		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
--		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
-+	group_slice = cfq_group_slice(cfqd, cfqg);
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/in.h>
++#include <linux/delay.h>
++#include <linux/if_arp.h>
++#include <net/ip.h>
++#include <scsi/iscsi_if.h>
++#include <scsi/libiscsi.h>
 +
-+	slice = group_slice * count /
-+		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
-+		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
- 
- 	if (cfqd->serving_type == ASYNC_WORKLOAD)
- 		/* async workload slice is scaled down according to
-> ---
->  block/cfq-iosched.c |   65 +++++++++++++++++++++++++++++++++++---------------
->  1 files changed, 45 insertions(+), 20 deletions(-)
-> 
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 73d93af..11256c3 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -78,6 +78,7 @@ struct cfq_rb_root {
->  	struct rb_node *left;
->  	unsigned count;
->  	u64 min_vdisktime;
-> +	unsigned total_weight;
->  };
->  #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
->  
-> @@ -167,6 +168,8 @@ struct cfq_group {
->  	/* number of cfqq currently on this group */
->  	int nr_cfqq;
->  
-> +	/* Per group busy queus average. Useful for workload slice calc. */
-> +	unsigned int busy_queues_avg[2];
->  	/*
->  	 * rr lists of queues with requests, onle rr for each priority class.
->  	 * Counts are embedded in the cfq_rb_root
-> @@ -184,6 +187,8 @@ struct cfq_data {
->  	/* Root service tree for cfq_groups */
->  	struct cfq_rb_root grp_service_tree;
->  	struct cfq_group root_group;
-> +	/* Number of active cfq groups on group service tree */
-> +	int nr_groups;
->  
->  	/*
->  	 * The priority currently being served
-> @@ -201,7 +206,6 @@ struct cfq_data {
->  	struct rb_root prio_trees[CFQ_PRIO_LISTS];
->  
->  	unsigned int busy_queues;
-> -	unsigned int busy_queues_avg[2];
->  
->  	int rq_in_driver[2];
->  	int sync_flight;
-> @@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
->  	return SYNC_WORKLOAD;
->  }
->  
-> -static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
-> +static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
-> +					struct cfq_data *cfqd,
-> +					struct cfq_group *cfqg)
->  {
-> -	struct cfq_group *cfqg = &cfqd->root_group;
-> -
->  	if (wl == IDLE_WORKLOAD)
->  		return cfqg->service_tree_idle.count;
->  
-> @@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->   * to quickly follows sudden increases and decrease slowly
->   */
->  
-> -static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
-> +static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
-> +					struct cfq_group *cfqg, bool rt)
->  {
->  	unsigned min_q, max_q;
->  	unsigned mult  = cfq_hist_divisor - 1;
->  	unsigned round = cfq_hist_divisor / 2;
-> -	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
-> +	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
->  
-> -	min_q = min(cfqd->busy_queues_avg[rt], busy);
-> -	max_q = max(cfqd->busy_queues_avg[rt], busy);
-> -	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
-> +	min_q = min(cfqg->busy_queues_avg[rt], busy);
-> +	max_q = max(cfqg->busy_queues_avg[rt], busy);
-> +	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
->  		cfq_hist_divisor;
-> -	return cfqd->busy_queues_avg[rt];
-> +	return cfqg->busy_queues_avg[rt];
-> +}
-> +
-> +static inline unsigned
-> +cfq_group_latency(struct cfq_data *cfqd, struct cfq_group *cfqg)
-> +{
-> +	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-> +
-> +	return cfq_target_latency * cfqg->weight / st->total_weight;
->  }
->  
->  static inline void
-> @@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  {
->  	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
->  	if (cfqd->cfq_latency) {
-> -		/* interested queues (we consider only the ones with the same
-> -		 * priority class) */
-> -		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
-> +		/*
-> +		 * interested queues (we consider only the ones with the same
-> +		 * priority class in the cfq group)
-> +		 */
-> +		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
-> +						cfq_class_rt(cfqq));
->  		unsigned sync_slice = cfqd->cfq_slice[1];
->  		unsigned expect_latency = sync_slice * iq;
-> -		if (expect_latency > cfq_target_latency) {
-> +		unsigned group_target_lat = cfq_group_latency(cfqd, cfqq->cfqg);
-> +
-> +		if (expect_latency > group_target_lat) {
->  			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
->  			/* scale low_slice according to IO priority
->  			 * and sync vs async */
-> @@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  				min(slice, base_low_slice * slice / sync_slice);
->  			/* the adapted slice value is scaled to fit all iqs
->  			 * into the target latency */
-> -			slice = max(slice * cfq_target_latency / expect_latency,
-> +			slice = max(slice * group_target_lat / expect_latency,
->  				    low_slice);
->  		}
->  	}
-> @@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
->  
->  	__cfq_group_service_tree_add(st, cfqg);
->  	cfqg->on_st = true;
-> +	cfqd->nr_groups++;
-> +	st->total_weight += cfqg->weight;
->  }
->  
->  static void
-> @@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
->  		return;
->  
->  	cfqg->on_st = false;
-> +	cfqd->nr_groups--;
-> +	st->total_weight -= cfqg->weight;
->  	if (!RB_EMPTY_NODE(&cfqg->rb_node))
->  		cfq_rb_erase(&cfqg->rb_node, st);
->  }
-> @@ -1592,6 +1614,7 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
->  	unsigned slice;
->  	unsigned count;
->  	struct cfq_rb_root *st;
-> +	int group_target_latency;
->  
->  	if (!cfqg) {
->  		cfqd->serving_prio = IDLE_WORKLOAD;
-> @@ -1600,9 +1623,9 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
->  	}
->  
->  	/* Choose next priority. RT > BE > IDLE */
-> -	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
-> +	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
->  		cfqd->serving_prio = RT_WORKLOAD;
-> -	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
-> +	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
->  		cfqd->serving_prio = BE_WORKLOAD;
->  	else {
->  		cfqd->serving_prio = IDLE_WORKLOAD;
-> @@ -1640,9 +1663,11 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
->  	 * proportional to the number of queues in that workload, over
->  	 * all the queues in the same priority class
->  	 */
-> -	slice = cfq_target_latency * count /
-> -		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
-> -		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
-> +	group_target_latency = cfq_group_latency(cfqd, cfqg);
-> +
-> +	slice = group_target_latency * count /
-> +		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
-> +		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
->  
->  	if (cfqd->serving_type == ASYNC_WORKLOAD)
->  		/* async workload slice is scaled down according to
-> -- 
-> 1.6.2.5
++#define DHCP_REQUEST        1
++#define DHCP_REPLY          2
++#define DHCP_HTYPE_ETHERNET 1
++#define DHCP_HLEN_ETHERNET  6
++#define DHCP_MSG_LEN      236
++
++#define DHCPC_SERVER_PORT  67
++#define DHCPC_CLIENT_PORT  68
++
++/*  DHCP message types */
++#define DHCPDISCOVER	1
++#define DHCPOFFER	2
++#define DHCPREQUEST	3
++#define DHCPDECLINE	4
++#define DHCPACK		5
++#define DHCPNAK		6
++#define DHCPRELEASE	7
++#define DHCPINFORM	8
++
++/* DHCP options */
++#define DHCP_OPTION_SUBNET_MASK		1
++#define DHCP_OPTION_ROUTER		3
++#define DHCP_OPTION_DNS_SERVER		6
++#define	DHCP_OPTION_MTU			26
++#define DHCP_OPTION_REQ_IPADDR		50
++#define DHCP_OPTION_LEASE_TIME		51
++#define DHCP_OPTION_MSG_TYPE		53
++#define DHCP_OPTION_SERVER_ID		54
++#define DHCP_OPTION_REQ_LIST		55
++#define	DHCP_OPTION_VCID		60
++#define DHCP_OPTION_END			255
++
++enum {
++	STATE_INIT	= 0,
++	STATE_SENDING,
++	STATE_OFFER_REC,
++	STATE_CONFIG_REC,
++};
++
++struct dhcp_pkt {
++	struct iphdr iph;
++	struct udphdr udph;
++	u8 op;
++	u8 htype;
++	u8 hlen;
++	u8 hops;
++	__be32 xid;
++	__be16 secs;
++	__be16 flags;
++	__be32 cipaddr;
++	__be32 yipaddr;
++	__be32 sipaddr;
++	__be32 ripaddr;
++	u8 chwaddr[16];
++	u8 sname[64];
++	u8 bfile[128];
++	u8 options[312];
++};
++
++
++static struct dhcp_client_state {
++	struct sk_buff *skb;
++	struct dhcp_pkt *pkt;
++	struct net_device *ndev;
++	struct list_head list;
++	struct dhcp_info dinfo;
++
++	volatile __u8 state;
++	__be32 xid;
++
++} client_state;
++
++static DEFINE_SPINLOCK(rcv_lock);
++
++static const char *RFC2132_VENDOR_CLASS_ID = "libiscsi client";
++
++static const u8 magic_cookie[4] = { 99, 130, 83, 99 };
++
++static inline u8 *add_msg_type(u8 *optptr, u8 type)
++{
++	*optptr++ = DHCP_OPTION_MSG_TYPE;
++	*optptr++ = 1;
++	*optptr++ = type;
++	return optptr;
++}
++
++static inline u8 *add_req_options(u8 *optptr)
++{
++	*optptr++ = DHCP_OPTION_REQ_LIST;
++	*optptr++ = 4;
++	*optptr++ = DHCP_OPTION_SUBNET_MASK;
++	*optptr++ = DHCP_OPTION_ROUTER;
++	*optptr++ = DHCP_OPTION_DNS_SERVER;
++	*optptr++ = DHCP_OPTION_MTU;
++	return optptr;
++}
++
++static inline u8 *add_vendor_cid(u8 *optptr)
++{
++	u8 len = strlen(RFC2132_VENDOR_CLASS_ID);
++	*optptr++ = DHCP_OPTION_VCID;
++	*optptr++ = len;
++	memcpy(optptr, RFC2132_VENDOR_CLASS_ID, len);
++	optptr += len;
++	return optptr;
++}
++
++static inline u8 *add_server_id(__be32 *sid, u8 *optptr)
++{
++	*optptr++ = DHCP_OPTION_SERVER_ID;
++	*optptr++ = 4;
++	memcpy(optptr, sid, 4);
++	return optptr + 4;
++}
++
++static inline u8 *add_req_ipaddr(__be32 *ip, u8 *optptr)
++{
++	*optptr++ = DHCP_OPTION_REQ_IPADDR;
++	*optptr++ = 4;
++	memcpy(optptr, ip, 4);
++	return optptr + 4;
++}
++
++static inline u8 *add_end(u8 *optptr)
++{
++	*optptr++ = DHCP_OPTION_END;
++	return optptr;
++}
++
++static void
++libiscsi_process_dhcp_opts(struct dhcp_client_state *client, u8 *optptr,
++								int len)
++{
++	u8 *end = optptr + len;
++	u8 type = 0;
++
++	while (optptr < end) {
++		switch (*optptr) {
++		case DHCP_OPTION_SUBNET_MASK:
++			memcpy(&client->dinfo.netmask, optptr + 2, 4);
++			break;
++		case DHCP_OPTION_ROUTER:
++			memcpy(&client->dinfo.gipaddr, optptr + 2, 4);
++			break;
++		case DHCP_OPTION_DNS_SERVER:
++			memcpy(&client->dinfo.dnsaddr, optptr + 2, 4);
++			break;
++		case DHCP_OPTION_MSG_TYPE:
++			type = *(optptr + 2);
++			if (type == DHCPOFFER)
++				client->state = STATE_OFFER_REC;
++			else if (type == DHCPACK)
++				client->state = STATE_CONFIG_REC;
++			break;
++		case DHCP_OPTION_SERVER_ID:
++			memcpy(&client->dinfo.serverid, optptr + 2, 4);
++			break;
++		case DHCP_OPTION_LEASE_TIME:
++			memcpy(&client->dinfo.ltime, optptr + 2, 4);
++			break;
++		case DHCP_OPTION_END:
++			break;
++		}
++
++		optptr += optptr[1] + 2;
++	}
++}
++
++static void
++libiscsi_process_dhcp_pack(struct dhcp_client_state *client,
++					struct dhcp_pkt *pkt)
++{
++	u8 *start, *end;
++	int opt_len;
++
++	start = &pkt->options[4];
++	end = (u8 *) pkt + ntohs(pkt->iph.tot_len);
++	opt_len = end - start;
++
++	if (pkt->op == DHCP_REPLY &&
++		!memcmp(&pkt->xid, &client->xid, sizeof(client->xid)) &&
++		!memcmp(pkt->chwaddr, client->dinfo.mac_addr, pkt->hlen)) {
++		memcpy(&client->dinfo.ipaddr, &pkt->yipaddr, 4);
++		libiscsi_process_dhcp_opts(client, start, opt_len);
++	}
++}
++
++static int
++libiscsi_ipconfig_send(struct dhcp_client_state *client)
++{
++	int rc = 0;
++	struct sk_buff *lskb = client->skb;
++
++	lskb->dev = client->ndev;
++	lskb->protocol = htons(ETH_P_IP);
++
++	dev_hard_header(lskb, client->ndev, ntohs(lskb->protocol),
++					client->ndev->broadcast,
++					client->dinfo.mac_addr, lskb->len);
++	rc = dev_queue_xmit(lskb);
++
++	return rc;
++}
++
++int
++libiscsi_ipconfig_recv(struct net_device *ndev, struct sk_buff *skb)
++{
++	struct iphdr *iph;
++	struct udphdr *udph;
++	struct ethhdr *eh;
++	struct dhcp_pkt *pkt;
++	struct sk_buff *pskb;
++	int len, opts_len;
++	struct dhcp_client_state *client;
++	int rc = 0;
++
++
++	client = &client_state;
++
++	if (unlikely(client->state == STATE_INIT))
++		goto out;
++
++	if (skb->pkt_type != PACKET_OTHERHOST)
++		goto out;
++
++	pskb = skb_copy(skb, GFP_ATOMIC);
++	if (!pskb) {
++		rc = -ENOMEM;
++		goto out;
++	}
++
++	eh = eth_hdr(pskb);
++	if (!is_valid_ether_addr(eh->h_dest))
++		goto drop;
++
++	if (compare_ether_addr(eh->h_dest, client->dinfo.mac_addr))
++		goto drop;
++
++	if (!pskb_may_pull(pskb, sizeof(struct iphdr) + sizeof(struct udphdr)))
++		goto drop;
++
++
++	skb_reset_network_header(pskb);
++	pkt = (struct dhcp_pkt *) skb_network_header(pskb);
++	iph = &pkt->iph;
++
++	if (iph->ihl != 5 || iph->version != 4 || iph->protocol != IPPROTO_UDP)
++		goto drop;
++
++	if (iph->frag_off & htons(IP_OFFSET | IP_MF))
++		goto drop;
++
++	if (skb->len < ntohs(iph->tot_len))
++		goto drop;
++
++	if (ip_fast_csum((u8 *)iph, iph->ihl))
++		goto drop;
++
++	udph = &pkt->udph;
++	if (udph->source != htons(67) || udph->dest != htons(68))
++		goto drop;
++
++	if (ntohs(iph->tot_len) < ntohs(udph->len) + sizeof(struct iphdr))
++		goto drop;
++
++	len = ntohs(udph->len) - sizeof(struct udphdr);
++	opts_len = len - (sizeof(*pkt) -
++			sizeof(struct iphdr) -
++			sizeof(struct udphdr) -
++			sizeof(pkt->options));
++	if (opts_len < 0)
++		goto drop;
++
++	if (memcmp(pkt->options, magic_cookie, 4))
++		goto drop;
++
++	spin_lock(&rcv_lock);
++
++	libiscsi_process_dhcp_pack(client, pkt);
++
++	spin_unlock(&rcv_lock);
++
++drop:
++	kfree(pskb);
++out:
++	return rc;
++}
++EXPORT_SYMBOL(libiscsi_ipconfig_recv);
++
++static int
++libiscsi_create_dhcp_msg(struct dhcp_client_state *client)
++{
++	struct iphdr *iph;
++	struct udphdr *udph;
++	struct sk_buff *skb;
++	struct dhcp_pkt *pkt;
++	int rc = 0;
++
++	skb = alloc_skb(sizeof(*pkt) +
++			LL_ALLOCATED_SPACE(client->ndev) + 15,
++			GFP_KERNEL);
++	if (!skb) {
++		rc = -ENOMEM;
++		return rc;
++	}
++
++	client->skb = skb;
++	skb_reserve(skb, LL_RESERVED_SPACE(client->ndev));
++
++	pkt = (struct dhcp_pkt *) skb_put(skb, sizeof(*pkt));
++	BUG_ON(!pkt);
++	client->pkt = pkt;
++	memset(pkt, 0, sizeof(*pkt));
++
++	skb_reset_network_header(skb);
++
++	/* construct IP header */
++	iph = &pkt->iph;
++	iph->version = 4;
++	iph->ihl = 5;
++	iph->tot_len = htons(sizeof(struct dhcp_pkt));
++	iph->frag_off = htons(IP_DF);
++	iph->ttl = 64;
++	iph->protocol = IPPROTO_UDP;
++	iph->daddr = htonl(INADDR_BROADCAST);
++	iph->check = ip_fast_csum((u8 *) iph, iph->ihl);
++
++	/* Construct UDP header */
++	udph = &pkt->udph;
++	udph->source = htons(DHCPC_CLIENT_PORT);
++	udph->dest = htons(DHCPC_SERVER_PORT);
++	udph->len = htons(sizeof(struct dhcp_pkt) - sizeof(struct iphdr));
++
++	pkt->op = DHCP_REQUEST;
++	pkt->htype = DHCP_HTYPE_ETHERNET;
++	pkt->hlen = ETH_ALEN;
++
++	memcpy(pkt->chwaddr, client->dinfo.mac_addr, ETH_ALEN);
++	pkt->secs = htons(jiffies / HZ);
++	pkt->xid = client->xid;
++
++	memcpy(pkt->options, magic_cookie, sizeof(magic_cookie));
++
++	return rc;
++}
++
++static int libiscsi_send_dhcp_request(struct dhcp_client_state *client)
++{
++	int rc = 0;
++	u8 *end;
++
++	rc = libiscsi_create_dhcp_msg(client);
++	if (rc)
++		return rc;
++
++	end = add_msg_type(&client->pkt->options[4], DHCPREQUEST);
++	end = add_server_id(&client->dinfo.serverid, end);
++	end = add_req_ipaddr(&client->dinfo.ipaddr, end);
++	end = add_vendor_cid(end);
++	end = add_end(end);
++
++	rc = libiscsi_ipconfig_send(client);
++
++	return rc;
++}
++
++static int libiscsi_send_dhcp_discover(struct dhcp_client_state *client)
++{
++	int rc = 0;
++	u8 *end;
++
++	rc = libiscsi_create_dhcp_msg(client);
++	if (rc)
++		return rc;
++
++	end = add_msg_type(&client->pkt->options[4], DHCPDISCOVER);
++	end = add_req_options(end);
++	end = add_vendor_cid(end);
++	end = add_end(end);
++
++	client->state = STATE_SENDING;
++	rc = libiscsi_ipconfig_send(client);
++
++	return rc;
++}
++
++static void
++libiscsi_wait_for_pack(struct dhcp_client_state *client, u8 state)
++{
++	unsigned long tout, ntout;
++
++	get_random_bytes(&tout, sizeof(tout));
++	tout = (tout % (unsigned)HZ) + (HZ * 2);
++
++	ntout = jiffies + tout;
++	while (time_before(jiffies, ntout) && (client->state != state))
++		schedule_timeout_uninterruptible(1);
++}
++
++int libiscsi_do_ipconf(struct net_device *ndev, struct dhcp_info *dinfo)
++{
++	int rc = 0;
++	int retry;
++	struct dhcp_client_state *client;
++	retry = 2;
++
++	client = &client_state;
++	client->dinfo.mac_addr = dinfo->mac_addr;
++	client->ndev = ndev;
++	client->state = STATE_INIT;
++
++	/* show time */
++	for (;;) {
++		get_random_bytes(&client->xid, sizeof(__be32));
++		libiscsi_send_dhcp_discover(client);
++		libiscsi_wait_for_pack(client, STATE_OFFER_REC);
++
++		if (client->state == STATE_OFFER_REC) {
++			libiscsi_send_dhcp_request(client);
++			libiscsi_wait_for_pack(client, STATE_CONFIG_REC);
++			if (client->state == STATE_CONFIG_REC) {
++				dinfo->ipaddr = client->dinfo.ipaddr;
++				dinfo->netmask = client->dinfo.netmask;
++				dinfo->ltime = client->dinfo.ltime;
++				client->state = STATE_INIT;
++				break;
++			}
++		}
++
++		if (!--retry) {
++			rc = -ENETUNREACH;
++			break;
++		}
++	}
++
++	return rc;
++}
++EXPORT_SYMBOL(libiscsi_do_ipconf);
++
++MODULE_AUTHOR("Rakesh Ranjan");
++MODULE_DESCRIPTION("iSCSI ipconfig functions");
++MODULE_LICENSE("GPL");
+-- 
+1.6.0.6
+
+
+--------------080408000900090107090600--
