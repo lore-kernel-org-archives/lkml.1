@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZKPVPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbZKPVN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZKPVPA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:15:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZKPVO7
+	id S1754378AbZKPVN0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZKPVN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:14:59 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:63706 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbZKPVO6 (ORCPT
+	Mon, 16 Nov 2009 16:13:26 -0500
+Received: from mtagate6.de.ibm.com ([195.212.17.166]:52712 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbZKPVNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:14:58 -0500
-Message-ID: <4B01C03C.6000309@oracle.com>
-Date: Mon, 16 Nov 2009 13:12:28 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 16 Nov 2009 16:13:25 -0500
+Date: Mon, 16 Nov 2009 22:13:29 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Subject: Re: [PATCH] s390: ensure NUL termination by strncpy()
+Message-ID: <20091116211328.GA5828@osiris.boeblingen.de.ibm.com>
+References: <4B019FC2.3060004@gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Shaohua Li <shaohua.li@intel.com>, linux-kernel@vger.kernel.org,
-       bcrl@kvack.org, Jeff Moyer <jmoyer@redhat.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH]aio: remove unused field
-References: <20091112075247.GA17960@sli10-desk.sh.intel.com> <20091113143408.c7965e74.akpm@linux-foundation.org>
-In-Reply-To: <20091113143408.c7965e74.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B01C07E.014C:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B019FC2.3060004@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 16, 2009 at 07:53:54PM +0100, Roel Kluin wrote:
+> For a larger source string, strncpy only NUL terminates when
+> the size argument is less than the size of the destination string.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/s390/kernel/ipl.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> Is this maybe needed?
 
-> If we do this then kick_iocb() has only one in-kernel caller, in
-> drivers/usb/gadget/inode.c.  I wonder if the gadget code really needs
-> to be using kick_iocb()?
+No, kernel_nss_name as well as the data.nss.name char array within ipl_info
+have the same size. So it will always fit and it is always NUL terminated.
 
-I don't think that it needs to, no.  It's only using the aio retry
-functionality to perform a copy of read data into user space.
+Maybe it should be changed to a simple memcpy, like we have it at a second
+place in the same file. I think that's up to Michael.
 
-I have a patch to switch it to using schedule_work() instead:
-
-  http://marc.info/?l=linux-fsdevel&m=125624446623075&w=2
-
-I've been focusing on other things instead of pushing that to the usb
-folks to be tested and merged, though.  I've cc:ed them in case they
-want to run with this.
-
-- z
+> diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
+> index 4890ac6..d52fcb4 100644
+> --- a/arch/s390/kernel/ipl.c
+> +++ b/arch/s390/kernel/ipl.c
+> @@ -1881,7 +1881,7 @@ void __init setup_ipl(void)
+>  		break;
+>  	case IPL_TYPE_NSS:
+>  		strncpy(ipl_info.data.nss.name, kernel_nss_name,
+> -			sizeof(ipl_info.data.nss.name));
+> +			sizeof(ipl_info.data.nss.name) - 1);
+>  		break;
+>  	case IPL_TYPE_UNKNOWN:
+>  		/* We have no info to copy */
