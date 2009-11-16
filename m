@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZKPSaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbZKPScZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbZKPSaG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 13:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKPSaF
+	id S1752677AbZKPScZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 13:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZKPScY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 13:30:05 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41941 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751458AbZKPSaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 13:30:04 -0500
-Date: Mon, 16 Nov 2009 18:31:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Stijn Devriendt <highguy@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrea Arcangeli <andrea@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] observe and act upon workload parallelism:
- PERF_TYPE_PARALLELISM (Was: [RFC][PATCH] sched_wait_block: wait for blocked
- threads)
-Message-ID: <20091116183117.48a02426@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0911160945470.9384@localhost.localdomain>
-References: <1258311859-6189-1-git-send-email-HIGHGuY@gmail.com>
-	<20091116083521.GC20672@elte.hu>
-	<alpine.LFD.2.01.0911160945470.9384@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Nov 2009 13:32:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6472 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZKPScY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 13:32:24 -0500
+Message-ID: <4B019A76.2080706@redhat.com>
+Date: Mon, 16 Nov 2009 20:31:18 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       torvalds@linux-foundation.org, peterz@infradead.org,
+       andi@firstfloor.org, fweisbec@gmail.com
+Subject: Re: [PATCH 04/21] sched: implement scheduler notifiers
+References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-5-git-send-email-tj@kernel.org>
+In-Reply-To: <1258391726-30264-5-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009 10:02:50 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On 11/16/2009 07:15 PM, Tejun Heo wrote:
+> Implement scheduler notifiers.  This is superset of preempt notifiers
+> which will be removed in favor of new notifiers.  Four notifications
+> are defined - activated, deactivated, in and out.  In and out are
+> identical to preempt notifiers.  Activated and deactivated are called
+> when a task's readiness to run changes.  The first three are always
+> called under rq lock.  Out may not be called under rq lock depending
+> on architecture.
+>
+> The notifier block contains union of all four callbacks to avoid
+> defining separate interface for each.
+>    
 
-> 
-> 
-> On Mon, 16 Nov 2009, Ingo Molnar wrote:
-> > 
-> > Regarding the API and your patch, i think we can and should do something 
-> > different and more capable - while still keeping your basic idea:
-> 
-> Actually, I'd suggest exactly the reverse.
-> 
-> Yes, do something different, but _less_ capable, and much simpler: 
-> introduce the notion of "grouped thread scheduling", where a _group_ of 
-> threads gets scheduled as one thread.
+> +
+> +struct sched_notifier {
+> +	struct hlist_node	link;
+> +	union {
+> +		void (*activated)(struct sched_notifier *n, bool wakeup);
+> +		void (*deactivated)(struct sched_notifier *n, bool sleep);
+> +		void (*in)(struct sched_notifier *n, struct task_struct *prev);
+> +		void (*out)(struct sched_notifier *n, struct task_struct *next);
+> +	};
+> +};
+> +
+>
+>   struct task_struct {
+> @@ -1237,6 +1268,8 @@ struct task_struct {
+>   	/* list of struct preempt_notifier: */
+>   	struct hlist_head preempt_notifiers;
+>   #endif
+> +	/* sched notifiers */
+> +	struct hlist_head notifiers[SCHED_NR_NOTIFIERS];
+>
+>    
 
-And preferably expose it so it can be used by groups of processes as well
-as just "threads" in the userspace shared pid etc sense. There are quite
-a few applications where both "only run one of us" and "don't pre-empt
-within the group" are a useful semantic (you often don't want the
-pre-empting within the group of threads because it messes up all the
-improved locking opportunities). In particular the usual buzz locks don't
-mix well with "only run one of us".
+Four hlist_heads (64 bytes) is pretty heavy for this.  I having all 
+members present in sched_notifier (instead of a union) and calling a 
+callback if it is not NULL.  This reduces the overhead to 16 bytes at 
+the expense of an extra check for sched_notifier users.
 
-Alan
+Besides this, is there any difference to preempt_notifiers?  if not we 
+can just add the new members and rename.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
