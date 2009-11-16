@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZKPXCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZKPWwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbZKPXCI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 18:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZKPWwf
+	id S1754684AbZKPWwl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 17:52:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZKPWwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 17:52:35 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60166 "EHLO ogre.sisk.pl"
+	Mon, 16 Nov 2009 17:52:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60172 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754638AbZKPWwd convert rfc822-to-8bit (ORCPT
+	id S1754614AbZKPWwf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 17:52:33 -0500
+	Mon, 16 Nov 2009 17:52:35 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Zeno Davatz" <zdavatz@gmail.com>
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
+       "Justin Mattock" <justinmattock@gmail.com>,
+       "Len Brown" <len.brown@intel.com>, "Lin Ming" <ming.m.lin@intel.com>
 References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
 In-Reply-To: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +21,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <xXQGFmujPl.A.Ib.DUdALB@chimera>
-Subject: [Bug #14373] Task blocked for more than 120 seconds
+Message-ID: <xXQGFmujPl.A.UR.8TdALB@chimera>
+Subject: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 16 Nov 2009 23:37:39 +0100 (CET)
+Date: Mon, 16 Nov 2009 23:37:40 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +37,13 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14373
-Subject		: Task blocked for more than 120 seconds
-Submitter	: Zeno Davatz <zdavatz@gmail.com>
-Date		: 2009-10-02 10:16 (46 days old)
-References	: http://marc.info/?l=linux-kernel&m=125447858618412&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14379
+Subject		: ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2009-10-08 21:46 (40 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9adc2e031bd22d5d9607a53a8d3b30e0b675f39
+References	: http://marc.info/?l=linux-kernel&m=125504031328941&w=4
+Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=23347
 
 
