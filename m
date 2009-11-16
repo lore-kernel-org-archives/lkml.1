@@ -1,93 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZKPUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZKPU1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbZKPUYa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 15:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZKPUYa
+	id S1753897AbZKPU1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 15:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZKPU1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 15:24:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35168 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753664AbZKPUY3 (ORCPT
+	Mon, 16 Nov 2009 15:27:17 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:35473 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbZKPU1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 15:24:29 -0500
-Date: Mon, 16 Nov 2009 12:23:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: linux-mmc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       504391@bugs.debian.org, Wouter van Heyst <larstiq@larstiq.dyndns.org>,
-       Pierre Ossman <pierre@ossman.eu>
-Subject: Re: [PATCH] mmc: add module parameter to set whether cards are
- assumed removable
-Message-Id: <20091116122329.847916b6.akpm@linux-foundation.org>
-In-Reply-To: <1257914676.2237.57.camel@localhost>
-References: <1257914676.2237.57.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Mon, 16 Nov 2009 15:27:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEAHc/AUtGGN1W/2dsb2JhbACBTtVqhDwEgW0
+Date: Mon, 16 Nov 2009 15:27:20 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, ltt-dev@lists.casi.polymtl.ca,
+       rp@svcs.cs.pdx.edu
+Subject: Re: Sparc64 support added to Userspace RCU
+Message-ID: <20091116202720.GA19798@Krystal>
+References: <20091022183242.GA19307@Krystal> <20091022195753.GA27253@Krystal> <20091115.203138.127196997.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091115.203138.127196997.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 15:26:26 up 90 days,  7:15,  4 users,  load average: 0.18, 0.12,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 04:44:36 +0000
-Ben Hutchings <ben@decadent.org.uk> wrote:
-
-> Some people run general-purpose distribution kernels on netbooks with
-> a card that is physically non-removable or logically non-removable
-> (e.g. used for /home) and cannot be cleanly unmounted during suspend.
-> Add a module parameter to set whether cards are assumed removable or
-> non-removable, with the default set by CONFIG_MMC_UNSAFE_RESUME.
+* David Miller (davem@davemloft.net) wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date: Thu, 22 Oct 2009 15:57:53 -0400
 > 
+> > Feedback is welcome,
+> 
+> __sparc_v8__ does not mean 64-bit longs or pointers as implied here:
+> 
+> #ifndef __SIZEOF_LONG__
+> #if (defined(__sparc_v8__) || defined(__sparc_v9__))
+> #define __SIZEOF_LONG__ 8
+> #else
+> #define __SIZEOF_LONG__ 4
+> #endif
+> #endif
+> 
+> "v8" was the last 32-bit standard of the cpu architecture.
+> 
+> Otherwise looks fine.
+> 
+> Although this port won't be very useful until it can be built in
+> 32-bit mode.  As most applications on sparc64 systems are still
+> 32-bit.  Like on powerpc, people only rarely build things 64-bit on
+> sparc64.
+> 
+> You need to build with "-Wa,-Av9a" on the GCC command line for that
+> case so that the assembler allows the v9 instructions emitted by your
+> macros, even when building for 32-bit.
+> 
+> Hope this helps.
 
-The description really doesn't give me enough info to work out what's
-happening here and why this is being proposed.  But it smells nasty.
+Yes ! Thanks a lot for this information. I'll push the following fix in
+my tree.
 
+Mathieu
 
-> index ab37a6d..bb22ffd 100644
-> --- a/drivers/mmc/core/Kconfig
-> +++ b/drivers/mmc/core/Kconfig
-> @@ -3,7 +3,7 @@
->  #
->  
->  config MMC_UNSAFE_RESUME
-> -	bool "Allow unsafe resume (DANGEROUS)"
-> +	bool "Assume MMC/SD cards are non-removable (DANGEROUS)"
->  	help
->  	  If you say Y here, the MMC layer will assume that all cards
->  	  stayed in their respective slots during the suspend. The
-> @@ -14,3 +14,5 @@ config MMC_UNSAFE_RESUME
->  	  This option is usually just for embedded systems which use
->  	  a MMC/SD card for rootfs. Most people should say N here.
->  
-> +	  This option sets a default which can be overridden by the
-> +	  module parameter "removable=0" or "removable=1".
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index d98b0e2..010c964 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -48,6 +48,22 @@ int use_spi_crc = 1;
->  module_param(use_spi_crc, bool, 0);
->  
->  /*
-> + * We normally treat cards as removed during suspend if they are not
-> + * known to be on a non-removable bus, to avoid the risk of writing
-> + * back data to a different card after resume.  Allow this to be
-> + * overridden if necessary.
-> + */
+diff --git a/README b/README
+index 883b808..ca23d43 100644
+--- a/README
++++ b/README
+@@ -18,11 +18,14 @@ BUILDING
+ 		Forcing a 32-bit build with 386 backward compatibility:
+ 		* CFLAGS="-m32 -g -O2" ./configure --host=i386-pc-linux-gnu
+ 
++		Forcing a 32-bit build for Sparcv9 (typical for Sparc v9)
++		* CFLAGS="-m32 -Wa,-Av9a -g -O2" ./configure
++
+ ARCHITECTURES SUPPORTED
+ -----------------------
+ 
+ Currently, x86 (i386, i486, i586, i686), x86 64-bit, PowerPC 32/64, S390, S390x
+-and Sparc64 are supported. Only tested on Linux so far, but should
++and Sparcv9 32/64 are supported. Only tested on Linux so far, but should
+ theoretically work on other operating systems.
+ 
+ QUICK START GUIDE
+diff --git a/urcu/uatomic_arch_sparc64.h b/urcu/uatomic_arch_sparc64.h
+index 35b9ac2..28829d2 100644
+--- a/urcu/uatomic_arch_sparc64.h
++++ b/urcu/uatomic_arch_sparc64.h
+@@ -24,7 +24,7 @@
+ #include <urcu/system.h>
+ 
+ #ifndef __SIZEOF_LONG__
+-#if (defined(__sparc_v8__) || defined(__sparc_v9__))
++#ifdef __LP64__
+ #define __SIZEOF_LONG__ 8
+ #else
+ #define __SIZEOF_LONG__ 4
 
-So we have a module parameter which nobody knows about.  If they don't
-set this parameter which they don't know about, the kernel will trash
-their filesystem??
-
-
-> +#ifdef CONFIG_MMC_UNSAFE_RESUME
-> +int mmc_assume_removable;
-> +#else
-> +int mmc_assume_removable = 1;
-> +#endif
-> +module_param_named(removable, mmc_assume_removable, bool, 0644);
-> +MODULE_PARM_DESC(
-> +	removable,
-> +	"MMC/SD cards are removable and may be removed during suspend");
-> +
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
