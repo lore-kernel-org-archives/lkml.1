@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZKPRGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZKPRHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbZKPRGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZKPRGm
+	id S1753531AbZKPRHX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZKPRHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:06:42 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:34903 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbZKPRGm (ORCPT
+	Mon, 16 Nov 2009 12:07:22 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:18198 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZKPRHW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:06:42 -0500
-Date: Mon, 16 Nov 2009 18:06:41 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, Wu Zhangjin <wuzj@lemote.com>
-Subject: Re: [PATCH] MIPS: Fixups of ALSA memory maps
-Message-ID: <20091116170641.GD14948@linux-mips.org>
-References: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com>
+	Mon, 16 Nov 2009 12:07:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=f4R8FX/0l+9N2tp/CvZF3Y+esAHwX2vRaynVlyQZAgdNcfDmLZe3E+/8TLGJkduEr
+	ckNE5RcRJ4Y/ZPrDCIHZA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091116165716.GD3568@n2100.arm.linux.org.uk>
+References: <20091102104949.GA23456@elf.ucw.cz>
+	 <20091116163659.GB3568@n2100.arm.linux.org.uk>
+	 <a55d774e0911160843h22938604s8966a58ee71992a@mail.gmail.com>
+	 <20091116165716.GD3568@n2100.arm.linux.org.uk>
+Date: Mon, 16 Nov 2009 09:07:24 -0800
+Message-ID: <a55d774e0911160907o27fcb1e1yde61e446039749a2@mail.gmail.com>
+Subject: Re: [PATCH 2/3] msm: add minimal board file for HTC Dream device
+From: Brian Swetland <swetland@google.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 12:48:14AM +0800, Wu Zhangjin wrote:
+On Mon, Nov 16, 2009 at 8:57 AM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Mon, Nov 16, 2009 at 08:43:20AM -0800, Brian Swetland wrote:
+>> What's the best way to handle a situation where there is no valid
+>> debug uart?  Could the arch/platform require DEBUG_LL be unset via
+>> Kconfig directives if it is configured in a way where there is no
+>> valid debug uart?
+>
+> You're the first to have that issue.  Everyone else has a UART they
+> can always direct stuff at.
+>
+> However, I believe you're making the issue far larger than it really is.
 
-> Seems this is MIPS specific, but it's not that easy to move this patch
-> into the arch/mips part, So, any better solution?
-> 
-> Thanks & Regards,
->        Wu Zhangjin
-> 
-> ------------------------
-> 
-> The user application mmap audio dma regions must be dma-coherent. This
-> patch fix it.
-> 
-> Without this patch, artsd will fail on boot, and mplayer will exit with
-> "Segmentation fault". (this happens on YeeLoong netbook, fuloong2f
-> mini pc with snd_cs5535 audio card)
-> 
-> This is originally from the to-mips branch of
-> http://dev.lemote.com/code/linux_loongson, and contributed by Yanhua
-> from Lemote Inc.
-> 
-> Reported-by: qiaochong <qiaochong@gmail.com>
-> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+I actually haven't run into it on the hardware I've worked on (often
+the debug uart isn't exposed anywhere useful, but it's usually there),
+but have seen designs where it would happen (all uarts assigned to
+some non-debug function).  Just curious about how to deal with such a
+situation correctly.
 
-This issue is an old ghost still around, see:
+> 1. If you define the DEBUG_LL macros to be empty, printascii() etc will
+>   not touch any mapping.
+>
+> 2. If no mapping is going to be touched by printascii(), does it matter
+>   whether a UART is mapped via this early mapping stuff?
+>
+> The answer to (2) is no.
+>
+> So, you can still arrange for these fields to be populated with a valid
+> value even if you don't intend to use the resulting mapping.  And so
+> there's no need to force DEBUG_LL to be unset.
+>
+> If you really have no values you can use, make sure you set io_pg_offst
+> to 0x3ffc - the last offset in the L1 page table.  This will cause the
+> code to write a single dummy entry at the very top of the page table,
+> which will then be overwritten by the generic ARM arch code for its own
+> use.
 
-   http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=20060124.132832.37533152.nemoto%40toshiba-tops.co.jp
+Pointing it at UART1 with the DEBUG_LL macros empty in the event of no
+debug uart available works great.
 
-which is a superset of your proposed patch and which itself is refering to
-an even older posting from 2003:
+Thanks,
 
-   http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=20030523215935.71373.qmail%40web11901.mail.yahoo.com
-
-The #ifdef'ed solution doesn't cut it for sure.  Let's see what better we
-can find ...
-
-  Ralf
+Brian
