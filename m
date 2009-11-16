@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbZKPMEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZKPMFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752830AbZKPMEV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZKPMEU
+	id S1752845AbZKPMFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZKPMFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:04:20 -0500
-Received: from www84.your-server.de ([213.133.104.84]:55416 "EHLO
+	Mon, 16 Nov 2009 07:05:50 -0500
+Received: from www84.your-server.de ([213.133.104.84]:49442 "EHLO
 	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbZKPMEU (ORCPT
+	with ESMTP id S1751447AbZKPMFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:04:20 -0500
-Subject: Re: [PATCH 5/7] kfifo: add DEFINE_KFIFO and friends, add very tiny
- functions
+	Mon, 16 Nov 2009 07:05:49 -0500
+Subject: Re: [PATCH 6/7] kfifo: add kfifo_skip, kfifo_from_user and
+ kfifo_to_user
 From: Stefani Seibold <stefani@seibold.net>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -20,8 +20,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
 In-Reply-To: <1258372242.31356.1.camel@wall-e>
 References: <1258372242.31356.1.camel@wall-e>
 Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 16 Nov 2009 13:04:25 +0100
-Message-ID: <1258373065.31356.16.camel@wall-e>
+Date: Mon, 16 Nov 2009 13:05:54 +0100
+Message-ID: <1258373154.31356.18.camel@wall-e>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -30,14 +30,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Add DECLARE_KFIFO - macro to declare a kfifo and the associated buffer inside a struct
- Add INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
- Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
- Add kfifo_size() - returns the size of the fifo in bytes
- Add kfifo_is_empty() - returns true if the fifo is empty
- Add kfifo_is_full() - returns true if the fifo is full
- Add kfifo_avail() - returns the number of bytes available in the FIFO
- Do some code cleanup
+ Add kfifo_reset_out() to lockless save discard the fifo output
+ Add kfifo_skip() to skip a number of output bytes
+ Add kfifo_from_user() to copy user space data into the fifo
+ Add kfifo_to_user() to copy fifo data to user space
 
 Signed-off-by: Stefani Seibold <stefani@seibold.net>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -45,131 +41,270 @@ Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Acked-by: Andi Kleen <ak@linux.intel.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- kfifo.h |   91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 89 insertions(+), 2 deletions(-)
+ include/linux/kfifo.h |   47 ++++++++++++++++
+ kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 170 insertions(+), 16 deletions(-)
 
-diff -u -N -r kfifo4/include/linux/kfifo.h kfifo5/include/linux/kfifo.h
---- kfifo4/include/linux/kfifo.h        2009-10-19 21:21:36.000000000 +0200
-+++ kfifo5/include/linux/kfifo.h        2009-10-19 21:25:25.000000000 +0200
-@@ -51,6 +51,57 @@
-        unsigned int out;       /* data is extracted from off. (out % size) */
- };
- 
-+/*
-+ * Macros for declaration and initialization of the kfifo datatype
-+ */
-+
-+#define __kfifo_initializer(s, b) \
-+       (struct kfifo) { \
-+               .size   = s, \
-+               .in     = 0, \
-+               .out    = 0, \
-+               .buffer = b \
-+       }
-+
-+/**
-+ * DECLARE_KFIFO - macro to declare a kfifo and the associated buffer
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ *
-+ * Note: the macro can be used inside struct or union declaration
-+ * Note: the macro creates two objects:
-+ *  A kfifo object with the given name and a buffer for the kfifo
-+ *  object named name##kfifo_buffer
-+ */
-+#define DECLARE_KFIFO(name, size) \
-+union { \
-+       struct kfifo name; \
-+       unsigned char name##kfifo_buffer[size + sizeof(struct kfifo)]; \
-+}
-+
-+/**
-+ * INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ */
-+#define INIT_KFIFO(name) \
-+       name = __kfifo_initializer(sizeof(name##kfifo_buffer) - \
-+                               sizeof(struct kfifo), name##kfifo_buffer)
-+
-+/**
-+ * DEFINE_KFIFO - macro to define and initialize a kfifo
-+ * @name: name of the declared kfifo datatype
-+ * @size: size of the fifo buffer
-+ *
-+ * Note: the macro can be used for global and local kfifo data type variables
-+ * Note: the macro creates two objects:
-+ *  A kfifo object with the given name and a buffer for the kfifo
-+ *  object named name##kfifo_buffer
-+ */
-+#define DEFINE_KFIFO(name, size) \
-+       unsigned char name##kfifo_buffer[size]; \
-+       struct kfifo name = __kfifo_initializer(size, name##kfifo_buffer)
-+
- extern void kfifo_init(struct kfifo *fifo, unsigned char *buffer,
-                        unsigned int size);
- extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
-@@ -71,6 +122,15 @@
+diff -u -N -r kfifo5/include/linux/kfifo.h kfifo6/include/linux/kfifo.h
+--- kfifo5/include/linux/kfifo.h        2009-10-19 21:25:25.000000000 +0200
++++ kfifo6/include/linux/kfifo.h        2009-10-19 21:29:14.000000000 +0200
+@@ -122,6 +122,16 @@
  }
  
  /**
-+ * kfifo_size - returns the size of the fifo in bytes
-+ * @fifo: the fifo to be used.
++ * kfifo_reset_out - skip FIFO contents
++ * @fifo: the fifo to be emptied.
 + */
-+static inline __must_check unsigned int kfifo_size(struct kfifo *fifo)
++static inline void kfifo_reset_out(struct kfifo *fifo)
 +{
-+       return fifo->size;
++       smp_mb();
++       fifo->out = fifo->in;
 +}
 +
 +/**
-  * kfifo_len - returns the number of used bytes in the FIFO
+  * kfifo_size - returns the size of the fifo in bytes
   * @fifo: the fifo to be used.
   */
-@@ -84,6 +144,33 @@
+@@ -228,4 +238,41 @@
+        return ret;
  }
  
++extern void kfifo_skip(struct kfifo *fifo, unsigned int len);
++
++extern __must_check unsigned int kfifo_from_user(struct kfifo *fifo,
++       const void __user *from, unsigned int n);
++
++extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
++       void __user *to, unsigned int n);
++
++/**
++ * __kfifo_add_out internal helper function for updating the out offset
++ */
++static inline void __kfifo_add_out(struct kfifo *fifo,
++                               unsigned int off)
++{
++       smp_mb();
++       fifo->out += off;
++}
++
++/**
++ * __kfifo_add_in internal helper function for updating the in offset
++ */
++static inline void __kfifo_add_in(struct kfifo *fifo,
++                               unsigned int off)
++{
++       smp_wmb();
++       fifo->in += off;
++}
++
++/**
++ * __kfifo_off internal helper function for calculating the index of a
++ * given offeset
++ */
++static inline unsigned int __kfifo_off(struct kfifo *fifo, unsigned int off)
++{
++       return off & (fifo->size - 1);
++}
++
+ #endif
+diff -u -N -r kfifo5/kernel/kfifo.c kfifo6/kernel/kfifo.c
+--- kfifo5/kernel/kfifo.c       2009-10-19 21:25:25.000000000 +0200
++++ kfifo6/kernel/kfifo.c       2009-10-19 21:29:14.000000000 +0200
+@@ -26,6 +26,7 @@
+ #include <linux/err.h>
+ #include <linux/kfifo.h>
+ #include <linux/log2.h>
++#include <linux/uaccess.h>
+ 
+ static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
+                unsigned int size)
+@@ -100,6 +101,21 @@
+ EXPORT_SYMBOL(kfifo_free);
+ 
  /**
-+ * kfifo_is_empty - returns true if the fifo is empty
++ * kfifo_skip - skip output data
 + * @fifo: the fifo to be used.
++ * @len: number of bytes to skip
 + */
-+static inline __must_check int kfifo_is_empty(struct kfifo *fifo)
++void kfifo_skip(struct kfifo *fifo, unsigned int len)
 +{
-+       return fifo->in == fifo->out;
++       if (len < kfifo_len(fifo)) {
++               __kfifo_add_out(fifo, len);
++               return;
++       }
++       kfifo_reset_out(fifo);
 +}
++EXPORT_SYMBOL(kfifo_skip);
 +
 +/**
-+ * kfifo_is_full - returns true if the fifo is full
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check int kfifo_is_full(struct kfifo *fifo)
-+{
-+       return kfifo_len(fifo) == kfifo_size(fifo);
-+}
-+
-+/**
-+ * kfifo_avail - returns the number of bytes available in the FIFO
-+ * @fifo: the fifo to be used.
-+ */
-+static inline __must_check unsigned int kfifo_avail(struct kfifo *fifo)
-+{
-+       return kfifo_size(fifo) - kfifo_len(fifo);
-+}
-+
-+/**
-  * kfifo_in_locked - puts some data into the FIFO using a spinlock for locking
+  * kfifo_in - puts some data into the FIFO
   * @fifo: the fifo to be used.
   * @from: the data to be added.
-@@ -133,8 +220,8 @@
-         * optimization: if the FIFO is empty, set the indices to 0
-         * so we don't wrap the next time
+@@ -115,6 +131,7 @@
+ unsigned int kfifo_in(struct kfifo *fifo,
+                        const unsigned char *from, unsigned int len)
+ {
++       unsigned int off;
+        unsigned int l;
+ 
+        len = min(len, fifo->size - fifo->in + fifo->out);
+@@ -126,21 +143,16 @@
+ 
+        smp_mb();
+ 
++       off = __kfifo_off(fifo, fifo->in);
++
+        /* first put the data starting from fifo->in to buffer end */
+-       l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
+-       memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
++       l = min(len, fifo->size - off);
++       memcpy(fifo->buffer + off, from, l);
+ 
+        /* then put the rest (if any) at the beginning of the buffer */
+        memcpy(fifo->buffer, from + l, len - l);
+ 
+-       /*
+-        * Ensure that we add the bytes to the kfifo -before-
+-        * we update the fifo->in index.
+-        */
+-
+-       smp_wmb();
+-
+-       fifo->in += len;
++       __kfifo_add_in(fifo, len);
+ 
+        return len;
+ }
+@@ -161,6 +173,7 @@
+ unsigned int kfifo_out(struct kfifo *fifo,
+                         unsigned char *to, unsigned int len)
+ {
++       unsigned int off;
+        unsigned int l;
+ 
+        len = min(len, fifo->in - fifo->out);
+@@ -172,22 +185,116 @@
+ 
+        smp_rmb();
+ 
++       off = __kfifo_off(fifo, fifo->out);
++
+        /* first get the data from fifo->out until the end of the buffer */
+-       l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
+-       memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
++       l = min(len, fifo->size - off);
++       memcpy(to, fifo->buffer + off, l);
+ 
+        /* then get the rest (if any) from the beginning of the buffer */
+        memcpy(to + l, fifo->buffer, len - l);
+ 
++       __kfifo_add_out(fifo, len);
++
++       return len;
++}
++EXPORT_SYMBOL(kfifo_out);
++
++/**
++ * kfifo_from_user - puts some data from user space into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: pointer to the data to be added.
++ * @len: the length of the data to be added.
++ *
++ * This function copies at most @len bytes from the @from into the
++ * FIFO depending and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_from_user(struct kfifo *fifo,
++       const void __user *from, unsigned int len)
++{
++       unsigned int off;
++       unsigned int l;
++       int ret;
++
++       len = min(len, fifo->size - fifo->in + fifo->out);
++
+        /*
+-        * Ensure that we remove the bytes from the kfifo -before-
+-        * we update the fifo->out index.
++        * Ensure that we sample the fifo->out index -before- we
++        * start putting bytes into the kfifo.
          */
--       if (fifo->in == fifo->out)
--               fifo->in = fifo->out = 0;
-+       if (kfifo_is_empty(fifo))
-+               kfifo_reset(fifo);
  
-        spin_unlock_irqrestore(lock, flags);
+        smp_mb();
  
-
+-       fifo->out += len;
++       off = __kfifo_off(fifo, fifo->in);
++
++       /* first put the data starting from fifo->in to buffer end */
++       l = min(len, fifo->size - off);
++       ret = copy_from_user(fifo->buffer + off, from, l);
++
++       if (unlikely(ret))
++               return l - ret;
++
++       /* then put the rest (if any) at the beginning of the buffer */
++       ret = copy_from_user(fifo->buffer, from + l, len - l);
++
++       if (unlikely(ret))
++               return len - ret;
++
++       __kfifo_add_in(fifo, len);
+ 
+        return len;
+ }
+-EXPORT_SYMBOL(kfifo_out);
++EXPORT_SYMBOL(kfifo_from_user);
++
++/**
++ * kfifo_to_user - gets data from the FIFO and write it to user space
++ * @fifo: the fifo to be used.
++ * @to: where the data must be copied.
++ * @len: the size of the destination buffer.
++ *
++ * This function copies at most @len bytes from the FIFO into the
++ * @to buffer and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_to_user(struct kfifo *fifo,
++       void __user *to, unsigned int len)
++{
++       unsigned int off;
++       unsigned int l;
++       int ret;
++
++       len = min(len, fifo->in - fifo->out);
++
++       /*
++        * Ensure that we sample the fifo->in index -before- we
++        * start removing bytes from the kfifo.
++        */
++
++       smp_rmb();
++
++       off = __kfifo_off(fifo, fifo->out);
++
++       /* first get the data from fifo->out until the end of the buffer */
++       l = min(len, fifo->size - off);
++       ret = copy_to_user(to, fifo->buffer + off, l);
++
++       if (unlikely(ret))
++               return l - ret;
++
++       /* then get the rest (if any) from the beginning of the buffer */
++       ret = copy_to_user(to + l, fifo->buffer, len - l);
++
++       if (unlikely(ret))
++               return len - ret;
++
++       __kfifo_add_out(fifo, len);
++
++       return len;
++}
++EXPORT_SYMBOL(kfifo_to_user);
++
 
 
