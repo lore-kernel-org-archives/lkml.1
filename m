@@ -1,310 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZKPMFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbZKPMGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbZKPMFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZKPMFu
+	id S1752865AbZKPMGP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZKPMGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:05:50 -0500
-Received: from www84.your-server.de ([213.133.104.84]:49442 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbZKPMFt (ORCPT
+	Mon, 16 Nov 2009 07:06:15 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37595 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbZKPMGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:05:49 -0500
-Subject: Re: [PATCH 6/7] kfifo: add kfifo_skip, kfifo_from_user and
- kfifo_to_user
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <1258372242.31356.1.camel@wall-e>
-References: <1258372242.31356.1.camel@wall-e>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 16 Nov 2009 13:05:54 +0100
-Message-ID: <1258373154.31356.18.camel@wall-e>
+	Mon, 16 Nov 2009 07:06:14 -0500
+Subject: [PATCH] perf: optimize perf_output_lock
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 16 Nov 2009 13:06:01 +0100
+Message-ID: <1258373161.26714.254.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Add kfifo_reset_out() to lockless save discard the fifo output
- Add kfifo_skip() to skip a number of output bytes
- Add kfifo_from_user() to copy user space data into the fifo
- Add kfifo_to_user() to copy fifo data to user space
+Subject: perf: optimize perf_output_lock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon Nov 16 12:45:14 CET 2009
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Acked-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+The purpuse of perf_output_{un,}lock() is to:
+
+ 1) avoid publishing incomplete data
+    [ possible when publishing a head that is ahead of an entry
+      that is still being written ]
+
+ 2) guarantee fwd progress
+    [ a simple refcount on pending writers doesn't need to drop to
+      0, making it so would end up implementing something like forced
+      quiecent states of RCU ]
+
+To satisfy the above without undue complexity it serializes between
+CPUs, this means that a pending writer can only be the same cpu in a
+nested context, and since (under normal operation) a cpu always makes
+progress we're good -- if the head is only published when the bottom 
+most writer completes.
+
+Now we don't need to disable IRQs in order to serialize between CPUs,
+disabling preemption ought to be sufficient, esp since we already deal
+with nesting due to NMIs.
+
+This avoids expensive IRQ ops.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/kfifo.h |   47 ++++++++++++++++
- kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 170 insertions(+), 16 deletions(-)
+ include/linux/perf_event.h |    1 -
+ kernel/perf_event.c        |   21 +++++++++++----------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff -u -N -r kfifo5/include/linux/kfifo.h kfifo6/include/linux/kfifo.h
---- kfifo5/include/linux/kfifo.h        2009-10-19 21:25:25.000000000 +0200
-+++ kfifo6/include/linux/kfifo.h        2009-10-19 21:29:14.000000000 +0200
-@@ -122,6 +122,16 @@
- }
+Index: linux-2.6/include/linux/perf_event.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_event.h
++++ linux-2.6/include/linux/perf_event.h
+@@ -739,7 +739,6 @@ struct perf_output_handle {
+ 	int				nmi;
+ 	int				sample;
+ 	int				locked;
+-	unsigned long			flags;
+ };
  
- /**
-+ * kfifo_reset_out - skip FIFO contents
-+ * @fifo: the fifo to be emptied.
-+ */
-+static inline void kfifo_reset_out(struct kfifo *fifo)
-+{
-+       smp_mb();
-+       fifo->out = fifo->in;
-+}
-+
-+/**
-  * kfifo_size - returns the size of the fifo in bytes
-  * @fifo: the fifo to be used.
-  */
-@@ -228,4 +238,41 @@
-        return ret;
- }
- 
-+extern void kfifo_skip(struct kfifo *fifo, unsigned int len);
-+
-+extern __must_check unsigned int kfifo_from_user(struct kfifo *fifo,
-+       const void __user *from, unsigned int n);
-+
-+extern __must_check unsigned int kfifo_to_user(struct kfifo *fifo,
-+       void __user *to, unsigned int n);
-+
-+/**
-+ * __kfifo_add_out internal helper function for updating the out offset
-+ */
-+static inline void __kfifo_add_out(struct kfifo *fifo,
-+                               unsigned int off)
-+{
-+       smp_mb();
-+       fifo->out += off;
-+}
-+
-+/**
-+ * __kfifo_add_in internal helper function for updating the in offset
-+ */
-+static inline void __kfifo_add_in(struct kfifo *fifo,
-+                               unsigned int off)
-+{
-+       smp_wmb();
-+       fifo->in += off;
-+}
-+
-+/**
-+ * __kfifo_off internal helper function for calculating the index of a
-+ * given offeset
-+ */
-+static inline unsigned int __kfifo_off(struct kfifo *fifo, unsigned int off)
-+{
-+       return off & (fifo->size - 1);
-+}
-+
- #endif
-diff -u -N -r kfifo5/kernel/kfifo.c kfifo6/kernel/kfifo.c
---- kfifo5/kernel/kfifo.c       2009-10-19 21:25:25.000000000 +0200
-+++ kfifo6/kernel/kfifo.c       2009-10-19 21:29:14.000000000 +0200
-@@ -26,6 +26,7 @@
- #include <linux/err.h>
- #include <linux/kfifo.h>
- #include <linux/log2.h>
-+#include <linux/uaccess.h>
- 
- static void _kfifo_init(struct kfifo *fifo, unsigned char *buffer,
-                unsigned int size)
-@@ -100,6 +101,21 @@
- EXPORT_SYMBOL(kfifo_free);
- 
- /**
-+ * kfifo_skip - skip output data
-+ * @fifo: the fifo to be used.
-+ * @len: number of bytes to skip
-+ */
-+void kfifo_skip(struct kfifo *fifo, unsigned int len)
-+{
-+       if (len < kfifo_len(fifo)) {
-+               __kfifo_add_out(fifo, len);
-+               return;
-+       }
-+       kfifo_reset_out(fifo);
-+}
-+EXPORT_SYMBOL(kfifo_skip);
-+
-+/**
-  * kfifo_in - puts some data into the FIFO
-  * @fifo: the fifo to be used.
-  * @from: the data to be added.
-@@ -115,6 +131,7 @@
- unsigned int kfifo_in(struct kfifo *fifo,
-                        const unsigned char *from, unsigned int len)
+ #ifdef CONFIG_PERF_EVENTS
+Index: linux-2.6/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -2696,20 +2696,21 @@ static void perf_output_wakeup(struct pe
+ static void perf_output_lock(struct perf_output_handle *handle)
  {
-+       unsigned int off;
-        unsigned int l;
+ 	struct perf_mmap_data *data = handle->data;
+-	int cpu;
++	int cur, cpu = get_cpu();
  
-        len = min(len, fifo->size - fifo->in + fifo->out);
-@@ -126,21 +143,16 @@
+ 	handle->locked = 0;
  
-        smp_mb();
- 
-+       off = __kfifo_off(fifo, fifo->in);
-+
-        /* first put the data starting from fifo->in to buffer end */
--       l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
--       memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
-+       l = min(len, fifo->size - off);
-+       memcpy(fifo->buffer + off, from, l);
- 
-        /* then put the rest (if any) at the beginning of the buffer */
-        memcpy(fifo->buffer, from + l, len - l);
- 
--       /*
--        * Ensure that we add the bytes to the kfifo -before-
--        * we update the fifo->in index.
--        */
+-	local_irq_save(handle->flags);
+-	cpu = smp_processor_id();
 -
--       smp_wmb();
+-	if (in_nmi() && atomic_read(&data->lock) == cpu)
+-		return;
++	for (;;) {
++		cur = atomic_cmpxchg(&data->lock, -1, cpu);
++		if (cur == -1) {
++			handle->locked = 1;
++			break;
++		}
++		if (cur == cpu)
++			break;
+ 
+-	while (atomic_cmpxchg(&data->lock, -1, cpu) != -1)
+ 		cpu_relax();
 -
--       fifo->in += len;
-+       __kfifo_add_in(fifo, len);
- 
-        return len;
+-	handle->locked = 1;
++	}
  }
-@@ -161,6 +173,7 @@
- unsigned int kfifo_out(struct kfifo *fifo,
-                         unsigned char *to, unsigned int len)
- {
-+       unsigned int off;
-        unsigned int l;
  
-        len = min(len, fifo->in - fifo->out);
-@@ -172,22 +185,116 @@
- 
-        smp_rmb();
- 
-+       off = __kfifo_off(fifo, fifo->out);
-+
-        /* first get the data from fifo->out until the end of the buffer */
--       l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
--       memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
-+       l = min(len, fifo->size - off);
-+       memcpy(to, fifo->buffer + off, l);
- 
-        /* then get the rest (if any) from the beginning of the buffer */
-        memcpy(to + l, fifo->buffer, len - l);
- 
-+       __kfifo_add_out(fifo, len);
-+
-+       return len;
-+}
-+EXPORT_SYMBOL(kfifo_out);
-+
-+/**
-+ * kfifo_from_user - puts some data from user space into the FIFO
-+ * @fifo: the fifo to be used.
-+ * @from: pointer to the data to be added.
-+ * @len: the length of the data to be added.
-+ *
-+ * This function copies at most @len bytes from the @from into the
-+ * FIFO depending and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_from_user(struct kfifo *fifo,
-+       const void __user *from, unsigned int len)
-+{
-+       unsigned int off;
-+       unsigned int l;
-+       int ret;
-+
-+       len = min(len, fifo->size - fifo->in + fifo->out);
-+
-        /*
--        * Ensure that we remove the bytes from the kfifo -before-
--        * we update the fifo->out index.
-+        * Ensure that we sample the fifo->out index -before- we
-+        * start putting bytes into the kfifo.
-         */
- 
-        smp_mb();
- 
--       fifo->out += len;
-+       off = __kfifo_off(fifo, fifo->in);
-+
-+       /* first put the data starting from fifo->in to buffer end */
-+       l = min(len, fifo->size - off);
-+       ret = copy_from_user(fifo->buffer + off, from, l);
-+
-+       if (unlikely(ret))
-+               return l - ret;
-+
-+       /* then put the rest (if any) at the beginning of the buffer */
-+       ret = copy_from_user(fifo->buffer, from + l, len - l);
-+
-+       if (unlikely(ret))
-+               return len - ret;
-+
-+       __kfifo_add_in(fifo, len);
- 
-        return len;
+ static void perf_output_unlock(struct perf_output_handle *handle)
+@@ -2755,7 +2756,7 @@ again:
+ 	if (atomic_xchg(&data->wakeup, 0))
+ 		perf_output_wakeup(handle);
+ out:
+-	local_irq_restore(handle->flags);
++	put_cpu();
  }
--EXPORT_SYMBOL(kfifo_out);
-+EXPORT_SYMBOL(kfifo_from_user);
-+
-+/**
-+ * kfifo_to_user - gets data from the FIFO and write it to user space
-+ * @fifo: the fifo to be used.
-+ * @to: where the data must be copied.
-+ * @len: the size of the destination buffer.
-+ *
-+ * This function copies at most @len bytes from the FIFO into the
-+ * @to buffer and returns the number of copied bytes.
-+ *
-+ * Note that with only one concurrent reader and one concurrent
-+ * writer, you don't need extra locking to use these functions.
-+ */
-+unsigned int kfifo_to_user(struct kfifo *fifo,
-+       void __user *to, unsigned int len)
-+{
-+       unsigned int off;
-+       unsigned int l;
-+       int ret;
-+
-+       len = min(len, fifo->in - fifo->out);
-+
-+       /*
-+        * Ensure that we sample the fifo->in index -before- we
-+        * start removing bytes from the kfifo.
-+        */
-+
-+       smp_rmb();
-+
-+       off = __kfifo_off(fifo, fifo->out);
-+
-+       /* first get the data from fifo->out until the end of the buffer */
-+       l = min(len, fifo->size - off);
-+       ret = copy_to_user(to, fifo->buffer + off, l);
-+
-+       if (unlikely(ret))
-+               return l - ret;
-+
-+       /* then get the rest (if any) from the beginning of the buffer */
-+       ret = copy_to_user(to + l, fifo->buffer, len - l);
-+
-+       if (unlikely(ret))
-+               return len - ret;
-+
-+       __kfifo_add_out(fifo, len);
-+
-+       return len;
-+}
-+EXPORT_SYMBOL(kfifo_to_user);
-+
+ 
+ void perf_output_copy(struct perf_output_handle *handle,
 
 
