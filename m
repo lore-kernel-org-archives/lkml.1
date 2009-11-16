@@ -1,61 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbZKPMJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbZKPMTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450AbZKPMJt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZKPMJs
+	id S1752935AbZKPMTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZKPMTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:09:48 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:57036 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZKPMJr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:09:47 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
-Date: Mon, 16 Nov 2009 13:09:47 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnd Bergmann <arndbergmann@googlemail.com>,
-       Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, John Kacur <jkacur@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20091010153314.827301943@linutronix.de> <200911021651.53331.arnd@arndb.de> <20091116105427.GA17411@lst.de>
-In-Reply-To: <20091116105427.GA17411@lst.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911161309.47186.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+gxI6zCZSjpmY0MP0lsz2y9jj26Dpsv+7YnDR
- joZNM6erg/1AO00SasCIQlqL52I3Y7x1cNLq8iLil1pYcypaif
- viyMh/ulILDvsls+ooP+w==
+	Mon, 16 Nov 2009 07:19:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2732 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752401AbZKPMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 07:19:39 -0500
+From: Avi Kivity <avi@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org
+Subject: [PATCH 00/42] KVM updates for the 2.6.33 merge window (batch 1/2)
+Date: Mon, 16 Nov 2009 14:19:01 +0200
+Message-Id: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 November 2009, Christoph Hellwig wrote:
-> As mentioned before making generic_file_llseek the new default is
-> probably a bad idea.  The majority of our file_operations instances
-> don't actually support seeking, so no_llseek should become the new
-> default if you spend some effort on converting things.  Anything that
-> wants to allow seeking will have to set a llseek method.  This also
-> mirrors what we do for other file operations.  None of the major ones
-> has a non-trivial default, it's either silently succeeding for a
-> selected few like open or release or returning an error for operatings
-> that actually do something like read and write.
+Highlights:
+- improved kernel context switching speed
+- better interoperation with other users of virtualization extensions
+- improved irq scaling
+- nested svm improvements and tracing
+- improved cpufreq integration
+- spin loop detection on newer hardware
 
-Ok, good point.
+Notes:
+- kvm/ppc64 support will be merged through the powerpc tree
+- depends on tip x86/entry branch (user return notifiers)
 
-Do you think we should also prevent pread/pwrite for devices without
-an llseek operation, like nonseekable_open does? I guess that would
-be consistent.
+Alexander Graf (2):
+  KVM: Activate Virtualization On Demand
+  KVM: SVM: Notify nested hypervisor of lost event injections
 
-Then there is the point that (I forgot who) brought up that changing
-code to do no_llseek is actually an ABI change. Even if the file
-position is never used anywhere, some random user application might
-expect a chardev not to return an error when its llseek method is
-called, resulting in regressions.
+Avi Kivity (6):
+  core, x86: Add user return notifiers
+  x86: Fix user return notifier build
+  KVM: Don't wrap schedule() with vcpu_put()/vcpu_load()
+  KVM: Don't pass kvm_run arguments
+  KVM: Return -ENOTTY on unrecognized ioctls
+  KVM: Move assigned device code to own file
 
-	Arnd <><
+Glauber Costa (1):
+  KVM: x86: include pvclock MSRs in msrs_to_save
+
+Gleb Natapov (9):
+  KVM: Call pic_clear_isr() on pic reset to reuse logic there
+  KVM: Move irq sharing information to irqchip level
+  KVM: Change irq routing table to use gsi indexed array
+  KVM: Maintain back mapping from irqchip/pin to gsi
+  KVM: Move irq routing data structure to rcu locking
+  KVM: Move irq ack notifier list to arch independent code
+  KVM: Convert irq notifiers lists to RCU locking
+  KVM: Move IO APIC to its own lock
+  KVM: Drop kvm->irq_lock lock from irq injection path
+
+Huang Weiyi (1):
+  KVM: remove duplicated #include
+
+Jan Kiszka (2):
+  KVM: x86: Refactor guest debug IOCTL handling
+  KVM: x86: Rework guest single-step flag injection and filtering
+
+Jiri Slaby (1):
+  KVM: fix lock imbalance in kvm_*_irq_source_id()
+
+Joerg Roedel (7):
+  KVM: SVM: reorganize svm_interrupt_allowed
+  KVM: SVM: don't copy exit_int_info on nested vmrun
+  KVM: SVM: Remove remaining occurences of rdtscll
+  KVM: SVM: Move INTR vmexit out of atomic code
+  KVM: SVM: Add tracepoint for nested vmrun
+  KVM: SVM: Add tracepoint for nested #vmexit
+  KVM: SVM: Add tracepoint for injected #vmexit
+
+Juan Quintela (1):
+  KVM: remove pre_task_link setting in save_state_to_tss16
+
+Marcelo Tosatti (2):
+  KVM: SVM: remove needless mmap_sem acquision from nested_svm_map
+  KVM: x86: disable paravirt mmu reporting
+
+Mohammed Gamal (5):
+  KVM: x86 emulator: Add 'push/pop sreg' instructions
+  KVM: x86 emulator: Introduce No64 decode option
+  KVM: x86 emulator: Add missing decoder flags for 'or' instructions
+  KVM: x86 emulator: Add pusha and popa instructions
+  KVM: VMX: Enhance invalid guest state emulation
+
+Stephen Rothwell (1):
+  x86: Fix user return notifier put_cpu_var() invocation
+
+Zachary Amsden (4):
+  KVM: Separate timer intialization into an indepedent function
+  KVM: Kill the confusing tsc_ref_khz and ref_freq variables
+  KVM: Fix printk name error in svm.c
+  KVM: Fix hotplug of CPUs
+
