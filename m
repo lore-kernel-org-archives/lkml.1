@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZKPVZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZKPVMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZKPVZK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbZKPVZJ
+	id S1754313AbZKPVMZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZKPVMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:25:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37937 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbZKPVZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:25:07 -0500
-Date: Mon, 16 Nov 2009 22:24:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration bootup
- messages
-Message-ID: <20091116212427.GC2221@elte.hu>
-References: <20091116210718.412792000@alcatraz.americas.sgi.com>
- <20091116210728.267482000@alcatraz.americas.sgi.com>
+	Mon, 16 Nov 2009 16:12:24 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:55809 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbZKPVMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 16:12:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=JPXMDEX2ciplcsQlqiOapxKgE+Pm2jOY06+K12QeDSysG2OcSzDehW3/bduFnf2qPw
+         z176gMSEYwmkfIz2vGITERHLhiIu1PD3VteYE7ZaUBuGJEZIlyLzuenRsXXsjL+4ufY3
+         0XaIwJsi1kdQfmwLWqkc+z0QLrqha971Zq80Q=
+Message-ID: <4B01C327.7050805@gmail.com>
+Date: Mon, 16 Nov 2009 22:24:55 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091116210728.267482000@alcatraz.americas.sgi.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Wagner <daw@cs.berkeley.edu>
+Subject: Re: [PATCH] Documentation: Fix NUL termination of strncpy
+References: <4B018405.2030408@gmail.com> <4B019F52.50509@gmail.com>
+In-Reply-To: <4B019F52.50509@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ensure the copied strings are NUL terminated.
 
-* Mike Travis <travis@sgi.com> wrote:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+>> Rationale (please correct me if I'm wrong):
 
-> --- linux.orig/init/calibrate.c
-> +++ linux/init/calibrate.c
-> @@ -123,23 +123,26 @@
->  {
->  	unsigned long ticks, loopbit;
->  	int lps_precision = LPS_PREC;
-> +	bool boot_cpu = (smp_processor_id() == 0);
+I was confused. strncpy requires explicit NUL termination
+or it depends on a NUL in the source string.
 
-this code is shared by other architectures too - are you sure 
-smp_processor_id()==0 is a proper 'I am the boot CPU' assumption 
-everywhere?
+ Documentation/accounting/getdelays.c               |    3 ++-
+ Documentation/hwmon/hpfall.c                       |    3 ++-
+ Documentation/networking/radiotap-headers.txt      |    2 +-
+ .../networking/timestamping/timestamping.c         |    6 ++++--
+ 4 files changed, 9 insertions(+), 5 deletions(-)
 
-	Ingo
+diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+index 6e25c26..ba54b19 100644
+--- a/Documentation/accounting/getdelays.c
++++ b/Documentation/accounting/getdelays.c
+@@ -303,7 +303,8 @@ int main(int argc, char *argv[])
+ 				err(1, "Invalid rcv buf size\n");
+ 			break;
+ 		case 'm':
+-			strncpy(cpumask, optarg, sizeof(cpumask));
++			strncpy(cpumask, optarg, sizeof(cpumask) - 1);
++			cpumask[sizeof(cpumask) - 1] = '\0';
+ 			maskset = 1;
+ 			printf("cpumask %s maskset %d\n", cpumask, maskset);
+ 			break;
+diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
+index 681ec22..4a06c06 100644
+--- a/Documentation/hwmon/hpfall.c
++++ b/Documentation/hwmon/hpfall.c
+@@ -27,7 +27,8 @@ int set_unload_heads_path(char *device)
+ 
+ 	if (strlen(device) <= 5 || strncmp(device, "/dev/", 5) != 0)
+ 		return -EINVAL;
+-	strncpy(devname, device + 5, sizeof(devname));
++	strncpy(devname, device + 5, sizeof(devname) - 1);
++	devname[sizeof(devname) - 1] = '\0';
+ 
+ 	snprintf(unload_heads_path, sizeof(unload_heads_path),
+ 				"/sys/block/%s/device/unload_heads", devname);
+diff --git a/Documentation/networking/radiotap-headers.txt b/Documentation/networking/radiotap-headers.txt
+index 953331c..447e004 100644
+--- a/Documentation/networking/radiotap-headers.txt
++++ b/Documentation/networking/radiotap-headers.txt
+@@ -126,7 +126,7 @@ int MyFunction(u8 * buf, int buflen)
+ 
+ 		case IEEE80211_RADIOTAP_ANTENNA:
+ 			/* radiotap uses 0 for 1st ant */
+-			antenna = *iterator.this_arg);
++			antenna = *iterator.this_arg;
+ 			break;
+ 
+ 		case IEEE80211_RADIOTAP_DBM_TX_POWER:
+diff --git a/Documentation/networking/timestamping/timestamping.c b/Documentation/networking/timestamping/timestamping.c
+index a7936fe..e2a17a4 100644
+--- a/Documentation/networking/timestamping/timestamping.c
++++ b/Documentation/networking/timestamping/timestamping.c
+@@ -374,12 +374,14 @@ int main(int argc, char **argv)
+ 		bail("socket");
+ 
+ 	memset(&device, 0, sizeof(device));
+-	strncpy(device.ifr_name, interface, sizeof(device.ifr_name));
++	strncpy(device.ifr_name, interface, sizeof(device.ifr_name) - 1);
++	device.ifr_name[sizeof(device.ifr_name) - 1] = '\0';
+ 	if (ioctl(sock, SIOCGIFADDR, &device) < 0)
+ 		bail("getting interface IP address");
+ 
+ 	memset(&hwtstamp, 0, sizeof(hwtstamp));
+-	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name));
++	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name) - 1);
++	hwtstamp.ifr_name[sizeof(hwtstamp.ifr_name) - 1] = '\0';
+ 	hwtstamp.ifr_data = (void *)&hwconfig;
+ 	memset(&hwconfig, 0, sizeof(hwconfig));
+ 	hwconfig.tx_type =
