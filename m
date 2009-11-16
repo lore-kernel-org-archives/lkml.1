@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbZKPCyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZKPDHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752126AbZKPCyw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 21:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZKPCyw
+	id S1752161AbZKPDHn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 22:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZKPDHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 21:54:52 -0500
-Received: from mta21.charter.net ([216.33.127.81]:51094 "EHLO
-	mta21.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZKPCyv (ORCPT
+	Sun, 15 Nov 2009 22:07:42 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:55053 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbZKPDHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 21:54:51 -0500
-X-Greylist: delayed 94690 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Nov 2009 21:54:51 EST
-X-Authority-Analysis: v=1.0 c=1 a=sAFGdaRh2doA:10 a=hOpmn2quAAAA:8
- a=D7HV_HDsCjdMOG3DZ6QA:9 a=b-cvOOEGqK0hhBuzpwQA:7
- a=0S3aQc3l3Y6dt29b3SpfdO8pH8kA:4 a=hUswqBWy9Q8A:10
-From: Steve Meisner <smeisner@charter.net>
-Organization: SCME
-To: linux-kernel@vger.kernel.org
-Subject: Parallel Driver(s) Broke in 2.6.31
-Date: Sun, 15 Nov 2009 21:54:47 -0500
-User-Agent: KMail/1.12.2 (Linux/2.6.29.6-desktop-2mnb; KDE/4.3.2; i686; ; )
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911152154.47510.smeisner@charter.net>
+	Sun, 15 Nov 2009 22:07:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=tzFcoEq12u73T3AhH0pp9SUJDqq+nxOHqzm4eyr+kihqfaut1jf793pQ0HXyNhjH97
+         mCAy0zAz4nK3lMBte6YfX8PAuQWIILtYV1Scggdm3VryCNMfM66j39n8mwq0hw8FJKcT
+         cp/TbMaLYemLhlxCHgQ7w6RDEvJq2Y5R254CE=
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH -mm] hpfs: Use bitmap_weight()
+Date: Mon, 16 Nov 2009 12:06:59 +0900
+Message-Id: <1258340819-28166-1-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: git-send-email 1.6.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I posted to the Mandriva forum with no luck yet.  I recently upgraded to 
-Mandriva 2010.0 and in doing so lost ability to use my parallel printer.  
-After many hours of debugging effort and finding nothing in logs or 
-hardware/driver error messages, I went on a hunch that it could be related to 
-the kernel.  So I rolled back to the 2009.1 kernel 2.6.29 and printing 
-returned.  I don't know how to proceed with determining the root cause as I 
-cannot find any error in the logs or differences in hardware detection and 
-module loading.  I don't even know the hierarchy of the modules involved 
-(parport, parport, pc, lp, and ppdev).   Should I start diffing those modules 
-and see if I get lucky applying hacking 101 techniques?  Please CC me 
-(smeisner@charter.net) if you have any suggestions (except for buying a new 
-printer).
-Thanks,
+Use bitmap_weight instead of doing hweight32 for each 32bit in bitmap.
 
+This patch applies on top of hpfs-use-hweight32.patch in -mm
+
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+---
+ fs/hpfs/super.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/fs/hpfs/super.c b/fs/hpfs/super.c
+index cf6fe4a..cadc4ce 100644
+--- a/fs/hpfs/super.c
++++ b/fs/hpfs/super.c
+@@ -14,6 +14,7 @@
+ #include <linux/magic.h>
+ #include <linux/sched.h>
+ #include <linux/smp_lock.h>
++#include <linux/bitmap.h>
+ 
+ /* Mark the filesystem dirty, so that chkdsk checks it when os/2 booted */
+ 
+@@ -115,12 +116,13 @@ static void hpfs_put_super(struct super_block *s)
+ unsigned hpfs_count_one_bitmap(struct super_block *s, secno secno)
+ {
+ 	struct quad_buffer_head qbh;
+-	unsigned *bits;
+-	unsigned i, count;
+-	if (!(bits = hpfs_map_4sectors(s, secno, &qbh, 4))) return 0;
+-	count = 0;
+-	for (i = 0; i < 2048 / sizeof(unsigned); i++)
+-		count += hweight32(bits[i]);
++	unsigned long *bits;
++	unsigned count;
++
++	bits = hpfs_map_4sectors(s, secno, &qbh, 4);
++	if (!bits)
++		return 0;
++	count = bitmap_weight(bits, 2048 * BITS_PER_BYTE);
+ 	hpfs_brelse4(&qbh);
+ 	return count;
+ }
 -- 
+1.6.5.1
 
-Steve Meisner
