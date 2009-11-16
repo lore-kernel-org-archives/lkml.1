@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZKPXfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZKPXer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZKPXfR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 18:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbZKPXfP
+	id S1754801AbZKPXer (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 18:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbZKPXeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 18:35:15 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:38667 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754347AbZKPXfL (ORCPT
+	Mon, 16 Nov 2009 18:34:46 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38947 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbZKPXep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 18:35:11 -0500
-Date: Mon, 16 Nov 2009 15:32:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, lenb@kernel.org,
-       cpufreq@vger.kernel.org, akpm <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, davej@redhat.com
-Subject: [PATCH -next] x86/cpufreq: don't use acpi_processor_get_bios_limit
- when not available
-Message-Id: <20091116153242.3c194a5a.randy.dunlap@oracle.com>
-In-Reply-To: <20091116181453.b42247cf.sfr@canb.auug.org.au>
-References: <20091116181453.b42247cf.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Nov 2009 18:34:45 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH 2/6] mm: mlocking in try_to_unmap_one
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0911152209350.29917@sister.anvils>
+References: <20091113151554.33C2.A69D9226@jp.fujitsu.com> <Pine.LNX.4.64.0911152209350.29917@sister.anvils>
+Message-Id: <20091117083403.3DAE.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B01E17B.018A:SCFMA4539814,ss=1,fgs=0
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 17 Nov 2009 08:34:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> On Fri, 13 Nov 2009, KOSAKI Motohiro wrote:
+> > 
+> > Very small nit. How about this?
+> 
+> Yes, that takes it a stage further, I prefer that, thanks: but better
+> redo against mmotm, I removed the "MLOCK_PAGES && " in a later patch.
 
-Only reference this function when the kconfig makes it available.
+Ah, yes.
+thanks.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/kernel/cpu/cpufreq/powernow-k7.c |    2 ++
- 1 file changed, 2 insertions(+)
+I'll redo.
 
---- linux-next-20091113.orig/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-+++ linux-next-20091113/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-@@ -717,7 +717,9 @@ static struct cpufreq_driver powernow_dr
- 	.verify		= powernow_verify,
- 	.target		= powernow_target,
- 	.get		= powernow_get,
-+#ifdef CONFIG_X86_POWERNOW_K7_ACPI
- 	.bios_limit	= acpi_processor_get_bios_limit,
-+#endif
- 	.init		= powernow_cpu_init,
- 	.exit		= powernow_cpu_exit,
- 	.name		= "powernow-k7",
+
+
