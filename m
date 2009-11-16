@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZKPSox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZKPSn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbZKPSox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 13:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZKPSow
+	id S1753350AbZKPSn7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 13:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZKPSn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 13:44:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56083 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753253AbZKPSow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 13:44:52 -0500
-Message-ID: <4B019D40.4010108@kernel.org>
-Date: Tue, 17 Nov 2009 03:43:12 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       torvalds@linux-foundation.org, peterz@infradead.org,
-       andi@firstfloor.org, fweisbec@gmail.com
-Subject: Re: [PATCH 04/21] sched: implement scheduler notifiers
-References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-5-git-send-email-tj@kernel.org> <4B019A76.2080706@redhat.com>
-In-Reply-To: <4B019A76.2080706@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Nov 2009 13:43:58 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:59874 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752373AbZKPSn5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 13:43:57 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAF4qAUtGGN1W/2dsb2JhbACBTtVlhDwEgW0
+Date: Mon, 16 Nov 2009 13:44:01 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: [RELEASE] LTTng 0.170 for kernel 2.6.31.6 (bugfix release,
+	stress-test)
+Message-ID: <20091116184401.GC9854@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 13:35:47 up 90 days,  5:25,  5 users,  load average: 0.04, 0.14,
+	0.21
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-Avi Kivity wrote:
-> Four hlist_heads (64 bytes) is pretty heavy for this.
+I just released lttng 0.170 which fixes concurrency problems between:
 
-hlist_head is one pointer, so it will be 32bytes on 64bit machines.
+cpu hotplug
+trace start/stop
+marker arm/disarm
 
-> I having all members present in sched_notifier (instead of a union)
-> and calling a callback if it is not NULL.  This reduces the overhead
-> to 16 bytes at the expense of an extra check for sched_notifier
-> users.
+All users using LTTng since 0.165 (where the refactoring has been done)
+are strongly encouraged to upgrade.
 
-And it will reduce the overhead to 8 bytes.  Anyways, Linus was
-against walking the list multiple times for different callbacks and
-the way kvm uses these notifiers doesn't work very well with
-allocating separate table on demand, so I just went with four
-pointers.  Given that these notifiers are quite unpopular yet, I lean
-toward Avi's suggestion.  Linus?
+The stress-tests I have done are (in parallel):
 
-> Besides this, is there any difference to preempt_notifiers?  if not we
-> can just add the new members and rename.
+#cpu hotplug
+for b in $(seq 1 1000); do
+  for a in $(find /sys/devices/system/cpu |grep online); do
+    echo 0 > $a;
+  done;
+  for a in $(find /sys/devices/system/cpu |grep online); do
+    echo 1 > $a;
+  done;
+done
 
-Yeap, if we're gonna add things to ops table, I agree that would be
-better.
+#ltt-armall
+for a in $(seq 1 1000); do
+  /home/compudj/local/bin/ltt-armall;
+  /home/compudj/local/bin/ltt-disarmall;
+done
 
-Thanks.
+#trace creation/removal
+for a in $(seq 1 1000); do
+  rm -fr /tmp/trace2;
+  /home/compudj/local/bin/lttctl -C -w /tmp/trace2 trace2;
+  /home/compudj/local/bin/lttctl -D trace2;
+done
+
+Works fine now. I'll leave the test run longer, but about 10 minutes of
+these running in parallel is fine now.
+
+Mathieu
 
 -- 
-tejun
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
