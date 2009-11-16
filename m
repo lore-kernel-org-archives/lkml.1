@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZKPGx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZKPHBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752161AbZKPGx7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 01:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZKPGx6
+	id S1752697AbZKPHBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 02:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZKPHBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 01:53:58 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:59481 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbZKPGx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 01:53:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:subject:from:reply-to:to:cc:in-reply-to:references
-         :content-type:organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Dn8x+OtGAhFyLDJBYumC3crMGddJWOvRI4scios2A+UKSixOpa5k/hTp8HpC1oMZ/8
-         Qfflj6OUNZH4m95PbNkyeX9BH0Jz4d/mnS+5NQespbQRIM/fWb6cbmc7UKSEN8Vl5Nhx
-         kyavHAYu18FaHrTqvoGQ13ddZFwS5Y2G9WbQI=
-Subject: Re: [PATCH 00/19] OMAP: DSS2: Intro
-From: Gregoire Gentil <gregoire@gentil.com>
-Reply-To: gregoire@gentil.com
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: tomi.valkeinen@nokia.com, ext Andrew Morton <akpm@linux-foundation.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <94a0d4530910070157v2dd8062aheffc6345daff9e78@mail.gmail.com>
-References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
-	 <1254302501.23991.90.camel@tubuntu>
-	 <94a0d4530910070157v2dd8062aheffc6345daff9e78@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Gregoire Gentil
-Date: Sun, 15 Nov 2009 22:54:01 -0800
-Message-Id: <1258354441.19798.10.camel@gregoire-laptop>
+	Mon, 16 Nov 2009 02:01:15 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38057 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752130AbZKPHBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 02:01:14 -0500
+Date: Mon, 16 Nov 2009 18:01:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: tip tree build failure (Was: linux-next: tip tree build
+ warning)
+Message-Id: <20091116180118.aa1bf1e4.sfr@canb.auug.org.au>
+In-Reply-To: <20091116162503.7f083c3a.sfr@canb.auug.org.au>
+References: <20091116162503.7f083c3a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 11:57 +0300, Felipe Contreras wrote:
-> On Wed, Sep 30, 2009 at 12:21 PM, Tomi Valkeinen
-> <tomi.valkeinen@nokia.com> wrote:
-> > Hi,
-> >
-> > Andrew, do you have time to check out the DSS2 driver? Or suggestions
-> > how should I proceed.
-> >
-> > I rebased DSS2 on top of today's linux-tree, and there were no
-> > conflicts, so the posted patches should apply. But the rebased tree is
-> > also available in master branch at
-> > git://gitorious.org/linux-omap-dss2/linux.git
+Hi all,
+
+On Mon, 16 Nov 2009 16:25:03 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
 > 
-> It's also worth noting that DSS2 is used basically on all linux-omap
-> trees already, I've seen it working at least on N900 and beagleboard
-> and it makes no sense to try to get some video output without it.
+> arch/x86/kernel/apic/apic.c: In function 'calibrate_APIC_clock':
+> arch/x86/kernel/apic/apic.c:650: warning: format '%ld' expects type 'long int', but argument 2 has type 'u32'
 > 
-> P.S. I had to patch the beagleboard support from Tomi's
-> 'master-before-squash'... it would be nice to get it upstream already
-I second Felipe on this one. DSS2 is a very stable and an ideal video
-driver for OMAP3. Hopefully, it will make upstream soon,
+> Introduced by commit 23af368e9a904f59256c27d371ce223d6cee0430
+> ("clockevents: Use u32 for mult and shift factors").
 
-Grégoire
+Unfortunately, this produces this error on sparc64 (since they use -Werror
+in arch/sparc) (sparc64 defconfig build):
+
+arch/sparc/kernel/time_64.c: In function 'time_init':
+arch/sparc/kernel/time_64.c:851: error: format '%lx' expects type 'long unsigned int', but argument 2 has type 'u32'
+
+I applied the following patch:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 16 Nov 2009 17:54:47 +1100
+Subject: [PATCH] sparc: fix printk for change of variable type
+
+The clockevent mult field became a u32.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/sparc/kernel/time_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index da1218e..63f73ae 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -847,7 +847,7 @@ void __init time_init(void)
+ 	sparc64_clockevent.min_delta_ns =
+ 		clockevent_delta2ns(0xF, &sparc64_clockevent);
+ 
+-	printk("clockevent: mult[%lx] shift[%d]\n",
++	printk("clockevent: mult[%ux] shift[%d]\n",
+ 	       sparc64_clockevent.mult, sparc64_clockevent.shift);
+ 
+ 	setup_sparc64_timer();
+-- 
+1.6.5.2
 
 
-
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
