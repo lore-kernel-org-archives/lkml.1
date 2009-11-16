@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZKPRR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZKPRTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZKPRR4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbZKPRRz
+	id S1753984AbZKPRTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:19:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZKPRTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:17:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33390 "EHLO hera.kernel.org"
+	Mon, 16 Nov 2009 12:19:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33482 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753781AbZKPRRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:17:53 -0500
+	id S1753299AbZKPRTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 12:19:03 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
        andi@firstfloor.org, fweisbec@gmail.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 03/21] workqueue: Add debugobjects support
-Date: Tue, 17 Nov 2009 02:15:08 +0900
-Message-Id: <1258391726-30264-4-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 04/21] sched: implement scheduler notifiers
+Date: Tue, 17 Nov 2009 02:15:09 +0900
+Message-Id: <1258391726-30264-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258391726-30264-1-git-send-email-tj@kernel.org>
 References: <1258391726-30264-1-git-send-email-tj@kernel.org>
@@ -26,375 +26,195 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+Implement scheduler notifiers.  This is superset of preempt notifiers
+which will be removed in favor of new notifiers.  Four notifications
+are defined - activated, deactivated, in and out.  In and out are
+identical to preempt notifiers.  Activated and deactivated are called
+when a task's readiness to run changes.  The first three are always
+called under rq lock.  Out may not be called under rq lock depending
+on architecture.
 
-Add debugobject support to track the life time of work_structs.
+The notifier block contains union of all four callbacks to avoid
+defining separate interface for each.
 
-While at it, remove duplicate definition of
-INIT_DELAYED_WORK_ON_STACK().
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/kernel/smpboot.c |    4 +-
- include/linux/workqueue.h |   38 +++++++++----
- kernel/workqueue.c        |  131 +++++++++++++++++++++++++++++++++++++++++++-
- lib/Kconfig.debug         |    8 +++
- 4 files changed, 166 insertions(+), 15 deletions(-)
+ include/linux/sched.h |   33 +++++++++++++++++++++++++++++
+ kernel/sched.c        |   54 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 87 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 565ebc6..ba43dfe 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -687,7 +687,7 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
- 		.done	= COMPLETION_INITIALIZER_ONSTACK(c_idle.done),
- 	};
- 
--	INIT_WORK(&c_idle.work, do_fork_idle);
-+	INIT_WORK_ON_STACK(&c_idle.work, do_fork_idle);
- 
- 	alternatives_smp_switch(1);
- 
-@@ -713,6 +713,7 @@ static int __cpuinit do_boot_cpu(int apicid, int cpu)
- 
- 	if (IS_ERR(c_idle.idle)) {
- 		printk("failed fork for CPU %d\n", cpu);
-+		destroy_work_on_stack(&c_idle.work);
- 		return PTR_ERR(c_idle.idle);
- 	}
- 
-@@ -831,6 +832,7 @@ do_rest:
- 		smpboot_restore_warm_reset_vector();
- 	}
- 
-+	destroy_work_on_stack(&c_idle.work);
- 	return boot_error;
- }
- 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index cf24c20..9466e86 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -25,6 +25,7 @@ typedef void (*work_func_t)(struct work_struct *work);
- struct work_struct {
- 	atomic_long_t data;
- #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
-+#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
- #define WORK_STRUCT_FLAG_MASK (3UL)
- #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
- 	struct list_head entry;
-@@ -35,6 +36,7 @@ struct work_struct {
- };
- 
- #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
-+#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(2)
- 
- struct delayed_work {
- 	struct work_struct work;
-@@ -63,7 +65,7 @@ struct execute_work {
- #endif
- 
- #define __WORK_INITIALIZER(n, f) {				\
--	.data = WORK_DATA_INIT(),				\
-+	.data = WORK_DATA_STATIC_INIT(),			\
- 	.entry	= { &(n).entry, &(n).entry },			\
- 	.func = (f),						\
- 	__WORK_INIT_LOCKDEP_MAP(#n, &(n))			\
-@@ -91,6 +93,14 @@ struct execute_work {
- #define PREPARE_DELAYED_WORK(_work, _func)			\
- 	PREPARE_WORK(&(_work)->work, (_func))
- 
-+#ifdef CONFIG_DEBUG_OBJECTS_WORK
-+extern void __init_work(struct work_struct *work, int onstack);
-+extern void destroy_work_on_stack(struct work_struct *work);
-+#else
-+static inline void __init_work(struct work_struct *work, int onstack) { }
-+static inline void destroy_work_on_stack(struct work_struct *work) { }
-+#endif
-+
- /*
-  * initialize all of a work item in one go
-  *
-@@ -99,24 +109,36 @@ struct execute_work {
-  * to generate better code.
-  */
- #ifdef CONFIG_LOCKDEP
--#define INIT_WORK(_work, _func)						\
-+#define __INIT_WORK(_work, _func, _onstack)				\
- 	do {								\
- 		static struct lock_class_key __key;			\
- 									\
-+		__init_work((_work), _onstack);				\
- 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
- 		lockdep_init_map(&(_work)->lockdep_map, #_work, &__key, 0);\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
- 	} while (0)
- #else
--#define INIT_WORK(_work, _func)						\
-+#define __INIT_WORK(_work, _func, _onstack)				\
- 	do {								\
-+		__init_work((_work), _onstack);				\
- 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
- 	} while (0)
- #endif
- 
-+#define INIT_WORK(_work, _func)					\
-+	do {							\
-+		__INIT_WORK((_work), (_func), 0);		\
-+	} while (0)
-+
-+#define INIT_WORK_ON_STACK(_work, _func)			\
-+	do {							\
-+		__INIT_WORK((_work), (_func), 1);		\
-+	} while (0)
-+
- #define INIT_DELAYED_WORK(_work, _func)				\
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
-@@ -125,22 +147,16 @@ struct execute_work {
- 
- #define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
- 	do {							\
--		INIT_WORK(&(_work)->work, (_func));		\
-+		INIT_WORK_ON_STACK(&(_work)->work, (_func));	\
- 		init_timer_on_stack(&(_work)->timer);		\
- 	} while (0)
- 
--#define INIT_DELAYED_WORK_DEFERRABLE(_work, _func)			\
-+#define INIT_DELAYED_WORK_DEFERRABLE(_work, _func)		\
- 	do {							\
- 		INIT_WORK(&(_work)->work, (_func));		\
- 		init_timer_deferrable(&(_work)->timer);		\
- 	} while (0)
- 
--#define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
--	do {							\
--		INIT_WORK(&(_work)->work, (_func));		\
--		init_timer_on_stack(&(_work)->timer);		\
--	} while (0)
--
- /**
-  * work_pending - Find out whether a work item is currently pending
-  * @work: The work item in question
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 67e526b..dee4865 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -68,6 +68,116 @@ struct workqueue_struct {
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..0012980 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1210,6 +1210,37 @@ struct sched_rt_entity {
  #endif
  };
  
-+#ifdef CONFIG_DEBUG_OBJECTS_WORK
-+
-+static struct debug_obj_descr work_debug_descr;
-+
 +/*
-+ * fixup_init is called when:
-+ * - an active object is initialized
++ * Scheduler notifiers
++ *
++ * All notifications other than OUT are guaranteed to be called with
++ * the respective rq lock held.  Depending on architecture
++ * (__ARCH_WANT_UNLOCKED_CTXSW), OUT might be called without the rq
++ * lock but task->oncpu is guaranteed to be true.
 + */
-+static int work_fixup_init(void *addr, enum debug_obj_state state)
-+{
-+	struct work_struct *work = addr;
++enum sched_notifier_type {
++	SCHED_NOTIFIER_ACTIVATED,	/* put on runqueue */
++	SCHED_NOTIFIER_DEACTIVATED,	/* removed from runqueue */
++	SCHED_NOTIFIER_IN,		/* occupying CPU */
++	SCHED_NOTIFIER_OUT,		/* leaving CPU */
 +
-+	switch (state) {
-+	case ODEBUG_STATE_ACTIVE:
-+		cancel_work_sync(work);
-+		debug_object_init(work, &work_debug_descr);
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+/*
-+ * fixup_activate is called when:
-+ * - an active object is activated
-+ * - an unknown object is activated (might be a statically initialized object)
-+ */
-+static int work_fixup_activate(void *addr, enum debug_obj_state state)
-+{
-+	struct work_struct *work = addr;
-+
-+	switch (state) {
-+
-+	case ODEBUG_STATE_NOTAVAILABLE:
-+		/*
-+		 * This is not really a fixup. The work struct was
-+		 * statically initialized. We just make sure that it
-+		 * is tracked in the object tracker.
-+		 */
-+		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
-+			debug_object_init(work, &work_debug_descr);
-+			debug_object_activate(work, &work_debug_descr);
-+			return 0;
-+		}
-+		WARN_ON_ONCE(1);
-+		return 0;
-+
-+	case ODEBUG_STATE_ACTIVE:
-+		WARN_ON(1);
-+
-+	default:
-+		return 0;
-+	}
-+}
-+
-+/*
-+ * fixup_free is called when:
-+ * - an active object is freed
-+ */
-+static int work_fixup_free(void *addr, enum debug_obj_state state)
-+{
-+	struct work_struct *work = addr;
-+
-+	switch (state) {
-+	case ODEBUG_STATE_ACTIVE:
-+		cancel_work_sync(work);
-+		debug_object_free(work, &work_debug_descr);
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static struct debug_obj_descr work_debug_descr = {
-+	.name		= "work_struct",
-+	.fixup_init	= work_fixup_init,
-+	.fixup_activate	= work_fixup_activate,
-+	.fixup_free	= work_fixup_free,
++	SCHED_NR_NOTIFIERS,
 +};
 +
-+static inline void debug_work_activate(struct work_struct *work)
-+{
-+	debug_object_activate(work, &work_debug_descr);
-+}
++struct sched_notifier {
++	struct hlist_node	link;
++	union {
++		void (*activated)(struct sched_notifier *n, bool wakeup);
++		void (*deactivated)(struct sched_notifier *n, bool sleep);
++		void (*in)(struct sched_notifier *n, struct task_struct *prev);
++		void (*out)(struct sched_notifier *n, struct task_struct *next);
++	};
++};
 +
-+static inline void debug_work_deactivate(struct work_struct *work)
-+{
-+	debug_object_deactivate(work, &work_debug_descr);
-+}
++void sched_notifier_register(enum sched_notifier_type type,
++			     struct sched_notifier *notifier);
++void sched_notifier_unregister(struct sched_notifier *notifier);
 +
-+void __init_work(struct work_struct *work, int onstack)
-+{
-+	if (onstack)
-+		debug_object_init_on_stack(work, &work_debug_descr);
-+	else
-+		debug_object_init(work, &work_debug_descr);
-+}
-+EXPORT_SYMBOL_GPL(__init_work);
-+
-+void destroy_work_on_stack(struct work_struct *work)
-+{
-+	debug_object_free(work, &work_debug_descr);
-+}
-+EXPORT_SYMBOL_GPL(destroy_work_on_stack);
-+
-+#else
-+static inline void debug_work_activate(struct work_struct *work) { }
-+static inline void debug_work_deactivate(struct work_struct *work) { }
-+#endif
-+
- /* Serializes the accesses to the list of workqueues. */
- static DEFINE_SPINLOCK(workqueue_lock);
- static LIST_HEAD(workqueues);
-@@ -145,6 +255,7 @@ static void __queue_work(struct cpu_workqueue_struct *cwq,
- {
- 	unsigned long flags;
+ struct rcu_node;
  
-+	debug_work_activate(work);
- 	spin_lock_irqsave(&cwq->lock, flags);
- 	insert_work(cwq, work, &cwq->worklist);
- 	spin_unlock_irqrestore(&cwq->lock, flags);
-@@ -280,6 +391,7 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
- 		struct lockdep_map lockdep_map = work->lockdep_map;
+ struct task_struct {
+@@ -1237,6 +1268,8 @@ struct task_struct {
+ 	/* list of struct preempt_notifier: */
+ 	struct hlist_head preempt_notifiers;
  #endif
- 		trace_workqueue_execution(cwq->thread, work);
-+		debug_work_deactivate(work);
- 		cwq->current_work = work;
- 		list_del_init(cwq->worklist.next);
- 		spin_unlock_irq(&cwq->lock);
-@@ -350,11 +462,18 @@ static void wq_barrier_func(struct work_struct *work)
- static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
- 			struct wq_barrier *barr, struct list_head *head)
- {
--	INIT_WORK(&barr->work, wq_barrier_func);
-+	/*
-+	 * debugobject calls are safe here even with cwq->lock locked
-+	 * as we know for sure that this will not trigger any of the
-+	 * checks and call back into the fixup functions where we
-+	 * might deadlock.
-+	 */
-+	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
- 	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
++	/* sched notifiers */
++	struct hlist_head notifiers[SCHED_NR_NOTIFIERS];
  
- 	init_completion(&barr->done);
+ 	/*
+ 	 * fpu_counter contains the number of consecutive context switches
+diff --git a/kernel/sched.c b/kernel/sched.c
+index de8a765..946c7a8 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1389,6 +1389,20 @@ static const u32 prio_to_wmult[40] = {
+  /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153,
+ };
  
-+	debug_work_activate(&barr->work);
- 	insert_work(cwq, &barr->work, head);
- }
- 
-@@ -372,8 +491,10 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
- 	}
- 	spin_unlock_irq(&cwq->lock);
- 
--	if (active)
-+	if (active) {
- 		wait_for_completion(&barr.done);
-+		destroy_work_on_stack(&barr.work);
-+	}
- 
- 	return active;
- }
-@@ -451,6 +572,7 @@ out:
- 		return 0;
- 
- 	wait_for_completion(&barr.done);
-+	destroy_work_on_stack(&barr.work);
- 	return 1;
- }
- EXPORT_SYMBOL_GPL(flush_work);
-@@ -485,6 +607,7 @@ static int try_to_grab_pending(struct work_struct *work)
- 		 */
- 		smp_rmb();
- 		if (cwq == get_wq_data(work)) {
-+			debug_work_deactivate(work);
- 			list_del_init(&work->entry);
- 			ret = 1;
- 		}
-@@ -507,8 +630,10 @@ static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
- 	}
- 	spin_unlock_irq(&cwq->lock);
- 
--	if (unlikely(running))
-+	if (unlikely(running)) {
- 		wait_for_completion(&barr.done);
-+		destroy_work_on_stack(&barr.work);
-+	}
- }
- 
- static void wait_on_work(struct work_struct *work)
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 234ceb1..c91f051 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -298,6 +298,14 @@ config DEBUG_OBJECTS_TIMERS
- 	  timer routines to track the life time of timer objects and
- 	  validate the timer operations.
- 
-+config DEBUG_OBJECTS_WORK
-+	bool "Debug work objects"
-+	depends on DEBUG_OBJECTS
-+	help
-+	  If you say Y here, additional code will be inserted into the
-+	  work queue routines to track the life time of work objects and
-+	  validate the work operations.
++#define sched_notifier_for_each(notifier, pos, p, type)			\
++	hlist_for_each_entry((notifier), (pos),				\
++			     &(p)->notifiers[(type)], link)
 +
- config DEBUG_OBJECTS_ENABLE_DEFAULT
- 	int "debug_objects bootup default value (0-1)"
-         range 0 1
++#define sched_notifier_call(p, type, callback, args...) do {		\
++	struct task_struct *__p = (p);					\
++	struct sched_notifier *__notifier;				\
++	struct hlist_node *__pos;					\
++									\
++	if (unlikely(!hlist_empty(&__p->notifiers[(type)])))		\
++		sched_notifier_for_each(__notifier, __pos, __p, (type))	\
++			__notifier->callback(__notifier , ##args);	\
++} while (0)
++
+ static void activate_task(struct rq *rq, struct task_struct *p, int wakeup);
+ 
+ /*
+@@ -1939,6 +1953,8 @@ static int effective_prio(struct task_struct *p)
+  */
+ static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
+ {
++	sched_notifier_call(p, SCHED_NOTIFIER_ACTIVATED, activated, wakeup);
++
+ 	if (task_contributes_to_load(p))
+ 		rq->nr_uninterruptible--;
+ 
+@@ -1951,6 +1967,8 @@ static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
+  */
+ static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep)
+ {
++	sched_notifier_call(p, SCHED_NOTIFIER_DEACTIVATED, deactivated, sleep);
++
+ 	if (task_contributes_to_load(p))
+ 		rq->nr_uninterruptible++;
+ 
+@@ -2478,6 +2496,8 @@ int wake_up_state(struct task_struct *p, unsigned int state)
+  */
+ static void __sched_fork(struct task_struct *p)
+ {
++	int i;
++
+ 	p->se.exec_start		= 0;
+ 	p->se.sum_exec_runtime		= 0;
+ 	p->se.prev_sum_exec_runtime	= 0;
+@@ -2529,6 +2549,8 @@ static void __sched_fork(struct task_struct *p)
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+ 	INIT_HLIST_HEAD(&p->preempt_notifiers);
+ #endif
++	for (i = 0; i < SCHED_NR_NOTIFIERS; i++)
++		INIT_HLIST_HEAD(&p->notifiers[i]);
+ 
+ 	/*
+ 	 * We mark the process as running here, but have not actually
+@@ -2709,6 +2731,7 @@ static inline void
+ prepare_task_switch(struct rq *rq, struct task_struct *prev,
+ 		    struct task_struct *next)
+ {
++	sched_notifier_call(prev, SCHED_NOTIFIER_OUT, out, next);
+ 	fire_sched_out_preempt_notifiers(prev, next);
+ 	prepare_lock_switch(rq, next);
+ 	prepare_arch_switch(next);
+@@ -2751,6 +2774,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	perf_event_task_sched_in(current, cpu_of(rq));
++	sched_notifier_call(current, SCHED_NOTIFIER_IN, in, prev);
+ 	fire_sched_in_preempt_notifiers(current);
+ 	finish_lock_switch(rq, prev);
+ 
+@@ -7399,6 +7423,34 @@ static void calc_global_load_remove(struct rq *rq)
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
++/**
++ * sched_notifier_register - register a sched_notifier
++ * @type: type of sched_notifier to register
++ * @notifier: sched_notifier to register
++ *
++ * Register @notifier of @type to the current task.
++ */
++void sched_notifier_register(enum sched_notifier_type type,
++			     struct sched_notifier *notifier)
++{
++	BUG_ON(type < 0 || type >= SCHED_NR_NOTIFIERS);
++	hlist_add_head(&notifier->link, &current->notifiers[type]);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_register);
++
++/**
++ * sched_notifier_unregister - unregister a sched_notifier
++ * @notifier: sched_notifier to unregister
++ *
++ * Unregister @notifier from the current task.  This function must be
++ * called from the task @notifier is registered to.
++ */
++void sched_notifier_unregister(struct sched_notifier *notifier)
++{
++	hlist_del_init(&notifier->link);
++}
++EXPORT_SYMBOL_GPL(sched_notifier_unregister);
++
+ #if defined(CONFIG_SCHED_DEBUG) && defined(CONFIG_SYSCTL)
+ 
+ static struct ctl_table sd_ctl_dir[] = {
+@@ -9534,6 +9586,8 @@ void __init sched_init(void)
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+ 	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
+ #endif
++	for (i = 0; i < SCHED_NR_NOTIFIERS; i++)
++		INIT_HLIST_HEAD(&init_task.notifiers[i]);
+ 
+ #ifdef CONFIG_SMP
+ 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
 -- 
 1.6.4.2
 
