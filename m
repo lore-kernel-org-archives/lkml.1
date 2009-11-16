@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZKPUOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZKPUNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbZKPUOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 15:14:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZKPUOG
+	id S1753930AbZKPUNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 15:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZKPUNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 15:14:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53957 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753643AbZKPUOF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 15:14:05 -0500
-Date: Mon, 16 Nov 2009 12:12:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Larry Woodman <lwoodman@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>, Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH] prevent deadlock in __unmap_hugepage_range() when
- alloc_huge_page() fails.
-Message-Id: <20091116121253.d86920a0.akpm@linux-foundation.org>
-In-Reply-To: <1257872456.3227.2.camel@dhcp-100-19-198.bos.redhat.com>
-References: <1257872456.3227.2.camel@dhcp-100-19-198.bos.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 15:13:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53883 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753643AbZKPUNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 15:13:47 -0500
+Date: Mon, 16 Nov 2009 21:13:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stijn Devriendt <highguy@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrea Arcangeli <andrea@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] observe and act upon workload parallelism:
+ PERF_TYPE_PARALLELISM (Was: [RFC][PATCH] sched_wait_block: wait for blocked
+ threads)
+Message-ID: <20091116201335.GC360@elte.hu>
+References: <1258311859-6189-1-git-send-email-HIGHGuY@gmail.com>
+ <20091116083521.GC20672@elte.hu>
+ <alpine.LFD.2.01.0911160945470.9384@localhost.localdomain>
+ <c76f371a0911161149p5416c992o64e926890b8b32c0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c76f371a0911161149p5416c992o64e926890b8b32c0@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009 12:00:56 -0500
-Larry Woodman <lwoodman@redhat.com> wrote:
 
+* Stijn Devriendt <highguy@gmail.com> wrote:
+
+> One extra catch, I didn't even think of in the original approach is 
+> that you still need a way of saying to the kernel: no more work here.
 > 
-> hugetlb_fault() takes the mm->page_table_lock spinlock then calls
-> hugetlb_cow().  If the alloc_huge_page() in hugetlb_cow() fails due to
-> an insufficient huge page pool it calls unmap_ref_private() with the
-> mm->page_table_lock held.  unmap_ref_private() then calls
-> unmap_hugepage_range() which tries to acquire the mm->page_table_lock.
-> 
-> 
-> [<ffffffff810928c3>] print_circular_bug_tail+0x80/0x9f 
->  [<ffffffff8109280b>] ? check_noncircular+0xb0/0xe8
->  [<ffffffff810935e0>] __lock_acquire+0x956/0xc0e
->  [<ffffffff81093986>] lock_acquire+0xee/0x12e
->  [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
->  [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
->  [<ffffffff814c348d>] _spin_lock+0x40/0x89
->  [<ffffffff8111a7a6>] ? unmap_hugepage_range+0x3e/0x84
->  [<ffffffff8111afee>] ? alloc_huge_page+0x218/0x318
->  [<ffffffff8111a7a6>] unmap_hugepage_range+0x3e/0x84
->  [<ffffffff8111b2d0>] hugetlb_cow+0x1e2/0x3f4
->  [<ffffffff8111b935>] ? hugetlb_fault+0x453/0x4f6
->  [<ffffffff8111b962>] hugetlb_fault+0x480/0x4f6
->  [<ffffffff8111baee>] follow_hugetlb_page+0x116/0x2d9
->  [<ffffffff814c31a7>] ? _spin_unlock_irq+0x3a/0x5c
->  [<ffffffff81107b4d>] __get_user_pages+0x2a3/0x427
->  [<ffffffff81107d0f>] get_user_pages+0x3e/0x54
->  [<ffffffff81040b8b>] get_user_pages_fast+0x170/0x1b5
->  [<ffffffff81160352>] dio_get_page+0x64/0x14a
->  [<ffffffff8116112a>] __blockdev_direct_IO+0x4b7/0xb31
->  [<ffffffff8115ef91>] blkdev_direct_IO+0x58/0x6e
->  [<ffffffff8115e0a4>] ? blkdev_get_blocks+0x0/0xb8
->  [<ffffffff810ed2c5>] generic_file_aio_read+0xdd/0x528
->  [<ffffffff81219da3>] ? avc_has_perm+0x66/0x8c
->  [<ffffffff81132842>] do_sync_read+0xf5/0x146
->  [<ffffffff8107da00>] ? autoremove_wake_function+0x0/0x5a
->  [<ffffffff81211857>] ? security_file_permission+0x24/0x3a
->  [<ffffffff81132fd8>] vfs_read+0xb5/0x126
->  [<ffffffff81133f6b>] ? fget_light+0x5e/0xf8
->  [<ffffffff81133131>] sys_read+0x54/0x8c
->  [<ffffffff81011e42>] system_call_fastpath+0x16/0x1b
+> My original approach fails bluntly and I will happily take credit for 
+> that ;) The perf-approach perfectly allows for this, by waking up the 
+> "controller" thread which does exactly nothing as there's no work 
+> left.
 
-Confused.
+Note, the perf approach does not require a 'controller thread'.
 
-That code is very old, alloc_huge_page() failures are surely common and
-afaict the bug will lead to an instantly dead box.  So why haven't
-people hit this bug before now?
+The most efficient approach using perf-events would be:
 
+ - have the pool threads block in poll(perf_event_fd). (all threads 
+   block in poll() on the same fd).
 
-> This can be fixed by dropping the mm->page_table_lock around the call 
-> to unmap_ref_private() if alloc_huge_page() fails, its dropped right below
-> in the normal path anyway:
-> 
+ - blocking threads wake_up() the pool and cause them to drop out of
+   poll() (with no intermediary). [if there's less than
+   perf_event::min_concurrency tasks running.]
 
-Why is that safe?  What is the page_table_lock protecting in here?
+ - waking threads observe the event state and only run if we are still 
+   below perf_event::max_concurrency - otherwise they re-queue to the
+   poll() waitqueue.
 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 5d7601b..f4daef4 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1973,12 +1973,15 @@ retry_avoidcopy:
->                  */
->                 if (outside_reserve) {
->                         BUG_ON(huge_pte_none(pte));
-> +                       spin_unlock(&mm->page_table_lock);
->                         if (unmap_ref_private(mm, vma, old_page, address)) {
-> +                               spin_lock(&mm->page_table_lock);
->                                 BUG_ON(page_count(old_page) != 1);
->                                 BUG_ON(huge_pte_none(pte));
->                                 goto retry_avoidcopy;
->                         }
->                         WARN_ON_ONCE(1);
-> +                       spin_lock(&mm->page_table_lock);
->                 }
-> 
->                 return -PTR_ERR(new_page);
-> 
-> 
-> Signed-off-by: Larry Woodman <lwooman@redhat.com>
+Basically the perf-event fd creates the 'group of tasks'. This can be 
+created voluntarily by cooperating threads - or involuntarily as well 
+via PID attach or CPU attach.
 
-Patch is somewhat mucked up.  The s-o-b goes at the end of the
-changelog.  And please don't include two copies of the same patch in
-the one email.
+There's no 'tracing' overhead or notification overhead: we maintain a 
+shared state and the 'notifications' are straight wakeups that bring the 
+pool members out of poll(), to drive the workload further.
 
+Such a special sw-event, with min_concurrency==max_concurrency==1 would 
+implement Linus's interface - using standard facilities like poll(). 
+(The only 'special' act is the set up of the group itself.)
+
+So various concurrency controls could be implemented that way - 
+including the one Linus suggest - even a HPC workload-queueing daemon 
+could be done as well, which sheperds 100% uncooperative tasks.
+
+I dont think this 'fancy' approach is actually a performance drag: it 
+would really do precisely the same thing Linus's facility does (unless 
+i'm missing something subtle - or something less subtle about Linus's 
+scheme), with the two parameters set to '1'.
+
+( It would also enable a lot of other things, and it would not tie the 
+  queueing implementation into the scheduler. )
+
+Only trying would tell us for sure though - maybe i'm wrong.
+
+Thanks,
+
+	Ingo
