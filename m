@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbZKPEOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbZKPESc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbZKPEOF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 23:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZKPEOE
+	id S1752557AbZKPESc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 23:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZKPESb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 23:14:04 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39091 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004AbZKPEOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 23:14:04 -0500
-Date: Mon, 16 Nov 2009 05:14:07 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: eliminate redundant/contradicting cache line size config options
-Message-ID: <20091116041407.GB5818@wotan.suse.de>
-References: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
-User-Agent: Mutt/1.5.9i
+	Sun, 15 Nov 2009 23:18:31 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:56872 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZKPESa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 23:18:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=EY0M4O9yYyf0dszIC0SSoaBR18O+Z7xDG+EXIZUHn9FMKNF7FvcOICY/DR4tx147Do
+         AcpdcCXME/oDPRaksvejOy8mhxRxkHGoUexfMSWXvTE9+fT5fKo3SXsvBFbzcG+Hc2Tz
+         1ZMPKbCaexzUyJVffOSOGGLzSEF59FfII8Lhk=
+From: Shawn Bohrer <shawn.bohrer@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Shawn Bohrer <shawn.bohrer@gmail.com>
+Subject: [PATCH 00/13] staging: line6 cleanups
+Date: Sun, 15 Nov 2009 22:17:49 -0600
+Message-Id: <1258345082-11811-1-git-send-email-shawn.bohrer@gmail.com>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 11:54:40AM +0000, Jan Beulich wrote:
-> Rather than having X86_L1_CACHE_BYTES and X86_L1_CACHE_SHIFT (with
-> inconsistent defaults), just having the latter suffices as the former
-> can be easily calculated from it.
-> 
-> To be consistent, also change X86_INTERNODE_CACHE_BYTES to
-> X86_INTERNODE_CACHE_SHIFT, and set it to 7 (128 bytes) for NUMA to
-> account for last level cache line size (which here matters more than
-> L1 cache line size).
+The following patches fix formatting and checkpatch errors/warnings
+for some of the files in the line6 driver.
 
-I think if we're going to set it to 7 (128B, for Pentium 4), then
-we should set the L1 cache shift as well? Most alignments to
-prevent cacheline pingpong use L1 cache shift for this anyway?
+Shawn Bohrer (13):
+  staging: line6: Lindent and fix checkpatch warnings in playback.c
+  staging: line6: Fix checkpatch errors in playback.c
+  staging: line6: Lindent and fix checkpatch warnings in capture.c
+  staging: line6: Fix checkpatch errors in capture.c
+  staging: line6: Lindent control.c
+  staging: line6: Fix some checkpatch warnings in control.c
+  staging: line6: Convert simple_strtoul() to strict_strtoul in
+    control.c
+  staging: line6: Fix checkpatch warnings in pcm.c
+  staging: line6: Lindent and fix some checkpatch warnings in
+    toneport.c
+  staging: line6: Convert simple_strtol to strict_strtol in toneport.c
+  staging: line6: Convert simple_strtoul to strict_strtoul in variax.c
+  staging: line6: Convert simple_strtoul to strict_strtoul in pod.c
+  staging: line6: Convert simple_strtoul to strict_strtoul in midi.c
 
-The internode thing is really just a not quite well defined thing
-because internode cachelines are really expensive and really big
-on vsmp so they warrant trading off extra space on some critical
-structures to reduce pingpong (but this is not to say that other
-structures that are *not* internode annotated do *not* need to
-worry about pingpong).
+ drivers/staging/line6/capture.c  |   98 +++++---
+ drivers/staging/line6/control.c  |  493 +++++++++++++++++++++++++-------------
+ drivers/staging/line6/midi.c     |   16 +-
+ drivers/staging/line6/pcm.c      |    3 +-
+ drivers/staging/line6/playback.c |  101 +++++---
+ drivers/staging/line6/pod.c      |   56 ++++-
+ drivers/staging/line6/toneport.c |  119 +++++----
+ drivers/staging/line6/variax.c   |   31 ++-
+ 8 files changed, 611 insertions(+), 306 deletions(-)
 
-Put another way, big SMP P4 systems with !NUMA still want to have
-128 byte aligned variables. I think it should just default to
-L1_CACHE_SHIFT unless the special case of vsmp.
-
-But other than that complaint (which was not introduced by your
-patch anyway) then this looks like a good cleanup to me, thanks.
-
-
-> Finally, make sure the default value for X86_L1_CACHE_SHIFT, when
-> X86_GENERIC is selected, is being seen before that for the individual
-> CPU model options (other than on x86-64, where GENERIC_CPU is part of
-> the choice construct, X86_GENERIC is a separate option on ix86).
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Nick Piggin <npiggin@suse.de>
