@@ -1,372 +1,395 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZKPA3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbZKPA1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZKPA3Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 19:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZKPA3O
+	id S1752537AbZKPA1i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 19:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZKPA1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 19:29:14 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:52798 "EHLO
+	Sun, 15 Nov 2009 19:27:37 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:53272 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbZKPA3L (ORCPT
+	with ESMTP id S1752306AbZKPA1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 19:29:11 -0500
+	Sun, 15 Nov 2009 19:27:36 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Ian Kent <raven@themaw.net>,
-       autofs@linux.kernel.org
-Subject: [PATCH 03/12] autofs/autofs4: move compat_ioctl handling into fs
-Date: Mon, 16 Nov 2009 00:26:58 +0000
-Message-Id: <1258331227-1694-4-git-send-email-arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Jan Blunck <jblunck@suse.de>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH 04/12] raw: partly fix compat_ioctl handling on non-x86
+Date: Mon, 16 Nov 2009 00:26:59 +0000
+Message-Id: <1258331227-1694-5-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1258331227-1694-1-git-send-email-arnd@arndb.de>
 References: <1258331227-1694-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+2cE6ce2/M5pCObQzi85Rqt2tGRKIc8r7Bx83
- 1Ki3quR/Twtn3xWRpU3GD/iJr5VGlecOy7ypb5XDtrxJn5qt9v
- iwplCye8fI3sRGeiGmPiQ==
+X-Provags-ID: V01U2FsdGVkX1+Jr1TDpASpiogVANHYaqnngZiBRjHL/Cl5im4
+ 8PA48RHowsTNNauZ6XknChjxe4x2hZGKKhoJCQ30hycvJycy+A
+ 5RE1KjWa5cnAGVG+DET7g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handling of autofs ioctl numbers does not need to be generic
-and can easily be done directly in autofs itself.
+The (compat_ioctl handling for the) raw driver is broken in
+multiple ways. The RAW_SETBIND and RAW_GETBIND ioctls are
+compatible between 32 and 64 bit on most architectures
+but not on x86-64 and ia64 because of the different alignment
+on 64 bit variables.
+Defining the data structure in terms of compat_u64 rather than
+using __attribute__((packed)) solves this.
 
-This also pushes the BKL into autofs and autofs4 ioctl
-methods.
+Another problem is the handling of ioctl passthrough to
+block devices, which is not implemented for the compat_ioctl
+case and has been broken for ages. This patch does not
+fix the problem but prints a diagnostic message in case
+someone hits it.
+
+Also move the conversion code into the raw driver itself
+to clean up the common fs/compat_ioctl implementation.
+
+Finally, push the big kernel lock into the ioctl functions,
+since I'm touching them anyway.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Ian Kent <raven@themaw.net>
-Cc: autofs@linux.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Blunck <jblunck@suse.de>
+Cc: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- fs/autofs/root.c        |   67 +++++++++++++++++++++++++++++++++++++++++++--
- fs/autofs4/root.c       |   69 ++++++++++++++++++++++++++++++++++++++++++++--
- fs/compat_ioctl.c       |   36 ------------------------
- include/linux/auto_fs.h |    1 +
- 4 files changed, 131 insertions(+), 42 deletions(-)
+ drivers/char/raw.c |  157 +++++++++++++++++++++++++++++++++++++++++-----------
+ fs/compat_ioctl.c  |   68 ----------------------
+ 2 files changed, 125 insertions(+), 100 deletions(-)
 
-diff --git a/fs/autofs/root.c b/fs/autofs/root.c
-index 4a1401c..ad8d240 100644
---- a/fs/autofs/root.c
-+++ b/fs/autofs/root.c
-@@ -15,6 +15,7 @@
- #include <linux/stat.h>
- #include <linux/param.h>
- #include <linux/time.h>
-+#include <linux/compat.h>
+diff --git a/drivers/char/raw.c b/drivers/char/raw.c
+index 64acd05..7ccf1c1 100644
+--- a/drivers/char/raw.c
++++ b/drivers/char/raw.c
+@@ -20,6 +20,7 @@
+ #include <linux/device.h>
+ #include <linux/mutex.h>
  #include <linux/smp_lock.h>
- #include "autofs_i.h"
++#include <linux/compat.h>
  
-@@ -24,12 +25,16 @@ static int autofs_root_symlink(struct inode *,struct dentry *,const char *);
- static int autofs_root_unlink(struct inode *,struct dentry *);
- static int autofs_root_rmdir(struct inode *,struct dentry *);
- static int autofs_root_mkdir(struct inode *,struct dentry *,int);
--static int autofs_root_ioctl(struct inode *, struct file *,unsigned int,unsigned long);
-+static long autofs_root_ioctl(struct file *,unsigned int,unsigned long);
-+static long autofs_root_compat_ioctl(struct file *,unsigned int,unsigned long);
+ #include <asm/uaccess.h>
  
- const struct file_operations autofs_root_operations = {
- 	.read		= generic_read_dir,
- 	.readdir	= autofs_root_readdir,
--	.ioctl		= autofs_root_ioctl,
-+	.unlocked_ioctl	= autofs_root_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= autofs_root_compat_ioctl,
-+#endif
- };
+@@ -120,9 +121,8 @@ static int raw_release(struct inode *inode, struct file *filp)
+ /*
+  * Forward ioctls to the underlying block device.
+  */
+-static int
+-raw_ioctl(struct inode *inode, struct file *filp,
+-		  unsigned int command, unsigned long arg)
++static long
++raw_ioctl(struct file *filp, unsigned int command, unsigned long arg)
+ {
+ 	struct block_device *bdev = filp->private_data;
  
- const struct inode_operations autofs_root_inode_operations = {
-@@ -490,6 +495,25 @@ static int autofs_root_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+@@ -140,10 +140,9 @@ static void bind_device(struct raw_config_request *rq)
+  * Deal with ioctls against the raw-device control interface, to bind
+  * and unbind other raw devices.
+  */
+-static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+-			unsigned int command, unsigned long arg)
++static int do_raw_ctl_ioctl(struct file *filp,
++			unsigned int command, struct raw_config_request *rq)
+ {
+-	struct raw_config_request rq;
+ 	struct raw_device_data *rawdev;
+ 	int err = 0;
+ 
+@@ -152,17 +151,11 @@ static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+ 	case RAW_GETBIND:
+ 
+ 		/* First, find out which raw minor we want */
+-
+-		if (copy_from_user(&rq, (void __user *) arg, sizeof(rq))) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-
+-		if (rq.raw_minor <= 0 || rq.raw_minor >= MAX_RAW_MINORS) {
++		if (rq->raw_minor <= 0 || rq->raw_minor >= MAX_RAW_MINORS) {
+ 			err = -EINVAL;
+ 			goto out;
+ 		}
+-		rawdev = &raw_devices[rq.raw_minor];
++		rawdev = &raw_devices[rq->raw_minor];
+ 
+ 		if (command == RAW_SETBIND) {
+ 			dev_t dev;
+@@ -183,10 +176,10 @@ static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+ 			 * major/minor numbers make sense.
+ 			 */
+ 
+-			dev = MKDEV(rq.block_major, rq.block_minor);
+-			if ((rq.block_major == 0 && rq.block_minor != 0) ||
+-					MAJOR(dev) != rq.block_major ||
+-					MINOR(dev) != rq.block_minor) {
++			dev = MKDEV(rq->block_major, rq->block_minor);
++			if ((rq->block_major == 0 && rq->block_minor != 0) ||
++					MAJOR(dev) != rq->block_major ||
++					MINOR(dev) != rq->block_minor) {
+ 				err = -EINVAL;
+ 				goto out;
+ 			}
+@@ -201,18 +194,18 @@ static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+ 				bdput(rawdev->binding);
+ 				module_put(THIS_MODULE);
+ 			}
+-			if (rq.block_major == 0 && rq.block_minor == 0) {
++			if (rq->block_major == 0 && rq->block_minor == 0) {
+ 				/* unbind */
+ 				rawdev->binding = NULL;
+ 				device_destroy(raw_class,
+-						MKDEV(RAW_MAJOR, rq.raw_minor));
++						MKDEV(RAW_MAJOR, rq->raw_minor));
+ 			} else {
+ 				rawdev->binding = bdget(dev);
+ 				if (rawdev->binding == NULL)
+ 					err = -ENOMEM;
+ 				else {
+ 					__module_get(THIS_MODULE);
+-					bind_device(&rq);
++					bind_device(rq);
+ 				}
+ 			}
+ 			mutex_unlock(&raw_mutex);
+@@ -222,16 +215,12 @@ static int raw_ctl_ioctl(struct inode *inode, struct file *filp,
+ 			mutex_lock(&raw_mutex);
+ 			bdev = rawdev->binding;
+ 			if (bdev) {
+-				rq.block_major = MAJOR(bdev->bd_dev);
+-				rq.block_minor = MINOR(bdev->bd_dev);
++				rq->block_major = MAJOR(bdev->bd_dev);
++				rq->block_minor = MINOR(bdev->bd_dev);
+ 			} else {
+-				rq.block_major = rq.block_minor = 0;
++				rq->block_major = rq->block_minor = 0;
+ 			}
+ 			mutex_unlock(&raw_mutex);
+-			if (copy_to_user((void __user *)arg, &rq, sizeof(rq))) {
+-				err = -EFAULT;
+-				goto out;
+-			}
+ 		}
+ 		break;
+ 	default:
+@@ -242,6 +231,108 @@ out:
+ 	return err;
  }
  
- /* Get/set timeout ioctl() operation */
-+#ifdef CONFIG_COMPAT
-+static inline int autofs_compat_get_set_timeout(struct autofs_sb_info *sbi,
-+					 unsigned int __user *p)
-+{
-+	unsigned long ntimeout;
 +
-+	if (get_user(ntimeout, p) ||
-+	    put_user(sbi->exp_timeout / HZ, p))
++static long raw_ctl_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	struct raw_config_request rq;
++	int err = -EINVAL;
++
++        switch (cmd) {
++        case RAW_SETBIND:
++        case RAW_GETBIND:
++		if (copy_from_user(&rq, (void __user *)arg, sizeof(rq))) {
++			err = -EFAULT;
++			break;
++		}
++
++		lock_kernel();
++                err = do_raw_ctl_ioctl(file, cmd, &rq);
++		unlock_kernel();
++
++		if (!err && cmd == RAW_GETBIND) {
++			if (copy_to_user((void __user *)arg, &rq, sizeof(rq))) {
++				err = -EFAULT;
++			}
++		}
++                break;
++        }
++        return err;
++}
++
++#ifdef CONFIG_COMPAT
++struct compat_raw_config_request {
++	compat_int_t	raw_minor;
++	compat_u64	block_major;
++	compat_u64	block_minor;
++};
++
++static int get_raw32_request(struct raw_config_request *req,
++			     struct compat_raw_config_request __user * user_req)
++{
++	int err;
++
++	if (!access_ok (VERIFY_READ, user_req,
++			sizeof(struct compat_raw_config_request)))
 +		return -EFAULT;
 +
-+	if (ntimeout > UINT_MAX/HZ)
-+		sbi->exp_timeout = 0;
-+	else
-+		sbi->exp_timeout = ntimeout * HZ;
++	err  = __get_user(req->raw_minor, &user_req->raw_minor);
++	err |= __get_user(req->block_major, &user_req->block_major);
++	err |= __get_user(req->block_minor, &user_req->block_minor);
 +
-+	return 0;
-+}
-+#endif
-+
- static inline int autofs_get_set_timeout(struct autofs_sb_info *sbi,
- 					 unsigned long __user *p)
- {
-@@ -544,7 +568,7 @@ static inline int autofs_expire_run(struct super_block *sb,
-  * ioctl()'s on the root directory is the chief method for the daemon to
-  * generate kernel reactions
-  */
--static int autofs_root_ioctl(struct inode *inode, struct file *filp,
-+static int autofs_do_root_ioctl(struct inode *inode, struct file *filp,
- 			     unsigned int cmd, unsigned long arg)
- {
- 	struct autofs_sb_info *sbi = autofs_sbi(inode->i_sb);
-@@ -569,6 +593,10 @@ static int autofs_root_ioctl(struct inode *inode, struct file *filp,
- 		return 0;
- 	case AUTOFS_IOC_PROTOVER: /* Get protocol version */
- 		return autofs_get_protover(argp);
-+#ifdef CONFIG_COMPAT
-+	case AUTOFS_IOC_SETTIMEOUT32:
-+		return autofs_compat_get_set_timeout(sbi, argp);
-+#endif
- 	case AUTOFS_IOC_SETTIMEOUT:
- 		return autofs_get_set_timeout(sbi, argp);
- 	case AUTOFS_IOC_EXPIRE:
-@@ -577,4 +605,37 @@ static int autofs_root_ioctl(struct inode *inode, struct file *filp,
- 	default:
- 		return -ENOSYS;
- 	}
-+
++	return err ? -EFAULT : 0;
 +}
 +
-+static long autofs_root_ioctl(struct file *filp,
-+			     unsigned int cmd, unsigned long arg)
++static int set_raw32_request(struct raw_config_request *req,
++			     struct compat_raw_config_request __user * user_req)
 +{
-+	int ret;
++	int err;
 +
-+	lock_kernel();
-+	ret = autofs_do_root_ioctl(filp->f_path.dentry->d_inode,
-+				   filp, cmd, arg);
-+	unlock_kernel();
++	if (!access_ok(VERIFY_WRITE, user_req,
++			sizeof(struct compat_raw_config_request)))
++		return -EFAULT;
 +
-+	return ret;
++	err  = __put_user(req->raw_minor, &user_req->raw_minor);
++	err |= __put_user(req->block_major, &user_req->block_major);
++	err |= __put_user(req->block_minor, &user_req->block_minor);
++
++	return err ? -EFAULT : 0;
 +}
 +
-+#ifdef CONFIG_COMPAT
-+static long autofs_root_compat_ioctl(struct file *filp,
-+			     unsigned int cmd, unsigned long arg)
++static long raw_ctl_compat_ioctl(struct file *file, unsigned cmd, unsigned long arg)
 +{
-+	struct inode *inode = filp->f_path.dentry->d_inode;
-+	int ret;
++	struct raw_config_request req;
++	struct compat_raw_config_request __user *user_req;
++	int err = -EINVAL;
 +
-+	lock_kernel();
-+	if (cmd == AUTOFS_IOC_READY || cmd == AUTOFS_IOC_FAIL)
-+		ret = autofs_do_root_ioctl(inode, filp, cmd, arg);
-+	else
-+		ret = autofs_do_root_ioctl(inode, filp, cmd,
-+			(unsigned long)compat_ptr(arg));
-+	unlock_kernel();
++	user_req = compat_ptr(arg);
++	switch (cmd) {
++	case RAW_SETBIND:
++	case RAW_GETBIND:
++		if ((err = get_raw32_request(&req, user_req)))
++			return err;
 +
-+	return ret;
- }
-+#endif
-diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index b96a3c5..ff00dfc 100644
---- a/fs/autofs4/root.c
-+++ b/fs/autofs4/root.c
-@@ -17,13 +17,17 @@
- #include <linux/stat.h>
- #include <linux/param.h>
- #include <linux/time.h>
-+#include <linux/compat.h>
-+#include <linux/smp_lock.h>
++		lock_kernel();
++		err = do_raw_ctl_ioctl(file, cmd, &req);
++		unlock_kernel();
 +
- #include "autofs_i.h"
- 
- static int autofs4_dir_symlink(struct inode *,struct dentry *,const char *);
- static int autofs4_dir_unlink(struct inode *,struct dentry *);
- static int autofs4_dir_rmdir(struct inode *,struct dentry *);
- static int autofs4_dir_mkdir(struct inode *,struct dentry *,int);
--static int autofs4_root_ioctl(struct inode *, struct file *,unsigned int,unsigned long);
-+static long autofs4_root_ioctl(struct file *,unsigned int,unsigned long);
-+static long autofs4_root_compat_ioctl(struct file *,unsigned int,unsigned long);
- static int autofs4_dir_open(struct inode *inode, struct file *file);
- static struct dentry *autofs4_lookup(struct inode *,struct dentry *, struct nameidata *);
- static void *autofs4_follow_link(struct dentry *, struct nameidata *);
-@@ -37,7 +41,10 @@ const struct file_operations autofs4_root_operations = {
- 	.read		= generic_read_dir,
- 	.readdir	= dcache_readdir,
- 	.llseek		= dcache_dir_lseek,
--	.ioctl		= autofs4_root_ioctl,
-+	.unlocked_ioctl	= autofs4_root_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= autofs4_root_compat_ioctl,
-+#endif
++		if ((!err) && (cmd == RAW_GETBIND)) {
++			err = set_raw32_request(&req, user_req);
++		}
++		break;
++	}
++	return err;
++}
++
++static long
++raw_compat_ioctl(struct file *filp, unsigned int command, unsigned long arg)
++{
++	/* FIXME: should pass through ioctls */
++	compat_printk("%s: no support for block ioctls\n", __func__);
++
++	return -ENOIOCTLCMD;
++}
++#endif /* CONFIG_COMPAT */
++
+ static const struct file_operations raw_fops = {
+ 	.read	=	do_sync_read,
+ 	.aio_read = 	generic_file_aio_read,
+@@ -249,14 +340,16 @@ static const struct file_operations raw_fops = {
+ 	.aio_write =	blkdev_aio_write,
+ 	.open	=	raw_open,
+ 	.release=	raw_release,
+-	.ioctl	=	raw_ioctl,
++	.unlocked_ioctl	= raw_ioctl,
++	.compat_ioctl = raw_compat_ioctl,
+ 	.owner	=	THIS_MODULE,
  };
  
- const struct file_operations autofs4_dir_operations = {
-@@ -807,6 +814,26 @@ static int autofs4_dir_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- }
+ static const struct file_operations raw_ctl_fops = {
+-	.ioctl	=	raw_ctl_ioctl,
+-	.open	=	raw_open,
+-	.owner	=	THIS_MODULE,
++	.unlocked_ioctl	= raw_ctl_ioctl,
++	.compat_ioctl	= raw_ctl_compat_ioctl,
++	.open		= raw_open,
++	.owner		= THIS_MODULE,
+ };
  
- /* Get/set timeout ioctl() operation */
-+#ifdef CONFIG_COMPAT
-+static inline int autofs4_compat_get_set_timeout(struct autofs_sb_info *sbi,
-+					 compat_ulong_t __user *p)
-+{
-+	int rv;
-+	unsigned long ntimeout;
-+
-+	if ((rv = get_user(ntimeout, p)) ||
-+	     (rv = put_user(sbi->exp_timeout/HZ, p)))
-+		return rv;
-+
-+	if (ntimeout > UINT_MAX/HZ)
-+		sbi->exp_timeout = 0;
-+	else
-+		sbi->exp_timeout = ntimeout * HZ;
-+
-+	return 0;
-+}
-+#endif
-+
- static inline int autofs4_get_set_timeout(struct autofs_sb_info *sbi,
- 					 unsigned long __user *p)
- {
-@@ -870,7 +897,7 @@ int is_autofs4_dentry(struct dentry *dentry)
-  * ioctl()'s on the root directory is the chief method for the daemon to
-  * generate kernel reactions
-  */
--static int autofs4_root_ioctl(struct inode *inode, struct file *filp,
-+static int autofs4_do_root_ioctl(struct inode *inode, struct file *filp,
- 			     unsigned int cmd, unsigned long arg)
- {
- 	struct autofs_sb_info *sbi = autofs4_sbi(inode->i_sb);
-@@ -900,6 +927,10 @@ static int autofs4_root_ioctl(struct inode *inode, struct file *filp,
- 		return autofs4_get_protosubver(sbi, p);
- 	case AUTOFS_IOC_SETTIMEOUT:
- 		return autofs4_get_set_timeout(sbi, p);
-+#ifdef CONFIG_COMPAT
-+	case AUTOFS_IOC_SETTIMEOUT32:
-+		return autofs4_compat_get_set_timeout(sbi, p);
-+#endif
- 
- 	case AUTOFS_IOC_ASKUMOUNT:
- 		return autofs4_ask_umount(filp->f_path.mnt, p);
-@@ -915,3 +946,35 @@ static int autofs4_root_ioctl(struct inode *inode, struct file *filp,
- 		return -ENOSYS;
- 	}
- }
-+
-+static long autofs4_root_ioctl(struct file *filp,
-+			       unsigned int cmd, unsigned long arg)
-+{
-+	int ret;
-+
-+	lock_kernel();
-+	ret = autofs4_do_root_ioctl(filp->f_path.dentry->d_inode,
-+				    filp, cmd, arg);
-+	unlock_kernel();
-+
-+	return ret;
-+}
-+
-+#ifdef CONFIG_COMPAT
-+static long autofs4_root_compat_ioctl(struct file *filp,
-+			     unsigned int cmd, unsigned long arg)
-+{
-+	struct inode *inode = filp->f_path.dentry->d_inode;
-+	int ret;
-+
-+	lock_kernel();
-+	if (cmd == AUTOFS_IOC_READY || cmd == AUTOFS_IOC_FAIL)
-+		ret = autofs4_do_root_ioctl(inode, filp, cmd, arg);
-+	else
-+		ret = autofs4_do_root_ioctl(inode, filp, cmd,
-+			(unsigned long)compat_ptr(arg));
-+	unlock_kernel();
-+
-+	return ret;
-+}
-+#endif
+ static struct cdev raw_cdev;
 diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 219a117..ed3f23c 100644
+index ed3f23c..80f1a92 100644
 --- a/fs/compat_ioctl.c
 +++ b/fs/compat_ioctl.c
-@@ -132,23 +132,6 @@ static int w_long(unsigned int fd, unsigned int cmd,
- 	return err;
- }
+@@ -558,70 +558,6 @@ static int do_smb_getmountuid(unsigned int fd, unsigned int cmd,
+ #define HIDPGETCONNLIST	_IOR('H', 210, int)
+ #define HIDPGETCONNINFO	_IOR('H', 211, int)
  
--static int rw_long(unsigned int fd, unsigned int cmd,
--		compat_ulong_t __user *argp)
+-#ifdef CONFIG_BLOCK
+-struct raw32_config_request
 -{
--	mm_segment_t old_fs = get_fs();
--	int err;
--	unsigned long val;
+-        compat_int_t    raw_minor;
+-        __u64   block_major;
+-        __u64   block_minor;
+-} __attribute__((packed));
 -
--	if(get_user(val, argp))
--		return -EFAULT;
--	set_fs (KERNEL_DS);
--	err = sys_ioctl(fd, cmd, (unsigned long)&val);
--	set_fs (old_fs);
--	if (!err && put_user(val, argp))
--		return -EFAULT;
--	return err;
+-static int get_raw32_request(struct raw_config_request *req, struct raw32_config_request __user *user_req)
+-{
+-        int ret;
+-
+-        if (!access_ok(VERIFY_READ, user_req, sizeof(struct raw32_config_request)))
+-                return -EFAULT;
+-
+-        ret = __get_user(req->raw_minor, &user_req->raw_minor);
+-        ret |= __get_user(req->block_major, &user_req->block_major);
+-        ret |= __get_user(req->block_minor, &user_req->block_minor);
+-
+-        return ret ? -EFAULT : 0;
 -}
 -
- struct compat_video_event {
- 	int32_t		type;
- 	compat_time_t	timestamp;
-@@ -556,12 +539,6 @@ static int do_smb_getmountuid(unsigned int fd, unsigned int cmd,
- 	return err;
- }
- 
--static int ioc_settimeout(unsigned int fd, unsigned int cmd,
--		compat_ulong_t __user *argp)
+-static int set_raw32_request(struct raw_config_request *req, struct raw32_config_request __user *user_req)
 -{
--	return rw_long(fd, AUTOFS_IOC_SETTIMEOUT, argp);
+-	int ret;
+-
+-        if (!access_ok(VERIFY_WRITE, user_req, sizeof(struct raw32_config_request)))
+-                return -EFAULT;
+-
+-        ret = __put_user(req->raw_minor, &user_req->raw_minor);
+-        ret |= __put_user(req->block_major, &user_req->block_major);
+-        ret |= __put_user(req->block_minor, &user_req->block_minor);
+-
+-        return ret ? -EFAULT : 0;
 -}
 -
- /* Bluetooth ioctls */
- #define HCIUARTSETPROTO	_IOW('U', 200, int)
- #define HCIUARTGETPROTO	_IOR('U', 201, int)
-@@ -1348,13 +1325,6 @@ COMPATIBLE_IOCTL(SOUND_MIXER_PRIVATE5)
- COMPATIBLE_IOCTL(SOUND_MIXER_GETLEVELS)
- COMPATIBLE_IOCTL(SOUND_MIXER_SETLEVELS)
- COMPATIBLE_IOCTL(OSS_GETVERSION)
--/* AUTOFS */
--COMPATIBLE_IOCTL(AUTOFS_IOC_CATATONIC)
--COMPATIBLE_IOCTL(AUTOFS_IOC_PROTOVER)
--COMPATIBLE_IOCTL(AUTOFS_IOC_EXPIRE)
--COMPATIBLE_IOCTL(AUTOFS_IOC_EXPIRE_MULTI)
--COMPATIBLE_IOCTL(AUTOFS_IOC_PROTOSUBVER)
--COMPATIBLE_IOCTL(AUTOFS_IOC_ASKUMOUNT)
- /* Raw devices */
- COMPATIBLE_IOCTL(RAW_SETBIND)
- COMPATIBLE_IOCTL(RAW_GETBIND)
-@@ -1647,9 +1617,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
- 	case RAW_GETBIND:
- 		return raw_ioctl(fd, cmd, argp);
+-static int raw_ioctl(unsigned fd, unsigned cmd,
+-		struct raw32_config_request __user *user_req)
+-{
+-        int ret;
+-
+-        switch (cmd) {
+-        case RAW_SETBIND:
+-        case RAW_GETBIND: {
+-                struct raw_config_request req;
+-                mm_segment_t oldfs = get_fs();
+-
+-                if ((ret = get_raw32_request(&req, user_req)))
+-                        return ret;
+-
+-                set_fs(KERNEL_DS);
+-                ret = sys_ioctl(fd,cmd,(unsigned long)&req);
+-                set_fs(oldfs);
+-
+-                if ((!ret) && (cmd == RAW_GETBIND)) {
+-                        ret = set_raw32_request(&req, user_req);
+-                }
+-                break;
+-        }
+-        }
+-        return ret;
+-}
+-#endif /* CONFIG_BLOCK */
+-
+ struct serial_struct32 {
+         compat_int_t    type;
+         compat_int_t    line;
+@@ -1612,10 +1548,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
+ 	case MTIOCGET32:
+ 	case MTIOCPOS32:
+ 		return mt_ioctl_trans(fd, cmd, argp);
+-	/* Raw devices */
+-	case RAW_SETBIND:
+-	case RAW_GETBIND:
+-		return raw_ioctl(fd, cmd, argp);
  #endif
--#define AUTOFS_IOC_SETTIMEOUT32 _IOWR(0x93,0x64,unsigned int)
--	case AUTOFS_IOC_SETTIMEOUT32:
--		return ioc_settimeout(fd, cmd, argp);
  	/* One SMB ioctl needs translations. */
  #define SMB_IOC_GETMOUNTUID_32 _IOR('u', 1, compat_uid_t)
- 	case SMB_IOC_GETMOUNTUID_32:
-@@ -1715,9 +1682,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
- 	case KDSKBMETA:
- 	case KDSKBLED:
- 	case KDSETLED:
--	/* AUTOFS */
--	case AUTOFS_IOC_READY:
--	case AUTOFS_IOC_FAIL:
- 	/* NBD */
- 	case NBD_SET_SOCK:
- 	case NBD_SET_BLKSIZE:
-diff --git a/include/linux/auto_fs.h b/include/linux/auto_fs.h
-index 7b09c83..da64e15 100644
---- a/include/linux/auto_fs.h
-+++ b/include/linux/auto_fs.h
-@@ -79,6 +79,7 @@ struct autofs_packet_expire {
- #define AUTOFS_IOC_FAIL       _IO(0x93,0x61)
- #define AUTOFS_IOC_CATATONIC  _IO(0x93,0x62)
- #define AUTOFS_IOC_PROTOVER   _IOR(0x93,0x63,int)
-+#define AUTOFS_IOC_SETTIMEOUT32 _IOWR(0x93,0x64,compat_ulong_t)
- #define AUTOFS_IOC_SETTIMEOUT _IOWR(0x93,0x64,unsigned long)
- #define AUTOFS_IOC_EXPIRE     _IOR(0x93,0x65,struct autofs_packet_expire)
- 
 -- 
 1.6.3.3
 
