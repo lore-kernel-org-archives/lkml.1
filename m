@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235AbZKPFZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbZKPF1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752235AbZKPFZI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 00:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZKPFZH
+	id S1752327AbZKPF1s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 00:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZKPF1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 00:25:07 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60330 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751091AbZKPFZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 00:25:06 -0500
-Date: Mon, 16 Nov 2009 16:25:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: tip tree build warning
-Message-Id: <20091116162503.7f083c3a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__16_Nov_2009_16_25_03_+1100_Q2.FzuN.jkzgZmdj"
+	Mon, 16 Nov 2009 00:27:48 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45246 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751091AbZKPF1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 00:27:47 -0500
+X-Authenticated: #3373616
+X-Provags-ID: V01U2FsdGVkX1+zfOF4lyqzGAfO2iccjs2cXz28HdyVmHsnKGJFPJ
+	1an7/Bhyhp/I39
+Message-ID: <4B00E261.6080701@gmx.de>
+Date: Mon, 16 Nov 2009 15:25:53 +1000
+From: =?ISO-8859-1?Q?Simon_K=E4mpflein?= <s.kaempflein@gmx.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       bfweisbec@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: perf counters: problem with perf record
+References: <4AFEE55B.3000906@gmx.de> <1258227980.30187.512.camel@laptop> <4AFFD2B8.5060400@gmx.de> <20091115103459.GC24931@elte.hu>
+In-Reply-To: <20091115103459.GC24931@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__16_Nov_2009_16_25_03_+1100_Q2.FzuN.jkzgZmdj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ingo Molnar wrote
+>> Maybe it's a good idea to add another comment making it clear that the
+>> performance counters are not fully working in this case. Or detect this
+>> case in "perf-record" and output a message relating to that.
+> 
+> Ok. Mind sending a patch that changes the message so that it explains it 
+> all to you more clearly?
 
-Hi all,
+Here's a patch for this:
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+More accurate error message when "perf record" fails because there is no
+APIC support:
+---
+ tools/perf/builtin-record.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-arch/x86/kernel/apic/apic.c: In function 'calibrate_APIC_clock':
-arch/x86/kernel/apic/apic.c:650: warning: format '%ld' expects type 'long i=
-nt', but argument 2 has type 'u32'
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 04f335e..77b21f1 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -303,6 +303,10 @@ try_again:
+                printf("\n");
+                error("perfcounter syscall returned with %d (%s)\n",
+                        fd[nr_cpu][counter], strerror(err));
++
++               if (attr->type == PERF_TYPE_HARDWARE && err == EOPNOTSUPP)
++                        die("No hardware sampling interrupt available.
+No APIC? Boot the kernel with the \"lapic\" boot parameter to
+force-enable it.\n");
++
+                die("No CONFIG_PERF_EVENTS=y kernel support configured?\n");
+                exit(-1);
+        }
+--
+1.5.4.3
 
-Introduced by commit 23af368e9a904f59256c27d371ce223d6cee0430
-("clockevents: Use u32 for mult and shift factors").
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> 
+>>> And does booting with the suggested lapic parameter cure your problems?
+>>>
+>> Yes, thank you!
+> 
+> Great.
+> 
+> You might want to send another patch that allows the .config enabling of 
+> that lapic boot parameter. It sucks to carry around boot parameters.
+> 
 
---Signature=_Mon__16_Nov_2009_16_25_03_+1100_Q2.FzuN.jkzgZmdj
-Content-Type: application/pgp-signature
+I'm not sure if this is a good idea. Some systems may crash if you
+force-enable it:
+http://lkml.indiana.edu/hypermail/linux/kernel/0307.3/1635.html
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+And I'm also not familiar with the kernel internals on that topic ;)
 
-iEYEARECAAYFAksA4i8ACgkQjjKRsyhoI8ym6wCdGGBNkbAvfMtqnT3VPWHuB9nM
-PI0AmwXsgs1t5ZaTkUmfTR3ONnyZ4yIK
-=C5fB
------END PGP SIGNATURE-----
+Simon
 
---Signature=_Mon__16_Nov_2009_16_25_03_+1100_Q2.FzuN.jkzgZmdj--
