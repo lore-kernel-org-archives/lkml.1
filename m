@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZKPBAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbZKPBIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbZKPBAV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 20:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZKPBAU
+	id S1751667AbZKPBIW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 20:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZKPBIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 20:00:20 -0500
-Received: from imap.ru.mvista.com ([213.79.90.228]:18974 "EHLO
+	Sun, 15 Nov 2009 20:08:18 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:18993 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752537AbZKPBAU (ORCPT
+	by vger.kernel.org with ESMTP id S1750931AbZKPBIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 20:00:20 -0500
-Date: Mon, 16 Nov 2009 04:00:22 +0300
+	Sun, 15 Nov 2009 20:08:09 -0500
+Date: Mon, 16 Nov 2009 04:08:14 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Paul Fertser <fercerpav@gmail.com>
-Cc: Ben Dooks <ben@simtec.co.uk>, Anton Vorontsov <cbou@mail.ru>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Lars-Peter Clausen <lars@metafoo.de>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 3/6] gta02: set pcf50633 charger_reference_current_ma
-Message-ID: <20091116010022.GA4927@oksana.dev.rtsoft.ru>
+Cc: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       zaurus-devel@www.linuxtogo.org
+Subject: Re: [RFC PATCH 1/2] power: implement platform battery driver
+Message-ID: <20091116010814.GB4927@oksana.dev.rtsoft.ru>
 Reply-To: avorontsov@ru.mvista.com
-References: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
- <1257369899-325-2-git-send-email-fercerpav@gmail.com>
- <1257369899-325-3-git-send-email-fercerpav@gmail.com>
- <20091111134844.GB22476@home.pavel.comp>
+References: <1257820673-30801-1-git-send-email-fercerpav@gmail.com>
+ <1257820673-30801-2-git-send-email-fercerpav@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20091111134844.GB22476@home.pavel.comp>
+In-Reply-To: <1257820673-30801-2-git-send-email-fercerpav@gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 04:48:44PM +0300, Paul Fertser wrote:
-> Hi,
+Hi Paul,
 
-Paul, thanks a lot for your work!
+On Tue, Nov 10, 2009 at 05:37:52AM +0300, Paul Fertser wrote:
+[...]
+> +static int platform_bat_get_property(struct power_supply *psy,
+> +				       enum power_supply_property psp,
+> +				       union power_supply_propval *val)
+> +{
+> +	struct platform_battery *bat =
+> +				container_of(psy, struct platform_battery, psy);
+> +	size_t i;
+> +	int present = 1;
+> +
+> +	if (bat->pdata->is_present)
+> +		present = bat->pdata->is_present();
+> +
+> +	if (psp != POWER_SUPPLY_PROP_PRESENT && !present)
+> +		return -ENODEV;
+> +
+> +	for (i = 0; i < psy->num_properties; i++)
+> +		if (psy->properties[i] == psp) {
+> +			val->intval = bat->pdata->get_property[i]();
+> +			return 0;
+> +		}
 
-> Ben, please give us an advice on how to proceed with this rather
-> trivial patch. Anton doesn't merge the other patches from this series
-> because we do not know via which tree to merge this particular patch.
-
-OK, a) the patch is trivial; b) signed off and acked by people who
-cares about and actually use gta devices; c) we can't wait forever
-(a month, that is), even though we do realize maintainers could be
-busy.
-
-So, I've applied this patch to battery-2.6.git. Ben, I hope you're
-fine with it.
+I'm not sure I like this. Why don't you just pass the enum
+to pdata hook? So platform devices would just use a single
+get_property function and a 'switch', like the rest of the
+power supply drivers.
 
 Thanks,
-
-> On Thu, Nov 05, 2009 at 12:24:56AM +0300, Paul Fertser wrote:
-> > From: Lars-Peter Clausen <lars@metafoo.de>
-> > 
-> > This value is board-specific and is needed for calculations to set charging
-> > current limit properly.
-> > 
-> > Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> > Acked-by: Nelson Castillo <arhuaco@freaks-unidos.net>
-> > Signed-off-by: Paul Fertser <fercerpav@gmail.com>
-> > Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> > ---
-> > 
-> > Since this patch compile-depends on previous probably it should go through
-> > the same tree as others. Nelson (gta02 maintainer) agrees with whatever you
-> > think is best.
-> > 
-> > Anton Vorontsov is ok with merging it through his tree but needs an explicit
-> > ack.
-> > 
-> >  arch/arm/mach-s3c2442/mach-gta02.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/arm/mach-s3c2442/mach-gta02.c b/arch/arm/mach-s3c2442/mach-gta02.c
-> > index 0fb385b..b0a3d74 100644
-> > --- a/arch/arm/mach-s3c2442/mach-gta02.c
-> > +++ b/arch/arm/mach-s3c2442/mach-gta02.c
-> > @@ -268,6 +268,9 @@ struct pcf50633_platform_data gta02_pcf_pdata = {
-> >  
-> >  	.batteries = gta02_batteries,
-> >  	.num_batteries = ARRAY_SIZE(gta02_batteries),
-> > +
-> > +	.charger_reference_current_ma = 1000,
-> > +
-> >  	.reg_init_data = {
-> >  		[PCF50633_REGULATOR_AUTO] = {
-> >  			.constraints = {
-> > -- 
-> > 1.6.4.4
-> > 
 
 -- 
 Anton Vorontsov
