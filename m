@@ -1,46 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZKPA5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZKPBAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZKPA5M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 19:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZKPA5M
+	id S1752845AbZKPBAV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 20:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZKPBAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 19:57:12 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58192 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbZKPA5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 19:57:11 -0500
-Message-ID: <4B00A335.9070900@cn.fujitsu.com>
-Date: Mon, 16 Nov 2009 08:56:21 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 15 Nov 2009 20:00:20 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:18974 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752537AbZKPBAU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 20:00:20 -0500
+Date: Mon, 16 Nov 2009 04:00:22 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: Ben Dooks <ben@simtec.co.uk>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Lars-Peter Clausen <lars@metafoo.de>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 3/6] gta02: set pcf50633 charger_reference_current_ma
+Message-ID: <20091116010022.GA4927@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1257369899-325-1-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-2-git-send-email-fercerpav@gmail.com>
+ <1257369899-325-3-git-send-email-fercerpav@gmail.com>
+ <20091111134844.GB22476@home.pavel.comp>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, mingo@elte.hu,
-       Frederic Weisbecker <fweisbec@gmail.com>, auke-jan.h.kok@intel.com
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-References: <20091025225342.007138f5@infradead.org>	<4AFA2293.5080803@cn.fujitsu.com> <20091115110043.6cafc221@infradead.org>
-In-Reply-To: <20091115110043.6cafc221@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091111134844.GB22476@home.pavel.comp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 11 Nov 2009 10:33:55 +0800
-> Li Zefan <lizf@cn.fujitsu.com> wrote:
->> This will leave __entry->comm, __entry->file and __entry->dev
->> uninitialized in the "else" case..
-> 
-> I would expect the struct to be zeroed before.... is it?
-> (the TP_ stuff is so obscure I find it hard to figure out where it ends
-> up)
-> 
+On Wed, Nov 11, 2009 at 04:48:44PM +0300, Paul Fertser wrote:
+> Hi,
 
-No, it won't. Ring buffer won't zero the buffer before returning it,
-and TP_ stuff won't zero the buffer after getting it.
+Paul, thanks a lot for your work!
 
-See static void ftrace_raw_event_##call(proto) in include/event/ftrace.h
+> Ben, please give us an advice on how to proceed with this rather
+> trivial patch. Anton doesn't merge the other patches from this series
+> because we do not know via which tree to merge this particular patch.
 
+OK, a) the patch is trivial; b) signed off and acked by people who
+cares about and actually use gta devices; c) we can't wait forever
+(a month, that is), even though we do realize maintainers could be
+busy.
+
+So, I've applied this patch to battery-2.6.git. Ben, I hope you're
+fine with it.
+
+Thanks,
+
+> On Thu, Nov 05, 2009 at 12:24:56AM +0300, Paul Fertser wrote:
+> > From: Lars-Peter Clausen <lars@metafoo.de>
+> > 
+> > This value is board-specific and is needed for calculations to set charging
+> > current limit properly.
+> > 
+> > Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> > Acked-by: Nelson Castillo <arhuaco@freaks-unidos.net>
+> > Signed-off-by: Paul Fertser <fercerpav@gmail.com>
+> > Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> > ---
+> > 
+> > Since this patch compile-depends on previous probably it should go through
+> > the same tree as others. Nelson (gta02 maintainer) agrees with whatever you
+> > think is best.
+> > 
+> > Anton Vorontsov is ok with merging it through his tree but needs an explicit
+> > ack.
+> > 
+> >  arch/arm/mach-s3c2442/mach-gta02.c |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/arm/mach-s3c2442/mach-gta02.c b/arch/arm/mach-s3c2442/mach-gta02.c
+> > index 0fb385b..b0a3d74 100644
+> > --- a/arch/arm/mach-s3c2442/mach-gta02.c
+> > +++ b/arch/arm/mach-s3c2442/mach-gta02.c
+> > @@ -268,6 +268,9 @@ struct pcf50633_platform_data gta02_pcf_pdata = {
+> >  
+> >  	.batteries = gta02_batteries,
+> >  	.num_batteries = ARRAY_SIZE(gta02_batteries),
+> > +
+> > +	.charger_reference_current_ma = 1000,
+> > +
+> >  	.reg_init_data = {
+> >  		[PCF50633_REGULATOR_AUTO] = {
+> >  			.constraints = {
+> > -- 
+> > 1.6.4.4
+> > 
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
