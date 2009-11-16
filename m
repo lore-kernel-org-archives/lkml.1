@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZKPRIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZKPRLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZKPRIh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZKPRIg
+	id S1753318AbZKPRLs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZKPRLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:08:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47392 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 12:11:48 -0500
+Received: from nn7.de ([85.214.94.156]:36795 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbZKPRIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:08:36 -0500
-Message-ID: <4B018703.3080507@redhat.com>
-Date: Mon, 16 Nov 2009 19:08:19 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: gregory.haskins@gmail.com, herbert@gondor.apana.org.au,
-       ghaskins@novell.com, mst@redhat.com,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-References: <4AF98A8C.9040201@novell.com>	<20091114011229.GA18580@gondor.apana.org.au>	<4AFE08EF.2030308@gmail.com> <20091113.190438.78469912.davem@davemloft.net>
-In-Reply-To: <20091113.190438.78469912.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751985AbZKPRLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 12:11:47 -0500
+Subject: Re: [PATCH] mouse button 1 emulation for mac_hid
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, olh@suse.de,
+       Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <20091116170543.GB24026@core.coreip.homeip.net>
+References: <1257762531.7245.23.camel@no>
+	 <20091114054246.GF4463@core.coreip.homeip.net>
+	 <alpine.LRH.2.00.0911161358240.31913@twin.jikos.cz>
+	 <20091116170543.GB24026@core.coreip.homeip.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-BgFecxfZ8zXlR/9+U9ET"
+Date: Mon, 16 Nov 2009 18:11:51 +0100
+Message-ID: <1258391511.3419.131.camel@no>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/14/2009 05:04 AM, David Miller wrote:
-> From: Gregory Haskins<gregory.haskins@gmail.com>
-> Date: Fri, 13 Nov 2009 20:33:35 -0500
->
->    
->> Well, not with respect to the overall protocol, of course not.  But with
->> respect to the buffer in question, it _has_ to be.  Or am I missing
->> something?
->>      
-> sendfile() absolutely, and positively, is not.
->
-> Any entity can write to the pages being send via sendfile(), at will,
-> and those writes will show up in the packet stream if they occur
-> before the NIC DMA's the memory backed by those pages into it's
-> buffer.
->
-> There is zero data synchronization whatsoever, we don't lock the
-> pages, we don't block their usage while they are queued up in the
-> socket send queue, nothing like that.
->
->    
 
-But it must maintain a reference count on the page being dmaed and drop 
-it only after dma is complete.  Otherwise we risk the page being 
-recycled and arbitrary memory sent out on the wire; and an application 
-can trivially cause this by truncate()ing a sendfile.
+--=-BgFecxfZ8zXlR/9+U9ET
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-> The user returns long before it every hits the wire and there is zero
-> "notification" to the user that the pages in question for the
-> sendfile() request are no longer in use.
->    
+On Mon, 2009-11-16 at 09:05 -0800, Dmitry Torokhov wrote:
+> On Mon, Nov 16, 2009 at 01:59:37PM +0100, Jiri Kosina wrote:
+> > On Fri, 13 Nov 2009, Dmitry Torokhov wrote:
+> >=20
+> > > > I am not sure what the future of mac_hid is (the source says will b=
+e
+> > > > removed, but since 9 years). In case it stays in kernel the attache=
+d
+> > > > patch adds support for mouse button 1 emulation. If this driver sta=
+ys in
+> > > > the kernel I would also suggest to rename it - it is not mac specif=
+ic (I
+> > > > am using this on a netbook).
+> > > >=20
+> > > > Rationale? Broken touchpads, within linux unsupported (multi-)touch=
+pads
+> > > > where click and hold + moving the mouse does not work (yet?).
+> > >=20
+> > > I would rather fix the touchpads so they work properly than pile more
+> > > quirks in kernel.
+> >=20
+> > Hi Dmitry,
+> >=20
+> > in exactly what way are you planning to "fix the touchpads"?
+> >=20
+>=20
+> Hi Jiri,
+>=20
+> It would be helpful to know which ones are currently. Obviously we can't
+> help with physically broken ones but I don't believe it is kernel's task
+> to deal with physically broken hardware. The ones that are not
+> physically broken - PS/2 should have fairly decent hardware emulation
+> mode (at least all I tried supported tap and trag while working as
+> regular PS/2 mouse) - so that can be used while we figuring out native
+> protocol. USB - appletouch, bcm - are there any issues at the moment?
 
-The put_page() is a notification except it doesn't reach the caller.  
-Gregory's patch (and previous shared info destructor patches) is an 
-attempt to make it reach the caller, IIUC.
+Ignoring broken hardware, there is the problem or feature that some
+touchpads have the mouse *under the touchpad*. So when you click there
+and want to move the mouse - well good luck. Of course this is something
+that needs to be ultimately fixed in the synaptics xorg driver.
 
--- 
-error compiling committee.c: too many arguments to function
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
 
+--=-BgFecxfZ8zXlR/9+U9ET
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABAgAGBQJLAYfWAAoJEH82z1Wqh6p31KYP/jelg048wDILXIKEoHO8TPlT
+oP6y/2B64Vby9ohFgC+stUZ6H32aN/o4BdBLQ8k5fkDlz2QAzUix7G5xYxkSE9DL
+Y4+/N/c5v6C+X/a1Pm37qcDGBLTKSbmK2uheC+bfpY2P/B7KEc2Dl0aSJ2eWOquV
+5guJnEiukbBccwMs2wDOJFBBdYKzk/1FVdQBjMSo+s5Usi0SnpauDyIBcpHFbyDH
+0131sO03Lf1NismUvWIIKEs2X0688+FrWpWlqr8Mv+p9p9mu+6j/qEH4EX3um2gk
+/AvuSFMw2Qd/EmA2sebjLCl7kkDnQGd2yhpAKIY0niJ5o5fGOyIMxjPqbZBwOayy
+VnQMnU/cHV1sM13UNpD1DdzdQceXEiz0iE+N7xDqMdx6Jz/g7MoUWUPVWRhT3IeE
+8FmYSOZJhgL8sKG92J4lRRhhlXTIcMSOctW4aMDyrHsvmoEZiyixeLQo1vRMXX0A
+/DS2XvREdR+Zu7LyYmcpqX1xP5xW5HxyK5enUqMgiwRAVK29Am7XzCULH8q5PcEM
+ZXAMtkjjipoPmhCiIv8SW3SXtDTEybUaic9khKHsIjujZA5j9fL5bYoodHYQnph0
+ZUjXH7OPqpnoyMWbkd4u7AhKrcSAcOKt2n4EdFTNmzVjzNWcdrtF9ovZ3gQeAbw3
+QhoJQnkYI7TEWNF6VYce
+=Vllr
+-----END PGP SIGNATURE-----
+
+--=-BgFecxfZ8zXlR/9+U9ET--
