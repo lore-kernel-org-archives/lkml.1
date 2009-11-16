@@ -1,79 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZKPSn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZKPSjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbZKPSn7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 13:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZKPSn6
+	id S1753117AbZKPSjf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 13:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZKPSje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 13:43:58 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:59874 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752373AbZKPSn5 (ORCPT
+	Mon, 16 Nov 2009 13:39:34 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:64262 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbZKPSjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 13:43:57 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAF4qAUtGGN1W/2dsb2JhbACBTtVlhDwEgW0
-Date: Mon, 16 Nov 2009 13:44:01 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: [RELEASE] LTTng 0.170 for kernel 2.6.31.6 (bugfix release,
-	stress-test)
-Message-ID: <20091116184401.GC9854@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Nov 2009 13:39:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qDPIrQXv5YDEDNIpHt1HHGe4Cn8bC8qSK/5nS/e2kwlZhkhH2hJjGbe007r5mNBTxZ
+         essb5G9ejg0IhVbMCyKmLDIRP/J1QsA24wewVIJEtJCHXqzER0mw3K9eVaZSZHrmtZNI
+         l3xt7V7VjzUyaHt/CwwKg1fY6F4MbYor4Sp5Y=
+Message-ID: <4B019F52.50509@gmail.com>
+Date: Mon, 16 Nov 2009 19:52:02 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Wagner <daw@cs.berkeley.edu>
+Subject: Re: [PATCH] Documentation: Fix NUL termination of strncpy
+References: <4B018405.2030408@gmail.com>
+In-Reply-To: <4B018405.2030408@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:35:47 up 90 days,  5:25,  5 users,  load average: 0.04, 0.14,
-	0.21
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ensure the copied strings are NUL terminated.
 
-I just released lttng 0.170 which fixes concurrency problems between:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+> Rationale (please correct me if I'm wrong):
+> 
+> For a larger source string, strncpy only NUL terminates when
+> the size argument is _less_ than sizeof(destination string).
+> strlcpy does this when it equals sizeof (dest), but does not
+> overwrite NULs in the higher chars.
+> 
+> Because cpumask is global I used strncpy, for the extra NULs.
+> devname is local so I think strlcpy can be used.
+> For {device,hwtstamp}.ifr_name I thought the strlcpy could
+> be used since ifr_name is zeroed upon creation of device and
+> hwtstamp.
+> 
+> Oh, and the parenthesis in radiotap-headers.txt should not
+> be there.
 
-cpu hotplug
-trace start/stop
-marker arm/disarm
+See http://markmail.org/message/5ckmbipstgslzolf
 
-All users using LTTng since 0.165 (where the refactoring has been done)
-are strongly encouraged to upgrade.
+(To David Wagner: this was what you meant.)
 
-The stress-tests I have done are (in parallel):
+I forgot strlcpy is not present in old glibc versions,
+please use this one instead.
 
-#cpu hotplug
-for b in $(seq 1 1000); do
-  for a in $(find /sys/devices/system/cpu |grep online); do
-    echo 0 > $a;
-  done;
-  for a in $(find /sys/devices/system/cpu |grep online); do
-    echo 1 > $a;
-  done;
-done
+Roel
 
-#ltt-armall
-for a in $(seq 1 1000); do
-  /home/compudj/local/bin/ltt-armall;
-  /home/compudj/local/bin/ltt-disarmall;
-done
+ Documentation/accounting/getdelays.c               |    2 +-
+ Documentation/hwmon/hpfall.c                       |    2 +-
+ Documentation/networking/radiotap-headers.txt      |    2 +-
+ .../networking/timestamping/timestamping.c         |    4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-#trace creation/removal
-for a in $(seq 1 1000); do
-  rm -fr /tmp/trace2;
-  /home/compudj/local/bin/lttctl -C -w /tmp/trace2 trace2;
-  /home/compudj/local/bin/lttctl -D trace2;
-done
-
-Works fine now. I'll leave the test run longer, but about 10 minutes of
-these running in parallel is fine now.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+index 6e25c26..4d71b0e 100644
+--- a/Documentation/accounting/getdelays.c
++++ b/Documentation/accounting/getdelays.c
+@@ -303,7 +303,7 @@ int main(int argc, char *argv[])
+ 				err(1, "Invalid rcv buf size\n");
+ 			break;
+ 		case 'm':
+-			strncpy(cpumask, optarg, sizeof(cpumask));
++			strncpy(cpumask, optarg, sizeof(cpumask) - 1);
+ 			maskset = 1;
+ 			printf("cpumask %s maskset %d\n", cpumask, maskset);
+ 			break;
+diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
+index 681ec22..fbcb585 100644
+--- a/Documentation/hwmon/hpfall.c
++++ b/Documentation/hwmon/hpfall.c
+@@ -27,7 +27,7 @@ int set_unload_heads_path(char *device)
+ 
+ 	if (strlen(device) <= 5 || strncmp(device, "/dev/", 5) != 0)
+ 		return -EINVAL;
+-	strncpy(devname, device + 5, sizeof(devname));
++	strncpy(devname, device + 5, sizeof(devname) - 1);
+ 
+ 	snprintf(unload_heads_path, sizeof(unload_heads_path),
+ 				"/sys/block/%s/device/unload_heads", devname);
+diff --git a/Documentation/networking/radiotap-headers.txt b/Documentation/networking/radiotap-headers.txt
+index 953331c..447e004 100644
+--- a/Documentation/networking/radiotap-headers.txt
++++ b/Documentation/networking/radiotap-headers.txt
+@@ -126,7 +126,7 @@ int MyFunction(u8 * buf, int buflen)
+ 
+ 		case IEEE80211_RADIOTAP_ANTENNA:
+ 			/* radiotap uses 0 for 1st ant */
+-			antenna = *iterator.this_arg);
++			antenna = *iterator.this_arg;
+ 			break;
+ 
+ 		case IEEE80211_RADIOTAP_DBM_TX_POWER:
+diff --git a/Documentation/networking/timestamping/timestamping.c b/Documentation/networking/timestamping/timestamping.c
+index a7936fe..bec1f9c 100644
+--- a/Documentation/networking/timestamping/timestamping.c
++++ b/Documentation/networking/timestamping/timestamping.c
+@@ -374,12 +374,12 @@ int main(int argc, char **argv)
+ 		bail("socket");
+ 
+ 	memset(&device, 0, sizeof(device));
+-	strncpy(device.ifr_name, interface, sizeof(device.ifr_name));
++	strncpy(device.ifr_name, interface, sizeof(device.ifr_name) - 1);
+ 	if (ioctl(sock, SIOCGIFADDR, &device) < 0)
+ 		bail("getting interface IP address");
+ 
+ 	memset(&hwtstamp, 0, sizeof(hwtstamp));
+-	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name));
++	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name) - 1);
+ 	hwtstamp.ifr_data = (void *)&hwconfig;
+ 	memset(&hwconfig, 0, sizeof(hwconfig));
+ 	hwconfig.tx_type =
