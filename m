@@ -1,109 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZKPMWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZKPM05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbZKPMWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZKPMUn
+	id S1753404AbZKPM05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZKPM04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:20:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49998 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:26:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8110 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbZKPMTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:19:43 -0500
-From: Avi Kivity <avi@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Subject: [PATCH 42/42] KVM: SVM: Add tracepoint for injected #vmexit
-Date: Mon, 16 Nov 2009 14:19:43 +0200
-Message-Id: <1258373983-8693-43-git-send-email-avi@redhat.com>
-In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
-References: <1258373983-8693-1-git-send-email-avi@redhat.com>
+	id S1753240AbZKPMUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 07:20:04 -0500
+Date: Mon, 16 Nov 2009 13:19:57 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: mmotm-1113: efi.c:  __divdi3 undefined (i386)
+Message-ID: <20091116121957.GF10245@nb.net.home>
+References: <4B004C87.7010406@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B004C87.7010406@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+On Sun, Nov 15, 2009 at 10:46:31AM -0800, Randy Dunlap wrote:
+> on i386 builds:
+> 
+> fs/built-in.o: In function `last_lba':
+> efi.c:(.text+0x9d9fe): undefined reference to `__divdi3'
+> 
+> 
+> -       return (bdev->bd_inode->i_size >> 9) - 1ULL;
+> +       return (bdev->bd_inode->i_size / bdev_logical_block_size(bdev)) - 1ULL;
 
-This patch adds a tracepoint for a nested #vmexit that gets
-re-injected to the guest.
+ Ah.. I guess that div_u64() is more portable. Updated
+ partitions-use-sector-size-for-efi-gpt.patch is below.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+    Karel
+
+
+>From fbb0c11cf349545f2499d382469749543fdc03d0 Mon Sep 17 00:00:00 2001
+From: Karel Zak <kzak@redhat.com>
+Date: Mon, 16 Nov 2009 12:19:25 +0100
+Subject: [PATCH] partitions: use sector size for EFI GPT
+
+Currently, kernel uses strictly 512-byte sectors for EFI GPT parsing.
+That's wrong.
+
+UEFI standard (version 2.3, May 2009, 5.3.1 GUID Format overview, page
+95) defines that LBA is always based on the logical block size. It
+means bdev_logical_block_size() (aka BLKSSZGET) for Linux.
+
+This patch removes static sector size from EFI GPT parser.
+
+The problem is reproducible with the latest GNU Parted:
+
+ # modprobe scsi_debug dev_size_mb=50 sector_size=4096
+
+  # ./parted /dev/sdb print
+  Model: Linux scsi_debug (scsi)
+  Disk /dev/sdb: 52.4MB
+  Sector size (logical/physical): 4096B/4096B
+  Partition Table: gpt
+
+  Number  Start   End     Size    File system  Name     Flags
+   1      24.6kB  3002kB  2978kB               primary
+   2      3002kB  6001kB  2998kB               primary
+   3      6001kB  9003kB  3002kB               primary
+
+  # blockdev --rereadpt /dev/sdb
+  # dmesg | tail -1
+   sdb: unknown partition table      <---- !!!
+
+with this patch:
+
+  # blockdev --rereadpt /dev/sdb
+  # dmesg | tail -1
+   sdb: sdb1 sdb2 sdb3
+
+Signed-off-by: Karel Zak <kzak@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/x86/kvm/svm.c   |    6 ++++++
- arch/x86/kvm/trace.h |   33 +++++++++++++++++++++++++++++++++
- arch/x86/kvm/x86.c   |    1 +
- 3 files changed, 40 insertions(+), 0 deletions(-)
+ fs/partitions/efi.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index edf6e8b..369eeb8 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1592,6 +1592,12 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 	struct vmcb *hsave = svm->nested.hsave;
- 	struct vmcb *vmcb = svm->vmcb;
+diff --git a/fs/partitions/efi.c b/fs/partitions/efi.c
+index 038a602..80eeff5 100644
+--- a/fs/partitions/efi.c
++++ b/fs/partitions/efi.c
+@@ -1,7 +1,9 @@
+ /************************************************************
+  * EFI GUID Partition Table handling
+- * Per Intel EFI Specification v1.02
+- * http://developer.intel.com/technology/efi/efi.htm
++ *
++ * http://www.uefi.org/specs/
++ * http://www.intel.com/technology/efi/
++ *
+  * efi.[ch] by Matt Domsch <Matt_Domsch@dell.com>
+  *   Copyright 2000,2001,2002,2004 Dell Inc.
+  *
+@@ -92,6 +94,7 @@
+  *
+  ************************************************************/
+ #include <linux/crc32.h>
++#include <linux/math64.h>
+ #include "check.h"
+ #include "efi.h"
  
-+	trace_kvm_nested_vmexit_inject(vmcb->control.exit_code,
-+				       vmcb->control.exit_info_1,
-+				       vmcb->control.exit_info_2,
-+				       vmcb->control.exit_int_info,
-+				       vmcb->control.exit_int_info_err);
-+
- 	nested_vmcb = nested_svm_map(svm, svm->nested.vmcb, KM_USER0);
- 	if (!nested_vmcb)
- 		return 1;
-diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
-index a7eb629..4d6bb5e 100644
---- a/arch/x86/kvm/trace.h
-+++ b/arch/x86/kvm/trace.h
-@@ -418,6 +418,39 @@ TRACE_EVENT(kvm_nested_vmexit,
- 		  __entry->exit_int_info, __entry->exit_int_info_err)
- );
+@@ -141,7 +144,8 @@ last_lba(struct block_device *bdev)
+ {
+ 	if (!bdev || !bdev->bd_inode)
+ 		return 0;
+-	return (bdev->bd_inode->i_size >> 9) - 1ULL;
++	return div_u64(bdev->bd_inode->i_size,
++		       bdev_logical_block_size(bdev)) - 1ULL;
+ }
  
-+/*
-+ * Tracepoint for #VMEXIT reinjected to the guest
-+ */
-+TRACE_EVENT(kvm_nested_vmexit_inject,
-+	    TP_PROTO(__u32 exit_code,
-+		     __u64 exit_info1, __u64 exit_info2,
-+		     __u32 exit_int_info, __u32 exit_int_info_err),
-+	    TP_ARGS(exit_code, exit_info1, exit_info2,
-+		    exit_int_info, exit_int_info_err),
-+
-+	TP_STRUCT__entry(
-+		__field(	__u32,		exit_code		)
-+		__field(	__u64,		exit_info1		)
-+		__field(	__u64,		exit_info2		)
-+		__field(	__u32,		exit_int_info		)
-+		__field(	__u32,		exit_int_info_err	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->exit_code		= exit_code;
-+		__entry->exit_info1		= exit_info1;
-+		__entry->exit_info2		= exit_info2;
-+		__entry->exit_int_info		= exit_int_info;
-+		__entry->exit_int_info_err	= exit_int_info_err;
-+	),
-+
-+	TP_printk("reason: %s ext_inf1: 0x%016llx "
-+		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x\n",
-+		  ftrace_print_symbols_seq(p, __entry->exit_code,
-+					   kvm_x86_ops->exit_reasons_str),
-+		__entry->exit_info1, __entry->exit_info2,
-+		__entry->exit_int_info, __entry->exit_int_info_err)
-+);
- #endif /* _TRACE_KVM_H */
+ static inline int
+@@ -188,6 +192,7 @@ static size_t
+ read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
+ {
+ 	size_t totalreadcount = 0;
++	sector_t n = lba * (bdev_logical_block_size(bdev) / 512);
  
- /* This part must be outside protection */
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 192d58e..a522d9b 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4986,3 +4986,4 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_msr);
- EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_cr);
- EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_nested_vmrun);
- EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_nested_vmexit);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_nested_vmexit_inject);
+ 	if (!bdev || !buffer || lba > last_lba(bdev))
+                 return 0;
+@@ -195,7 +200,7 @@ read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
+ 	while (count) {
+ 		int copied = 512;
+ 		Sector sect;
+-		unsigned char *data = read_dev_sector(bdev, lba++, &sect);
++		unsigned char *data = read_dev_sector(bdev, n++, &sect);
+ 		if (!data)
+ 			break;
+ 		if (copied > count)
+@@ -601,6 +606,7 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
+ 	gpt_header *gpt = NULL;
+ 	gpt_entry *ptes = NULL;
+ 	u32 i;
++	unsigned ssz = bdev_logical_block_size(bdev) / 512;
+ 
+ 	if (!find_valid_gpt(bdev, &gpt, &ptes) || !gpt || !ptes) {
+ 		kfree(gpt);
+@@ -611,13 +617,14 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
+ 	pr_debug("GUID Partition Table is valid!  Yea!\n");
+ 
+ 	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
++		u64 start = le64_to_cpu(ptes[i].starting_lba);
++		u64 size = le64_to_cpu(ptes[i].ending_lba) -
++			   le64_to_cpu(ptes[i].starting_lba) + 1ULL;
++
+ 		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
+ 			continue;
+ 
+-		put_partition(state, i+1, le64_to_cpu(ptes[i].starting_lba),
+-				 (le64_to_cpu(ptes[i].ending_lba) -
+-                                  le64_to_cpu(ptes[i].starting_lba) +
+-				  1ULL));
++		put_partition(state, i+1, start * ssz, size * ssz);
+ 
+ 		/* If this is a RAID volume, tell md */
+ 		if (!efi_guidcmp(ptes[i].partition_type_guid,
 -- 
-1.6.5.2
+1.6.5.1
+
 
