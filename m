@@ -1,170 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZKPMUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZKPM2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZKPMUZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZKPMUX
+	id S1753345AbZKPM2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZKPMT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:20:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26734 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:19:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbZKPMTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752932AbZKPMTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Nov 2009 07:19:42 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 16/42] KVM: Drop kvm->irq_lock lock from irq injection path
-Date: Mon, 16 Nov 2009 14:19:17 +0200
-Message-Id: <1258373983-8693-17-git-send-email-avi@redhat.com>
+Subject: [PATCH 17/42] KVM: Return -ENOTTY on unrecognized ioctls
+Date: Mon, 16 Nov 2009 14:19:18 +0200
+Message-Id: <1258373983-8693-18-git-send-email-avi@redhat.com>
 In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
 References: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+Not the incorrect -EINVAL.
 
-The only thing it protects now is interrupt injection into lapic and
-this can work lockless. Even now with kvm->irq_lock in place access
-to lapic is not entirely serialized since vcpu access doesn't take
-kvm->irq_lock.
-
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/kvm-ia64.c |    2 --
- arch/x86/kvm/i8254.c     |    2 --
- arch/x86/kvm/lapic.c     |    2 --
- arch/x86/kvm/x86.c       |    2 --
- virt/kvm/eventfd.c       |    2 --
- virt/kvm/irq_comm.c      |    6 +-----
- virt/kvm/kvm_main.c      |    2 --
- 7 files changed, 1 insertions(+), 17 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c   |    2 +-
+ arch/powerpc/kvm/powerpc.c |    2 +-
+ arch/s390/kvm/kvm-s390.c   |    2 +-
+ arch/x86/kvm/x86.c         |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index 4a98314..f534e0f 100644
+index f534e0f..f6471c8 100644
 --- a/arch/ia64/kvm/kvm-ia64.c
 +++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -982,10 +982,8 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 			goto out;
- 		if (irqchip_in_kernel(kvm)) {
- 			__s32 status;
--			mutex_lock(&kvm->irq_lock);
- 			status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
- 				    irq_event.irq, irq_event.level);
--			mutex_unlock(&kvm->irq_lock);
- 			if (ioctl == KVM_IRQ_LINE_STATUS) {
- 				irq_event.status = status;
- 				if (copy_to_user(argp, &irq_event,
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 144e7f6..fab7440 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -688,10 +688,8 @@ static void __inject_pit_timer_intr(struct kvm *kvm)
- 	struct kvm_vcpu *vcpu;
- 	int i;
+@@ -941,7 +941,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ {
+ 	struct kvm *kvm = filp->private_data;
+ 	void __user *argp = (void __user *)arg;
+-	int r = -EINVAL;
++	int r = -ENOTTY;
  
--	mutex_lock(&kvm->irq_lock);
- 	kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 1);
- 	kvm_set_irq(kvm, kvm->arch.vpit->irq_source_id, 0, 0);
--	mutex_unlock(&kvm->irq_lock);
+ 	switch (ioctl) {
+ 	case KVM_SET_MEMORY_REGION: {
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2a4551f..95af622 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -421,7 +421,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
  
- 	/*
- 	 * Provides NMI watchdog support via Virtual Wire mode.
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index df8bcb0..8787637 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -501,9 +501,7 @@ static void apic_send_ipi(struct kvm_lapic *apic)
- 		   irq.trig_mode, irq.level, irq.dest_mode, irq.delivery_mode,
- 		   irq.vector);
+ 	switch (ioctl) {
+ 	default:
+-		r = -EINVAL;
++		r = -ENOTTY;
+ 	}
  
--	mutex_lock(&apic->vcpu->kvm->irq_lock);
- 	kvm_irq_delivery_to_apic(apic->vcpu->kvm, apic, &irq);
--	mutex_unlock(&apic->vcpu->kvm->irq_lock);
- }
+ 	return r;
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 07ced89..00e2ce8 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -150,7 +150,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 		break;
+ 	}
+ 	default:
+-		r = -EINVAL;
++		r = -ENOTTY;
+ 	}
  
- static u32 apic_get_tmcct(struct kvm_lapic *apic)
+ 	return r;
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fdf989f..5beb4c1 100644
+index 5beb4c1..829e306 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -2286,10 +2286,8 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 			goto out;
- 		if (irqchip_in_kernel(kvm)) {
- 			__s32 status;
--			mutex_lock(&kvm->irq_lock);
- 			status = kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID,
- 					irq_event.irq, irq_event.level);
--			mutex_unlock(&kvm->irq_lock);
- 			if (ioctl == KVM_IRQ_LINE_STATUS) {
- 				irq_event.status = status;
- 				if (copy_to_user(argp, &irq_event,
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index bb4ebd8..30f70fd 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -61,10 +61,8 @@ irqfd_inject(struct work_struct *work)
- 	struct _irqfd *irqfd = container_of(work, struct _irqfd, inject);
- 	struct kvm *kvm = irqfd->kvm;
- 
--	mutex_lock(&kvm->irq_lock);
- 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
- 	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
--	mutex_unlock(&kvm->irq_lock);
- }
- 
- /*
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index fadf440..15a83b9 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -82,8 +82,6 @@ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
- 	int i, r = -1;
- 	struct kvm_vcpu *vcpu, *lowest = NULL;
- 
--	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
--
- 	if (irq->dest_mode == 0 && irq->dest_id == 0xff &&
- 			kvm_is_dm_lowest_prio(irq))
- 		printk(KERN_INFO "kvm: apic: phys broadcast and lowest prio\n");
-@@ -138,7 +136,7 @@ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
- 	return kvm_irq_delivery_to_apic(kvm, NULL, &irq);
- }
- 
--/* This should be called with the kvm->irq_lock mutex held
-+/*
-  * Return value:
-  *  < 0   Interrupt was ignored (masked or not delivered for other reasons)
-  *  = 0   Interrupt was coalesced (previous irq is still pending)
-@@ -153,8 +151,6 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level)
- 
- 	trace_kvm_set_irq(irq, level, irq_source_id);
- 
--	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
--
- 	/* Not possible to detect if the guest uses the PIC or the
- 	 * IOAPIC.  So set the bit in both. The guest will ignore
- 	 * writes to the unused one.
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 6eca153..c12c95b 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -137,7 +137,6 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
- 				    interrupt_work);
- 	kvm = assigned_dev->kvm;
- 
--	mutex_lock(&kvm->irq_lock);
- 	spin_lock_irq(&assigned_dev->assigned_dev_lock);
- 	if (assigned_dev->irq_requested_type & KVM_DEV_IRQ_HOST_MSIX) {
- 		struct kvm_guest_msix_entry *guest_entries =
-@@ -156,7 +155,6 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
- 			    assigned_dev->guest_irq, 1);
- 
- 	spin_unlock_irq(&assigned_dev->assigned_dev_lock);
--	mutex_unlock(&assigned_dev->kvm->irq_lock);
- }
- 
- static irqreturn_t kvm_assigned_dev_intr(int irq, void *dev_id)
+@@ -2176,7 +2176,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ {
+ 	struct kvm *kvm = filp->private_data;
+ 	void __user *argp = (void __user *)arg;
+-	int r = -EINVAL;
++	int r = -ENOTTY;
+ 	/*
+ 	 * This union makes it completely explicit to gcc-3.x
+ 	 * that these two variables' stack usage should be
 -- 
 1.6.5.2
 
