@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZKPPIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbZKPPJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbZKPPIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:08:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKPPIA
+	id S1753074AbZKPPJy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZKPPJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:08:00 -0500
-Received: from www.tglx.de ([62.245.132.106]:58648 "EHLO www.tglx.de"
+	Mon, 16 Nov 2009 10:09:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48340 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZKPPIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:08:00 -0500
-Date: Mon, 16 Nov 2009 16:07:40 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
-       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
-Subject: Re: [PATCH v8 01/16] tracing: convert trace_clock_local() as weak
- function
-In-Reply-To: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
-Message-ID: <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
-References: <cover.1258177321.git.wuzhangjin@gmail.com> <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751232AbZKPPJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 10:09:53 -0500
+Date: Mon, 16 Nov 2009 16:09:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86: Add missing might_fault() from copy_{to,from}_user()
+Message-ID: <20091116150937.GA22187@elte.hu>
+References: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Nov 2009, Wu Zhangjin wrote:
 
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> In x86-64, copy_to/from_user() rely on assembly routines that never
+> call might_fault(), making us missing various lockdep checks.
 > 
-> trace_clock_local() is based on the arch-specific sched_clock(), in X86,
-> it is tsc(64bit) based, which can give very high precision(about 1ns
-> with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
-> give only 10ms precison with 1000 HZ. which is not enough for tracing,
-> especially for Real Time system.
+> This doesn't apply to __copy_from,to_user() that explicitly handle
+> these calls, neither is it a problem in x86-32 where
+> copy_to,from_user() rely on the "__" prefixed versions that also call
+> might_fault().
 > 
-> so, we need to implement a MIPS specific sched_clock() to get higher
-> precision. There is a tsc like clock counter register in MIPS, whose
-> frequency is half of the processor, so, if the cpu frequency is 800MHz,
-> the time precision reaches 2.5ns, which is very good for tracing, even
-> for Real Time system.
-> 
-> but 'Cause it is only 32bit long, which will rollover quickly, so, such
-> a sched_clock() will bring with extra load, which is not good for the
-> whole system. so, we only need to implement a arch-specific
-> trace_clock_local() for tracing. as a preparation, we convert it as a
-> weak function.
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  arch/x86/include/asm/uaccess_64.h |   10 +++++++++-
+>  arch/x86/lib/copy_user_64.S       |    4 ++--
+>  2 files changed, 11 insertions(+), 3 deletions(-)
 
-Hmm, I'm not convinced that this is really a huge overhead. 
-
-First of all the rollover happens once every 10 seconds on a 800MHz
-machine. 
-
-Secondly we have a lockless implementation of extending 32bit counters
-to 63 bit which is used at least by ARM to provide a high resolution
-sched_clock implementation. See include/linux/cnt32_63.h and the users
-in arch/
-
-But that's a problem which can be discussed seperately and does not
-affect the rest of the tracing infrastructure. I really would
-recommend that you implement a sched_clock for the r4k machines based
-on cnt32_63 and measure the overhead. Having a fine granular
-sched_clock in general is probably not a bad thing.
+Looks good - other than that you missed the renaming of the symbol 
+export line in arch/x86/kernel/x8664_ksyms_64.c, which i fixed.
 
 Thanks,
 
-	tglx
+	Ingo
