@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZKPCnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbZKPCox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbZKPCnb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 21:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZKPCna
+	id S1752041AbZKPCox (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 21:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbZKPCox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 21:43:30 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:49313 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZKPCn3 (ORCPT
+	Sun, 15 Nov 2009 21:44:53 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37461 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbZKPCow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 21:43:29 -0500
-Subject: Re: [PATCH 1/1] Adding radio type FM
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Janakiram Sistla <janakiram.sistla@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4fb5db50911151836u5b4844adrd91b56a5ebc7084d@mail.gmail.com>
-References: <4fb5db50911121909h1619e483ga4aa395af8fc1161@mail.gmail.com>
-	 <1258082571.7715.13.camel@violet>
-	 <4fb5db50911140519q70bbdd00qb585153c4926df96@mail.gmail.com>
-	 <1258216474.3299.24.camel@violet>
-	 <4fb5db50911140937j278584e5nf9e4d5767a44a920@mail.gmail.com>
-	 <1258221909.3299.26.camel@violet>
-	 <4fb5db50911151836u5b4844adrd91b56a5ebc7084d@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 16 Nov 2009 03:43:21 +0100
-Message-ID: <1258339401.2003.3.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Sun, 15 Nov 2009 21:44:52 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B00BC81.8060706@jp.fujitsu.com>
+Date: Mon, 16 Nov 2009 11:44:17 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, spencer@bluehost.com,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
+       oleg@redhat.com, sgruszka@redhat.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/core] sched: Fix granularity of task_u/stime()
+References: <4AFB9029.9000208@jp.fujitsu.com> <tip-761b1d26df542fd5eb348837351e4d2f3bc7bffe@git.kernel.org> <20091113230910.GA11280@elte.hu>
+In-Reply-To: <20091113230910.GA11280@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Janakiram,
-
-so first of all, please stop sending emails to majordomo. That is not a
-real person.
-
-> Adding changes  RFKILL type FM  and for RFKILL for FM  in core
+Ingo Molnar wrote:
+> * tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 > 
-> From 4bf0ae6c90de9a766914abeb5ab5e5428089b648 Mon Sep 17 00:00:00 2001
-> From: Janakiram Sistla <janakiram.sistla@gmail.com>
-> Date: Mon, 16 Nov 2009 07:58:09 +0530
-> Subject: [PATCH 1/1] Adding radio type FM
+>> Commit-ID:  761b1d26df542fd5eb348837351e4d2f3bc7bffe
+>> Gitweb:     http://git.kernel.org/tip/761b1d26df542fd5eb348837351e4d2f3bc7bffe
+>> Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+>> AuthorDate: Thu, 12 Nov 2009 13:33:45 +0900
+>> Committer:  Ingo Molnar <mingo@elte.hu>
+>> CommitDate: Thu, 12 Nov 2009 15:23:47 +0100
+>>
+>> sched: Fix granularity of task_u/stime()
+>>
+>> Originally task_s/utime() were designed to return clock_t but
+>> later changed to return cputime_t by following commit:
 > 
-> Adding radio type FM in RFKILL_TYPE_.FM belongs to
-> same class of with both TX/RX capability.
+> i think this one causes this new warning in -tip:
 > 
-> Signed-off-by: Janakiram Sistla <janakiram.sistla@gmail.com>
+>  include/trace/events/timer.h:279: warning: format '%lu' 
+>  expects type 'long unsigned int', but argument 4 has type 'cputime_t'
 
-the patch itself is fine, but can we get at least one with a proper
-commit message. And if you mailer is broken, then either fix it or use
-git send-email.
+No.  I believe the warning was already there.
+Following patch, based on tip:sched/core, will remove the warning.
 
-Regards
 
-Marcel
+Thanks,
+H.Seto
+
+===
+
+Subject: [PATCH] trace: cputime_t is not always unsigned long
+
+Type of cputime_t can be u64, unsigned long long or so on,
+e.g. if kernel is configured with VIRT_CPU_ACCOUNTING=y.
+So it can cause following warning:
+
+ include/trace/events/timer.h:279: warning: format '%lu'
+ expects type 'long unsigned int', but argument 4 has type 'cputime_t'
+
+For printk(), it is better to use cputime_to_cputime64() and %llu,
+since cputime64_t is always u64.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ include/trace/events/timer.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+index 1844c48..8f4ec13 100644
+--- a/include/trace/events/timer.h
++++ b/include/trace/events/timer.h
+@@ -302,8 +302,8 @@ TRACE_EVENT(itimer_state,
+ 		__entry->interval_usec	= value->it_interval.tv_usec;
+ 	),
+ 
+-	TP_printk("which %d, expires %lu, it_value %lu.%lu, it_interval %lu.%lu",
+-		  __entry->which, __entry->expires,
++	TP_printk("which %d, expires %llu, it_value %lu.%lu, it_interval %lu.%lu",
++		  __entry->which, cputime_to_cputime64(__entry->expires),
+ 		  __entry->value_sec, __entry->value_usec,
+ 		  __entry->interval_sec, __entry->interval_usec)
+ );
+@@ -332,8 +332,8 @@ TRACE_EVENT(itimer_expire,
+ 		__entry->pid	= pid_nr(pid);
+ 	),
+ 
+-	    TP_printk("which %d, pid %d, now %lu", __entry->which,
+-		      (int) __entry->pid, __entry->now)
++	    TP_printk("which %d, pid %d, now %llu", __entry->which,
++		      (int) __entry->pid, cputime_to_cputime64(__entry->now))
+ );
+ 
+ #endif /*  _TRACE_TIMER_H */
+-- 
+1.6.5.2
 
 
