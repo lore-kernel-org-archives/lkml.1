@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbZKPQKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZKPQLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbZKPQKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 11:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZKPQKb
+	id S1752946AbZKPQLD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 11:11:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZKPQLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 11:10:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35295 "EHLO hera.kernel.org"
+	Mon, 16 Nov 2009 11:11:02 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35301 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbZKPQKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 11:10:30 -0500
-Date: Mon, 16 Nov 2009 16:09:47 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1258373161.26714.254.camel@laptop>
-References: <1258373161.26714.254.camel@laptop>
+	id S1751297AbZKPQLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 11:11:00 -0500
+Date: Mon, 16 Nov 2009 16:10:03 GMT
+From: tip-bot for Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, prarit@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, prarit@redhat.com, mingo@elte.hu
+In-Reply-To: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
+References: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: Optimize perf_output_lock()
-Message-ID: <tip-559fdc3c1b624edb1933a875022fe7e27934d11c@git.kernel.org>
-Git-Commit-ID: 559fdc3c1b624edb1933a875022fe7e27934d11c
+Subject: [tip:x86/urgent] x86: AMD Northbridge: Verify NB's node is online
+Message-ID: <tip-303fc0870f8fbfabe260c5c32b18e53458d597ea@git.kernel.org>
+Git-Commit-ID: 303fc0870f8fbfabe260c5c32b18e53458d597ea
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,103 +29,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  559fdc3c1b624edb1933a875022fe7e27934d11c
-Gitweb:     http://git.kernel.org/tip/559fdc3c1b624edb1933a875022fe7e27934d11c
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 16 Nov 2009 12:45:14 +0100
+Commit-ID:  303fc0870f8fbfabe260c5c32b18e53458d597ea
+Gitweb:     http://git.kernel.org/tip/303fc0870f8fbfabe260c5c32b18e53458d597ea
+Author:     Prarit Bhargava <prarit@redhat.com>
+AuthorDate: Thu, 12 Nov 2009 13:09:31 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Nov 2009 13:27:45 +0100
+CommitDate: Mon, 16 Nov 2009 15:43:05 +0100
 
-perf_event: Optimize perf_output_lock()
+x86: AMD Northbridge: Verify NB's node is online
 
-The purpose of perf_output_{un,}lock() is to:
+Fix panic seen on some IBM and HP systems on 2.6.32-rc6:
 
- 1) avoid publishing incomplete data
-    [ possible when publishing a head that is ahead of an entry
-      that is still being written ]
+ BUG: unable to handle kernel NULL pointer dereference at (null)
+ IP: [<ffffffff8120bf3f>] find_next_bit+0x77/0x9c
+  [...]
+  [<ffffffff8120bbde>] cpumask_next_and+0x2e/0x3b
+  [<ffffffff81225c62>] pci_device_probe+0x8e/0xf5
+  [<ffffffff812b9be6>] ? driver_sysfs_add+0x47/0x6c
+  [<ffffffff812b9da5>] driver_probe_device+0xd9/0x1f9
+  [<ffffffff812b9f1d>] __driver_attach+0x58/0x7c
+  [<ffffffff812b9ec5>] ? __driver_attach+0x0/0x7c
+  [<ffffffff812b9298>] bus_for_each_dev+0x54/0x89
+  [<ffffffff812b9b4f>] driver_attach+0x19/0x1b
+  [<ffffffff812b97ae>] bus_add_driver+0xd3/0x23d
+  [<ffffffff812ba1e7>] driver_register+0x98/0x109
+  [<ffffffff81225ed0>] __pci_register_driver+0x63/0xd3
+  [<ffffffff81072776>] ? up_read+0x26/0x2a
+  [<ffffffffa0081000>] ? k8temp_init+0x0/0x20 [k8temp]
+  [<ffffffffa008101e>] k8temp_init+0x1e/0x20 [k8temp]
+  [<ffffffff8100a073>] do_one_initcall+0x6d/0x185
+  [<ffffffff8108d765>] sys_init_module+0xd3/0x236
+  [<ffffffff81011ac2>] system_call_fastpath+0x16/0x1b
 
- 2) guarantee fwd progress
-    [ a simple refcount on pending writers doesn't need to drop to
-      0, making it so would end up implementing something like forced
-      quiecent states of RCU ]
+I put in a printk and commented out the set_dev_node()
+call when and got this output:
 
-To satisfy the above without undue complexity it serializes
-between CPUs, this means that a pending writer can only be the
-same cpu in a nested context, and since (under normal operation)
-a cpu always makes progress we're good -- if the head is only
-published when the bottom  most writer completes.
+ quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x0
+ quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x1
+ quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x2
+ quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x3
 
-Now we don't need to disable IRQs in order to serialize between
-CPUs, disabling preemption ought to be sufficient, esp since we
-already deal with nesting due to NMIs.
+I.e. the issue appears to be that the HW has set val to a valid
+value, however, the system is only configured for a single
+node -- 0, the others are offline.
 
-This avoids potentially expensive (and needless) local IRQ
-disable/enable ops.
+Check to see if the node is actually online before setting
+the numa node for an AMD northbridge in quirk_amd_nb_node().
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1258373161.26714.254.camel@laptop>
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: bhavna.sarathy@amd.com
+Cc: jbarnes@virtuousgeek.org
+Cc: andreas.herrmann3@amd.com
+LKML-Reference: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
+[ v2: clean up the code and add comments ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/perf_event.h |    1 -
- kernel/perf_event.c        |   21 +++++++++++----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ arch/x86/kernel/quirks.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index df4e73e..7f87563 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -714,7 +714,6 @@ struct perf_output_handle {
- 	int				nmi;
- 	int				sample;
- 	int				locked;
--	unsigned long			flags;
- };
- 
- #ifdef CONFIG_PERF_EVENTS
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 6f4ed3b..3256e36 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -2674,20 +2674,21 @@ static void perf_output_wakeup(struct perf_output_handle *handle)
- static void perf_output_lock(struct perf_output_handle *handle)
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index 6c3b2c6..18093d7 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -499,6 +499,7 @@ static void __init quirk_amd_nb_node(struct pci_dev *dev)
  {
- 	struct perf_mmap_data *data = handle->data;
--	int cpu;
-+	int cur, cpu = get_cpu();
+ 	struct pci_dev *nb_ht;
+ 	unsigned int devfn;
++	u32 node;
+ 	u32 val;
  
- 	handle->locked = 0;
+ 	devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0);
+@@ -507,7 +508,13 @@ static void __init quirk_amd_nb_node(struct pci_dev *dev)
+ 		return;
  
--	local_irq_save(handle->flags);
--	cpu = smp_processor_id();
--
--	if (in_nmi() && atomic_read(&data->lock) == cpu)
--		return;
-+	for (;;) {
-+		cur = atomic_cmpxchg(&data->lock, -1, cpu);
-+		if (cur == -1) {
-+			handle->locked = 1;
-+			break;
-+		}
-+		if (cur == cpu)
-+			break;
- 
--	while (atomic_cmpxchg(&data->lock, -1, cpu) != -1)
- 		cpu_relax();
--
--	handle->locked = 1;
-+	}
+ 	pci_read_config_dword(nb_ht, 0x60, &val);
+-	set_dev_node(&dev->dev, val & 7);
++	node = val & 7;
++	/*
++	 * Some hardware may return an invalid node ID,
++	 * so check it first:
++	 */
++	if (node_online(node))
++		set_dev_node(&dev->dev, node);
+ 	pci_dev_put(nb_ht);
  }
  
- static void perf_output_unlock(struct perf_output_handle *handle)
-@@ -2733,7 +2734,7 @@ again:
- 	if (atomic_xchg(&data->wakeup, 0))
- 		perf_output_wakeup(handle);
- out:
--	local_irq_restore(handle->flags);
-+	put_cpu();
- }
- 
- void perf_output_copy(struct perf_output_handle *handle,
