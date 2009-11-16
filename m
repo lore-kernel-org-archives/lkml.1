@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751103AbZKPVVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbZKPVXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751103AbZKPVVJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZKPVVI
+	id S1752449AbZKPVXK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZKPVXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:21:08 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:11122 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZKPVVH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:21:07 -0500
-Date: Mon, 16 Nov 2009 14:21:13 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/pci: remove early PCI pr_debug statements
-Message-ID: <20091116212113.GF21242@ldl.fc.hp.com>
+	Mon, 16 Nov 2009 16:23:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37609 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751267AbZKPVXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 16:23:08 -0500
+Date: Mon, 16 Nov 2009 22:22:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] x86: Limit the number of processor bootup messages
+Message-ID: <20091116212216.GA2221@elte.hu>
+References: <20091116210718.412792000@alcatraz.americas.sgi.com>
+ <20091116210726.585624000@alcatraz.americas.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091116210726.585624000@alcatraz.americas.sgi.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit db635adc turned -DDEBUG for x86/pci on when CONFIG_PCI_DEBUG
-is set. In general, I agree with that change.
 
-However, it exposes a bunch of very low level PCI debugging in the
-early x86 path, such as:
+* Mike Travis <travis@sgi.com> wrote:
 
-	0 reading 2 from a: ffff
-	1 reading 2 from a: ffff
-	2 reading 2 from a: ffff
-	3 reading 2 from a: 300
-	3 reading 2 from 0: 1002
-	3 reading 2 from 2: 515e
+> +	if (cpu == 0)
+> +		printk(KERN_INFO "CPU0: Thermal monitoring enabled (%s)\n",
+> +		       tm2 ? "TM2" : "TM1");
 
-These statements add a lot of noise to the boot and aren't likely to
-be necessary even when handling random upstream bug reports.
+Hm, 'cpu==0 means boot cpu' assumptions are not particularly clean.
 
-[In contrast, statements such as these:
+> +#ifdef CONFIG_NUMA
+> +	if (system_state == SYSTEM_BOOTING) {
+> +		static int current_node = -1;
+> +		int node = cpu_to_node(cpu);
+> +
+> +		if (node != current_node) {
+> +			if (current_node > (-1))
+> +				pr_cont(" Ok.\n");
+> +			current_node = node;
+> +			pr_info("Booting Node %3d, Processors ", node);
+> +		}
+> +		pr_cont(" #%d%s", cpu, cpu == (nr_cpu_ids - 1) ? " Ok.\n" : "");
+> +	} else
+> +#endif
+> +		pr_info("Booting Processor %d APIC 0x%x\n", cpu, apicid);
 
-	pci 0000:02:04.0: found [14e4:164a] class 000200 header type 00
-	pci 0000:02:04.0: reg 10: [mem 0xf8000000-0xf9ffffff 64bit]
-	pci 0000:02:04.0: reg 30: [mem 0x00000000-0x0001ffff pref]
+preprocessor directives cutting into if/else branches in an assymetric 
+way is being frowned upon. I'd also suggest to put this into a helper 
+inline.
 
-are indeed useful when remote debugging users' machines]
+Is the SYSTEM_BOOTING check there to not re-print this on CPU hotplug?
 
-Remove the noisy printks and save electrons everywhere.
-
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/arch/x86/pci/early.c b/arch/x86/pci/early.c
-index aaf26ae..d1067d5 100644
---- a/arch/x86/pci/early.c
-+++ b/arch/x86/pci/early.c
-@@ -12,8 +12,6 @@ u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset)
- 	u32 v;
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	v = inl(0xcfc);
--	if (v != 0xffffffff)
--		pr_debug("%x reading 4 from %x: %x\n", slot, offset, v);
- 	return v;
- }
- 
-@@ -22,7 +20,6 @@ u8 read_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset)
- 	u8 v;
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	v = inb(0xcfc + (offset&3));
--	pr_debug("%x reading 1 from %x: %x\n", slot, offset, v);
- 	return v;
- }
- 
-@@ -31,28 +28,24 @@ u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset)
- 	u16 v;
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	v = inw(0xcfc + (offset&2));
--	pr_debug("%x reading 2 from %x: %x\n", slot, offset, v);
- 	return v;
- }
- 
- void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset,
- 				    u32 val)
- {
--	pr_debug("%x writing to %x: %x\n", slot, offset, val);
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	outl(val, 0xcfc);
- }
- 
- void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val)
- {
--	pr_debug("%x writing to %x: %x\n", slot, offset, val);
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	outb(val, 0xcfc + (offset&3));
- }
- 
- void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val)
- {
--	pr_debug("%x writing to %x: %x\n", slot, offset, val);
- 	outl(0x80000000 | (bus<<16) | (slot<<11) | (func<<8) | offset, 0xcf8);
- 	outw(val, 0xcfc + (offset&2));
- }
+	Ingo
