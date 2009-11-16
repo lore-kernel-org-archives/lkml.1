@@ -1,51 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZKPWaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZKPW1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbZKPWaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 17:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZKPWaZ
+	id S1754547AbZKPW1g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 17:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbZKPW1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 17:30:25 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39645 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbZKPWaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 17:30:24 -0500
-Date: Mon, 16 Nov 2009 17:22:40 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] staging: rtl8187se: Rename staging driver to avoid
-	name conflict with mainline driver
-Message-ID: <20091116222239.GA1308@tuxdriver.com>
-References: <4b016848.3j3kclbqZ4ylyZGU%Larry.Finger@lwfinger.net> <69e28c910911161202w5255bff5ydb7fc665b3320bda@mail.gmail.com> <4B01CD9D.7040601@lwfinger.net>
+	Mon, 16 Nov 2009 17:27:35 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:43710 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754530AbZKPW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 17:27:34 -0500
+Date: Mon, 16 Nov 2009 23:27:39 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for non-ASCII
+Message-ID: <20091116222738.GQ4764@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, hpa@zytor.com,
+	alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+References: <20091116135114.GA2719@x200> <20091116190739.GJ4764@const.famille.thibault.fr> <20091116195313.GB4462@x200>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B01CD9D.7040601@lwfinger.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091116195313.GB4462@x200>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 04:09:33PM -0600, Larry Finger wrote:
-> On 11/16/2009 02:02 PM, Gábor Stefanik wrote:
-> >>
-> >> -obj-$(CONFIG_RTL8187SE)        += rtl8187se.o
-> >> +obj-$(CONFIG_RTL8187SE_STAGE)  += rtl8187se_stage.o
-> > 
-> > Please make this r8187se.o, to be consistent with the other
-> > r8180-sa2400 derivative drivers.
+Alexey Dobriyan, le Mon 16 Nov 2009 22:53:13 +0300, a écrit :
+> > Fix your keymap, it should use KT_LETTER instead of KT_LATIN.
 > 
-> I cannot do that. From what I see, the kernel make system creates the .ko file
-> from the name specified here. When I make that rtl8187se.o, then I get
-> rtl8187se.ko, which is what I want to avoid.
+> You have read bugzilla and patch, haven't you?
 
-Gábor is suggesting r{no t}{no l}8187se... :-)
+Yes.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+And you could probably also read bug #7746 which is probably now a dup
+(yes, the original report mixes several issues).
+
+> My keymap contains
+> 
+> 				keycode 44 = +z
+> 		shift           keycode 44 = +Z
+> 	altgr                   keycode 44 = U+044F        # CYRILLIC SMALL LETTER YA
+> 	altgr   shift           keycode 44 = U+042F        # CYRILLIC CAPITAL LETTER YA
+
+And U+044F / U+042F is not KT_LETTER.
+
+Yes, there's no way you can express a unicode character in KT_LETTER.
+Limited interface, but that's not a reason to break other interfaces.
+
+> > > Note: patch relies on keymap being consistent wrt SMALL/CAPITAL symbols.
+> > 
+> > And that's not true for a lot of keyboard symbols.
+> 
+> That's why patch implies keymap is not fucked up.
+
+However you can't changed the "fucked up" keyboard of people.  They have
+bought it and it's printed like that on it...
+
+> > Strictly speaking, caps lock is caps lock, not shift lock.  If you really
+> > want a shift lock, then set your caps lock key to produce shift lock.
+> > Applying your patch would turn the existing capslock behavior into shift
+> > lock, we _don't_ want that.
+> > 
+> > > Though extracting SMALL <=> CAPITAL mapping from unicode tables and
+> > > putting it into kernel may be more correct.
+> > 
+> > That's what console-setup
+> 
+> What is it?
+
+google tells packages.debian.org/console-setup
+
+> 	$ sudo emerge -s console-setup
+> 	Searching...
+> 	[ Results for search key : console-setup ]
+> 	[ Applications found : 0 ]
+
+emerge is not universal, that's all.
+
+> > does by using various symbol levels and it just _works_.
+> 
+> Ubuntu user?
+
+Nope.
+
+> > One issue however is that then the capslock keyboard led doesn't
+> > light up while in caps mode.
+> 
+> Interesting breakage you have.
+
+It's not breakage.  It's because instead of using the KT_LETTER way to
+get the caps lock behavior, console-setup uses a modifier, since it's
+much more powerful (you just decide what exactly will be the upper case,
+and not have to rely on the shifted keysym to be the expected one), but
+the kernel doesn't permit to assign a modifier to a keyboard LED.
+
+> [presses CapsLock several times]
+
+No need to be sarcastic.
+
+> > Maybe we should rethink the interface to light keyboard leds instead.
+> 
+> Oh, and there no need to reply at every place
+
+People posting in the bugzilla usually don't read linux-kernel, that's
+why I posted a sum up there.
+
+Samuel
