@@ -1,58 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZKPUPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZKPUSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbZKPUPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 15:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZKPUPz
+	id S1753952AbZKPUSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 15:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZKPUSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 15:15:55 -0500
-Received: from nox.protox.org ([88.191.38.29]:37986 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297AbZKPUPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 15:15:54 -0500
-Subject: Re: drm/ksm -> s2disk -> resume -> [drm:r100_ring_test] *ERROR* 
- radeon: ring test failed (sracth(0x15E4)=0xCAFEDEAD)
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Christian Hartmann <cornogle@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ffd8902a0911060754i3da8ef12n86661537872148fe@mail.gmail.com>
-References: <ffd8902a0911060746x4dd818b4v4fc94208823c321b@mail.gmail.com>
-	 <ffd8902a0911060754i3da8ef12n86661537872148fe@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 16 Nov 2009 21:15:55 +0100
-Message-Id: <1258402555.2031.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 15:18:16 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:48730 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831AbZKPUSP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 15:18:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=iTykIFywVoyzEFAAEa5xs7slXHt3CD54pH3d2Xc3F2Ua4XQVxwCqCpCzsMCRyot/M0
+         FvOJ4vhRWyjYGdi+aqX2wD/1caeJ4BuPFlOY5Cb8DCp61T/4y8bGTwQXHagznFsuIyKX
+         TdBZ1dVGkic5zVujWZdNbrLWZrb3dntCLEFKM=
+Message-ID: <4B01B389.9090507@gmail.com>
+Date: Mon, 16 Nov 2009 15:18:17 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <20091002141407.30224.54207.stgit@dev.haskins.net>	<20091110115335.GC6989@redhat.com>	<4AF919020200005A000586A9@sinclair.provo.novell.com>	<20091110131722.GA19645@redhat.com>	<4AF9747E.8020408@novell.com>	<20091110143652.GB19645@redhat.com>	<4AF98A8C.9040201@novell.com>	<20091114011229.GA18580@gondor.apana.org.au>	<4AFE08EF.2030308@gmail.com>	<20091114022103.GA19020@gondor.apana.org.au>	<4AFE15AD.6000208@gmail.com>	<20091113184503.13f6d447@s6510>	<4AFE3FD2.6030403@gmail.com> <20091116115931.6266f9c9@nehalam>
+In-Reply-To: <20091116115931.6266f9c9@nehalam>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCAF29B2210E4E39837024CE9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-06 at 16:54 +0100, Christian Hartmann wrote:
-> hello,
-> 
-> here the dmesg from boot before resume. the first dmesg was truncated..
-> 
-> 
-> 2009/11/6 Christian Hartmann <cornogle@googlemail.com>:
-> > radeon driver is broken after resume, I have to reboot everytime.
-> >
-> > [  170.805463] [drm:r100_ring_test] *ERROR* radeon: ring test failed
-> > (sracth(0x15E4)=0xCAFEDEAD)
-> > [  170.805471] [drm:r100_cp_init] *ERROR* radeon: cp isn't working (-22).
-> >
-> > Could it be (Im am really not sure yet), that i have included the
-> > firmware R100_cp.bin into the kernel space?
-> yes, I have included it. But ...
-> > ...why is this not working after a normal resume?
-> 
-> me again, chris h.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCAF29B2210E4E39837024CE9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Can you confirm that booting the kernel with radeon.agpmode=-1 fix your
-issue ? My guess is that once again AGP is broken on resume, we have
-several issue with evil AGP.
+Stephen Hemminger wrote:
+> On Sat, 14 Nov 2009 00:27:46 -0500
+> Gregory Haskins <gregory.haskins@gmail.com> wrote:
+>=20
+>> Stephen Hemminger wrote:
 
-Cheers,
-Jerome
+>=20
+>>> People have tried doing copy-less send by page flipping, but the over=
+head of the IPI to
+>>> invalidate the TLB exceeded the overhead of the copy. There was an In=
+tel paper on this in
+>>> at Linux Symposium (Ottawa) several years ago.
+>> I think you are confusing copy-less tx with copy-less rx.  You can try=
+
+>> to do copy-less rx with page flipping, which has the IPI/TLB thrashing=
+
+>> properties you mention, and I agree is problematic.  We are talking
+>> about copy-less tx here, however, and therefore no page-flipping is
+>> involved.  Rather, we are just posting SG lists of pages directly to t=
+he
+>> NIC (assuming the nic supports HIGH_DMA, etc).  You do not need to fli=
+p
+>> the page, or invalidate the TLB (and thus IPI the other cores) to do
+>> this to my knowledge.
+>>
+>=20
+> If you want to do copy-less tx for all applications, you have to
+> do COW to handle the trivial case of :
+>=20
+> while (cc =3D read(infd, buffer, sizeof buffer)) {
+>    send(outsock, buffer, cc);
+> }
+>=20
+>=20
+
+You certainly _could_ implement this as a COW I suppose, but that would
+be insane.  If someone did do this, you are right: you need TLB
+invalidation.
+
+However, if I were going to actually propose the changeover of the
+system calls to use zero-copy (note that I am not), it would be based on
+the concept in this patch.  That is: the send() would block until the
+NIC completes the DMA and the shinfo block is freed.  Alternate
+implementations would be AIO based, where the shinfo destructor
+signifies the generation of the completion event.
+
+FWIW: The latter is conceptually similar to how this is being used in
+AlacrityVM.
+
+HTH
+
+Kind Regards,
+-Greg
 
 
+--------------enigCAF29B2210E4E39837024CE9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksBs4kACgkQP5K2CMvXmqETQACfeydFUnIJYpjoIrLpDM+eQGMA
+p60An09PbHED3QzdR+Ri5+/N1uQTwbux
+=7M4I
+-----END PGP SIGNATURE-----
+
+--------------enigCAF29B2210E4E39837024CE9--
