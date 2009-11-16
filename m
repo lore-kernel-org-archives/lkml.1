@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751622AbZKPO5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZKPPBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751622AbZKPO5L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 09:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZKPO5K
+	id S1752886AbZKPPBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZKPPBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 09:57:10 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58699 "EHLO
+	Mon, 16 Nov 2009 10:01:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49551 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbZKPO5J (ORCPT
+	with ESMTP id S1752191AbZKPPBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 09:57:09 -0500
-Date: Mon, 16 Nov 2009 08:57:12 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [PATCH] staging: rtl8187se: Rename staging driver to avoid name
- conflict with mainline driver
-Message-ID: <4b016848.3j3kclbqZ4ylyZGU%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Nov 2009 10:01:48 -0500
+Subject: Re: [PATCH v8 01/16] tracing: convert trace_clock_local() as weak
+ function
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Michal Simek <monstr@monstr.eu>,
+       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
+In-Reply-To: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+References: <cover.1258177321.git.wuzhangjin@gmail.com>
+	 <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 16 Nov 2009 10:01:52 -0500
+Message-Id: <1258383712.22249.452.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that active development has begun on a mainline version of
-a driver for the RTL8187SE that should be called rtl8187se, there
-is a conflict with the driver in staging with the same name.
+On Sat, 2009-11-14 at 14:33 +0800, Wu Zhangjin wrote:
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
+> 
+> trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+> it is tsc(64bit) based, which can give very high precision(about 1ns
+> with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+> give only 10ms precison with 1000 HZ. which is not enough for tracing,
+> especially for Real Time system.
+> 
+> so, we need to implement a MIPS specific sched_clock() to get higher
+> precision. There is a tsc like clock counter register in MIPS, whose
+> frequency is half of the processor, so, if the cpu frequency is 800MHz,
+> the time precision reaches 2.5ns, which is very good for tracing, even
+> for Real Time system.
+> 
+> but 'Cause it is only 32bit long, which will rollover quickly, so, such
+> a sched_clock() will bring with extra load, which is not good for the
+> whole system. so, we only need to implement a arch-specific
+> trace_clock_local() for tracing. as a preparation, we convert it as a
+> weak function.
+> 
+> The MIPS specific trace_clock_local() is coming in the next two patches.
+> 
+> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 
-To solve the conflict, rename the driver in staging to rtl8187se_stage.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+-- Steve
 
-Index: wireless-testing/drivers/staging/Makefile
-===================================================================
---- wireless-testing.orig/drivers/staging/Makefile
-+++ wireless-testing/drivers/staging/Makefile
-@@ -20,7 +20,7 @@ obj-$(CONFIG_COMEDI)		+= comedi/
- obj-$(CONFIG_ASUS_OLED)		+= asus_oled/
- obj-$(CONFIG_PANEL)		+= panel/
- obj-$(CONFIG_ALTERA_PCIE_CHDMA)	+= altpciechdma/
--obj-$(CONFIG_RTL8187SE)		+= rtl8187se/
-+obj-$(CONFIG_RTL8187SE_STAGE)	+= rtl8187se/
- obj-$(CONFIG_RTL8192SU)		+= rtl8192su/
- obj-$(CONFIG_RTL8192E)		+= rtl8192e/
- obj-$(CONFIG_INPUT_MIMIO)	+= mimio/
-Index: wireless-testing/drivers/staging/rtl8187se/Kconfig
-===================================================================
---- wireless-testing.orig/drivers/staging/rtl8187se/Kconfig
-+++ wireless-testing/drivers/staging/rtl8187se/Kconfig
-@@ -1,4 +1,4 @@
--config RTL8187SE
-+config RTL8187SE_STAGE
- 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
- 	depends on PCI && WLAN
- 	select WIRELESS_EXT
-Index: wireless-testing/drivers/staging/rtl8187se/Makefile
-===================================================================
---- wireless-testing.orig/drivers/staging/rtl8187se/Makefile
-+++ wireless-testing/drivers/staging/rtl8187se/Makefile
-@@ -16,7 +16,7 @@ EXTRA_CFLAGS += -DENABLE_LPS
- 
- #EXTRA_CFLAGS += -mhard-float -DCONFIG_FORCE_HARD_FLOAT=y
- 
--rtl8187se-objs :=			\
-+rtl8187se_stage-objs :=			\
- 		r8180_core.o		\
- 		r8180_93cx6.o		\
- 		r8180_wx.o		\
-@@ -35,5 +35,5 @@ rtl8187se-objs :=			\
- 		ieee80211/ieee80211_crypt_ccmp.o	\
- 		ieee80211/ieee80211_crypt_wep.o
- 
--obj-$(CONFIG_RTL8187SE)	+= rtl8187se.o
-+obj-$(CONFIG_RTL8187SE_STAGE)	+= rtl8187se_stage.o
- 
+
