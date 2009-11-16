@@ -1,118 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZKPT7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZKPUDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbZKPT7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 14:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZKPT7m
+	id S1753917AbZKPUDJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 15:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZKPUDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 14:59:42 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:40070 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752545AbZKPT7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 14:59:41 -0500
-Date: Mon, 16 Nov 2009 11:59:31 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Gregory Haskins <ghaskins@novell.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-Message-ID: <20091116115931.6266f9c9@nehalam>
-In-Reply-To: <4AFE3FD2.6030403@gmail.com>
-References: <20091002141407.30224.54207.stgit@dev.haskins.net>
-	<20091110115335.GC6989@redhat.com>
-	<4AF919020200005A000586A9@sinclair.provo.novell.com>
-	<20091110131722.GA19645@redhat.com>
-	<4AF9747E.8020408@novell.com>
-	<20091110143652.GB19645@redhat.com>
-	<4AF98A8C.9040201@novell.com>
-	<20091114011229.GA18580@gondor.apana.org.au>
-	<4AFE08EF.2030308@gmail.com>
-	<20091114022103.GA19020@gondor.apana.org.au>
-	<4AFE15AD.6000208@gmail.com>
-	<20091113184503.13f6d447@s6510>
-	<4AFE3FD2.6030403@gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 15:03:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:50239 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753861AbZKPUDH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 15:03:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=rYFKaZVFlZqEzoF65ihnkqBcRglWdKvmEq+jEfImu6Hz2FYnQRImnbp8m3RxR0G7QO
+         pyhqK819MuWgeSo3MZ/l0iJKYTlRmwEOG/H25HkdyGlkWEpcqtG7yjMNtEeolI/klZ88
+         4ekHUOUuej/4W6Q1GoI3AUkC1MGfkmeZiIroI=
+MIME-Version: 1.0
+In-Reply-To: <4b016848.3j3kclbqZ4ylyZGU%Larry.Finger@lwfinger.net>
+References: <4b016848.3j3kclbqZ4ylyZGU%Larry.Finger@lwfinger.net>
+From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
+Date: Mon, 16 Nov 2009 21:02:52 +0100
+Message-ID: <69e28c910911161202w5255bff5ydb7fc665b3320bda@mail.gmail.com>
+Subject: Re: [PATCH] staging: rtl8187se: Rename staging driver to avoid name 
+	conflict with mainline driver
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Nov 2009 00:27:46 -0500
-Gregory Haskins <gregory.haskins@gmail.com> wrote:
+On Mon, Nov 16, 2009 at 3:57 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> Now that active development has begun on a mainline version of
+> a driver for the RTL8187SE that should be called rtl8187se, there
+> is a conflict with the driver in staging with the same name.
+>
+> To solve the conflict, rename the driver in staging to rtl8187se_stage.
+>
+> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+> ---
+>
+> Index: wireless-testing/drivers/staging/Makefile
+> ===================================================================
+> --- wireless-testing.orig/drivers/staging/Makefile
+> +++ wireless-testing/drivers/staging/Makefile
+> @@ -20,7 +20,7 @@ obj-$(CONFIG_COMEDI)          += comedi/
+>  obj-$(CONFIG_ASUS_OLED)                += asus_oled/
+>  obj-$(CONFIG_PANEL)            += panel/
+>  obj-$(CONFIG_ALTERA_PCIE_CHDMA)        += altpciechdma/
+> -obj-$(CONFIG_RTL8187SE)                += rtl8187se/
+> +obj-$(CONFIG_RTL8187SE_STAGE)  += rtl8187se/
+>  obj-$(CONFIG_RTL8192SU)                += rtl8192su/
+>  obj-$(CONFIG_RTL8192E)         += rtl8192e/
+>  obj-$(CONFIG_INPUT_MIMIO)      += mimio/
+> Index: wireless-testing/drivers/staging/rtl8187se/Kconfig
+> ===================================================================
+> --- wireless-testing.orig/drivers/staging/rtl8187se/Kconfig
+> +++ wireless-testing/drivers/staging/rtl8187se/Kconfig
+> @@ -1,4 +1,4 @@
+> -config RTL8187SE
+> +config RTL8187SE_STAGE
+>        tristate "RealTek RTL8187SE Wireless LAN NIC driver"
+>        depends on PCI && WLAN
+>        select WIRELESS_EXT
+> Index: wireless-testing/drivers/staging/rtl8187se/Makefile
+> ===================================================================
+> --- wireless-testing.orig/drivers/staging/rtl8187se/Makefile
+> +++ wireless-testing/drivers/staging/rtl8187se/Makefile
+> @@ -16,7 +16,7 @@ EXTRA_CFLAGS += -DENABLE_LPS
+>
+>  #EXTRA_CFLAGS += -mhard-float -DCONFIG_FORCE_HARD_FLOAT=y
+>
+> -rtl8187se-objs :=                      \
+> +rtl8187se_stage-objs :=                        \
+>                r8180_core.o            \
+>                r8180_93cx6.o           \
+>                r8180_wx.o              \
+> @@ -35,5 +35,5 @@ rtl8187se-objs :=                     \
+>                ieee80211/ieee80211_crypt_ccmp.o        \
+>                ieee80211/ieee80211_crypt_wep.o
+>
+> -obj-$(CONFIG_RTL8187SE)        += rtl8187se.o
+> +obj-$(CONFIG_RTL8187SE_STAGE)  += rtl8187se_stage.o
 
-> Stephen Hemminger wrote:
-> > On Fri, 13 Nov 2009 21:27:57 -0500
-> > Gregory Haskins <gregory.haskins@gmail.com> wrote:
-> > 
-> >> Herbert Xu wrote:
-> >>> On Fri, Nov 13, 2009 at 08:33:35PM -0500, Gregory Haskins wrote:
-> >>>> Well, not with respect to the overall protocol, of course not.  But with
-> >>>> respect to the buffer in question, it _has_ to be.  Or am I missing
-> >>>> something?
-> >>> sendfile() has never guaranteed that the kernel is finished with
-> >>> the underlying pages when it returns.
-> >>>
-> >>> Cheers,
-> >> Clearly there must be _some_ mechanism to synchronize (e.g.
-> >> flush/barrier) though, right?  Otherwise, that interface would seem to
-> >> be quite prone to races and would likely be unusable.   So what does
-> >> said flush use to know when the buffer is free?
-> > 
-> > No all the interfaces require a copy.
-> 
-> I'm sorry, but I do not think that is correct.  As others have pointed
-> out, that would not appear to be true for at least sendfile.
+Please make this r8187se.o, to be consistent with the other
+r8180-sa2400 derivative drivers.
 
-Correct.
-
-> 
-> > Actually, sendfile makes no guarantee about synchronization
-> > because the receiver of said file could be arbitrarily slow, and any attempt at locking down
-> > current contents of file is a denial of service exposure.
-> 
-> I think you are inverting the problem space.  It is fully expected that
-> changing the "file", or the pages that represent the file before the
-> packet is queued would constitute the modification of the stream on the
-> wire.
-> 
-> I am more thinking about the applications of mmap+sendfile to implement
-> a zero-copy interface.  As David mentions in another mail, it seems that
-> there is no sync mechanism available, so this would not appear to be a
-> viable use case today, unfortunately.
-
-yes, if you do mmap/sendfile then there is no synchronization, and the stack
-can hold onto your data for an arbitrary time.  The file and mapping's can
-be closed but that risks tying up all of memory.
-
-
-> > 
-> > People have tried doing copy-less send by page flipping, but the overhead of the IPI to
-> > invalidate the TLB exceeded the overhead of the copy. There was an Intel paper on this in
-> > at Linux Symposium (Ottawa) several years ago.
-> 
-> I think you are confusing copy-less tx with copy-less rx.  You can try
-> to do copy-less rx with page flipping, which has the IPI/TLB thrashing
-> properties you mention, and I agree is problematic.  We are talking
-> about copy-less tx here, however, and therefore no page-flipping is
-> involved.  Rather, we are just posting SG lists of pages directly to the
-> NIC (assuming the nic supports HIGH_DMA, etc).  You do not need to flip
-> the page, or invalidate the TLB (and thus IPI the other cores) to do
-> this to my knowledge.
-> 
-
-If you want to do copy-less tx for all applications, you have to
-do COW to handle the trivial case of :
-
-while (cc = read(infd, buffer, sizeof buffer)) {
-   send(outsock, buffer, cc);
-}
-
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 
 
 -- 
+Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
