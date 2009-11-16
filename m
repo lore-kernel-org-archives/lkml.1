@@ -1,165 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbZKPMIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbZKPMJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbZKPMIr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZKPMIq
+	id S1752450AbZKPMJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZKPMJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:08:46 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:59361 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbZKPMIp (ORCPT
+	Mon, 16 Nov 2009 07:09:48 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:57036 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbZKPMJr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:08:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ukde93SJSimevRTD9zLOaEsKiRxaPtXn5WlfK6ZcGo8CyUqtGxRhfLq08H5KW/GDvo
-         QXMcyB7AEvucn2mDaMKl+ZPtlyAIMD2ghC+NfVkydfIOGfffGatDjypbSS5TFc6QnwOu
-         XL5zsZ+TXXDYQ8xbuAYaaE/dNFjY/pvLy6YvI=
-Date: Mon, 16 Nov 2009 13:08:45 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 0/5] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091116120845.GA10115@bizet.domek.prywatny>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <20091115120721.GA7557@bizet.domek.prywatny> <20091116095258.GS29804@csn.ul.ie>
+	Mon, 16 Nov 2009 07:09:47 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
+Date: Mon, 16 Nov 2009 13:09:47 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, John Kacur <jkacur@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20091010153314.827301943@linutronix.de> <200911021651.53331.arnd@arndb.de> <20091116105427.GA17411@lst.de>
+In-Reply-To: <20091116105427.GA17411@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091116095258.GS29804@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911161309.47186.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+gxI6zCZSjpmY0MP0lsz2y9jj26Dpsv+7YnDR
+ joZNM6erg/1AO00SasCIQlqL52I3Y7x1cNLq8iLil1pYcypaif
+ viyMh/ulILDvsls+ooP+w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 09:52:58AM +0000, Mel Gorman wrote:
-> On Sun, Nov 15, 2009 at 01:07:21PM +0100, Karol Lewandowski wrote:
-> >              total       used       free     shared    buffers     cached
-> > Mem:        255240     194052      61188          0       4040      49364
-> > -/+ buffers/cache:     140648     114592
-> > Swap:       514040      72712     441328
-> > 
-> > 
-> > Is that ok?  Wild guess -- maybe kswapd doesn't take fragmentation (or
-> > other factors) into account as hard as it used to in 2.6.30?
+On Monday 16 November 2009, Christoph Hellwig wrote:
+> As mentioned before making generic_file_llseek the new default is
+> probably a bad idea.  The majority of our file_operations instances
+> don't actually support seeking, so no_llseek should become the new
+> default if you spend some effort on converting things.  Anything that
+> wants to allow seeking will have to set a llseek method.  This also
+> mirrors what we do for other file operations.  None of the major ones
+> has a non-trivial default, it's either silently succeeding for a
+> selected few like open or release or returning an error for operatings
+> that actually do something like read and write.
 
-> That's a lot of memory free. I take it the order-5 GFP_ATOMIC allocation
-> failed. What was the dmesg for it please?
+Ok, good point.
 
-Sure, it's attached below.
+Do you think we should also prevent pread/pwrite for devices without
+an llseek operation, like nonseekable_open does? I guess that would
+be consistent.
 
-Hmm, "Normal free"/"DMA free" are much lower than 61MB as shown above.
-free(1) output was collected right after resume successfully finished.
+Then there is the point that (I forgot who) brought up that changing
+code to do no_llseek is actually an ABI change. Even if the file
+position is never used anywhere, some random user application might
+expect a chardev not to return an error when its llseek method is
+called, resulting in regressions.
 
-Thanks.
-
-
-e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-e100 0000:00:03.0: PCI INT A -> Link[LNKC] -> GSI 9 (level, low) -> IRQ 9
-e100 0000:00:03.0: PME# disabled
-e100: eth0: e100_probe: addr 0xe8120000, irq 9, MAC addr 00:10:a4:89:e8:84
-ifconfig: page allocation failure. order:5, mode:0x8020
-Pid: 7339, comm: ifconfig Not tainted 2.6.32-rc7-dirty #3
-Call Trace:
- [<c0168704>] ? __alloc_pages_nodemask+0x45d/0x4eb
- [<c01050b3>] ? dma_generic_alloc_coherent+0x4a/0xa7
- [<c0105069>] ? dma_generic_alloc_coherent+0x0/0xa7
- [<d0935ba0>] ? e100_alloc_cbs+0xc2/0x16f [e100]
- [<d0936d23>] ? e100_up+0x1b/0xf5 [e100]
- [<d0936e14>] ? e100_open+0x17/0x41 [e100]
- [<c03245cc>] ? dev_open+0x8f/0xc5
- [<c0323d54>] ? dev_change_flags+0xa2/0x155
- [<c03576b0>] ? devinet_ioctl+0x22a/0x51e
- [<c0316ebc>] ? sock_ioctl+0x1b6/0x1da
- [<c0316d06>] ? sock_ioctl+0x0/0x1da
- [<c0193f9b>] ? vfs_ioctl+0x1c/0x5f
- [<c0194565>] ? do_vfs_ioctl+0x4bf/0x4fb
- [<c0373362>] ? do_page_fault+0x33b/0x351
- [<c01945cd>] ? sys_ioctl+0x2c/0x42
- [<c0102834>] ? sysenter_do_call+0x12/0x26
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-Normal per-cpu:
-CPU    0: hi:   90, btch:  15 usd:  89
-active_anon:15632 inactive_anon:17534 isolated_anon:0
- active_file:12373 inactive_file:12884 isolated_file:0
- unevictable:0 dirty:15 writeback:62 unstable:0
- free:2072 slab_reclaimable:849 slab_unreclaimable:1080
- mapped:7343 shmem:233 pagetables:505 bounce:0
-DMA free:1440kB min:120kB low:148kB high:180kB active_anon:224kB inactive_anon:1516kB active_file:3440kB inactive_file:5140kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15808kB mlocked:0kB dirty:0kB writeback:0kB mapped:404kB shmem:44kB slab_reclaimable:16kB slab_unreclaimable:16kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 238 238
-Normal free:6848kB min:1912kB low:2388kB high:2868kB active_anon:62304kB inactive_anon:68620kB active_file:46052kB inactive_file:46396kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:243776kB mlocked:0kB dirty:60kB writeback:248kB mapped:28968kB shmem:888kB slab_reclaimable:3380kB slab_unreclaimable:4304kB kernel_stack:464kB pagetables:2020kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:128 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0
-DMA: 4*4kB 8*8kB 33*16kB 22*32kB 2*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1440kB
-Normal: 486*4kB 271*8kB 139*16kB 12*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 6848kB
-29040 total pagecache pages
-3548 pages in swap cache
-Swap cache stats: add 72385, delete 68837, find 70772/74308
-Free swap  = 483200kB
-Total swap = 514040kB
-65520 pages RAM
-1726 pages reserved
-20970 pages shared
-50976 pages non-shared
-ifconfig: page allocation failure. order:5, mode:0x8020
-Pid: 7339, comm: ifconfig Not tainted 2.6.32-rc7-dirty #3
-Call Trace:
- [<c0168704>] ? __alloc_pages_nodemask+0x45d/0x4eb
- [<c01050b3>] ? dma_generic_alloc_coherent+0x4a/0xa7
- [<c0105069>] ? dma_generic_alloc_coherent+0x0/0xa7
- [<d0935ba0>] ? e100_alloc_cbs+0xc2/0x16f [e100]
- [<d0936d23>] ? e100_up+0x1b/0xf5 [e100]
- [<d0936e14>] ? e100_open+0x17/0x41 [e100]
- [<c03245cc>] ? dev_open+0x8f/0xc5
- [<c0323d54>] ? dev_change_flags+0xa2/0x155
- [<c03576b0>] ? devinet_ioctl+0x22a/0x51e
- [<c0316ebc>] ? sock_ioctl+0x1b6/0x1da
- [<c0316d06>] ? sock_ioctl+0x0/0x1da
- [<c0193f9b>] ? vfs_ioctl+0x1c/0x5f
- [<c0194565>] ? do_vfs_ioctl+0x4bf/0x4fb
- [<c0189370>] ? vfs_write+0xf4/0x105
- [<c01945cd>] ? sys_ioctl+0x2c/0x42
- [<c0102834>] ? sysenter_do_call+0x12/0x26
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-Normal per-cpu:
-CPU    0: hi:   90, btch:  15 usd:  82
-active_anon:15563 inactive_anon:17593 isolated_anon:0
- active_file:12294 inactive_file:12787 isolated_file:0
- unevictable:0 dirty:18 writeback:155 unstable:0
- free:2267 slab_reclaimable:847 slab_unreclaimable:1080
- mapped:7271 shmem:229 pagetables:505 bounce:0
-DMA free:1440kB min:120kB low:148kB high:180kB active_anon:224kB inactive_anon:1516kB active_file:3440kB inactive_file:5140kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15808kB mlocked:0kB dirty:0kB writeback:0kB mapped:404kB shmem:44kB slab_reclaimable:16kB slab_unreclaimable:16kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 238 238
-Normal free:7628kB min:1912kB low:2388kB high:2868kB active_anon:62028kB inactive_anon:68856kB active_file:45736kB inactive_file:46008kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:243776kB mlocked:0kB dirty:72kB writeback:620kB mapped:28680kB shmem:872kB slab_reclaimable:3372kB slab_unreclaimable:4304kB kernel_stack:464kB pagetables:2020kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0
-DMA: 4*4kB 8*8kB 33*16kB 22*32kB 2*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1440kB
-Normal: 559*4kB 290*8kB 152*16kB 16*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 7628kB
-29016 total pagecache pages
-3702 pages in swap cache
-Swap cache stats: add 72550, delete 68848, find 70774/74310
-Free swap  = 482540kB
-Total swap = 514040kB
-65520 pages RAM
-1726 pages reserved
-20826 pages shared
-50895 pages non-shared
-e100 0000:00:03.0: firmware: requesting e100/d101s_ucode.bin
-e100: eth0 NIC Link is Up 100 Mbps Full Duplex
-crashreporter[9491]: segfault at b67701a0 ip b67701a0 sp bfa0fc2c error 4 in libnss_files-2.7.so[b67b6000+a000]
+	Arnd <><
