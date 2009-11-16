@@ -1,71 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZKPRuC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZKPRz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbZKPRuC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:50:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZKPRuB
+	id S1752103AbZKPRz6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZKPRz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:50:01 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35441 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751458AbZKPRuA (ORCPT
+	Mon, 16 Nov 2009 12:55:58 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:25646 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbZKPRz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:50:00 -0500
-Date: Mon, 16 Nov 2009 12:50:06 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca>
-References: <4AF4526B.4060101@zytor.com> <40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com> <20091109201608.GD15159@caffeine.csclub.uwaterloo.ca> <4AF886D4.1080108@zytor.com> <20091109212333.GE15159@caffeine.csclub.uwaterloo.ca> <20091112121805.GF1394@ucw.cz> <20091113162301.GU15157@caffeine.csclub.uwaterloo.ca> <20091113165730.0b9b2676@lxorguk.ukuu.org.uk> <20091113192412.GY15157@caffeine.csclub.uwaterloo.ca> <20091113212148.5cb829d4@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091113212148.5cb829d4@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 16 Nov 2009 12:55:57 -0500
+Date: Mon, 16 Nov 2009 09:55:27 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Karel Zak <kzak@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: mmotm-1113: efi.c:  __divdi3 undefined (i386)
+Message-Id: <20091116095527.3a1265c9.randy.dunlap@oracle.com>
+In-Reply-To: <20091116121957.GF10245@nb.net.home>
+References: <4B004C87.7010406@oracle.com>
+	<20091116121957.GF10245@nb.net.home>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B01921B.008E:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 09:21:48PM +0000, Alan Cox wrote:
-> > > Which usually means some form of write gathering is enabled or something
-> > > thinks the device is write combining on the PCI bus. What does the PCI
-> > > bus and the RCRR MTRR set look like ?
+On Mon, 16 Nov 2009 13:19:57 +0100 Karel Zak wrote:
+
+> On Sun, Nov 15, 2009 at 10:46:31AM -0800, Randy Dunlap wrote:
+> > on i386 builds:
 > > 
-> > Well there is no /proc/mtrr.
+> > fs/built-in.o: In function `last_lba':
+> > efi.c:(.text+0x9d9fe): undefined reference to `__divdi3'
+> > 
+> > 
+> > -       return (bdev->bd_inode->i_size >> 9) - 1ULL;
+> > +       return (bdev->bd_inode->i_size / bdev_logical_block_size(bdev)) - 1ULL;
 > 
-> Linux doesn't have an RCRR driver - so you need to dump the MSRs directly
-> (see the Geode GX manual MSR list) and read out the msrs.
+>  Ah.. I guess that div_u64() is more portable. Updated
+>  partitions-use-sector-size-for-efi-gpt.patch is below.
+> 
+>     Karel
 
-Hmm, so looking at the Geode SC1200 data book, it doesn't mention mtrr,
-rcrr or msr.  I know the Geode LX has lots of MSR documentation.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Looking at the GX1 data book (which it seems the SC1200 refers to),
-it does mention mtrr, as not supported.  I have managed to find something
-called the region configuration range registers, which must be RCRR.
+Thanks.
 
-I think this is a dump of the 8 region MSRs:
 
-0x00001810->0xbf848ba8b7f282e8
-0x00001811->0xbfcb5328b7f932e8
-0x00001812->0xbfe93418b7f712e8
-0x00001813->0xbfbd59b8b7fb52e8
-0x00001814->0xbfb5f868b7f3d2e8
-0x00001815->0xbf815018b7ef42e8
-0x00001816->0xbfc4c0d8b7f2a2e8
-0x00001817->0xbfe1eea8b7eff2e8
 
-This must of course mean I read them wrong because those are not the
-right values.  Some bit ranges must be 0 and are not.
+> From fbb0c11cf349545f2499d382469749543fdc03d0 Mon Sep 17 00:00:00 2001
+> From: Karel Zak <kzak@redhat.com>
+> Date: Mon, 16 Nov 2009 12:19:25 +0100
+> Subject: [PATCH] partitions: use sector size for EFI GPT
+> 
+> Currently, kernel uses strictly 512-byte sectors for EFI GPT parsing.
+> That's wrong.
+> 
+> UEFI standard (version 2.3, May 2009, 5.3.1 GUID Format overview, page
+> 95) defines that LBA is always based on the logical block size. It
+> means bdev_logical_block_size() (aka BLKSSZGET) for Linux.
+> 
+> This patch removes static sector size from EFI GPT parser.
+> 
+> The problem is reproducible with the latest GNU Parted:
+> 
+>  # modprobe scsi_debug dev_size_mb=50 sector_size=4096
+> 
+>   # ./parted /dev/sdb print
+>   Model: Linux scsi_debug (scsi)
+>   Disk /dev/sdb: 52.4MB
+>   Sector size (logical/physical): 4096B/4096B
+>   Partition Table: gpt
+> 
+>   Number  Start   End     Size    File system  Name     Flags
+>    1      24.6kB  3002kB  2978kB               primary
+>    2      3002kB  6001kB  2998kB               primary
+>    3      6001kB  9003kB  3002kB               primary
+> 
+>   # blockdev --rereadpt /dev/sdb
+>   # dmesg | tail -1
+>    sdb: unknown partition table      <---- !!!
+> 
+> with this patch:
+> 
+>   # blockdev --rereadpt /dev/sdb
+>   # dmesg | tail -1
+>    sdb: sdb1 sdb2 sdb3
+> 
+> Signed-off-by: Karel Zak <kzak@redhat.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/partitions/efi.c |   23 +++++++++++++++--------
+>  1 files changed, 15 insertions(+), 8 deletions(-)
+> 
+> diff --git a/fs/partitions/efi.c b/fs/partitions/efi.c
+> index 038a602..80eeff5 100644
+> --- a/fs/partitions/efi.c
+> +++ b/fs/partitions/efi.c
+> @@ -1,7 +1,9 @@
+>  /************************************************************
+>   * EFI GUID Partition Table handling
+> - * Per Intel EFI Specification v1.02
+> - * http://developer.intel.com/technology/efi/efi.htm
+> + *
+> + * http://www.uefi.org/specs/
+> + * http://www.intel.com/technology/efi/
+> + *
+>   * efi.[ch] by Matt Domsch <Matt_Domsch@dell.com>
+>   *   Copyright 2000,2001,2002,2004 Dell Inc.
+>   *
+> @@ -92,6 +94,7 @@
+>   *
+>   ************************************************************/
+>  #include <linux/crc32.h>
+> +#include <linux/math64.h>
+>  #include "check.h"
+>  #include "efi.h"
+>  
+> @@ -141,7 +144,8 @@ last_lba(struct block_device *bdev)
+>  {
+>  	if (!bdev || !bdev->bd_inode)
+>  		return 0;
+> -	return (bdev->bd_inode->i_size >> 9) - 1ULL;
+> +	return div_u64(bdev->bd_inode->i_size,
+> +		       bdev_logical_block_size(bdev)) - 1ULL;
+>  }
+>  
+>  static inline int
+> @@ -188,6 +192,7 @@ static size_t
+>  read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
+>  {
+>  	size_t totalreadcount = 0;
+> +	sector_t n = lba * (bdev_logical_block_size(bdev) / 512);
+>  
+>  	if (!bdev || !buffer || lba > last_lba(bdev))
+>                  return 0;
+> @@ -195,7 +200,7 @@ read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
+>  	while (count) {
+>  		int copied = 512;
+>  		Sector sect;
+> -		unsigned char *data = read_dev_sector(bdev, lba++, &sect);
+> +		unsigned char *data = read_dev_sector(bdev, n++, &sect);
+>  		if (!data)
+>  			break;
+>  		if (copied > count)
+> @@ -601,6 +606,7 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
+>  	gpt_header *gpt = NULL;
+>  	gpt_entry *ptes = NULL;
+>  	u32 i;
+> +	unsigned ssz = bdev_logical_block_size(bdev) / 512;
+>  
+>  	if (!find_valid_gpt(bdev, &gpt, &ptes) || !gpt || !ptes) {
+>  		kfree(gpt);
+> @@ -611,13 +617,14 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
+>  	pr_debug("GUID Partition Table is valid!  Yea!\n");
+>  
+>  	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
+> +		u64 start = le64_to_cpu(ptes[i].starting_lba);
+> +		u64 size = le64_to_cpu(ptes[i].ending_lba) -
+> +			   le64_to_cpu(ptes[i].starting_lba) + 1ULL;
+> +
+>  		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
+>  			continue;
+>  
+> -		put_partition(state, i+1, le64_to_cpu(ptes[i].starting_lba),
+> -				 (le64_to_cpu(ptes[i].ending_lba) -
+> -                                  le64_to_cpu(ptes[i].starting_lba) +
+> -				  1ULL));
+> +		put_partition(state, i+1, start * ssz, size * ssz);
+>  
+>  		/* If this is a RAID volume, tell md */
+>  		if (!efi_guidcmp(ptes[i].partition_type_guid,
+> -- 
+> 1.6.5.1
+> 
+> 
 
-Trying rdmsr from msr-tools 1.2 gives me:
 
-# ./rdmsr -x 0x00001810
-rdmsr: CPU 0 cannot read MSR 0x00001810
-
-Hmm, now what?
-
--- 
-Len Sorensen
+---
+~Randy
