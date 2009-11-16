@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZKPMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZKPM1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbZKPMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZKPMUf
+	id S1753293AbZKPM1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZKPMUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:20:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44452 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:20:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2358 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbZKPMTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:19:41 -0500
+	id S1752972AbZKPMTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 07:19:43 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 27/42] KVM: SVM: Remove remaining occurences of rdtscll
-Date: Mon, 16 Nov 2009 14:19:28 +0200
-Message-Id: <1258373983-8693-28-git-send-email-avi@redhat.com>
+Subject: [PATCH 28/42] KVM: fix lock imbalance in kvm_*_irq_source_id()
+Date: Mon, 16 Nov 2009 14:19:29 +0200
+Message-Id: <1258373983-8693-29-git-send-email-avi@redhat.com>
 In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
 References: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-This patch replaces them with native_read_tsc() which can
-also be used in expressions and saves a variable on the
-stack in this case.
+Stanse found 2 lock imbalances in kvm_request_irq_source_id and
+kvm_free_irq_source_id. They omit to unlock kvm->irq_lock on fail paths.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Fix that by adding unlock labels at the end of the functions and jump
+there from the fail paths.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/svm.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ virt/kvm/irq_comm.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 41c996a..9a4daca 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -763,14 +763,13 @@ static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	int i;
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index 15a83b9..00c68d2 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -220,11 +220,13 @@ int kvm_request_irq_source_id(struct kvm *kvm)
  
- 	if (unlikely(cpu != vcpu->cpu)) {
--		u64 tsc_this, delta;
-+		u64 delta;
+ 	if (irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
+ 		printk(KERN_WARNING "kvm: exhaust allocatable IRQ sources!\n");
+-		return -EFAULT;
++		irq_source_id = -EFAULT;
++		goto unlock;
+ 	}
  
- 		/*
- 		 * Make sure that the guest sees a monotonically
- 		 * increasing TSC.
- 		 */
--		rdtscll(tsc_this);
--		delta = vcpu->arch.host_tsc - tsc_this;
-+		delta = vcpu->arch.host_tsc - native_read_tsc();
- 		svm->vmcb->control.tsc_offset += delta;
- 		if (is_nested(svm))
- 			svm->nested.hsave->control.tsc_offset += delta;
-@@ -792,7 +791,7 @@ static void svm_vcpu_put(struct kvm_vcpu *vcpu)
- 	for (i = 0; i < NR_HOST_SAVE_USER_MSRS; i++)
- 		wrmsrl(host_save_user_msrs[i], svm->host_user_msrs[i]);
+ 	ASSERT(irq_source_id != KVM_USERSPACE_IRQ_SOURCE_ID);
+ 	set_bit(irq_source_id, bitmap);
++unlock:
+ 	mutex_unlock(&kvm->irq_lock);
  
--	rdtscll(vcpu->arch.host_tsc);
-+	vcpu->arch.host_tsc = native_read_tsc();
+ 	return irq_source_id;
+@@ -240,7 +242,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ 	if (irq_source_id < 0 ||
+ 	    irq_source_id >= sizeof(kvm->arch.irq_sources_bitmap)) {
+ 		printk(KERN_ERR "kvm: IRQ source ID out of range!\n");
+-		return;
++		goto unlock;
+ 	}
+ 	for (i = 0; i < KVM_IOAPIC_NUM_PINS; i++) {
+ 		clear_bit(irq_source_id, &kvm->arch.vioapic->irq_states[i]);
+@@ -251,6 +253,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ #endif
+ 	}
+ 	clear_bit(irq_source_id, &kvm->arch.irq_sources_bitmap);
++unlock:
+ 	mutex_unlock(&kvm->irq_lock);
  }
  
- static unsigned long svm_get_rflags(struct kvm_vcpu *vcpu)
 -- 
 1.6.5.2
 
