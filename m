@@ -1,100 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZKPBnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZKPB4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751912AbZKPBnH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 20:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZKPBnH
+	id S1752004AbZKPB4E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 20:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZKPB4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 20:43:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:52077 "EHLO mga09.intel.com"
+	Sun, 15 Nov 2009 20:56:03 -0500
+Received: from mga02.intel.com ([134.134.136.20]:32982 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751156AbZKPBnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 20:43:06 -0500
+	id S1751881AbZKPB4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 20:56:02 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,748,1249282800"; 
-   d="scan'208";a="467535574"
-Subject: Re: [PATCH 4/5] acpi: fix trivial warning
-From: Lin Ming <ming.m.lin@intel.com>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Daniel Walker <dwalker@fifo99.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <94a0d4530911150927l3224e815ha6ff17aab6f19251@mail.gmail.com>
-References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-4-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-5-git-send-email-felipe.contreras@gmail.com>
-	 <1252936556.28368.215.camel@desktop>
-	 <94a0d4530909140734q51779b76g2ddc7211ece87171@mail.gmail.com>
-	 <1252940549.28368.255.camel@desktop>
-	 <94a0d4530911111623h1ae3463dte8a3f83ec0ad1f75@mail.gmail.com>
-	 <1258134207.6411.0.camel@c-dwalke-linux.qualcomm.com>
-	 <94a0d4530911131228s6b6b6221o7b24002ca03373e5@mail.gmail.com>
-	 <1258305351.6428.8.camel@desktop>
-	 <94a0d4530911150927l3224e815ha6ff17aab6f19251@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 16 Nov 2009 09:27:25 +0800
-Message-Id: <1258334845.17765.23.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="569789426"
+Date: Mon, 16 Nov 2009 09:56:05 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: jgarzik@redhat.com, sean.hefty@intel.com
+Subject: [PATCH]AHCI: disable sntf cap for ich8
+Message-ID: <20091116015605.GA21717@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-16 at 01:27 +0800, Felipe Contreras wrote:
-> On Sun, Nov 15, 2009 at 7:15 PM, Daniel Walker <dwalker@fifo99.com> wrote:
-> > On Fri, 2009-11-13 at 22:28 +0200, Felipe Contreras wrote:
-> >> That doesn't seem too positive. Or at least there's no indication that
-> >> somebody will pick it up.
-> >
-> > I'd re-submit with a better description of the patch. You should always
-> > try to describe what your doing as accurately as possible so the
-> > maintainer doesn't have to work very hard to know what your doing.
-> 
-> There's nothing to add. It's a patch to cleanup the coding style, that's it.
-> 
-> > That
-> > particular patch just has a one liner description that wasn't very
-> > informative .. Either that or re-submit your series without that patch
-> > if you don't have confidence in it.
-> 
-> All of my patches have been picked up, except the ones for ACPI. I
-> haven't received a single comment from them, which would explain the
-> current state of the code.
+I obseved there is a sata_async_notification() for every ahci interrupt. But the
+async notification does nothing (this is hard disk drive and no pmp). This cause
+cpu wastes some time on sntf register access.
 
-Hi, Felipe
+It appears ICH AHCI doesn't support SNotification register, but the controller
+reports it does. After quirking it, the async notification disappears.
 
-All files under linux-2.6/drivers/acpi/acpica and most files under
-linux-2.6/include/acpi are ACPICA code, see http://www.acpica.org for
-detail.
+PS. it appears all ICH don't support SNotification register from ICH manual, don't
+know if we need quirk all ICH. I don't have machines with all kinds of ICH.
 
-The ACPICA's coding style is totally different than linux kernel.
-For example, a function named AcpiEvaluateObject in ACPICA, but in linux
-kernel it is called acpi_evaluate_object.
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+---
+ drivers/ata/ahci.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-We have a program "acpisrc" to convert the ACPICA style code to linux
-style and then run lindent on the converted code.
-
-You can download the official ACPICA release from
-http://www.acpica.org/downloads/ , "acpisrc" is included in it.
-
-It's great that you are contributing to ACPICA code.
-All these linuxized ACPICA codes are generated by acpisrc and lindent,
-so we'd better not touch those code directly.
-
-Instead, our process is:
-1. Write patches for ACPICA code.
-2. Send patches to devel.acpica.org, robert.moore@intel.com, ming.m.lin@intel.com
-3. I will generate and send the linuxized ACPICA code to Len Brown <lenb@kernel.org>
-4. Len asks Linus to merge the linuxized ACPICA code.
-
-Thanks,
-Lin Ming
-
-> 
-> If somebody raised the hand and said; I'll merge this, please resend,
-> I'd do that, otherwise I think it's a waste of time.
-> 
-
+Index: linux/drivers/ata/ahci.c
+===================================================================
+--- linux.orig/drivers/ata/ahci.c	2009-11-16 09:36:40.000000000 +0800
++++ linux/drivers/ata/ahci.c	2009-11-16 09:53:44.000000000 +0800
+@@ -113,6 +113,7 @@ enum {
+ 	board_ahci_mcp65	= 6,
+ 	board_ahci_nopmp	= 7,
+ 	board_ahci_yesncq	= 8,
++	board_ahci_nosntf	= 9,
+ 
+ 	/* global controller registers */
+ 	HOST_CAP		= 0x00, /* host capabilities */
+@@ -235,6 +236,7 @@ enum {
+ 	AHCI_HFLAG_NO_SUSPEND		= (1 << 10), /* don't suspend */
+ 	AHCI_HFLAG_SRST_TOUT_IS_OFFLINE	= (1 << 11), /* treat SRST timeout as
+ 							link offline */
++	AHCI_HFLAG_NO_SNTF		= (1 << 12), /* no sntf */
+ 
+ 	/* ap->flags bits */
+ 
+@@ -508,7 +510,7 @@ static const struct ata_port_info ahci_p
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+ 	},
+-	/* board_ahci_yesncq */
++	[board_ahci_yesncq] =
+ 	{
+ 		AHCI_HFLAGS	(AHCI_HFLAG_YES_NCQ),
+ 		.flags		= AHCI_FLAG_COMMON,
+@@ -516,6 +518,14 @@ static const struct ata_port_info ahci_p
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+ 	},
++	[board_ahci_nosntf] =
++	{
++		AHCI_HFLAGS	(AHCI_HFLAG_NO_SNTF),
++		.flags		= AHCI_FLAG_COMMON,
++		.pio_mask	= ATA_PIO4,
++		.udma_mask	= ATA_UDMA6,
++		.port_ops	= &ahci_ops,
++	},
+ };
+ 
+ static const struct pci_device_id ahci_pci_tbl[] = {
+@@ -531,7 +541,7 @@ static const struct pci_device_id ahci_p
+ 	{ PCI_VDEVICE(INTEL, 0x2683), board_ahci }, /* ESB2 */
+ 	{ PCI_VDEVICE(INTEL, 0x27c6), board_ahci }, /* ICH7-M DH */
+ 	{ PCI_VDEVICE(INTEL, 0x2821), board_ahci }, /* ICH8 */
+-	{ PCI_VDEVICE(INTEL, 0x2822), board_ahci }, /* ICH8 */
++	{ PCI_VDEVICE(INTEL, 0x2822), board_ahci_nosntf }, /* ICH8 */
+ 	{ PCI_VDEVICE(INTEL, 0x2824), board_ahci }, /* ICH8 */
+ 	{ PCI_VDEVICE(INTEL, 0x2829), board_ahci }, /* ICH8M */
+ 	{ PCI_VDEVICE(INTEL, 0x282a), board_ahci }, /* ICH8M */
+@@ -849,6 +859,12 @@ static void ahci_save_initial_config(str
+ 		cap &= ~HOST_CAP_PMP;
+ 	}
+ 
++	if ((cap & HOST_CAP_SNTF) && (hpriv->flags & AHCI_HFLAG_NO_SNTF)) {
++		dev_printk(KERN_INFO, &pdev->dev,
++			   "controller can't do SNTF, turning off CAP_SNTF\n");
++		cap &= ~HOST_CAP_SNTF;
++	}
++
+ 	if (pdev->vendor == PCI_VENDOR_ID_JMICRON && pdev->device == 0x2361 &&
+ 	    port_map != 1) {
+ 		dev_printk(KERN_INFO, &pdev->dev,
