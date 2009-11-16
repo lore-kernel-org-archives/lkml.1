@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZKPVg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZKPViy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZKPVg1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZKPVg0
+	id S1754107AbZKPViy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZKPViy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:36:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34896 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750908AbZKPVgZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:36:25 -0500
-Date: Mon, 16 Nov 2009 13:36:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-11-13-19-59 uploaded
-Message-Id: <20091116133628.24132480.akpm@linux-foundation.org>
-In-Reply-To: <20091116210941.GA2622@ldl.fc.hp.com>
-References: <200911140403.nAE43CN1016851@imap1.linux-foundation.org>
-	<20091116210941.GA2622@ldl.fc.hp.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 16:38:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7781 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbZKPVix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 16:38:53 -0500
+Date: Mon, 16 Nov 2009 16:37:09 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [RFC] Block IO Controller V2 - some results
+Message-ID: <20091116213709.GK13235@redhat.com>
+References: <1258404660.3533.150.camel@cail> <20091116211412.GJ13235@redhat.com> <1258407135.3533.152.camel@cail>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258407135.3533.152.camel@cail>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009 14:09:41 -0700
-Alex Chiang <achiang@hp.com> wrote:
+On Mon, Nov 16, 2009 at 04:32:15PM -0500, Alan D. Brunelle wrote:
+> On Mon, 2009-11-16 at 16:14 -0500, Vivek Goyal wrote:
+> > On Mon, Nov 16, 2009 at 03:51:00PM -0500, Alan D. Brunelle wrote:
+> > > Hi Vivek: 
+> > > 
+> > > I'm finding some things that don't quite seem right - executive
+> > > summary: 
+> > 
+> > Hi Alan,
+> > 
+> > Thanks a lot for such an extensive testing and test results. I am still
+> > digesting the results but I thought I will make a quick note about writes.
+> > This patchset works only for sync IO. If you are performing buffered
+> > writes then you will not see any service differentiation. Providing
+> > support for buffered write path is in TODO list. 
+> 
+> Ah, I thought you meant sync I/O versus async I/O. So do you mean that
+> the testing should use _direct_ I/O (bypassing the cache)? 
 
-> Hi Andrew,
-> 
-> * akpm@linux-foundation.org <akpm@linux-foundation.org>:
-> > The mm-of-the-moment snapshot 2009-11-13-19-59 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://zen-kernel.org/kernel/mmotm.git
-> > 
-> > It contains the following patches against 2.6.32-rc7:
-> 
-> Many of the patches have dropped their subject lines. I realize
-> that you can get the subject of the patch from the patch name,
-> but if one is using the git tree, then looking at the git log,
-> you see things like:
-> 
-> 	commit 7f97d096be78d5a8d6bf2efc28fe3efba21e47f0
-> 	Author: Andrew Morton <akpm@linux-foundation.org>
-> 	Date:   Mon Nov 9 20:59:36 2009 +0100
-> 
-> 	    fed up with those stupid warnings
-> 	    
-> 	    
-> 	    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> 
-> And there's no real good way to know that it came from
-> undeprecate-pci_find_device.patch.
-> 
-> Would it be reasonable of me to request that your scripts stick
-> the subject of the mail into the patch description field? That
-> would greatly enhance the useability of the git version of mmotm.
+Only for Writes. Reads will anyway show up as sync IO at the CFQ, so
+that's not a problem. You can choose to test these either as direct IO
+or let them go through page cache.
 
-yup, I need to fix that as part of getting all this stuff into
-linux-next.
+For writes, you need to use direct IO if you are looking for service
+differentiation with current patchset.
 
-Tell everyone to stop sending patches and reporting bugs :(
+Thanks
+Vivek
+
+> 
+> > 
+> > > 
+> > > o  I think the apportionment algorithm doesn't work consistently well
+> > > for writes.
+> > > 
+> > > o  I think there are problems with significant performance loss when
+> > > doing random I/Os.
+> > 
+> > This concerns me. I had a quick look and as per your results, even with
+> > group_idle=0 you are seeing this regression. I guess this might be coming
+> > from the fact that we idle on sync-noidle workload per group and that
+> > idling becomes significant as number of groups increase.
+> > 
+> > Thanks
+> > Vivek
