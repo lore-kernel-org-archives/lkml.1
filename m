@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZKPXRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZKPXTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZKPXRU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 18:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZKPXRO
+	id S1755639AbZKPXTW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 18:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZKPXTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 18:17:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60625 "EHLO ogre.sisk.pl"
+	Mon, 16 Nov 2009 18:19:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60605 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755615AbZKPXRI convert rfc822-to-8bit (ORCPT
+	id S1755674AbZKPXQt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 18:17:08 -0500
+	Mon, 16 Nov 2009 18:16:49 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "A. G." <orion.linbug@gmail.com>
+       "Aleksei Lukin" <lukin@stu.cn.ua>
 References: <ipicVA1QUFF.A.zWB.1mdALB@chimera>
 In-Reply-To: <ipicVA1QUFF.A.zWB.1mdALB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <OWmO9uyC1hM.A.g2B.PndALB@chimera>
-Subject: [Bug #14450] [2.6.31] Network interfaces are dead with 2.6.31 (iwlagn and sky2)
+Message-ID: <OWmO9uyC1hM.A.Q4B.QndALB@chimera>
+Subject: [Bug #14448] PAT cpu feature is absent but detected by Xorg and others, cuses video driver problems
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Tue, 17 Nov 2009 00:01:24 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14450
-Subject		: [2.6.31] Network interfaces are dead with 2.6.31 (iwlagn and sky2)
-Submitter	: A. G. <orion.linbug@gmail.com>
-Date		: 2009-10-21 07:30 (27 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14448
+Subject		: PAT cpu feature is absent but detected by Xorg and others, cuses video driver problems
+Submitter	: Aleksei Lukin <lukin@stu.cn.ua>
+Date		: 2009-10-20 17:54 (28 days old)
 
 
