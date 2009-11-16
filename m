@@ -1,110 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZKPPOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbZKPPVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbZKPPOY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZKPPOY
+	id S1752813AbZKPPVT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZKPPVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:14:24 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:18463 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbZKPPOX (ORCPT
+	Mon, 16 Nov 2009 10:21:18 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:51148 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbZKPPVR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:14:23 -0500
+	Mon, 16 Nov 2009 10:21:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ow3j8G59UZmtqfBBCOrIYTlm3wP0xKdyLhUC+L0276GvBxpBlzGMFmagFTWagfv4Jk
-         HFNvDdEDy/kRS88YAi9/H9bjTpiNosgto8dp0H87uhaFYFOMHUs+N69El5PVcaEjMQne
-         oMU3j9jU7vwHFeleCoPBIwm0nSEVennyCtKJY=
-Date: Mon, 16 Nov 2009 18:14:26 +0300
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, x86team <x86@kernel.org>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86,io-apic: IO-APIC MMIO should not fail on resourse
-	insertion
-Message-ID: <20091116151426.GC5653@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=R5JEBSf3aZ0SChe1IcUpEcCX6b79HYiJ2qeqveam8KKOJIF1dY7lm6OGx/KnTXUD9/
+         YffOBsWfhtO7YF1gI1McUSAyWy6KYpEND5mm0YDuPJVAo7sqljoiHxp0+DeDqe2w4HIM
+         vxviFnV0pFB6RBWtRZ2b5ysGsYcYcH0qLUbfU=
+Subject: Re: [PATCH v8 01/16] tracing: convert trace_clock_local() as weak
+ function
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
+       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
+In-Reply-To: <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
+References: <cover.1258177321.git.wuzhangjin@gmail.com>
+	 <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+	 <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 16 Nov 2009 23:21:08 +0800
+Message-ID: <1258384868.15821.9.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If IO-APIC base address is 1K aligned we should not fail
-on resourse insertion procedure. For this sake we define
-IO_APIC_SLOT_SIZE constant which should cover all IO-APIC
-direct accessible registers.
+On Mon, 2009-11-16 at 16:07 +0100, Thomas Gleixner wrote:
+> On Sat, 14 Nov 2009, Wu Zhangjin wrote:
+> 
+> > From: Wu Zhangjin <wuzhangjin@gmail.com>
+> > 
+> > trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+> > it is tsc(64bit) based, which can give very high precision(about 1ns
+> > with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+> > give only 10ms precison with 1000 HZ. which is not enough for tracing,
+> > especially for Real Time system.
+> > 
+> > so, we need to implement a MIPS specific sched_clock() to get higher
+> > precision. There is a tsc like clock counter register in MIPS, whose
+> > frequency is half of the processor, so, if the cpu frequency is 800MHz,
+> > the time precision reaches 2.5ns, which is very good for tracing, even
+> > for Real Time system.
+> > 
+> > but 'Cause it is only 32bit long, which will rollover quickly, so, such
+> > a sched_clock() will bring with extra load, which is not good for the
+> > whole system. so, we only need to implement a arch-specific
+> > trace_clock_local() for tracing. as a preparation, we convert it as a
+> > weak function.
+> 
+> Hmm, I'm not convinced that this is really a huge overhead. 
+> 
+> First of all the rollover happens once every 10 seconds on a 800MHz
+> machine. 
+> 
+> Secondly we have a lockless implementation of extending 32bit counters
+> to 63 bit which is used at least by ARM to provide a high resolution
+> sched_clock implementation. See include/linux/cnt32_63.h and the users
+> in arch/
+> 
+> But that's a problem which can be discussed seperately and does not
+> affect the rest of the tracing infrastructure. I really would
+> recommend that you implement a sched_clock for the r4k machines based
+> on cnt32_63 and measure the overhead. Having a fine granular
+> sched_clock in general is probably not a bad thing.
+> 
 
-An example of a such configuration is there
+Thanks very much for your prompt, 
 
-	http://marc.info/?l=linux-kernel&m=118114792006520
+Will have a look at cnt32_to_63() in include/linux/cnt32_to_63.h later.
 
-| Quoting the message
-|
-| IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
-| IOAPIC[1]: apic_id 3, version 32, address 0xfec80000, GSI 24-47
-| IOAPIC[2]: apic_id 4, version 32, address 0xfec80400, GSI 48-71
-| IOAPIC[3]: apic_id 5, version 32, address 0xfec84000, GSI 72-95
-| IOAPIC[4]: apic_id 8, version 32, address 0xfec84400, GSI 96-119
+Thanks & Regards,
+	Wu Zhangjin
 
-Reported-by: "Maciej W. Rozycki" <macro@linux-mips.org>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Acked-by: Yinghai Lu <yinghai@kernel.org>
----
-
-Yinghai, I've added your Ack assuming yours "Good to me" is it.
-
- arch/x86/include/asm/apicdef.h |    7 +++++++
- arch/x86/kernel/apic/io_apic.c |   11 +++++------
- 2 files changed, 12 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.git/arch/x86/include/asm/apicdef.h
-=====================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/apicdef.h
-+++ linux-2.6.git/arch/x86/include/asm/apicdef.h
-@@ -11,6 +11,13 @@
- #define IO_APIC_DEFAULT_PHYS_BASE	0xfec00000
- #define	APIC_DEFAULT_PHYS_BASE		0xfee00000
- 
-+/*
-+ * We assume that it will be more then enough
-+ * in feasible feauture to cover all direct
-+ * accessible IO-APIC registers
-+ */
-+#define IO_APIC_SLOT_SIZE		1024
-+
- #define	APIC_ID		0x20
- 
- #define	APIC_LVR	0x30
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -4133,18 +4133,17 @@ void __init ioapic_init_mappings(void)
- #ifdef CONFIG_X86_32
- fake_ioapic_page:
- #endif
--			ioapic_phys = (unsigned long)
--				alloc_bootmem_pages(PAGE_SIZE);
-+			ioapic_phys = (unsigned long)alloc_bootmem_pages(PAGE_SIZE);
- 			ioapic_phys = __pa(ioapic_phys);
- 		}
- 		set_fixmap_nocache(idx, ioapic_phys);
--		apic_printk(APIC_VERBOSE,
--			    "mapped IOAPIC to %08lx (%08lx)\n",
--			    __fix_to_virt(idx), ioapic_phys);
-+		apic_printk(APIC_VERBOSE, "mapped IOAPIC to %08lx (%08lx)\n",
-+			__fix_to_virt(idx) + (ioapic_phys & ~PAGE_MASK),
-+			ioapic_phys);
- 		idx++;
- 
- 		ioapic_res->start = ioapic_phys;
--		ioapic_res->end = ioapic_phys + PAGE_SIZE-1;
-+		ioapic_res->end = ioapic_phys + IO_APIC_SLOT_SIZE - 1;
- 		ioapic_res++;
- 	}
- }
