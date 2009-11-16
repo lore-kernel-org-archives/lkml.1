@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbZKPLBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbZKPLNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752615AbZKPLBm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 06:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZKPLBl
+	id S1751985AbZKPLNr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 06:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZKPLNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 06:01:41 -0500
-Received: from cantor.suse.de ([195.135.220.2]:55037 "EHLO mx1.suse.de"
+	Mon, 16 Nov 2009 06:13:46 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50654 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZKPLBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 06:01:41 -0500
-Message-ID: <4B01310D.3020609@suse.de>
-Date: Mon, 16 Nov 2009 20:01:33 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: GPF in run_workqueue()/list_del_init(cwq->worklist.next) on	resume
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl> <alpine.LFD.2.01.0911091339290.31845@localhost.localdomain> <200911100119.38019.rjw@sisk.pl> <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain> <4AFA70FB.60706@kernel.org> <20091111181349.GA30638@redhat.com> <4AFB9595.1030002@kernel.org> <20091112183508.GA14661@redhat.com> <4AFC5E96.1020609@kernel.org>
-In-Reply-To: <4AFC5E96.1020609@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751483AbZKPLNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 06:13:46 -0500
+To: ben-linux@fluff.org, rmk+kernel@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.32-rc7] Remove kmem_cache_destroy() in s3c24xx_dma_init().
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200905202258.GII65132.HMFSJFOVOFtLQO@I-love.SAKURA.ne.jp>
+	<200905261942.III78639.FMOJLFtFSOHVOQ@I-love.SAKURA.ne.jp>
+In-Reply-To: <200905261942.III78639.FMOJLFtFSOHVOQ@I-love.SAKURA.ne.jp>
+Message-Id: <200911162013.GFC81201.OFOMOJtQLSFFHV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Mon, 16 Nov 2009 20:13:50 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-11/13/2009 04:14 AM, Tejun Heo wrote:
->>> making flush_work() behave as
->>> flush_work_sync() by default should be doable without too much
->>> overhead.  I'll give it a shot.
+Will you send below patch to upstream?
 
-Aieee... my estimate for cross cpu work queueing was way off.
-Queueing on different cpus is very common - sometimes more so than on
-the same cpu, so it looks like this can't be done without adding
-significant overhead to queueing path.  Giving up.  :-(
+Regards.
+--------------------
+[PATCH 2.6.32-rc7] Remove kmem_cache_destroy() in s3c24xx_dma_init().
 
-Thanks.
+kmem_cache_destroy() in s3c24xx_dma_init() triggers NULL pointer dereference
+if kmem_cache_create() failed. We can remove this kmem_cache_destroy() because
+it is called only when kmem_cache_create() failed.
 
--- 
-tejun
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ arch/arm/plat-s3c24xx/dma.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- linux-2.6.30-rc6.orig/arch/arm/plat-s3c24xx/dma.c
++++ linux-2.6.30-rc6/arch/arm/plat-s3c24xx/dma.c
+@@ -1396,7 +1396,6 @@ int __init s3c24xx_dma_init(unsigned int
+ 	return 0;
+ 
+  err:
+-	kmem_cache_destroy(dma_kmem);
+ 	iounmap(dma_base);
+ 	dma_base = NULL;
+ 	return ret;
