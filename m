@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbZKPIIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZKPIeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752088AbZKPIIH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 03:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZKPIIG
+	id S1751918AbZKPIeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 03:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZKPIeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 03:08:06 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:41505 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbZKPIIG convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Mon, 16 Nov 2009 03:08:06 -0500
-Message-Id: <4B011677020000780001FD9D@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Mon, 16 Nov 2009 08:08:07 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Nick Piggin" <npiggin@suse.de>
-Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
-       <hpa@zytor.com>
-Subject: Re: [PATCH] x86: eliminate redundant/contradicting cache line
-	 size config options
-References: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
- <20091116041407.GB5818@wotan.suse.de>
-In-Reply-To: <20091116041407.GB5818@wotan.suse.de>
+	Mon, 16 Nov 2009 03:34:16 -0500
+Received: from nox.protox.org ([88.191.38.29]:50394 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751734AbZKPIeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 03:34:15 -0500
+Subject: Re: [PATCH 2/2] drm: mm always protect change to unused_nodes with
+  unused_lock spinlock
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       Chris Wilson <chris@chris-wilson.co.uk>
+In-Reply-To: <21d7e9970911151542n49f15a9dn6481d0bc2bdfbc45@mail.gmail.com>
+References: <1258142218-2070-1-git-send-email-jglisse@redhat.com>
+	 <21d7e9970911151542n49f15a9dn6481d0bc2bdfbc45@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 16 Nov 2009 09:31:34 +0100
+Message-Id: <1258360294.1989.2.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Nick Piggin <npiggin@suse.de> 16.11.09 05:14 >>>
->On Fri, Nov 13, 2009 at 11:54:40AM +0000, Jan Beulich wrote:
->> Rather than having X86_L1_CACHE_BYTES and X86_L1_CACHE_SHIFT (with
->> inconsistent defaults), just having the latter suffices as the former
->> can be easily calculated from it.
->> 
->> To be consistent, also change X86_INTERNODE_CACHE_BYTES to
->> X86_INTERNODE_CACHE_SHIFT, and set it to 7 (128 bytes) for NUMA to
->> account for last level cache line size (which here matters more than
->> L1 cache line size).
->
->I think if we're going to set it to 7 (128B, for Pentium 4), then
->we should set the L1 cache shift as well? Most alignments to
->prevent cacheline pingpong use L1 cache shift for this anyway?
+On Mon, 2009-11-16 at 09:42 +1000, Dave Airlie wrote:
+> On Sat, Nov 14, 2009 at 5:56 AM, Jerome Glisse <jglisse@redhat.com> wrote:
+> > unused_nodes modification needs to be protected by unused_lock spinlock.
+> > Here is an example of an usage where there is no such protection without
+> > this patch.
+> >
+> >  Process 1: 1-drm_mm_pre_get(this function modify unused_nodes list)
+> >             2-spin_lock(spinlock protecting mm struct)
+> >             3-drm_mm_put_block(this function might modify unused_nodes
+> >               list but doesn't protect modification with unused_lock)
+> >             4-spin_unlock(spinlock protecting mm struct)
+> >  Process2:  1-drm_mm_pre_get(this function modify unused_nodes list)
+> > At this point Process1 & Process2 might both be doing modification to
+> > unused_nodes list. This patch add unused_lock protection into
+> > drm_mm_put_block to avoid such issue.
+> 
+> Have we got a bug number or reproducer for this?
+> 
+> I've cc'ed Thomas and Chris who were last ppl to touch drm_mm.c for some
+> sort of acks.
+> 
+> Dave.
 
-But for P4 L1_CACHE_SHIFT already is 7.
+No bug, this comes from code review while working on TTM. I think my
+analysis is correct.
 
->The internode thing is really just a not quite well defined thing
->because internode cachelines are really expensive and really big
->on vsmp so they warrant trading off extra space on some critical
->structures to reduce pingpong (but this is not to say that other
->structures that are *not* internode annotated do *not* need to
->worry about pingpong).
-
-The internode one, as said in the patch description, should consider
-the last level cache line size rather than L1, which 128 seems to be
-a much better fit (without in introducing model dependencies like
-for L1) than just using the L1 value directly.
-
-Jan
+Cheers,
+Jerome
 
