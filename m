@@ -1,64 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZKPVaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZKPVaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbZKPVaJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZKPVaI
+	id S1754468AbZKPVaj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZKPVaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:30:08 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36505 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbZKPVaH (ORCPT
+	Mon, 16 Nov 2009 16:30:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55225 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbZKPVae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:30:07 -0500
-Message-ID: <4B01C3DB.3040802@zytor.com>
-Date: Mon, 16 Nov 2009 13:27:55 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
+	Mon, 16 Nov 2009 16:30:34 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Travis <travis@sgi.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration bootup
- messages
-References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210728.267482000@alcatraz.americas.sgi.com> <20091116212427.GC2221@elte.hu>
-In-Reply-To: <20091116212427.GC2221@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 1/2] perf tools: Don't die in perf_header_attr__new
+Date: Mon, 16 Nov 2009 19:30:26 -0200
+Message-Id: <1258407027-384-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/16/2009 01:24 PM, Ingo Molnar wrote:
-> 
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->> --- linux.orig/init/calibrate.c
->> +++ linux/init/calibrate.c
->> @@ -123,23 +123,26 @@
->>  {
->>  	unsigned long ticks, loopbit;
->>  	int lps_precision = LPS_PREC;
->> +	bool boot_cpu = (smp_processor_id() == 0);
-> 
-> this code is shared by other architectures too - are you sure 
-> smp_processor_id()==0 is a proper 'I am the boot CPU' assumption 
-> everywhere?
-> 
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-It really shouldn't be for x86 either, although right now we play nasty
-renumbering games to accommodate that assumption.  It seems like we
-really should have a boot_cpu_id() or some such.
+We really should propagate such kinds of errors so that users of these
+library functions decide what to do in such cases instead of exiting in
+random places like now.
 
-	-hpa
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-record.c |    5 ++++-
+ tools/perf/util/header.c    |   22 ++++++++++++----------
+ tools/perf/util/header.h    |    4 +---
+ 3 files changed, 17 insertions(+), 14 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 04f335e..4c03bb7 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -220,7 +220,8 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
+ 		h_attr = header->attr[nr];
+ 	} else {
+ 		h_attr = perf_header_attr__new(a);
+-		perf_header__add_attr(header, h_attr);
++		if (h_attr != NULL)
++			perf_header__add_attr(header, h_attr);
+ 	}
+ 
+ 	return h_attr;
+@@ -308,6 +309,8 @@ try_again:
+ 	}
+ 
+ 	h_attr = get_header_attr(attr, counter);
++	if (h_attr == NULL)
++		die("nomem\n");
+ 
+ 	if (!file_new) {
+ 		if (memcmp(&h_attr->attr, attr, sizeof(*attr))) {
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index d8416f0..2f07a23 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -19,16 +19,16 @@ struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr)
+ {
+ 	struct perf_header_attr *self = malloc(sizeof(*self));
+ 
+-	if (!self)
+-		die("nomem");
+-
+-	self->attr = *attr;
+-	self->ids = 0;
+-	self->size = 1;
+-	self->id = malloc(sizeof(u64));
+-
+-	if (!self->id)
+-		die("nomem");
++	if (self != NULL) {
++		self->attr = *attr;
++		self->ids  = 0;
++		self->size = 1;
++		self->id   = malloc(sizeof(u64));
++		if (self->id == NULL) {
++			free(self);
++			self = NULL;
++		}
++	}
+ 
+ 	return self;
+ }
+@@ -423,6 +423,8 @@ struct perf_header *perf_header__read(int fd)
+ 		tmp = lseek(fd, 0, SEEK_CUR);
+ 
+ 		attr = perf_header_attr__new(&f_attr.attr);
++		if (attr == NULL)
++			 die("nomem");
+ 
+ 		nr_ids = f_attr.ids.size / sizeof(u64);
+ 		lseek(fd, f_attr.ids.offset, SEEK_SET);
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index f1b3bf7..0cbd4c9 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -64,9 +64,7 @@ void perf_header__add_attr(struct perf_header *self,
+ void perf_header__push_event(u64 id, const char *name);
+ char *perf_header__find_event(u64 id);
+ 
+-
+-struct perf_header_attr *
+-perf_header_attr__new(struct perf_event_attr *attr);
++struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr);
+ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ 
+ u64 perf_header__sample_type(struct perf_header *header);
+-- 
+1.6.2.5
 
