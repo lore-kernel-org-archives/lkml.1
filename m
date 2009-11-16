@@ -1,112 +1,702 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZKPMWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZKPMeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZKPMWG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZKPMWF
+	id S1753234AbZKPMeg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZKPMef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:22:05 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:58251 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbZKPMWC convert rfc822-to-8bit (ORCPT
+	Mon, 16 Nov 2009 07:34:35 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:63121 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752521AbZKPMec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:22:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZlljRmtz6JxaiQInf+dqkmdtDlUwIP5dPnS5RO3AAuOoMJQMtHRpGApR4ua/LM9OTJ
-         1d7DLBWzZ1iLYjX7/D1i1TG9BafydwjnnAcY7f7S1fWvZW+vn/9Y4QdQLMu1OjC38F0J
-         F9G6zStktk4SsNN7MbqJ1+PHABHBjIN7Vb12w=
+	Mon, 16 Nov 2009 07:34:32 -0500
+Date: Mon, 16 Nov 2009 14:37:48 +0200
+From: Phil Carmody <ext-phil.2.carmody@nokia.com>
+To: ext Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "Leukkunen Lauri (Nokia-D/Helsinki)" <lauri.leukkunen@nokia.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>,
+       "Doyu Hiroshi (Nokia-D/Helsinki)" <hiroshi.doyu@nokia.com>,
+       "Kauppi Ari (EXT-Ixonos/Oulu)" <ext-ari.kauppi@nokia.com>,
+       Jarkko Nikula <jhnikula@gmail.com>,
+       "Nurkkala Eero.An (EXT-Offcode/Oulu)" <ext-Eero.Nurkkala@nokia.com>,
+       "Tereshonkov Roman (Nokia-D/Helsinki)" <roman.tereshonkov@nokia.com>
+Subject: Re: [PATCH v2 1/2] input: touchscreen: introduce tsc2005 driver
+Message-ID: <20091116123748.GC28963@pcarmody-desktop>
+References: <1257340982-22814-1-git-send-email-aaro.koskinen@nokia.com> <20091114060332.GG4463@core.coreip.homeip.net>
 MIME-Version: 1.0
-In-Reply-To: <1258321890l.9645l.1l@oscar.alarsen.net>
-References: <20091115200215.GA25351@machine> <1258321890l.9645l.1l@oscar.alarsen.net>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Mon, 16 Nov 2009 10:21:48 -0200
-Message-ID: <b8bf37780911160421s3b79424doe82417f330414d72@mail.gmail.com>
-Subject: Re: [PATCH v5 10/12] string: factorize skip_spaces and export it to 
-	be generally available
-To: Anders Larsen <al@alarsen.net>
-Cc: Anonymous <aim0shei@lavabit.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091114060332.GG4463@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 16 Nov 2009 12:34:08.0653 (UTC) FILETIME=[17BA03D0:01CA66B9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Anders!
 
-On Sun, Nov 15, 2009 at 7:51 PM, Anders Larsen <al@alarsen.net> wrote:
-> On 2009-11-15 21:02:15, Anonymous wrote:
->>
->> On Sun, Nov 15, 2009 at 08:33:29PM +0100, Anders Larsen wrote:
->> > On 2009-11-15 08:15:03, André Goddard Rosa wrote:
->> > >+char *skip_spaces(const char *str)
->> > >+{
->> > >+    while (isspace(*str))
->> > >+            ++str;
->> > >+    return (char *)str;
->> > >+}
->> >> Is there a good reason why the parameter 'str' is declared 'const'
->> > when skip_spaces() returns a non-const pointer into str ?
->> >Declaring return value as const won't let us modificate string after
->> skipping spaces. Declaring parameter as non-const won't let us
->> giving (const char *) to this function. So i think it is ok.
->
-> skip_spaces() _implicitly_ casts away the 'const' of the parameter,
-> which may come as a (nasty) surprise to users of the function.
->
-> Consider this (contrieved and buggy) example:
->
->        const char* my_string = " do not modify me! ";
->        char* result = strcat(skip_spaces(my_string, "boom!"));
->
-> The proposed implementation of skip_spaces() effectively prevents
-> the compiler from catching this obvious bug.
->
+Many thanks for your reply, Dmitry. Some comments follow yours.
 
-I agree with the above comment. It's possible to make it differently
-char* skip_spaces(char *),
-but it's necessary to change many of its callers at the same time:
+On 14/11/09 07:03 +0100, ext Dmitry Torokhov wrote:
+> Hi Aaro,
+> 
+> On Wed, Nov 04, 2009 at 03:23:01PM +0200, Aaro Koskinen wrote:
+> > +
+> > +static void tsc2005_ts_update_pen_state(struct tsc2005 *ts,
+> > +                                     int x, int y, int pressure)
+> > +{
+> > +     if (pressure) {
+> > +             input_report_abs(ts->idev, ABS_X, x);
+> > +             input_report_abs(ts->idev, ABS_Y, y);
+> > +             input_report_abs(ts->idev, ABS_PRESSURE, pressure);
+> > +             if (!ts->pen_down) {
+> > +                     input_report_key(ts->idev, BTN_TOUCH, 1);
+> > +                     ts->pen_down = 1;
+> > +             }
+> 
+> Just report BTN_TOUCH always, input core will filter duplicates.
 
-CC      lib/argv_split.o
-lib/argv_split.c: In function ‘count_argc’:
-lib/argv_split.c:24: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
-lib/argv_split.c: In function ‘argv_split’:
-lib/argv_split.c:78: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
-...
-  CC      lib/vsprintf.o
-lib/vsprintf.c: In function ‘vsscanf’:
-lib/vsprintf.c:1737: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
-lib/vsprintf.c:1738: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
-lib/vsprintf.c:1808: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
-lib/vsprintf.c:1850: warning: passing argument 1 of ‘skip_spaces’
-discards qualifiers from pointer target type
-include/linux/string.h:65: note: expected ‘char *’ but argument is of
-type ‘const char *’
+Because there are several places where a check will be made whether
+we need to do anything or not. We'll grab a spinlock, decide to add 
+no entropy, decide to toggle no status bits, and decide to not do 
+anything more after that. Sounds like waste.
 
-    There are other functions following the same pattern presently:
+> > +     } else {
+> > +             input_report_abs(ts->idev, ABS_PRESSURE, 0);
+> > +             if (ts->pen_down) {
+> > +                     input_report_key(ts->idev, BTN_TOUCH, 0);
+> > +                     ts->pen_down = 0;
+> > +             }
+> > +     }
+> > +
+> > +     input_sync(ts->idev);
+> > +}
+> > +
+> > +/*
+> > + * This function is called by the SPI framework after the coordinates
+> > + * have been read from TSC2005
+> > + */
+> > +static void tsc2005_ts_rx(void *arg)
+> > +{
+> > +     struct tsc2005 *ts = arg;
+> > +     unsigned long flags;
+> > +     int inside_rect, pressure_limit;
+> > +     int x, y, z1, z2, pressure;
+> > +
+> > +     spin_lock_irqsave(&ts->lock, flags);
+> > +
+> > +     if (ts->disable_depth) {
+> > +             ts->spi_pending = 0;
+> > +             goto out;
+> > +     }
+> > +
+> > +     x = ts->data[0];
+> > +     y = ts->data[1];
+> > +     z1 = ts->data[2];
+> > +     z2 = ts->data[3];
+> > +
+> > +     /* validate pressure and position */
+> > +     if (x > MAX_12BIT || y > MAX_12BIT)
+> > +             goto out;
+> > +
+> > +     /* skip coords if the pressure-components are out of range */
+> > +     if (z1 < 100 || z2 > MAX_12BIT || z1 >= z2)
+> > +             goto out;
+> > +
+> > +     /* skip point if this is a pen down with the exact same values as
+> > +      * the value before pen-up - that implies SPI fed us stale data
+> > +      */
+> > +     if (!ts->pen_down &&
+> > +         ts->in_x == x &&
+> > +         ts->in_y == y &&
+> > +         ts->in_z1 == z1 &&
+> > +         ts->in_z2 == z2)
+> > +             goto out;
+> > +
+> > +     /* At this point we are happy we have a valid and useful reading.
+> > +      * Remember it for later comparisons. We may now begin downsampling
+> > +      */
+> > +     ts->in_x = x;
+> > +     ts->in_y = y;
+> > +     ts->in_z1 = z1;
+> > +     ts->in_z2 = z2;
+> > +
+> > +     /* don't run average on the "pen down" event */
+> > +     if (ts->sample_sent) {
+> > +             ts->avg_x += x;
+> > +             ts->avg_y += y;
+> > +             ts->avg_z1 += z1;
+> > +             ts->avg_z2 += z2;
+> > +
+> > +             if (++ts->sample_cnt < TS_SAMPLES)
+> > +                     goto out;
+> > +
+> > +             x = ts->avg_x / TS_SAMPLES;
+> > +             y = ts->avg_y / TS_SAMPLES;
+> > +             z1 = ts->avg_z1 / TS_SAMPLES;
+> > +             z2 = ts->avg_z2 / TS_SAMPLES;
+> > +     }
+> >
+> 
+> Do we really need to do filtering and averaging in kernel? What about
+> tslib?
 
-        char *strstr(const char *haystack, const char *needle);
-        char *strchr(const char *s, int c);
-        char *strrchr(const char *s, int c);
+Not everyone uses tslib. There's already some filtering in the tsc2005 
+already, but it's not really enough. This averaging also has the
+pleasant side-effect of reducing the number of input events. The
+fudging that takes place later has slightly different smoothing
+behaviour, and isn't a substitute.
 
-    on both glibc and the kernel.
+> > +     ts->sample_cnt = 0;
+> > +     ts->avg_x = 0;
+> > +     ts->avg_y = 0;
+> > +     ts->avg_z1 = 0;
+> > +     ts->avg_z2 = 0;
+> > +
+> > +     pressure = x * (z2 - z1) / z1;
+> > +     pressure = pressure * ts->x_plate_ohm / 4096;
+> > +
+> > +     pressure_limit = ts->sample_sent ? ts->p_max : ts->touch_pressure;
+> > +     if (pressure > pressure_limit)
+> > +             goto out;
+> > +
+> > +     /* Discard the event if it still is within the previous rect -
+> > +      * unless the pressure is clearly harder, but then use previous
+> > +      * x,y position. If any coordinate deviates enough, fudging
+> > +      * of all three will still take place in the input layer.
+> > +      */
+> > +     inside_rect = (ts->sample_sent &&
+> > +             x > (int)ts->out_x - ts->fudge_x &&
+> > +             x < (int)ts->out_x + ts->fudge_x &&
+> > +             y > (int)ts->out_y - ts->fudge_y &&
+> > +             y < (int)ts->out_y + ts->fudge_y);
+> > +     if (inside_rect)
+> > +             x = ts->out_x, y = ts->out_y;
+> > +
+> > +     if (!inside_rect || pressure < (ts->out_p - ts->fudge_p)) {
+> > +             tsc2005_ts_update_pen_state(ts, x, y, pressure);
+> > +             ts->sample_sent = 1;
+> > +             ts->out_x = x;
+> > +             ts->out_y = y;
+> > +             ts->out_p = pressure;
+> > +     }
+> > +out:
+> > +     if (ts->spi_pending > 1) {
+> > +             /* One or more interrupts (sometimes several dozens)
+> > +              * occured while waiting for the SPI read - get
+> > +              * another read going.
+> > +              */
+> > +             ts->spi_pending = 1;
+> > +             if (spi_async(ts->spi, &ts->read_msg)) {
+> > +                     dev_err(&ts->spi->dev, "ts: spi_async() failed");
+> > +                     ts->spi_pending = 0;
+> > +             }
+> > +     } else
+> > +             ts->spi_pending = 0;
+> > +
+> > +     /* kick pen up timer - to make sure it expires again(!) */
+> > +     if (ts->sample_sent) {
+> > +             mod_timer(&ts->penup_timer,
+> > +                       jiffies + msecs_to_jiffies(TSC2005_TS_PENUP_TIME));
+> > +             /* Also kick the watchdog, as we still think we're alive */
+> > +             if (ts->esd_timeout && ts->disable_depth == 0) {
+> > +                     unsigned long wdj = msecs_to_jiffies(ts->esd_timeout);
+> > +                     mod_timer(&ts->esd_timer, round_jiffies(jiffies+wdj));
+> > +             }
+> > +     }
+> > +     spin_unlock_irqrestore(&ts->lock, flags);
+> > +}
+> > +
+> > +/* This penup timer is very forgiving of delayed SPI reads. The
+> > + * (ESD) watchdog will rescue us if spi_pending remains set, unless
+> > + * we are enterring the disabled state. In that case we must just
+> > + * handle the pen up, and let disabling complete.
+> > + */
+> > +static void tsc2005_ts_penup_timer_handler(unsigned long data)
+> > +{
+> > +     struct tsc2005 *ts = (struct tsc2005 *)data;
+> > +     if ((!ts->spi_pending || ts->disable_depth) &&
+> > +         ts->sample_sent) {
+> > +             tsc2005_ts_update_pen_state(ts, 0, 0, 0);
+> > +             ts->sample_sent = 0;
+> > +     }
+> > +}
+> > +
+> > +/*
+> > + * This interrupt is called when pen is down and coordinates are
+> > + * available. That is indicated by a either:
+> > + * a) a rising edge on PINTDAV or (PENDAV mode)
+> > + * b) a falling edge on DAV line (DAV mode)
+> > + * depending on the setting of the IRQ bits in the CFR2 setting above.
+> > + */
+> > +static irqreturn_t tsc2005_ts_irq_handler(int irq, void *dev_id)
+> > +{
+> > +     struct tsc2005 *ts = dev_id;
+> > +     if (ts->disable_depth)
+> > +             goto out;
+> > +
+> > +     if (!ts->spi_pending) {
+> > +             if (spi_async(ts->spi, &ts->read_msg)) {
+> > +                     dev_err(&ts->spi->dev, "ts: spi_async() failed");
+> > +                     goto out;
+> > +             }
+> > +     }
+> > +     /* By shifting in 1s we can never wrap */
+> > +     ts->spi_pending = (ts->spi_pending<<1)+1;
+> > +
+> > +     /* Kick pen up timer only if it's not been started yet. Strictly,
+> > +      * it isn't even necessary to start it at all here,  but doing so
+> > +      * keeps an equivalence between pen state and timer state.
+> > +      * The SPI read loop will keep pushing it into the future.
+> > +      * If it times out with an SPI pending, it's ignored anyway.
+> > +      */
+> > +     if (!timer_pending(&ts->penup_timer)) {
+> > +             unsigned long pu = msecs_to_jiffies(TSC2005_TS_PENUP_TIME);
+> > +             ts->penup_timer.expires = jiffies + pu;
+> > +             add_timer(&ts->penup_timer);
+> > +     }
+> > +out:
+> > +     return IRQ_HANDLED;
+> > +}
+> > +
+> > +static void tsc2005_ts_setup_spi_xfer(struct tsc2005 *ts)
+> > +{
+> > +     struct spi_message *m = &ts->read_msg;
+> > +     struct spi_transfer *x = &ts->read_xfer[0];
+> > +     int i;
+> > +
+> > +     spi_message_init(m);
+> > +
+> > +     for (i = 0; i < NUM_READ_REGS; i++, x++) {
+> > +             x->tx_buf = &tsc2005_read_reg[i];
+> > +             x->rx_buf = &ts->data[i];
+> > +             x->len = 4;
+> > +             x->bits_per_word = 24;
+> > +             x->cs_change = i < (NUM_READ_REGS - 1);
+> > +             spi_message_add_tail(x, m);
+> > +     }
+> > +
+> > +     m->complete = tsc2005_ts_rx;
+> > +     m->context = ts;
+> > +}
+> > +
+> > +static ssize_t tsc2005_ts_pen_down_show(struct device *dev,
+> > +                                     struct device_attribute *attr,
+> > +                                     char *buf)
+> > +{
+> > +     struct tsc2005 *ts = dev_get_drvdata(dev);
+> > +
+> > +     return sprintf(buf, "%u\n", ts->pen_down);
+> > +}
+> > +
+> > +static DEVICE_ATTR(pen_down, S_IRUGO, tsc2005_ts_pen_down_show, NULL);
+> 
+> What is the point of exporting this through sysfs?
 
-Thanks,
-André
+It's a quick and simple way for any user-space app to know if the
+screen is currently being touched without having to subscribe to the
+stream of input events. OK, that wasn't a great reason, I admit.
+
+> > +static int tsc2005_configure(struct tsc2005 *ts, int flags)
+> > +{
+> > +     tsc2005_write(ts, TSC2005_REG_CFR0, TSC2005_CFR0_INITVALUE);
+> > +     tsc2005_write(ts, TSC2005_REG_CFR1, TSC2005_CFR1_INITVALUE);
+> > +     tsc2005_write(ts, TSC2005_REG_CFR2, TSC2005_CFR2_INITVALUE);
+> > +     tsc2005_cmd(ts, flags);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static void tsc2005_start_scan(struct tsc2005 *ts)
+> > +{
+> > +     tsc2005_configure(ts, TSC2005_CMD_SCAN_XYZZ);
+> > +}
+> > +
+> > +static void tsc2005_stop_scan(struct tsc2005 *ts)
+> > +{
+> > +     tsc2005_cmd(ts, TSC2005_CMD_STOP);
+> > +}
+> > +
+> > +/* Must be called with mutex held */
+> > +static void tsc2005_disable(struct tsc2005 *ts)
+> > +{
+> > +     if (ts->disable_depth++ != 0)
+> > +             return;
+> > +
+> > +     disable_irq(ts->spi->irq);
+> > +     if (ts->esd_timeout)
+> > +             del_timer(&ts->esd_timer);
+> 
+> del_timer_sync()?
+
+Yup.
+
+> > +
+> > +     /* wait until penup timer expire normally */
+> > +     do {
+> > +             msleep(4);
+> > +     } while (ts->sample_sent);
+> > +
+> > +     tsc2005_stop_scan(ts);
+> > +}
+> > +
+> > +static void tsc2005_enable(struct tsc2005 *ts)
+> > +{
+> > +     if (ts->disable_depth != 1)
+> > +             goto out;
+> > +
+> > +     if (ts->esd_timeout) {
+> > +             unsigned long wdj = msecs_to_jiffies(ts->esd_timeout);
+> > +             ts->esd_timer.expires = round_jiffies(jiffies+wdj);
+> > +             add_timer(&ts->esd_timer);
+> 
+> just use mod_timer().
+
+There are, or at least should be, no situations where the timer can be 
+active at that point. So mod_timer()'s not necessary. My preference is
+for add_timer(), but I won't cling to that religiously.
+
+> > +     }
+> > +     tsc2005_start_scan(ts);
+> > +     enable_irq(ts->spi->irq);
+> > +out:
+> > +     --ts->disable_depth;
+> > +}
+> > +
+> > +static ssize_t tsc2005_disable_show(struct device *dev,
+> > +                                 struct device_attribute *attr, char *buf)
+> > +{
+> > +     struct tsc2005 *ts = dev_get_drvdata(dev);
+> > +
+> > +     return sprintf(buf, "%u\n", ts->disabled);
+> > +}
+> > +
+> > +static ssize_t tsc2005_disable_store(struct device *dev,
+> > +                                  struct device_attribute *attr,
+> > +                                  const char *buf, size_t count)
+> > +{
+> > +     struct tsc2005          *ts = dev_get_drvdata(dev);
+> > +     unsigned long res;
+> > +     int i;
+> > +
+> > +     if (strict_strtoul(buf, 10, &res) < 0)
+> > +             return -EINVAL;
+> > +     i = res ? 1 : 0;
+> > +
+> > +     mutex_lock(&ts->mutex);
+> > +     if (i == ts->disabled)
+> > +             goto out;
+> > +     ts->disabled = i;
+> > +
+> > +     if (i)
+> > +             tsc2005_disable(ts);
+> > +     else
+> > +             tsc2005_enable(ts);
+> > +out:
+> > +     mutex_unlock(&ts->mutex);
+> > +     return count;
+> > +}
+> > +
+> > +static DEVICE_ATTR(disable_ts, 0664, tsc2005_disable_show,
+> > +                tsc2005_disable_store);
+> > +
+> > +static ssize_t tsc2005_ctrl_selftest_show(struct device *dev,
+> > +                                       struct device_attribute *attr,
+> > +                                       char *buf)
+> > +{
+> > +     u16 temp_high_orig, temp_high_test, temp_high;
+> > +     unsigned int result = 1;
+> > +     struct tsc2005 *ts = dev_get_drvdata(dev);
+> > +
+> > +     if (!ts->set_reset) {
+> > +             dev_warn(&ts->spi->dev,
+> > +                      "unable to selftest: reset not configured\n");
+> > +             result = 0;
+> > +             goto out;
+> > +     }
+> > +
+> > +     mutex_lock(&ts->mutex);
+> > +     tsc2005_disable(ts);
+> > +
+> > +     /* Test ctrl communications via temp high / low registers */
+> > +     tsc2005_read(ts, TSC2005_REG_TEMP_HIGH, &temp_high_orig);
+> > +
+> > +     temp_high_test = (temp_high_orig - 1) & 0x0FFF;
+> > +
+> > +     tsc2005_write(ts, TSC2005_REG_TEMP_HIGH, temp_high_test);
+> > +
+> > +     tsc2005_read(ts, TSC2005_REG_TEMP_HIGH, &temp_high);
+> > +
+> > +     if (temp_high != temp_high_test) {
+> > +             result = 0;
+> > +             dev_warn(dev, "selftest failed: %d != %d\n",
+> > +                      temp_high, temp_high_test);
+> > +     }
+> > +
+> > +     /* HW Reset */
+> > +     ts->set_reset(0);
+> > +     msleep(1); /* only 10us required */
+> > +     ts->set_reset(1);
+> > +
+> > +     tsc2005_enable(ts);
+> > +
+> > +     /* Test that reset really happened */
+> > +     tsc2005_read(ts, TSC2005_REG_TEMP_HIGH, &temp_high);
+> > +
+> > +     if (temp_high != temp_high_orig) {
+> > +             result = 0;
+> > +             dev_warn(dev, "selftest failed after reset: "
+> > +                      "%d != %d\n",
+> > +                      temp_high, temp_high_orig);
+> > +     }
+> > +
+> > +     mutex_unlock(&ts->mutex);
+> > +
+> > +out:
+> > +     return sprintf(buf, "%u\n", result);
+> > +}
+> > +
+> > +static DEVICE_ATTR(ts_ctrl_selftest, S_IRUGO, tsc2005_ctrl_selftest_show, NULL);
+> > +
+> > +static void tsc2005_esd_timer_handler(unsigned long data)
+> > +{
+> > +     struct tsc2005 *ts = (struct tsc2005 *)data;
+> > +     if (!ts->disable_depth)
+> > +             schedule_work(&ts->esd_work);
+> > +}
+> > +
+> > +static void tsc2005_rst_handler(struct work_struct *work)
+> > +{
+> > +     u16 reg_val;
+> > +     struct tsc2005 *ts = container_of(work, struct tsc2005, esd_work);
+> > +     unsigned long wdj;
+> > +
+> > +     mutex_lock(&ts->mutex);
+> > +
+> > +     /* If we are disabled, or the a touch has been detected,
+> > +      * then ignore this timeout. The enable will restart the
+> > +      * watchdog, as it restarts scanning
+> > +      */
+> > +     if (ts->disable_depth)
+> > +             goto out;
+> > +
+> > +     /* If we cannot read our known value from configuration register 0
+> > +      * then reset the controller as if from power-up and start
+> > +      * scanning again. Always re-arm the watchdog.
+> > +      */
+> > +     tsc2005_read(ts, TSC2005_REG_CFR0, &reg_val);
+> > +     if ((reg_val ^ TSC2005_CFR0_INITVALUE) & TSC2005_CFR0_RW_MASK) {
+> > +             dev_info(&ts->spi->dev, "TSC not responding, resetting.\n");
+> > +             /* If this timer kicked in, the penup timer, if ever active
+> > +              * at all, must have expired ages ago, so no need to del it.
+> > +              */
+> > +             ts->set_reset(0);
+> > +             if (ts->sample_sent) {
+> > +                     tsc2005_ts_update_pen_state(ts, 0, 0, 0);
+> > +                     ts->sample_sent = 0;
+> > +             }
+> > +             ts->spi_pending = 0;
+> > +             msleep(1); /* only 10us required */
+> > +             ts->set_reset(1);
+> > +             tsc2005_start_scan(ts);
+> > +     }
+> > +     wdj = msecs_to_jiffies(ts->esd_timeout);
+> > +     mod_timer(&ts->esd_timer, round_jiffies(jiffies+wdj));
+> > +
+> > +out:
+> > +     mutex_unlock(&ts->mutex);
+> > +}
+> > +
+> > +static int __devinit tsc2005_ts_init(struct tsc2005 *ts,
+> > +                                  struct tsc2005_platform_data *pdata)
+> > +{
+> > +     struct input_dev *idev;
+> > +     int r;
+> > +     int x_max, y_max;
+> > +
+> > +     init_timer(&ts->penup_timer);
+> > +     setup_timer(&ts->penup_timer, tsc2005_ts_penup_timer_handler,
+> > +                     (unsigned long)ts);
+> > +
+> > +     spin_lock_init(&ts->lock);
+> > +     mutex_init(&ts->mutex);
+> > +
+> > +     ts->x_plate_ohm         = pdata->ts_x_plate_ohm ? : 280;
+> > +     ts->hw_avg_max          = pdata->ts_hw_avg;
+> > +     ts->stab_time           = pdata->ts_stab_time;
+> > +     x_max                   = pdata->ts_x_max ? : 4096;
+> > +     ts->fudge_x             = pdata->ts_x_fudge ? : 4;
+> > +     y_max                   = pdata->ts_y_max ? : 4096;
+> > +     ts->fudge_y             = pdata->ts_y_fudge ? : 8;
+> > +     ts->p_max               = pdata->ts_pressure_max ? : MAX_12BIT;
+> > +     ts->touch_pressure      = pdata->ts_touch_pressure ? : ts->p_max;
+> > +     ts->fudge_p             = pdata->ts_pressure_fudge ? : 2;
+> > +
+> > +     ts->set_reset           = pdata->set_reset;
+> > +
+> > +     idev = input_allocate_device();
+> > +     if (idev == NULL) {
+> > +             r = -ENOMEM;
+> > +             goto err1;
+> > +     }
+> > +
+> > +     idev->name = "TSC2005 touchscreen";
+> > +     snprintf(ts->phys, sizeof(ts->phys), "%s/input-ts",
+> > +              dev_name(&ts->spi->dev));
+> > +     idev->phys = ts->phys;
+> > +
+> > +     idev->evbit[0] = BIT(EV_ABS) | BIT(EV_KEY);
+> > +     idev->absbit[0] = BIT(ABS_X) | BIT(ABS_Y) | BIT(ABS_PRESSURE);
+> > +     idev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+> > +     ts->idev = idev;
+> > +
+> > +     tsc2005_ts_setup_spi_xfer(ts);
+> > +
+> > +     input_set_abs_params(idev, ABS_X, 0, x_max, ts->fudge_x, 0);
+> > +     input_set_abs_params(idev, ABS_Y, 0, y_max, ts->fudge_y, 0);
+> > +     input_set_abs_params(idev, ABS_PRESSURE, 0, ts->p_max, ts->fudge_p, 0);
+> > +
+> > +     tsc2005_start_scan(ts);
+> > +
+> > +     r = request_irq(ts->spi->irq, tsc2005_ts_irq_handler,
+> > +                     (((TSC2005_CFR2_INITVALUE & TSC2005_CFR2_IRQ_MASK) ==
+> > +                       TSC2005_CFR2_IRQ_PENDAV)
+> > +                      ? IRQF_TRIGGER_RISING
+> > +                      : IRQF_TRIGGER_FALLING) |
+> > +                     IRQF_DISABLED, "tsc2005", ts);
+> > +     if (r < 0) {
+> > +             dev_err(&ts->spi->dev, "unable to get DAV IRQ");
+> > +             goto err2;
+> > +     }
+> > +
+> > +     set_irq_wake(ts->spi->irq, 1);
+> > +
+> > +     r = input_register_device(idev);
+> > +     if (r < 0) {
+> > +             dev_err(&ts->spi->dev, "can't register touchscreen device\n");
+> > +             goto err3;
+> > +     }
+> > +
+> > +     /* We can tolerate these failing */
+> 
+> Should we though?
+
+For graceful degradation of functionality, yes. The core interface is
+the touchscreen event stream, without that we make no sense at all. 
+We can function as such without the following.
+
+> > +     r = device_create_file(&ts->spi->dev, &dev_attr_ts_ctrl_selftest);
+> > +     if (r < 0)
+> > +             dev_warn(&ts->spi->dev, "can't create sysfs file for %s: %d\n",
+> > +                      dev_attr_ts_ctrl_selftest.attr.name, r);
+> > +
+> > +     r = device_create_file(&ts->spi->dev, &dev_attr_pen_down);
+> > +     if (r < 0)
+> > +             dev_warn(&ts->spi->dev, "can't create sysfs file for %s: %d\n",
+> > +                      dev_attr_pen_down.attr.name, r);
+> > +
+> > +     r = device_create_file(&ts->spi->dev, &dev_attr_disable_ts);
+> > +     if (r < 0)
+> > +             dev_warn(&ts->spi->dev, "can't create sysfs file for %s: %d\n",
+> > +                      dev_attr_disable_ts.attr.name, r);
+> > +
+> 
+> attribute_group is more compact by the way.
+
+I promise I won't add to that list in the future, and will instead
+move it over to an attribute_group.
+
+> > +     /* Finally, configure and start the optional EDD watchdog. */
+> > +     ts->esd_timeout = pdata->esd_timeout;
+> > +     if (ts->esd_timeout && ts->set_reset) {
+> > +             unsigned long wdj;
+> > +             setup_timer(&ts->esd_timer, tsc2005_esd_timer_handler,
+> > +                         (unsigned long)ts);
+> > +             INIT_WORK(&ts->esd_work, tsc2005_rst_handler);
+> > +             wdj = msecs_to_jiffies(ts->esd_timeout);
+> > +             ts->esd_timer.expires = round_jiffies(jiffies+wdj);
+> > +             add_timer(&ts->esd_timer);
+> > +     }
+> > +
+> > +     return 0;
+> > +err3:
+> > +     free_irq(ts->spi->irq, ts);
+> > +err2:
+> > +     tsc2005_stop_scan(ts);
+> > +     input_free_device(idev);
+> > +err1:
+> > +     return r;
+> > +}
+> > +
+> > +static int __devinit tsc2005_probe(struct spi_device *spi)
+> > +{
+> > +     struct tsc2005                  *ts;
+> > +     struct tsc2005_platform_data    *pdata = spi->dev.platform_data;
+> > +     int r;
+> > +
+> > +     if (spi->irq < 0) {
+> > +             dev_dbg(&spi->dev, "no irq?\n");
+> > +             return -ENODEV;
+> > +     }
+> > +     if (!pdata) {
+> > +             dev_dbg(&spi->dev, "no platform data?\n");
+> > +             return -ENODEV;
+> > +     }
+> > +
+> > +     ts = kzalloc(sizeof(*ts), GFP_KERNEL);
+> > +     if (ts == NULL)
+> > +             return -ENOMEM;
+> > +
+> > +     dev_set_drvdata(&spi->dev, ts);
+> > +     ts->spi = spi;
+> > +     spi->dev.power.power_state = PMSG_ON;
+> > +
+> > +     spi->mode = SPI_MODE_0;
+> > +     spi->bits_per_word = 8;
+> > +     /* The max speed might've been defined by the board-specific
+> > +      * struct */
+> > +     if (!spi->max_speed_hz)
+> > +             spi->max_speed_hz = TSC2005_HZ;
+> > +
+> > +     spi_setup(spi);
+> > +
+> > +     r = tsc2005_ts_init(ts, pdata);
+> > +     if (r)
+> > +             goto err1;
+> > +
+> > +     return 0;
+> > +
+> > +err1:
+> > +     kfree(ts);
+> > +     return r;
+> > +}
+> > +
+> > +static int __devexit tsc2005_remove(struct spi_device *spi)
+> > +{
+> > +     struct tsc2005 *ts = dev_get_drvdata(&spi->dev);
+> > +
+> > +     mutex_lock(&ts->mutex);
+> > +     tsc2005_disable(ts);
+> > +     mutex_unlock(&ts->mutex);
+> > +
+> > +     device_remove_file(&ts->spi->dev, &dev_attr_disable_ts);
+> > +     device_remove_file(&ts->spi->dev, &dev_attr_pen_down);
+> > +     device_remove_file(&ts->spi->dev, &dev_attr_ts_ctrl_selftest);
+> > +
+> > +     free_irq(ts->spi->irq, ts);
+> > +     input_unregister_device(ts->idev);
+> > +
+> > +     if (ts->esd_timeout)
+> > +             del_timer(&ts->esd_timer);
+> 
+> del_timer_sync().
+
+Yup.
+
+Phil
