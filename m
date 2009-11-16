@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZKPESE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZKPEZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZKPESE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 23:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZKPESD
+	id S1752647AbZKPEZn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 23:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZKPEZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 23:18:03 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:12308 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbZKPESC convert rfc822-to-8bit (ORCPT
+	Sun, 15 Nov 2009 23:25:43 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:46764 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbZKPEZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 23:18:02 -0500
+	Sun, 15 Nov 2009 23:25:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JveylydPg5A4H+i9szCF+yeazTqqvVDdkZVTaoJ0G7urOfTlNa53w2JUtqiRUslgsr
-         sSa648DloJka06+t58BCqxyHWG/mlHnXF3pNdgDVB1v3rYWfUo7gvg89E6wsqTSerk5M
-         2AaYaJlZxfOe11koEXmgwilezucKPSsMUYxq8=
+         :cc:content-type;
+        b=JPRJlKjj5/HjdACSzQfcdRc9Sk6LSoQOpMGX8pnKhIkjSi2HSeYSJMKp2B5e+TCr7E
+         pa6cFct4iesWYsGk3xlinf/8/zf7Ih3uMswQBHvRnIhI80uW+iFgOOdkfYJ/hPuSu2vY
+         B9SafSrOM94CTDq93ld8SOIeYffKO7qwFGLIs=
 MIME-Version: 1.0
-In-Reply-To: <72981EBCFD196144B7C6999B9FC34A9A494C18F02B@SHEXMB-01.global.atheros.com>
-References: <a44ae5cd0911111141i56c067f2we01cfef857133081@mail.gmail.com>
-	 <a44ae5cd0911111158w4985a6a0n2b30da3421a1b46b@mail.gmail.com>
-	 <72981EBCFD196144B7C6999B9FC34A9A494C18F02B@SHEXMB-01.global.atheros.com>
-Date: Sun, 15 Nov 2009 23:18:06 -0500
-Message-ID: <a44ae5cd0911152018qf913307n5506fc2772fc5e60@mail.gmail.com>
-Subject: Re: 2.6.32-rc6-git4 -- NetworkManager: page allocation failure. 
-	order:8, mode:0x8020
-From: Miles Lane <miles.lane@gmail.com>
-To: Jie Yang <Jie.Yang@atheros.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jay Cliburn <jcliburn@gmail.com>,
-       Chris Snook <chris.snook@gmail.com>
+In-Reply-To: <1258339401.2003.3.camel@violet>
+References: <4fb5db50911121909h1619e483ga4aa395af8fc1161@mail.gmail.com>
+	 <1258082571.7715.13.camel@violet>
+	 <4fb5db50911140519q70bbdd00qb585153c4926df96@mail.gmail.com>
+	 <1258216474.3299.24.camel@violet>
+	 <4fb5db50911140937j278584e5nf9e4d5767a44a920@mail.gmail.com>
+	 <1258221909.3299.26.camel@violet>
+	 <4fb5db50911151836u5b4844adrd91b56a5ebc7084d@mail.gmail.com>
+	 <1258339401.2003.3.camel@violet>
+Date: Mon, 16 Nov 2009 09:55:46 +0530
+Message-ID: <4fb5db50911152025j20eba2e6xf243d6af57f81ed1@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Adding radio type FM
+From: Janakiram Sistla <janakiram.sistla@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I download the latest linux tarball in bz2 format from ftp.kernel.org
-and then apply the patches there.  For example:
+Hi Marcel,
 
-    tar xvfj linux-2.6.31.tar.bz2
-    cd linux
-    bzcat ../patch-2.4.32-rc6.bz2 | patch -p1
-    bzcat ../patch-2.4.32-rc6-git4.bz2 | patch -p1
-    make defconfig
+I am sorry about this.There is a problem with my git send-email.so i
+had to use the mailer.I will surely take complete precaution that it
+will not repeat further.
 
-    and so forth
+Regards,
+Ram.
 
-
-On Sun, Nov 15, 2009 at 9:21 PM, Jie Yang <Jie.Yang@atheros.com> wrote:
-> On Thursday, November 12, 2009 3:58 AM
-> Miles Lane <miles.lane@gmail.com> wrote:
->> Subject: Re: 2.6.32-rc6-git4 -- NetworkManager: page
->> allocation failure. order:8, mode:0x8020
->>
->> This is completely reproducible with this kernel.  I get the
->> error on boot, and then I get it again each time I wake the
->> OS from the suspend state.
->>
->>         Miles
->>
+On 11/16/09, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Janakiram,
 >
-> hi,     Miles
-> it seems that after git-pull my git-tag -l
-> result is
-> ... ...
-> v2.6.31-rc9
-> v2.6.32-rc1
-> v2.6.32-rc3
+> so first of all, please stop sending emails to majordomo. That is not a
+> real person.
 >
-> how can i get the 2.6.32-rc6-git4 version.
+> > Adding changes  RFKILL type FM  and for RFKILL for FM  in core
+> >
+> > From 4bf0ae6c90de9a766914abeb5ab5e5428089b648 Mon Sep 17 00:00:00 2001
+> > From: Janakiram Sistla <janakiram.sistla@gmail.com>
+> > Date: Mon, 16 Nov 2009 07:58:09 +0530
+> > Subject: [PATCH 1/1] Adding radio type FM
+> >
+> > Adding radio type FM in RFKILL_TYPE_.FM belongs to
+> > same class of with both TX/RX capability.
+> >
+> > Signed-off-by: Janakiram Sistla <janakiram.sistla@gmail.com>
 >
-> best wishes
-> jie
+> the patch itself is fine, but can we get at least one with a proper
+> commit message. And if you mailer is broken, then either fix it or use
+> git send-email.
+>
+> Regards
+>
+> Marcel
 >
 >
 >
