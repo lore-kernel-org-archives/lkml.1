@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZKPWMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZKPWQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZKPWMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 17:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZKPWMb
+	id S1754502AbZKPWQr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 17:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZKPWQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 17:12:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59980 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbZKPWMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 17:12:30 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Nov 2009 17:16:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51809 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754240AbZKPWQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 17:16:46 -0500
+Date: Mon, 16 Nov 2009 14:14:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: steve@digidescorp.com
+Cc: microblaze-uclinux@itee.uq.edu.au, monstr@monstr.eu,
+       linux-kernel@vger.kernel.org, Chen Liqin <liqin.chen@sunplusct.com>,
+       Lennox Wu <lennox.wu@gmail.com>, David Howells <dhowells@redhat.com>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: Re: [PATCH] microblaze: Fix pfn_valid() for noMMU
+Message-Id: <20091116141426.9fc63622.akpm@linux-foundation.org>
+In-Reply-To: <1258150109-6884-1-git-send-email-steve@digidescorp.com>
+References: <1258150109-6884-1-git-send-email-steve@digidescorp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH -tip 3/3] Add get_signal tracepoint
-In-Reply-To: Masami Hiramatsu's message of  Monday, 16 November 2009 16:51:23 -0500 <4B01C95B.1070302@redhat.com>
-References: <20091113225226.15079.90813.stgit@harusame>
-	<20091113225240.15079.4863.stgit@harusame>
-	<20091113235333.0E3CC15E8@magilla.sf.frob.com>
-	<20091114001020.GB24738@elte.hu>
-	<4B01C95B.1070302@redhat.com>
-X-Windows: the defacto substandard.
-Message-Id: <20091116220957.8E2142F@magilla.sf.frob.com>
-Date: Mon, 16 Nov 2009 14:09:57 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I CC'd Oleg, who doesn't care much about tracepoints, but always stays up
-to speed about all things related to signals.)
+On Fri, 13 Nov 2009 16:08:29 -0600
+steve@digidescorp.com wrote:
 
-> >   - signal IPI/wakeup events
+> Configuring DEBUG_SLAB causes a noMMU kernel to die during initialization
+> with an invalid virtual address panic in kfree_debugcheck().
+> The panic is due to an improper definition of pfn_valid().
 > 
-> All signals might be used for IPI, isn't it? :-)
-> Or, did you mean SIGSTOP/SIGCONT pare?
+> Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+> ---
+> diff -uprN a/arch/microblaze/include/asm/page.h b/arch/microblaze/include/asm/page.h
+> --- a/arch/microblaze/include/asm/page.h	2009-09-09 17:13:59.000000000 -0500
+> +++ b/arch/microblaze/include/asm/page.h	2009-11-13 15:20:26.000000000 -0600
+> @@ -161,7 +161,8 @@ extern int page_is_ram(unsigned long pfn
+>  #  endif /* CONFIG_MMU */
+>  
+>  #  ifndef CONFIG_MMU
+> -#  define pfn_valid(pfn)	((pfn) >= min_low_pfn && (pfn) <= max_mapnr)
+> +#  define pfn_valid(pfn)	(((pfn) >= min_low_pfn) && \
+> +				((pfn) <= (min_low_pfn + max_mapnr)))
+>  #  define ARCH_PFN_OFFSET	(PAGE_OFFSET >> PAGE_SHIFT)
+>  #  else /* CONFIG_MMU */
+>  #  define ARCH_PFN_OFFSET	(memory_start >> PAGE_SHIFT)
 
-I suspect he means something approximating signal_wake_up() calls.  If a
-signal is blocked, ignored, already pending, etc., then the "sending" event
-does not lead to any kind of wakeup or interrupt.
-
-i.e. perhaps something like:
-
-@@ -529,8 +529,11 @@ void signal_wake_up(struct task_struct *t, int resume)
- 	mask = TASK_INTERRUPTIBLE;
- 	if (resume)
- 		mask |= TASK_WAKEKILL;
--	if (!wake_up_state(t, mask))
-+	trace_signal_wakeup(t, resume);
-+	if (!wake_up_state(t, mask)) {
- 		kick_process(t);
-+		trace_signal_ipi(t, resume);
-+	}
-
-OTOH, kick_process() is only called from here.
-Perhaps tracepoints in the sched layer can cover these.
-
-Anyway, Ingo can be more precise about what he has in mind.
-
-> >   - signal loss events (queue overflow)
-> 
-> Perhaps, this event is only for rt-signals, since
-> legacy signals just overwritten if it was sent.
-
-Not exactly.  Nothing is ever "overwritten".  If a non-RT signal is already
-pending, then you just leave the existing queue elements alone--i.e. the
-first one isn't overwritten, rather the second one is dropped.  But this is
-not really the point.
-
-The "queue overflow" happens in two ways.  For RT signals it really is a
-"signal loss" event--but that's also reported to the sender as -EAGAIN.  So
-a signal-generation tracepoint that reports the return value would already
-cover that in a way.
-
-For non-RT signals, a new signal is never lost.  But __sigqueue_alloc() can
-still fail.  In this case, you get no queue element and thus no siginfo_t
-stored, so you can lose some information about the signal.  You don't lose
-the signal itself, but will later dequeue it with an all-zeros siginfo_t.
-While calling this a "signal loss" is inaccurate, it is indeed a silent
-failure of sorts (unlike the RT signal case, which the userland caller
-knows about from the return value).
+Is arch/score/include/asm/page.h buggy also?
 
 
-Thanks,
-Roland
