@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752307AbZKPK1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbZKPKgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752307AbZKPK1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 05:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZKPK1c
+	id S1752194AbZKPKgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 05:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZKPKgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 05:27:32 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:18067 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZKPK1b (ORCPT
+	Mon, 16 Nov 2009 05:36:53 -0500
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:45717 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbZKPKgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 05:27:31 -0500
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1432R98dNzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KT76DE-01-40O-02
-X-M-MSG: 
-Date: Mon, 16 Nov 2009 11:27:14 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, chrisw@sous-sol.org, dwmw2@infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 07/10] bootmem: add free_bootmem_late
-Message-ID: <20091116102714.GC3328@amd.com>
-References: <1256712464-21472-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1256712464-21472-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <20091028074832.GC19402@elte.hu>
- <4AE7FA12.2070905@kernel.org>
- <84144f020910280438j65bcacacq731f6076cbd8d99@mail.gmail.com>
- <4AE83541.3030306@kernel.org>
- <84144f020910290419k45a0c47fp500f5b5c390b80e2@mail.gmail.com>
- <20091108095719.GC2845@elte.hu>
+	Mon, 16 Nov 2009 05:36:52 -0500
+Date: Mon, 16 Nov 2009 16:06:49 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [v9 PATCH 0/9]: cpuidle: Cleanup cpuidle/ Introduce cpuidle to
+ POWER.
+Message-ID: <20091116103649.GA23142@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091016093850.GB27350@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091108095719.GC2845@elte.hu>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+In-Reply-To: <20091016093850.GB27350@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 16 Nov 2009 10:27:15.0011 (UTC) FILETIME=[5DA47130:01CA66A7]
-X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 08, 2009 at 10:57:19AM +0100, Ingo Molnar wrote:
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-16 15:08:50]:
 
-> Page tables is the main dependency. x86 boots with a limited set of page 
-> tables, the real ones are set up later.
+> Hi,
 > 
-> We'd need to see what bootmem allocations are done before page table 
-> init in practice. I think i did such tests a few years ago and i think 
-> it's rather limited (if it happens at all).
+> This patchset introduces cpuidle infrastructure to POWER, prototyping
+> for pSeries, and also does a major refactoring of current x86 idle
+> power management and a cleanup of cpuidle infrastructure.
 > 
-> If that's mapped out we can just convert x86 to an 'emulated' bootmem 
-> allocator: buddy and slab is set up right when pagetables are set up, 
-> and bootmem can just use kmalloc.
+> This patch series has been in discussion for quite a while now and
+> below are the links to the previous discussions.
+> 
+> Hopefully, this is ready to be included in the -tip tree.
+> 
+> v8 --> http://lkml.org/lkml/2009/10/8/82
+> v7 --> http://lkml.org/lkml/2009/10/6/278
+> v6 --> http://lkml.org/lkml/2009/9/22/180
+> v5 --> http://lkml.org/lkml/2009/9/22/26
+> v4 --> http://lkml.org/lkml/2009/9/1/133
+> v3 --> http://lkml.org/lkml/2009/8/27/124
+> v2 --> http://lkml.org/lkml/2009/8/26/233
+> v1 --> http://lkml.org/lkml/2009/8/19/150
+> 
+> 
+> Changes in this version:
+> ----------------------------------------
+>         *Added documentation for the new design regarding registration
+>         of idle routines in Documentation/cpuidle/core.txt
+> 
+>         *Platforms which do not want the code bloat of cpuidle can
+>         disable CONFIG_CPU_IDLE. Alternate definition of
+>         cpuidle_idle_call is provided which would call the appropriate
+>         idle routine provided by the arch without the overhead of
+>         registration and governors.
+>         (Thanks to Andi for raising this isuue)
+> 
+>         *I had missed a cpuidle_kick_cpus() in
+>         cpuidle_pause_and_lock() which is called from the hotplug
+>         path. So added that and tested this patchset by subjecting it
+>         to cpuhotplug torture.
+>         (Thanks to Balbir for noticing this)
+> 
+> 
 
-That sounds like a good idea. But keep in mind that support for 1GB
-pages currently depends on the bootmem allocator because the buddy
-system can not allocate 1GB of physically contiguous memory.
-But I think this could also be handled from x86 arch code without the
-bootmem allocator.
+Hi Peter,
 
-	Joerg
+Did you get time to look at this series?
+Please let me know if we need any changes to this version to get it
+merged.
 
-
+thanks
+> --arun
+> 
