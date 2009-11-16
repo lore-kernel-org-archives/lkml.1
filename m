@@ -1,56 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZKPOYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbZKPOXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZKPOYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 09:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZKPOYT
+	id S1753358AbZKPOXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 09:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZKPOW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 09:24:19 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43494 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbZKPOYS (ORCPT
+	Mon, 16 Nov 2009 09:22:59 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:17285 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbZKPOW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 09:24:18 -0500
-Date: Mon, 16 Nov 2009 15:22:36 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
-       linux-bluetooth@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: -rc6: something (probably active usb bluetooth) blocks suspend
-Message-ID: <20091116142236.GA1796@ucw.cz>
-References: <20091116112254.GB12315@elf.ucw.cz> <200911161443.20704.oliver@neukum.org>
+	Mon, 16 Nov 2009 09:22:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=ffUgnoEmKUMGx3FwgsBJ7wOGS5/GfF8q6COkaDt/knsWBjtnPheUL9gq7Ce/wYjxG1
+         cP3X8QMu436tAY3+vZpkFuIM3CWG/EQzqVKUUGMPWBnAEFCQOWSIi0W6eTEEz0vMhyJQ
+         49t7LIFqX/FY7YrwfC95U9t0GNO7yWmp2hB5o=
+Message-ID: <4B016041.5030000@gmail.com>
+Date: Mon, 16 Nov 2009 09:22:57 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911161443.20704.oliver@neukum.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: herbert@gondor.apana.org.au, ghaskins@novell.com, mst@redhat.com,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+References: <4AF98A8C.9040201@novell.com>	<20091114011229.GA18580@gondor.apana.org.au>	<4AFE08EF.2030308@gmail.com> <20091113.190438.78469912.davem@davemloft.net>
+In-Reply-To: <20091113.190438.78469912.davem@davemloft.net>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCA38B29347E8D8DB8FE10837"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-11-16 14:43:20, Oliver Neukum wrote:
-> Am Montag, 16. November 2009 12:22:54 schrieb Pavel Machek:
-> > Linux amd 2.6.32-rc6-00498-g05b553a-dirty #89 SMP Fri Nov 13 10:43:31
-> > CET 2009 i686 GNU/Linux
-> > 
-> > ...and yes, it is a regression. Hw is thinkpad x60.
-> > 
-> > Tried to suspend, machine came right back, used radio kill switch, and
-> > it suspended ok. Relevant messages seem to be:
-> 
-> I forgot to ask. Is this repeatable? The code is build on the
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCA38B29347E8D8DB8FE10837
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It happened once...  
+David Miller wrote:
+> From: Gregory Haskins <gregory.haskins@gmail.com>
+> Date: Fri, 13 Nov 2009 20:33:35 -0500
+>=20
+>> Well, not with respect to the overall protocol, of course not.  But wi=
+th
+>> respect to the buffer in question, it _has_ to be.  Or am I missing
+>> something?
+>=20
+> sendfile() absolutely, and positively, is not.
+>=20
+> Any entity can write to the pages being send via sendfile(), at will,
+> and those writes will show up in the packet stream if they occur
+> before the NIC DMA's the memory backed by those pages into it's
+> buffer.
 
-> assumption
-> that workqueues are frozen as the system calls suspend for system
-> sleep. If that assumption is wrong, a race can lead to this failure.
-> Is it wrong?
+Right, understood.
 
-There are two kinds of workqueues -- AFAICT -- kind one is frozen,
-kind two is not.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>=20
+> There is zero data synchronization whatsoever, we don't lock the
+> pages, we don't block their usage while they are queued up in the
+> socket send queue, nothing like that.
+
+Understood.
+
+>=20
+> The user returns long before it every hits the wire and there is zero
+> "notification" to the user that the pages in question for the
+> sendfile() request are no longer in use.
+
+Ok, this was the part I didn't know.
+
+>=20
+> It seems that your understanding of how buffering and synchronization
+> works in the TCP stack has come out of a fairy tale :-)
+
+I understand that we do not protect the buffers from modification from
+other entities in process.  This was purely a question of
+synchronization from the producers standpoint.
+
+IOW:
+
+for (;;) {
+   char buf[512];
+
+   memcpy(buf, next, sizeof(buf));=09
+   write(fd, buf);
+}
+
+would work without worrying that the producer will stomp on buf itself.
+ It is now my understanding that for things other than sendfile, this
+works because the buffer is copied before it returns control to the app.
+ For sendfile(), the producer is more or less on its own and therefore
+has to be careful if they are reusing previous mmapped buffers.  Ok.
+
+But really, this is somewhat orthogonal to the original problem, so let
+me see if we can bring it back on topic.  Michael stated that this patch
+in question may be problematic because there are places in the stack
+that can get_page() without also maintaining a reference to the shinfo
+object.  Evgeniy seems to say the opposite.  I am not sure who is right,
+or if I misunderstood one or both of them.  Any thoughts?
+
+Kind Regards,
+-Greg
+
+
+
+--------------enigCA38B29347E8D8DB8FE10837
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksBYEEACgkQP5K2CMvXmqHRGACdHQBE2RI72HYNcNyDOivQjdHE
+AXYAn3W9cRcV1O1Cu918l6ibruhrmNP1
+=eH7w
+-----END PGP SIGNATURE-----
+
+--------------enigCA38B29347E8D8DB8FE10837--
