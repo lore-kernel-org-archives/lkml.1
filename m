@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZKPR5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbZKPSD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbZKPR5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZKPR5i
+	id S1752131AbZKPSD7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 13:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZKPSD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:57:38 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:50375 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbZKPR5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:57:37 -0500
-Date: Mon, 16 Nov 2009 17:57:39 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [PATCH 0/5] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091116175739.GW29804@csn.ul.ie>
-References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <200911131004.25293.elendil@planet.nl>
+	Mon, 16 Nov 2009 13:03:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44731 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbZKPSD6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 13:03:58 -0500
+Date: Mon, 16 Nov 2009 10:02:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Stijn Devriendt <highguy@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrea Arcangeli <andrea@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] observe and act upon workload parallelism: PERF_TYPE_PARALLELISM
+ (Was: [RFC][PATCH] sched_wait_block: wait for blocked threads)
+In-Reply-To: <20091116083521.GC20672@elte.hu>
+Message-ID: <alpine.LFD.2.01.0911160945470.9384@localhost.localdomain>
+References: <1258311859-6189-1-git-send-email-HIGHGuY@gmail.com> <20091116083521.GC20672@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200911131004.25293.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 10:04:21AM +0100, Frans Pop wrote:
-> On Thursday 12 November 2009, Mel Gorman wrote:
-> > Changelog since V2
-> >   o Dropped the kswapd-quickly-notice-high-order patch. In more detailed
-> >     testing, it made latencies even worse as kswapd slept more on
-> >     high-order congestion causing order-0 direct reclaims.
-> >   o Added changes to how congestion_wait() works
-> >   o Added a number of new patches altering the behaviour of reclaim
+
+
+On Mon, 16 Nov 2009, Ingo Molnar wrote:
 > 
-> I have tested this series on top of .32-rc7. First impression is that it 
-> does seem to improve my test case, but does not yet completely solve it.
-> 
-> My last gitk instance now loads more smoothly for most of the time it takes 
-> to complete, but I still see a choke point where things freeze for a while 
-> and where I get SKB allocation errors from my wireless.
-> However, that choke point does seem to happen later and to be shorter than 
-> without the patches.
-> 
+> Regarding the API and your patch, i think we can and should do something 
+> different and more capable - while still keeping your basic idea:
 
-I haven't fully figured out why this makes a difference yet, but with
-.32-rc7 and these patches, could you retry the test except beforehand do
+Actually, I'd suggest exactly the reverse.
 
-cd /sys
-for SYS in `find -name low_latency`; do
-        echo 0 > $SYS
-done
+Yes, do something different, but _less_ capable, and much simpler: 
+introduce the notion of "grouped thread scheduling", where a _group_ of 
+threads gets scheduled as one thread.
 
-I believe the low_latency logic might be interfering with the number of
-clean pages available for kswapd to reclaim.
+Think of it like a classic user-level threading package, where one process 
+implements multiple threads entirely in user space, and switches between 
+them. Except we'd do the exact reverse: create multiple threads in the 
+kernel, but only run _one_ of them at a time. So as far as the scheduler 
+is concerned, it acts as just a single thread - except it's a single 
+thread that has multiple instances associated with it.
 
-Thanks
+And every time the "currently active" thread in that group runs out of CPU 
+time - or any time it sleeps - we'd just go on to the next thread in the 
+group.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+There are potentially lots of cases where you want to use multiple threads 
+not because you want multiple CPU's, but because you want to have "another 
+thread ready" for when one thread sleeps on IO. Or you may use threads as 
+a container - again, you may not need a lot of CPU, but you split your 
+single load up into multiple execution contexts just because you had some 
+independent things going on (think UI threads).
+
+As far as I can tell, that is pretty much what Stijn Devriendt wanted: he 
+may have lots of threads, but he effectively really just wants "one CPU" 
+worth of processing.
+
+It's also what we often want with AIO-like threads: it's not that we want 
+CPU parallelism, and if the data is in caches, we'd like to run the IO 
+thread immediately and not switch CPU's at all, and actually do it all 
+synchronously. It's just that _if_ the AIO thread blocks, we'd like to 
+resume the original thread that may have better things to do. 
+
+No "observe CPU parallelism" or anything fancy at all. Just a "don't 
+consider these X threads to be parallel" flag to clone (or a separate 
+system call).
+
+Imagine doing async system calls with the equivalent of
+
+ - create such an "affine" thread in kernel space
+ - run the IO in that affine thread - if it runs to completion without 
+   blocking and in a timeslice, never schedule at all.
+
+where these "affine" threads would be even more lightweight than regular 
+threads, because they don't even act as real scheduling entities, they are 
+grouped together with the original one.
+
+			Linus
