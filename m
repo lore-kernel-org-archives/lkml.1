@@ -1,285 +1,413 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZKPScx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbZKPSea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbZKPScx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 13:32:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZKPScu
+	id S1752951AbZKPSea (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 13:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZKPSe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 13:32:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55038 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbZKPScs (ORCPT
+	Mon, 16 Nov 2009 13:34:28 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:53972 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZKPSe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 13:32:48 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 5/5] perf buildid-list: New plumbing command
-Date: Mon, 16 Nov 2009 16:32:45 -0200
-Message-Id: <1258396365-29217-5-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258396365-29217-4-git-send-email-acme@infradead.org>
-References: <1258396365-29217-1-git-send-email-acme@infradead.org>
- <1258396365-29217-2-git-send-email-acme@infradead.org>
- <1258396365-29217-3-git-send-email-acme@infradead.org>
- <1258396365-29217-4-git-send-email-acme@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 16 Nov 2009 13:34:26 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+RA5o1EfHuK05SV4aRDJLS
+Date: Mon, 16 Nov 2009 10:34:26 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       ext Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the omap_dss2 tree with the omap
+ tree
+Message-ID: <20091116183425.GN3684@atomide.com>
+References: <20091116160402.deb0cc82.sfr@canb.auug.org.au>
+ <1258366001.2384.25.camel@tubuntu.research.nokia.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="QKdGvSO+nmPlgiQ/"
+Content-Disposition: inline
+In-Reply-To: <1258366001.2384.25.camel@tubuntu.research.nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-With this we can list the buildids in a perf.data file so that we can
-pipe them to other, distro specific tools that from the buildids can
-figure out separate packages (foo-debuginfo) where we can find the
-matching symtabs so that perf report can do its job.
+--QKdGvSO+nmPlgiQ/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-E.g:
+* Tomi Valkeinen <tomi.valkeinen@nokia.com> [091116 02:06]:
+> On Mon, 2009-11-16 at 06:04 +0100, ext Stephen Rothwell wrote:
+> > Hi Tomi,
+> > 
+> > Today's linux-next merge of the omap_dss2 tree got a conflict in
+> > arch/arm/configs/omap_3430sdp_defconfig between the omap tree and the
+> > omap_dss2 tree.
+> > 
+> > I just used the version from the omap tree as I can't figure out anything
+> > better, sorry.
+> 
+> Tony, 
+> 
+> These patches in omap tree seem to cause the conflicts. Are they stable,
+> ie. can I cherry pick them to my for-next tree, and put my patches on
+> top of them?
 
-[acme@doppio linux-2.6-tip]$ perf buildid-list | head -5
-8e08b117e5458ad3f85da16d42d0fc5cd21c5869
-520c2387a587cc5acfcf881e27dba1caaeab4b1f
-ec8dd400904ddfcac8b1c343263a790f977159dc
-7caedbca5a6d8ab39a7fe44bd28c07d3e14a3f3f
-379bb828fd08859dbea73279f04abefabc95a6a3
-[acme@doppio linux-2.6-tip]$ perf buildid-list -v | head -5
-8e08b117e5458ad3f85da16d42d0fc5cd21c5869 /sbin/init
-520c2387a587cc5acfcf881e27dba1caaeab4b1f /lib64/ld-2.10.1.so
-ec8dd400904ddfcac8b1c343263a790f977159dc /lib64/libc-2.10.1.so
-7caedbca5a6d8ab39a7fe44bd28c07d3e14a3f3f /sbin/udevd
-379bb828fd08859dbea73279f04abefabc95a6a3 /lib64/libdl-2.10.1.so
-[acme@doppio linux-2.6-tip]$
-
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Documentation/perf-buildid-list.txt |   34 +++++++
- tools/perf/Makefile                            |    1 +
- tools/perf/builtin-buildid-list.c              |  116 ++++++++++++++++++++++++
- tools/perf/builtin.h                           |    1 +
- tools/perf/command-list.txt                    |    1 +
- tools/perf/perf.c                              |    1 +
- 6 files changed, 154 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/Documentation/perf-buildid-list.txt
- create mode 100644 tools/perf/builtin-buildid-list.c
-
-diff --git a/tools/perf/Documentation/perf-buildid-list.txt b/tools/perf/Documentation/perf-buildid-list.txt
-new file mode 100644
-index 0000000..abab34e
---- /dev/null
-+++ b/tools/perf/Documentation/perf-buildid-list.txt
-@@ -0,0 +1,34 @@
-+perf-buildid-list(1)
-+====================
-+
-+NAME
-+----
-+perf-buildid-list - List the buildids in a perf.data file
-+
-+SYNOPSIS
-+--------
-+[verse]
-+'perf buildid-list <options>'
-+
-+DESCRIPTION
-+-----------
-+This command displays the buildids found in a perf.data file, so that other
-+tools can be used to fetch packages with matching symbol tables for use by
-+perf report.
-+
-+OPTIONS
-+-------
-+-i::
-+--input=::
-+        Input file name. (default: perf.data)
-+-f::
-+--force::
-+	Don't do ownership validation.
-+-v::
-+--verbose::
-+	Be more verbose, showing the name of the DSOs after the buildids.
-+
-+SEE ALSO
-+--------
-+linkperf:perf-record[1], linkperf:perf-top[1],
-+linkperf:perf-report[1]
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index cd42c97..3dbb5c5 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -431,6 +431,7 @@ BUILTIN_OBJS += bench/sched-pipe.o
+Well all the board-*.c patches are still getting shuffled around
+this week a bit.. But we can resolve it with the following two changes.
  
- BUILTIN_OBJS += builtin-help.o
- BUILTIN_OBJS += builtin-sched.o
-+BUILTIN_OBJS += builtin-buildid-list.o
- BUILTIN_OBJS += builtin-list.o
- BUILTIN_OBJS += builtin-record.o
- BUILTIN_OBJS += builtin-report.o
-diff --git a/tools/perf/builtin-buildid-list.c b/tools/perf/builtin-buildid-list.c
-new file mode 100644
-index 0000000..2e377e1
---- /dev/null
-+++ b/tools/perf/builtin-buildid-list.c
-@@ -0,0 +1,116 @@
-+/*
-+ * builtin-buildid-list.c
-+ *
-+ * Builtin buildid-list command: list buildids in perf.data
-+ *
-+ * Copyright (C) 2009, Red Hat Inc.
-+ * Copyright (C) 2009, Arnaldo Carvalho de Melo <acme@redhat.com>
-+ */
-+#include "builtin.h"
-+#include "perf.h"
-+#include "util/cache.h"
-+#include "util/data_map.h"
-+#include "util/debug.h"
-+#include "util/header.h"
-+#include "util/parse-options.h"
-+#include "util/symbol.h"
+> b30dcf5f37023d591caee80c233bf33706bc5a21
+> omap3: 3430sdp: Enable Linux Regulator framework
+
+This we should keep as it is, but the commit ID may still change.
+ 
+> fc89f86e06c11b8828ce1d6c669f724877546c03
+> ARM: OMAP3: Fix 3430SDP defconfig
+
+I've cut out the CONFIG_FB related sections of this patch in
+omap for-next branch, see below.
+
+Tomi, please update your patch by leaving out the now unnecessary
+TWL4030 and regulator sections. See also the updated version of
+your patch attached.
+
+And please also use the static commit id I gave earlier, the other
+patches can still change a bit.
+
+Regards,
+
+Tony
+
+--QKdGvSO+nmPlgiQ/
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: inline; filename="sdp3430-defconfig-nofb.patch"
+
+I've left out the CONFIG_FB related parts of
+"ARM: OMAP3: Fix 3430SDP defconfig" and renamed
+it to "ARM: OMAP3: Update 3430SDP defconfig".
+
+--- a/arch/arm/configs/omap_3430sdp_defconfig
++++ b/arch/arm/configs/omap_3430sdp_defconfig
+@@ -940,11 +940,9 @@ CONFIG_TWL4030_CORE=y
+ # Graphics support
+ #
+ # CONFIG_VGASTATE is not set
+-# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+ CONFIG_FB=y
+ # CONFIG_FIRMWARE_EDID is not set
+ # CONFIG_FB_DDC is not set
+-# CONFIG_FB_BOOT_VESA_SUPPORT is not set
+ CONFIG_FB_CFB_FILLRECT=y
+ CONFIG_FB_CFB_COPYAREA=y
+ CONFIG_FB_CFB_IMAGEBLIT=y
+@@ -965,13 +963,8 @@ CONFIG_FB_CFB_IMAGEBLIT=y
+ #
+ # CONFIG_FB_S1D13XXX is not set
+ # CONFIG_FB_VIRTUAL is not set
+-# CONFIG_FB_METRONOME is not set
+-# CONFIG_FB_MB862XX is not set
+-# CONFIG_FB_BROADSHEET is not set
+ CONFIG_FB_OMAP=y
+-# CONFIG_FB_OMAP_LCD_VGA is not set
+ # CONFIG_FB_OMAP_LCDC_EXTERNAL is not set
+-# CONFIG_FB_OMAP_LCD_MIPID is not set
+ # CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
+ CONFIG_FB_OMAP_CONSISTENT_DMA_SIZE=2
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+@@ -979,7 +972,11 @@ CONFIG_FB_OMAP_CONSISTENT_DMA_SIZE=2
+ #
+ # Display device support
+ #
+-# CONFIG_DISPLAY_SUPPORT is not set
++CONFIG_DISPLAY_SUPPORT=y
 +
-+static char const *input_name = "perf.data";
-+static int force;
++#
++# Display hardware drivers
++#
+ 
+ #
+ # Console display driver support
+
+--QKdGvSO+nmPlgiQ/
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: inline; filename="tomi-3430sdp-v2.patch"
+
+>From 5fdd839b3fcf292c52fd68b76a6b254436c86c3e Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Wed, 5 Aug 2009 16:07:26 +0300
+Subject: [PATCH] OMAP: SDP: Enable DSS2 for OMAP3 SDP board
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
+
+diff --git a/arch/arm/configs/omap_3430sdp_defconfig b/arch/arm/configs/omap_3430sdp_defconfig
+index 8a4a7e2..730ada3 100644
+--- a/arch/arm/configs/omap_3430sdp_defconfig
++++ b/arch/arm/configs/omap_3430sdp_defconfig
+@@ -1336,10 +1338,33 @@ CONFIG_FB_CFB_IMAGEBLIT=y
+ #
+ # CONFIG_FB_S1D13XXX is not set
+ # CONFIG_FB_VIRTUAL is not set
+-CONFIG_FB_OMAP=y
+-# CONFIG_FB_OMAP_LCDC_EXTERNAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
++# CONFIG_FB_OMAP_LCD_VGA is not set
+ # CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
+-CONFIG_FB_OMAP_CONSISTENT_DMA_SIZE=2
++CONFIG_OMAP2_VRAM=y
++CONFIG_OMAP2_VRFB=y
++CONFIG_OMAP2_DSS=y
++CONFIG_OMAP2_VRAM_SIZE=4
++CONFIG_OMAP2_DSS_DEBUG_SUPPORT=y
++# CONFIG_OMAP2_DSS_RFBI is not set
++CONFIG_OMAP2_DSS_VENC=y
++# CONFIG_OMAP2_DSS_SDI is not set
++# CONFIG_OMAP2_DSS_DSI is not set
++# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
++CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=0
++CONFIG_FB_OMAP2=y
++CONFIG_FB_OMAP2_DEBUG_SUPPORT=y
++# CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE is not set
++CONFIG_FB_OMAP2_NUM_FBS=3
 +
-+static const char *const buildid_list_usage[] = {
-+	"perf report [<options>]",
-+	NULL
-+};
++#
++# OMAP2/3 Display Device Drivers
++#
++CONFIG_PANEL_GENERIC=y
++# CONFIG_PANEL_SAMSUNG_LTE430WQ_F0C is not set
++CONFIG_PANEL_SHARP_LS037V7DW01=y
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ 
+ #
+diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
+index a2abac9..b697d50 100644
+--- a/arch/arm/mach-omap2/board-3430sdp.c
++++ b/arch/arm/mach-omap2/board-3430sdp.c
+@@ -37,6 +37,7 @@
+ #include <plat/common.h>
+ #include <plat/dma.h>
+ #include <plat/gpmc.h>
++#include <plat/display.h>
+ 
+ #include <plat/control.h>
+ #include <plat/gpmc-smc91x.h>
+@@ -152,31 +153,152 @@ static struct spi_board_info sdp3430_spi_board_info[] __initdata = {
+ 	},
+ };
+ 
+-static struct platform_device sdp3430_lcd_device = {
+-	.name		= "sdp2430_lcd",
+-	.id		= -1,
 +
-+static const struct option options[] = {
-+	OPT_STRING('i', "input", &input_name, "file",
-+		    "input file name"),
-+	OPT_BOOLEAN('f', "force", &force, "don't complain, do it"),
-+	OPT_BOOLEAN('v', "verbose", &verbose,
-+		    "be more verbose (show counter open errors, etc)"),
-+	OPT_END()
-+};
++#define SDP3430_LCD_PANEL_BACKLIGHT_GPIO	8
++#define SDP3430_LCD_PANEL_ENABLE_GPIO		5
 +
-+static int perf_file_section__process_buildids(struct perf_file_section *self,
-+					       int feat, int fd)
++static unsigned backlight_gpio;
++static unsigned enable_gpio;
++static int lcd_enabled;
++static int dvi_enabled;
++
++static void __init sdp3430_display_init(void)
 +{
-+	if (feat != HEADER_BUILD_ID)
-+		return 0;
++	int r;
 +
-+	if (lseek(fd, self->offset, SEEK_SET) < 0) {
-+		pr_warning("Failed to lseek to %Ld offset for buildids!\n",
-+			   self->offset);
-+		return -1;
++	enable_gpio    = SDP3430_LCD_PANEL_ENABLE_GPIO;
++	backlight_gpio = SDP3430_LCD_PANEL_BACKLIGHT_GPIO;
++
++	r = gpio_request(enable_gpio, "LCD reset");
++	if (r) {
++		printk(KERN_ERR "failed to get LCD reset GPIO\n");
++		goto err0;
 +	}
 +
-+	if (perf_header__read_build_ids(fd, self->offset, self->size)) {
-+		pr_warning("Failed to read buildids!\n");
-+		return -1;
++	r = gpio_request(backlight_gpio, "LCD Backlight");
++	if (r) {
++		printk(KERN_ERR "failed to get LCD backlight GPIO\n");
++		goto err1;
 +	}
++
++	gpio_direction_output(enable_gpio, 0);
++	gpio_direction_output(backlight_gpio, 0);
++
++	return;
++err1:
++	gpio_free(enable_gpio);
++err0:
++	return;
++}
++
++static int sdp3430_panel_enable_lcd(struct omap_dss_device *dssdev)
++{
++	if (dvi_enabled) {
++		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
++		return -EINVAL;
++	}
++
++	gpio_direction_output(enable_gpio, 1);
++	gpio_direction_output(backlight_gpio, 1);
++
++	lcd_enabled = 1;
 +
 +	return 0;
 +}
 +
-+static int __cmd_buildid_list(void)
++static void sdp3430_panel_disable_lcd(struct omap_dss_device *dssdev)
 +{
-+	int err = -1;
-+	struct perf_header *header;
-+	struct perf_file_header f_header;
-+	struct stat input_stat;
-+	int input = open(input_name, O_RDONLY);
++	lcd_enabled = 0;
 +
-+	if (input < 0) {
-+		pr_err("failed to open file: %s", input_name);
-+		if (!strcmp(input_name, "perf.data"))
-+			pr_err("  (try 'perf record' first)");
-+		pr_err("\n");
-+		goto out;
-+	}
-+
-+	err = fstat(input, &input_stat);
-+	if (err < 0) {
-+		perror("failed to stat file");
-+		goto out_close;
-+	}
-+
-+	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
-+		pr_err("file %s not owned by current user or root\n",
-+		       input_name);
-+		goto out_close;
-+	}
-+
-+	if (!input_stat.st_size) {
-+		pr_info("zero-sized file, nothing to do!\n");
-+		goto out_close;
-+	}
-+
-+	err = -1;
-+	header = perf_header__new();
-+	if (header == NULL)
-+		goto out_close;
-+
-+	if (perf_file_header__read(&f_header, header, input) < 0) {
-+		pr_warning("incompatible file format");
-+		goto out_close;
-+	}
-+
-+	err = perf_header__process_sections(header, input,
-+				         perf_file_section__process_buildids);
-+
-+	if (err < 0)
-+		goto out_close;
-+
-+	dsos__fprintf_buildid(stdout);
-+out_close:
-+	close(input);
-+out:
-+	return err;
++	gpio_direction_output(enable_gpio, 0);
++	gpio_direction_output(backlight_gpio, 0);
 +}
 +
-+int cmd_buildid_list(int argc, const char **argv, const char *prefix __used)
++static int sdp3430_panel_enable_dvi(struct omap_dss_device *dssdev)
 +{
-+	argc = parse_options(argc, argv, options, buildid_list_usage, 0);
-+	setup_pager();
-+	return __cmd_buildid_list();
++	if (lcd_enabled) {
++		printk(KERN_ERR "cannot enable DVI, LCD is enabled\n");
++		return -EINVAL;
++	}
++
++	dvi_enabled = 1;
++
++	return 0;
 +}
-diff --git a/tools/perf/builtin.h b/tools/perf/builtin.h
-index d4fe12d..9b02d85 100644
---- a/tools/perf/builtin.h
-+++ b/tools/perf/builtin.h
-@@ -16,6 +16,7 @@ extern int check_pager_config(const char *cmd);
++
++static void sdp3430_panel_disable_dvi(struct omap_dss_device *dssdev)
++{
++	dvi_enabled = 0;
++}
++
++static int sdp3430_panel_enable_tv(struct omap_dss_device *dssdev)
++{
++	return 0;
++}
++
++static void sdp3430_panel_disable_tv(struct omap_dss_device *dssdev)
++{
++}
++
++
++static struct omap_dss_device sdp3430_lcd_device = {
++	.name			= "lcd",
++	.driver_name		= "sharp_ls_panel",
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.phy.dpi.data_lines	= 16,
++	.platform_enable	= sdp3430_panel_enable_lcd,
++	.platform_disable	= sdp3430_panel_disable_lcd,
+ };
  
- extern int cmd_annotate(int argc, const char **argv, const char *prefix);
- extern int cmd_bench(int argc, const char **argv, const char *prefix);
-+extern int cmd_buildid_list(int argc, const char **argv, const char *prefix);
- extern int cmd_help(int argc, const char **argv, const char *prefix);
- extern int cmd_sched(int argc, const char **argv, const char *prefix);
- extern int cmd_list(int argc, const char **argv, const char *prefix);
-diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
-index 1642a88..983ae29 100644
---- a/tools/perf/command-list.txt
-+++ b/tools/perf/command-list.txt
-@@ -4,6 +4,7 @@
- #
- perf-annotate			mainporcelain common
- perf-bench			mainporcelain common
-+perf-build-list			mainporcelain common
- perf-list			mainporcelain common
- perf-sched			mainporcelain common
- perf-record			mainporcelain common
-diff --git a/tools/perf/perf.c b/tools/perf/perf.c
-index 9cd55b9..89b82ac 100644
---- a/tools/perf/perf.c
-+++ b/tools/perf/perf.c
-@@ -287,6 +287,7 @@ static void handle_internal_command(int argc, const char **argv)
- 	static struct cmd_struct commands[] = {
- 		{ "help", cmd_help, 0 },
- 		{ "list", cmd_list, 0 },
-+		{ "buildid-list", cmd_buildid_list, 0 },
- 		{ "record", cmd_record, 0 },
- 		{ "report", cmd_report, 0 },
- 		{ "bench", cmd_bench, 0 },
--- 
-1.6.2.5
+-static struct regulator_consumer_supply sdp3430_vdac_supply = {
+-	.supply		= "vdac",
+-	.dev		= &sdp3430_lcd_device.dev,
++static struct omap_dss_device sdp3430_dvi_device = {
++	.name			= "dvi",
++	.driver_name		= "generic_panel",
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.phy.dpi.data_lines	= 24,
++	.platform_enable	= sdp3430_panel_enable_dvi,
++	.platform_disable	= sdp3430_panel_disable_dvi,
+ };
+ 
+-static struct regulator_consumer_supply sdp3430_vdvi_supply = {
+-	.supply		= "vdvi",
+-	.dev		= &sdp3430_lcd_device.dev,
++static struct omap_dss_device sdp3430_tv_device = {
++	.name			= "tv",
++	.driver_name		= "venc",
++	.type			= OMAP_DISPLAY_TYPE_VENC,
++	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
++	.platform_enable	= sdp3430_panel_enable_tv,
++	.platform_disable	= sdp3430_panel_disable_tv,
+ };
+ 
+-static struct platform_device *sdp3430_devices[] __initdata = {
++
++static struct omap_dss_device *sdp3430_dss_devices[] = {
+ 	&sdp3430_lcd_device,
++	&sdp3430_dvi_device,
++	&sdp3430_tv_device,
+ };
+ 
+-static struct omap_lcd_config sdp3430_lcd_config __initdata = {
+-	.ctrl_name	= "internal",
++static struct omap_dss_board_info sdp3430_dss_data = {
++	.num_devices	= ARRAY_SIZE(sdp3430_dss_devices),
++	.devices	= sdp3430_dss_devices,
++	.default_device	= &sdp3430_lcd_device,
++};
++
++static struct platform_device sdp3430_dss_device = {
++	.name		= "omapdss",
++	.id		= -1,
++	.dev		= {
++		.platform_data = &sdp3430_dss_data,
++	},
++};
++
++static struct regulator_consumer_supply sdp3430_vdda_dac_supply = {
++	.supply		= "vdda_dac",
++	.dev		= &sdp3430_dss_device.dev,
++};
++
++static struct platform_device *sdp3430_devices[] __initdata = {
++	&sdp3430_dss_device,
+ };
+ 
+ static struct omap_board_config_kernel sdp3430_config[] __initdata = {
+-	{ OMAP_TAG_LCD,		&sdp3430_lcd_config },
+ };
+ 
+ static void __init omap_3430sdp_init_irq(void)
+@@ -392,22 +514,34 @@ static struct regulator_init_data sdp3430_vdac = {
+ 					| REGULATOR_CHANGE_STATUS,
+ 	},
+ 	.num_consumer_supplies	= 1,
+-	.consumer_supplies	= &sdp3430_vdac_supply,
++	.consumer_supplies	= &sdp3430_vdda_dac_supply,
+ };
+ 
+ /* VPLL2 for digital video outputs */
++static struct regulator_consumer_supply sdp3430_vpll2_supplies[] = {
++	{
++		.supply		= "vdvi",
++		.dev		= &sdp3430_lcd_device.dev,
++	},
++	{
++		.supply		= "vdds_dsi",
++		.dev		= &sdp3430_dss_device.dev,
++	}
++};
++
+ static struct regulator_init_data sdp3430_vpll2 = {
+ 	.constraints = {
+ 		.name			= "VDVI",
+ 		.min_uV			= 1800000,
+ 		.max_uV			= 1800000,
++		.apply_uV		= true,
+ 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
+ 					| REGULATOR_MODE_STANDBY,
+ 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+ 					| REGULATOR_CHANGE_STATUS,
+ 	},
+-	.num_consumer_supplies	= 1,
+-	.consumer_supplies	= &sdp3430_vdvi_supply,
++	.num_consumer_supplies	= ARRAY_SIZE(sdp3430_vpll2_supplies),
++	.consumer_supplies	= sdp3430_vpll2_supplies,
+ };
+ 
+ static struct twl4030_platform_data sdp3430_twldata = {
+@@ -499,6 +633,7 @@ static void __init omap_3430sdp_init(void)
+ 	omap_serial_init();
+ 	usb_musb_init();
+ 	board_smc91x_init();
++	sdp3430_display_init();
+ 	enable_board_wakeup_source();
+ }
+ 
 
+--QKdGvSO+nmPlgiQ/--
