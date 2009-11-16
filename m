@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbZKPTFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZKPTja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbZKPTFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 14:05:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZKPTFg
+	id S1753551AbZKPTja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 14:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZKPTj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 14:05:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59208 "EHLO ogre.sisk.pl"
+	Mon, 16 Nov 2009 14:39:29 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:42098 "EHLO solo.fdn.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753765AbZKPTFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 14:05:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: Null suspend/resume functions
-Date: Mon, 16 Nov 2009 20:07:11 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>,
-       alsa-devel@alsa-project.org, linux-pm@lists.linux-foundation.org,
-       Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109133136.GC1245@sirena.org.uk> <20091116153000.GB29479@sirena.org.uk>
-In-Reply-To: <20091116153000.GB29479@sirena.org.uk>
+	id S1752613AbZKPTj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 14:39:29 -0500
+X-Greylist: delayed 1912 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Nov 2009 14:39:29 EST
+Date: Mon, 16 Nov 2009 20:07:39 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for non-ASCII
+Message-ID: <20091116190739.GJ4764@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, hpa@zytor.com,
+	alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+References: <20091116135114.GA2719@x200>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911162007.11963.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091116135114.GA2719@x200>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 November 2009, Mark Brown wrote:
-> On Mon, Nov 09, 2009 at 01:31:36PM +0000, Mark Brown wrote:
-> > On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
-> > > On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
+Alexey Dobriyan, le Mon 16 Nov 2009 16:51:15 +0300, a écrit :
+> Steps to reproduce:
 > 
-> Any chance someone from the PM side could comment on the issue below?
+> 	[log into console (not xterm)]
+> 	[load non-trivial keymap]
+> 	[turn on CapsLock]
+> 	[type something]
+> 
+> Symbols won't be capital despite CapsLock and despite Shift+* working
+> as expected.
 
-There is.  I haven't had a chance to look at it yet, will do shortly.
+Fix your keymap, it should use KT_LETTER instead of KT_LATIN.
 
-> > > > +static int fsi_runtime_nop(struct device *dev)
-> > > > +{
-> > > > +	/* Runtime PM callback shared between ->runtime_suspend()
-> > > > +	 * and ->runtime_resume(). Simply returns success.
-> > > > +	 *
-> > > > +	 * This driver re-initializes all registers after
-> > > > +	 * pm_runtime_get_sync() anyway so there is no need
-> > > > +	 * to save and restore registers here.
-> > > > +	 */
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > > This sets off alarm bells but it's perfectly reasonable, especially with
-> > > platforms able to put things into a low power state with no explicit
-> > > driver code now they can do power domain style things like SH.  I've
-> > > CCed in the PM folks since this seems like a perfectly reasonable use
-> > > case which ought to be handled more nicely.
+> Note: patch relies on keymap being consistent wrt SMALL/CAPITAL symbols.
 
-Thanks,
-Rafael
+And that's not true for a lot of keyboard symbols.  Strictly speaking,
+caps lock is caps lock, not shift lock.  If you really want a shift
+lock, then set your caps lock key to produce shift lock.  Applying your
+patch would turn the existing capslock behavior into shift lock, we
+_don't_ want that.
+
+> Though extracting SMALL <=> CAPITAL mapping from unicode tables and
+> putting it into kernel may be more correct.
+
+That's what console-setup does by using various symbol levels and it
+just _works_.  One issue however is that then the capslock keyboard
+led doesn't light up while in caps mode.  Maybe we should rethink the
+interface to light keyboard leds instead.
+
+Nacked-By: Samuel Thibault <samuel.thibault@ens-lyon.org>
