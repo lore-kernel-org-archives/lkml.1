@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZKPRTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZKPRT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZKPRTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZKPRTG
+	id S1754066AbZKPRT1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZKPRTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:19:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33482 "EHLO hera.kernel.org"
+	Mon, 16 Nov 2009 12:19:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33495 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753299AbZKPRTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:19:03 -0500
+	id S1753837AbZKPRTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 12:19:16 -0500
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
@@ -16,9 +16,9 @@ To: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
        torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
        andi@firstfloor.org, fweisbec@gmail.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 04/21] sched: implement scheduler notifiers
-Date: Tue, 17 Nov 2009 02:15:09 +0900
-Message-Id: <1258391726-30264-5-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/21] kvm: convert kvm to use new scheduler notifiers
+Date: Tue, 17 Nov 2009 02:15:10 +0900
+Message-Id: <1258391726-30264-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258391726-30264-1-git-send-email-tj@kernel.org>
 References: <1258391726-30264-1-git-send-email-tj@kernel.org>
@@ -26,195 +26,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement scheduler notifiers.  This is superset of preempt notifiers
-which will be removed in favor of new notifiers.  Four notifications
-are defined - activated, deactivated, in and out.  In and out are
-identical to preempt notifiers.  Activated and deactivated are called
-when a task's readiness to run changes.  The first three are always
-called under rq lock.  Out may not be called under rq lock depending
-on architecture.
-
-The notifier block contains union of all four callbacks to avoid
-defining separate interface for each.
+Convert kvm to use new scheduler notifiers instead of preempt
+notifiers.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Avi Kivity <avi@redhat.com>
 ---
- include/linux/sched.h |   33 +++++++++++++++++++++++++++++
- kernel/sched.c        |   54 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 87 insertions(+), 0 deletions(-)
+ include/linux/kvm_host.h |    5 +--
+ virt/kvm/kvm_main.c      |   51 +++++++++++++++++++--------------------------
+ 2 files changed, 24 insertions(+), 32 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 75e6e60..0012980 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1210,6 +1210,37 @@ struct sched_rt_entity {
- #endif
- };
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index b7bbb5d..b6e56f1 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -74,9 +74,8 @@ void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
  
-+/*
-+ * Scheduler notifiers
-+ *
-+ * All notifications other than OUT are guaranteed to be called with
-+ * the respective rq lock held.  Depending on architecture
-+ * (__ARCH_WANT_UNLOCKED_CTXSW), OUT might be called without the rq
-+ * lock but task->oncpu is guaranteed to be true.
-+ */
-+enum sched_notifier_type {
-+	SCHED_NOTIFIER_ACTIVATED,	/* put on runqueue */
-+	SCHED_NOTIFIER_DEACTIVATED,	/* removed from runqueue */
-+	SCHED_NOTIFIER_IN,		/* occupying CPU */
-+	SCHED_NOTIFIER_OUT,		/* leaving CPU */
-+
-+	SCHED_NR_NOTIFIERS,
-+};
-+
-+struct sched_notifier {
-+	struct hlist_node	link;
-+	union {
-+		void (*activated)(struct sched_notifier *n, bool wakeup);
-+		void (*deactivated)(struct sched_notifier *n, bool sleep);
-+		void (*in)(struct sched_notifier *n, struct task_struct *prev);
-+		void (*out)(struct sched_notifier *n, struct task_struct *next);
-+	};
-+};
-+
-+void sched_notifier_register(enum sched_notifier_type type,
-+			     struct sched_notifier *notifier);
-+void sched_notifier_unregister(struct sched_notifier *notifier);
-+
- struct rcu_node;
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+-#ifdef CONFIG_PREEMPT_NOTIFIERS
+-	struct preempt_notifier preempt_notifier;
+-#endif
++	struct sched_notifier sched_in_notifier;
++	struct sched_notifier sched_out_notifier;
+ 	int vcpu_id;
+ 	struct mutex mutex;
+ 	int   cpu;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 7495ce3..4cc8051 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -79,8 +79,6 @@ static cpumask_var_t cpus_hardware_enabled;
+ struct kmem_cache *kvm_vcpu_cache;
+ EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
  
- struct task_struct {
-@@ -1237,6 +1268,8 @@ struct task_struct {
- 	/* list of struct preempt_notifier: */
- 	struct hlist_head preempt_notifiers;
- #endif
-+	/* sched notifiers */
-+	struct hlist_head notifiers[SCHED_NR_NOTIFIERS];
+-static __read_mostly struct preempt_ops kvm_preempt_ops;
+-
+ struct dentry *kvm_debugfs_dir;
  
- 	/*
- 	 * fpu_counter contains the number of consecutive context switches
-diff --git a/kernel/sched.c b/kernel/sched.c
-index de8a765..946c7a8 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1389,6 +1389,20 @@ static const u32 prio_to_wmult[40] = {
-  /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153,
- };
+ static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
+@@ -713,7 +711,8 @@ void vcpu_load(struct kvm_vcpu *vcpu)
  
-+#define sched_notifier_for_each(notifier, pos, p, type)			\
-+	hlist_for_each_entry((notifier), (pos),				\
-+			     &(p)->notifiers[(type)], link)
-+
-+#define sched_notifier_call(p, type, callback, args...) do {		\
-+	struct task_struct *__p = (p);					\
-+	struct sched_notifier *__notifier;				\
-+	struct hlist_node *__pos;					\
-+									\
-+	if (unlikely(!hlist_empty(&__p->notifiers[(type)])))		\
-+		sched_notifier_for_each(__notifier, __pos, __p, (type))	\
-+			__notifier->callback(__notifier , ##args);	\
-+} while (0)
-+
- static void activate_task(struct rq *rq, struct task_struct *p, int wakeup);
- 
- /*
-@@ -1939,6 +1953,8 @@ static int effective_prio(struct task_struct *p)
-  */
- static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
- {
-+	sched_notifier_call(p, SCHED_NOTIFIER_ACTIVATED, activated, wakeup);
-+
- 	if (task_contributes_to_load(p))
- 		rq->nr_uninterruptible--;
- 
-@@ -1951,6 +1967,8 @@ static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
-  */
- static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep)
- {
-+	sched_notifier_call(p, SCHED_NOTIFIER_DEACTIVATED, deactivated, sleep);
-+
- 	if (task_contributes_to_load(p))
- 		rq->nr_uninterruptible++;
- 
-@@ -2478,6 +2496,8 @@ int wake_up_state(struct task_struct *p, unsigned int state)
-  */
- static void __sched_fork(struct task_struct *p)
- {
-+	int i;
-+
- 	p->se.exec_start		= 0;
- 	p->se.sum_exec_runtime		= 0;
- 	p->se.prev_sum_exec_runtime	= 0;
-@@ -2529,6 +2549,8 @@ static void __sched_fork(struct task_struct *p)
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	INIT_HLIST_HEAD(&p->preempt_notifiers);
- #endif
-+	for (i = 0; i < SCHED_NR_NOTIFIERS; i++)
-+		INIT_HLIST_HEAD(&p->notifiers[i]);
- 
- 	/*
- 	 * We mark the process as running here, but have not actually
-@@ -2709,6 +2731,7 @@ static inline void
- prepare_task_switch(struct rq *rq, struct task_struct *prev,
- 		    struct task_struct *next)
- {
-+	sched_notifier_call(prev, SCHED_NOTIFIER_OUT, out, next);
- 	fire_sched_out_preempt_notifiers(prev, next);
- 	prepare_lock_switch(rq, next);
- 	prepare_arch_switch(next);
-@@ -2751,6 +2774,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	prev_state = prev->state;
- 	finish_arch_switch(prev);
- 	perf_event_task_sched_in(current, cpu_of(rq));
-+	sched_notifier_call(current, SCHED_NOTIFIER_IN, in, prev);
- 	fire_sched_in_preempt_notifiers(current);
- 	finish_lock_switch(rq, prev);
- 
-@@ -7399,6 +7423,34 @@ static void calc_global_load_remove(struct rq *rq)
+ 	mutex_lock(&vcpu->mutex);
+ 	cpu = get_cpu();
+-	preempt_notifier_register(&vcpu->preempt_notifier);
++	sched_notifier_register(SCHED_NOTIFIER_IN, &vcpu->sched_in_notifier);
++	sched_notifier_register(SCHED_NOTIFIER_OUT, &vcpu->sched_out_notifier);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
  }
- #endif /* CONFIG_HOTPLUG_CPU */
+@@ -722,11 +721,28 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	preempt_disable();
+ 	kvm_arch_vcpu_put(vcpu);
+-	preempt_notifier_unregister(&vcpu->preempt_notifier);
++	sched_notifier_unregister(&vcpu->sched_in_notifier);
++	sched_notifier_unregister(&vcpu->sched_out_notifier);
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
  
-+/**
-+ * sched_notifier_register - register a sched_notifier
-+ * @type: type of sched_notifier to register
-+ * @notifier: sched_notifier to register
-+ *
-+ * Register @notifier of @type to the current task.
-+ */
-+void sched_notifier_register(enum sched_notifier_type type,
-+			     struct sched_notifier *notifier)
++static void kvm_sched_in(struct sched_notifier *sn, struct task_struct *prev)
 +{
-+	BUG_ON(type < 0 || type >= SCHED_NR_NOTIFIERS);
-+	hlist_add_head(&notifier->link, &current->notifiers[type]);
-+}
-+EXPORT_SYMBOL_GPL(sched_notifier_register);
++	struct kvm_vcpu *vcpu =
++		container_of(sn, struct kvm_vcpu, sched_in_notifier);
 +
-+/**
-+ * sched_notifier_unregister - unregister a sched_notifier
-+ * @notifier: sched_notifier to unregister
-+ *
-+ * Unregister @notifier from the current task.  This function must be
-+ * called from the task @notifier is registered to.
-+ */
-+void sched_notifier_unregister(struct sched_notifier *notifier)
++	kvm_arch_vcpu_load(vcpu, smp_processor_id());
++}
++
++static void kvm_sched_out(struct sched_notifier *sn, struct task_struct *next)
 +{
-+	hlist_del_init(&notifier->link);
-+}
-+EXPORT_SYMBOL_GPL(sched_notifier_unregister);
++	struct kvm_vcpu *vcpu =
++		container_of(sn, struct kvm_vcpu, sched_out_notifier);
 +
- #if defined(CONFIG_SCHED_DEBUG) && defined(CONFIG_SYSCTL)
++	kvm_arch_vcpu_put(vcpu);
++}
++
+ static void ack_flush(void *_completed)
+ {
+ }
+@@ -1772,7 +1788,8 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
+ 	if (IS_ERR(vcpu))
+ 		return PTR_ERR(vcpu);
  
- static struct ctl_table sd_ctl_dir[] = {
-@@ -9534,6 +9586,8 @@ void __init sched_init(void)
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
- #endif
-+	for (i = 0; i < SCHED_NR_NOTIFIERS; i++)
-+		INIT_HLIST_HEAD(&init_task.notifiers[i]);
+-	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
++	vcpu->sched_in_notifier.in = kvm_sched_in;
++	vcpu->sched_out_notifier.out = kvm_sched_out;
  
- #ifdef CONFIG_SMP
- 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+ 	r = kvm_arch_vcpu_setup(vcpu);
+ 	if (r)
+@@ -2690,27 +2707,6 @@ static struct sys_device kvm_sysdev = {
+ struct page *bad_page;
+ pfn_t bad_pfn;
+ 
+-static inline
+-struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
+-{
+-	return container_of(pn, struct kvm_vcpu, preempt_notifier);
+-}
+-
+-static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
+-{
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
+-
+-	kvm_arch_vcpu_load(vcpu, cpu);
+-}
+-
+-static void kvm_sched_out(struct preempt_notifier *pn,
+-			  struct task_struct *next)
+-{
+-	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
+-
+-	kvm_arch_vcpu_put(vcpu);
+-}
+-
+ int kvm_init(void *opaque, unsigned int vcpu_size,
+ 		  struct module *module)
+ {
+@@ -2780,9 +2776,6 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
+ 		goto out_free;
+ 	}
+ 
+-	kvm_preempt_ops.sched_in = kvm_sched_in;
+-	kvm_preempt_ops.sched_out = kvm_sched_out;
+-
+ 	kvm_init_debug();
+ 
+ 	return 0;
 -- 
 1.6.4.2
 
