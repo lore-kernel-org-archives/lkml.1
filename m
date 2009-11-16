@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZKPKuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbZKPKzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZKPKuT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 05:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZKPKuS
+	id S1752625AbZKPKzI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 05:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZKPKzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 05:50:18 -0500
-Received: from www.tglx.de ([62.245.132.106]:51944 "EHLO www.tglx.de"
+	Mon, 16 Nov 2009 05:55:08 -0500
+Received: from verein.lst.de ([213.95.11.210]:40751 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZKPKuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 05:50:17 -0500
-Date: Mon, 16 Nov 2009 11:49:08 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dimitri Sivanich <sivanich@sgi.com>
-cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, yinghai@kernel.org,
-       suresh.b.siddha@intel.com
-Subject: Re: [PATCH] Remove SMP ifdef from irq_desc
-In-Reply-To: <20091110185716.GA4665@sgi.com>
-Message-ID: <alpine.LFD.2.00.0911161120550.24119@localhost.localdomain>
-References: <20091021011233.GB32196@sgi.com> <tip-683c91f85d7a3e1092d7fa3ec5687af8cd379f02@git.kernel.org> <20091108145355.GA8432@elte.hu> <20091109160215.GA14718@sgi.com> <20091110044025.GA7897@elte.hu> <20091110163118.GA13707@sgi.com> <20091110171910.GA25581@elte.hu>
- <20091110185716.GA4665@sgi.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752511AbZKPKzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 05:55:07 -0500
+Date: Mon, 16 Nov 2009 11:54:27 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, John Kacur <jkacur@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] macintosh: Explicitly set llseek to no_llseek in ans-lcd
+Message-ID: <20091116105427.GA17411@lst.de>
+References: <20091010153314.827301943@linutronix.de> <alpine.LFD.2.00.0910212350210.3526@localhost.localdomain> <20091021221619.GF4880@nowhere> <200911021651.53331.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911021651.53331.arnd@arndb.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Nov 2009, Dimitri Sivanich wrote:
-
-> Remove the CONFIG_SMP ifdef from the irq_desc structure and consolidate
-> initializers for the smp/non-smp cases.
+On Mon, Nov 02, 2009 at 04:51:52PM +0100, Arnd Bergmann wrote:
+> I looked at what places in the code manipulate file->f_pos directly
+> and found that almost all the uses in driver code are broken because
+> they don't take any locks. Most of them are in driver specific
+> lseek operations. Others are in read/write methods and are even
+> more broken because the change gets immediately overwritten by
+> vfs_read/vfs_write when the driver method returns.
 > 
-> For the x86_32 case, this adds 4 bytes of text and 128 bytes of data.
-> For the x86_64 case, this adds 15 bytes of text and 240 bytes of data.
+> IMHO, we should complete the pushdown into all ioctl methods
+> that John and Thomas have started working on, fixing the lseek
+> methods in those files we touch.
+> 
+> When that is done, all interaction between default_llseek and
+> driver locking has to be with explicit calls to lock_kernel
+> in those drivers, so we can reasonably well script the search
+> for drivers needing the BKL in llseek: everyhing that
+>  a) defines file_operations without an llseek function,
+>  b) touches f_pos somewhere, and
+>  c) calls lock_kernel() somewhere
+> That should only be a small number and when they are fixed,
+> we can remove default_llseek and instead call generic_file_llseek
+> for any file operation without a separate llseek method.
 
-Hmm, on ARM and PowerPC the increase of data is 4K and I expect it's
-minimum the same on other architectures. Not sure if we should worry
-about it, but it's definitely a significant number.
-
-Thanks,
-
-	tglx
-
-
+As mentioned before making generic_file_llseek the new default is
+probably a bad idea.  The majority of our file_operations instances
+don't actually support seeking, so no_llseek should become the new
+default if you spend some effort on converting things.  Anything that
+wants to allow seeking will have to set a llseek method.  This also
+mirrors what we do for other file operations.  None of the major ones
+has a non-trivial default, it's either silently succeeding for a
+selected few like open or release or returning an error for operatings
+that actually do something like read and write.
 
