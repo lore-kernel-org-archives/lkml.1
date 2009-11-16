@@ -1,122 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbZKPVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZKPVbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbZKPVaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZKPVae
+	id S1754465AbZKPVbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZKPVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:30:34 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55224 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbZKPVae (ORCPT
+	Mon, 16 Nov 2009 16:31:17 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48996 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752294AbZKPVbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:30:34 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 2/2] perf top: Use all the lines in the screen
-Date: Mon, 16 Nov 2009 19:30:27 -0200
-Message-Id: <1258407027-384-2-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258407027-384-1-git-send-email-acme@infradead.org>
-References: <1258407027-384-1-git-send-email-acme@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 16 Nov 2009 16:31:16 -0500
+Date: Mon, 16 Nov 2009 16:31:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [RFC][PATCH 1/10] PM: Add flag for devices capable of generating
+ run-time wake-up events
+In-Reply-To: <20091116210545.GA29696@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0911161629310.2971-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Mon, 16 Nov 2009, Matthew Garrett wrote:
 
-By querying the current number of rows, if the user specifies the number
-of entries, use that instead. If the user uses the 'e' command to change
-the number of lines 0 will mean do it automatically, any other number
-disables the auto resizing.
+> On Mon, Nov 16, 2009 at 04:00:49PM -0500, Alan Stern wrote:
+> > On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
+> > > Yes, in general.  The platform.
+> > 
+> > And for non-platform devices (hot-pluggable, for example)?  Presumably 
+> > you would want the driver that detects and registers the device to set 
+> > this flag.
+> 
+> Are there any cases where the bus code won't know this?
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-top.c |   42 +++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 41 insertions(+), 1 deletions(-)
+None that I'm aware of.  I merely wanted to clarify where the flag was 
+supposed to get set.
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 6613f98..3af9520 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -60,7 +60,7 @@ static int			system_wide			=      0;
- static int			default_interval		=      0;
- 
- static int			count_filter			=      5;
--static int			print_entries			=     15;
-+static int			print_entries;
- 
- static int			target_pid			=     -1;
- static int			inherit				=      0;
-@@ -115,6 +115,36 @@ struct sym_entry {
-  * Source functions
-  */
- 
-+/* most GUI terminals set LINES (although some don't export it) */
-+static int term_rows(void)
-+{
-+	char *lines_string = getenv("LINES");
-+	int n_lines;
-+
-+	if (lines_string && (n_lines = atoi(lines_string)) > 0)
-+		return n_lines;
-+#ifdef TIOCGWINSZ
-+	else {
-+		struct winsize ws;
-+		if (!ioctl(1, TIOCGWINSZ, &ws) && ws.ws_row)
-+			return ws.ws_row;
-+	}
-+#endif
-+	return 25;
-+}
-+
-+static void update_print_entries(void)
-+{
-+	print_entries = term_rows();
-+	if (print_entries > 9)
-+		print_entries -= 9;
-+}
-+
-+static void sig_winch_handler(int sig __used)
-+{
-+	update_print_entries();
-+}
-+
- static void parse_source(struct sym_entry *syme)
- {
- 	struct symbol *sym;
-@@ -668,6 +698,11 @@ static void handle_keypress(int c)
- 			break;
- 		case 'e':
- 			prompt_integer(&print_entries, "Enter display entries (lines)");
-+			if (print_entries == 0) {
-+				update_print_entries();
-+				signal(SIGWINCH, sig_winch_handler);
-+			} else
-+				signal(SIGWINCH, SIG_DFL);
- 			break;
- 		case 'E':
- 			if (nr_counters > 1) {
-@@ -1228,5 +1263,10 @@ int cmd_top(int argc, const char **argv, const char *prefix __used)
- 	if (target_pid != -1 || profile_cpu != -1)
- 		nr_cpus = 1;
- 
-+	if (print_entries == 0) {
-+		update_print_entries();
-+		signal(SIGWINCH, sig_winch_handler);
-+	}
-+
- 	return __cmd_top();
- }
--- 
-1.6.2.5
+> > > > What if the kernel can't tell whether or not the device can generate 
+> > > > runtime wake-up events?
+> > > 
+> > > Do you have any specific examples in mind?
+> > 
+> > What about Matthew's example of an ACPI GPE which might or might not 
+> > cause a runtime wake-up event, depending on the AML code in the BIOS?
+> 
+> The platform knows whether or not that's the case.
+
+Okay, then it isn't a problem.  Except perhaps in the case of buggy 
+devices which _should_ generate these events but don't.
+
+Alan Stern
 
