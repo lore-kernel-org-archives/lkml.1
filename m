@@ -1,265 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbZKPMUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZKPMT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbZKPMUA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZKPMTr
+	id S1753082AbZKPMT6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbZKPMTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:19:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58797 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:19:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53405 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752591AbZKPMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752589AbZKPMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Nov 2009 07:19:39 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 01/42] core, x86: Add user return notifiers
-Date: Mon, 16 Nov 2009 14:19:02 +0200
-Message-Id: <1258373983-8693-2-git-send-email-avi@redhat.com>
+Subject: [PATCH 02/42] x86: Fix user return notifier build
+Date: Mon, 16 Nov 2009 14:19:03 +0200
+Message-Id: <1258373983-8693-3-git-send-email-avi@redhat.com>
 In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
 References: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a general per-cpu notifier that is called whenever the kernel is
-about to return to userspace.  The notifier uses a thread_info flag
-and existing checks, so there is no impact on user return or context
-switch fast paths.
-
-This will be used initially to speed up KVM task switching by lazily
-updating MSRs.
+When CONFIG_USER_RETURN_NOTIFIER is set, we need to link
+kernel/user-return-notifier.o.
 
 Signed-off-by: Avi Kivity <avi@redhat.com>
-LKML-Reference: <1253342422-13811-1-git-send-email-avi@redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <1256473485-23109-1-git-send-email-avi@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/Kconfig                         |   10 +++++++
- arch/x86/Kconfig                     |    1 +
- arch/x86/include/asm/thread_info.h   |    7 +++-
- arch/x86/kernel/process.c            |    2 +
- arch/x86/kernel/signal.c             |    3 ++
- include/linux/user-return-notifier.h |   42 +++++++++++++++++++++++++++++++
- kernel/user-return-notifier.c        |   46 ++++++++++++++++++++++++++++++++++
- 7 files changed, 109 insertions(+), 2 deletions(-)
- create mode 100644 include/linux/user-return-notifier.h
- create mode 100644 kernel/user-return-notifier.c
+ kernel/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 7f418bb..4e312ff 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -83,6 +83,13 @@ config KRETPROBES
- 	def_bool y
- 	depends on KPROBES && HAVE_KRETPROBES
+diff --git a/kernel/Makefile b/kernel/Makefile
+index b8d4cd8..0ae57a8 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -95,6 +95,7 @@ obj-$(CONFIG_RING_BUFFER) += trace/
+ obj-$(CONFIG_SMP) += sched_cpupri.o
+ obj-$(CONFIG_SLOW_WORK) += slow-work.o
+ obj-$(CONFIG_PERF_EVENTS) += perf_event.o
++obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
  
-+config USER_RETURN_NOTIFIER
-+	bool
-+	depends on HAVE_USER_RETURN_NOTIFIER
-+	help
-+	  Provide a kernel-internal notification when a cpu is about to
-+	  switch to user mode.
-+
- config HAVE_IOREMAP_PROT
- 	bool
- 
-@@ -126,4 +133,7 @@ config HAVE_DMA_API_DEBUG
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	bool
- 
-+config HAVE_USER_RETURN_NOTIFIER
-+	bool
-+
- source "kernel/gcov/Kconfig"
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 8da9374..1df175d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -50,6 +50,7 @@ config X86
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
- 	select HAVE_ARCH_KMEMCHECK
-+	select HAVE_USER_RETURN_NOTIFIER
- 
- config OUTPUT_FORMAT
- 	string
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index d27d0a2..375c917 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -83,6 +83,7 @@ struct thread_info {
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SECCOMP		8	/* secure computing */
- #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
-+#define TIF_USER_RETURN_NOTIFY	11	/* notify kernel of userspace return */
- #define TIF_NOTSC		16	/* TSC is not accessible in userland */
- #define TIF_IA32		17	/* 32bit process */
- #define TIF_FORK		18	/* ret_from_fork */
-@@ -107,6 +108,7 @@ struct thread_info {
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
- #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
-+#define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
- #define _TIF_NOTSC		(1 << TIF_NOTSC)
- #define _TIF_IA32		(1 << TIF_IA32)
- #define _TIF_FORK		(1 << TIF_FORK)
-@@ -142,13 +144,14 @@ struct thread_info {
- 
- /* Only used for 64 bit */
- #define _TIF_DO_NOTIFY_MASK						\
--	(_TIF_SIGPENDING|_TIF_MCE_NOTIFY|_TIF_NOTIFY_RESUME)
-+	(_TIF_SIGPENDING | _TIF_MCE_NOTIFY | _TIF_NOTIFY_RESUME |	\
-+	 _TIF_USER_RETURN_NOTIFY)
- 
- /* flags to check in __switch_to() */
- #define _TIF_WORK_CTXSW							\
- 	(_TIF_IO_BITMAP|_TIF_DEBUGCTLMSR|_TIF_DS_AREA_MSR|_TIF_NOTSC)
- 
--#define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
-+#define _TIF_WORK_CTXSW_PREV (_TIF_WORK_CTXSW|_TIF_USER_RETURN_NOTIFY)
- #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW|_TIF_DEBUG)
- 
- #define PREEMPT_ACTIVE		0x10000000
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 5284cd2..e51b056 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -9,6 +9,7 @@
- #include <linux/pm.h>
- #include <linux/clockchips.h>
- #include <linux/random.h>
-+#include <linux/user-return-notifier.h>
- #include <trace/events/power.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-@@ -224,6 +225,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 		 */
- 		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
- 	}
-+	propagate_user_return_notify(prev_p, next_p);
- }
- 
- int sys_fork(struct pt_regs *regs)
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 6a44a76..c49f90f 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -19,6 +19,7 @@
- #include <linux/stddef.h>
- #include <linux/personality.h>
- #include <linux/uaccess.h>
-+#include <linux/user-return-notifier.h>
- 
- #include <asm/processor.h>
- #include <asm/ucontext.h>
-@@ -872,6 +873,8 @@ do_notify_resume(struct pt_regs *regs, void *unused, __u32 thread_info_flags)
- 		if (current->replacement_session_keyring)
- 			key_replace_session_keyring();
- 	}
-+	if (thread_info_flags & _TIF_USER_RETURN_NOTIFY)
-+		fire_user_return_notifiers();
- 
- #ifdef CONFIG_X86_32
- 	clear_thread_flag(TIF_IRET);
-diff --git a/include/linux/user-return-notifier.h b/include/linux/user-return-notifier.h
-new file mode 100644
-index 0000000..b6ac056
---- /dev/null
-+++ b/include/linux/user-return-notifier.h
-@@ -0,0 +1,42 @@
-+#ifndef _LINUX_USER_RETURN_NOTIFIER_H
-+#define _LINUX_USER_RETURN_NOTIFIER_H
-+
-+#ifdef CONFIG_USER_RETURN_NOTIFIER
-+
-+#include <linux/list.h>
-+#include <linux/sched.h>
-+
-+struct user_return_notifier {
-+	void (*on_user_return)(struct user_return_notifier *urn);
-+	struct hlist_node link;
-+};
-+
-+
-+void user_return_notifier_register(struct user_return_notifier *urn);
-+void user_return_notifier_unregister(struct user_return_notifier *urn);
-+
-+static inline void propagate_user_return_notify(struct task_struct *prev,
-+						struct task_struct *next)
-+{
-+	if (test_tsk_thread_flag(prev, TIF_USER_RETURN_NOTIFY)) {
-+		clear_tsk_thread_flag(prev, TIF_USER_RETURN_NOTIFY);
-+		set_tsk_thread_flag(next, TIF_USER_RETURN_NOTIFY);
-+	}
-+}
-+
-+void fire_user_return_notifiers(void);
-+
-+#else
-+
-+struct user_return_notifier {};
-+
-+static inline void propagate_user_return_notify(struct task_struct *prev,
-+						struct task_struct *next)
-+{
-+}
-+
-+static inline void fire_user_return_notifiers(void) {}
-+
-+#endif
-+
-+#endif
-diff --git a/kernel/user-return-notifier.c b/kernel/user-return-notifier.c
-new file mode 100644
-index 0000000..530ccb8
---- /dev/null
-+++ b/kernel/user-return-notifier.c
-@@ -0,0 +1,46 @@
-+
-+#include <linux/user-return-notifier.h>
-+#include <linux/percpu.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+
-+static DEFINE_PER_CPU(struct hlist_head, return_notifier_list);
-+
-+#define URN_LIST_HEAD per_cpu(return_notifier_list, raw_smp_processor_id())
-+
-+/*
-+ * Request a notification when the current cpu returns to userspace.  Must be
-+ * called in atomic context.  The notifier will also be called in atomic
-+ * context.
-+ */
-+void user_return_notifier_register(struct user_return_notifier *urn)
-+{
-+	set_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
-+	hlist_add_head(&urn->link, &URN_LIST_HEAD);
-+}
-+EXPORT_SYMBOL_GPL(user_return_notifier_register);
-+
-+/*
-+ * Removes a registered user return notifier.  Must be called from atomic
-+ * context, and from the same cpu registration occured in.
-+ */
-+void user_return_notifier_unregister(struct user_return_notifier *urn)
-+{
-+	hlist_del(&urn->link);
-+	if (hlist_empty(&URN_LIST_HEAD))
-+		clear_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
-+}
-+EXPORT_SYMBOL_GPL(user_return_notifier_unregister);
-+
-+/* Calls registered user return notifiers */
-+void fire_user_return_notifiers(void)
-+{
-+	struct user_return_notifier *urn;
-+	struct hlist_node *tmp1, *tmp2;
-+	struct hlist_head *head;
-+
-+	head = &get_cpu_var(return_notifier_list);
-+	hlist_for_each_entry_safe(urn, tmp1, tmp2, head, link)
-+		urn->on_user_return(urn);
-+	put_cpu_var();
-+}
+ ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
 -- 
 1.6.5.2
 
