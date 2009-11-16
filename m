@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZKPPwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbZKPQFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZKPPwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKPPwf
+	id S1753127AbZKPQFW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 11:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZKPQFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:52:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:58744 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbZKPPwe (ORCPT
+	Mon, 16 Nov 2009 11:05:20 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:52907 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752758AbZKPQFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:52:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=MkKJTpPLcvDv0BUKquKnhr/Ke94OTL8MN7baXF2wV66Ts+yGPWW/4uqwt91DbRGB+o
-         kwAwZvxBN3mm4sg80cy7uoGohT4X59Rh0tKKvlRcikkHtQ/RKIeMnNC4mKPb/VhH0t6a
-         dkJik3bSGAUyZYYbnKhpOUSffitod1C1EQO7Y=
-Message-ID: <4B01782E.80802@gmail.com>
-Date: Mon, 16 Nov 2009 17:05:02 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 16 Nov 2009 11:05:18 -0500
+Date: Mon, 16 Nov 2009 11:05:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Pavel Machek <pavel@ucw.cz>, USB list <linux-usb@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>, <marcel@holtmann.org>,
+       <linux-bluetooth@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: -rc6: something (probably active usb bluetooth) blocks suspend
+In-Reply-To: <200911161447.51651.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0911161059470.2971-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] OSS: keep index within bounds of midi_devs[]
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the {orig,midi}_dev equals num_midis, that's one too
-large already.
+On Mon, 16 Nov 2009, Oliver Neukum wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-In MIDIbuf_open() sound/oss/midibuf.c:166
+> Am Samstag, 14. November 2009 12:10:21 schrieb Pavel Machek:
+> > On Mon 2009-11-16 12:48:29, Oliver Neukum wrote:
+> > > Am Montag, 16. November 2009 12:22:54 schrieb Pavel Machek:
+> > >
+> > > Hi Pavle,
+> > >
+> > :-)
+> > :
+> > > first the obvious question. Does it work if you down the interface?
+> > > (not by killswitch)
+> > 
+> > Well, I'm not sure how repeatable it is. It happens once in two tries
+> > today.
+> 
+> Ok, so it looks like a race.
+> 
+> > > > usb 5-1: usb suspend
+> > > > usb 5-1: usb auto-resume
+> > > > uhci_hcd 0000:00:1d.3: port 1 portsc 0095,01
+> > > > usb 5-1: finish resume
+> > > > uhci_hcd 0000:00:1d.3: reserve dev 2 ep81-INT, period 1, phase 0, 23
+> > > > us
+> > >
+> > > Why is the device autoresumed here? Are you using autosuspend?
+> > > This is odd, as the freezer should block the send path and remote
+> > > wakeups should be deferred.
+> > 
+> > I believe I have it enabled in kconfig but not during runtime.
+> 
+> Please check.
 
-        if (num_midis > MAX_MIDI_DEV)
-        {
-                printk(KERN_ERR "midi: Too many midi interfaces\n");
-                num_midis = MAX_MIDI_DEV;
-        }
+If you want to learn the source of the autoresume, do something like
+this:
 
-num_midis is at most MAX_MIDI_DEV.
-
-`git grep -n MAX_MIDI_DEV' and note that when the index equals
-num_midis this causes reads/writes outside array bounds for
-midi_devs, midi2synth, dev_conf and others (below check in patch).
-
- sound/oss/midi_synth.c |    2 +-
- sound/oss/mpu401.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/sound/oss/midi_synth.c b/sound/oss/midi_synth.c
-index 9e45098..3bc7104 100644
---- a/sound/oss/midi_synth.c
-+++ b/sound/oss/midi_synth.c
-@@ -426,7 +426,7 @@ midi_synth_open(int dev, int mode)
- 	int             err;
- 	struct midi_input_info *inc;
+Index: usb-2.6/drivers/usb/core/hub.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/hub.c
++++ usb-2.6/drivers/usb/core/hub.c
+@@ -2334,6 +2334,8 @@ int usb_port_resume(struct usb_device *u
+ 		/* drive resume for at least 20 msec */
+ 		dev_dbg(&udev->dev, "usb %sresume\n",
+ 				(msg.event & PM_EVENT_AUTO ? "auto-" : ""));
++		if ((msg.event & PM_EVENT_AUTO) && udev->maxchild == 0)
++			dump_stack();
+ 		msleep(25);
  
--	if (orig_dev < 0 || orig_dev > num_midis || midi_devs[orig_dev] == NULL)
-+	if (orig_dev < 0 || orig_dev >= num_midis || midi_devs[orig_dev] == NULL)
- 		return -ENXIO;
- 
- 	midi2synth[orig_dev] = dev;
-diff --git a/sound/oss/mpu401.c b/sound/oss/mpu401.c
-index 734b8f9..0af9d24 100644
---- a/sound/oss/mpu401.c
-+++ b/sound/oss/mpu401.c
-@@ -770,7 +770,7 @@ static int mpu_synth_ioctl(int dev, unsigned int cmd, void __user *arg)
- 
- 	midi_dev = synth_devs[dev]->midi_dev;
- 
--	if (midi_dev < 0 || midi_dev > num_midis || midi_devs[midi_dev] == NULL)
-+	if (midi_dev < 0 || midi_dev >= num_midis || midi_devs[midi_dev] == NULL)
- 		return -ENXIO;
- 
- 	devc = &dev_conf[midi_dev];
+ 		/* Virtual root hubs can trigger on GET_PORT_STATUS to
+
+This will show you what is responsible for all autoresumes of non-hub 
+USB devices.
+
+Alan Stern
+
