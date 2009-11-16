@@ -1,87 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbZKPJFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbZKPJKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbZKPJFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 04:05:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZKPJFL
+	id S1752152AbZKPJKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 04:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZKPJKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 04:05:11 -0500
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:57108 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbZKPJFJ (ORCPT
+	Mon, 16 Nov 2009 04:10:17 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:62448 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbZKPJKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 04:05:09 -0500
-Date: Mon, 16 Nov 2009 10:05:06 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [BUG] sched_rt_periodic_timer vs cpu hotplug
-Message-ID: <20091116090506.GA6077@osiris.boeblingen.de.ibm.com>
-References: <20091111101801.GA19103@osiris.boeblingen.de.ibm.com>
- <1257935428.23203.82.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1257935428.23203.82.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 16 Nov 2009 04:10:16 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/12] move compat_ioctl handling into drivers
+Date: Mon, 16 Nov 2009 09:10:20 +0000
+Message-Id: <1258362620-2328-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.3.3
+X-Provags-ID: V01U2FsdGVkX1/gqkSYL7TCfKvdEitC+Kmjug0tmLdHoVVjOdo
+ MQleWkom6u1OJ6cdgmkQoWVgZD3Tn8a0yJbGhT+bj2Es0aV+Kl
+ etM63bEGYClNSJCmJjrTA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 11, 2009 at 11:30:28AM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-11-11 at 11:18 +0100, Heiko Carstens wrote:
-> > we've seen a crash on s390 which seems to be related to sched_rt_period_timer vs.
-> > cpu hotplug:
-> > 
-> >     <1>Unable to handle kernel pointer dereference at virtual kernel address 00000000ff5ec000
-> >     <4>Oops: 0011 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-[...]
-> >     <4>Krnl PSW : 0404200180000000 000000000013952c (sched_rt_period_timer+0x188/0x3d8)
-[...]
-> >     <4>([<00000000001394d0>] sched_rt_period_timer+0x12c/0x3d8)
-> >     <4> [<0000000000173db0>] __run_hrtimer+0xb0/0x110
-> >     <4> [<00000000001740b2>] hrtimer_interrupt+0xf2/0x1e8
-> >     <4> [<000000000010770c>] clock_comparator_work+0x68/0x70
-> >     <4> [<000000000010dbc0>] do_extint+0x18c/0x190
-> >     <4> [<0000000000117f9e>] ext_no_vtime+0x1e/0x22
-> >     <4> [<000000000058ea04>] _spin_unlock_irq+0x48/0x80
-> >     <4>([<000000000058ea00>] _spin_unlock_irq+0x44/0x80)
-> >     <4> [<000000000043c190>] dasd_block_tasklet+0x1b8/0x2b0
-> >     <4> [<0000000000155b0e>] tasklet_hi_action+0xfe/0x1f4
-> >     <4> [<00000000001570d4>] __do_softirq+0x184/0x2e8
-> >     <4> [<0000000000110b34>] do_softirq+0xe4/0xe8
-> >     <4> [<0000000000156ac4>] irq_exit+0xc0/0xe0
-> >     <4> [<000000000010db7a>] do_extint+0x146/0x190
-> >     <4> [<0000000000117f9e>] ext_no_vtime+0x1e/0x22
-> >     <4> [<0000000000115040>] vtime_stop_cpu+0xac/0x100
-> >     <4>([<0000000000114fe6>] vtime_stop_cpu+0x52/0x100)
-> >     <4> [<000000000010a324>] cpu_idle+0xfc/0x198
-> >     <4> [<0000000000584a64>] start_secondary+0xb4/0xc0
->
-> Does something like the below fix it? Normal sched_domain bits also do
-> sync_sched() for domain destruction as can be seen from
-> detach_destroy_domains()..
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 91642c1..3b02339 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -7918,6 +7923,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
->  
->  static void free_rootdomain(struct root_domain *rd)
->  {
-> +	synchronize_sched();
-> +
->  	cpupri_cleanup(&rd->cpupri);
+This is the second series of patches on compat_ioctl handling,
+moving compat handlers into more drivers. Most of these
+patches consist on a part that adds a compat_ioctl method
+in one driver and another part removing the respective
+section from fs/compat_ioctl.c. The fs/compat_ioctl.c
+portion depends on other patches[1], but the driver code can
+be applied independently.
 
-We haven't seen the bug above with your patch applied again. On the other
-hand the race window is so small, that we were also unable to reproduce
-the original bug.
-Instead we are later running into a different use-after-free bug. But that
-one is unrelated to this one.
+If some of you feel responsible for the code I patched, please
+look at my changes and if they are ok, either take them into
+your tree or give me an Acked-by for them.
 
-Anyway, your patch should fix this bug. Would be good to have it in .32
+I have tested the patches for sg, usbdevfs and autofs, which
+was easily done in qemu, but I'm lacking test cases for
+most of the other ones.
 
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+	Arnd <><
+
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andre Noll <maan@systemlinux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs@linux.kernel.org
+Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: David Vrabel <david.vrabel@csr.com>
+Cc: Doug Gilbert <dgilbert@interlog.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ian Kent <raven@themaw.net>
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
+Cc: Jan Blunck <jblunck@suse.de>
+Cc: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-i2c@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-raid@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Cc: Martin K. Petersen <martin.petersen@oracle.com>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Oliver Neukum <oliver@neukum.org>
+Cc: Paul Clements <Paul.Clements@steeleye.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: user-mode-linux-user@lists.sourceforge.net
+Cc: Wolfram Sang <w.sang@pengutronix.de>
+
+Arnd Bergmann (12):
+  arch/um: handle compat_ioctl in tty line driver
+  scsi/sg: move compat_ioctl handling into sg driver
+  autofs/autofs4: move compat_ioctl handling into fs
+  raw: partly fix compat_ioctl handling on non-x86
+  nbd: add compat_ioctl method
+  smbfs: do compat_ioctl handling in place
+  i2cdev: move compat_ioctl handling into driver
+  md: move compat_ioctl handling into md.c
+  lp: move compat_ioctl handling into lp.c
+  usbdevfs: move compat_ioctl handling to devio.c
+  hamradio/mkiss: fix typo in compat_ioctl
+  compat_ioctl: remove unused handlers
+
+ arch/um/drivers/line.c          |    6 +
+ arch/um/drivers/ssl.c           |    1 +
+ arch/um/drivers/stdio_console.c |    1 +
+ arch/um/include/shared/line.h   |    2 +
+ drivers/block/nbd.c             |    7 +-
+ drivers/char/lp.c               |  115 +++++++--
+ drivers/char/raw.c              |  157 ++++++++++---
+ drivers/i2c/i2c-dev.c           |  117 +++++++++
+ drivers/md/md.c                 |   23 ++
+ drivers/net/hamradio/mkiss.c    |    2 +-
+ drivers/scsi/sg.c               |  182 ++++++++++++++-
+ drivers/usb/core/devio.c        |  110 ++++++++-
+ fs/autofs/root.c                |   67 +++++-
+ fs/autofs4/root.c               |   69 +++++-
+ fs/compat_ioctl.c               |  504 +--------------------------------------
+ fs/smbfs/dir.c                  |    5 +-
+ fs/smbfs/file.c                 |    3 +-
+ fs/smbfs/ioctl.c                |   48 ++++-
+ fs/smbfs/proto.h                |    3 +-
+ include/linux/auto_fs.h         |    1 +
+ include/linux/usbdevice_fs.h    |   26 ++
+ kernel/trace/blktrace.c         |    1 +
+ 22 files changed, 856 insertions(+), 594 deletions(-)
+
+[1] http://patchwork.kernel.org/bundle/arnd/compat-ioctl-cleanup/?state=*
