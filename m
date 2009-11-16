@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZKPM3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZKPMUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbZKPM3O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZKPM3K
+	id S1753326AbZKPMUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZKPMUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:29:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25922 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:20:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36780 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbZKPMTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:19:40 -0500
+	id S1752950AbZKPMTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 07:19:42 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 14/42] KVM: Convert irq notifiers lists to RCU locking
-Date: Mon, 16 Nov 2009 14:19:15 +0200
-Message-Id: <1258373983-8693-15-git-send-email-avi@redhat.com>
+Subject: [PATCH 15/42] KVM: Move IO APIC to its own lock
+Date: Mon, 16 Nov 2009 14:19:16 +0200
+Message-Id: <1258373983-8693-16-git-send-email-avi@redhat.com>
 In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
 References: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,88 +23,381 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Gleb Natapov <gleb@redhat.com>
 
-Use RCU locking for mask/ack notifiers lists.
+The allows removal of irq_lock from the injection path.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- virt/kvm/irq_comm.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c |    7 +---
+ arch/x86/kvm/i8259.c     |   22 +++++++++---
+ arch/x86/kvm/lapic.c     |    5 +--
+ arch/x86/kvm/x86.c       |   10 +----
+ virt/kvm/ioapic.c        |   80 +++++++++++++++++++++++++++++++++++-----------
+ virt/kvm/ioapic.h        |    4 ++
+ virt/kvm/irq_comm.c      |   23 ++++++++-----
+ 7 files changed, 100 insertions(+), 51 deletions(-)
 
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index 0ad09f0..4a98314 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -851,8 +851,7 @@ static int kvm_vm_ioctl_get_irqchip(struct kvm *kvm,
+ 	r = 0;
+ 	switch (chip->chip_id) {
+ 	case KVM_IRQCHIP_IOAPIC:
+-		memcpy(&chip->chip.ioapic, ioapic_irqchip(kvm),
+-				sizeof(struct kvm_ioapic_state));
++		r = kvm_get_ioapic(kvm, &chip->chip.ioapic);
+ 		break;
+ 	default:
+ 		r = -EINVAL;
+@@ -868,9 +867,7 @@ static int kvm_vm_ioctl_set_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
+ 	r = 0;
+ 	switch (chip->chip_id) {
+ 	case KVM_IRQCHIP_IOAPIC:
+-		memcpy(ioapic_irqchip(kvm),
+-				&chip->chip.ioapic,
+-				sizeof(struct kvm_ioapic_state));
++		r = kvm_set_ioapic(kvm, &chip->chip.ioapic);
+ 		break;
+ 	default:
+ 		r = -EINVAL;
+diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+index ccc941a..d057c0c 100644
+--- a/arch/x86/kvm/i8259.c
++++ b/arch/x86/kvm/i8259.c
+@@ -38,7 +38,15 @@ static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
+ 	s->isr_ack |= (1 << irq);
+ 	if (s != &s->pics_state->pics[0])
+ 		irq += 8;
++	/*
++	 * We are dropping lock while calling ack notifiers since ack
++	 * notifier callbacks for assigned devices call into PIC recursively.
++	 * Other interrupt may be delivered to PIC while lock is dropped but
++	 * it should be safe since PIC state is already updated at this stage.
++	 */
++	spin_unlock(&s->pics_state->lock);
+ 	kvm_notify_acked_irq(s->pics_state->kvm, SELECT_PIC(irq), irq);
++	spin_lock(&s->pics_state->lock);
+ }
+ 
+ void kvm_pic_clear_isr_ack(struct kvm *kvm)
+@@ -176,16 +184,18 @@ int kvm_pic_set_irq(void *opaque, int irq, int level)
+ static inline void pic_intack(struct kvm_kpic_state *s, int irq)
+ {
+ 	s->isr |= 1 << irq;
+-	if (s->auto_eoi) {
+-		if (s->rotate_on_auto_eoi)
+-			s->priority_add = (irq + 1) & 7;
+-		pic_clear_isr(s, irq);
+-	}
+ 	/*
+ 	 * We don't clear a level sensitive interrupt here
+ 	 */
+ 	if (!(s->elcr & (1 << irq)))
+ 		s->irr &= ~(1 << irq);
++
++	if (s->auto_eoi) {
++		if (s->rotate_on_auto_eoi)
++			s->priority_add = (irq + 1) & 7;
++		pic_clear_isr(s, irq);
++	}
++
+ }
+ 
+ int kvm_pic_read_irq(struct kvm *kvm)
+@@ -294,9 +304,9 @@ static void pic_ioport_write(void *opaque, u32 addr, u32 val)
+ 				priority = get_priority(s, s->isr);
+ 				if (priority != 8) {
+ 					irq = (priority + s->priority_add) & 7;
+-					pic_clear_isr(s, irq);
+ 					if (cmd == 5)
+ 						s->priority_add = (irq + 1) & 7;
++					pic_clear_isr(s, irq);
+ 					pic_update_irq(s->pics_state);
+ 				}
+ 				break;
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 23c2176..df8bcb0 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -471,11 +471,8 @@ static void apic_set_eoi(struct kvm_lapic *apic)
+ 		trigger_mode = IOAPIC_LEVEL_TRIG;
+ 	else
+ 		trigger_mode = IOAPIC_EDGE_TRIG;
+-	if (!(apic_get_reg(apic, APIC_SPIV) & APIC_SPIV_DIRECTED_EOI)) {
+-		mutex_lock(&apic->vcpu->kvm->irq_lock);
++	if (!(apic_get_reg(apic, APIC_SPIV) & APIC_SPIV_DIRECTED_EOI))
+ 		kvm_ioapic_update_eoi(apic->vcpu->kvm, vector, trigger_mode);
+-		mutex_unlock(&apic->vcpu->kvm->irq_lock);
+-	}
+ }
+ 
+ static void apic_send_ipi(struct kvm_lapic *apic)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 1687d12..fdf989f 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2038,9 +2038,7 @@ static int kvm_vm_ioctl_get_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
+ 			sizeof(struct kvm_pic_state));
+ 		break;
+ 	case KVM_IRQCHIP_IOAPIC:
+-		memcpy(&chip->chip.ioapic,
+-			ioapic_irqchip(kvm),
+-			sizeof(struct kvm_ioapic_state));
++		r = kvm_get_ioapic(kvm, &chip->chip.ioapic);
+ 		break;
+ 	default:
+ 		r = -EINVAL;
+@@ -2070,11 +2068,7 @@ static int kvm_vm_ioctl_set_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
+ 		spin_unlock(&pic_irqchip(kvm)->lock);
+ 		break;
+ 	case KVM_IRQCHIP_IOAPIC:
+-		mutex_lock(&kvm->irq_lock);
+-		memcpy(ioapic_irqchip(kvm),
+-			&chip->chip.ioapic,
+-			sizeof(struct kvm_ioapic_state));
+-		mutex_unlock(&kvm->irq_lock);
++		r = kvm_set_ioapic(kvm, &chip->chip.ioapic);
+ 		break;
+ 	default:
+ 		r = -EINVAL;
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index 9fe140b..38a2d20 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -182,6 +182,7 @@ int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level)
+ 	union kvm_ioapic_redirect_entry entry;
+ 	int ret = 1;
+ 
++	mutex_lock(&ioapic->lock);
+ 	if (irq >= 0 && irq < IOAPIC_NUM_PINS) {
+ 		entry = ioapic->redirtbl[irq];
+ 		level ^= entry.fields.polarity;
+@@ -198,34 +199,51 @@ int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level)
+ 		}
+ 		trace_kvm_ioapic_set_irq(entry.bits, irq, ret == 0);
+ 	}
++	mutex_unlock(&ioapic->lock);
++
+ 	return ret;
+ }
+ 
+-static void __kvm_ioapic_update_eoi(struct kvm_ioapic *ioapic, int pin,
+-				    int trigger_mode)
++static void __kvm_ioapic_update_eoi(struct kvm_ioapic *ioapic, int vector,
++				     int trigger_mode)
+ {
+-	union kvm_ioapic_redirect_entry *ent;
++	int i;
++
++	for (i = 0; i < IOAPIC_NUM_PINS; i++) {
++		union kvm_ioapic_redirect_entry *ent = &ioapic->redirtbl[i];
+ 
+-	ent = &ioapic->redirtbl[pin];
++		if (ent->fields.vector != vector)
++			continue;
+ 
+-	kvm_notify_acked_irq(ioapic->kvm, KVM_IRQCHIP_IOAPIC, pin);
++		/*
++		 * We are dropping lock while calling ack notifiers because ack
++		 * notifier callbacks for assigned devices call into IOAPIC
++		 * recursively. Since remote_irr is cleared only after call
++		 * to notifiers if the same vector will be delivered while lock
++		 * is dropped it will be put into irr and will be delivered
++		 * after ack notifier returns.
++		 */
++		mutex_unlock(&ioapic->lock);
++		kvm_notify_acked_irq(ioapic->kvm, KVM_IRQCHIP_IOAPIC, i);
++		mutex_lock(&ioapic->lock);
++
++		if (trigger_mode != IOAPIC_LEVEL_TRIG)
++			continue;
+ 
+-	if (trigger_mode == IOAPIC_LEVEL_TRIG) {
+ 		ASSERT(ent->fields.trig_mode == IOAPIC_LEVEL_TRIG);
+ 		ent->fields.remote_irr = 0;
+-		if (!ent->fields.mask && (ioapic->irr & (1 << pin)))
+-			ioapic_service(ioapic, pin);
++		if (!ent->fields.mask && (ioapic->irr & (1 << i)))
++			ioapic_service(ioapic, i);
+ 	}
+ }
+ 
+ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector, int trigger_mode)
+ {
+ 	struct kvm_ioapic *ioapic = kvm->arch.vioapic;
+-	int i;
+ 
+-	for (i = 0; i < IOAPIC_NUM_PINS; i++)
+-		if (ioapic->redirtbl[i].fields.vector == vector)
+-			__kvm_ioapic_update_eoi(ioapic, i, trigger_mode);
++	mutex_lock(&ioapic->lock);
++	__kvm_ioapic_update_eoi(ioapic, vector, trigger_mode);
++	mutex_unlock(&ioapic->lock);
+ }
+ 
+ static inline struct kvm_ioapic *to_ioapic(struct kvm_io_device *dev)
+@@ -250,8 +268,8 @@ static int ioapic_mmio_read(struct kvm_io_device *this, gpa_t addr, int len,
+ 	ioapic_debug("addr %lx\n", (unsigned long)addr);
+ 	ASSERT(!(addr & 0xf));	/* check alignment */
+ 
+-	mutex_lock(&ioapic->kvm->irq_lock);
+ 	addr &= 0xff;
++	mutex_lock(&ioapic->lock);
+ 	switch (addr) {
+ 	case IOAPIC_REG_SELECT:
+ 		result = ioapic->ioregsel;
+@@ -265,6 +283,8 @@ static int ioapic_mmio_read(struct kvm_io_device *this, gpa_t addr, int len,
+ 		result = 0;
+ 		break;
+ 	}
++	mutex_unlock(&ioapic->lock);
++
+ 	switch (len) {
+ 	case 8:
+ 		*(u64 *) val = result;
+@@ -277,7 +297,6 @@ static int ioapic_mmio_read(struct kvm_io_device *this, gpa_t addr, int len,
+ 	default:
+ 		printk(KERN_WARNING "ioapic: wrong length %d\n", len);
+ 	}
+-	mutex_unlock(&ioapic->kvm->irq_lock);
+ 	return 0;
+ }
+ 
+@@ -293,15 +312,15 @@ static int ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
+ 		     (void*)addr, len, val);
+ 	ASSERT(!(addr & 0xf));	/* check alignment */
+ 
+-	mutex_lock(&ioapic->kvm->irq_lock);
+ 	if (len == 4 || len == 8)
+ 		data = *(u32 *) val;
+ 	else {
+ 		printk(KERN_WARNING "ioapic: Unsupported size %d\n", len);
+-		goto unlock;
++		return 0;
+ 	}
+ 
+ 	addr &= 0xff;
++	mutex_lock(&ioapic->lock);
+ 	switch (addr) {
+ 	case IOAPIC_REG_SELECT:
+ 		ioapic->ioregsel = data;
+@@ -312,15 +331,14 @@ static int ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
+ 		break;
+ #ifdef	CONFIG_IA64
+ 	case IOAPIC_REG_EOI:
+-		kvm_ioapic_update_eoi(ioapic->kvm, data, IOAPIC_LEVEL_TRIG);
++		__kvm_ioapic_update_eoi(ioapic, data, IOAPIC_LEVEL_TRIG);
+ 		break;
+ #endif
+ 
+ 	default:
+ 		break;
+ 	}
+-unlock:
+-	mutex_unlock(&ioapic->kvm->irq_lock);
++	mutex_unlock(&ioapic->lock);
+ 	return 0;
+ }
+ 
+@@ -349,6 +367,7 @@ int kvm_ioapic_init(struct kvm *kvm)
+ 	ioapic = kzalloc(sizeof(struct kvm_ioapic), GFP_KERNEL);
+ 	if (!ioapic)
+ 		return -ENOMEM;
++	mutex_init(&ioapic->lock);
+ 	kvm->arch.vioapic = ioapic;
+ 	kvm_ioapic_reset(ioapic);
+ 	kvm_iodevice_init(&ioapic->dev, &ioapic_mmio_ops);
+@@ -360,3 +379,26 @@ int kvm_ioapic_init(struct kvm *kvm)
+ 	return ret;
+ }
+ 
++int kvm_get_ioapic(struct kvm *kvm, struct kvm_ioapic_state *state)
++{
++	struct kvm_ioapic *ioapic = ioapic_irqchip(kvm);
++	if (!ioapic)
++		return -EINVAL;
++
++	mutex_lock(&ioapic->lock);
++	memcpy(state, ioapic, sizeof(struct kvm_ioapic_state));
++	mutex_unlock(&ioapic->lock);
++	return 0;
++}
++
++int kvm_set_ioapic(struct kvm *kvm, struct kvm_ioapic_state *state)
++{
++	struct kvm_ioapic *ioapic = ioapic_irqchip(kvm);
++	if (!ioapic)
++		return -EINVAL;
++
++	mutex_lock(&ioapic->lock);
++	memcpy(ioapic, state, sizeof(struct kvm_ioapic_state));
++	mutex_unlock(&ioapic->lock);
++	return 0;
++}
+diff --git a/virt/kvm/ioapic.h b/virt/kvm/ioapic.h
+index 6e461ad..419c43b 100644
+--- a/virt/kvm/ioapic.h
++++ b/virt/kvm/ioapic.h
+@@ -45,6 +45,7 @@ struct kvm_ioapic {
+ 	struct kvm_io_device dev;
+ 	struct kvm *kvm;
+ 	void (*ack_notifier)(void *opaque, int irq);
++	struct mutex lock;
+ };
+ 
+ #ifdef DEBUG
+@@ -74,4 +75,7 @@ int kvm_ioapic_set_irq(struct kvm_ioapic *ioapic, int irq, int level);
+ void kvm_ioapic_reset(struct kvm_ioapic *ioapic);
+ int kvm_irq_delivery_to_apic(struct kvm *kvm, struct kvm_lapic *src,
+ 		struct kvm_lapic_irq *irq);
++int kvm_get_ioapic(struct kvm *kvm, struct kvm_ioapic_state *state);
++int kvm_set_ioapic(struct kvm *kvm, struct kvm_ioapic_state *state);
++
+ #endif
 diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index f019725..6c94614 100644
+index 6c94614..fadf440 100644
 --- a/virt/kvm/irq_comm.c
 +++ b/virt/kvm/irq_comm.c
-@@ -183,19 +183,19 @@ void kvm_notify_acked_irq(struct kvm *kvm, unsigned irqchip, unsigned pin)
- 
- 	rcu_read_lock();
- 	gsi = rcu_dereference(kvm->irq_routing)->chip[irqchip][pin];
--	rcu_read_unlock();
--
- 	if (gsi != -1)
--		hlist_for_each_entry(kian, n, &kvm->irq_ack_notifier_list, link)
-+		hlist_for_each_entry_rcu(kian, n, &kvm->irq_ack_notifier_list,
-+					 link)
- 			if (kian->gsi == gsi)
- 				kian->irq_acked(kian);
-+	rcu_read_unlock();
- }
- 
- void kvm_register_irq_ack_notifier(struct kvm *kvm,
- 				   struct kvm_irq_ack_notifier *kian)
+@@ -146,8 +146,8 @@ static int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
+  */
+ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level)
  {
- 	mutex_lock(&kvm->irq_lock);
--	hlist_add_head(&kian->link, &kvm->irq_ack_notifier_list);
-+	hlist_add_head_rcu(&kian->link, &kvm->irq_ack_notifier_list);
- 	mutex_unlock(&kvm->irq_lock);
- }
- 
-@@ -203,8 +203,9 @@ void kvm_unregister_irq_ack_notifier(struct kvm *kvm,
- 				    struct kvm_irq_ack_notifier *kian)
- {
- 	mutex_lock(&kvm->irq_lock);
--	hlist_del_init(&kian->link);
-+	hlist_del_init_rcu(&kian->link);
- 	mutex_unlock(&kvm->irq_lock);
-+	synchronize_rcu();
- }
- 
- int kvm_request_irq_source_id(struct kvm *kvm)
-@@ -257,7 +258,7 @@ void kvm_register_irq_mask_notifier(struct kvm *kvm, int irq,
- {
- 	mutex_lock(&kvm->irq_lock);
- 	kimn->irq = irq;
--	hlist_add_head(&kimn->link, &kvm->mask_notifier_list);
-+	hlist_add_head_rcu(&kimn->link, &kvm->mask_notifier_list);
- 	mutex_unlock(&kvm->irq_lock);
- }
- 
-@@ -265,8 +266,9 @@ void kvm_unregister_irq_mask_notifier(struct kvm *kvm, int irq,
- 				      struct kvm_irq_mask_notifier *kimn)
- {
- 	mutex_lock(&kvm->irq_lock);
--	hlist_del(&kimn->link);
-+	hlist_del_rcu(&kimn->link);
- 	mutex_unlock(&kvm->irq_lock);
-+	synchronize_rcu();
- }
- 
- void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask)
-@@ -274,11 +276,11 @@ void kvm_fire_mask_notifiers(struct kvm *kvm, int irq, bool mask)
- 	struct kvm_irq_mask_notifier *kimn;
+-	struct kvm_kernel_irq_routing_entry *e;
+-	int ret = -1;
++	struct kvm_kernel_irq_routing_entry *e, irq_set[KVM_NR_IRQCHIPS];
++	int ret = -1, i = 0;
+ 	struct kvm_irq_routing_table *irq_rt;
  	struct hlist_node *n;
  
--	WARN_ON(!mutex_is_locked(&kvm->irq_lock));
+@@ -162,14 +162,19 @@ int kvm_set_irq(struct kvm *kvm, int irq_source_id, u32 irq, int level)
+ 	rcu_read_lock();
+ 	irq_rt = rcu_dereference(kvm->irq_routing);
+ 	if (irq < irq_rt->nr_rt_entries)
+-		hlist_for_each_entry(e, n, &irq_rt->map[irq], link) {
+-			int r = e->set(e, kvm, irq_source_id, level);
+-			if (r < 0)
+-				continue;
 -
--	hlist_for_each_entry(kimn, n, &kvm->mask_notifier_list, link)
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(kimn, n, &kvm->mask_notifier_list, link)
- 		if (kimn->irq == irq)
- 			kimn->func(kimn, mask);
-+	rcu_read_unlock();
+-			ret = r + ((ret < 0) ? 0 : ret);
+-		}
++		hlist_for_each_entry(e, n, &irq_rt->map[irq], link)
++			irq_set[i++] = *e;
+ 	rcu_read_unlock();
++
++	while(i--) {
++		int r;
++		r = irq_set[i].set(&irq_set[i], kvm, irq_source_id, level);
++		if (r < 0)
++			continue;
++
++		ret = r + ((ret < 0) ? 0 : ret);
++	}
++
+ 	return ret;
  }
  
- void kvm_free_irq_routing(struct kvm *kvm)
 -- 
 1.6.5.2
 
