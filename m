@@ -1,189 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZKPRz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZKPR5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752103AbZKPRz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 12:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZKPRz6
+	id S1752164AbZKPR5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 12:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZKPR5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 12:55:58 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:25646 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbZKPRz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 12:55:57 -0500
-Date: Mon, 16 Nov 2009 09:55:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Karel Zak <kzak@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: mmotm-1113: efi.c:  __divdi3 undefined (i386)
-Message-Id: <20091116095527.3a1265c9.randy.dunlap@oracle.com>
-In-Reply-To: <20091116121957.GF10245@nb.net.home>
-References: <4B004C87.7010406@oracle.com>
-	<20091116121957.GF10245@nb.net.home>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B01921B.008E:SCFMA4539814,ss=1,fgs=0
+	Mon, 16 Nov 2009 12:57:38 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:50375 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbZKPR5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 12:57:37 -0500
+Date: Mon, 16 Nov 2009 17:57:39 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Frans Pop <elendil@planet.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [PATCH 0/5] Reduce GFP_ATOMIC allocation failures, candidate
+	fix V3
+Message-ID: <20091116175739.GW29804@csn.ul.ie>
+References: <1258054235-3208-1-git-send-email-mel@csn.ul.ie> <200911131004.25293.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200911131004.25293.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009 13:19:57 +0100 Karel Zak wrote:
-
-> On Sun, Nov 15, 2009 at 10:46:31AM -0800, Randy Dunlap wrote:
-> > on i386 builds:
-> > 
-> > fs/built-in.o: In function `last_lba':
-> > efi.c:(.text+0x9d9fe): undefined reference to `__divdi3'
-> > 
-> > 
-> > -       return (bdev->bd_inode->i_size >> 9) - 1ULL;
-> > +       return (bdev->bd_inode->i_size / bdev_logical_block_size(bdev)) - 1ULL;
+On Fri, Nov 13, 2009 at 10:04:21AM +0100, Frans Pop wrote:
+> On Thursday 12 November 2009, Mel Gorman wrote:
+> > Changelog since V2
+> >   o Dropped the kswapd-quickly-notice-high-order patch. In more detailed
+> >     testing, it made latencies even worse as kswapd slept more on
+> >     high-order congestion causing order-0 direct reclaims.
+> >   o Added changes to how congestion_wait() works
+> >   o Added a number of new patches altering the behaviour of reclaim
 > 
->  Ah.. I guess that div_u64() is more portable. Updated
->  partitions-use-sector-size-for-efi-gpt.patch is below.
+> I have tested this series on top of .32-rc7. First impression is that it 
+> does seem to improve my test case, but does not yet completely solve it.
 > 
->     Karel
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Thanks.
-
-
-
-> From fbb0c11cf349545f2499d382469749543fdc03d0 Mon Sep 17 00:00:00 2001
-> From: Karel Zak <kzak@redhat.com>
-> Date: Mon, 16 Nov 2009 12:19:25 +0100
-> Subject: [PATCH] partitions: use sector size for EFI GPT
-> 
-> Currently, kernel uses strictly 512-byte sectors for EFI GPT parsing.
-> That's wrong.
-> 
-> UEFI standard (version 2.3, May 2009, 5.3.1 GUID Format overview, page
-> 95) defines that LBA is always based on the logical block size. It
-> means bdev_logical_block_size() (aka BLKSSZGET) for Linux.
-> 
-> This patch removes static sector size from EFI GPT parser.
-> 
-> The problem is reproducible with the latest GNU Parted:
-> 
->  # modprobe scsi_debug dev_size_mb=50 sector_size=4096
-> 
->   # ./parted /dev/sdb print
->   Model: Linux scsi_debug (scsi)
->   Disk /dev/sdb: 52.4MB
->   Sector size (logical/physical): 4096B/4096B
->   Partition Table: gpt
-> 
->   Number  Start   End     Size    File system  Name     Flags
->    1      24.6kB  3002kB  2978kB               primary
->    2      3002kB  6001kB  2998kB               primary
->    3      6001kB  9003kB  3002kB               primary
-> 
->   # blockdev --rereadpt /dev/sdb
->   # dmesg | tail -1
->    sdb: unknown partition table      <---- !!!
-> 
-> with this patch:
-> 
->   # blockdev --rereadpt /dev/sdb
->   # dmesg | tail -1
->    sdb: sdb1 sdb2 sdb3
-> 
-> Signed-off-by: Karel Zak <kzak@redhat.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  fs/partitions/efi.c |   23 +++++++++++++++--------
->  1 files changed, 15 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/partitions/efi.c b/fs/partitions/efi.c
-> index 038a602..80eeff5 100644
-> --- a/fs/partitions/efi.c
-> +++ b/fs/partitions/efi.c
-> @@ -1,7 +1,9 @@
->  /************************************************************
->   * EFI GUID Partition Table handling
-> - * Per Intel EFI Specification v1.02
-> - * http://developer.intel.com/technology/efi/efi.htm
-> + *
-> + * http://www.uefi.org/specs/
-> + * http://www.intel.com/technology/efi/
-> + *
->   * efi.[ch] by Matt Domsch <Matt_Domsch@dell.com>
->   *   Copyright 2000,2001,2002,2004 Dell Inc.
->   *
-> @@ -92,6 +94,7 @@
->   *
->   ************************************************************/
->  #include <linux/crc32.h>
-> +#include <linux/math64.h>
->  #include "check.h"
->  #include "efi.h"
->  
-> @@ -141,7 +144,8 @@ last_lba(struct block_device *bdev)
->  {
->  	if (!bdev || !bdev->bd_inode)
->  		return 0;
-> -	return (bdev->bd_inode->i_size >> 9) - 1ULL;
-> +	return div_u64(bdev->bd_inode->i_size,
-> +		       bdev_logical_block_size(bdev)) - 1ULL;
->  }
->  
->  static inline int
-> @@ -188,6 +192,7 @@ static size_t
->  read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
->  {
->  	size_t totalreadcount = 0;
-> +	sector_t n = lba * (bdev_logical_block_size(bdev) / 512);
->  
->  	if (!bdev || !buffer || lba > last_lba(bdev))
->                  return 0;
-> @@ -195,7 +200,7 @@ read_lba(struct block_device *bdev, u64 lba, u8 * buffer, size_t count)
->  	while (count) {
->  		int copied = 512;
->  		Sector sect;
-> -		unsigned char *data = read_dev_sector(bdev, lba++, &sect);
-> +		unsigned char *data = read_dev_sector(bdev, n++, &sect);
->  		if (!data)
->  			break;
->  		if (copied > count)
-> @@ -601,6 +606,7 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
->  	gpt_header *gpt = NULL;
->  	gpt_entry *ptes = NULL;
->  	u32 i;
-> +	unsigned ssz = bdev_logical_block_size(bdev) / 512;
->  
->  	if (!find_valid_gpt(bdev, &gpt, &ptes) || !gpt || !ptes) {
->  		kfree(gpt);
-> @@ -611,13 +617,14 @@ efi_partition(struct parsed_partitions *state, struct block_device *bdev)
->  	pr_debug("GUID Partition Table is valid!  Yea!\n");
->  
->  	for (i = 0; i < le32_to_cpu(gpt->num_partition_entries) && i < state->limit-1; i++) {
-> +		u64 start = le64_to_cpu(ptes[i].starting_lba);
-> +		u64 size = le64_to_cpu(ptes[i].ending_lba) -
-> +			   le64_to_cpu(ptes[i].starting_lba) + 1ULL;
-> +
->  		if (!is_pte_valid(&ptes[i], last_lba(bdev)))
->  			continue;
->  
-> -		put_partition(state, i+1, le64_to_cpu(ptes[i].starting_lba),
-> -				 (le64_to_cpu(ptes[i].ending_lba) -
-> -                                  le64_to_cpu(ptes[i].starting_lba) +
-> -				  1ULL));
-> +		put_partition(state, i+1, start * ssz, size * ssz);
->  
->  		/* If this is a RAID volume, tell md */
->  		if (!efi_guidcmp(ptes[i].partition_type_guid,
-> -- 
-> 1.6.5.1
-> 
+> My last gitk instance now loads more smoothly for most of the time it takes 
+> to complete, but I still see a choke point where things freeze for a while 
+> and where I get SKB allocation errors from my wireless.
+> However, that choke point does seem to happen later and to be shorter than 
+> without the patches.
 > 
 
+I haven't fully figured out why this makes a difference yet, but with
+.32-rc7 and these patches, could you retry the test except beforehand do
 
----
-~Randy
+cd /sys
+for SYS in `find -name low_latency`; do
+        echo 0 > $SYS
+done
+
+I believe the low_latency logic might be interfering with the number of
+clean pages available for kswapd to reclaim.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
