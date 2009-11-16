@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZKPUve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZKPU60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZKPUve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 15:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZKPUvd
+	id S1754068AbZKPU60 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 15:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZKPU6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 15:51:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59532 "EHLO ogre.sisk.pl"
+	Mon, 16 Nov 2009 15:58:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53842 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbZKPUvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 15:51:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/10] PM: Add flag for devices capable of generating run-time wake-up events
-Date: Mon, 16 Nov 2009 21:52:38 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <Pine.LNX.4.44L0.0911161436560.2971-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911161436560.2971-100000@iolanthe.rowland.org>
+	id S1754013AbZKPU6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 15:58:24 -0500
+Date: Mon, 16 Nov 2009 21:58:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/5] perf buildid-list: New plumbing command
+Message-ID: <20091116205820.GA6984@elte.hu>
+References: <1258396365-29217-1-git-send-email-acme@infradead.org>
+ <1258396365-29217-2-git-send-email-acme@infradead.org>
+ <1258396365-29217-3-git-send-email-acme@infradead.org>
+ <1258396365-29217-4-git-send-email-acme@infradead.org>
+ <1258396365-29217-5-git-send-email-acme@infradead.org>
+ <20091116185850.GB5293@nowhere>
+ <20091116194104.GC12042@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911162152.38333.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091116194104.GC12042@ghostprotocols.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 November 2009, Alan Stern wrote:
-> On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+
+* Arnaldo Carvalho de Melo <acme@ghostprotocols.net> wrote:
+
+> Em Mon, Nov 16, 2009 at 07:58:52PM +0100, Frederic Weisbecker escreveu:
+> > On Mon, Nov 16, 2009 at 04:32:45PM -0200, Arnaldo Carvalho de Melo wrote:
+> > > With this we can list the buildids in a perf.data file so that we can
+> > > pipe them to other, distro specific tools that from the buildids can
+> > > figure out separate packages (foo-debuginfo) where we can find the
+> > > matching symtabs so that perf report can do its job.
+> > > E.g:
+> > > [acme@doppio linux-2.6-tip]$ perf buildid-list | head -2
+> > > 8e08b117e5458ad3f85da16d42d0fc5cd21c5869
+> > > 520c2387a587cc5acfcf881e27dba1caaeab4b1f
+> > > [acme@doppio linux-2.6-tip]$ perf buildid-list -v | head -2
+> > > 8e08b117e5458ad3f85da16d42d0fc5cd21c5869 /sbin/init
+> > > 520c2387a587cc5acfcf881e27dba1caaeab4b1f /lib64/ld-2.10.1.so
 > > 
-> > Apparently, there are devices that can wake up the system from sleep
-> > states and yet are incapable of generating wake-up events at run
-> > time.  Thus, introduce a flag indicating if given device is capable
-> > of generating run-time wake-up events.
+> > I would rather see the effect of this -v option as the default.
+> > It's very useful to see the dso resolved but hashes alone
+> > don't pay much.
 > 
-> This raises the question: Who is responsible for setting the new 
-> flag?  The code that registers the device?
+> I disagree, the main purpose of this command is equivalent to 'git
+> rev-list':
+> 
+> [acme@doppio linux-2.6-tip]$ git rev-list HEAD^^..
+> 089242a8c826aac1c827bb797475b9852fe0db49
+> 18e3a75dc47d8397bbf0936ec8e3ebdecada7ba1
+> [acme@doppio linux-2.6-tip]$ 
+> 
+> I.e. provide content keys that then will be used by distro specific
+> porcelain to get the matching -debuginfo packages with the symtabs.
 
-Yes, in general.  The platform.
+Hm, i'd say that's a (small) bug in Git.
 
-Actually, I needed it for PCI, but I thought it would be better to put it at
-the core level.
+Porcelain can add flags just fine to get 'raw' behavior - so in general 
+we want to default the most human friendly parameters to the most 
+human-readable output format.
 
-> What if the kernel can't tell whether or not the device can generate 
-> runtime wake-up events?
-
-Do you have any specific examples in mind?
-
-> What if the user wants to override the kernel's setting?  Should there 
-> be a sysfs attribute controlling the flag?
-
-I have no plans for adding anything like that.
-
-Rafael
+	Ingo
