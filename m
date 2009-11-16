@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZKPVaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbZKPVaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbZKPVaj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZKPVaf
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754368AbZKPVaf (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 16 Nov 2009 16:30:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55225 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZKPVae
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 16 Nov 2009 16:30:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55224 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbZKPVae (ORCPT
+	with ESMTP id S1754351AbZKPVae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Nov 2009 16:30:34 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
@@ -16,10 +16,12 @@ Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 1/2] perf tools: Don't die in perf_header_attr__new
-Date: Mon, 16 Nov 2009 19:30:26 -0200
-Message-Id: <1258407027-384-1-git-send-email-acme@infradead.org>
+Subject: [PATCH 2/2] perf top: Use all the lines in the screen
+Date: Mon, 16 Nov 2009 19:30:27 -0200
+Message-Id: <1258407027-384-2-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1258407027-384-1-git-send-email-acme@infradead.org>
+References: <1258407027-384-1-git-send-email-acme@infradead.org>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,9 +30,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-We really should propagate such kinds of errors so that users of these
-library functions decide what to do in such cases instead of exiting in
-random places like now.
+By querying the current number of rows, if the user specifies the number
+of entries, use that instead. If the user uses the 'e' command to change
+the number of lines 0 will mean do it automatically, any other number
+disables the auto resizing.
 
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -38,89 +41,82 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/builtin-record.c |    5 ++++-
- tools/perf/util/header.c    |   22 ++++++++++++----------
- tools/perf/util/header.h    |    4 +---
- 3 files changed, 17 insertions(+), 14 deletions(-)
+ tools/perf/builtin-top.c |   42 +++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 41 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 04f335e..4c03bb7 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -220,7 +220,8 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
- 		h_attr = header->attr[nr];
- 	} else {
- 		h_attr = perf_header_attr__new(a);
--		perf_header__add_attr(header, h_attr);
-+		if (h_attr != NULL)
-+			perf_header__add_attr(header, h_attr);
- 	}
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 6613f98..3af9520 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -60,7 +60,7 @@ static int			system_wide			=      0;
+ static int			default_interval		=      0;
  
- 	return h_attr;
-@@ -308,6 +309,8 @@ try_again:
- 	}
+ static int			count_filter			=      5;
+-static int			print_entries			=     15;
++static int			print_entries;
  
- 	h_attr = get_header_attr(attr, counter);
-+	if (h_attr == NULL)
-+		die("nomem\n");
+ static int			target_pid			=     -1;
+ static int			inherit				=      0;
+@@ -115,6 +115,36 @@ struct sym_entry {
+  * Source functions
+  */
  
- 	if (!file_new) {
- 		if (memcmp(&h_attr->attr, attr, sizeof(*attr))) {
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index d8416f0..2f07a23 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -19,16 +19,16 @@ struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr)
- {
- 	struct perf_header_attr *self = malloc(sizeof(*self));
- 
--	if (!self)
--		die("nomem");
--
--	self->attr = *attr;
--	self->ids = 0;
--	self->size = 1;
--	self->id = malloc(sizeof(u64));
--
--	if (!self->id)
--		die("nomem");
-+	if (self != NULL) {
-+		self->attr = *attr;
-+		self->ids  = 0;
-+		self->size = 1;
-+		self->id   = malloc(sizeof(u64));
-+		if (self->id == NULL) {
-+			free(self);
-+			self = NULL;
-+		}
++/* most GUI terminals set LINES (although some don't export it) */
++static int term_rows(void)
++{
++	char *lines_string = getenv("LINES");
++	int n_lines;
++
++	if (lines_string && (n_lines = atoi(lines_string)) > 0)
++		return n_lines;
++#ifdef TIOCGWINSZ
++	else {
++		struct winsize ws;
++		if (!ioctl(1, TIOCGWINSZ, &ws) && ws.ws_row)
++			return ws.ws_row;
 +	}
++#endif
++	return 25;
++}
++
++static void update_print_entries(void)
++{
++	print_entries = term_rows();
++	if (print_entries > 9)
++		print_entries -= 9;
++}
++
++static void sig_winch_handler(int sig __used)
++{
++	update_print_entries();
++}
++
+ static void parse_source(struct sym_entry *syme)
+ {
+ 	struct symbol *sym;
+@@ -668,6 +698,11 @@ static void handle_keypress(int c)
+ 			break;
+ 		case 'e':
+ 			prompt_integer(&print_entries, "Enter display entries (lines)");
++			if (print_entries == 0) {
++				update_print_entries();
++				signal(SIGWINCH, sig_winch_handler);
++			} else
++				signal(SIGWINCH, SIG_DFL);
+ 			break;
+ 		case 'E':
+ 			if (nr_counters > 1) {
+@@ -1228,5 +1263,10 @@ int cmd_top(int argc, const char **argv, const char *prefix __used)
+ 	if (target_pid != -1 || profile_cpu != -1)
+ 		nr_cpus = 1;
  
- 	return self;
++	if (print_entries == 0) {
++		update_print_entries();
++		signal(SIGWINCH, sig_winch_handler);
++	}
++
+ 	return __cmd_top();
  }
-@@ -423,6 +423,8 @@ struct perf_header *perf_header__read(int fd)
- 		tmp = lseek(fd, 0, SEEK_CUR);
- 
- 		attr = perf_header_attr__new(&f_attr.attr);
-+		if (attr == NULL)
-+			 die("nomem");
- 
- 		nr_ids = f_attr.ids.size / sizeof(u64);
- 		lseek(fd, f_attr.ids.offset, SEEK_SET);
-diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
-index f1b3bf7..0cbd4c9 100644
---- a/tools/perf/util/header.h
-+++ b/tools/perf/util/header.h
-@@ -64,9 +64,7 @@ void perf_header__add_attr(struct perf_header *self,
- void perf_header__push_event(u64 id, const char *name);
- char *perf_header__find_event(u64 id);
- 
--
--struct perf_header_attr *
--perf_header_attr__new(struct perf_event_attr *attr);
-+struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr);
- void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
- 
- u64 perf_header__sample_type(struct perf_header *header);
 -- 
 1.6.2.5
 
