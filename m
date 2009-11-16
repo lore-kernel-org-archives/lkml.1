@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZKPQnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752783AbZKPQ53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZKPQnN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 11:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZKPQnM
+	id S1752783AbZKPQ53 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 11:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZKPQ53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 11:43:12 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:52324 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753198AbZKPQnK (ORCPT
+	Mon, 16 Nov 2009 11:57:29 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55417 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbZKPQ52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 11:43:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=sRkn5tOeWK3ERZ1ZTHXv5Xvf8SqjwUjPu4k5AcRJ/3s45kphBcrq/0uO14fWUoDMrP
-         NwcrPh8F7dtQL4YTq5Ag9hG5O0DUTHPUj/JIGSQ3u/6vknMh0eI7Cl6ReAJqZVk5dk+Q
-         vxT+qRjB+F+8gQvZiURdClohw/gyVIwJD1Ol8=
-Message-ID: <4B018405.2030408@gmail.com>
-Date: Mon, 16 Nov 2009 17:55:33 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 16 Nov 2009 11:57:28 -0500
+Date: Mon, 16 Nov 2009 16:57:16 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Brian Swetland <swetland@google.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 2/3] msm: add minimal board file for HTC Dream device
+Message-ID: <20091116165716.GD3568@n2100.arm.linux.org.uk>
+References: <20091102104949.GA23456@elf.ucw.cz> <20091116163659.GB3568@n2100.arm.linux.org.uk> <a55d774e0911160843h22938604s8966a58ee71992a@mail.gmail.com>
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Documentation: Fix NUL termination of strncpy
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a55d774e0911160843h22938604s8966a58ee71992a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure the copied strings are NUL terminated.
+On Mon, Nov 16, 2009 at 08:43:20AM -0800, Brian Swetland wrote:
+> What's the best way to handle a situation where there is no valid
+> debug uart?  Could the arch/platform require DEBUG_LL be unset via
+> Kconfig directives if it is configured in a way where there is no
+> valid debug uart?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- Documentation/accounting/getdelays.c               |    2 +-
- Documentation/hwmon/hpfall.c                       |    2 +-
- Documentation/networking/radiotap-headers.txt      |    2 +-
- .../networking/timestamping/timestamping.c         |    4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+You're the first to have that issue.  Everyone else has a UART they
+can always direct stuff at.
 
-Rationale (please correct me if I'm wrong):
+However, I believe you're making the issue far larger than it really is.
 
-For a larger source string, strncpy only NUL terminates when
-the size argument is _less_ than sizeof(destination string).
-strlcpy does this when it equals sizeof (dest), but does not
-overwrite NULs in the higher chars.
+1. If you define the DEBUG_LL macros to be empty, printascii() etc will
+   not touch any mapping.
 
-Because cpumask is global I used strncpy, for the extra NULs.
-devname is local so I think strlcpy can be used.
-For {device,hwtstamp}.ifr_name I thought the strlcpy could
-be used since ifr_name is zeroed upon creation of device and
-hwtstamp.
+2. If no mapping is going to be touched by printascii(), does it matter
+   whether a UART is mapped via this early mapping stuff?
 
-Oh, and the parenthesis in radiotap-headers.txt should not
-be there.
+The answer to (2) is no.
 
-Roel
+So, you can still arrange for these fields to be populated with a valid
+value even if you don't intend to use the resulting mapping.  And so
+there's no need to force DEBUG_LL to be unset.
 
-diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
-index 6e25c26..4d71b0e 100644
---- a/Documentation/accounting/getdelays.c
-+++ b/Documentation/accounting/getdelays.c
-@@ -303,7 +303,7 @@ int main(int argc, char *argv[])
- 				err(1, "Invalid rcv buf size\n");
- 			break;
- 		case 'm':
--			strncpy(cpumask, optarg, sizeof(cpumask));
-+			strncpy(cpumask, optarg, sizeof(cpumask) - 1);
- 			maskset = 1;
- 			printf("cpumask %s maskset %d\n", cpumask, maskset);
- 			break;
-diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
-index 681ec22..00477ea 100644
---- a/Documentation/hwmon/hpfall.c
-+++ b/Documentation/hwmon/hpfall.c
-@@ -27,7 +27,7 @@ int set_unload_heads_path(char *device)
- 
- 	if (strlen(device) <= 5 || strncmp(device, "/dev/", 5) != 0)
- 		return -EINVAL;
--	strncpy(devname, device + 5, sizeof(devname));
-+	strlcpy(devname, device + 5, sizeof(devname));
- 
- 	snprintf(unload_heads_path, sizeof(unload_heads_path),
- 				"/sys/block/%s/device/unload_heads", devname);
-diff --git a/Documentation/networking/radiotap-headers.txt b/Documentation/networking/radiotap-headers.txt
-index 953331c..447e004 100644
---- a/Documentation/networking/radiotap-headers.txt
-+++ b/Documentation/networking/radiotap-headers.txt
-@@ -126,7 +126,7 @@ int MyFunction(u8 * buf, int buflen)
- 
- 		case IEEE80211_RADIOTAP_ANTENNA:
- 			/* radiotap uses 0 for 1st ant */
--			antenna = *iterator.this_arg);
-+			antenna = *iterator.this_arg;
- 			break;
- 
- 		case IEEE80211_RADIOTAP_DBM_TX_POWER:
-diff --git a/Documentation/networking/timestamping/timestamping.c b/Documentation/networking/timestamping/timestamping.c
-index a7936fe..c1acd2c 100644
---- a/Documentation/networking/timestamping/timestamping.c
-+++ b/Documentation/networking/timestamping/timestamping.c
-@@ -374,12 +374,12 @@ int main(int argc, char **argv)
- 		bail("socket");
- 
- 	memset(&device, 0, sizeof(device));
--	strncpy(device.ifr_name, interface, sizeof(device.ifr_name));
-+	strlcpy(device.ifr_name, interface, sizeof(device.ifr_name));
- 	if (ioctl(sock, SIOCGIFADDR, &device) < 0)
- 		bail("getting interface IP address");
- 
- 	memset(&hwtstamp, 0, sizeof(hwtstamp));
--	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name));
-+	strlcpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name));
- 	hwtstamp.ifr_data = (void *)&hwconfig;
- 	memset(&hwconfig, 0, sizeof(hwconfig));
- 	hwconfig.tx_type =
+If you really have no values you can use, make sure you set io_pg_offst
+to 0x3ffc - the last offset in the L1 page table.  This will cause the
+code to write a single dummy entry at the very top of the page table,
+which will then be overwritten by the generic ARM arch code for its own
+use.
