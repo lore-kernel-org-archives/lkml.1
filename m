@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZKPTkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZKPTlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbZKPTkM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 14:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZKPTkL
+	id S1753806AbZKPTlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 14:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZKPTlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 14:40:11 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:35919 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbZKPTkK (ORCPT
+	Mon, 16 Nov 2009 14:41:13 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:59333 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753315AbZKPTlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 14:40:10 -0500
-Date: Mon, 16 Nov 2009 20:40:15 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] FIX IT
-Message-ID: <20091116194015.GA13820@rhlx01.hs-esslingen.de>
+	Mon, 16 Nov 2009 14:41:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:x-url:user-agent;
+        b=LW3L+CPxrZRuzIGO/tYRmhJOXUU4aQ4q3rb4buSiaxcZVICNYpSgETPMe/4m3A+1rm
+         y+gjOB6A8xe+itEz2cCl1V+60dCytjdR5bp4lHbQbo7U27ut8IkJzYqov4uNqBmWzMSY
+         iCEIl8P2af2oL9oOuLfjBGBsMCOOTZZTnoZs8=
+Date: Mon, 16 Nov 2009 17:41:04 -0200
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/5] perf buildid-list: New plumbing command
+Message-ID: <20091116194104.GC12042@ghostprotocols.net>
+References: <1258396365-29217-1-git-send-email-acme@infradead.org> <1258396365-29217-2-git-send-email-acme@infradead.org> <1258396365-29217-3-git-send-email-acme@infradead.org> <1258396365-29217-4-git-send-email-acme@infradead.org> <1258396365-29217-5-git-send-email-acme@infradead.org> <20091116185850.GB5293@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091116185850.GB5293@nowhere>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ChangeLog: Partially fix B0RKEN kernel usability
+Em Mon, Nov 16, 2009 at 07:58:52PM +0100, Frederic Weisbecker escreveu:
+> On Mon, Nov 16, 2009 at 04:32:45PM -0200, Arnaldo Carvalho de Melo wrote:
+> > With this we can list the buildids in a perf.data file so that we can
+> > pipe them to other, distro specific tools that from the buildids can
+> > figure out separate packages (foo-debuginfo) where we can find the
+> > matching symtabs so that perf report can do its job.
+> > E.g:
+> > [acme@doppio linux-2.6-tip]$ perf buildid-list | head -2
+> > 8e08b117e5458ad3f85da16d42d0fc5cd21c5869
+> > 520c2387a587cc5acfcf881e27dba1caaeab4b1f
+> > [acme@doppio linux-2.6-tip]$ perf buildid-list -v | head -2
+> > 8e08b117e5458ad3f85da16d42d0fc5cd21c5869 /sbin/init
+> > 520c2387a587cc5acfcf881e27dba1caaeab4b1f /lib64/ld-2.10.1.so
+> 
+> I would rather see the effect of this -v option as the default.
+> It's very useful to see the dso resolved but hashes alone
+> don't pay much.
 
-checkpatch.pl'd, tested, applies cleanly to 2.6.32-rc7.
-Seemingly best to go via trusted mmotm.
+I disagree, the main purpose of this command is equivalent to 'git
+rev-list':
 
-Thanks as always,
+[acme@doppio linux-2.6-tip]$ git rev-list HEAD^^..
+089242a8c826aac1c827bb797475b9852fe0db49
+18e3a75dc47d8397bbf0936ec8e3ebdecada7ba1
+[acme@doppio linux-2.6-tip]$ 
 
-Signed-off-by: Andreas Mohr <andi@lisas.de>
+I.e. provide content keys that then will be used by distro specific
+porcelain to get the matching -debuginfo packages with the symtabs.
 
-
---- linux-2.6/init/main.c.orig	2009-11-16 20:13:08.000000000 +0100
-+++ linux-2.6/init/main.c	2009-11-16 20:14:51.000000000 +0100
-@@ -846,7 +846,8 @@ static noinline int init_post(void)
- 	run_init_process("/bin/init");
- 	run_init_process("/bin/sh");
- 
--	panic("No init found.  Try passing init= option to kernel.");
-+	panic("No init found.  Try passing init= option to kernel. "
-+	      "See Linux Documentation/init.txt for guidance.");
- }
- 
- static int __init kernel_init(void * unused)
---- /dev/null	2009-11-10 08:07:33.390012116 +0100
-+++ linux-2.6/Documentation/init.txt	2009-11-16 20:17:57.000000000 +0100
-@@ -0,0 +1,44 @@
-+Explaining the dreaded "No init found." boot hang message
-+=========================================================
-+
-+OK, so you've got this pretty unintuitive message (currently located
-+in init/main.c) and are wondering what the H*** went wrong.
-+Some high-level reasons for failure (listed roughly in order of execution)
-+to load the init binary are:
-+A) Unable to mount root FS
-+B) init binary doesn't exist on rootfs
-+C) other requirements not met
-+D) binary exists but dependencies not available
-+E) binary cannot be loaded
-+
-+Detailed explanations:
-+0) Set "debug" kernel parameter (in bootloader or CONFIG_CMDLINE)
-+to get more detailed kernel messages.
-+A) Please make sure you have the correct root FS type
-+(and root= kernel parameter points to the correct partition),
-+required drivers such as storage hardware (such as SCSI or USB!)
-+and filesystem (ext3, jffs2 etc.) are builtin (alternatively as modules by
-+using initrd)
-+C) Possibly a conflict in console= setup --> initial console unavailable.
-+E.g. some serial consoles are unreliable due to serial IRQ issues (e.g. missing
-+interrupt-based configuration).
-+Try using a different console= device or e.g. netconsole=.
-+D) e.g. crucial library dependencies of the init binary such as
-+/lib/ld-linux.so.2 missing or broken. Use readelf -d <INIT>|grep NEEDED
-+to find out which libraries are required.
-+E) make sure the binary's architecture matches your hardware.
-+E.g. i386 vs. x86_64 mismatch, or trying to load x86 on ARM hardware.
-+Or did you try loading a non-binary file here!?! (shell script?)
-+To find out more, add code patch to display kernel_execve()s return values.
-+
-+Please extend this explanation whenever you find new failure causes
-+(after all loading the init binary is a CRITICAL and hard transition step
-+which needs to be made as painless as possible), then submit patch to LKML.
-+Further TODOs:
-+- Implement the various run_init_process() invocations via a struct array
-+  which can then store the kernel_execve() result value and on failure
-+  log it all by iterating over _all_ results (very important usability fix).
-+- try to make the implementation itself more helpful in general,
-+  e.g. by providing additional error messages at affected places.
-+
-+Andreas Mohr <andi at lisas period de>
+- Arnaldo
