@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZKPVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZKPVg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbZKPVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZKPVf0
+	id S1754341AbZKPVg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZKPVg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:35:26 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:39694 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753924AbZKPVfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:35:25 -0500
-Message-ID: <4B01C59A.9050507@sgi.com>
-Date: Mon, 16 Nov 2009 13:35:22 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] x86: Limit the number of per cpu MCE bootup messages
-References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210727.456553000@alcatraz.americas.sgi.com> <20091116212251.GB2221@elte.hu>
-In-Reply-To: <20091116212251.GB2221@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Nov 2009 16:36:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34896 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750908AbZKPVgZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 16:36:25 -0500
+Date: Mon, 16 Nov 2009 13:36:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-11-13-19-59 uploaded
+Message-Id: <20091116133628.24132480.akpm@linux-foundation.org>
+In-Reply-To: <20091116210941.GA2622@ldl.fc.hp.com>
+References: <200911140403.nAE43CN1016851@imap1.linux-foundation.org>
+	<20091116210941.GA2622@ldl.fc.hp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Nov 2009 14:09:41 -0700
+Alex Chiang <achiang@hp.com> wrote:
 
-
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
+> Hi Andrew,
 > 
->> @@ -83,6 +86,7 @@
->>  	unsigned long flags;
->>  	int hdr = 0;
->>  	int i;
->> +	char buf[120];
+> * akpm@linux-foundation.org <akpm@linux-foundation.org>:
+> > The mm-of-the-moment snapshot 2009-11-13-19-59 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://zen-kernel.org/kernel/mmotm.git
+> > 
+> > It contains the following patches against 2.6.32-rc7:
 > 
-> that constant is not particularly nice, is it?
+> Many of the patches have dropped their subject lines. I realize
+> that you can get the subject of the patch from the patch name,
+> but if one is using the git tree, then looking at the git log,
+> you see things like:
 > 
-> 	Ingo
+> 	commit 7f97d096be78d5a8d6bf2efc28fe3efba21e47f0
+> 	Author: Andrew Morton <akpm@linux-foundation.org>
+> 	Date:   Mon Nov 9 20:59:36 2009 +0100
+> 
+> 	    fed up with those stupid warnings
+> 	    
+> 	    
+> 	    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> And there's no real good way to know that it came from
+> undeprecate-pci_find_device.patch.
+> 
+> Would it be reasonable of me to request that your scripts stick
+> the subject of the mail into the patch description field? That
+> would greatly enhance the useability of the git version of mmotm.
 
-I'm up for suggestions.  I just noticed that during testing, the
-MCE Banks messages overflowed 80 chars but I didn't actually
-check to see what the longest might be.
+yup, I need to fix that as part of getting all this stuff into
+linux-next.
 
-Should I trim it to 80?  Or use a different constant?
-
-Thanks,
-Mike
+Tell everyone to stop sending patches and reporting bugs :(
