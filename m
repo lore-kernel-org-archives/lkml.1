@@ -1,126 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbZKPOXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZKPO2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbZKPOXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 09:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZKPOW7
+	id S1753870AbZKPO2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 09:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZKPO2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 09:22:59 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:17285 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbZKPOW6 (ORCPT
+	Mon, 16 Nov 2009 09:28:17 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:59183 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753201AbZKPO2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 09:22:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=ffUgnoEmKUMGx3FwgsBJ7wOGS5/GfF8q6COkaDt/knsWBjtnPheUL9gq7Ce/wYjxG1
-         cP3X8QMu436tAY3+vZpkFuIM3CWG/EQzqVKUUGMPWBnAEFCQOWSIi0W6eTEEz0vMhyJQ
-         49t7LIFqX/FY7YrwfC95U9t0GNO7yWmp2hB5o=
-Message-ID: <4B016041.5030000@gmail.com>
-Date: Mon, 16 Nov 2009 09:22:57 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 16 Nov 2009 09:28:16 -0500
+Date: Mon, 16 Nov 2009 19:58:11 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 5/7] hw-breakpoints: Rewrite the hw-breakpoints layer on
+	top of perf events
+Message-ID: <20091116142811.GA24341@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1257474542-6648-1-git-send-email-fweisbec@gmail.com> <1257474542-6648-6-git-send-email-fweisbec@gmail.com> <20091108173107.GB4465@in.ibm.com> <20091112151947.GC5237@nowhere>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: herbert@gondor.apana.org.au, ghaskins@novell.com, mst@redhat.com,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-References: <4AF98A8C.9040201@novell.com>	<20091114011229.GA18580@gondor.apana.org.au>	<4AFE08EF.2030308@gmail.com> <20091113.190438.78469912.davem@davemloft.net>
-In-Reply-To: <20091113.190438.78469912.davem@davemloft.net>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCA38B29347E8D8DB8FE10837"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091112151947.GC5237@nowhere>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCA38B29347E8D8DB8FE10837
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, Nov 12, 2009 at 04:19:52PM +0100, Frederic Weisbecker wrote:
+> On Sun, Nov 08, 2009 at 11:01:07PM +0530, K.Prasad wrote:
+> > 
+> > A few more observations....
+> > 
+> > int reserve_bp_slot(struct perf_event *bp)
+> > {
+> > ...
+> > ....
+> > 	if (!bp->attr.pinned) {
+> > 		/*
+> > 		 * If there are already flexible counters here,
+> > 		 * there is at least one slot reserved for all
+> > 		 * of them. Just join the party.
+> > 		 *
+> > 		 * Otherwise, check there is at least one free slot
+> > 		 */
+> > 		if (!slots.flexible && slots.pinned == HBP_NUM) {
+> > 			ret = -ENOSPC;
+> > 			goto end;
+> > 		}
+> > 
+> > 	/* Flexible counters need to keep at least one slot */
+> > 	} else if (slots.pinned + (!!slots.flexible) == HBP_NUM) {
+> > 		ret = -ENOSPC;
+> > 		goto end;
+> > 	}
+> > ..
+> > ...
+> > }
+> > 
+> > It appears that you're reserving one slot for the non-pinned breakpoint
+> > requests, which I'm afraid wouldn't play well with PPC64 (having one
+> > DABR).
+> 
+> I don't understand what you mean. PPC64 has only one DABR, or...?
+> 
 
-David Miller wrote:
-> From: Gregory Haskins <gregory.haskins@gmail.com>
-> Date: Fri, 13 Nov 2009 20:33:35 -0500
->=20
->> Well, not with respect to the overall protocol, of course not.  But wi=
-th
->> respect to the buffer in question, it _has_ to be.  Or am I missing
->> something?
->=20
-> sendfile() absolutely, and positively, is not.
->=20
-> Any entity can write to the pages being send via sendfile(), at will,
-> and those writes will show up in the packet stream if they occur
-> before the NIC DMA's the memory backed by those pages into it's
-> buffer.
+Yes, PPC64 has just one DABR. And so this scheme will allow the first
+request (be it 'pinned' or 'unpinned') to use the debug register? Sounds
+fine.
 
-Right, understood.
+Thanks,
+K.Prasad
 
->=20
-> There is zero data synchronization whatsoever, we don't lock the
-> pages, we don't block their usage while they are queued up in the
-> socket send queue, nothing like that.
-
-Understood.
-
->=20
-> The user returns long before it every hits the wire and there is zero
-> "notification" to the user that the pages in question for the
-> sendfile() request are no longer in use.
-
-Ok, this was the part I didn't know.
-
->=20
-> It seems that your understanding of how buffering and synchronization
-> works in the TCP stack has come out of a fairy tale :-)
-
-I understand that we do not protect the buffers from modification from
-other entities in process.  This was purely a question of
-synchronization from the producers standpoint.
-
-IOW:
-
-for (;;) {
-   char buf[512];
-
-   memcpy(buf, next, sizeof(buf));=09
-   write(fd, buf);
-}
-
-would work without worrying that the producer will stomp on buf itself.
- It is now my understanding that for things other than sendfile, this
-works because the buffer is copied before it returns control to the app.
- For sendfile(), the producer is more or less on its own and therefore
-has to be careful if they are reusing previous mmapped buffers.  Ok.
-
-But really, this is somewhat orthogonal to the original problem, so let
-me see if we can bring it back on topic.  Michael stated that this patch
-in question may be problematic because there are places in the stack
-that can get_page() without also maintaining a reference to the shinfo
-object.  Evgeniy seems to say the opposite.  I am not sure who is right,
-or if I misunderstood one or both of them.  Any thoughts?
-
-Kind Regards,
--Greg
-
-
-
---------------enigCA38B29347E8D8DB8FE10837
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksBYEEACgkQP5K2CMvXmqHRGACdHQBE2RI72HYNcNyDOivQjdHE
-AXYAn3W9cRcV1O1Cu918l6ibruhrmNP1
-=eH7w
------END PGP SIGNATURE-----
-
---------------enigCA38B29347E8D8DB8FE10837--
