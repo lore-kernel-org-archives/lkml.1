@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbZKPEad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZKPEap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752885AbZKPEad (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 23:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbZKPEad
+	id S1753117AbZKPEap (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 23:30:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZKPEao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 23:30:33 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:59617 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbZKPEab (ORCPT
+	Sun, 15 Nov 2009 23:30:44 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:49594 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbZKPEal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 23:30:31 -0500
+	Sun, 15 Nov 2009 23:30:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:subject:from:reply-to:to:cc:in-reply-to:references
          :content-type:organization:date:message-id:mime-version:x-mailer
          :content-transfer-encoding;
-        b=wObH1ea0zVD6vGeHVkwSFhlKeB3LDkGjCxu6doD4buvbxyOJy+5f25Sp5/Dp4OSIs9
-         jBFuvDv0jMwRykbqfZ2YGxv6WJ1j0nGBd3mCVskUO0FxQeeS3QuWD8hCtY9IKyLzGNpO
-         DBZYU2Abhmk/5jnkNhDE1+s4M5WiMDYt1TBWQ=
-Subject: [PATCH 3/5] AI TB: Driver for the Freescale MMA7455L accelerometer
+        b=aJKXw+Dg0MmNR7xRS2G2MWr4vIl0YK8qFbsPgvCU68dKqqiZHSTAFmGVUUPyb5vI1E
+         rFN8W7OT2BLtRnkbOXAXC8p6XjFBcD9fRrNBAU3MPCyR4ZpxP9bZXZEq/RqOXu8gNp5+
+         fhHds8v7ob/mAWRto9lfJXPJjkjZkrDgK7lL8=
+Subject: [PATCH 4/5] AI TB: Driver for the Always Innovating Touch Book
+ keyboard.
 From: Gregoire Gentil <gregoire@gentil.com>
 Reply-To: gregoire@gentil.com
 To: linux-omap@vger.kernel.org
@@ -28,8 +29,8 @@ In-Reply-To: <1258228079.16065.17.camel@runt>
 References: <1258228079.16065.17.camel@runt>
 Content-Type: text/plain
 Organization: Gregoire Gentil
-Date: Sun, 15 Nov 2009 20:30:35 -0800
-Message-Id: <1258345835.9089.19.camel@gregoire-laptop>
+Date: Sun, 15 Nov 2009 20:30:46 -0800
+Message-Id: <1258345846.9089.20.camel@gregoire-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1
 Content-Transfer-Encoding: 7bit
@@ -37,706 +38,357 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver for the Freescale MMA7455L accelerometer
+Driver for the Always Innovating Touch Book keyboard.
 
 
 
 
 Signed-off-by: Gregoire Gentil <gregoire@gentil.com>
 ---
-drivers/input/misc/Kconfig    |    9 +
-drivers/input/misc/Makefile   |    2 +-
-drivers/input/misc/mma7455l.c |  625
-+++++++++++++++++++++++++++++++++++++++++
-include/linux/mma7455l.h      |   11 +
-4 files changed, 646 insertions(+), 1 deletions(-)
-create mode 100644 drivers/input/misc/mma7455l.c
-create mode 100644 include/linux/mma7455l.h
+drivers/hid/Kconfig                |    7 +
+drivers/hid/Makefile               |    1 +
+drivers/hid/hid-alwaysinnovating.c |  262
+++++++++++++++++++++++++++++++++++++
+drivers/hid/hid-core.c             |    1 +
+drivers/hid/hid-ids.h              |    3 +
+5 files changed, 274 insertions(+), 0 deletions(-)
+create mode 100644 drivers/hid/hid-alwaysinnovating.c
 
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index a9bb254..454bac7 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -317,4 +317,13 @@ config INPUT_PCAP
-  To compile this driver as a module, choose M here: the
-  module will be called pcap_keys.
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 24d90ea..b56ddc5 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -62,6 +62,13 @@ config HID_A4TECH
+---help---
+Support for A4 tech X5 and WOP-35 / Trust 450L mice.
 
-+config INPUT_MMA7455L
-+ tristate "Freescale MMA7455L 3-axis accelerometer"
-+ depends on SPI_MASTER
-+ help
-+   SPI driver for the Freescale MMA7455L 3-axis accelerometer.
++config HID_ALWAYSINNOVATING
++ tristate "Always Innovating" if EMBEDDED
++ depends on USB_HID
++ default !EMBEDDED
++ ---help---
++ Support for Always Innovating Touch Book.
 +
-+   The userspace interface is a 3-axis (X/Y/Z) relative movement
-+   Linux input device, reporting REL_[XYZ] events.
-+
+config HID_APPLE
+tristate "Apple" if EMBEDDED
+depends on (USB_HID || BT_HIDP)
+diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+index 0de2dff..b6a2860 100644
+--- a/drivers/hid/Makefile
++++ b/drivers/hid/Makefile
+@@ -20,6 +20,7 @@ ifdef CONFIG_LOGIRUMBLEPAD2_FF
 endif
-diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
-index a8b8485..3db6347 100644
---- a/drivers/input/misc/Makefile
-+++ b/drivers/input/misc/Makefile
-@@ -30,4 +30,4 @@ obj-$(CONFIG_INPUT_WINBOND_CIR) += winbond-cir.o
-obj-$(CONFIG_INPUT_WISTRON_BTNS) += wistron_btns.o
-obj-$(CONFIG_INPUT_WM831X_ON) += wm831x-on.o
-obj-$(CONFIG_INPUT_YEALINK) += yealink.o
--
-+obj-$(CONFIG_INPUT_MMA7455L) += mma7455l.o
-diff --git a/drivers/input/misc/mma7455l.c
-b/drivers/input/misc/mma7455l.c
+
+obj-$(CONFIG_HID_A4TECH) += hid-a4tech.o
++obj-$(CONFIG_HID_ALWAYSINNOVATING) += hid-alwaysinnovating.o
+obj-$(CONFIG_HID_APPLE) += hid-apple.o
+obj-$(CONFIG_HID_BELKIN) += hid-belkin.o
+obj-$(CONFIG_HID_CHERRY) += hid-cherry.o
+diff --git a/drivers/hid/hid-alwaysinnovating.c
+b/drivers/hid/hid-alwaysinnovating.c
 new file mode 100644
-index 0000000..771d4b7
+index 0000000..a7bb0fd
 --- /dev/null
-+++ b/drivers/input/misc/mma7455l.c
-@@ -0,0 +1,625 @@
-+/* Linux kernel driver for the Freescale MMA7455L 3-axis accelerometer
++++ b/drivers/hid/hid-alwaysinnovating.c
+@@ -0,0 +1,262 @@
++/*
++ *  USB HID quirks support for the Always Innovating Touch Book
++ *  Code borrowed from hid-apple.c
 + *
-+ * Copyright (C) 2009 by Always Innovating, Inc.
-+ * Author: Gregoire Gentil <gregoire@gentil.com>
-+ * Author: Tim Yamin <plasm@roo.me.uk>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ *
++ *  Copyright (c) 2009 Gregoire Gentil <gregoire@gentil.com>
++ *  Copyright (c) 2009 Tim Yamin <plasm@roo.me.uk>
 + */
 +
 +/*
-+ * What this driver doesn't yet support:
-+ *
-+ * - I2C
-+ * - INT2 handling
-+ * - Pulse detection (and the sysctls to control it)
-+ * - 10-bit measurement
++ * This program is free software; you can redistribute it and/or modify
+it
++ * under the terms of the GNU General Public License as published by
+the Free
++ * Software Foundation; either version 2 of the License, or (at your
+option)
++ * any later version.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/module.h>
 +#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <linux/delay.h>
-+#include <linux/input.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/sysfs.h>
-+#include <linux/gpio.h>
++#include <linux/hid.h>
++#include <linux/module.h>
++#include <linux/usb.h>
 +
-+#include <linux/mma7455l.h>
-+#include <linux/spi/spi.h>
++#include "hid-ids.h"
 +
-+#define MMA7455L_WHOAMI_MAGIC 0x55
-+
-+enum mma7455l_reg {
-+ MMA7455L_REG_XOUTL = 0x00,
-+ MMA7455L_REG_XOUTH = 0x01,
-+ MMA7455L_REG_YOUTL = 0x02,
-+ MMA7455L_REG_YOUTH = 0x03,
-+ MMA7455L_REG_ZOUTL = 0x04,
-+ MMA7455L_REG_ZOUTH = 0x05,
-+ MMA7455L_REG_XOUT8 = 0x06,
-+ MMA7455L_REG_YOUT8 = 0x07,
-+ MMA7455L_REG_ZOUT8 = 0x08,
-+ MMA7455L_REG_STATUS = 0x09,
-+ MMA7455L_REG_DETSRC = 0x0a,
-+ MMA7455L_REG_TOUT = 0x0b,
-+ MMA7455L_REG_RESERVED1 = 0x0c,
-+ MMA7455L_REG_I2CAD = 0x0d,
-+ MMA7455L_REG_USRINF = 0x0e,
-+ MMA7455L_REG_WHOAMI = 0x0f,
-+ MMA7455L_REG_XOFFL = 0x10,
-+ MMA7455L_REG_XOFFH = 0x11,
-+ MMA7455L_REG_YOFFL = 0x12,
-+ MMA7455L_REG_YOFFH = 0x13,
-+ MMA7455L_REG_ZOFFL = 0x14,
-+ MMA7455L_REG_ZOFFH = 0x15,
-+ MMA7455L_REG_MCTL = 0x16,
-+ MMA7455L_REG_INTRST = 0x17,
-+ MMA7455L_REG_CTL1 = 0x18,
-+ MMA7455L_REG_CTL2 = 0x19,
-+ MMA7455L_REG_LDTH = 0x1a,
-+ MMA7455L_REG_PDTH = 0x1b,
-+ MMA7455L_REG_PW = 0x1c,
-+ MMA7455L_REG_LT = 0x1d,
-+ MMA7455L_REG_TW = 0x1e,
-+ MMA7455L_REG_RESERVED2 = 0x1f,
++struct touchbook_sc {
++ unsigned long quirks;
++ unsigned int  fn_on;
++ DECLARE_BITMAP(pressed_fn, KEY_CNT);
 +};
 +
-+enum mma7455l_reg_status {
-+ MMA7455L_STATUS_XDA = 0x08,
-+ MMA7455L_STATUS_YDA = 0x10,
-+ MMA7455L_STATUS_ZDA = 0x20,
-+};
-+
-+enum mma7455l_mode {
-+ MMA7455L_MODE_STANDBY = 0,
-+ MMA7455L_MODE_MEASUREMENT = 1,
-+ MMA7455L_MODE_LEVELDETECTION = 0x42, /* Set DRPD to on */
-+ MMA7455L_MODE_PULSEDETECTION = 0x43, /* Set DRPD to on */
-+ MMA7455L_MODE_MASK = 0x43,
-+};
-+
-+enum mma7455l_gselect {
-+ MMA7455L_GSELECT_8 = 0x0,
-+ MMA7455L_GSELECT_2 = 0x4,
-+ MMA7455L_GSELECT_4 = 0x8,
-+ MMA7455L_GSELECT_MASK = 0xC,
-+};
-+
-+/* FIXME */
-+#define MMA7455L_F_FS 0x0020 /* ADC full scale */
-+
-+struct mma7455l_info {
-+ struct spi_device *spi_dev;
-+ struct input_dev *input_dev;
-+ struct mutex lock;
-+ struct delayed_work work;
-+
-+ u8 mode;
-+ u8 gSelect;
-+
++struct touchbook_key_translation {
++ u16 from;
++ u16 to;
 + u8 flags;
-+ u8 working;
 +};
 +
-+/* lowlevel register access functions */
++static struct touchbook_key_translation touchbook_fn_keys[] = {
++ { KEY_F6, KEY_BRIGHTNESSDOWN },
++ { KEY_F7, KEY_BRIGHTNESSUP },
 +
-+#define WRITE_BIT (1 << 7)
-+#define ADDR_SHIFT 1
++ { KEY_F8, KEY_MUTE },
++ { KEY_F9, KEY_VOLUMEDOWN },
++ { KEY_F10, KEY_VOLUMEUP },
 +
-+static inline u_int8_t __reg_read(struct mma7455l_info *mma, u_int8_t
-reg)
++ { KEY_UP, KEY_PAGEUP },
++ { KEY_DOWN, KEY_PAGEDOWN },
++ { }
++};
++
++extern unsigned long touchbook_revision;
++unsigned long swap_key;
++
++static struct touchbook_key_translation *touchbook_find_translation(
++ struct touchbook_key_translation *table, u16 from)
 +{
-+ int rc;
-+ u_int8_t cmd;
++ struct touchbook_key_translation *trans;
 +
-+ cmd = ((reg & 0x3f) << ADDR_SHIFT);
-+ rc = spi_w8r8(mma->spi_dev, cmd);
++ /* Look for the translation */
++ for (trans = table; trans->from; trans++)
++ if (trans->from == from)
++ return trans;
 +
-+ return rc;
++ return NULL;
 +}
 +
-+static u_int8_t reg_read(struct mma7455l_info *mma, u_int8_t reg)
++static int touchbook_event(struct hid_device *hid, struct hid_field
+*field,
++ struct hid_usage *usage, __s32 value)
 +{
-+ u_int8_t ret;
++ int do_translate;
 +
-+ mutex_lock(&mma->lock);
-+ ret = __reg_read(mma, reg);
-+ mutex_unlock(&mma->lock);
++ struct input_dev *input = field->hidinput->input;
++ struct touchbook_sc *asc = hid_get_drvdata(hid);
++ struct touchbook_key_translation *trans;
 +
-+ return ret;
-+}
++ if (swap_key && usage->code == KEY_RIGHTSHIFT) {
++ input_event(input, usage->type, KEY_END, value);
++ return 1;
++ }
 +
-+static s16 __reg_read_10(struct mma7455l_info *mma, u8 reg1, u8 reg2)
-+{
-+ u8 v1, v2;
++ if (swap_key && usage->code == KEY_END) {
++ input_event(input, usage->type, KEY_RIGHTSHIFT, value);
++ return 1;
++ }
 +
-+ v1 = __reg_read(mma, reg1);
-+ v2 = __reg_read(mma, reg2);
++ if (usage->code == KEY_POWER) {
++ asc->fn_on = !!value;
++ input_event(input, usage->type, usage->code, value);
++ return 1;
++ }
 +
-+ return (v2 & 0x4) << 13 | (v2 & 0x3) << 8 | v1;
-+}
-+
-+static inline int __reg_write(struct mma7455l_info *mma,
-+ u_int8_t reg, u_int8_t val)
-+{
-+ u_int8_t buf[2];
-+
-+ buf[0] = ((reg & 0x3f) << ADDR_SHIFT) | WRITE_BIT;
-+ buf[1] = val;
-+
-+ return spi_write(mma->spi_dev, buf, sizeof(buf));
-+}
-+
-+static int reg_write(struct mma7455l_info *mma, u_int8_t reg, u_int8_t
-val)
-+{
-+ int ret;
-+
-+ mutex_lock(&mma->lock);
-+ ret = __reg_write(mma, reg, val);
-+ mutex_unlock(&mma->lock);
-+
-+ return ret;
-+}
-+
-+static s16 __reg_write_10(struct mma7455l_info *mma,
-+ u8 reg1, u8 reg2, s16 value)
-+{
-+ int ret;
-+ u8 v1, v2;
-+
-+ v1 = value & 0xFF;
-+ if (value < 0)
-+ v2 = ((value >> 8) & 0x3) | 0x4;
++ trans = touchbook_find_translation(touchbook_fn_keys, usage->code);
++ if (trans) {
++ if (test_bit(usage->code, asc->pressed_fn))
++ do_translate = 1;
 + else
-+ v2 = 0;
++ do_translate = asc->fn_on;
 +
-+ ret = __reg_write(mma, reg1, v1);
-+ ret = __reg_write(mma, reg2, v2);
++ if (do_translate) {
++ if (value)
++ set_bit(usage->code, asc->pressed_fn);
++ else
++ clear_bit(usage->code, asc->pressed_fn);
++
++ input_event(input, usage->type, trans->to,
++ value);
++
++ return 1;
++ }
++ }
++
++ return 0;
++}
++
++static int touchbook_input_mapping(struct hid_device *hdev,
++ struct hid_input *hi,
++ struct hid_field *field, struct hid_usage *usage,
++ unsigned long **bit, int *max)
++{
++ struct touchbook_key_translation *trans;
++
++ /* Enable all other keys */
++ for (trans = touchbook_fn_keys; trans->from; trans++)
++ set_bit(trans->to, hi->input->keybit);
++
++ return 0;
++}
++
++static ssize_t show_swap_key(struct device *dev,
++ struct device_attribute *attr, char *buf)
++{
++ return snprintf(buf, PAGE_SIZE, "%lu\n", swap_key);
++}
++
++static ssize_t store_swap_key(struct device *dev,
++ struct device_attribute *attr,
++ const char *buf, size_t count)
++{
++ strict_strtoul(buf, 10, &swap_key);
++
++ if (swap_key != 0 && swap_key != 1) {
++ swap_key = 0;
++ return -EINVAL;
++ }
++
++ return count;
++}
++
++static struct device_attribute touchbook_hid_attrs[] = {
++ __ATTR(swap_key, S_IRUGO | S_IWUGO, show_swap_key, store_swap_key),
++};
++
++int touchbook_create_sysfs(struct hid_device *hdev)
++{
++ int i;
++ int r;
++
++ for (i = 0; i < ARRAY_SIZE(touchbook_hid_attrs); i++) {
++ r = device_create_file(&hdev->dev,
++ &touchbook_hid_attrs[i]);
++
++ if (r) {
++ dev_err(&hdev->dev, "failed to create sysfs file\n");
++ return r;
++ }
++ }
++
++ return 0;
++}
++
++void touchbook_remove_sysfs(struct hid_device *hdev)
++{
++ int i;
++
++ for (i = 0; i < ARRAY_SIZE(touchbook_hid_attrs); i++)
++ device_remove_file(&hdev->dev,
++ &touchbook_hid_attrs[i]);
++}
++
++static int touchbook_probe(struct hid_device *hdev,
++ const struct hid_device_id *id)
++{
++ unsigned long quirks = id->driver_data;
++ struct touchbook_sc *asc;
++ unsigned int connect_mask = HID_CONNECT_DEFAULT;
++ int ret;
++
++ asc = kzalloc(sizeof(*asc), GFP_KERNEL);
++ if (asc == NULL) {
++ dev_err(&hdev->dev, "can't alloc touchbook descriptor\n");
++ return -ENOMEM;
++ }
++
++ asc->quirks = quirks;
++ hid_set_drvdata(hdev, asc);
++
++ ret = hid_parse(hdev);
++ if (ret) {
++ dev_err(&hdev->dev, "parse failed\n");
++ goto err_free;
++ }
++
++ ret = touchbook_create_sysfs(hdev);
++ if (ret) {
++ dev_err(&hdev->dev, "failed to create sysfs entries\n");
++ goto err_free;
++ }
++
++ swap_key = (touchbook_revision >= 4) ? 1 : 0;
++
++ ret = hid_hw_start(hdev, connect_mask);
++ if (ret) {
++ dev_err(&hdev->dev, "hw start failed\n");
++ goto err_free;
++ }
++
++ return 0;
++err_free:
++ kfree(asc);
 + return ret;
 +}
 +
-+static void mma7455l_work(struct work_struct *work)
++static void touchbook_remove(struct hid_device *hdev)
 +{
-+ struct mma7455l_info *mma =
-+ container_of(work, struct mma7455l_info, work.work);
-+
-+ s8 val;
-+ mma->working = 1;
-+
-+ /* FIXME: 10 bit accuracy? */
-+ if (!(mma->flags & MMA7455L_STATUS_XDA)) {
-+ val = reg_read(mma, MMA7455L_REG_XOUT8);
-+ input_report_abs(mma->input_dev, ABS_X, val);
-+ }
-+ if (!(mma->flags & MMA7455L_STATUS_YDA)) {
-+ val = reg_read(mma, MMA7455L_REG_YOUT8);
-+ input_report_abs(mma->input_dev, ABS_Y, val);
-+ }
-+ if (!(mma->flags & MMA7455L_STATUS_ZDA)) {
-+ val = reg_read(mma, MMA7455L_REG_ZOUT8);
-+ input_report_abs(mma->input_dev, ABS_Z, val);
-+ }
-+
-+ mma->working = 0;
-+ input_sync(mma->input_dev);
-+ put_device(&mma->spi_dev->dev);
-+
-+ /* Enable IRQ and clear out interrupt */
-+ reg_write(mma, MMA7455L_REG_INTRST, 0x3);
-+ reg_write(mma, MMA7455L_REG_INTRST, 0x0);
-+ enable_irq(mma->spi_dev->irq);
++ hid_hw_stop(hdev);
++ kfree(hid_get_drvdata(hdev));
++ touchbook_remove_sysfs(hdev);
 +}
 +
-+static void mma7455l_schedule_work(struct mma7455l_info *mma)
-+{
-+ int status;
-+
-+ get_device(&mma->spi_dev->dev);
-+ status = schedule_delayed_work(&mma->work, HZ / 10);
-+}
-+
-+static irqreturn_t mma7455l_interrupt(int irq, void *_mma)
-+{
-+ struct mma7455l_info *mma = _mma;
-+ mma7455l_schedule_work(mma);
-+
-+ /* Disable any further interrupts until we have processed
-+ * the current one */
-+ disable_irq(mma->spi_dev->irq);
-+ return IRQ_HANDLED;
-+}
-+
-+/* sysfs */
-+
-+static void get_mode(struct mma7455l_info *mma, u8 *mode, u8 *gSelect)
-+{
-+ u8 tmp = reg_read(mma, MMA7455L_REG_MCTL);
-+
-+ *mode = tmp & MMA7455L_MODE_MASK;
-+ *gSelect = tmp & MMA7455L_GSELECT_MASK;
-+}
-+
-+static void set_mode(struct mma7455l_info *mma, u8 mode, u8 gSelect)
-+{
-+ reg_write(mma, MMA7455L_REG_MCTL, mode | gSelect);
-+}
-+
-+static void update_mode(struct mma7455l_info *mma, u8 mode, u8 gSelect)
-+{
-+ mma->mode = mode;
-+ mma->gSelect = gSelect;
-+
-+ reg_write(mma, MMA7455L_REG_MCTL, mma->mode | mma->gSelect);
-+}
-+
-+static ssize_t show_measure(struct device *dev,
-+ struct device_attribute *attr, char *buf)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+ s8 x, y, z;
-+ u8 old_Mode, old_gSelect;
-+
-+ get_mode(mma, &old_Mode, &old_gSelect);
-+ set_mode(mma, MMA7455L_MODE_MEASUREMENT, MMA7455L_GSELECT_2);
-+
-+ while (reg_read(mma, MMA7455L_REG_STATUS) == 0)
-+ msleep(10);
-+
-+ x = reg_read(mma, MMA7455L_REG_XOUT8);
-+ y = reg_read(mma, MMA7455L_REG_YOUT8);
-+ z = reg_read(mma, MMA7455L_REG_ZOUT8);
-+
-+ set_mode(mma, old_Mode, old_gSelect);
-+ return sprintf(buf, "%d %d %d\n", x, y, z);
-+}
-+
-+static ssize_t show_mode(struct device *dev,
-+ struct device_attribute *attr, char *buf)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ switch (mma->mode) {
-+ case MMA7455L_MODE_STANDBY:
-+ return sprintf(buf, "Standby\n");
-+ break;
-+ case MMA7455L_MODE_MEASUREMENT:
-+ return sprintf(buf, "Measurement\n");
-+ break;
-+ case MMA7455L_MODE_LEVELDETECTION:
-+ return sprintf(buf, "Level Detection\n");
-+ break;
-+ case MMA7455L_MODE_PULSEDETECTION:
-+ return sprintf(buf, "Pulse Detection\n");
-+ break;
-+ }
-+
-+ return sprintf(buf, "Unknown mode!\n");
-+}
-+
-+static ssize_t show_gSelect(struct device *dev,
-+ struct device_attribute *attr, char *buf)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ switch (mma->gSelect) {
-+ case MMA7455L_GSELECT_8:
-+ return sprintf(buf, "8\n");
-+ break;
-+ case MMA7455L_GSELECT_4:
-+ return sprintf(buf, "4\n");
-+ break;
-+ case MMA7455L_GSELECT_2:
-+ return sprintf(buf, "2\n");
-+ break;
-+ }
-+
-+ return sprintf(buf, "Unknown gSelect!\n");
-+}
-+
-+static ssize_t show_level_threshold(struct device *dev,
-+ struct device_attribute *attr, char *buf)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+ return sprintf(buf, "%u\n", reg_read(mma, MMA7455L_REG_LDTH));
-+}
-+
-+static ssize_t show_calibration(struct device *dev,
-+ struct device_attribute *attr, char *buf)
-+{
-+ s16 x, y, z;
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ mutex_lock(&mma->lock);
-+ x = __reg_read_10(mma, MMA7455L_REG_XOFFL, MMA7455L_REG_XOFFH);
-+ y = __reg_read_10(mma, MMA7455L_REG_YOFFL, MMA7455L_REG_YOFFH);
-+ z = __reg_read_10(mma, MMA7455L_REG_ZOFFL, MMA7455L_REG_ZOFFH);
-+ mutex_unlock(&mma->lock);
-+
-+ return sprintf(buf, "%d %d %d\n", x, y, z);
-+}
-+
-+static ssize_t write_mode(struct device *dev,
-+ struct device_attribute *attr, const char *buf, size_t count)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ if (!strncmp(buf, "Standby", count))
-+ update_mode(mma, MMA7455L_MODE_STANDBY, mma->gSelect);
-+ else if (!strncmp(buf, "Measurement", count))
-+ update_mode(mma, MMA7455L_MODE_MEASUREMENT, mma->gSelect);
-+ else if (!strncmp(buf, "Level Detection", count))
-+ update_mode(mma, MMA7455L_MODE_LEVELDETECTION, mma->gSelect);
-+ else if (!strncmp(buf, "Pulse Detection", count))
-+ update_mode(mma, MMA7455L_MODE_PULSEDETECTION, mma->gSelect);
-+
-+ return count;
-+}
-+
-+static ssize_t write_gSelect(struct device *dev,
-+ struct device_attribute *attr, const char *buf, size_t count)
-+{
-+ unsigned long v;
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ if (strict_strtoul(buf, 10, &v) == 0) {
-+ switch (v) {
-+ case 8:
-+ update_mode(mma, mma->mode, MMA7455L_GSELECT_8);
-+ break;
-+ case 4:
-+ update_mode(mma, mma->mode, MMA7455L_GSELECT_4);
-+ break;
-+ case 2:
-+ update_mode(mma, mma->mode, MMA7455L_GSELECT_2);
-+ break;
-+ default:
-+ return -EINVAL;
-+ break;
-+ }
-+ return count;
-+ }
-+
-+ return -EINVAL;
-+}
-+
-+static ssize_t write_level_threshold(struct device *dev,
-+ struct device_attribute *attr, const char *buf, size_t count)
-+{
-+ unsigned long v;
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ if (strict_strtoul(buf, 10, &v) == 0) {
-+ if (v <= 0xFF) {
-+ reg_write(mma, MMA7455L_REG_LDTH, v);
-+ return count;
-+ } else
-+ return -EINVAL;
-+ }
-+
-+ return -EINVAL;
-+}
-+
-+static ssize_t write_calibration(struct device *dev,
-+ struct device_attribute *attr, const char *buf, size_t count)
-+{
-+ int x, y, z;
-+ struct mma7455l_info *mma = dev_get_drvdata(dev);
-+
-+ if (sscanf(buf, "%d %d %d", &x, &y, &z) == 3) {
-+ mutex_lock(&mma->lock);
-+ __reg_write_10(mma, MMA7455L_REG_XOFFL, MMA7455L_REG_XOFFH, x);
-+ __reg_write_10(mma, MMA7455L_REG_YOFFL, MMA7455L_REG_YOFFH, y);
-+ __reg_write_10(mma, MMA7455L_REG_ZOFFL, MMA7455L_REG_ZOFFH, z);
-+ mutex_unlock(&mma->lock);
-+
-+ return count;
-+ }
-+
-+ return -EINVAL;
-+}
-+
-+static DEVICE_ATTR(measure, S_IRUGO, show_measure, NULL);
-+static DEVICE_ATTR(mode, S_IRUGO | S_IWUGO, show_mode, write_mode);
-+static DEVICE_ATTR(gSelect, S_IRUGO | S_IWUGO, show_gSelect,
-write_gSelect);
-+static DEVICE_ATTR(level_threshold, S_IRUGO | S_IWUGO,
-show_level_threshold,
-+ write_level_threshold);
-+static DEVICE_ATTR(calibration, S_IRUGO | S_IWUGO, show_calibration,
-+ write_calibration);
-+
-+static struct attribute *mma7455l_sysfs_entries[] = {
-+       &dev_attr_measure.attr,
-+ &dev_attr_mode.attr,
-+ &dev_attr_gSelect.attr,
-+ &dev_attr_level_threshold.attr,
-+ &dev_attr_calibration.attr,
-+ NULL
++static const struct hid_device_id touchbook_devices[] = {
++ { HID_USB_DEVICE(USB_VENDOR_ID_ALWAYSINNOVATING,
++ USB_DEVICE_ID_ALWAYSINNOVATING_TOUCH_BOOK) },
++ { }
 +};
 +
-+static struct attribute_group mma7455l_attr_group = {
-+       .attrs  = mma7455l_sysfs_entries,
++MODULE_DEVICE_TABLE(hid, touchbook_devices);
++
++static struct hid_driver touchbook_driver = {
++ .name = "touchbook",
++ .id_table = touchbook_devices,
++ .probe = touchbook_probe,
++ .remove = touchbook_remove,
++ .event = touchbook_event,
++ .input_mapping = touchbook_input_mapping,
 +};
 +
-+/* input device handling and driver core interaction */
-+static int mma7455l_input_open(struct input_dev *inp)
++static int touchbook_init(void)
 +{
-+ struct mma7455l_info *mma = input_get_drvdata(inp);
-+ if (mma->mode == MMA7455L_MODE_STANDBY)
-+ update_mode(mma, MMA7455L_MODE_MEASUREMENT, mma->gSelect);
++ int ret;
 +
-+ return 0;
++ ret = hid_register_driver(&touchbook_driver);
++ if (ret)
++ printk(KERN_ERR "can't register touchbook driver\n");
++
++ return ret;
 +}
 +
-+static void mma7455l_input_close(struct input_dev *inp)
++static void touchbook_exit(void)
 +{
-+ struct mma7455l_info *mma = input_get_drvdata(inp);
-+ update_mode(mma, MMA7455L_MODE_STANDBY, MMA7455L_GSELECT_2);
++ hid_unregister_driver(&touchbook_driver);
 +}
 +
-+static int __devinit mma7455l_probe(struct spi_device *spi)
-+{
-+ int rc;
-+ struct mma7455l_info *mma;
-+ struct mma7455l_platform_data *pdata = spi->dev.platform_data;
-+ u_int8_t wai;
-+
-+ mma = kzalloc(sizeof(*mma), GFP_KERNEL);
-+ if (!mma)
-+ return -ENOMEM;
-+
-+ mutex_init(&mma->lock);
-+ INIT_DELAYED_WORK(&mma->work, mma7455l_work);
-+ mma->spi_dev = spi;
-+ mma->flags = mma->working = 0;
-+
-+ spi_set_drvdata(spi, mma);
-+
-+ rc = spi_setup(spi);
-+ if (rc < 0) {
-+ printk(KERN_ERR
-+ "mma7455l error durign spi_setup of mma7455l driver\n");
-+ dev_set_drvdata(&spi->dev, NULL);
-+ kfree(mma);
-+ return rc;
-+ }
-+
-+ wai = reg_read(mma, MMA7455L_REG_WHOAMI);
-+ if (wai != MMA7455L_WHOAMI_MAGIC) {
-+ printk(KERN_ERR
-+ "mma7455l unknown whoami signature 0x%02x\n", wai);
-+ dev_set_drvdata(&spi->dev, NULL);
-+ kfree(mma);
-+ return -ENODEV;
-+ }
-+
-+ rc = request_irq(mma->spi_dev->irq, mma7455l_interrupt,
-+ IRQF_TRIGGER_HIGH, "mma7455l", mma);
-+ if (rc < 0) {
-+ dev_err(&spi->dev, "mma7455l error requesting IRQ %d\n",
-+ mma->spi_dev->irq);
-+ /* FIXME */
-+ return rc;
-+ }
-+
-+ rc = sysfs_create_group(&spi->dev.kobj, &mma7455l_attr_group);
-+ if (rc) {
-+ dev_err(&spi->dev, "error creating sysfs group\n");
-+ return rc;
-+ }
-+
-+ /* initialize input layer details */
-+ mma->input_dev = input_allocate_device();
-+ if (!mma->input_dev) {
-+ dev_err(&spi->dev,
-+ "mma7455l Unable to allocate input device\n");
-+ /* FIXME */
-+ }
-+
-+ set_bit(EV_ABS, mma->input_dev->evbit);
-+ set_bit(ABS_X, mma->input_dev->absbit);
-+ set_bit(ABS_Y, mma->input_dev->absbit);
-+ set_bit(ABS_Z, mma->input_dev->absbit);
-+
-+ input_set_drvdata(mma->input_dev, mma);
-+ mma->input_dev->name = "MMA7455L";
-+ mma->input_dev->open = mma7455l_input_open;
-+ mma->input_dev->close = mma7455l_input_close;
-+
-+ rc = input_register_device(mma->input_dev);
-+ if (!rc) {
-+ update_mode(mma, MMA7455L_MODE_STANDBY, MMA7455L_GSELECT_2);
-+
-+ mutex_lock(&mma->lock);
-+ __reg_write_10(mma, MMA7455L_REG_XOFFL,
-+ MMA7455L_REG_XOFFH, pdata->calibration_x);
-+ __reg_write_10(mma, MMA7455L_REG_YOFFL,
-+ MMA7455L_REG_YOFFH, pdata->calibration_y);
-+ __reg_write_10(mma, MMA7455L_REG_ZOFFL,
-+ MMA7455L_REG_ZOFFH, pdata->calibration_z);
-+ mutex_unlock(&mma->lock);
-+
-+ return 0;
-+ }
-+
-+ input_free_device(mma->input_dev);
-+ return rc;
-+}
-+
-+static int __devexit mma7455l_remove(struct spi_device *spi)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(&spi->dev);
-+
-+ sysfs_remove_group(&spi->dev.kobj, &mma7455l_attr_group);
-+ input_unregister_device(mma->input_dev);
-+ dev_set_drvdata(&spi->dev, NULL);
-+ kfree(mma);
-+
-+ return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int mma7455l_suspend(struct spi_device *spi, pm_message_t
-message)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(&spi->dev);
-+ get_mode(mma, &mma->mode, &mma->gSelect);
-+ set_mode(mma, MMA7455L_MODE_STANDBY, MMA7455L_GSELECT_2);
-+
-+ return 0;
-+}
-+
-+static int mma7455l_resume(struct spi_device *spi)
-+{
-+ struct mma7455l_info *mma = dev_get_drvdata(&spi->dev);
-+ update_mode(mma, mma->mode, mma->gSelect);
-+
-+ return 0;
-+}
-+#else
-+#define mma7455l_suspend NULL
-+#define mma7455l_resume  NULL
-+#endif
-+
-+static struct spi_driver mma7455l_driver = {
-+ .driver = {
-+ .name = "mma7455l",
-+ .owner = THIS_MODULE,
-+ },
-+
-+ .probe = mma7455l_probe,
-+ .remove = __devexit_p(mma7455l_remove),
-+ .suspend = mma7455l_suspend,
-+ .resume = mma7455l_resume,
-+};
-+
-+static int __init mma7455l_init(void)
-+{
-+ return spi_register_driver(&mma7455l_driver);
-+}
-+
-+static void __exit mma7455l_exit(void)
-+{
-+ spi_unregister_driver(&mma7455l_driver);
-+}
-+
-+MODULE_AUTHOR("Gregoire Gentil <gregoire@gentil.com>");
++module_init(touchbook_init);
++module_exit(touchbook_exit);
 +MODULE_LICENSE("GPL");
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 7d05c4b..2bb62c3 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1252,6 +1252,7 @@ EXPORT_SYMBOL_GPL(hid_disconnect);
+static const struct hid_device_id hid_blacklist[] = {
+{ HID_USB_DEVICE(USB_VENDOR_ID_A4TECH, USB_DEVICE_ID_A4TECH_WCP32PU) },
+{ HID_USB_DEVICE(USB_VENDOR_ID_A4TECH, USB_DEVICE_ID_A4TECH_X5_005D) },
++ { HID_USB_DEVICE(USB_VENDOR_ID_ALWAYSINNOVATING,
+USB_DEVICE_ID_ALWAYSINNOVATING_TOUCH_BOOK) },
+{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE,
+USB_DEVICE_ID_APPLE_ATV_IRCONTROL) },
+{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_IRCONTROL4) },
+{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE,
+USB_DEVICE_ID_APPLE_MIGHTYMOUSE) },
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index adbef5d..ebf53f7 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -54,6 +54,9 @@
+#define USB_VENDOR_ID_ALPS 0x0433
+#define USB_DEVICE_ID_IBM_GAMEPAD 0x1101
+
++#define USB_VENDOR_ID_ALWAYSINNOVATING 0xa110
++#define USB_DEVICE_ID_ALWAYSINNOVATING_TOUCH_BOOK 0x0002
 +
-+module_init(mma7455l_init);
-+module_exit(mma7455l_exit);
-diff --git a/include/linux/mma7455l.h b/include/linux/mma7455l.h
-new file mode 100644
-index 0000000..12ab50a
---- /dev/null
-+++ b/include/linux/mma7455l.h
-@@ -0,0 +1,11 @@
-+#ifndef _LINUX_MMA7455L_H
-+#define _LINUX_MMA7455L_H
-+
-+struct mma7455l_platform_data {
-+ /* Calibration offsets */
-+ s16 calibration_x;
-+ s16 calibration_y;
-+ s16 calibration_z;
-+};
-+
-+#endif /* _LINUX_MMA7455L_H */
+#define USB_VENDOR_ID_APPLE 0x05ac
+#define USB_DEVICE_ID_APPLE_MIGHTYMOUSE 0x0304
+#define USB_DEVICE_ID_APPLE_FOUNTAIN_ANSI 0x020e
 -- 
 1.6.0.4
+
 
 
 
