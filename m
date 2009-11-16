@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbZKPPJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZKPPKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753074AbZKPPJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZKPPJx
+	id S1753414AbZKPPKh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZKPPKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:09:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48340 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZKPPJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:09:53 -0500
-Date: Mon, 16 Nov 2009 16:09:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86: Add missing might_fault() from copy_{to,from}_user()
-Message-ID: <20091116150937.GA22187@elte.hu>
-References: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Mon, 16 Nov 2009 10:10:36 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59674 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbZKPPKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 10:10:36 -0500
+Subject: Re: [PATCH v8 06/16] tracing: add an endian argument to
+ scripts/recordmcount.pl
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: wuzhangjin@gmail.com
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
+       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
+In-Reply-To: <1258381775.15821.1.camel@falcon.domain.org>
+References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+	 <b99c08397d9ff92ac5a72bda9131df41b702fc71.1258177321.git.wuzhangjin@gmail.com>
+	 <8f579e2cece16cd22358a4ec143ef6a8c462639b.1258177321.git.wuzhangjin@gmail.com>
+	 <ea337742d3ca7eec2825416041a6d4fa917d5cc4.1258177321.git.wuzhangjin@gmail.com>
+	 <7c7568247ad6cc109ec20387cfc3ca258d1d430f.1258177321.git.wuzhangjin@gmail.com>
+	 <3fcaffcfb3c8c8cd3015151ed5b7480ccaecde0f.1258177321.git.wuzhangjin@gmail.com>
+	 <alpine.LFD.2.00.0911161520080.24119@localhost.localdomain>
+	 <1258381775.15821.1.camel@falcon.domain.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 16 Nov 2009 10:10:40 -0500
+Message-Id: <1258384240.22249.453.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> In x86-64, copy_to/from_user() rely on assembly routines that never
-> call might_fault(), making us missing various lockdep checks.
+On Mon, 2009-11-16 at 22:29 +0800, Wu Zhangjin wrote:
+> On Mon, 2009-11-16 at 15:21 +0100, Thomas Gleixner wrote:
+> > On Sat, 14 Nov 2009, Wu Zhangjin wrote:
+> > 
+> > > From: Wu Zhangjin <wuzhangjin@gmail.com>
+> > > 
+> > > MIPS and some other architectures need this argument to handle
+> > > big/little endian respectively.
+> > 
+> > Hmm, the patch adds the endian argument to the command line, but does
+> > nothing else with it. Is there something missing from the patch or is
+> > it just a left over from earlier iterations ?
+> > 
 > 
-> This doesn't apply to __copy_from,to_user() that explicitly handle
-> these calls, neither is it a problem in x86-32 where
-> copy_to,from_user() rely on the "__" prefixed versions that also call
-> might_fault().
+> It is used in: 
 > 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  arch/x86/include/asm/uaccess_64.h |   10 +++++++++-
->  arch/x86/lib/copy_user_64.S       |    4 ++--
->  2 files changed, 11 insertions(+), 3 deletions(-)
+> [PATCH v8 07/16] tracing: add dynamic function tracer support for MIPS
+> 
+> Steven told me to split it out ;)
 
-Looks good - other than that you missed the renaming of the symbol 
-export line in arch/x86/kernel/x8664_ksyms_64.c, which i fixed.
+Heh, IIRC I think I meant to split out the recordmcount.pl code first.
+But this is fine too ;-)
 
-Thanks,
+-- Steve
 
-	Ingo
+
