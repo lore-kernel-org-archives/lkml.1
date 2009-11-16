@@ -1,22 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZKPVuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZKPVuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbZKPVuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZKPVuV
+	id S1754186AbZKPVuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZKPVut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:50:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47454 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbZKPVuU (ORCPT
+	Mon, 16 Nov 2009 16:50:49 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:64338 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbZKPVus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:50:20 -0500
-Message-ID: <4B01C8B5.7060903@zytor.com>
-Date: Mon, 16 Nov 2009 13:48:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Mon, 16 Nov 2009 16:50:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=x3YhdJMw1Qj3/ed9uHJqQh7cf6iwa2trWzqgZAh5jG2Fs6HFzI4dXm9Hu/vxLm9hOe
+         lPvIGvqoy/7u52c6zTXKrK1CxQe7leFQat+93bRvfGv9RQw3Lsha8btB4sYVI5lC0KN+
+         DKG0cnl1DohQBDys8cD7Pnn2rRXGaCei4xJIc=
+Date: Tue, 17 Nov 2009 00:50:52 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Heiko Carstens <heiko.carstens@de.ibm.com>,
        Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -29,58 +34,36 @@ CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Jack Steiner <steiner@sgi.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration bootup
- messages
-References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210728.267482000@alcatraz.americas.sgi.com> <20091116212427.GC2221@elte.hu> <4B01C803.1010303@sgi.com>
-In-Reply-To: <4B01C803.1010303@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration
+	bootup messages
+Message-ID: <20091116215052.GK5653@lenovo>
+References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210728.267482000@alcatraz.americas.sgi.com> <20091116212427.GC2221@elte.hu> <4B01C3DB.3040802@zytor.com> <20091116214302.GJ5653@lenovo> <4B01C81F.9040000@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B01C81F.9040000@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/16/2009 01:45 PM, Mike Travis wrote:
+On Mon, Nov 16, 2009 at 01:46:07PM -0800, H. Peter Anvin wrote:
+> On 11/16/2009 01:43 PM, Cyrill Gorcunov wrote:
+> > 
+> > It seems we have one
+> > 
+> > 	arch/x86/kernel/setup.c:125:unsigned int boot_cpu_id __read_mostly;
+> > 
+> > 	-- Cyrill
 > 
+> We probably should make it an inline function so that if other arches
+> want to define it to be a constant or some other kind of special thing
+> they can.
 > 
-> Ingo Molnar wrote:
->> * Mike Travis <travis@sgi.com> wrote:
->>
->>> --- linux.orig/init/calibrate.c
->>> +++ linux/init/calibrate.c
->>> @@ -123,23 +123,26 @@
->>>  {
->>>  	unsigned long ticks, loopbit;
->>>  	int lps_precision = LPS_PREC;
->>> +	bool boot_cpu = (smp_processor_id() == 0);
->>
->> this code is shared by other architectures too - are you sure 
->> smp_processor_id()==0 is a proper 'I am the boot CPU' assumption 
->> everywhere?
->>
->> 	Ingo
+> 	-hpa
 > 
-> This was where having the boot_cpu_id would have been handy.
-> 
-> I could add something like:
-> 
-> --- linux.orig/init/main.c
-> +++ linux/init/main.c
-> @@ -539,13 +539,15 @@
->   *     Activate the first processor.
->   */
-> 
-> +int boot_cpu_id __read_mostly;
-   ^^^^^^^^^^^^^^^
-> +
->  static void __init boot_cpu_init(void)
->  {
-> -       int cpu = smp_processor_id();
-> +       int boot_cpu_id = smp_processor_id();
-          ^^^^^^^^^^^^^^^
->         /* Mark the boot cpu "present", "online" etc for SMP and UP case */
 
-Doesn't really work, does it?
+IA-64 and SPARC already has this variable. But boot_cpu_id() as an
+inline function seem to be more natural/portable ineed.
 
-I also still think that wrapping it in an inline would be good.
-
-	-hpa
+	-- Cyrill
