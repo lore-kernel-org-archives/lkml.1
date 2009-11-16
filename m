@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZKPXp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZKPXqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbZKPXp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 18:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZKPXpz
+	id S1755163AbZKPXqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 18:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZKPXqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 18:45:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5408 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbZKPXpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 18:45:54 -0500
-Message-ID: <4B01E428.9070203@redhat.com>
-Date: Mon, 16 Nov 2009 18:45:44 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH -tip 3/3] Add get_signal tracepoint
-References: <20091113225226.15079.90813.stgit@harusame>	<20091113225240.15079.4863.stgit@harusame>	<20091113235333.0E3CC15E8@magilla.sf.frob.com>	<20091114001020.GB24738@elte.hu>	<4B01C95B.1070302@redhat.com>	<20091116220957.8E2142F@magilla.sf.frob.com>	<4B01D4B5.1050909@redhat.com> <20091116230037.23EEB1A2@magilla.sf.frob.com>
-In-Reply-To: <20091116230037.23EEB1A2@magilla.sf.frob.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 18:46:23 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:14423 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755054AbZKPXqV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 18:46:21 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtEEAAZzAUurR7H+/2dsb2JhbACcdKM0iRsIjhOCSwiBaQSBbYZR
+X-IronPort-AV: E=Sophos;i="4.44,754,1249257600"; 
+   d="scan'208";a="434000950"
+User-Agent: Microsoft-Entourage/12.23.0.091001
+Date: Mon, 16 Nov 2009 15:46:25 -0800
+Subject: Re: [PATCH 1/4] drivers/net/enic: decrement sizeof size in strncmp
+From: Scott Feldman <scofeldm@cisco.com>
+To: Julia Lawall <julia@diku.dk>, Joe Eykholt <jeykholt@cisco.com>,
+       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <kernel-janitors@vger.kernel.org>
+Message-ID: <C7272451.17157%scofeldm@cisco.com>
+Thread-Topic: [PATCH 1/4] drivers/net/enic: decrement sizeof size in strncmp
+Thread-Index: AcpnFwIQ3D8ZeAtXM0+26gJy7CZnqA==
+In-Reply-To: <Pine.LNX.4.64.0911120848100.16627@ask.diku.dk>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 16 Nov 2009 23:46:27.0517 (UTC) FILETIME=[03902ED0:01CA6717]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->> Hmm, actually, trace_signal_send() doesn't record the return value.
->
-> Is that because it's called before the action really happens?
-> Is it important that it be called beforehand?  If it's called
-> afterwards, it's easy to pass the return value.
+Thanks Julia/Jorg.  We'll pick up change in next enic patch series.
 
-I'm not so sure why signal sending events was put beforehand.
-However, I assume that original intent might be recording
-the *timing* of all signal generation (including SIGSTOP/CONT).
-
->> So, what about trace_signal_overflow() for RT-signals and
->> trace_signal_loss_info() for non-RT?
->
-> Really you can distinguish those just by looking at sig and info, so
-> perhaps a single tracepoint is enough.
-
-Ah, right :-)
-
->  I guess it really depends on what
-> filtering you would want and how inconvenient it is to have to apply that
-> filtering.  Having these two distinct tracepoints lets you trivially trace
-> only "silent information loss" without seeing the events where userland
-> gets full information (if applications are paying attention).
->
-> If you want to have a full suite of tracepoints where each one covers one
-> unambiguous corner of the semantics, then there are more than these just
-> for sending.  e.g. see below.
-
-As Ingo said, I think this kind of finegrained events are optional.
-I don't think we really need these events soon. IMHO, just adding
-signal-loss event is enough at the first step.
-
-But anyway, thank you so much for suggesting those tracepoints!
-
-Thank you,
+-scott
 
 
--- 
-Masami Hiramatsu
+On 11/11/09 11:48 PM, "Julia Lawall" <julia@diku.dk> wrote:
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+> From: Julia Lawall <julia@diku.dk>
+> 
+> As observed by Joe Perches, sizeof of a constant string includes the
+> trailing 0.  If what is wanted is to check the initial characters of
+> another string, this trailing 0 should not be taken into account.  If an
+> exact match is wanted, strcmp should be used instead.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression foo;
+> constant char *abc;
+> @@
+> 
+> strncmp(foo, abc,
+> - sizeof(abc)
+> + sizeof(abc)-1
+>  )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  drivers/net/enic/vnic_dev.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -u -p a/drivers/net/enic/vnic_dev.c b/drivers/net/enic/vnic_dev.c
+> --- a/drivers/net/enic/vnic_dev.c
+> +++ b/drivers/net/enic/vnic_dev.c
+> @@ -358,9 +358,9 @@ int vnic_dev_hw_version(struct vnic_dev
+> if (err)
+> return err;
+>  
+> - if (strncmp(fw_info->hw_version, "A1", sizeof("A1")) == 0)
+> + if (strncmp(fw_info->hw_version, "A1", sizeof("A1") - 1) == 0)
+> *hw_ver = VNIC_DEV_HW_VER_A1;
+> - else if (strncmp(fw_info->hw_version, "A2", sizeof("A2")) == 0)
+> + else if (strncmp(fw_info->hw_version, "A2", sizeof("A2") - 1) == 0)
+> *hw_ver = VNIC_DEV_HW_VER_A2;
+> else
+> *hw_ver = VNIC_DEV_HW_VER_UNKNOWN;
 
