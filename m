@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZKPQnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZKPQqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZKPQnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 11:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZKPQnW
+	id S1753461AbZKPQqJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 11:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZKPQqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 11:43:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:6589 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753326AbZKPQnU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 11:43:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=pKhuAh9VG+UdxEHP0EC2vcxHuE56qfZbDxRTexpXULoz/DOQaF1K6jTO8mtSMeobD
-	12BITam5MLa3QEbMLAL9g==
+	Mon, 16 Nov 2009 11:46:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29401 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbZKPQqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 11:46:06 -0500
+Message-ID: <4B018157.3080707@redhat.com>
+Date: Mon, 16 Nov 2009 17:44:07 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091116163659.GB3568@n2100.arm.linux.org.uk>
-References: <20091102104949.GA23456@elf.ucw.cz>
-	 <20091116163659.GB3568@n2100.arm.linux.org.uk>
-Date: Mon, 16 Nov 2009 08:43:20 -0800
-Message-ID: <a55d774e0911160843h22938604s8966a58ee71992a@mail.gmail.com>
-Subject: Re: [PATCH 2/3] msm: add minimal board file for HTC Dream device
-From: Brian Swetland <swetland@google.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: Chris Mason <chris.mason@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       device-mapper development <dm-devel@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [PATCH 0/7] Reduce GFP_ATOMIC allocation failures, candidate
+ fix V3
+References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie> <20091112202748.GC2811@think> <20091112220005.GD2811@think> <20091113024642.GA7771@think>
+In-Reply-To: <20091113024642.GA7771@think>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 8:36 AM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Mon, Nov 02, 2009 at 11:49:49AM +0100, Pavel Machek wrote:
->> +MACHINE_START(TROUT, "HTC Dream")
->> +#ifdef CONFIG_MSM_DEBUG_UART
->> +     .phys_io        = MSM_DEBUG_UART_PHYS,
->> +     .io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
->> +#endif
->
-> Why is this ifdef'd?  Two reasons why not to do this:
->
-> 1. MSM_DEBUG_UART is always defined, so the conditional is pointless
+On 11/13/2009 03:46 AM, Chris Mason wrote:
+> On Thu, Nov 12, 2009 at 05:00:05PM -0500, Chris Mason wrote:
+> 
+> [ ...]
+> 
+>>
+>> The punch line is that the btrfs guy thinks we can solve all of this with
+>> just one more thread.  If we change dm-crypt to have a thread dedicated
+>> to sync IO and a thread dedicated to async IO the system should smooth
+>> out.
 
-For a default dream build, definitely, but not always on every msm7k
-target (some devices may not have a serial port that can safely be
-chattered at by the debug code).  For this board file, no harm to
-require it.
+Please, can you cc DM maintainers with these kind of patches? dm-devel list at least.
 
-> 2. the low level page table building code does not expect these to be
->   unset (or even set to an invalid value).  Leaving them unset and
->   having DEBUG_LL enabled is a recipe to prevent booting.
+Note that the crypt requests can be already processed synchronously or asynchronously,
+depending on used crypto module (async it is in the case of some hw acceleration).
 
-What's the best way to handle a situation where there is no valid
-debug uart?  Could the arch/platform require DEBUG_LL be unset via
-Kconfig directives if it is configured in a way where there is no
-valid debug uart?
+Adding another queue make the situation more complicated and because the crypt
+requests can be queued in crypto layer I am not sure that this solution will help
+in this situation at all.
+(Try to run that with AES-NI acceleration for example.)
 
-> To put it another way, these two fields aren't optional.
->
 
-Thanks,
-
-Brian
+Milan
+--
+mbroz@redhat.com
