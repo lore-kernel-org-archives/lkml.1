@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZKPVbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZKPVcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbZKPVbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 16:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbZKPVbR
+	id S1754349AbZKPVcK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 16:32:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZKPVcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 16:31:17 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:48996 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752294AbZKPVbQ (ORCPT
+	Mon, 16 Nov 2009 16:32:09 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:23988 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbZKPVcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 16:31:16 -0500
-Date: Mon, 16 Nov 2009 16:31:20 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [RFC][PATCH 1/10] PM: Add flag for devices capable of generating
- run-time wake-up events
-In-Reply-To: <20091116210545.GA29696@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0911161629310.2971-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 16 Nov 2009 16:32:08 -0500
+Subject: Re: [RFC] Block IO Controller V2 - some results
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+In-Reply-To: <20091116211412.GJ13235@redhat.com>
+References: <1258404660.3533.150.camel@cail>
+	 <20091116211412.GJ13235@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 16 Nov 2009 16:32:15 -0500
+Message-ID: <1258407135.3533.152.camel@cail>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009, Matthew Garrett wrote:
-
-> On Mon, Nov 16, 2009 at 04:00:49PM -0500, Alan Stern wrote:
-> > On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
-> > > Yes, in general.  The platform.
+On Mon, 2009-11-16 at 16:14 -0500, Vivek Goyal wrote:
+> On Mon, Nov 16, 2009 at 03:51:00PM -0500, Alan D. Brunelle wrote:
+> > Hi Vivek: 
 > > 
-> > And for non-platform devices (hot-pluggable, for example)?  Presumably 
-> > you would want the driver that detects and registers the device to set 
-> > this flag.
+> > I'm finding some things that don't quite seem right - executive
+> > summary: 
 > 
-> Are there any cases where the bus code won't know this?
+> Hi Alan,
+> 
+> Thanks a lot for such an extensive testing and test results. I am still
+> digesting the results but I thought I will make a quick note about writes.
+> This patchset works only for sync IO. If you are performing buffered
+> writes then you will not see any service differentiation. Providing
+> support for buffered write path is in TODO list. 
 
-None that I'm aware of.  I merely wanted to clarify where the flag was 
-supposed to get set.
+Ah, I thought you meant sync I/O versus async I/O. So do you mean that
+the testing should use _direct_ I/O (bypassing the cache)? 
 
-> > > > What if the kernel can't tell whether or not the device can generate 
-> > > > runtime wake-up events?
-> > > 
-> > > Do you have any specific examples in mind?
+> 
 > > 
-> > What about Matthew's example of an ACPI GPE which might or might not 
-> > cause a runtime wake-up event, depending on the AML code in the BIOS?
+> > o  I think the apportionment algorithm doesn't work consistently well
+> > for writes.
+> > 
+> > o  I think there are problems with significant performance loss when
+> > doing random I/Os.
 > 
-> The platform knows whether or not that's the case.
-
-Okay, then it isn't a problem.  Except perhaps in the case of buggy 
-devices which _should_ generate these events but don't.
-
-Alan Stern
+> This concerns me. I had a quick look and as per your results, even with
+> group_idle=0 you are seeing this regression. I guess this might be coming
+> from the fact that we idle on sync-noidle workload per group and that
+> idling becomes significant as number of groups increase.
+> 
+> Thanks
+> Vivek
 
