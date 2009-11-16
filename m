@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZKPTxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZKPTxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbZKPTxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 14:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZKPTxR
+	id S1753833AbZKPTxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 14:53:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZKPTxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 14:53:17 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:34526 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbZKPTxQ (ORCPT
+	Mon, 16 Nov 2009 14:53:36 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64935 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbZKPTxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 14:53:16 -0500
+	Mon, 16 Nov 2009 14:53:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ZfXgsASNnc26CFZZWenNWQwrde3TpPr4XK9hZFFY88F20Vq+6lxKbVUjs3zfKBVaA5
-         o0mZhe1vbkCAzJqfdVDhyrabnTFdNhsIaSLm7pgK3PTrsF0P5INfy9FzVwKv23G6vdg+
-         n661W6RTprNhrbRHc6QTEqGkeLNiDPKhgBe5w=
-Date: Mon, 16 Nov 2009 22:53:13 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, alan@lxorguk.ukuu.org.uk,
-       mgarski@post.pl
-Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for
- non-ASCII
-Message-ID: <20091116195313.GB4462@x200>
-References: <20091116135114.GA2719@x200>
- <20091116190739.GJ4764@const.famille.thibault.fr>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EoA87eHvdAAXbOiaK/pr6bRAJ26xku45Ka+Vxq56BBGKi3cHgf5uuso6SrpNOIG5ui
+         DD2HRWqggDTKg2LrkssSUK3VW5BCGDnrmMRubPDZ5Fu5augIXyIdflORZB+vyIsTxfV9
+         vk6xVipyDyctBYIWiz3cF7uJxX7lKNRvnbHDI=
+Date: Mon, 16 Nov 2009 11:53:32 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: [PATCH] Input: fix wrong synaptics detection in
+	psmouse_extensions()
+Message-ID: <20091116195332.GD24026@core.coreip.homeip.net>
+References: <alpine.LSU.2.00.0911161245570.15039@wotan.suse.de> <20091116170151.GA24026@core.coreip.homeip.net> <alpine.LSU.2.00.0911161806580.15039@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091116190739.GJ4764@const.famille.thibault.fr>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LSU.2.00.0911161806580.15039@wotan.suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 08:07:39PM +0100, Samuel Thibault wrote:
-> Alexey Dobriyan, le Mon 16 Nov 2009 16:51:15 +0300, a écrit :
-> > Steps to reproduce:
+On Mon, Nov 16, 2009 at 06:12:39PM +0100, Jiri Kosina wrote:
+> 
+> [ fixed linux-input CC which I have typoed previously ]
+> 
+> On Mon, 16 Nov 2009, Dmitry Torokhov wrote:
+> 
+> > On Mon, Nov 16, 2009 at 12:51:30PM +0100, Jiri Kosina wrote:
+> > > Commit b7802c5c1ea ("Input: psmouse - use boolean type") caused the 
+> > > synaptics_hardware variable to be completely useless, as it is constantly 
+> > > set to 'true' throughout the whole psmouse_extensions(). This was caused 
+> > > by the following hunk in the commit in question
+> > > 
+> > > 	-       int synaptics_hardware = 0;
+> > > 	+       bool synaptics_hardware = true;
+> > > 
+> > > which is wrong. Fix that up.
 > > 
-> > 	[log into console (not xterm)]
-> > 	[load non-trivial keymap]
-> > 	[turn on CapsLock]
-> > 	[type something]
+> > Hmm, not sure what I was thinnking at that time but it is obviously I
+> > should have stayed away form tehe keyboard...
 > > 
-> > Symbols won't be capital despite CapsLock and despite Shift+* working
-> > as expected.
+> > Applied, thank you Jiri.
 > 
-> Fix your keymap, it should use KT_LETTER instead of KT_LATIN.
+> I guess you will be pushing that one to .32 still, right? 
 
-You have read bugzilla and patch, haven't you?
+Yes, I will try to get it in .32
 
-My keymap contains
+> I think it's 
+> quite crucial fix, so if it doesn't make it in time for .32 (I am not sure 
+> whether Linus will be doing next -rc or not), it should go to -stable for 
+> .32 right away.
 
-				keycode 44 = +z
-		shift           keycode 44 = +Z
-	altgr                   keycode 44 = U+044F        # CYRILLIC SMALL LETTER YA
-	altgr   shift           keycode 44 = U+042F        # CYRILLIC CAPITAL LETTER YA
+Actually it is not that critical, it will only cause us to do an
+unnecessary full reset when every protocol detection failed and we
+resort to the bare PS/2 protocol. Still  the fix is tiny so might as
+well do stable if it misses release.
 
-> > Note: patch relies on keymap being consistent wrt SMALL/CAPITAL symbols.
-> 
-> And that's not true for a lot of keyboard symbols.
-
-That's why patch implies keymap is not fucked up.
-
-> Strictly speaking, caps lock is caps lock, not shift lock.  If you really
-> want a shift lock, then set your caps lock key to produce shift lock.
-> Applying your patch would turn the existing capslock behavior into shift
-> lock, we _don't_ want that.
-> 
-> > Though extracting SMALL <=> CAPITAL mapping from unicode tables and
-> > putting it into kernel may be more correct.
-> 
-> That's what console-setup
-
-What is it?
-
-	$ sudo emerge -s console-setup
-	Searching...
-	[ Results for search key : console-setup ]
-	[ Applications found : 0 ]
-
-> does by using various symbol levels and it just _works_.
-
-Ubuntu user?
-
-> One issue however is that then the capslock keyboard
-> led doesn't light up while in caps mode.
-
-Interesting breakage you have.
-
-[presses CapsLock several times]
-
-> Maybe we should rethink the interface to light keyboard leds instead.
-
-Oh, and there no need to reply at every place as if Linus is going to
-grab it from bugzilla and apply in hurry.
+-- 
+Dmitry
