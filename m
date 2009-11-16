@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZKPQLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZKPQLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZKPQLD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 11:11:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZKPQLC
+	id S1753075AbZKPQLp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 11:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZKPQLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 11:11:02 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35301 "EHLO hera.kernel.org"
+	Mon, 16 Nov 2009 11:11:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41346 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297AbZKPQLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 11:11:00 -0500
-Date: Mon, 16 Nov 2009 16:10:03 GMT
-From: tip-bot for Prarit Bhargava <prarit@redhat.com>
+	id S1750987AbZKPQLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 11:11:43 -0500
+Date: Mon, 16 Nov 2009 16:10:19 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, prarit@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, prarit@redhat.com, mingo@elte.hu
-In-Reply-To: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
-References: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       arjan@infradead.org, npiggin@suse.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: npiggin@suse.de, arjan@infradead.org, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
+References: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: AMD Northbridge: Verify NB's node is online
-Message-ID: <tip-303fc0870f8fbfabe260c5c32b18e53458d597ea@git.kernel.org>
-Git-Commit-ID: 303fc0870f8fbfabe260c5c32b18e53458d597ea
+Subject: [tip:x86/asm] x86: Add missing might_fault() checks to copy_{to,from}_user()
+Message-ID: <tip-3c93ca00eeeb774c7dd666cc7286a9e90c53e998@git.kernel.org>
+Git-Commit-ID: 3c93ca00eeeb774c7dd666cc7286a9e90c53e998
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,88 +33,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  303fc0870f8fbfabe260c5c32b18e53458d597ea
-Gitweb:     http://git.kernel.org/tip/303fc0870f8fbfabe260c5c32b18e53458d597ea
-Author:     Prarit Bhargava <prarit@redhat.com>
-AuthorDate: Thu, 12 Nov 2009 13:09:31 -0500
+Commit-ID:  3c93ca00eeeb774c7dd666cc7286a9e90c53e998
+Gitweb:     http://git.kernel.org/tip/3c93ca00eeeb774c7dd666cc7286a9e90c53e998
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Mon, 16 Nov 2009 15:42:18 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Nov 2009 15:43:05 +0100
+CommitDate: Mon, 16 Nov 2009 16:09:52 +0100
 
-x86: AMD Northbridge: Verify NB's node is online
+x86: Add missing might_fault() checks to copy_{to,from}_user()
 
-Fix panic seen on some IBM and HP systems on 2.6.32-rc6:
+On x86-64, copy_[to|from]_user() rely on assembly routines that
+never call might_fault(), making us missing various lockdep
+checks.
 
- BUG: unable to handle kernel NULL pointer dereference at (null)
- IP: [<ffffffff8120bf3f>] find_next_bit+0x77/0x9c
-  [...]
-  [<ffffffff8120bbde>] cpumask_next_and+0x2e/0x3b
-  [<ffffffff81225c62>] pci_device_probe+0x8e/0xf5
-  [<ffffffff812b9be6>] ? driver_sysfs_add+0x47/0x6c
-  [<ffffffff812b9da5>] driver_probe_device+0xd9/0x1f9
-  [<ffffffff812b9f1d>] __driver_attach+0x58/0x7c
-  [<ffffffff812b9ec5>] ? __driver_attach+0x0/0x7c
-  [<ffffffff812b9298>] bus_for_each_dev+0x54/0x89
-  [<ffffffff812b9b4f>] driver_attach+0x19/0x1b
-  [<ffffffff812b97ae>] bus_add_driver+0xd3/0x23d
-  [<ffffffff812ba1e7>] driver_register+0x98/0x109
-  [<ffffffff81225ed0>] __pci_register_driver+0x63/0xd3
-  [<ffffffff81072776>] ? up_read+0x26/0x2a
-  [<ffffffffa0081000>] ? k8temp_init+0x0/0x20 [k8temp]
-  [<ffffffffa008101e>] k8temp_init+0x1e/0x20 [k8temp]
-  [<ffffffff8100a073>] do_one_initcall+0x6d/0x185
-  [<ffffffff8108d765>] sys_init_module+0xd3/0x236
-  [<ffffffff81011ac2>] system_call_fastpath+0x16/0x1b
+This doesn't apply to __copy_from,to_user() that explicitly
+handle these calls, neither is it a problem in x86-32 where
+copy_to,from_user() rely on the "__" prefixed versions that
+also call might_fault().
 
-I put in a printk and commented out the set_dev_node()
-call when and got this output:
-
- quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x0
- quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x1
- quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x2
- quirk_amd_nb_node: current numa_node = 0x0, would set to val & 7 = 0x3
-
-I.e. the issue appears to be that the HW has set val to a valid
-value, however, the system is only configured for a single
-node -- 0, the others are offline.
-
-Check to see if the node is actually online before setting
-the numa node for an AMD northbridge in quirk_amd_nb_node().
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: bhavna.sarathy@amd.com
-Cc: jbarnes@virtuousgeek.org
-Cc: andreas.herrmann3@amd.com
-LKML-Reference: <20091112180933.12532.98685.sendpatchset@prarit.bos.redhat.com>
-[ v2: clean up the code and add comments ]
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1258382538-30979-1-git-send-email-fweisbec@gmail.com>
+[ v2: fix module export ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/quirks.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/uaccess_64.h |   10 +++++++++-
+ arch/x86/kernel/x8664_ksyms_64.c  |    2 +-
+ arch/x86/lib/copy_user_64.S       |    4 ++--
+ 3 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index 6c3b2c6..18093d7 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -499,6 +499,7 @@ static void __init quirk_amd_nb_node(struct pci_dev *dev)
- {
- 	struct pci_dev *nb_ht;
- 	unsigned int devfn;
-+	u32 node;
- 	u32 val;
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index 7adebac..46324c6 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -19,7 +19,7 @@ __must_check unsigned long
+ copy_user_generic(void *to, const void *from, unsigned len);
  
- 	devfn = PCI_DEVFN(PCI_SLOT(dev->devfn), 0);
-@@ -507,7 +508,13 @@ static void __init quirk_amd_nb_node(struct pci_dev *dev)
- 		return;
+ __must_check unsigned long
+-copy_to_user(void __user *to, const void *from, unsigned len);
++_copy_to_user(void __user *to, const void *from, unsigned len);
+ __must_check unsigned long
+ _copy_from_user(void *to, const void __user *from, unsigned len);
+ __must_check unsigned long
+@@ -32,6 +32,7 @@ static inline unsigned long __must_check copy_from_user(void *to,
+ 	int sz = __compiletime_object_size(to);
+ 	int ret = -EFAULT;
  
- 	pci_read_config_dword(nb_ht, 0x60, &val);
--	set_dev_node(&dev->dev, val & 7);
-+	node = val & 7;
-+	/*
-+	 * Some hardware may return an invalid node ID,
-+	 * so check it first:
-+	 */
-+	if (node_online(node))
-+		set_dev_node(&dev->dev, node);
- 	pci_dev_put(nb_ht);
++	might_fault();
+ 	if (likely(sz == -1 || sz >= n))
+ 		ret = _copy_from_user(to, from, n);
+ #ifdef CONFIG_DEBUG_VM
+@@ -41,6 +42,13 @@ static inline unsigned long __must_check copy_from_user(void *to,
+ 	return ret;
  }
  
++static __always_inline __must_check
++int copy_to_user(void __user *dst, const void *src, unsigned size)
++{
++	might_fault();
++
++	return _copy_to_user(dst, src, size);
++}
+ 
+ static __always_inline __must_check
+ int __copy_from_user(void *dst, const void __user *src, unsigned size)
+diff --git a/arch/x86/kernel/x8664_ksyms_64.c b/arch/x86/kernel/x8664_ksyms_64.c
+index cd54276..a102976 100644
+--- a/arch/x86/kernel/x8664_ksyms_64.c
++++ b/arch/x86/kernel/x8664_ksyms_64.c
+@@ -31,7 +31,7 @@ EXPORT_SYMBOL(__put_user_8);
+ EXPORT_SYMBOL(copy_user_generic);
+ EXPORT_SYMBOL(__copy_user_nocache);
+ EXPORT_SYMBOL(_copy_from_user);
+-EXPORT_SYMBOL(copy_to_user);
++EXPORT_SYMBOL(_copy_to_user);
+ 
+ EXPORT_SYMBOL(copy_page);
+ EXPORT_SYMBOL(clear_page);
+diff --git a/arch/x86/lib/copy_user_64.S b/arch/x86/lib/copy_user_64.S
+index 3936998..cf889d4 100644
+--- a/arch/x86/lib/copy_user_64.S
++++ b/arch/x86/lib/copy_user_64.S
+@@ -65,7 +65,7 @@
+ 	.endm
+ 
+ /* Standard copy_to_user with segment limit checking */
+-ENTRY(copy_to_user)
++ENTRY(_copy_to_user)
+ 	CFI_STARTPROC
+ 	GET_THREAD_INFO(%rax)
+ 	movq %rdi,%rcx
+@@ -75,7 +75,7 @@ ENTRY(copy_to_user)
+ 	jae bad_to_user
+ 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
+ 	CFI_ENDPROC
+-ENDPROC(copy_to_user)
++ENDPROC(_copy_to_user)
+ 
+ /* Standard copy_from_user with segment limit checking */
+ ENTRY(_copy_from_user)
