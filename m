@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbZKPLTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZKPLW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752370AbZKPLTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 06:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZKPLTk
+	id S1752386AbZKPLW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 06:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZKPLWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 06:19:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45655 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbZKPLTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 06:19:39 -0500
-Date: Mon, 16 Nov 2009 11:18:36 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, ghaskins@novell.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, ghaskins@novell.com, mingo@elte.hu
-In-Reply-To: <1258363873.26714.83.camel@laptop>
-References: <1258363873.26714.83.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Sched_rt_periodic_timer vs cpu hotplug
-Message-ID: <tip-047106adcc85e3023da210143a6ab8a55df9e0fc@git.kernel.org>
-Git-Commit-ID: 047106adcc85e3023da210143a6ab8a55df9e0fc
-X-Mailer: tip-git-log-daemon
+	Mon, 16 Nov 2009 06:22:55 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52453 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbZKPLWz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 06:22:55 -0500
+Date: Mon, 16 Nov 2009 12:22:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: -rc6: something (probably active usb bluetooth) blocks suspend
+Message-ID: <20091116112254.GB12315@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  047106adcc85e3023da210143a6ab8a55df9e0fc
-Gitweb:     http://git.kernel.org/tip/047106adcc85e3023da210143a6ab8a55df9e0fc
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 16 Nov 2009 10:28:09 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Nov 2009 10:46:27 +0100
+Linux amd 2.6.32-rc6-00498-g05b553a-dirty #89 SMP Fri Nov 13 10:43:31
+CET 2009 i686 GNU/Linux
 
-sched: Sched_rt_periodic_timer vs cpu hotplug
+...and yes, it is a regression. Hw is thinkpad x60.
 
-Heiko reported a case where a timer interrupt managed to
-reference a root_domain structure that was already freed by a
-concurrent hot-un-plug operation.
+Tried to suspend, machine came right back, used radio kill switch, and
+it suspended ok. Relevant messages seem to be:
 
-Solve this like the regular sched_domain stuff is also
-synchronized, by adding a synchronize_sched() stmt to the free
-path, this ensures that a root_domain stays present for any
-atomic section that could have observed it.
+								Pavel
 
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Gregory Haskins <ghaskins@novell.com>
-Cc: Siddha Suresh B <suresh.b.siddha@intel.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-LKML-Reference: <1258363873.26714.83.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+PM: Preparing system for mem sleep
+Freezing user space processes ... (elapsed 0.02 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+PM: Entering mem sleep
+usb 5-2: usb suspend
+btusb_intr_complete: hci0 urb f3b57420 failed to resubmit (1)
+uhci_hcd 0000:00:1d.3: release dev 2 ep81-INT, period 1, phase 0, 23
+us
+btusb_bulk_complete: hci0 urb f3b57680 failed to resubmit (1)
+btusb_bulk_complete: hci0 urb f3b57718 failed to resubmit (1)
+usb 5-1: usb suspend
+usb 5-1: usb auto-resume
+uhci_hcd 0000:00:1d.3: port 1 portsc 0095,01
+usb 5-1: finish resume
+uhci_hcd 0000:00:1d.3: reserve dev 2 ep81-INT, period 1, phase 0, 23
+us
+hub 5-0:1.0: port 1 nyet suspended
+hub 5-0:1.0: suspend error -16
+pm_op(): usb_dev_suspend+0x0/0x10 returns -16
+PM: Device usb5 failed to suspend: error -16
+PM: Some devices failed to suspend
+thinkpad_acpi: ACPI backlight control delay disabled
+usb 5-2: usb resume
+uhci_hcd 0000:00:1d.3: port 2 portsc 00a5,01
+usb 5-2: finish resume
+usb usb4: usb resume
+usb usb4: wakeup_rh
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index cea2bea..3c91f11 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7912,6 +7912,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 
- static void free_rootdomain(struct root_domain *rd)
- {
-+	synchronize_sched();
-+
- 	cpupri_cleanup(&rd->cpupri);
- 
- 	free_cpumask_var(rd->rto_mask);
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
