@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZKPOaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZKPObu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbZKPOaR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 09:30:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZKPOaQ
+	id S1753928AbZKPObu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 09:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZKPObt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 09:30:16 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:38863 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbZKPOaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 09:30:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=juwn4LTvnpe/5S/viBQroegXW93ZpAruvrYkW4g8zF2SqPyiYuJ8+JYr6R+6xigC7k
-         DPGQxGgqxz50HglpLsEhEh8RTY2vfkaY5ZzTEZvmXx9PpMwHNebif9/WmwqZJPZxHYny
-         sQQk2luktsgjmt4iWcNUHFDpkYpo98iyZYzZQ=
-Subject: Re: [PATCH v8 06/16] tracing: add an endian argument to
- scripts/recordmcount.pl
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
-       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
-In-Reply-To: <alpine.LFD.2.00.0911161520080.24119@localhost.localdomain>
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
-	 <b99c08397d9ff92ac5a72bda9131df41b702fc71.1258177321.git.wuzhangjin@gmail.com>
-	 <8f579e2cece16cd22358a4ec143ef6a8c462639b.1258177321.git.wuzhangjin@gmail.com>
-	 <ea337742d3ca7eec2825416041a6d4fa917d5cc4.1258177321.git.wuzhangjin@gmail.com>
-	 <7c7568247ad6cc109ec20387cfc3ca258d1d430f.1258177321.git.wuzhangjin@gmail.com>
-	 <3fcaffcfb3c8c8cd3015151ed5b7480ccaecde0f.1258177321.git.wuzhangjin@gmail.com>
-	 <alpine.LFD.2.00.0911161520080.24119@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 16 Nov 2009 22:29:35 +0800
-Message-ID: <1258381775.15821.1.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 09:31:49 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:43597
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753679AbZKPObs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 09:31:48 -0500
+X-SpamScore: -3
+X-BigFish: VPS-3(zz98dNzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KT7HOP-01-A7S-02
+X-M-MSG: 
+Date: Mon, 16 Nov 2009 15:32:13 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 16
+Message-ID: <20091116143213.GD30377@aftab>
+References: <20091116181453.b42247cf.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20091116181453.b42247cf.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Nov 2009 14:31:38.0527 (UTC) FILETIME=[81C76AF0:01CA66C9]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-16 at 15:21 +0100, Thomas Gleixner wrote:
-> On Sat, 14 Nov 2009, Wu Zhangjin wrote:
-> 
-> > From: Wu Zhangjin <wuzhangjin@gmail.com>
-> > 
-> > MIPS and some other architectures need this argument to handle
-> > big/little endian respectively.
-> 
-> Hmm, the patch adds the endian argument to the command line, but does
-> nothing else with it. Is there something missing from the patch or is
-> it just a left over from earlier iterations ?
-> 
+Hi Stephen,
 
-It is used in: 
 
-[PATCH v8 07/16] tracing: add dynamic function tracer support for MIPS
+On Mon, Nov 16, 2009 at 06:14:53PM +1100, Stephen Rothwell wrote:
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+> (patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).
 
-Steven told me to split it out ;)
+...
 
-Thanks & Regards,
-	Wu Zhangjin
+> Merging tip/auto-latest
+
+can you please add the edac-amd tree back to the linux-next mix, right
+after the -tip tree wrt merge order? URL is
+
+git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-next
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
