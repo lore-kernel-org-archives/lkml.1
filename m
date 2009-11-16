@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZKPOWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZKPOYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbZKPOWE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 09:22:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZKPOWD
+	id S1753565AbZKPOYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 09:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZKPOYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 09:22:03 -0500
-Received: from www.tglx.de ([62.245.132.106]:57580 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbZKPOWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 09:22:02 -0500
-Date: Mon, 16 Nov 2009 15:21:32 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
-       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com,
-       Wu Zhangjin <wuzj@lemote.com>
-Subject: Re: [PATCH v8 06/16] tracing: add an endian argument to
- scripts/recordmcount.pl
-In-Reply-To: <3fcaffcfb3c8c8cd3015151ed5b7480ccaecde0f.1258177321.git.wuzhangjin@gmail.com>
-Message-ID: <alpine.LFD.2.00.0911161520080.24119@localhost.localdomain>
-References: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com> <b99c08397d9ff92ac5a72bda9131df41b702fc71.1258177321.git.wuzhangjin@gmail.com> <8f579e2cece16cd22358a4ec143ef6a8c462639b.1258177321.git.wuzhangjin@gmail.com>
- <ea337742d3ca7eec2825416041a6d4fa917d5cc4.1258177321.git.wuzhangjin@gmail.com> <7c7568247ad6cc109ec20387cfc3ca258d1d430f.1258177321.git.wuzhangjin@gmail.com> <3fcaffcfb3c8c8cd3015151ed5b7480ccaecde0f.1258177321.git.wuzhangjin@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 16 Nov 2009 09:24:19 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43494 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbZKPOYS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 09:24:18 -0500
+Date: Mon, 16 Nov 2009 15:22:36 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: -rc6: something (probably active usb bluetooth) blocks suspend
+Message-ID: <20091116142236.GA1796@ucw.cz>
+References: <20091116112254.GB12315@elf.ucw.cz> <200911161443.20704.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911161443.20704.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Nov 2009, Wu Zhangjin wrote:
-
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
+On Mon 2009-11-16 14:43:20, Oliver Neukum wrote:
+> Am Montag, 16. November 2009 12:22:54 schrieb Pavel Machek:
+> > Linux amd 2.6.32-rc6-00498-g05b553a-dirty #89 SMP Fri Nov 13 10:43:31
+> > CET 2009 i686 GNU/Linux
+> > 
+> > ...and yes, it is a regression. Hw is thinkpad x60.
+> > 
+> > Tried to suspend, machine came right back, used radio kill switch, and
+> > it suspended ok. Relevant messages seem to be:
 > 
-> MIPS and some other architectures need this argument to handle
-> big/little endian respectively.
+> I forgot to ask. Is this repeatable? The code is build on the
 
-Hmm, the patch adds the endian argument to the command line, but does
-nothing else with it. Is there something missing from the patch or is
-it just a left over from earlier iterations ?
+It happened once...  
 
-Thanks,
+> assumption
+> that workqueues are frozen as the system calls suspend for system
+> sleep. If that assumption is wrong, a race can lead to this failure.
+> Is it wrong?
 
-	tglx
+There are two kinds of workqueues -- AFAICT -- kind one is frozen,
+kind two is not.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
