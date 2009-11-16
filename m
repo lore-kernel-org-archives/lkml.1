@@ -1,260 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZKPMYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZKPMYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424AbZKPMYc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZKPMU2
+	id S1753808AbZKPMYK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZKPMUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:20:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60644 "EHLO mx1.redhat.com"
+	Mon, 16 Nov 2009 07:20:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55071 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752985AbZKPMTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752986AbZKPMTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Nov 2009 07:19:43 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 36/42] KVM: x86: Rework guest single-step flag injection and filtering
-Date: Mon, 16 Nov 2009 14:19:37 +0200
-Message-Id: <1258373983-8693-37-git-send-email-avi@redhat.com>
+Subject: [PATCH 37/42] KVM: x86: include pvclock MSRs in msrs_to_save
+Date: Mon, 16 Nov 2009 14:19:38 +0200
+Message-Id: <1258373983-8693-38-git-send-email-avi@redhat.com>
 In-Reply-To: <1258373983-8693-1-git-send-email-avi@redhat.com>
 References: <1258373983-8693-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Glauber Costa <glommer@redhat.com>
 
-Push TF and RF injection and filtering on guest single-stepping into the
-vender get/set_rflags callbacks. This makes the whole mechanism more
-robust wrt user space IOCTL order and instruction emulations.
+For a while now, we are issuing a rdmsr instruction to find out which
+msrs in our save list are really supported by the underlying machine.
+However, it fails to account for kvm-specific msrs, such as the pvclock
+ones.
 
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+This patch moves then to the beginning of the list, and skip testing them.
+
+Cc: stable@kernel.org
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    3 ++
- arch/x86/kvm/x86.c              |   77 +++++++++++++++++++++++----------------
- 2 files changed, 48 insertions(+), 32 deletions(-)
+ arch/x86/kvm/x86.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index e7f8708..179a919 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -614,6 +614,9 @@ void kvm_get_cs_db_l_bits(struct kvm_vcpu *vcpu, int *db, int *l);
- int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata);
- int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data);
- 
-+unsigned long kvm_get_rflags(struct kvm_vcpu *vcpu);
-+void kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags);
-+
- void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr);
- void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code);
- void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long cr2,
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 4693f91..385cd0a 100644
+index 385cd0a..4de5bc0 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -235,6 +235,25 @@ bool kvm_require_cpl(struct kvm_vcpu *vcpu, int required_cpl)
- }
- EXPORT_SYMBOL_GPL(kvm_require_cpl);
- 
-+unsigned long kvm_get_rflags(struct kvm_vcpu *vcpu)
-+{
-+	unsigned long rflags;
-+
-+	rflags = kvm_x86_ops->get_rflags(vcpu);
-+	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
-+		rflags &= ~(unsigned long)(X86_EFLAGS_TF | X86_EFLAGS_RF);
-+	return rflags;
-+}
-+EXPORT_SYMBOL_GPL(kvm_get_rflags);
-+
-+void kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
-+{
-+	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
-+		rflags |= X86_EFLAGS_TF | X86_EFLAGS_RF;
-+	kvm_x86_ops->set_rflags(vcpu, rflags);
-+}
-+EXPORT_SYMBOL_GPL(kvm_set_rflags);
-+
- /*
-  * Load the pae pdptrs.  Return true is they are all valid.
+@@ -503,16 +503,19 @@ static inline u32 bit(int bitno)
+  * and KVM_SET_MSRS, and KVM_GET_MSR_INDEX_LIST.
+  *
+  * This list is modified at module load time to reflect the
+- * capabilities of the host cpu.
++ * capabilities of the host cpu. This capabilities test skips MSRs that are
++ * kvm-specific. Those are put in the beginning of the list.
   */
-@@ -2777,7 +2796,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 		kvm_x86_ops->get_cs_db_l_bits(vcpu, &cs_db, &cs_l);
- 
- 		vcpu->arch.emulate_ctxt.vcpu = vcpu;
--		vcpu->arch.emulate_ctxt.eflags = kvm_x86_ops->get_rflags(vcpu);
-+		vcpu->arch.emulate_ctxt.eflags = kvm_get_rflags(vcpu);
- 		vcpu->arch.emulate_ctxt.mode =
- 			(vcpu->arch.emulate_ctxt.eflags & X86_EFLAGS_VM)
- 			? X86EMUL_MODE_REAL : cs_l
-@@ -2855,7 +2874,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 		return EMULATE_DO_MMIO;
- 	}
- 
--	kvm_x86_ops->set_rflags(vcpu, vcpu->arch.emulate_ctxt.eflags);
-+	kvm_set_rflags(vcpu, vcpu->arch.emulate_ctxt.eflags);
- 
- 	if (vcpu->mmio_is_write) {
- 		vcpu->mmio_needed = 0;
-@@ -3291,7 +3310,7 @@ void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
- 		   unsigned long *rflags)
- {
- 	kvm_lmsw(vcpu, msw);
--	*rflags = kvm_x86_ops->get_rflags(vcpu);
-+	*rflags = kvm_get_rflags(vcpu);
- }
- 
- unsigned long realmode_get_cr(struct kvm_vcpu *vcpu, int cr)
-@@ -3329,7 +3348,7 @@ void realmode_set_cr(struct kvm_vcpu *vcpu, int cr, unsigned long val,
- 	switch (cr) {
- 	case 0:
- 		kvm_set_cr0(vcpu, mk_cr_64(vcpu->arch.cr0, val));
--		*rflags = kvm_x86_ops->get_rflags(vcpu);
-+		*rflags = kvm_get_rflags(vcpu);
- 		break;
- 	case 2:
- 		vcpu->arch.cr2 = val;
-@@ -3460,7 +3479,7 @@ static void post_kvm_run_save(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_run *kvm_run = vcpu->run;
- 
--	kvm_run->if_flag = (kvm_x86_ops->get_rflags(vcpu) & X86_EFLAGS_IF) != 0;
-+	kvm_run->if_flag = (kvm_get_rflags(vcpu) & X86_EFLAGS_IF) != 0;
- 	kvm_run->cr8 = kvm_get_cr8(vcpu);
- 	kvm_run->apic_base = kvm_get_apic_base(vcpu);
- 	if (irqchip_in_kernel(vcpu->kvm))
-@@ -3840,13 +3859,7 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
++
++#define KVM_SAVE_MSRS_BEGIN	2
+ static u32 msrs_to_save[] = {
++	MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
+ 	MSR_IA32_SYSENTER_CS, MSR_IA32_SYSENTER_ESP, MSR_IA32_SYSENTER_EIP,
+ 	MSR_K6_STAR,
+ #ifdef CONFIG_X86_64
+ 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
  #endif
+-	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
+-	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
++	MSR_IA32_TSC, MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
+ };
  
- 	regs->rip = kvm_rip_read(vcpu);
--	regs->rflags = kvm_x86_ops->get_rflags(vcpu);
--
--	/*
--	 * Don't leak debug flags in case they were set for guest debugging
--	 */
--	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
--		regs->rflags &= ~(X86_EFLAGS_TF | X86_EFLAGS_RF);
-+	regs->rflags = kvm_get_rflags(vcpu);
+ static unsigned num_msrs_to_save;
+@@ -2446,7 +2449,8 @@ static void kvm_init_msr_list(void)
+ 	u32 dummy[2];
+ 	unsigned i, j;
  
- 	vcpu_put(vcpu);
- 
-@@ -3874,12 +3887,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	kvm_register_write(vcpu, VCPU_REGS_R13, regs->r13);
- 	kvm_register_write(vcpu, VCPU_REGS_R14, regs->r14);
- 	kvm_register_write(vcpu, VCPU_REGS_R15, regs->r15);
--
- #endif
- 
- 	kvm_rip_write(vcpu, regs->rip);
--	kvm_x86_ops->set_rflags(vcpu, regs->rflags);
--
-+	kvm_set_rflags(vcpu, regs->rflags);
- 
- 	vcpu->arch.exception.pending = false;
- 
-@@ -4098,7 +4109,7 @@ static int is_vm86_segment(struct kvm_vcpu *vcpu, int seg)
- {
- 	return (seg != VCPU_SREG_LDTR) &&
- 		(seg != VCPU_SREG_TR) &&
--		(kvm_x86_ops->get_rflags(vcpu) & X86_EFLAGS_VM);
-+		(kvm_get_rflags(vcpu) & X86_EFLAGS_VM);
- }
- 
- int kvm_load_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
-@@ -4126,7 +4137,7 @@ static void save_state_to_tss32(struct kvm_vcpu *vcpu,
- {
- 	tss->cr3 = vcpu->arch.cr3;
- 	tss->eip = kvm_rip_read(vcpu);
--	tss->eflags = kvm_x86_ops->get_rflags(vcpu);
-+	tss->eflags = kvm_get_rflags(vcpu);
- 	tss->eax = kvm_register_read(vcpu, VCPU_REGS_RAX);
- 	tss->ecx = kvm_register_read(vcpu, VCPU_REGS_RCX);
- 	tss->edx = kvm_register_read(vcpu, VCPU_REGS_RDX);
-@@ -4150,7 +4161,7 @@ static int load_state_from_tss32(struct kvm_vcpu *vcpu,
- 	kvm_set_cr3(vcpu, tss->cr3);
- 
- 	kvm_rip_write(vcpu, tss->eip);
--	kvm_x86_ops->set_rflags(vcpu, tss->eflags | 2);
-+	kvm_set_rflags(vcpu, tss->eflags | 2);
- 
- 	kvm_register_write(vcpu, VCPU_REGS_RAX, tss->eax);
- 	kvm_register_write(vcpu, VCPU_REGS_RCX, tss->ecx);
-@@ -4188,7 +4199,7 @@ static void save_state_to_tss16(struct kvm_vcpu *vcpu,
- 				struct tss_segment_16 *tss)
- {
- 	tss->ip = kvm_rip_read(vcpu);
--	tss->flag = kvm_x86_ops->get_rflags(vcpu);
-+	tss->flag = kvm_get_rflags(vcpu);
- 	tss->ax = kvm_register_read(vcpu, VCPU_REGS_RAX);
- 	tss->cx = kvm_register_read(vcpu, VCPU_REGS_RCX);
- 	tss->dx = kvm_register_read(vcpu, VCPU_REGS_RDX);
-@@ -4209,7 +4220,7 @@ static int load_state_from_tss16(struct kvm_vcpu *vcpu,
- 				 struct tss_segment_16 *tss)
- {
- 	kvm_rip_write(vcpu, tss->ip);
--	kvm_x86_ops->set_rflags(vcpu, tss->flag | 2);
-+	kvm_set_rflags(vcpu, tss->flag | 2);
- 	kvm_register_write(vcpu, VCPU_REGS_RAX, tss->ax);
- 	kvm_register_write(vcpu, VCPU_REGS_RCX, tss->cx);
- 	kvm_register_write(vcpu, VCPU_REGS_RDX, tss->dx);
-@@ -4355,8 +4366,8 @@ int kvm_task_switch(struct kvm_vcpu *vcpu, u16 tss_selector, int reason)
- 	}
- 
- 	if (reason == TASK_SWITCH_IRET) {
--		u32 eflags = kvm_x86_ops->get_rflags(vcpu);
--		kvm_x86_ops->set_rflags(vcpu, eflags & ~X86_EFLAGS_NT);
-+		u32 eflags = kvm_get_rflags(vcpu);
-+		kvm_set_rflags(vcpu, eflags & ~X86_EFLAGS_NT);
- 	}
- 
- 	/* set back link to prev task only if NT bit is set in eflags
-@@ -4377,8 +4388,8 @@ int kvm_task_switch(struct kvm_vcpu *vcpu, u16 tss_selector, int reason)
- 					 old_tss_base, &nseg_desc);
- 
- 	if (reason == TASK_SWITCH_CALL || reason == TASK_SWITCH_GATE) {
--		u32 eflags = kvm_x86_ops->get_rflags(vcpu);
--		kvm_x86_ops->set_rflags(vcpu, eflags | X86_EFLAGS_NT);
-+		u32 eflags = kvm_get_rflags(vcpu);
-+		kvm_set_rflags(vcpu, eflags | X86_EFLAGS_NT);
- 	}
- 
- 	if (reason != TASK_SWITCH_IRET) {
-@@ -4473,12 +4484,15 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 					struct kvm_guest_debug *dbg)
- {
- 	unsigned long rflags;
--	int old_debug;
- 	int i;
- 
- 	vcpu_load(vcpu);
- 
--	old_debug = vcpu->guest_debug;
-+	/*
-+	 * Read rflags as long as potentially injected trace flags are still
-+	 * filtered out.
-+	 */
-+	rflags = kvm_get_rflags(vcpu);
- 
- 	vcpu->guest_debug = dbg->control;
- 	if (!(vcpu->guest_debug & KVM_GUESTDBG_ENABLE))
-@@ -4495,12 +4509,11 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 		vcpu->arch.switch_db_regs = (vcpu->arch.dr7 & DR7_BP_EN_MASK);
- 	}
- 
--	rflags = kvm_x86_ops->get_rflags(vcpu);
--	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
--		rflags |= X86_EFLAGS_TF | X86_EFLAGS_RF;
--	else if (old_debug & KVM_GUESTDBG_SINGLESTEP)
--		rflags &= ~(X86_EFLAGS_TF | X86_EFLAGS_RF);
--	kvm_x86_ops->set_rflags(vcpu, rflags);
-+	/*
-+	 * Trigger an rflags update that will inject or remove the trace
-+	 * flags.
-+	 */
-+	kvm_set_rflags(vcpu, rflags);
- 
- 	kvm_x86_ops->set_guest_debug(vcpu, dbg);
- 
+-	for (i = j = 0; i < ARRAY_SIZE(msrs_to_save); i++) {
++	/* skip the first msrs in the list. KVM-specific */
++	for (i = j = KVM_SAVE_MSRS_BEGIN; i < ARRAY_SIZE(msrs_to_save); i++) {
+ 		if (rdmsr_safe(msrs_to_save[i], &dummy[0], &dummy[1]) < 0)
+ 			continue;
+ 		if (j < i)
 -- 
 1.6.5.2
 
