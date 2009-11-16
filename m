@@ -1,183 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZKPBSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZKPBnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751832AbZKPBSR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 20:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbZKPBSQ
+	id S1751912AbZKPBnH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 20:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZKPBnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 20:18:16 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:45524 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbZKPBSP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 20:18:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=r/isYboyD+IvPVu2KKlbzO8GRj8SXLqNVbbJKFCGouYE05ffkwLD/mGtZEDNODbx26
-         kB+b5553yUGthKQVF4eVYyQPK1AXfrIorDjtnREehb+u/vzlnIMjiR7uNpSU17h4Z9qe
-         Kg8QeodIRWRXEEXr0NUWlCjL4dhj6HduIgGsI=
-Message-ID: <4B00A858.8000705@gmail.com>
-Date: Sun, 15 Nov 2009 20:18:16 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH v1 resent] net: TCP_MSS_DEFAULT, TCP_MSS_DESIRED
-Content-Type: multipart/mixed;
- boundary="------------000801080008050209040204"
+	Sun, 15 Nov 2009 20:43:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:52077 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751156AbZKPBnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Nov 2009 20:43:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,748,1249282800"; 
+   d="scan'208";a="467535574"
+Subject: Re: [PATCH 4/5] acpi: fix trivial warning
+From: Lin Ming <ming.m.lin@intel.com>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Daniel Walker <dwalker@fifo99.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <94a0d4530911150927l3224e815ha6ff17aab6f19251@mail.gmail.com>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-4-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-5-git-send-email-felipe.contreras@gmail.com>
+	 <1252936556.28368.215.camel@desktop>
+	 <94a0d4530909140734q51779b76g2ddc7211ece87171@mail.gmail.com>
+	 <1252940549.28368.255.camel@desktop>
+	 <94a0d4530911111623h1ae3463dte8a3f83ec0ad1f75@mail.gmail.com>
+	 <1258134207.6411.0.camel@c-dwalke-linux.qualcomm.com>
+	 <94a0d4530911131228s6b6b6221o7b24002ca03373e5@mail.gmail.com>
+	 <1258305351.6428.8.camel@desktop>
+	 <94a0d4530911150927l3224e815ha6ff17aab6f19251@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 16 Nov 2009 09:27:25 +0800
+Message-Id: <1258334845.17765.23.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000801080008050209040204
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, 2009-11-16 at 01:27 +0800, Felipe Contreras wrote:
+> On Sun, Nov 15, 2009 at 7:15 PM, Daniel Walker <dwalker@fifo99.com> wrote:
+> > On Fri, 2009-11-13 at 22:28 +0200, Felipe Contreras wrote:
+> >> That doesn't seem too positive. Or at least there's no indication that
+> >> somebody will pick it up.
+> >
+> > I'd re-submit with a better description of the patch. You should always
+> > try to describe what your doing as accurately as possible so the
+> > maintainer doesn't have to work very hard to know what your doing.
+> 
+> There's nothing to add. It's a patch to cleanup the coding style, that's it.
+> 
+> > That
+> > particular patch just has a one liner description that wasn't very
+> > informative .. Either that or re-submit your series without that patch
+> > if you don't have confidence in it.
+> 
+> All of my patches have been picked up, except the ones for ACPI. I
+> haven't received a single comment from them, which would explain the
+> current state of the code.
 
-Define two symbols needed in both kernel and user space.
+Hi, Felipe
 
-Remove old (somewhat incorrect) kernel variant that wasn't used in
-most cases.  Default should apply to both RMSS and SMSS (RFC2581).
+All files under linux-2.6/drivers/acpi/acpica and most files under
+linux-2.6/include/acpi are ACPICA code, see http://www.acpica.org for
+detail.
 
-Replace numeric constants with defined symbols.
+The ACPICA's coding style is totally different than linux kernel.
+For example, a function named AcpiEvaluateObject in ACPICA, but in linux
+kernel it is called acpi_evaluate_object.
 
-Stand-alone patch, originally developed for TCPCT.
+We have a program "acpisrc" to convert the ACPICA style code to linux
+style and then run lindent on the converted code.
 
-Signed-off-by: William.Allen.Simpson@gmail.com
-Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
----
-    include/linux/tcp.h      |    6 ++++++
-    include/net/tcp.h        |    3 ---
-    net/ipv4/tcp_input.c     |    4 ++--
-    net/ipv4/tcp_ipv4.c      |    6 +++---
-    net/ipv4/tcp_minisocks.c |    2 +-
-    net/ipv6/tcp_ipv6.c      |    2 +-
-    6 files changed, 13 insertions(+), 10 deletions(-)
+You can download the official ACPICA release from
+http://www.acpica.org/downloads/ , "acpisrc" is included in it.
 
+It's great that you are contributing to ACPICA code.
+All these linuxized ACPICA codes are generated by acpisrc and lindent,
+so we'd better not touch those code directly.
 
---------------000801080008050209040204
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCP_MSSv1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="TCP_MSSv1.patch"
+Instead, our process is:
+1. Write patches for ACPICA code.
+2. Send patches to devel.acpica.org, robert.moore@intel.com, ming.m.lin@intel.com
+3. I will generate and send the linuxized ACPICA code to Len Brown <lenb@kernel.org>
+4. Len asks Linus to merge the linuxized ACPICA code.
 
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index eeecb85..32d7d77 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -81,6 +81,12 @@ enum {
- 	TCP_DATA_OFFSET = __cpu_to_be32(0xF0000000)
- }; 
- 
-+/*
-+ * TCP general constants
-+ */
-+#define TCP_MSS_DEFAULT		 536U	/* IPv4 (RFC1122, RFC2581) */
-+#define TCP_MSS_DESIRED		1220U	/* IPv6 (tunneled), EDNS0 (RFC3226) */
-+
- /* TCP socket options */
- #define TCP_NODELAY		1	/* Turn off Nagle's algorithm. */
- #define TCP_MAXSEG		2	/* Limit MSS */
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 25bf3ba..a413e9f 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -62,9 +62,6 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
- /* Minimal accepted MSS. It is (60+60+8) - (20+20). */
- #define TCP_MIN_MSS		88U
- 
--/* Minimal RCV_MSS. */
--#define TCP_MIN_RCVMSS		536U
--
- /* The least MTU to use for probing */
- #define TCP_BASE_MSS		512
- 
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index be0c5bf..cc306ac 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -140,7 +140,7 @@ static void tcp_measure_rcv_mss(struct sock *sk, const struct sk_buff *skb)
- 		 * "len" is invariant segment length, including TCP header.
- 		 */
- 		len += skb->data - skb_transport_header(skb);
--		if (len >= TCP_MIN_RCVMSS + sizeof(struct tcphdr) ||
-+		if (len >= TCP_MSS_DEFAULT + sizeof(struct tcphdr) ||
- 		    /* If PSH is not set, packet should be
- 		     * full sized, provided peer TCP is not badly broken.
- 		     * This observation (if it is correct 8)) allows
-@@ -411,7 +411,7 @@ void tcp_initialize_rcv_mss(struct sock *sk)
- 	unsigned int hint = min_t(unsigned int, tp->advmss, tp->mss_cache);
- 
- 	hint = min(hint, tp->rcv_wnd / 2);
--	hint = min(hint, TCP_MIN_RCVMSS);
-+	hint = min(hint, TCP_MSS_DEFAULT);
- 	hint = max(hint, TCP_MIN_MSS);
- 
- 	inet_csk(sk)->icsk_ack.rcv_mss = hint;
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index f83ac91..0718fde 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -217,7 +217,7 @@ int tcp_v4_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
- 	if (inet->opt)
- 		inet_csk(sk)->icsk_ext_hdr_len = inet->opt->optlen;
- 
--	tp->rx_opt.mss_clamp = 536;
-+	tp->rx_opt.mss_clamp = TCP_MSS_DEFAULT;
- 
- 	/* Socket identity is still unknown (sport may be zero).
- 	 * However we set state to SYN-SENT and not releasing socket
-@@ -1270,7 +1270,7 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- 		goto drop_and_free;
- 
- 	tcp_clear_options(&tmp_opt);
--	tmp_opt.mss_clamp = 536;
-+	tmp_opt.mss_clamp = TCP_MSS_DEFAULT;
- 	tmp_opt.user_mss  = tcp_sk(sk)->rx_opt.user_mss;
- 
- 	tcp_parse_options(skb, &tmp_opt, 0, dst);
-@@ -1818,7 +1818,7 @@ static int tcp_v4_init_sock(struct sock *sk)
- 	 */
- 	tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
- 	tp->snd_cwnd_clamp = ~0;
--	tp->mss_cache = 536;
-+	tp->mss_cache = TCP_MSS_DEFAULT;
- 
- 	tp->reordering = sysctl_tcp_reordering;
- 	icsk->icsk_ca_ops = &tcp_init_congestion_ops;
-diff --git a/net/ipv4/tcp_minisocks.c b/net/ipv4/tcp_minisocks.c
-index fb68bab..7a42990 100644
---- a/net/ipv4/tcp_minisocks.c
-+++ b/net/ipv4/tcp_minisocks.c
-@@ -476,7 +476,7 @@ struct sock *tcp_create_openreq_child(struct sock *sk, struct request_sock *req,
- 		if (newtp->af_specific->md5_lookup(sk, newsk))
- 			newtp->tcp_header_len += TCPOLEN_MD5SIG_ALIGNED;
- #endif
--		if (skb->len >= TCP_MIN_RCVMSS+newtp->tcp_header_len)
-+		if (skb->len >= TCP_MSS_DEFAULT + newtp->tcp_header_len)
- 			newicsk->icsk_ack.last_seg_size = skb->len - newtp->tcp_header_len;
- 		newtp->rx_opt.mss_clamp = req->mss;
- 		TCP_ECN_openreq_child(newtp, req);
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 6951827..b528f75 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1849,7 +1849,7 @@ static int tcp_v6_init_sock(struct sock *sk)
- 	 */
- 	tp->snd_ssthresh = TCP_INFINITE_SSTHRESH;
- 	tp->snd_cwnd_clamp = ~0;
--	tp->mss_cache = 536;
-+	tp->mss_cache = TCP_MSS_DEFAULT;
- 
- 	tp->reordering = sysctl_tcp_reordering;
- 
--- 
-1.6.3.3
+Thanks,
+Lin Ming
 
+> 
+> If somebody raised the hand and said; I'll merge this, please resend,
+> I'd do that, otherwise I think it's a waste of time.
+> 
 
-
---------------000801080008050209040204--
