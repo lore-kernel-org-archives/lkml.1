@@ -1,53 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbZKPM7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZKPNGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752467AbZKPM7f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:59:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZKPM7e
+	id S1752904AbZKPNGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 08:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZKPNGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:59:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60082 "EHLO mx2.suse.de"
+	Mon, 16 Nov 2009 08:06:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50310 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbZKPM7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:59:34 -0500
-Date: Mon, 16 Nov 2009 13:59:37 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Soeren Sonnenburg <sonne@debian.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, olh@suse.de,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mouse button 1 emulation for mac_hid
-In-Reply-To: <20091114054246.GF4463@core.coreip.homeip.net>
-Message-ID: <alpine.LRH.2.00.0911161358240.31913@twin.jikos.cz>
-References: <1257762531.7245.23.camel@no> <20091114054246.GF4463@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1752481AbZKPNGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 08:06:35 -0500
+Date: Mon, 16 Nov 2009 08:05:43 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
+Subject: Re: [PATCH 04/16] blkio: Implement per cfq group latency target
+	and busy queue avg
+Message-ID: <20091116130543.GB13235@redhat.com>
+References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com> <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258134015-21632-5-git-send-email-vgoyal@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Nov 2009, Dmitry Torokhov wrote:
-
-> > I am not sure what the future of mac_hid is (the source says will be
-> > removed, but since 9 years). In case it stays in kernel the attached
-> > patch adds support for mouse button 1 emulation. If this driver stays in
-> > the kernel I would also suggest to rename it - it is not mac specific (I
-> > am using this on a netbook).
-> > 
-> > Rationale? Broken touchpads, within linux unsupported (multi-)touchpads
-> > where click and hold + moving the mouse does not work (yet?).
+On Fri, Nov 13, 2009 at 12:40:03PM -0500, Vivek Goyal wrote:
+> o So far we had 300ms soft target latency system wide. Now with the
+>   introduction of cfq groups, divide that latency by number of groups so
+>   that one can come up with group target latency which will be helpful
+>   in determining the workload slice with-in group and also the dynamic
+>   slice length of the cfq queue.
 > 
-> I would rather fix the touchpads so they work properly than pile more
-> quirks in kernel.
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-Hi Dmitry,
+Regenerated the patch with group_target_lat renamed to group_slice.
+Corrado mentioned that group_target_lat can be confusing here.
 
-in exactly what way are you planning to "fix the touchpads"?
+o So far we had 300ms soft target latency system wide. Now with the
+  introduction of cfq groups, divide that latency by number of groups so
+  that one can come up with group target latency which will be helpful
+  in determining the workload slice with-in group and also the dynamic
+  slice length of the cfq queue.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |   65 ++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 45 insertions(+), 20 deletions(-)
 
+Index: linux7/block/cfq-iosched.c
+===================================================================
+--- linux7.orig/block/cfq-iosched.c	2009-11-13 12:03:54.000000000 -0500
++++ linux7/block/cfq-iosched.c	2009-11-16 07:47:12.000000000 -0500
+@@ -78,6 +78,7 @@ struct cfq_rb_root {
+ 	struct rb_node *left;
+ 	unsigned count;
+ 	u64 min_vdisktime;
++	unsigned total_weight;
+ };
+ #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+ 
+@@ -167,6 +168,8 @@ struct cfq_group {
+ 	/* number of cfqq currently on this group */
+ 	int nr_cfqq;
+ 
++	/* Per group busy queus average. Useful for workload slice calc. */
++	unsigned int busy_queues_avg[2];
+ 	/*
+ 	 * rr lists of queues with requests, onle rr for each priority class.
+ 	 * Counts are embedded in the cfq_rb_root
+@@ -184,6 +187,8 @@ struct cfq_data {
+ 	/* Root service tree for cfq_groups */
+ 	struct cfq_rb_root grp_service_tree;
+ 	struct cfq_group root_group;
++	/* Number of active cfq groups on group service tree */
++	int nr_groups;
+ 
+ 	/*
+ 	 * The priority currently being served
+@@ -201,7 +206,6 @@ struct cfq_data {
+ 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+ 
+ 	unsigned int busy_queues;
+-	unsigned int busy_queues_avg[2];
+ 
+ 	int rq_in_driver[2];
+ 	int sync_flight;
+@@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct c
+ 	return SYNC_WORKLOAD;
+ }
+ 
+-static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
++static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
++					struct cfq_data *cfqd,
++					struct cfq_group *cfqg)
+ {
+-	struct cfq_group *cfqg = &cfqd->root_group;
+-
+ 	if (wl == IDLE_WORKLOAD)
+ 		return cfqg->service_tree_idle.count;
+ 
+@@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd,
+  * to quickly follows sudden increases and decrease slowly
+  */
+ 
+-static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
++static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
++					struct cfq_group *cfqg, bool rt)
+ {
+ 	unsigned min_q, max_q;
+ 	unsigned mult  = cfq_hist_divisor - 1;
+ 	unsigned round = cfq_hist_divisor / 2;
+-	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
++	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
+ 
+-	min_q = min(cfqd->busy_queues_avg[rt], busy);
+-	max_q = max(cfqd->busy_queues_avg[rt], busy);
+-	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
++	min_q = min(cfqg->busy_queues_avg[rt], busy);
++	max_q = max(cfqg->busy_queues_avg[rt], busy);
++	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
+ 		cfq_hist_divisor;
+-	return cfqd->busy_queues_avg[rt];
++	return cfqg->busy_queues_avg[rt];
++}
++
++static inline unsigned
++cfq_group_slice(struct cfq_data *cfqd, struct cfq_group *cfqg)
++{
++	struct cfq_rb_root *st = &cfqd->grp_service_tree;
++
++	return cfq_target_latency * cfqg->weight / st->total_weight;
+ }
+ 
+ static inline void
+@@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd
+ {
+ 	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
+ 	if (cfqd->cfq_latency) {
+-		/* interested queues (we consider only the ones with the same
+-		 * priority class) */
+-		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
++		/*
++		 * interested queues (we consider only the ones with the same
++		 * priority class in the cfq group)
++		 */
++		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
++						cfq_class_rt(cfqq));
+ 		unsigned sync_slice = cfqd->cfq_slice[1];
+ 		unsigned expect_latency = sync_slice * iq;
+-		if (expect_latency > cfq_target_latency) {
++		unsigned group_slice = cfq_group_slice(cfqd, cfqq->cfqg);
++
++		if (expect_latency > group_slice) {
+ 			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
+ 			/* scale low_slice according to IO priority
+ 			 * and sync vs async */
+@@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd
+ 				min(slice, base_low_slice * slice / sync_slice);
+ 			/* the adapted slice value is scaled to fit all iqs
+ 			 * into the target latency */
+-			slice = max(slice * cfq_target_latency / expect_latency,
++			slice = max(slice * group_slice / expect_latency,
+ 				    low_slice);
+ 		}
+ 	}
+@@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_da
+ 
+ 	__cfq_group_service_tree_add(st, cfqg);
+ 	cfqg->on_st = true;
++	cfqd->nr_groups++;
++	st->total_weight += cfqg->weight;
+ }
+ 
+ static void
+@@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_da
+ 		return;
+ 
+ 	cfqg->on_st = false;
++	cfqd->nr_groups--;
++	st->total_weight -= cfqg->weight;
+ 	if (!RB_EMPTY_NODE(&cfqg->rb_node))
+ 		cfq_rb_erase(&cfqg->rb_node, st);
+ }
+@@ -1592,6 +1614,7 @@ static void choose_service_tree(struct c
+ 	unsigned slice;
+ 	unsigned count;
+ 	struct cfq_rb_root *st;
++	unsigned group_slice;
+ 
+ 	if (!cfqg) {
+ 		cfqd->serving_prio = IDLE_WORKLOAD;
+@@ -1600,9 +1623,9 @@ static void choose_service_tree(struct c
+ 	}
+ 
+ 	/* Choose next priority. RT > BE > IDLE */
+-	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
++	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
+ 		cfqd->serving_prio = RT_WORKLOAD;
+-	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
++	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
+ 		cfqd->serving_prio = BE_WORKLOAD;
+ 	else {
+ 		cfqd->serving_prio = IDLE_WORKLOAD;
+@@ -1640,9 +1663,11 @@ static void choose_service_tree(struct c
+ 	 * proportional to the number of queues in that workload, over
+ 	 * all the queues in the same priority class
+ 	 */
+-	slice = cfq_target_latency * count /
+-		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
+-		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
++	group_slice = cfq_group_slice(cfqd, cfqg);
++
++	slice = group_slice * count /
++		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
++		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
+ 
+ 	if (cfqd->serving_type == ASYNC_WORKLOAD)
+ 		/* async workload slice is scaled down according to
+> ---
+>  block/cfq-iosched.c |   65 +++++++++++++++++++++++++++++++++++---------------
+>  1 files changed, 45 insertions(+), 20 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 73d93af..11256c3 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -78,6 +78,7 @@ struct cfq_rb_root {
+>  	struct rb_node *left;
+>  	unsigned count;
+>  	u64 min_vdisktime;
+> +	unsigned total_weight;
+>  };
+>  #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+>  
+> @@ -167,6 +168,8 @@ struct cfq_group {
+>  	/* number of cfqq currently on this group */
+>  	int nr_cfqq;
+>  
+> +	/* Per group busy queus average. Useful for workload slice calc. */
+> +	unsigned int busy_queues_avg[2];
+>  	/*
+>  	 * rr lists of queues with requests, onle rr for each priority class.
+>  	 * Counts are embedded in the cfq_rb_root
+> @@ -184,6 +187,8 @@ struct cfq_data {
+>  	/* Root service tree for cfq_groups */
+>  	struct cfq_rb_root grp_service_tree;
+>  	struct cfq_group root_group;
+> +	/* Number of active cfq groups on group service tree */
+> +	int nr_groups;
+>  
+>  	/*
+>  	 * The priority currently being served
+> @@ -201,7 +206,6 @@ struct cfq_data {
+>  	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+>  
+>  	unsigned int busy_queues;
+> -	unsigned int busy_queues_avg[2];
+>  
+>  	int rq_in_driver[2];
+>  	int sync_flight;
+> @@ -330,10 +334,10 @@ static enum wl_type_t cfqq_type(struct cfq_queue *cfqq)
+>  	return SYNC_WORKLOAD;
+>  }
+>  
+> -static inline int cfq_busy_queues_wl(enum wl_prio_t wl, struct cfq_data *cfqd)
+> +static inline int cfq_group_busy_queues_wl(enum wl_prio_t wl,
+> +					struct cfq_data *cfqd,
+> +					struct cfq_group *cfqg)
+>  {
+> -	struct cfq_group *cfqg = &cfqd->root_group;
+> -
+>  	if (wl == IDLE_WORKLOAD)
+>  		return cfqg->service_tree_idle.count;
+>  
+> @@ -420,18 +424,27 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>   * to quickly follows sudden increases and decrease slowly
+>   */
+>  
+> -static inline unsigned cfq_get_avg_queues(struct cfq_data *cfqd, bool rt)
+> +static inline unsigned cfq_group_get_avg_queues(struct cfq_data *cfqd,
+> +					struct cfq_group *cfqg, bool rt)
+>  {
+>  	unsigned min_q, max_q;
+>  	unsigned mult  = cfq_hist_divisor - 1;
+>  	unsigned round = cfq_hist_divisor / 2;
+> -	unsigned busy = cfq_busy_queues_wl(rt, cfqd);
+> +	unsigned busy = cfq_group_busy_queues_wl(rt, cfqd, cfqg);
+>  
+> -	min_q = min(cfqd->busy_queues_avg[rt], busy);
+> -	max_q = max(cfqd->busy_queues_avg[rt], busy);
+> -	cfqd->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
+> +	min_q = min(cfqg->busy_queues_avg[rt], busy);
+> +	max_q = max(cfqg->busy_queues_avg[rt], busy);
+> +	cfqg->busy_queues_avg[rt] = (mult * max_q + min_q + round) /
+>  		cfq_hist_divisor;
+> -	return cfqd->busy_queues_avg[rt];
+> +	return cfqg->busy_queues_avg[rt];
+> +}
+> +
+> +static inline unsigned
+> +cfq_group_latency(struct cfq_data *cfqd, struct cfq_group *cfqg)
+> +{
+> +	struct cfq_rb_root *st = &cfqd->grp_service_tree;
+> +
+> +	return cfq_target_latency * cfqg->weight / st->total_weight;
+>  }
+>  
+>  static inline void
+> @@ -439,12 +452,17 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>  {
+>  	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
+>  	if (cfqd->cfq_latency) {
+> -		/* interested queues (we consider only the ones with the same
+> -		 * priority class) */
+> -		unsigned iq = cfq_get_avg_queues(cfqd, cfq_class_rt(cfqq));
+> +		/*
+> +		 * interested queues (we consider only the ones with the same
+> +		 * priority class in the cfq group)
+> +		 */
+> +		unsigned iq = cfq_group_get_avg_queues(cfqd, cfqq->cfqg,
+> +						cfq_class_rt(cfqq));
+>  		unsigned sync_slice = cfqd->cfq_slice[1];
+>  		unsigned expect_latency = sync_slice * iq;
+> -		if (expect_latency > cfq_target_latency) {
+> +		unsigned group_target_lat = cfq_group_latency(cfqd, cfqq->cfqg);
+> +
+> +		if (expect_latency > group_target_lat) {
+>  			unsigned base_low_slice = 2 * cfqd->cfq_slice_idle;
+>  			/* scale low_slice according to IO priority
+>  			 * and sync vs async */
+> @@ -452,7 +470,7 @@ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>  				min(slice, base_low_slice * slice / sync_slice);
+>  			/* the adapted slice value is scaled to fit all iqs
+>  			 * into the target latency */
+> -			slice = max(slice * cfq_target_latency / expect_latency,
+> +			slice = max(slice * group_target_lat / expect_latency,
+>  				    low_slice);
+>  		}
+>  	}
+> @@ -707,6 +725,8 @@ cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>  
+>  	__cfq_group_service_tree_add(st, cfqg);
+>  	cfqg->on_st = true;
+> +	cfqd->nr_groups++;
+> +	st->total_weight += cfqg->weight;
+>  }
+>  
+>  static void
+> @@ -721,6 +741,8 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>  		return;
+>  
+>  	cfqg->on_st = false;
+> +	cfqd->nr_groups--;
+> +	st->total_weight -= cfqg->weight;
+>  	if (!RB_EMPTY_NODE(&cfqg->rb_node))
+>  		cfq_rb_erase(&cfqg->rb_node, st);
+>  }
+> @@ -1592,6 +1614,7 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>  	unsigned slice;
+>  	unsigned count;
+>  	struct cfq_rb_root *st;
+> +	int group_target_latency;
+>  
+>  	if (!cfqg) {
+>  		cfqd->serving_prio = IDLE_WORKLOAD;
+> @@ -1600,9 +1623,9 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>  	}
+>  
+>  	/* Choose next priority. RT > BE > IDLE */
+> -	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
+> +	if (cfq_group_busy_queues_wl(RT_WORKLOAD, cfqd, cfqg))
+>  		cfqd->serving_prio = RT_WORKLOAD;
+> -	else if (cfq_busy_queues_wl(BE_WORKLOAD, cfqd))
+> +	else if (cfq_group_busy_queues_wl(BE_WORKLOAD, cfqd, cfqg))
+>  		cfqd->serving_prio = BE_WORKLOAD;
+>  	else {
+>  		cfqd->serving_prio = IDLE_WORKLOAD;
+> @@ -1640,9 +1663,11 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+>  	 * proportional to the number of queues in that workload, over
+>  	 * all the queues in the same priority class
+>  	 */
+> -	slice = cfq_target_latency * count /
+> -		max_t(unsigned, cfqd->busy_queues_avg[cfqd->serving_prio],
+> -		      cfq_busy_queues_wl(cfqd->serving_prio, cfqd));
+> +	group_target_latency = cfq_group_latency(cfqd, cfqg);
+> +
+> +	slice = group_target_latency * count /
+> +		max_t(unsigned, cfqg->busy_queues_avg[cfqd->serving_prio],
+> +		      cfq_group_busy_queues_wl(cfqd->serving_prio, cfqd, cfqg));
+>  
+>  	if (cfqd->serving_type == ASYNC_WORKLOAD)
+>  		/* async workload slice is scaled down according to
+> -- 
+> 1.6.2.5
