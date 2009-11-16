@@ -1,131 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZKPT7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZKPT7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZKPT7I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 14:59:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZKPT7H
+	id S1753891AbZKPT7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 14:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZKPT7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 14:59:07 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:47894 "EHLO toro.web-alm.net"
+	Mon, 16 Nov 2009 14:59:42 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:40070 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbZKPT7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 14:59:06 -0500
-Message-ID: <4B01AE5D.1010801@osadl.org>
-Date: Mon, 16 Nov 2009 20:56:13 +0100
-From: Carsten Emde <Carsten.Emde@osadl.org>
-Organization: Open Source Automation Development Lab (OSADL) eG
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] ftrace: fix trace_marker output
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752545AbZKPT7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 14:59:41 -0500
+Date: Mon, 16 Nov 2009 11:59:31 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Gregory Haskins <ghaskins@novell.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
+Message-ID: <20091116115931.6266f9c9@nehalam>
+In-Reply-To: <4AFE3FD2.6030403@gmail.com>
+References: <20091002141407.30224.54207.stgit@dev.haskins.net>
+	<20091110115335.GC6989@redhat.com>
+	<4AF919020200005A000586A9@sinclair.provo.novell.com>
+	<20091110131722.GA19645@redhat.com>
+	<4AF9747E.8020408@novell.com>
+	<20091110143652.GB19645@redhat.com>
+	<4AF98A8C.9040201@novell.com>
+	<20091114011229.GA18580@gondor.apana.org.au>
+	<4AFE08EF.2030308@gmail.com>
+	<20091114022103.GA19020@gondor.apana.org.au>
+	<4AFE15AD.6000208@gmail.com>
+	<20091113184503.13f6d447@s6510>
+	<4AFE3FD2.6030403@gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a string was written to <debugfs>/tracing/trace_marker, some
-strange characters appeared in the trace output instead of the
-string, since a vprint function erroneously called a vararg print
-function with a va_list argument. This patch fixes the problem and
-simplifies the related code.
+On Sat, 14 Nov 2009 00:27:46 -0500
+Gregory Haskins <gregory.haskins@gmail.com> wrote:
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+> Stephen Hemminger wrote:
+> > On Fri, 13 Nov 2009 21:27:57 -0500
+> > Gregory Haskins <gregory.haskins@gmail.com> wrote:
+> > 
+> >> Herbert Xu wrote:
+> >>> On Fri, Nov 13, 2009 at 08:33:35PM -0500, Gregory Haskins wrote:
+> >>>> Well, not with respect to the overall protocol, of course not.  But with
+> >>>> respect to the buffer in question, it _has_ to be.  Or am I missing
+> >>>> something?
+> >>> sendfile() has never guaranteed that the kernel is finished with
+> >>> the underlying pages when it returns.
+> >>>
+> >>> Cheers,
+> >> Clearly there must be _some_ mechanism to synchronize (e.g.
+> >> flush/barrier) though, right?  Otherwise, that interface would seem to
+> >> be quite prone to races and would likely be unusable.   So what does
+> >> said flush use to know when the buffer is free?
+> > 
+> > No all the interfaces require a copy.
+> 
+> I'm sorry, but I do not think that is correct.  As others have pointed
+> out, that would not appear to be true for at least sendfile.
 
-Index: linux-2.6.31.6-rt19/kernel/trace/trace.c
-===================================================================
---- linux-2.6.31.6-rt19.orig/kernel/trace/trace.c
-+++ linux-2.6.31.6-rt19/kernel/trace/trace.c
-@@ -1376,10 +1376,11 @@ int trace_array_vprintk(struct trace_arr
- 	pause_graph_tracing();
- 	raw_local_irq_save(irq_flags);
- 	__raw_spin_lock(&trace_buf_lock);
--	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
--
--	len = min(len, TRACE_BUF_SIZE-1);
--	trace_buf[len] = 0;
-+	if (args == NULL) {
-+		strncpy(trace_buf, fmt, TRACE_BUF_SIZE);
-+		len = strlen(trace_buf);
-+	} else
-+		len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
- 
- 	size = sizeof(*entry) + len + 1;
- 	buffer = tr->buffer;
-@@ -1388,10 +1389,10 @@ int trace_array_vprintk(struct trace_arr
- 	if (!event)
- 		goto out_unlock;
- 	entry = ring_buffer_event_data(event);
--	entry->ip			= ip;
-+	entry->ip = ip;
- 
- 	memcpy(&entry->buf, trace_buf, len);
--	entry->buf[len] = 0;
-+	entry->buf[len] = '\0';
- 	if (!filter_check_discard(call, entry, buffer, event))
- 		ring_buffer_unlock_commit(buffer, event);
- 
-@@ -1408,7 +1409,7 @@ int trace_array_vprintk(struct trace_arr
- 
- int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
- {
--	return trace_array_printk(&global_trace, ip, fmt, args);
-+	return trace_array_vprintk(&global_trace, ip, fmt, args);
- }
- EXPORT_SYMBOL_GPL(trace_vprintk);
- 
-@@ -3336,22 +3337,11 @@ tracing_entries_write(struct file *filp,
- 	return cnt;
- }
- 
--static int mark_printk(const char *fmt, ...)
--{
--	int ret;
--	va_list args;
--	va_start(args, fmt);
--	ret = trace_vprintk(0, fmt, args);
--	va_end(args);
--	return ret;
--}
--
- static ssize_t
- tracing_mark_write(struct file *filp, const char __user *ubuf,
- 					size_t cnt, loff_t *fpos)
- {
- 	char *buf;
--	char *end;
- 
- 	if (tracing_disabled)
- 		return -EINVAL;
-@@ -3359,7 +3349,7 @@ tracing_mark_write(struct file *filp, co
- 	if (cnt > TRACE_BUF_SIZE)
- 		cnt = TRACE_BUF_SIZE;
- 
--	buf = kmalloc(cnt + 1, GFP_KERNEL);
-+	buf = kmalloc(cnt + 2, GFP_KERNEL);
- 	if (buf == NULL)
- 		return -ENOMEM;
- 
-@@ -3367,14 +3357,13 @@ tracing_mark_write(struct file *filp, co
- 		kfree(buf);
- 		return -EFAULT;
- 	}
-+	if (buf[cnt-1] != '\n') {
-+		buf[cnt] = '\n';
-+		buf[cnt+1] = '\0';
-+	} else
-+		buf[cnt] = '\0';
- 
--	/* Cut from the first nil or newline. */
--	buf[cnt] = '\0';
--	end = strchr(buf, '\n');
--	if (end)
--		*end = '\0';
--
--	cnt = mark_printk("%s\n", buf);
-+	cnt = trace_vprintk(0, buf, NULL);
- 	kfree(buf);
- 	*fpos += cnt;
- 
+Correct.
+
+> 
+> > Actually, sendfile makes no guarantee about synchronization
+> > because the receiver of said file could be arbitrarily slow, and any attempt at locking down
+> > current contents of file is a denial of service exposure.
+> 
+> I think you are inverting the problem space.  It is fully expected that
+> changing the "file", or the pages that represent the file before the
+> packet is queued would constitute the modification of the stream on the
+> wire.
+> 
+> I am more thinking about the applications of mmap+sendfile to implement
+> a zero-copy interface.  As David mentions in another mail, it seems that
+> there is no sync mechanism available, so this would not appear to be a
+> viable use case today, unfortunately.
+
+yes, if you do mmap/sendfile then there is no synchronization, and the stack
+can hold onto your data for an arbitrary time.  The file and mapping's can
+be closed but that risks tying up all of memory.
+
+
+> > 
+> > People have tried doing copy-less send by page flipping, but the overhead of the IPI to
+> > invalidate the TLB exceeded the overhead of the copy. There was an Intel paper on this in
+> > at Linux Symposium (Ottawa) several years ago.
+> 
+> I think you are confusing copy-less tx with copy-less rx.  You can try
+> to do copy-less rx with page flipping, which has the IPI/TLB thrashing
+> properties you mention, and I agree is problematic.  We are talking
+> about copy-less tx here, however, and therefore no page-flipping is
+> involved.  Rather, we are just posting SG lists of pages directly to the
+> NIC (assuming the nic supports HIGH_DMA, etc).  You do not need to flip
+> the page, or invalidate the TLB (and thus IPI the other cores) to do
+> this to my knowledge.
+> 
+
+If you want to do copy-less tx for all applications, you have to
+do COW to handle the trivial case of :
+
+while (cc = read(infd, buffer, sizeof buffer)) {
+   send(outsock, buffer, cc);
+}
+
+
+
+
+-- 
