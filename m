@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZKPNsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZKPNvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZKPNsq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 08:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZKPNsp
+	id S1753297AbZKPNvO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 08:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZKPNvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 08:48:45 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:38168 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbZKPNsp (ORCPT
+	Mon, 16 Nov 2009 08:51:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:4483 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbZKPNvN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 08:48:45 -0500
-Date: Mon, 16 Nov 2009 14:48:31 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Sandiford <rdsandiford@googlemail.com>,
-       Patrik Kluba <kpajko79@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Michal Simek <monstr@monstr.eu>,
-       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
-Subject: Re: [PATCH v8 00/16] ftrace for MIPS
-Message-ID: <20091116134831.GA10189@linux-mips.org>
-References: <cover.1258177321.git.wuzhangjin@gmail.com>
+	Mon, 16 Nov 2009 08:51:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=teLoXbWgby/1Fe0WsQhkeHue8rgH3Qq5/X4v9faeEZ6/5ysS3GJdQ7FCqyi05UA2Yg
+         2LrmrfYMiIzQa/lJNKyvfL8EyYiMZR8tITnvu9f00YIG2MwtRvv/h8ZakLW9aFpmkKYO
+         IdpfwAAQcAvCVGjwvSI3HRCdyMD3+4T5Qb4ls=
+Date: Mon, 16 Nov 2009 16:51:15 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, alan@lxorguk.ukuu.org.uk,
+       mgarski@post.pl
+Subject: [PATCH] kbd: (#7063) make CapsLock work as expected even for
+ non-ASCII
+Message-ID: <20091116135114.GA2719@x200>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1258177321.git.wuzhangjin@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 14, 2009 at 02:30:31PM +0800, Wu Zhangjin wrote:
+Steps to reproduce:
 
-Time to talk about how to get the whole thing merged.
+	[log into console (not xterm)]
+	[load non-trivial keymap]
+	[turn on CapsLock]
+	[type something]
 
-I'm reasonably happy with the arch part of the patchset.  There are two
-remaining issues in the arch part - cache flushing will not work as is on
-a SMP system and the whole code patching is going to fail if the kernel
-text is replicated with CONFIG_REPLICATE_KTEXT which is an IP27-only option.
+Symbols won't be capital despite CapsLock and despite Shift+* working
+as expected.
 
-I suggest we should go ahready and just disallow dynamic ftrace on on
-these problematic configurations for now and deal with them later, so
-something like
+Note: patch relies on keymap being consistent wrt SMALL/CAPITAL symbols.
+Though extracting SMALL <=> CAPITAL mapping from unicode tables and
+putting it into kernel may be more correct.
 
-	select HAVE_DYNAMIC_FTRACE if !SMP && !REPLICATE_KTEXT
+Fix long-standing http://bugzilla.kernel.org/show_bug.cgi?id=7063
 
-This leaves the non-arch bits to merge; patches which touch code outside
-of arch/mips are:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-    [PATCH v8 01/16] tracing: convert trace_clock_local() as weak function
-    [PATCH v8 06/16] tracing: add an endian argument to
-    [PATCH v8 07/16] tracing: add dynamic function tracer support for MIPS
-    [PATCH v8 09/16] tracing: define a new __time_notrace annotation flag
-    [PATCH v8 10/16] tracing: not trace the timecounter_read* in
+ drivers/char/keyboard.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-  Ralf
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -1261,8 +1261,14 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ 		param.value = keysym;
+ 		if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_UNICODE, &param) == NOTIFY_STOP)
+ 			return;
+-		if (down && !raw_mode)
++		if (down && !raw_mode) {
++			if (vc_kbd_led(kbd, VC_CAPSLOCK)) {
++				key_map = key_maps[shift_final ^ (1 << KG_SHIFT)];
++				if (key_map)
++					keysym = key_map[keycode];
++			}
+ 			to_utf8(vc, keysym);
++		}
+ 		return;
+ 	}
+ 
