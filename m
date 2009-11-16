@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZKPPCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZKPPIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbZKPPCX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 10:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZKPPCW
+	id S1752851AbZKPPIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 10:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZKPPIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 10:02:22 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:45945 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752705AbZKPPCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 10:02:21 -0500
-X-Sasl-enc: FGqLZwzzsx0qLofFRc1w/jszEwWtHLWW8DzOuzDLlgFf 1258383747
-Date: Mon, 16 Nov 2009 13:02:24 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>
-Cc: linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH v5 12/12] tree-wide: convert open calls to remove
-	spaces to skip_spaces() lib function
-Message-ID: <20091116150224.GA22176@khazad-dum.debian.net>
-References: <cover.1258181836.git.andre.goddard@gmail.com> <623fc6c1c58b8c3ccf4a1373e94aba3639a0714e.1258181837.git.andre.goddard@gmail.com>
+	Mon, 16 Nov 2009 10:08:00 -0500
+Received: from www.tglx.de ([62.245.132.106]:58648 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751232AbZKPPIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 10:08:00 -0500
+Date: Mon, 16 Nov 2009 16:07:40 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+cc: rostedt@goodmis.org, Ralf Baechle <ralf@linux-mips.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Nicholas Mc Guire <der.herr@hofr.at>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Sandiford <rdsandiford@googlemail.com>,
+       Patrik Kluba <kpajko79@gmail.com>, Michal Simek <monstr@monstr.eu>,
+       "Maciej W . Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, zhangfx@lemote.com, zhouqg@gmail.com
+Subject: Re: [PATCH v8 01/16] tracing: convert trace_clock_local() as weak
+ function
+In-Reply-To: <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+Message-ID: <alpine.LFD.2.00.0911161559280.24119@localhost.localdomain>
+References: <cover.1258177321.git.wuzhangjin@gmail.com> <9dc81a7a9e5a292cccdf465c533a2b08d19d6021.1258177321.git.wuzhangjin@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <623fc6c1c58b8c3ccf4a1373e94aba3639a0714e.1258181837.git.andre.goddard@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-> index d93108d..e8026d9 100644
-> --- a/drivers/platform/x86/thinkpad_acpi.c
-> +++ b/drivers/platform/x86/thinkpad_acpi.c
-> @@ -1006,11 +1006,8 @@ static int parse_strtoul(const char *buf,
->  {
->  	char *endp;
->  
-> -	while (*buf && isspace(*buf))
-> -		buf++;
-> -	*value = simple_strtoul(buf, &endp, 0);
-> -	while (*endp && isspace(*endp))
-> -		endp++;
-> +	*value = simple_strtoul(skip_spaces(buf), &endp, 0);
-> +	endp = skip_spaces(endp);
->  	if (*endp || *value > max)
->  		return -EINVAL;
->  
+On Sat, 14 Nov 2009, Wu Zhangjin wrote:
 
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-(thinkpad-acpi changes only)
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
+> 
+> trace_clock_local() is based on the arch-specific sched_clock(), in X86,
+> it is tsc(64bit) based, which can give very high precision(about 1ns
+> with 1GHz). but in MIPS, the sched_clock() is jiffies based, which can
+> give only 10ms precison with 1000 HZ. which is not enough for tracing,
+> especially for Real Time system.
+> 
+> so, we need to implement a MIPS specific sched_clock() to get higher
+> precision. There is a tsc like clock counter register in MIPS, whose
+> frequency is half of the processor, so, if the cpu frequency is 800MHz,
+> the time precision reaches 2.5ns, which is very good for tracing, even
+> for Real Time system.
+> 
+> but 'Cause it is only 32bit long, which will rollover quickly, so, such
+> a sched_clock() will bring with extra load, which is not good for the
+> whole system. so, we only need to implement a arch-specific
+> trace_clock_local() for tracing. as a preparation, we convert it as a
+> weak function.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Hmm, I'm not convinced that this is really a huge overhead. 
+
+First of all the rollover happens once every 10 seconds on a 800MHz
+machine. 
+
+Secondly we have a lockless implementation of extending 32bit counters
+to 63 bit which is used at least by ARM to provide a high resolution
+sched_clock implementation. See include/linux/cnt32_63.h and the users
+in arch/
+
+But that's a problem which can be discussed seperately and does not
+affect the rest of the tracing infrastructure. I really would
+recommend that you implement a sched_clock for the r4k machines based
+on cnt32_63 and measure the overhead. Having a fine granular
+sched_clock in general is probably not a bad thing.
+
+Thanks,
+
+	tglx
