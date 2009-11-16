@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbZKPMyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbZKPM7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbZKPMyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 07:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZKPMyZ
+	id S1752467AbZKPM7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 07:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZKPM7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 07:54:25 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38367 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752255AbZKPMyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 07:54:24 -0500
-Message-Id: <1258376069.11110.1345439521@webmail.messagingengine.com>
-X-Sasl-Enc: xc/VWKAWLq69PWG8yy/OiHICKXgjKGx9ewjGF8GQAszV 1258376069
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Pavel Machek" <pavel@ucw.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-Cc: ibm-acpi-devel@lists.sourceforge.net
+	Mon, 16 Nov 2009 07:59:34 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60082 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751651AbZKPM7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 07:59:34 -0500
+Date: Mon, 16 Nov 2009 13:59:37 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Soeren Sonnenburg <sonne@debian.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, olh@suse.de,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH] mouse button 1 emulation for mac_hid
+In-Reply-To: <20091114054246.GF4463@core.coreip.homeip.net>
+Message-ID: <alpine.LRH.2.00.0911161358240.31913@twin.jikos.cz>
+References: <1257762531.7245.23.camel@no> <20091114054246.GF4463@core.coreip.homeip.net>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <20091116112304.GC12315@elf.ucw.cz>
-References: <20091116112304.GC12315@elf.ucw.cz>
-Subject: Re: -rc6: annoying thermal messages
-Date: Mon, 16 Nov 2009 10:54:29 -0200
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n Mon, 16 Nov 2009 12:23 +0100, "Pavel Machek" <pavel@ucw.cz> wrote:
->
-> My dmesg log is rather full of. Thinkpad x60.
-> Pavel
+On Fri, 13 Nov 2009, Dmitry Torokhov wrote:
 
-I think I will have to rate-limit it somehow.  Do we have any ready-to-
-use generic rate-limiters that can do 'once a minute', or should I
-cook my own?
+> > I am not sure what the future of mac_hid is (the source says will be
+> > removed, but since 9 years). In case it stays in kernel the attached
+> > patch adds support for mouse button 1 emulation. If this driver stays in
+> > the kernel I would also suggest to rename it - it is not mac specific (I
+> > am using this on a netbook).
+> > 
+> > Rationale? Broken touchpads, within linux unsupported (multi-)touchpads
+> > where click and hold + moving the mouse does not work (yet?).
+> 
+> I would rather fix the touchpads so they work properly than pile more
+> quirks in kernel.
 
-But your thinkpad needs some sort of hardware loving care, it seems.
-What does "sensors" report (or cat /proc/acpi/ibm/thermal) ?
+Hi Dmitry,
 
-> thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
-> extremely hot!
-
-That is a direct alarm from the firmware, the EC thinks your hardware
-is damaged and about to catch fire.
-
-Either that, or something  in the driver is seriously broken. But
-you're the first one to ever report that alarm :)
+in exactly what way are you planning to "fix the touchpads"?
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
