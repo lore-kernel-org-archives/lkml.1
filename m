@@ -1,219 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZKPA1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZKPA2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbZKPA1y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Nov 2009 19:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZKPA1x
+	id S1753414AbZKPA2N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Nov 2009 19:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZKPA2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Nov 2009 19:27:53 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:64210 "EHLO
+	Sun, 15 Nov 2009 19:28:12 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:58069 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753142AbZKPA1u (ORCPT
+	with ESMTP id S1753377AbZKPA2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Nov 2009 19:27:50 -0500
+	Sun, 15 Nov 2009 19:28:07 -0500
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: Arnd Bergmann <arnd@arndb.de>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH 06/12] smbfs: do compat_ioctl handling in place
-Date: Mon, 16 Nov 2009 00:27:01 +0000
-Message-Id: <1258331227-1694-7-git-send-email-arnd@arndb.de>
+       "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org
+Subject: [PATCH 07/12] i2cdev: move compat_ioctl handling into driver
+Date: Mon, 16 Nov 2009 00:27:02 +0000
+Message-Id: <1258331227-1694-8-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1258331227-1694-1-git-send-email-arnd@arndb.de>
 References: <1258331227-1694-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19Vzmc89LgW0u19z6LOcZO+7VuzBOs8rKJew0d
- l6auxFb0VWEDZDFUKphrb2QKEfo1YYBu1xKRpL+XpbENu8HFfN
- xc4KS20et3NFQkFmMw0Lw==
+X-Provags-ID: V01U2FsdGVkX19B+7+R6pNI2y6fEn7038MmY4CHulDgKWZY2Va
+ iCL0L2yHBNQctAXAUL7eeOQVZ7+zGLRwzOXEJv5gaKKRjZ5azr
+ b7gxhQemjoagWG2hDeqWg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handling SMB_IOC_GETMOUNTUID emulation directly in smbfs avoids
-extra code in fs/compat_ioctl.c and can be optimized away by
-the compiler in architectures where SMB_IOC_GETMOUNTUID and
-COMPAT_SMB_IOC_GETMOUNTUID are identical.
-
-As a positive side-effect, this pushes the BKL into the
-ioctl method.
+Doing all the compat_ioctl handling in the i2c driver itself
+removes special cases from fs/compat_ioctl.c and makes it possible
+to optimize this case better.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
+Cc: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>
+Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
+Cc: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-i2c@vger.kernel.org
 ---
- fs/compat_ioctl.c |   25 -------------------------
- fs/smbfs/dir.c    |    5 ++++-
- fs/smbfs/file.c   |    3 ++-
- fs/smbfs/ioctl.c  |   48 ++++++++++++++++++++++++++++++++++++++++++++----
- fs/smbfs/proto.h  |    3 ++-
- 5 files changed, 52 insertions(+), 32 deletions(-)
+ drivers/i2c/i2c-dev.c |  117 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/compat_ioctl.c     |  119 -------------------------------------------------
+ 2 files changed, 117 insertions(+), 119 deletions(-)
 
+diff --git a/drivers/i2c/i2c-dev.c b/drivers/i2c/i2c-dev.c
+index 7e13d2d..fde0c9e 100644
+--- a/drivers/i2c/i2c-dev.c
++++ b/drivers/i2c/i2c-dev.c
+@@ -35,6 +35,7 @@
+ #include <linux/i2c.h>
+ #include <linux/i2c-dev.h>
+ #include <linux/smp_lock.h>
++#include <linux/compat.h>
+ #include <linux/jiffies.h>
+ #include <asm/uaccess.h>
+ 
+@@ -439,6 +440,119 @@ static long i2cdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_COMPAT
++struct i2c_msg32 {
++	u16 addr;
++	u16 flags;
++	u16 len;
++	compat_caddr_t buf;
++};
++
++struct i2c_rdwr_ioctl_data32 {
++	compat_caddr_t msgs; /* struct i2c_msg __user *msgs */
++	u32 nmsgs;
++};
++
++struct i2c_smbus_ioctl_data32 {
++	u8 read_write;
++	u8 command;
++	u32 size;
++	compat_caddr_t data; /* union i2c_smbus_data *data */
++};
++
++struct i2c_rdwr_aligned {
++	struct i2c_rdwr_ioctl_data cmd;
++	struct i2c_msg msgs[0];
++};
++
++static int compat_i2c_rdwr_ioctl(struct file *filp, unsigned int cmd,
++			struct i2c_rdwr_ioctl_data32    __user *udata)
++{
++	struct i2c_rdwr_aligned		__user *tdata;
++	struct i2c_msg			__user *tmsgs;
++	struct i2c_msg32		__user *umsgs;
++	compat_caddr_t			datap;
++	int				nmsgs, i;
++
++	if (get_user(nmsgs, &udata->nmsgs))
++		return -EFAULT;
++	if (nmsgs > I2C_RDRW_IOCTL_MAX_MSGS)
++		return -EINVAL;
++
++	if (get_user(datap, &udata->msgs))
++		return -EFAULT;
++	umsgs = compat_ptr(datap);
++
++	tdata = compat_alloc_user_space(sizeof(*tdata) +
++				      nmsgs * sizeof(struct i2c_msg));
++	tmsgs = &tdata->msgs[0];
++
++	if (put_user(nmsgs, &tdata->cmd.nmsgs) ||
++	    put_user(tmsgs, &tdata->cmd.msgs))
++		return -EFAULT;
++
++	for (i = 0; i < nmsgs; i++) {
++		if (copy_in_user(&tmsgs[i].addr, &umsgs[i].addr, 3*sizeof(u16)))
++			return -EFAULT;
++		if (get_user(datap, &umsgs[i].buf) ||
++		    put_user(compat_ptr(datap), &tmsgs[i].buf))
++			return -EFAULT;
++	}
++	return i2cdev_ioctl(filp, cmd, (unsigned long)tdata);
++}
++
++static int compat_i2c_smbus_ioctl(struct file *filp, unsigned int cmd,
++			struct i2c_smbus_ioctl_data32   __user *udata)
++{
++	struct i2c_smbus_ioctl_data	__user *tdata;
++	compat_caddr_t			datap;
++
++	tdata = compat_alloc_user_space(sizeof(*tdata));
++	if (tdata == NULL)
++		return -ENOMEM;
++	if (!access_ok(VERIFY_WRITE, tdata, sizeof(*tdata)))
++		return -EFAULT;
++
++	if (!access_ok(VERIFY_READ, udata, sizeof(*udata)))
++		return -EFAULT;
++
++	if (__copy_in_user(&tdata->read_write, &udata->read_write, 2 * sizeof(u8)))
++		return -EFAULT;
++	if (__copy_in_user(&tdata->size, &udata->size, 2 * sizeof(u32)))
++		return -EFAULT;
++	if (__get_user(datap, &udata->data) ||
++	    __put_user(compat_ptr(datap), &tdata->data))
++		return -EFAULT;
++
++	return i2cdev_ioctl(filp, cmd, (unsigned long)tdata);
++}
++
++static int compat_i2c_funcs(struct file *filp, unsigned int cmd,
++			compat_ulong_t __user *argp)
++{
++	struct i2c_client *client = filp->private_data;
++	compat_ulong_t funcs;
++	funcs = i2c_get_functionality(client->adapter);
++	return put_user(funcs, argp);
++}
++
++static long i2cdev_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
++{
++	void __user *argp = compat_ptr(arg);
++
++	switch (cmd) {
++	case I2C_FUNCS:
++		return compat_i2c_funcs(filp, cmd, argp);
++	case I2C_RDWR:
++		return compat_i2c_rdwr_ioctl(filp, cmd, argp);
++	case I2C_SMBUS:
++		return compat_i2c_smbus_ioctl(filp, cmd, argp);
++	}
++
++	return i2cdev_ioctl(filp, cmd, arg);
++}
++#endif /* CONFIG_COMPAT */
++
+ static int i2cdev_open(struct inode *inode, struct file *file)
+ {
+ 	unsigned int minor = iminor(inode);
+@@ -501,6 +615,9 @@ static const struct file_operations i2cdev_fops = {
+ 	.read		= i2cdev_read,
+ 	.write		= i2cdev_write,
+ 	.unlocked_ioctl	= i2cdev_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= i2cdev_compat_ioctl,
++#endif
+ 	.open		= i2cdev_open,
+ 	.release	= i2cdev_release,
+ };
 diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 376d907..a762fb1 100644
+index a762fb1..b419459 100644
 --- a/fs/compat_ioctl.c
 +++ b/fs/compat_ioctl.c
-@@ -520,25 +520,6 @@ static int mt_ioctl_trans(unsigned int fd, unsigned int cmd, void __user *argp)
+@@ -117,21 +117,6 @@
+ #include <asm/fbio.h>
+ #endif
  
- #endif /* CONFIG_BLOCK */
- 
--static int do_smb_getmountuid(unsigned int fd, unsigned int cmd,
--			compat_uid_t __user *argp)
+-static int w_long(unsigned int fd, unsigned int cmd,
+-		compat_ulong_t __user *argp)
 -{
 -	mm_segment_t old_fs = get_fs();
--	__kernel_uid_t kuid;
 -	int err;
+-	unsigned long val;
 -
--	cmd = SMB_IOC_GETMOUNTUID;
--
--	set_fs(KERNEL_DS);
--	err = sys_ioctl(fd, cmd, (unsigned long)&kuid);
--	set_fs(old_fs);
--
--	if (err >= 0)
--		err = put_user(kuid, argp);
--
+-	set_fs (KERNEL_DS);
+-	err = sys_ioctl(fd, cmd, (unsigned long)&val);
+-	set_fs (old_fs);
+-	if (!err && put_user(val, argp))
+-		return -EFAULT;
 -	return err;
 -}
 -
- /* Bluetooth ioctls */
- #define HCIUARTSETPROTO	_IOW('U', 200, int)
- #define HCIUARTGETPROTO	_IOR('U', 201, int)
-@@ -1264,8 +1245,6 @@ COMPATIBLE_IOCTL(OSS_GETVERSION)
- /* Raw devices */
- COMPATIBLE_IOCTL(RAW_SETBIND)
- COMPATIBLE_IOCTL(RAW_GETBIND)
--/* SMB ioctls which do not need any translations */
--COMPATIBLE_IOCTL(SMB_IOC_NEWCONN)
- /* Watchdog */
- COMPATIBLE_IOCTL(WDIOC_GETSUPPORT)
- COMPATIBLE_IOCTL(WDIOC_GETSTATUS)
-@@ -1543,10 +1522,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
- 	case MTIOCPOS32:
- 		return mt_ioctl_trans(fd, cmd, argp);
- #endif
--	/* One SMB ioctl needs translations. */
--#define SMB_IOC_GETMOUNTUID_32 _IOR('u', 1, compat_uid_t)
--	case SMB_IOC_GETMOUNTUID_32:
--		return do_smb_getmountuid(fd, cmd, argp);
- 	/* Serial */
- 	case TIOCGSERIAL:
- 	case TIOCSSERIAL:
-diff --git a/fs/smbfs/dir.c b/fs/smbfs/dir.c
-index 3e4803b..9607ff1 100644
---- a/fs/smbfs/dir.c
-+++ b/fs/smbfs/dir.c
-@@ -39,7 +39,10 @@ const struct file_operations smb_dir_operations =
- {
- 	.read		= generic_read_dir,
- 	.readdir	= smb_readdir,
--	.ioctl		= smb_ioctl,
-+	.unlocked_ioctl	= smb_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= smb_ioctl,
-+#endif
- 	.open		= smb_dir_open,
- };
- 
-diff --git a/fs/smbfs/file.c b/fs/smbfs/file.c
-index 92d5e8f..02f2bf8 100644
---- a/fs/smbfs/file.c
-+++ b/fs/smbfs/file.c
-@@ -438,7 +438,8 @@ const struct file_operations smb_file_operations =
- 	.aio_read	= smb_file_aio_read,
- 	.write		= do_sync_write,
- 	.aio_write	= smb_file_aio_write,
--	.ioctl		= smb_ioctl,
-+	.unlocked_ioctl	= smb_ioctl,
-+	.compat_ioctl	= smb_ioctl,
- 	.mmap		= smb_file_mmap,
- 	.open		= smb_file_open,
- 	.release	= smb_file_release,
-diff --git a/fs/smbfs/ioctl.c b/fs/smbfs/ioctl.c
-index dbae1f8..0c28305 100644
---- a/fs/smbfs/ioctl.c
-+++ b/fs/smbfs/ioctl.c
-@@ -14,6 +14,8 @@
- #include <linux/mm.h>
- #include <linux/highuid.h>
- #include <linux/net.h>
-+#include <linux/smp_lock.h>
-+#include <linux/compat.h>
- 
- #include <linux/smb_fs.h>
- #include <linux/smb_mount.h>
-@@ -22,11 +24,9 @@
- 
- #include "proto.h"
- 
--int
--smb_ioctl(struct inode *inode, struct file *filp,
--	  unsigned int cmd, unsigned long arg)
-+static long
-+smb_locked_ioctl(struct smb_sb_info *server, unsigned int cmd, void __user *arg)
- {
--	struct smb_sb_info *server = server_from_inode(inode);
- 	struct smb_conn_opt opt;
- 	int result = -EINVAL;
- 
-@@ -65,3 +65,43 @@ smb_ioctl(struct inode *inode, struct file *filp,
- 
- 	return result;
+ struct compat_video_event {
+ 	int32_t		type;
+ 	compat_time_t	timestamp;
+@@ -691,96 +676,6 @@ static int do_usbdevfs_discsignal(unsigned int fd, unsigned int cmd,
+         return err;
  }
-+
-+long
-+smb_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct smb_sb_info *server;
-+	int ret;
-+
-+	lock_kernel();
-+	server = server_from_inode(filp->f_path.dentry->d_inode);
-+	ret = smb_locked_ioctl(server, cmd, (void __user *)arg);
-+	unlock_kernel();
-+
-+	return ret;
-+}
-+
-+#ifdef CONFIG_COMPAT
-+#define COMPAT_SMB_IOC_GETMOUNTUID _IOR('u', 1, compat_uid_t)
-+long
-+smb_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-+{
-+	struct smb_sb_info *server;
-+	void __user *argp = compat_ptr(arg);
-+	int ret;
-+
-+	lock_kernel();
-+	server = server_from_inode(filp->f_path.dentry->d_inode);
-+	if (cmd == COMPAT_SMB_IOC_GETMOUNTUID &&
-+	    sizeof (compat_uid_t) < sizeof (__kernel_old_uid_t)) {
-+		uid_t uid = server->mnt->mounted_uid;
-+		if (uid > 65535)
-+			uid = (compat_uid_t)overflowuid;
-+		ret = put_user(uid, (compat_uid_t __user *) argp);
-+	} else {
-+		ret = smb_locked_ioctl(server, cmd, argp);
-+	}
-+	unlock_kernel();
-+
-+	return ret;
-+}
-+#endif
-diff --git a/fs/smbfs/proto.h b/fs/smbfs/proto.h
-index 03f456c..34bc708 100644
---- a/fs/smbfs/proto.h
-+++ b/fs/smbfs/proto.h
-@@ -67,7 +67,8 @@ extern const struct address_space_operations smb_file_aops;
- extern const struct file_operations smb_file_operations;
- extern const struct inode_operations smb_file_inode_operations;
- /* ioctl.c */
--extern int smb_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg);
-+extern long smb_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
-+extern long smb_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
- /* smbiod.c */
- extern void smbiod_wake_up(void);
- extern int smbiod_register_server(struct smb_sb_info *server);
+ 
+-/*
+- * I2C layer ioctls
+- */
+-
+-struct i2c_msg32 {
+-	u16 addr;
+-	u16 flags;
+-	u16 len;
+-	compat_caddr_t buf;
+-};
+-
+-struct i2c_rdwr_ioctl_data32 {
+-	compat_caddr_t msgs; /* struct i2c_msg __user *msgs */
+-	u32 nmsgs;
+-};
+-
+-struct i2c_smbus_ioctl_data32 {
+-	u8 read_write;
+-	u8 command;
+-	u32 size;
+-	compat_caddr_t data; /* union i2c_smbus_data *data */
+-};
+-
+-struct i2c_rdwr_aligned {
+-	struct i2c_rdwr_ioctl_data cmd;
+-	struct i2c_msg msgs[0];
+-};
+-
+-static int do_i2c_rdwr_ioctl(unsigned int fd, unsigned int cmd,
+-			struct i2c_rdwr_ioctl_data32    __user *udata)
+-{
+-	struct i2c_rdwr_aligned		__user *tdata;
+-	struct i2c_msg			__user *tmsgs;
+-	struct i2c_msg32		__user *umsgs;
+-	compat_caddr_t			datap;
+-	int				nmsgs, i;
+-
+-	if (get_user(nmsgs, &udata->nmsgs))
+-		return -EFAULT;
+-	if (nmsgs > I2C_RDRW_IOCTL_MAX_MSGS)
+-		return -EINVAL;
+-
+-	if (get_user(datap, &udata->msgs))
+-		return -EFAULT;
+-	umsgs = compat_ptr(datap);
+-
+-	tdata = compat_alloc_user_space(sizeof(*tdata) +
+-				      nmsgs * sizeof(struct i2c_msg));
+-	tmsgs = &tdata->msgs[0];
+-
+-	if (put_user(nmsgs, &tdata->cmd.nmsgs) ||
+-	    put_user(tmsgs, &tdata->cmd.msgs))
+-		return -EFAULT;
+-
+-	for (i = 0; i < nmsgs; i++) {
+-		if (copy_in_user(&tmsgs[i].addr, &umsgs[i].addr, 3*sizeof(u16)))
+-			return -EFAULT;
+-		if (get_user(datap, &umsgs[i].buf) ||
+-		    put_user(compat_ptr(datap), &tmsgs[i].buf))
+-			return -EFAULT;
+-	}
+-	return sys_ioctl(fd, cmd, (unsigned long)tdata);
+-}
+-
+-static int do_i2c_smbus_ioctl(unsigned int fd, unsigned int cmd,
+-			struct i2c_smbus_ioctl_data32   __user *udata)
+-{
+-	struct i2c_smbus_ioctl_data	__user *tdata;
+-	compat_caddr_t			datap;
+-
+-	tdata = compat_alloc_user_space(sizeof(*tdata));
+-	if (tdata == NULL)
+-		return -ENOMEM;
+-	if (!access_ok(VERIFY_WRITE, tdata, sizeof(*tdata)))
+-		return -EFAULT;
+-
+-	if (!access_ok(VERIFY_READ, udata, sizeof(*udata)))
+-		return -EFAULT;
+-
+-	if (__copy_in_user(&tdata->read_write, &udata->read_write, 2 * sizeof(u8)))
+-		return -EFAULT;
+-	if (__copy_in_user(&tdata->size, &udata->size, 2 * sizeof(u32)))
+-		return -EFAULT;
+-	if (__get_user(datap, &udata->data) ||
+-	    __put_user(compat_ptr(datap), &tdata->data))
+-		return -EFAULT;
+-
+-	return sys_ioctl(fd, cmd, (unsigned long)tdata);
+-}
+-
+ #define RTC_IRQP_READ32		_IOR('p', 0x0b, compat_ulong_t)
+ #define RTC_IRQP_SET32		_IOW('p', 0x0c, compat_ulong_t)
+ #define RTC_EPOCH_READ32	_IOR('p', 0x0d, compat_ulong_t)
+@@ -1341,13 +1236,6 @@ COMPATIBLE_IOCTL(USBDEVFS_SUBMITURB32)
+ COMPATIBLE_IOCTL(USBDEVFS_REAPURB32)
+ COMPATIBLE_IOCTL(USBDEVFS_REAPURBNDELAY32)
+ COMPATIBLE_IOCTL(USBDEVFS_CLEAR_HALT)
+-/* i2c */
+-COMPATIBLE_IOCTL(I2C_SLAVE)
+-COMPATIBLE_IOCTL(I2C_SLAVE_FORCE)
+-COMPATIBLE_IOCTL(I2C_TENBIT)
+-COMPATIBLE_IOCTL(I2C_PEC)
+-COMPATIBLE_IOCTL(I2C_RETRIES)
+-COMPATIBLE_IOCTL(I2C_TIMEOUT)
+ /* hiddev */
+ COMPATIBLE_IOCTL(HIDIOCGVERSION)
+ COMPATIBLE_IOCTL(HIDIOCAPPLICATION)
+@@ -1533,13 +1421,6 @@ static long do_ioctl_trans(int fd, unsigned int cmd,
+ 		return do_usbdevfs_bulk(fd, cmd, argp);
+ 	case USBDEVFS_DISCSIGNAL32:
+ 		return do_usbdevfs_discsignal(fd, cmd, argp);
+-	/* i2c */
+-	case I2C_FUNCS:
+-		return w_long(fd, cmd, argp);
+-	case I2C_RDWR:
+-		return do_i2c_rdwr_ioctl(fd, cmd, argp);
+-	case I2C_SMBUS:
+-		return do_i2c_smbus_ioctl(fd, cmd, argp);
+ 	/* Not implemented in the native kernel */
+ 	case RTC_IRQP_READ32:
+ 	case RTC_IRQP_SET32:
 -- 
 1.6.3.3
 
