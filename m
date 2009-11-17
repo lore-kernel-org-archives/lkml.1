@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZKQUhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZKQUeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbZKQUhU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 15:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZKQUhT
+	id S1752358AbZKQUeK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 15:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZKQUeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 15:37:19 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55980 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbZKQUhS (ORCPT
+	Tue, 17 Nov 2009 15:34:09 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:35789 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZKQUeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 15:37:18 -0500
-Message-ID: <4B030799.9020402@zytor.com>
-Date: Tue, 17 Nov 2009 12:29:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 17 Nov 2009 15:34:08 -0500
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Uwe =?utf-8?Q?Kleine-?= =?utf-8?Q?K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] strcmp: fix overflow error
+References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	<alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
+	<200911171916.41727.mb@bu3sch.de>
+X-Yow: I wonder if I should put myself in ESCROW!!
+Date: Tue, 17 Nov 2009 21:34:11 +0100
+In-Reply-To: <200911171916.41727.mb@bu3sch.de> (Michael Buesch's message of
+	"Tue, 17 Nov 2009 19:16:40 +0100")
+Message-ID: <m2pr7g3n7g.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] x86: Limit the number of processor bootup messages
-References: <20091117191752.164451000@alcatraz.americas.sgi.com>	 <20091117191757.651569000@alcatraz.americas.sgi.com> <86802c440911171210x4780c08cg3b3260afd5d2bc5d@mail.gmail.com>
-In-Reply-To: <86802c440911171210x4780c08cg3b3260afd5d2bc5d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/17/2009 12:10 PM, Yinghai Lu wrote:
->>
->> The following lines have been removed:
->>
->>        CPU: Physical Processor ID:
->>        CPU: Processor Core ID:
->>        CPU %d/0x%x -> Node %d
-> 
-> please don't.
-> 
+Michael Buesch <mb@bu3sch.de> writes:
 
-Why not?
+> Well, that doesn't actually return the difference at all. Is that allowed?
 
-Or, more formally: please state the rationale for keeping them.
-	
-	-hpa
+The only requirement is that the compare functions return <0,0,>0
+depending on the order.
 
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
