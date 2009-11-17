@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbZKQWw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZKQWxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbZKQWw7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZKQWwG
+	id S1756767AbZKQWxL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbZKQWxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:52:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:41635 "EHLO www.tglx.de"
+	Tue, 17 Nov 2009 17:53:09 -0500
+Received: from lucidpixels.com ([75.144.35.66]:44354 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756693AbZKQWwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:52:01 -0500
-Message-Id: <20091117224916.856352649@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Tue, 17 Nov 2009 22:51:42 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: [patch 13/13] genirq: Remove typename from struct irq_chip
-References: <20091117224852.846805939@linutronix.de>
-Content-Disposition: inline; filename=genirq-remove-irqchip-typename.patch
+	id S1756642AbZKQWxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:53:07 -0500
+Date: Tue, 17 Nov 2009 17:53:12 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
+ hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
+In-Reply-To: <20091117213711.GA19132@linux-os.sc.intel.com>
+Message-ID: <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
+References: <1258069232.14894.9.camel@localhost.localdomain> <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain> <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan> <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>
+ <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain> <1258137165.21141.20.camel@localhost.localdomain> <alpine.DEB.2.00.0911131340140.5316@p34.internal.lan> <1258161139.21141.29.camel@localhost.localdomain> <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
+ <alpine.DEB.2.00.0911170643430.25285@p34.internal.lan> <20091117213711.GA19132@linux-os.sc.intel.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The last users of the migration helper are gone. Remove it.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/irq.h |    6 ------
- kernel/irq/chip.c   |    2 --
- 2 files changed, 8 deletions(-)
 
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -106,7 +106,6 @@ struct msi_desc;
-  * @bus_sync_unlock:	function to sync and unlock slow bus (i2c) chips
-  *
-  * @release:		release function solely used by UML
-- * @typename:		obsoleted by name, kept as migration helper
-  */
- struct irq_chip {
- 	const char	*name;
-@@ -135,11 +134,6 @@ struct irq_chip {
- #ifdef CONFIG_IRQ_RELEASE_METHOD
- 	void		(*release)(unsigned int irq, void *dev_id);
- #endif
--	/*
--	 * For compatibility, ->typename is copied into ->name.
--	 * Will disappear.
--	 */
--	const char	*typename;
- };
- 
- struct timer_rand_state;
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -310,8 +310,6 @@ void irq_chip_set_defaults(struct irq_ch
- 	if (!chip->shutdown)
- 		chip->shutdown = chip->disable != default_disable ?
- 			chip->disable : default_shutdown;
--	if (!chip->name)
--		chip->name = chip->typename;
- 	if (!chip->end)
- 		chip->end = dummy_irq_chip.end;
- }
+On Tue, 17 Nov 2009, Pallipadi, Venkatesh wrote:
 
+> On Tue, Nov 17, 2009 at 03:45:31AM -0800, Justin Piszcz wrote:
+> +		WARN_ON_ONCE((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt);
+>
+> 	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
+> }
+> -- 
+> 1.6.0.6
+
+Hi, that omits the message @ boot and you are correct, all is/continues to work fine.
+
+Thanks..
+
+As far as the DP55KG reboots, the workaround is set append="reboot=a" -
+will a BIOS fix address this (other) issue? Try rebooting Linux without 
+any special parameters (2.6.30+) and the DP55KG will hang at reboot
+(note, shutdown does shut the machine off).
+
+Justin.
 
