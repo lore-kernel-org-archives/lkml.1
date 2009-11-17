@@ -1,100 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbZKQGqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZKQGyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbZKQGqQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 01:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZKQGqP
+	id S1755516AbZKQGyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 01:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZKQGyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 01:46:15 -0500
-Received: from mga06.intel.com ([134.134.136.21]:31128 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753559AbZKQGqP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 01:46:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,757,1249282800"; 
-   d="scan'208";a="570246981"
-Subject: Re: [MM] Make mm counters per cpu instead of atomic
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 17 Nov 2009 14:48:41 +0800
-Message-Id: <1258440521.11321.32.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+	Tue, 17 Nov 2009 01:54:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64133 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754164AbZKQGyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 01:54:07 -0500
+Message-ID: <4B0248FA.5040502@redhat.com>
+Date: Tue, 17 Nov 2009 01:55:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jim Keniston <jkenisto@us.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -next 0/3] x86 insn decoder test updates (Re: linux-next:
+ Tree for October 29 (x86 posttest))
+References: <20091116230611.5250.86656.stgit@harusame> <20091117061352.GE30852@elte.hu>
+In-Reply-To: <20091117061352.GE30852@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-04 at 14:14 -0500, Christoph Lameter wrote:
-> From: Christoph Lameter <cl@linux-foundation.org>
-> Subject: Make mm counters per cpu
+Ingo Molnar wrote:
 > 
-> Changing the mm counters to per cpu counters is possible after the introduction
-> of the generic per cpu operations (currently in percpu and -next).
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> With that the contention on the counters in mm_struct can be avoided. The
-> USE_SPLIT_PTLOCKS case distinction can go away. Larger SMP systems do not
-> need to perform atomic updates to mm counters anymore. Various code paths
-> can be simplified since per cpu counter updates are fast and batching
-> of counter updates is no longer needed.
+>> Here are the patches which update x86 instruction decoder build-time 
+>> test. As Stephen reported on linux-next, sometimes objdump decodes bad 
+>> instructions as normal. This will cause a false positive result on x86 
+>> insn decoder test. This patches update the test as below;
+>>
+>>  - Show more information with V=1
+>>  - Show in which symbol the difference places.
+>>  - Just warning instead of build failure.
 > 
-> One price to pay for these improvements is the need to scan over all percpu
-> counters when the actual count values are needed.
+> yes, -tip testing was showing such build bugs too:
 > 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+>  Error: ffffffff8104aae3:	c5 83 3d 49 80 ee    	lds    0xffffffffee80493d(%rbx),%eax
+>  Error: objdump says 6 bytes, but insn_get_length() says 3 (attr:0)
 > 
-> ---
->  fs/proc/task_mmu.c       |   14 +++++++++-
->  include/linux/mm_types.h |   16 ++++--------
->  include/linux/sched.h    |   61 ++++++++++++++++++++---------------------------
->  kernel/fork.c            |   25 ++++++++++++++-----
->  mm/filemap_xip.c         |    2 -
->  mm/fremap.c              |    2 -
->  mm/init-mm.c             |    3 ++
->  mm/memory.c              |   20 +++++++--------
->  mm/rmap.c                |   10 +++----
->  mm/swapfile.c            |    2 -
->  10 files changed, 84 insertions(+), 71 deletions(-)
-> 
-> Index: linux-2.6/include/linux/mm_types.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm_types.h	2009-11-04 13:08:33.000000000 -0600
-> +++ linux-2.6/include/linux/mm_types.h	2009-11-04 13:13:42.000000000 -0600
-> @@ -24,11 +24,10 @@ struct address_space;
+> it happens with older tools, such as binutils-2.17. Modern binutils 
+> (2.19) is fine.
 
-> Index: linux-2.6/kernel/fork.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/fork.c	2009-11-04 13:08:33.000000000 -0600
-> +++ linux-2.6/kernel/fork.c	2009-11-04 13:14:19.000000000 -0600
-> @@ -444,6 +444,8 @@ static void mm_init_aio(struct mm_struct
-> 
->  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
->  {
-> +	int cpu;
-> +
->  	atomic_set(&mm->mm_users, 1);
->  	atomic_set(&mm->mm_count, 1);
->  	init_rwsem(&mm->mmap_sem);
-> @@ -452,8 +454,11 @@ static struct mm_struct * mm_init(struct
->  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
->  	mm->core_state = NULL;
->  	mm->nr_ptes = 0;
-> -	set_mm_counter(mm, file_rss, 0);
-> -	set_mm_counter(mm, anon_rss, 0);
-> +	for_each_possible_cpu(cpu) {
-> +		struct mm_counter *m;
-> +
-> +		memset(m, sizeof(struct mm_counter), 0);
-Above memset is wrong.
-1) m isn't initiated;
-2) It seems the 2nd and the 3rd parameters should be interchanged.
+Thank you for telling me.
 
+> We dont want to remove the build error: it helped us fix a number of 
+> real bugs in the decoder - instead please try to create a make based 
+> workaround based on binutils, to not run the test with binutils older 
+> than 2.19 or so.
+
+OK, that's fine for me.
+
+Thank you,
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
