@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZKQSv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZKQSzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZKQSv0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 13:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZKQSvY
+	id S1755167AbZKQSzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 13:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKQSzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 13:51:24 -0500
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:45275 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbZKQSvX (ORCPT
+	Tue, 17 Nov 2009 13:55:35 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49317 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZKQSzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 13:51:23 -0500
-Message-ID: <4B02F050.2080100@csr.com>
-Date: Tue, 17 Nov 2009 18:49:52 +0000
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 17 Nov 2009 13:55:35 -0500
+Date: Tue, 17 Nov 2009 19:55:39 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] strcmp: fix overflow error
+Message-ID: <20091117185539.GA23385@pengutronix.de>
+References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Greg KH <greg@kroah.com>, lud <linux-usb@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 2 (usb/whci)
-References: <20091102173845.210d1c57.sfr@canb.auug.org.au>	<20091102091339.479a3ddb.randy.dunlap@oracle.com>	<20091111090403.5fb0229e.randy.dunlap@oracle.com>	<20091111173015.GA9641@kroah.com>	<4B028BBB.1080803@csr.com> <20091117075101.0bf72415.randy.dunlap@oracle.com>
-In-Reply-To: <20091117075101.0bf72415.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Nov 2009 18:49:52.0676 (UTC) FILETIME=[BF6CAE40:01CA67B6]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> 
-> When the driver is built-in (not a loadable module), the messages are:
-> 
-> drivers/built-in.o: In function `qset_add_urb':
-> (.text+0x4595f8): undefined reference to `__umoddi3'
-> drivers/built-in.o: In function `qset_add_urb':
-> (.text+0x45969a): undefined reference to `__udivdi3'
-> 
-> Those could still refer to other (inline) functions...
+Hello Linus,
 
-If HIGHMEM64G is set then dma_addr_t is 64 bits which is where the 64
-bit maths come from.
+On Tue, Nov 17, 2009 at 09:41:58AM -0800, Linus Torvalds wrote:
+> On Tue, 17 Nov 2009, Uwe Kleine-König wrote:
+> >
+> > strcmp("\x01", "\xef") returns 18 but it should return something < 0.
+> > The reason is that the variable holding the result of the subtraction is
+> > too small and overflows.
+> 
+> No. The reason is that whoever wrote that function is a moron and doesn't 
+> know the standard. And your fix is not correct _either_
+OK, right.
 
-David
+Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
+(BTW, this was already broken in 2.4.0, so I was unable to find out who
+is the moron :-)
+
+Best regards
+Uwe
+
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
-
-
-Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
