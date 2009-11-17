@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZKQR3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZKQRZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbZKQR3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZKQR3w
+	id S1756144AbZKQRZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZKQRZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:29:52 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:54217 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbZKQR3v (ORCPT
+	Tue, 17 Nov 2009 12:25:38 -0500
+Received: from mga11.intel.com ([192.55.52.93]:55496 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752678AbZKQRZh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:29:51 -0500
-Date: Tue, 17 Nov 2009 12:25:37 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [MM] Make mm counters per cpu instead of atomic
-In-Reply-To: <1258450465.11321.36.camel@localhost>
-Message-ID: <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>  <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost> <1258450465.11321.36.camel@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Nov 2009 12:25:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,759,1249282800"; 
+   d="scan'208";a="747860551"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 17 Nov 2009 09:25:42 -0800
+Subject: RE: [PATCH] ia64 support for tools/perf/
+Thread-Topic: [PATCH] ia64 support for tools/perf/
+Thread-Index: AcpnqoahkiWnc3AFQN6vOKUXAptJrgAACiZw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3876A5B@orsmsx505.amr.corp.intel.com>
+References: <4b02d7f43514327a@agluck-desktop.sc.intel.com>
+ <20091117172139.GB5967@elte.hu>
+In-Reply-To: <20091117172139.GB5967@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009, Zhang, Yanmin wrote:
+> Btw., are you planning HAVE_PERF_EVENTS support for IA64? (It's nice 
+> stuff, i can only recommend it! ;-)
 
-> The right change above should be:
->  struct mm_counter *m = per_cpu_ptr(mm->rss, cpu);
+My first goal is getting the s/w events hooked up and working.  I'm still
+wondering about how to get the h/w counters to co-exist with perfmon (which
+has been part of ia64 API for many years).
 
-Right.
-
-> With the change, command 'make oldconfig' and a boot command still
-> hangs.
-
-Not sure if its worth spending more time on this but if you want I will
-consolidate the fixes so far and put out another patchset.
-
-Where does it hang during boot?
-
+-Tony
