@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZKQGep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZKQGfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbZKQGep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 01:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKQGeo
+	id S1755302AbZKQGfD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 01:35:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZKQGfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 01:34:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58749 "EHLO hera.kernel.org"
+	Tue, 17 Nov 2009 01:35:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58769 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbZKQGem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 01:34:42 -0500
-Date: Tue, 17 Nov 2009 06:31:00 GMT
+	id S1752447AbZKQGfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 01:35:00 -0500
+Date: Tue, 17 Nov 2009 06:31:17 GMT
 From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        jkenisto@us.ibm.com, rdunlap@xenotime.net,
@@ -21,12 +21,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        dle-develop@lists.sourceforge.net, tglx@linutronix.de,
        sfr@canb.auug.org.au, mhiramat@redhat.com, systemtap@sources.redhat.com,
        mingo@elte.hu
-In-Reply-To: <20091116230618.5250.18762.stgit@harusame>
-References: <20091116230618.5250.18762.stgit@harusame>
+In-Reply-To: <20091116230624.5250.49813.stgit@harusame>
+References: <20091116230624.5250.49813.stgit@harusame>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] x86: Add verbose option to insn decoder test
-Message-ID: <tip-d65ff75fbe6f8ac7c17f18e4108521898468822c@git.kernel.org>
-Git-Commit-ID: d65ff75fbe6f8ac7c17f18e4108521898468822c
+Subject: [tip:perf/probes] x86: Show symbol name if insn decoder test failed
+Message-ID: <tip-35039eb6b199749943547c8572be6604edf00229@git.kernel.org>
+Git-Commit-ID: 35039eb6b199749943547c8572be6604edf00229
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -35,17 +35,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d65ff75fbe6f8ac7c17f18e4108521898468822c
-Gitweb:     http://git.kernel.org/tip/d65ff75fbe6f8ac7c17f18e4108521898468822c
+Commit-ID:  35039eb6b199749943547c8572be6604edf00229
+Gitweb:     http://git.kernel.org/tip/35039eb6b199749943547c8572be6604edf00229
 Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Mon, 16 Nov 2009 18:06:18 -0500
+AuthorDate: Mon, 16 Nov 2009 18:06:24 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 17 Nov 2009 07:16:48 +0100
+CommitDate: Tue, 17 Nov 2009 07:16:50 +0100
 
-x86: Add verbose option to insn decoder test
+x86: Show symbol name if insn decoder test failed
 
-Add verbose option to insn decoder test. This dumps decoded
-instruction when building kernel with V=1.
+Show symbol name if insn decoder test find a difference.
+This will help us to find out where the issue is.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: systemtap <systemtap@sources.redhat.com>
@@ -54,147 +54,61 @@ Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Randy Dunlap <rdunlap@xenotime.net>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-LKML-Reference: <20091116230618.5250.18762.stgit@harusame>
+LKML-Reference: <20091116230624.5250.49813.stgit@harusame>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/tools/Makefile       |    9 ++++-
- arch/x86/tools/test_get_len.c |   74 ++++++++++++++++++++++++++++++++++------
- 2 files changed, 71 insertions(+), 12 deletions(-)
+ arch/x86/tools/distill.awk    |    5 +++++
+ arch/x86/tools/test_get_len.c |   10 +++++++++-
+ 2 files changed, 14 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
-index 5e295d9..4688f90 100644
---- a/arch/x86/tools/Makefile
-+++ b/arch/x86/tools/Makefile
-@@ -1,6 +1,13 @@
- PHONY += posttest
-+
-+ifeq ($(KBUILD_VERBOSE),1)
-+  postest_verbose = -v
-+else
-+  postest_verbose =
-+endif
-+
- quiet_cmd_posttest = TEST    $@
--      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len $(CONFIG_64BIT)
-+      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len -$(CONFIG_64BIT) $(posttest_verbose)
+diff --git a/arch/x86/tools/distill.awk b/arch/x86/tools/distill.awk
+index d433619..c13c0ee 100644
+--- a/arch/x86/tools/distill.awk
++++ b/arch/x86/tools/distill.awk
+@@ -15,6 +15,11 @@ BEGIN {
+ 	fwait_str="9b\tfwait"
+ }
  
- posttest: $(obj)/test_get_len vmlinux
- 	$(call cmd,posttest)
++/^ *[0-9a-f]+ <[^>]*>:/ {
++	# Symbol entry
++	printf("%s%s\n", $2, $1)
++}
++
+ /^ *[0-9a-f]+:/ {
+ 	if (split($0, field, "\t") < 3) {
+ 		# This is a continuation of the same insn.
 diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
-index 376d338..5743e51 100644
+index 5743e51..af75e07 100644
 --- a/arch/x86/tools/test_get_len.c
 +++ b/arch/x86/tools/test_get_len.c
-@@ -20,6 +20,7 @@
- #include <stdio.h>
- #include <string.h>
- #include <assert.h>
-+#include <unistd.h>
- 
- #define unlikely(cond) (cond)
- 
-@@ -36,11 +37,16 @@
-  */
- 
- const char *prog;
-+static int verbose;
-+static int x86_64;
- 
- static void usage(void)
- {
- 	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
--		" %s [y|n](64bit flag)\n", prog);
-+		" %s [-y|-n] [-v] \n", prog);
-+	fprintf(stderr, "\t-y	64bit mode\n");
-+	fprintf(stderr, "\t-n	32bit mode\n");
-+	fprintf(stderr, "\t-v	verbose mode\n");
- 	exit(1);
- }
- 
-@@ -50,6 +56,56 @@ static void malformed_line(const char *line, int line_nr)
- 	exit(3);
- }
- 
-+static void dump_field(FILE *fp, const char *name, const char *indent,
-+		       struct insn_field *field)
-+{
-+	fprintf(fp, "%s.%s = {\n", indent, name);
-+	fprintf(fp, "%s\t.value = %d, bytes[] = {%x, %x, %x, %x},\n",
-+		indent, field->value, field->bytes[0], field->bytes[1],
-+		field->bytes[2], field->bytes[3]);
-+	fprintf(fp, "%s\t.got = %d, .nbytes = %d},\n", indent,
-+		field->got, field->nbytes);
-+}
-+
-+static void dump_insn(FILE *fp, struct insn *insn)
-+{
-+	fprintf(fp, "Instruction = { \n");
-+	dump_field(fp, "prefixes", "\t",	&insn->prefixes);
-+	dump_field(fp, "rex_prefix", "\t",	&insn->rex_prefix);
-+	dump_field(fp, "vex_prefix", "\t",	&insn->vex_prefix);
-+	dump_field(fp, "opcode", "\t",		&insn->opcode);
-+	dump_field(fp, "modrm", "\t",		&insn->modrm);
-+	dump_field(fp, "sib", "\t",		&insn->sib);
-+	dump_field(fp, "displacement", "\t",	&insn->displacement);
-+	dump_field(fp, "immediate1", "\t",	&insn->immediate1);
-+	dump_field(fp, "immediate2", "\t",	&insn->immediate2);
-+	fprintf(fp, "\t.attr = %x, .opnd_bytes = %d, .addr_bytes = %d,\n",
-+		insn->attr, insn->opnd_bytes, insn->addr_bytes);
-+	fprintf(fp, "\t.length = %d, .x86_64 = %d, .kaddr = %p}\n",
-+		insn->length, insn->x86_64, insn->kaddr);
-+}
-+
-+static void parse_args(int argc, char **argv)
-+{
-+	int c;
-+	prog = argv[0];
-+	while ((c = getopt(argc, argv, "ynv")) != -1) {
-+		switch (c) {
-+		case 'y':
-+			x86_64 = 1;
-+			break;
-+		case 'n':
-+			x86_64 = 0;
-+			break;
-+		case 'v':
-+			verbose = 1;
-+			break;
-+		default:
-+			usage();
-+		}
-+	}
-+}
-+
- #define BUFSIZE 256
+@@ -110,7 +110,7 @@ static void parse_args(int argc, char **argv)
  
  int main(int argc, char **argv)
-@@ -57,15 +113,9 @@ int main(int argc, char **argv)
- 	char line[BUFSIZE];
+ {
+-	char line[BUFSIZE];
++	char line[BUFSIZE], sym[BUFSIZE] = "<unknown>";
  	unsigned char insn_buf[16];
  	struct insn insn;
--	int insns = 0;
--	int x86_64 = 0;
--
--	prog = argv[0];
--	if (argc > 2)
--		usage();
-+	int insns = 0, c;
+ 	int insns = 0, c;
+@@ -122,6 +122,12 @@ int main(int argc, char **argv)
+ 		int nb = 0;
+ 		unsigned int b;
  
--	if (argc == 2 && argv[1][0] == 'y')
--		x86_64 = 1;
-+	parse_args(argc, argv);
- 
- 	while (fgets(line, BUFSIZE, stdin)) {
- 		char copy[BUFSIZE], *s, *tab1, *tab2;
-@@ -97,8 +147,10 @@ int main(int argc, char **argv)
++		if (line[0] == '<') {
++			/* Symbol line */
++			strcpy(sym, line);
++			continue;
++		}
++
+ 		insns++;
+ 		memset(insn_buf, 0, 16);
+ 		strcpy(copy, line);
+@@ -145,6 +151,8 @@ int main(int argc, char **argv)
+ 		insn_init(&insn, insn_buf, x86_64);
+ 		insn_get_length(&insn);
  		if (insn.length != nb) {
++			fprintf(stderr, "Error: %s found a difference at %s\n",
++				prog, sym);
  			fprintf(stderr, "Error: %s", line);
  			fprintf(stderr, "Error: objdump says %d bytes, but "
--				"insn_get_length() says %d (attr:%x)\n", nb,
--				insn.length, insn.attr);
-+				"insn_get_length() says %d\n", nb,
-+				insn.length);
-+			if (verbose)
-+				dump_insn(stderr, &insn);
- 			exit(2);
- 		}
- 	}
+ 				"insn_get_length() says %d\n", nb,
