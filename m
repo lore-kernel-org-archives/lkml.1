@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZKQCIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZKQCQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755758AbZKQCIV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 21:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbZKQCIU
+	id S1755780AbZKQCQi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 21:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKQCQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 21:08:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41501 "EHLO mx2.suse.de"
+	Mon, 16 Nov 2009 21:16:37 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:59153 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755453AbZKQCIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 21:08:19 -0500
-Date: Tue, 17 Nov 2009 03:08:21 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-       Jan Kara <jack@suse.cz>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext2: clear uptodate flag on super block I/O error
-Message-ID: <20091117020821.GF5818@wotan.suse.de>
-References: <20091111123340.703f5c86@nehalam> <200911112234.24180.elendil@planet.nl> <20091113144727.575cf038@nehalam> <20091113150719.9d31dde2.akpm@linux-foundation.org> <20091116160449.3fc5e958@nehalam>
+	id S1755187AbZKQCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 21:16:36 -0500
+Date: Tue, 17 Nov 2009 13:16:37 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Christian Pellegrin <chripell@fsfe.org>,
+       Wolfgang Grandegger <wg@grandegger.com>, Anant Gole <anantgole@ti.com>,
+       Oliver Hartkopp <oliver@hartkopp.net>
+Subject: linux-next: manual merge of the net tree with the net-current tree
+Message-Id: <20091117131637.3a35f898.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091116160449.3fc5e958@nehalam>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 04:04:49PM -0800, Stephen Hemminger wrote:
-> This fixes a WARN backtrace in mark_buffer_dirty() that occurs during
-> unmount when a USB or floppy device is removed. I reported this a kernel
-> regression, but looks like it might have been there for longer
-> than that.
-> 
-> The super block update from a previous operation has marked the buffer
-> as in error, and the flag has to be cleared before doing the update.
-> (Similar code already exists in ext4).
-> 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> --- a/fs/ext2/super.c	2009-11-16 15:55:36.399078475 -0800
-> +++ b/fs/ext2/super.c	2009-11-16 15:59:49.814765923 -0800
-> @@ -1121,8 +1121,20 @@ static void ext2_sync_super(struct super
->  static int ext2_sync_fs(struct super_block *sb, int wait)
->  {
->  	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
-> +	struct buffer_head *sbh = EXT2_SB(sb)->s_sbh;
->  
->  	lock_kernel();
-> +	if (buffer_write_io_error(sbh)) {
-> +		/*
-> +		 * This happens if USB or floppy device is yanked out.
-> +		 * Maybe user put device back in so warn and update again.
-> +		 */
-> +		printk(KERN_ERR
-> +		       "EXT2-fs: previous I/O error to superblock detected\n");
-> +		clear_buffer_write_io_error(sbh);
-> +		set_buffer_uptodate(sbh);
-> +	}
-> +
->  	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
->  		ext2_debug("setting valid to 0\n");
->  		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
+Hi all,
 
-I think the real fix is to avoid clearing uptodate in case of io errors.
-For read io errors, the buffer/page should not have been uptodate to
-start with, and for write io errors, an error writing back the buffer
-does not mean it is somehow no longer the most uptodate copy of the data.
+Today's linux-next merge of the net tree got a conflict in
+drivers/net/can/Kconfig between commit
+b93cf3f0bb45560d2ce62bdcc2181c40660cfdbf ("can: Fix driver Kconfig
+structure") from the net-current tree and commits
+3758bf25db8caeec667e4e56e030da0ec3060529 ("can: add TI CAN (HECC)
+driver"), e0000163e30eeb112b41486ea113fd54f64e1f17 ("can: Driver for the
+Microchip MCP251x SPI CAN controllers") and
+afa17a500a3667f66df450100538d06769529bba ("net/can: add driver for mscan
+family & mpc52xx_mscan") from the net tree.
 
-Higher level policy about IO errors (whether to retry, ignore, throw
-out the data, etc) would be nice to implement properly too, but that is
-not really the job of the low level cache and IO routines.
+I fixed it up (see below) and can carry the fix for a while. (I am not
+sure the fix is entirely correct.)
 
-I proposed some patches a while back but didn't get much interest.
-Maybe I should just ask someone to merge them.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+diff --cc drivers/net/can/Kconfig
+index 772f6d2,c16e6ff..0000000
+--- a/drivers/net/can/Kconfig
++++ b/drivers/net/can/Kconfig
+@@@ -41,10 -95,38 +41,42 @@@ config CAN_AT9
+  	---help---
+  	  This is a driver for the SoC CAN controller in Atmel's AT91SAM9263.
+  
++ config CAN_TI_HECC
++ 	depends on CAN_DEV && ARCH_OMAP3
++ 	tristate "TI High End CAN Controller"
++ 	---help---
++ 	  Driver for TI HECC (High End CAN Controller) module found on many
++ 	  TI devices. The device specifications are available from www.ti.com
++ 
++ config CAN_MCP251X
++ 	tristate "Microchip MCP251x SPI CAN controllers"
++ 	depends on CAN_DEV && SPI
++ 	---help---
++ 	  Driver for the Microchip MCP251x SPI CAN controllers.
++ 
++ config CAN_MSCAN
++ 	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
++ 	tristate "Support for Freescale MSCAN based chips"
++ 	---help---
++ 	  The Motorola Scalable Controller Area Network (MSCAN) definition
++ 	  is based on the MSCAN12 definition which is the specific
++ 	  implementation of the Motorola Scalable CAN concept targeted for
++ 	  the Motorola MC68HC12 Microcontroller Family.
++ 
++ config CAN_MPC52XX
++ 	tristate "Freescale MPC5xxx onboard CAN controller"
++ 	depends on CAN_MSCAN && PPC_MPC52xx
++ 	---help---
++ 	  If you say yes here you get support for Freescale's MPC52xx
++ 	  onboard dualCAN controller.
++ 
++ 	  This driver can also be built as a module.  If so, the module
++ 	  will be called mpc5xxx_can.
++ 
+ +source "drivers/net/can/sja1000/Kconfig"
+ +
+ +source "drivers/net/can/usb/Kconfig"
+ +
+  config CAN_DEBUG_DEVICES
+  	bool "CAN devices debugging messages"
+  	depends on CAN
