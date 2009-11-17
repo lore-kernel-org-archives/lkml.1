@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbZKQJcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZKQJf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753777AbZKQJcA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 04:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZKQJcA
+	id S1754414AbZKQJf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZKQJf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 04:32:00 -0500
-Received: from mga09.intel.com ([134.134.136.24]:21249 "EHLO mga09.intel.com"
+	Tue, 17 Nov 2009 04:35:56 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:49281 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbZKQJb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 04:31:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,757,1249282800"; 
-   d="scan'208";a="467991225"
-Subject: Re: [MM] Make mm counters per cpu instead of atomic
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <1258443101.11321.33.camel@localhost>
-References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-	 <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 17 Nov 2009 17:34:25 +0800
-Message-Id: <1258450465.11321.36.camel@localhost>
+	id S1753091AbZKQJfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 04:35:54 -0500
+Date: Tue, 17 Nov 2009 10:35:54 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mika Kuoppala <mika.kuoppala@nokia.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: Shared i2c adapter locking
+Message-ID: <20091117103554.03971b2f@hyperion.delvare>
+In-Reply-To: <20091117193313.b750804e.sfr@canb.auug.org.au>
+References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
+	<20091029154317.651904b9@hyperion.delvare>
+	<1256828976.2827.27.camel@achroite>
+	<20091105141122.56b6b4f8@hyperion.delvare>
+	<1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
+	<20091105150715.692b5200@hyperion.delvare>
+	<20091117193313.b750804e.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 15:31 +0800, Zhang, Yanmin wrote:
-> On Tue, 2009-11-17 at 14:48 +0800, Zhang, Yanmin wrote:
-> > On Wed, 2009-11-04 at 14:14 -0500, Christoph Lameter wrote:
-> > > From: Christoph Lameter <cl@linux-foundation.org>
-> > > Subject: Make mm counters per cpu
-> > > 
-> > > Changing the mm counters to per cpu counters is possible after the introduction
-> > > of the generic per cpu operations (currently in percpu and -next).
-> > > 
-> > > With that the contention on the counters in mm_struct can be avoided. The
-> > > USE_SPLIT_PTLOCKS case distinction can go away. Larger SMP systems do not
-> > > need to perform atomic updates to mm counters anymore. Various code paths
-> > > can be simplified since per cpu counter updates are fast and batching
-> > > of counter updates is no longer needed.
-> > > 
-> > > One price to pay for these improvements is the need to scan over all percpu
-> > > counters when the actual count values are needed.
-> > > 
-> > > Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-> > > 
-> > > ---
-> > >  fs/proc/task_mmu.c       |   14 +++++++++-
-> > >  include/linux/mm_types.h |   16 ++++--------
-> > >  include/linux/sched.h    |   61 ++++++++++++++++++++---------------------------
-> > >  kernel/fork.c            |   25 ++++++++++++++-----
-> > >  mm/filemap_xip.c         |    2 -
-> > >  mm/fremap.c              |    2 -
-> > >  mm/init-mm.c             |    3 ++
-> > >  mm/memory.c              |   20 +++++++--------
-> > >  mm/rmap.c                |   10 +++----
-> > >  mm/swapfile.c            |    2 -
-> > >  10 files changed, 84 insertions(+), 71 deletions(-)
-> > > 
-> > > Index: linux-2.6/include/linux/mm_types.h
-> > > ===================================================================
-> > > --- linux-2.6.orig/include/linux/mm_types.h	2009-11-04 13:08:33.000000000 -0600
-> > > +++ linux-2.6/include/linux/mm_types.h	2009-11-04 13:13:42.000000000 -0600
-> > > @@ -24,11 +24,10 @@ struct address_space;
+Hi Stephen,
+
+On Tue, 17 Nov 2009 19:33:13 +1100, Stephen Rothwell wrote:
+> Hi Jean,
+> 
+> On Thu, 5 Nov 2009 15:07:15 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+> >
+> > > Presumably this is meant for net-next-2.6, and you'll implement
 > > 
-> > > Index: linux-2.6/kernel/fork.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/kernel/fork.c	2009-11-04 13:08:33.000000000 -0600
-> > > +++ linux-2.6/kernel/fork.c	2009-11-04 13:14:19.000000000 -0600
-> > > @@ -444,6 +444,8 @@ static void mm_init_aio(struct mm_struct
-> > > 
-> > >  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
-> > >  {
-> > > +	int cpu;
-> > > +
-> > >  	atomic_set(&mm->mm_users, 1);
-> > >  	atomic_set(&mm->mm_count, 1);
-> > >  	init_rwsem(&mm->mmap_sem);
-> > > @@ -452,8 +454,11 @@ static struct mm_struct * mm_init(struct
-> > >  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
-> > >  	mm->core_state = NULL;
-> > >  	mm->nr_ptes = 0;
-> > > -	set_mm_counter(mm, file_rss, 0);
-> > > -	set_mm_counter(mm, anon_rss, 0);
-> > > +	for_each_possible_cpu(cpu) {
-> > > +		struct mm_counter *m;
-> > > +
-> > > +		memset(m, sizeof(struct mm_counter), 0);
-> > Above memset is wrong.
-> > 1) m isn't initiated;
-> > 2) It seems the 2nd and the 3rd parameters should be interchanged.
-> Changing it to below fixes the command hang issue.
+> > Actually I meant to push this to Linus immediately, through my i2c
+> > tree. This is essentially a no-op: the binary code will be the same as
+> > before the patch, so guaranteed to be safe, and this will solve
+> > conflicts in linux-next.
 > 
->         for_each_possible_cpu(cpu) {
->                 struct mm_counter *m = per_cpu(mm->rss->readers, cpu);
-> 
->                 memset(m, 0, sizeof(struct mm_counter));
->         }
+> Any word on this?
 
-Sorry. I was too optimistic and used another kernel to boot.
-The right change above should be:
- struct mm_counter *m = per_cpu_ptr(mm->rss, cpu);
+Haven't you read this:
+http://www.spinics.net/lists/linux-next/msg07839.html
 
-Compiler doesn't report error/warning when I use any member.
+and the 3 following posts?
 
-With the change, command 'make oldconfig' and a boot command still
-hangs.
+If you did and something is still not clear, please let me know. My
+understanding is that the action token is in David's hands now.
 
-Yanmin
-
-
+-- 
+Jean Delvare
