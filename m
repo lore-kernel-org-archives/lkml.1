@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZKQIj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbZKQIkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbZKQIj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZKQIj3
+	id S1752986AbZKQIkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZKQIkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:39:29 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57627 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbZKQIj2 (ORCPT
+	Tue, 17 Nov 2009 03:40:20 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:63761 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbZKQIkT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:39:28 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH]  [for mmotm-1113] mm: Simplify try_to_unmap_one()
-Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
+	Tue, 17 Nov 2009 03:40:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YDWXJ6iYLJYrgCX8IaeC+c9Xi942vEkuL2tWrOfQVK6mLaTuW+dq27+Kpp47eCNqOr
+         c/h7rFpuVGdfXyIAecqBVkzX7UxA2NsrOTiyOegvgGPl99ZJ356c0aGi/SWq3t22twF8
+         p+8US+0a42oL1VEmWWLuR7btNdOaSEfNK9cQ8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 17 Nov 2009 17:39:27 +0900 (JST)
+In-Reply-To: <xXQGFmujPl.A.nXG.-SdALB@chimera>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.nXG.-SdALB@chimera>
+Date: Tue, 17 Nov 2009 17:40:25 +0900
+Message-ID: <28c262360911170040r4313ca2bs9716b9271946f082@mail.gmail.com>
+Subject: Re: [Bug #14618] OOM killer, page fault
+From: Minchan Kim <minchan.kim@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Norbert Preining <preining@logic.at>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SWAP_MLOCK mean "We marked the page as PG_MLOCK, please move it to
-unevictable-lru". So, following code is easy confusable.
+I think we can ignore this bug.
+We can see the mm_fault_error in stack trace.
+I guess it's from returning VM_FAULT_OOM of any driver.
 
-        if (vma->vm_flags & VM_LOCKED) {
-                ret = SWAP_MLOCK;
-                goto out_unmap;
-        }
+As I know, It happens very rarely. Norbert, right?
 
-Plus, if the VMA doesn't have VM_LOCKED, We don't need to check
-the needed of calling mlock_vma_page().
+In addition, I don't see the any similar report.
 
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/rmap.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+So I think It would be better to ignore this bug
+until we can meet similar report again.
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 82e31fb..70dec01 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -779,10 +779,9 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
- 	if (!(flags & TTU_IGNORE_MLOCK)) {
--		if (vma->vm_flags & VM_LOCKED) {
--			ret = SWAP_MLOCK;
--			goto out_unmap;
--		}
-+		if (vma->vm_flags & VM_LOCKED)
-+			goto out_mlock;
-+
- 		if (TTU_ACTION(flags) == TTU_MUNLOCK)
- 			goto out_unmap;
- 	}
-@@ -855,18 +854,19 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
- 
- out_unmap:
- 	pte_unmap_unlock(pte, ptl);
-+out:
-+	return ret;
- 
--	if (ret == SWAP_MLOCK) {
--		ret = SWAP_AGAIN;
--		if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
--			if (vma->vm_flags & VM_LOCKED) {
--				mlock_vma_page(page);
--				ret = SWAP_MLOCK;
--			}
--			up_read(&vma->vm_mm->mmap_sem);
-+out_mlock:
-+	pte_unmap_unlock(pte, ptl);
-+
-+	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
-+		if (vma->vm_flags & VM_LOCKED) {
-+			mlock_vma_page(page);
-+			ret = SWAP_MLOCK;
- 		}
-+		up_read(&vma->vm_mm->mmap_sem);
- 	}
--out:
- 	return ret;
- }
- 
+
+On Tue, Nov 17, 2009 at 7:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14618
+> Subject         : OOM killer, page fault
+> Submitter       : Norbert Preining <preining@logic.at>
+> Date            : 2009-10-30 6:32 (18 days old)
+> References      : http://marc.info/?l=linux-kernel&m=125688434909582&w=4
+> Handled-By      : Minchan Kim <minchan.kim@gmail.com>
+>
+>
+>
+
+
+
 -- 
-1.6.2.5
-
-
-
+Kind regards,
+Minchan Kim
