@@ -1,66 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZKQATH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZKQAVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZKQATH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 19:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZKQATG
+	id S1755321AbZKQAVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 19:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZKQAVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 19:19:06 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:43368 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755186AbZKQATE (ORCPT
+	Mon, 16 Nov 2009 19:21:16 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:51357 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754882AbZKQAVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 19:19:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=RkjHzEORwL/Y4A0ujNnO34WOxlL0zzwXxucev0vaHvdmDR44l1RWiwOI3ie+RgJxJS
-         QSeqOKHbjAicwxvgxlwa0VJtuc9tg6uuhZxPG16k4Nn2+opAZj1lzj1Axahp+8BC6/oZ
-         ZOht54HjAc9fihApn3vNdxfR65hKTQ35xjXu4=
-Message-ID: <4B01EC25.5010703@gmail.com>
-Date: Mon, 16 Nov 2009 16:19:49 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Mon, 16 Nov 2009 19:21:15 -0500
+Message-Id: <1258417281.1921.1345554581@webmail.messagingengine.com>
+X-Sasl-Enc: bvpGpm/8DHUaNNsGDMFTIrRViW7GfSnYa0KaYHMPfaxv 1258417281
+From: myuboot@fastmail.fm
+To: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>
-Subject: Re: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer
- to expected String
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.UR.8TdALB@chimera>
-In-Reply-To: <xXQGFmujPl.A.UR.8TdALB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailer: MessagingEngine.com Webmail Interface
+In-Reply-To: <4AFA6B7F.10404@walsimou.com>
+References: <1255735395.30097.1340523469@webmail.messagingengine.com>
+ <4AD906D8.3020404@caviumnetworks.com>
+ <1257898975.30125.1344591929@webmail.messagingengine.com>
+ <4AFA6B7F.10404@walsimou.com>
+Subject: problem bring up initramfs and busybox
+Date: Mon, 16 Nov 2009 18:21:21 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14379
-> Subject		: ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
-> Submitter	: Justin Mattock<justinmattock@gmail.com>
-> Date		: 2009-10-08 21:46 (40 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9adc2e031bd22d5d9607a53a8d3b30e0b675f39
-> References	: http://marc.info/?l=linux-kernel&m=125504031328941&w=4
-> Handled-By	: Alexey Starikovskiy<astarikovskiy@suse.de>
-> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=23347
->
->
->
->    
-o.k. just pulled the latest to see, and
-the warning message is there.
-so yes this bug report should be open
-until this is fixed.
+I have been struggling to bring up a MIPS 32 board with busybox with or
+without initramfs.
+The kernel stucks there without the shell coming up.
 
-Justin P. Mattock
+[    1.153000] nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
+[    1.161000] ip_tables: (C) 2000-2006 Netfilter Core Team
+[    1.167000] TCP cubic registered
+[    1.170000] NET: Registered protocol family 17
+[   25.971000] Freeing unused kernel memory: 1032k freed
+[   39.969000] Algorithmics/MIPS FPU Emulator v1.5
+
+
+What I tried here is to use initramfs with statically linked busybox.
+The initramfs seems to be up, and runs the commands in the /init one by
+one, and then it goes to a inifite loop in r4k_wait at
+arch/mips/kernel/genex.S.
+
+The following is the execution sequense when it runs /init. Can anyone
+give me some idea what is wrong?
+
+Thanks, Andrew
+
+
+Breakpoint 2, do_execve (filename=0x9780a000 "/bin/sh", argv=0x4f73a4,
+envp=0x4f73ac, regs=0x97997f30) at fs/exec.c:1293
+1293            retval = unshare_files(&displaced);
+(gdb) c
+Continuing.
+
+Breakpoint 2, do_execve (filename=0x9780a000 "/sbin/switch_root",
+argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
+1293            retval = unshare_files(&displaced);
+(gdb) c
+Continuing.
+
+Breakpoint 2, do_execve (filename=0x9780a000 "/usr/sbin/switch_root",
+argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
+1293            retval = unshare_files(&displaced);
+(gdb) c
+Continuing.
+
+Breakpoint 2, do_execve (filename=0x9780a000 "/bin/switch_root",
+argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
+1293            retval = unshare_files(&displaced);
+(gdb) c
+Continuing.
+
+Breakpoint 2, do_execve (filename=0x9780a000 "/usr/bin/switch_root",
+argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
+1293            retval = unshare_files(&displaced);
+(gdb) c
+Continuing.
+^C
+Program received signal SIGSTOP, Stopped (signal).
+r4k_wait () at arch/mips/kernel/genex.S:147
+147             jr      ra
+
+-- And here is the content of /init script - 
+#!/bin/busybox sh
+
+# Mount the /proc and /sys filesystems.
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+mdev -s
+/bin/sh
+
+# Do your stuff here.
+echo "This script mounts rootfs and boots it up, nothing more!"
+
+# Mount the root filesystem.
+mount -o ro /dev/mtdblock4 /mnt/root
+
+# Clean up.
+umount /proc
+umount /sys
+
+# Boot the real thing.
+exec switch_root /mnt/root /sbin/init
