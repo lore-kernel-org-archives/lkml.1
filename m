@@ -1,36 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbZKQJXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZKQJWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbZKQJXK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 04:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZKQJXJ
+	id S1753789AbZKQJWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZKQJWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 04:23:09 -0500
-Received: from odontologia.udea.edu.co ([200.24.17.105]:23793 "EHLO
-	odontologia.udea.edu.co" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbZKQJXI (ORCPT
+	Tue, 17 Nov 2009 04:22:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33321
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752771AbZKQJWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 04:23:08 -0500
-From: "Mrs.Cindy Howard" <info@odontologia.udea.edu.co>
-Reply-To: tobaccodept12@hotmail.com
-Subject: Confirm Reciept
-Date: Tue, 17 Nov 2009 04:22:04 -0500
-Message-Id: <20091117092205.M38781@odontologia.udea.edu.co>
-X-Mailer: Open WebMail 2.51 20050228
-X-OriginatingIP: 65.120.56.2 (asefodua)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-To: undisclosed-recipients:;
+	Tue, 17 Nov 2009 04:22:32 -0500
+Date: Tue, 17 Nov 2009 01:22:48 -0800 (PST)
+Message-Id: <20091117.012248.86306050.davem@davemloft.net>
+To: huananhu@huawei.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       william.allen.simpson@gmail.com
+Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <faf197be196ee.196eefaf197be@huawei.com>
+References: <faf197be196ee.196eefaf197be@huawei.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your email ID has been awarded 1,000,000,00 GBP in the Tobacco Award Promo. 
-You are to reply us with your details as listed below for claims purpose.
+From: fangxiaozhi 00110321 <huananhu@huawei.com>
+Date: Tue, 17 Nov 2009 17:19:02 +0800
 
-1.Full Name:
-2.Full Address:
-3.Status:
-4.Occupation:
-5.Phone Number:
-6.Country:
+> From: fangxiaozhi <huananhu@huawei.com>
+> 1. This patch is based on the kernel of 2.6.32-rc4 
+> 2. In this patch, we enlarge the out buffer size to optimize the upload speed for the ppp connection. Then it can support the upload of HSUPA data cards.
+> Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+
+Your patch is broken, please don't wate my time like this.
+
++ git apply --check --whitespace=error-all diff
+error: patch failed: drivers/net/ppp_async.c:36
+error: drivers/net/ppp_async.c: patch does not apply
