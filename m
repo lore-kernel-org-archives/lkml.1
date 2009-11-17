@@ -1,90 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZKQMwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZKQMxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbZKQMwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZKQMwe
+	id S1754298AbZKQMxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZKQMxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:52:34 -0500
-Received: from ozlabs.org ([203.10.76.45]:46803 "EHLO ozlabs.org"
+	Tue, 17 Nov 2009 07:53:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41085 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755984AbZKQMwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:52:33 -0500
-Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
- without CONFIG_XICS set
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <1258461544.24093.72.camel@concordia>
-References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
-	 <1258461544.24093.72.camel@concordia>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-BMaeNH7yeliJffYihnrk"
-Date: Tue, 17 Nov 2009 23:52:38 +1100
-Message-ID: <1258462358.24093.83.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1752242AbZKQMxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 07:53:18 -0500
+Date: Tue, 17 Nov 2009 13:53:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ling Ma <ling.ma@intel.com>
+Subject: Re: [PATCH 1/4] perf bench: Add mem-memcpy.c:memcpy() benchmark
+Message-ID: <20091117125315.GA22668@elte.hu>
+References: <20091117112148.GA32578@elte.hu>
+ <1258458153-25700-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258458153-25700-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-BMaeNH7yeliJffYihnrk
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+FYI, it fails to build on 32-bit systems, with:
 
-On Tue, 2009-11-17 at 23:39 +1100, Michael Ellerman wrote:
-> On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
-> > KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but i=
-f
-> > it's not set, there are numerous small build errors. This is a small se=
-ries
-> > of patches to allow CONFIG_XICS to be unset in the config.
-> >=20
-> > XICS appears to be some sort of interrupt controller but I'm not sure h=
-ow
-> > common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
-> > universally requires CONFIG_XICS, the better path might be to force it =
-to
-> > be set.
->=20
-> It is indeed 'some sort of interrupt controller' :)
->=20
-> All the virtualised PSERIES systems have, or appear to have, a XICS. So
-> it's pretty common.
->=20
-> I think the only time you see an MPIC is on older machines, and even
-> then maybe only if you're running bare metal.
->=20
-> So it is pretty much required for a PSERIES kernel, but perhaps there
-> are cases where the BML guys want to be able to turn it off.
+bench/mem-memcpy.c: In function 'bench_mem_memcpy':
+bench/mem-memcpy.c:118: error: format '%lu' expects type 'long unsigned int', but argument 4 has type 'size_t'
 
-In fact this series makes me wonder whether we can drop support for a
-single kernel image with pseries XICS & MPIC support.
-
-If we could drop that requirement we could have a single set of names,
-ie. API, for the irq routines and build either the XICS or MPIC
-versions.
-
-That would avoid all the code that needs a setup_foo_xics() and
-setup_foo_mpic() - it'd just be setup_foo(), implemented by either the
-XICS or MPIC code.
-
-cheers
-
-
-
---=-BMaeNH7yeliJffYihnrk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAksCnJYACgkQdSjSd0sB4dLlTACgyOQzAgYGj6l+DZblroA00YGi
-ARkAn33WbyMtc8NO2zv1V/blPTosRG2U
-=T2C3
------END PGP SIGNATURE-----
-
---=-BMaeNH7yeliJffYihnrk--
-
+	Ingo
