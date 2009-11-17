@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZKQCQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZKQCcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbZKQCQi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 21:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKQCQh
+	id S1752616AbZKQCcX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 21:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZKQCcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 21:16:37 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59153 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbZKQCQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 21:16:36 -0500
-Date: Tue, 17 Nov 2009 13:16:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       Christian Pellegrin <chripell@fsfe.org>,
-       Wolfgang Grandegger <wg@grandegger.com>, Anant Gole <anantgole@ti.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>
-Subject: linux-next: manual merge of the net tree with the net-current tree
-Message-Id: <20091117131637.3a35f898.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Mon, 16 Nov 2009 21:32:23 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41894 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752015AbZKQCcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 21:32:22 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEAMOYAUtGGN1W/2dsb2JhbACBS9YdhDwE
+Date: Mon, 16 Nov 2009 21:32:24 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org, pierre-marc.fournier@polymtl.ca,
+       william.bourque@polymtl.ca
+Subject: [RELEASE] LTTng 0.171 and LTTV 0.12.21 (trace format 2.4)
+Message-ID: <20091117023224.GA20305@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 21:23:29 up 90 days, 13:13,  4 users,  load average: 0.98, 0.46,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/net/can/Kconfig between commit
-b93cf3f0bb45560d2ce62bdcc2181c40660cfdbf ("can: Fix driver Kconfig
-structure") from the net-current tree and commits
-3758bf25db8caeec667e4e56e030da0ec3060529 ("can: add TI CAN (HECC)
-driver"), e0000163e30eeb112b41486ea113fd54f64e1f17 ("can: Driver for the
-Microchip MCP251x SPI CAN controllers") and
-afa17a500a3667f66df450100538d06769529bba ("net/can: add driver for mscan
-family & mpc52xx_mscan") from the net tree.
+I just released LTTng 0.171 and LTTV 0.12.21, which move the trace
+format to 2.4 (therefore not compatible with older versions).
 
-I fixed it up (see below) and can carry the fix for a while. (I am not
-sure the fix is entirely correct.)
+The reason:
+
+"Do not limit alignment on architecture size anymore, because uint64_t
+types are aligned on 64-bit even on 32-bit archs. It's a waste of space
+for 32-bit architectures, but makes our format compatible with gcc."
+
+Mathieu
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/net/can/Kconfig
-index 772f6d2,c16e6ff..0000000
---- a/drivers/net/can/Kconfig
-+++ b/drivers/net/can/Kconfig
-@@@ -41,10 -95,38 +41,42 @@@ config CAN_AT9
-  	---help---
-  	  This is a driver for the SoC CAN controller in Atmel's AT91SAM9263.
-  
-+ config CAN_TI_HECC
-+ 	depends on CAN_DEV && ARCH_OMAP3
-+ 	tristate "TI High End CAN Controller"
-+ 	---help---
-+ 	  Driver for TI HECC (High End CAN Controller) module found on many
-+ 	  TI devices. The device specifications are available from www.ti.com
-+ 
-+ config CAN_MCP251X
-+ 	tristate "Microchip MCP251x SPI CAN controllers"
-+ 	depends on CAN_DEV && SPI
-+ 	---help---
-+ 	  Driver for the Microchip MCP251x SPI CAN controllers.
-+ 
-+ config CAN_MSCAN
-+ 	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
-+ 	tristate "Support for Freescale MSCAN based chips"
-+ 	---help---
-+ 	  The Motorola Scalable Controller Area Network (MSCAN) definition
-+ 	  is based on the MSCAN12 definition which is the specific
-+ 	  implementation of the Motorola Scalable CAN concept targeted for
-+ 	  the Motorola MC68HC12 Microcontroller Family.
-+ 
-+ config CAN_MPC52XX
-+ 	tristate "Freescale MPC5xxx onboard CAN controller"
-+ 	depends on CAN_MSCAN && PPC_MPC52xx
-+ 	---help---
-+ 	  If you say yes here you get support for Freescale's MPC52xx
-+ 	  onboard dualCAN controller.
-+ 
-+ 	  This driver can also be built as a module.  If so, the module
-+ 	  will be called mpc5xxx_can.
-+ 
- +source "drivers/net/can/sja1000/Kconfig"
- +
- +source "drivers/net/can/usb/Kconfig"
- +
-  config CAN_DEBUG_DEVICES
-  	bool "CAN devices debugging messages"
-  	depends on CAN
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
