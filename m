@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZKQWxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZKQWwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbZKQWxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbZKQWxJ
+	id S1756760AbZKQWwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZKQWw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:53:09 -0500
-Received: from lucidpixels.com ([75.144.35.66]:44354 "EHLO lucidpixels.com"
+	Tue, 17 Nov 2009 17:52:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38756 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756642AbZKQWxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:53:07 -0500
-Date: Tue, 17 Nov 2009 17:53:12 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
- hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
-In-Reply-To: <20091117213711.GA19132@linux-os.sc.intel.com>
-Message-ID: <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
-References: <1258069232.14894.9.camel@localhost.localdomain> <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain> <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan> <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>
- <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain> <1258137165.21141.20.camel@localhost.localdomain> <alpine.DEB.2.00.0911131340140.5316@p34.internal.lan> <1258161139.21141.29.camel@localhost.localdomain> <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
- <alpine.DEB.2.00.0911170643430.25285@p34.internal.lan> <20091117213711.GA19132@linux-os.sc.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1756603AbZKQWwZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:52:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [Bug #14620] WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask
+Date: Tue, 17 Nov 2009 23:53:50 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       =?iso-8859-1?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.SJG.7SdALB@chimera> <20091117024318.GC23066@mit.edu>
+In-Reply-To: <20091117024318.GC23066@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911172353.50156.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 17 November 2009, Theodore Tso wrote:
+> On Mon, Nov 16, 2009 at 11:37:47PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14620
+> > Subject		: WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask
+> > Submitter	: Rogério Brito <rbrito@ime.usp.br>
+> > Date		: 2009-11-06 23:10 (11 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125754907413892&w=4
+> 
+> This isn't technically a regression, since the warning is simply
+> complaining about something that apparently ext4 has been doing for a
+> long time, which is that it allocates some very large order data
+> buffers.  So the change referenced simply printed a warning message
+> that complained about the fact.
+> 
+> The actual problem will be fixed in 2.6.32, as we no longer allocate
+> the big data buffers at mount time.
 
+Thanks, I'm going to close the bug.
 
-On Tue, 17 Nov 2009, Pallipadi, Venkatesh wrote:
-
-> On Tue, Nov 17, 2009 at 03:45:31AM -0800, Justin Piszcz wrote:
-> +		WARN_ON_ONCE((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt);
->
-> 	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
-> }
-> -- 
-> 1.6.0.6
-
-Hi, that omits the message @ boot and you are correct, all is/continues to work fine.
-
-Thanks..
-
-As far as the DP55KG reboots, the workaround is set append="reboot=a" -
-will a BIOS fix address this (other) issue? Try rebooting Linux without 
-any special parameters (2.6.30+) and the DP55KG will hang at reboot
-(note, shutdown does shut the machine off).
-
-Justin.
-
+Rafael
