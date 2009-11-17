@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbZKQI7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZKQJDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbZKQI7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZKQI7v
+	id S1753516AbZKQJDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZKQJDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:59:51 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:41841 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbZKQI7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:59:50 -0500
-Date: Tue, 17 Nov 2009 09:59:55 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: tglx@linutronix.de, mingo@elte.hu,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix clock_gettime vsyscall time warp
-Message-ID: <20091117095955.0df508a5@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <1258436990.17765.83.camel@minggr.sh.intel.com>
-References: <1258436990.17765.83.camel@minggr.sh.intel.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Tue, 17 Nov 2009 04:03:34 -0500
+Received: from gate.crashing.org ([63.228.1.57]:55423 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376AbZKQJDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 04:03:32 -0500
+Subject: Re: [Bug #14355] USB serial regression after 2.6.31.1 with Huawei
+ E169 GSM modem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Ben Efros <ben@pc-doctor.com>
+In-Reply-To: <200911170012.24914.rjw@sisk.pl>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.2k.LUdALB@chimera> <200911170005.27342.oliver@neukum.org>
+	 <200911170012.24914.rjw@sisk.pl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 17 Nov 2009 20:02:47 +1100
+Message-ID: <1258448567.2140.564.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009 13:49:50 +0800
-Lin Ming <ming.m.lin@intel.com> wrote:
-
-> The root cause is the NTP adjusted clock multiplier(timekeeper.mult) is
-> not updated to vsyscall gtod data(vsyscall_gtod_data.clock.mult). 
+On Tue, 2009-11-17 at 00:12 +0100, Rafael J. Wysocki wrote:
+> On Tuesday 17 November 2009, Oliver Neukum wrote:
+> > Am Montag, 16. November 2009 23:37:39 schrieb Rafael J. Wysocki:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.31.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14355
+> > > Subject		: USB serial regression after 2.6.31.1 with Huawei E169 GSM modem
+> > > Submitter	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Date		: 2009-10-10 03:07 (38 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=125513456327542&w=4
+> > 
+> > Benjamin has fixed this bug.
 > 
-> Since commit 0a544198 "timekeeping: Move NTP adjusted clock multiplier
-> to struct timekeeper", clock->mult is only the unmodified multiplier.
+> Thanks, closed.
 > 
-> Below patch passes the adjusted clock multiplier to update_vsyscall.
-> -void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-> +void update_vsyscall(struct timespec *wall_time, struct clocksource *clock, u32 mult)
-> 
-> With this patch applied to 2.6.32-rc7, I have been running
-> time-warp-test for many hours without any time warp on both x86_64 and
-> ia64 machines.
-> 
-> This patch also touches the powerpc code, so it would be very
-> appreciated if anyone can help to test it on powerpc.
 
-Ouch! Yes, good catch. That patch needs to go into 2.6.32.
+I asked Greg to re-open for a while to track other issues with
+various Huawei modems. However, it appears that most of them would
+be tricky to workaround in the kernel and are fixed by FW updates
+(though updating those modem FW can be non trivial).
 
--- 
-blue skies,
-   Martin.
+I'll leave it open for a little while see how things go on the
+corresponding ubuntu bug, and if things settle, we can then close it,
+in the meantime, you can remove it from your list of regressions.
 
-"Reality continues to ruin my life." - Calvin.
+Cheers,
+Ben.
+
 
