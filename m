@@ -1,97 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZKQSfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZKQSkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZKQSfR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 13:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbZKQSfQ
+	id S1754673AbZKQSkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 13:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZKQSkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 13:35:16 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:39787 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbZKQSfO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 13:35:14 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-	<20090924211459.GB27963@localhost> <4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-	<m163ayzevu.fsf@fess.ebiederm.org> <20091002084755.GA7382@localhost>
-	<20091002173308.6158d734@lxorguk.ukuu.org.uk>
-	<m1ske1wgdi.fsf@fess.ebiederm.org>
-	<20091003140902.38628d8a@lxorguk.ukuu.org.uk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Nov 2009 10:35:07 -0800
-In-Reply-To: <20091003140902.38628d8a@lxorguk.ukuu.org.uk> (Alan Cox's message of "Sat\, 3 Oct 2009 14\:09\:02 +0100")
-Message-ID: <m13a4df19g.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Nov 2009 13:40:32 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:42049 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753639AbZKQSkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 13:40:31 -0500
+Message-ID: <4B02EE1D.6020302@sgi.com>
+Date: Tue, 17 Nov 2009 10:40:29 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86, mce: rework output of MCE banks ownership information
+References: <20091116210718.412792000@alcatraz.americas.sgi.com> <20091116210727.456553000@alcatraz.americas.sgi.com> <20091116212251.GB2221@elte.hu> <4B01C59A.9050507@sgi.com> <4B024C76.9050005@jp.fujitsu.com>
+In-Reply-To: <4B024C76.9050005@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Author: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-> On Fri, 02 Oct 2009 16:00:41 -0700
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->>
->>
->> I have seen a hang in:
->>   /bin/stty (changing the baud rate)
->>     set_termios
->>       tty_wait_until_sent
->>         tty_chars_in_buffer
->>           ftdi_chars_in_buffer
->>
->> Where the driver wedged for a serial port and no progress
->> was made.
->>
->> This happened to me several times with 2.6.31.  My initial
->> hypothesis was this was a hardware error (as it only happened
->> on single piece of hardware).  With all of the driver problems
->> I suspect it could be a driver bug.
->
-> Driver bug I would think - or setup. If you've genuinely got the port
-> flow controlled then a request to set the termios after the I/O will wait
-> until a signal or carrier change (or indeed forever) quite correctly.
+The output of MCE banks ownership information on boot tend
+to be long on new processor which has many banks:
 
-I have finally tracked this one down.  But I'm not certain if there is
-anything we can do in software to make things better.
+  CPU 1 MCA banks SHD:0 SHD:1 CMCI:2 CMCI:3 CMCI:5 SHD:6 SHD:7 SHD:8 SHD:9 SHD:12 SHD:13 SHD:14 SHD:15 SHD:16 SHD:17 SHD:18 SHD:19 SHD:20 SHD:21
 
-Boiled down.  ftdi_chars_in_buffer is essentially priv->tx_outstanding_bytes.
-tx_outstanding_bytes is incremented when an urb request is sent and
-tx_outstanding_bytes is decremented when an urb request completes.
+This message can fill up the console output when the number
+of cpus is large.
 
-It turns out I have a moderately noisy usb line, and so I occasionally
-get messages like:
+This patch suppress this info message on boot, and introduce
+debug message in shorter format instead, like:
 
-ehci_hcd 0000:00:0a.1: detected XactErr len 0/7 retry 31
+  CPU 1 MCE banks map: ssCC PCss ssPP ssss ssss ss
 
-Which as best as I can tell result in the urb getting abandoned and
-neither completed nor canceled (because we have hit the maximum
-retry count and they still don't succeed).
+  where: s: shared, C: checked by cmci, P: checked by poll.
 
-Which appears to result in tx_outstanding_bytes getting stuck at
-some positive number.
+This patch still keep the info when ownership is updated.
+E.g. if a cpu take over the ownership from hot-removed cpu,
+both message will be shown:
 
+  CPU 1 MCE banks map updated: CMCI:6 CMCI:7 CMCI:10 CMCI:11
+  CPU 1 MCE banks map: ssCC PCCC ssPP ssCC ssss ss
 
-Is it possible to handle this more gracefully in software?
-Is it possible to handle this in a way that makes it clear there
-was a hardware error that we could not recover from.  A little
-debug level error doesn't usually even make it to the log.
+v2:
+  - stop changing the level of message on update
+  - change the number of banks message on boot to debug level
 
-Eric
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+
+  - Modified to not use pr_cont().
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c       |    6 +--
+ arch/x86/kernel/cpu/mcheck/mce_intel.c |   63 +++++++++++++++++++++++++++------
+ 2 files changed, 55 insertions(+), 14 deletions(-)
+
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1215,11 +1215,11 @@
+ 
+ 	b = cap & MCG_BANKCNT_MASK;
+ 	if (!banks)
+-		printk(KERN_INFO "mce: CPU supports %d MCE banks\n", b);
++		pr_debug("mce: CPU supports %d MCE banks\n", b);
+ 
+ 	if (b > MAX_NR_BANKS) {
+-		printk(KERN_WARNING
+-		       "MCE: Using only %u machine check banks out of %u\n",
++		pr_warning(
++			"MCE: Using only %u machine check banks out of %u\n",
+ 			MAX_NR_BANKS, b);
+ 		b = MAX_NR_BANKS;
+ 	}
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
+@@ -64,14 +64,50 @@
+ 	mce_notify_irq();
+ }
+ 
+-static void print_update(char *type, int *hdr, int num)
++#define	MCE_MSG_LEN	120
++
++#ifdef DEBUG_KERNEL
++static void print_banks_map(int banks, char *buf)
++{
++	int i, n;
++
++	n = snprintf(buf, MCE_MSG_LEN, "CPU %d MCE banks map:",
++							smp_processor_id());
++	for (i = 0; i < banks; i++) {
++		n += snprintf(&buf[n], MCE_MSG_LEN - n,
++			"%s%s", (i % 4) ? "" : " ",
++			test_bit(i, __get_cpu_var(mce_banks_owned)) ? "C" :
++			test_bit(i, __get_cpu_var(mce_poll_banks)) ? "P" : "s");
++	}
++
++	/* (indicate if message buffer overflowed) */
++	pr_debug("%s%s\n", buf, n < MCE_MSG_LEN ? "" : "..." );
++}
++
++static void print_update(char *type, int *hdr, int num, char *buf)
++{
++	int n = *hdr;
++
++	if (n == 0)
++		n = snprintf(buf, MCE_MSG_LEN,
++			"CPU %d MCE banks map updated:", smp_processor_id());
++
++	n += snprintf(&buf[n], MCE_MSG_LEN - n, " %s:%d", type, num);
++	*hdr = n;
++}
++
++#else /* !DEBUG_KERNEL */
++
++static inline void print_banks_map(int banks, char *buf)
++{
++}
++
++static inline void print_update(char *type, int *hdr, int num, char *buf)
+ {
+-	if (*hdr == 0)
+-		printk(KERN_INFO "CPU %d MCA banks", smp_processor_id());
+-	*hdr = 1;
+-	printk(KERN_CONT " %s:%d", type, num);
+ }
+ 
++#endif
++
+ /*
+  * Enable CMCI (Corrected Machine Check Interrupt) for available MCE banks
+  * on this CPU. Use the algorithm recommended in the SDM to discover shared
+@@ -83,8 +119,10 @@
+ 	unsigned long flags;
+ 	int hdr = 0;
+ 	int i;
++	char buf[MCE_MSG_LEN];
+ 
+ 	spin_lock_irqsave(&cmci_discover_lock, flags);
++
+ 	for (i = 0; i < banks; i++) {
+ 		u64 val;
+ 
+@@ -95,8 +133,8 @@
+ 
+ 		/* Already owned by someone else? */
+ 		if (val & CMCI_EN) {
+-			if (test_and_clear_bit(i, owned) || boot)
+-				print_update("SHD", &hdr, i);
++			if (test_and_clear_bit(i, owned) && !boot)
++				print_update("SHD", &hdr, i, buf);
+ 			__clear_bit(i, __get_cpu_var(mce_poll_banks));
+ 			continue;
+ 		}
+@@ -107,16 +145,19 @@
+ 
+ 		/* Did the enable bit stick? -- the bank supports CMCI */
+ 		if (val & CMCI_EN) {
+-			if (!test_and_set_bit(i, owned) || boot)
+-				print_update("CMCI", &hdr, i);
++			if (!test_and_set_bit(i, owned) && !boot)
++				print_update("CMCI", &hdr, i, buf);
+ 			__clear_bit(i, __get_cpu_var(mce_poll_banks));
+ 		} else {
+ 			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
+ 		}
+ 	}
+-	spin_unlock_irqrestore(&cmci_discover_lock, flags);
+ 	if (hdr)
+-		printk(KERN_CONT "\n");
++		pr_debug("%s%s\n", buf, hdr < MCE_MSG_LEN ? "" : "...");
++	if (hdr || boot)
++		print_banks_map(banks, buf);
++
++	spin_unlock_irqrestore(&cmci_discover_lock, flags);
+ }
+ 
+ /*
+
