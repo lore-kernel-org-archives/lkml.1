@@ -1,68 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZKQJDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZKQJDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbZKQJDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 04:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZKQJDe
+	id S1753726AbZKQJDs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZKQJDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 04:03:34 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55423 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbZKQJDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 04:03:32 -0500
-Subject: Re: [Bug #14355] USB serial regression after 2.6.31.1 with Huawei
- E169 GSM modem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Ben Efros <ben@pc-doctor.com>
-In-Reply-To: <200911170012.24914.rjw@sisk.pl>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
-	 <xXQGFmujPl.A.2k.LUdALB@chimera> <200911170005.27342.oliver@neukum.org>
-	 <200911170012.24914.rjw@sisk.pl>
+	Tue, 17 Nov 2009 04:03:45 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:29311 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753512AbZKQJDg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 04:03:36 -0500
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
+       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com
+In-Reply-To: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
+References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 20:02:47 +1100
-Message-ID: <1258448567.2140.564.camel@pasglop>
+Date: Tue, 17 Nov 2009 11:03:00 +0200
+Message-Id: <1258448580.27437.81.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Nov 2009 09:03:02.0577 (UTC) FILETIME=[C491F210:01CA6764]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 00:12 +0100, Rafael J. Wysocki wrote:
-> On Tuesday 17 November 2009, Oliver Neukum wrote:
-> > Am Montag, 16. November 2009 23:37:39 schrieb Rafael J. Wysocki:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.31.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14355
-> > > Subject		: USB serial regression after 2.6.31.1 with Huawei E169 GSM modem
-> > > Submitter	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Date		: 2009-10-10 03:07 (38 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=125513456327542&w=4
-> > 
-> > Benjamin has fixed this bug.
-> 
-> Thanks, closed.
-> 
+A pair of nit-picks.
 
-I asked Greg to re-open for a while to track other issues with
-various Huawei modems. However, it appears that most of them would
-be tricky to workaround in the kernel and are fixed by FW updates
-(though updating those modem FW can be non trivial).
+On Wed, 2009-11-11 at 21:13 -0500, David VomLehn wrote:
+> @@ -0,0 +1,293 @@
+> +/*
+> + *				panic-note.c
 
-I'll leave it open for a little while see how things go on the
-corresponding ubuntu bug, and if things settle, we can then close it,
-in the meantime, you can remove it from your list of regressions.
+No need to type file name there.
 
-Cheers,
-Ben.
+> + *
+> + * Allow a blob to be registered with the kernel that will be printed if
+> + * the kernel panics.
+> + *
+> + * Copyright (C) 2009  Cisco Systems, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+> + */
+> +
+> +/* Open issues:
+> + * Where should the panic_note file be created? It's almost like a sysctl,
+> + * but doesn't follow the same rules. When you write to a sysctl file, the
+> + * previous data is replaced. When you write to the panic_note file, you
+> + * can append to the end of the existing data.
+> + */
 
+Please, take a look at what is the kernel comment style at
+Documentation/CodingStyle. We use
+
+/*
+ * Multi-line
+ * comment
+ */
+
+style.
+
+> +
+> +#include <linux/semaphore.h>
+> +#include <linux/fs.h>
+> +#include <linux/proc_fs.h>
+> +#include <linux/module.h>
+> +#include <linux/uaccess.h>
+> +
+> +/* Maximum size, in bytes, allowed for the blob. Having this limit prevents
+> + * an inadvertant denial of service attack that might happen if someone with
+> + * root privileges was automatically generating this note and the generator
+> + * had an infinite loop. Perhaps this is more of a a denial of service
+> + * suicide. */
+> +#define PANIC_NOTE_SIZE		(PAGE_SIZE * 4)
+> +
+> +/*
+> + * struct panic_note_data - Information about the panic note
+> + * @n:		Number of bytes in the note
+> + * @p:		Pointer to the data in the note
+> + * @sem:	Semaphore controlling access to data in the note
+> + */
+> +struct panic_note_state {
+> +	size_t			n;
+> +	void			*p;
+> +	struct rw_semaphore	sem;
+> +};
+> +
+> +static struct panic_note_state panic_note_state = {
+> +	0, NULL, __RWSEM_INITIALIZER(panic_note_state.sem)
+> +};
+> +static const struct file_operations panic_note_fops;
+> +static struct inode_operations panic_note_iops;
+> +static struct proc_dir_entry *panic_note_entry;
+> +
+> +/*
+> + * panic_note_print - display the panic note
+> + * @priority:	Printk priority to use, e.g. KERN_EMERG
+> + */
+> +void panic_note_print()
+> +{
+> +	int i;
+> +	int linelen;
+int i, lineline is more compact.
+
+> +
+> +	/* We skip the semaphore stuff because we're in a panic situation and
+> +	 * the scheduler isn't available in case the semaphore is already owned
+> +	 * by someone else */
+> +	for (i = 0; i < panic_note_state.n; i += linelen) {
+> +		const char *p;
+> +		int remaining;
+> +		const char *nl;
+
+const char *p, *nl is more compact. And there are several more places.
+But this is matter of taste, really.
+
+> +
+> +		p = panic_note_state.p + i;
+> +		remaining = panic_note_state.n - i;
+> +
+> +		nl = memchr(p, '\n', remaining);
+> +
+> +		if (nl == NULL) {
+> +			linelen = remaining;
+> +			pr_emerg("%.*s\n", linelen, p);
+> +		} else {
+> +			linelen = nl - p + 1;
+> +			pr_emerg("%.*s", linelen, p);
+> +		}
+> +	}
+> +}
+> +
+> +/*
+> + * read_write_size - calculate the limited copy_to_user/copy_from_user count
+> + * @nbytes:	The number of bytes requested
+> + * @pos:	Offset, in bytes, into the file
+> + * @size:	Maximum I/O offset, in bytes. For a read, this is the actual
+> + *		number of bytes in the file, since you can't read past
+> + *		the end. Writes can be done after the number of bytes in the
+> + *		file, so this is the maximum possible file size, minus one.
+> + *
+> + * Returns the number of bytes to copy.
+> + */
+> +static ssize_t read_write_size(size_t nbytes, loff_t pos, size_t size)
+> +{
+> +	ssize_t retval;
+> +
+> +	if (pos >= size)
+> +		retval = 0;
+> +
+Unnecessary \n
+> +	else {
+> +		retval = size - pos;
+> +		if (retval > nbytes)
+> +			retval = nbytes;
+> +	}
+> +
+> +	return retval;
+> +}
+
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
