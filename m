@@ -1,164 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbZKQLoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZKQLpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbZKQLoz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZKQLoy
+	id S1755824AbZKQLpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbZKQLpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:44:54 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:48661 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755574AbZKQLox convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 06:45:10 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59457 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755012AbZKQLpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:44:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FjzbxVQNwl0W6hBY16FZ+E6wt2IoGwQzficarfmTwSPsQ6KD2HZ0jMkS1NASpf5/Rq
-         gi1fgHNQNWs4O5Yn+W13lETJXLfFTx3wcC025viZCz/HBzPhpKJW/NfzowveOghjVGjn
-         Z0HTZH6RjjQVNNFJTMhEofBP0BDqYU9a13a3g=
+	Tue, 17 Nov 2009 06:45:06 -0500
+Date: Tue, 17 Nov 2009 12:45:03 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Paul Parsons <lost.distance@yahoo.com>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz
+Subject: Re: [PATCH] hx4700: fix hx4700 touchscreen pressure values
+Message-ID: <20091117114502.GA1376@ucw.cz>
+References: <E1N9Lt7-0007mK-2t@relay07.plus.net>
 MIME-Version: 1.0
-In-Reply-To: <1258372718.31356.10.camel@wall-e>
-References: <1258372242.31356.1.camel@wall-e>
-	 <1258372718.31356.10.camel@wall-e>
-Date: Tue, 17 Nov 2009 17:14:57 +0530
-Message-ID: <b90c0690911170344l23d4ca11x5f3d6b04fee89aab@mail.gmail.com>
-Subject: Re: [PATCH 2/7] kfifo: move out spinlock
-From: Roger Quadros <quadros.roger@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1N9Lt7-0007mK-2t@relay07.plus.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefani,
+Hi!
 
- minor typo.
+> hx4700 touchscreen events were being dropped in ads7846_rx() because their pressure values consistently exceeded the platform maximum of 512; a sample of 256 pressure values were in the range 531 to 815. Doubling the platform maximum to 1024 allows hx4700 touchscreen events to pass the test.
+> 
+> Signed-off-by: Paul Parsons <lost.distance@yahoo.com>
 
-> diff -u -N -r kfifo1/include/linux/kfifo.h kfifo2/include/linux/kfifo.h
-> --- kfifo1/include/linux/kfifo.h        2009-10-19 20:39:24.000000000 +0200
-> +++ kfifo2/include/linux/kfifo.h        2009-10-19 20:58:34.000000000 +0200
-> @@ -30,13 +30,12 @@
->        unsigned int size;      /* the size of the allocated buffer */
->        unsigned int in;        /* data is added at offset (in % size) */
->        unsigned int out;       /* data is extracted from off. (out % size) */
-> -       spinlock_t *lock;       /* protects concurrent modifications */
->  };
->
->  extern void kfifo_init(struct kfifo *fifo, unsigned char *buffer,
-> -                       unsigned int size, spinlock_t *lock);
-> +                       unsigned int size);
->  extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
-> -                       gfp_t gfp_mask, spinlock_t *lock);
-> +                       gfp_t gfp_mask);
->  extern void kfifo_free(struct kfifo *fifo);
->  extern unsigned int __kfifo_put(struct kfifo *fifo,
->                                const unsigned char *buffer, unsigned int len);
-> @@ -58,58 +57,67 @@
->  */
->  static inline void kfifo_reset(struct kfifo *fifo)
->  {
-> -       unsigned long flags;
-> -
-> -       spin_lock_irqsave(fifo->lock, flags);
-> -
->        __kfifo_reset(fifo);
-> +}
-> +
-> +/**
-> + * __kfifo_len - returns the number of bytes available in the FIFO
-> + * @fifo: the fifo to be used.
-> + */
-> +static inline unsigned int __kfifo_len(struct kfifo *fifo)
-> +{
-> +       register unsigned int   out;
->
-> -       spin_unlock_irqrestore(fifo->lock, flags);
-> +       out = fifo->out;
-> +       smp_rmb();
-> +       return fifo->in - out;
->  }
->
->  /**
-> - * kfifo_put - puts some data into the FIFO
-> + * kfifo_put_locked - puts some data into the FIFO using a spinlock for locking
->  * @fifo: the fifo to be used.
-> - * @buffer: the data to be added.
-> + * @from: the data to be added.
->  * @len: the length of the data to be added.
+Does pressure actually work as expected -- that is not inverted?
+Because I need this patch on spitz...  but it may break your
+machine...
 
-should be @n:
+Binary files linux-rc/drivers/input.ofic/built-in.o and linux-rc/drivers/input/built-in.o differ
+diff -ur linux-rc/drivers/input.ofic/touchscreen/ads7846.c linux-rc/drivers/input/touchscreen/ads7846.c
+--- linux-rc/drivers/input.ofic/touchscreen/ads7846.c	2009-10-06 13:49:56.000000000 +0200
++++ linux-rc/drivers/input/touchscreen/ads7846.c	2009-10-06 21:18:25.000000000 +0200
+@@ -29,10 +29,14 @@
+ #include <linux/spi/ads7846.h>
+ #include <asm/irq.h>
+ 
++#ifndef VERBOSE
++#undef dev_dbg
++#define dev_dbg(...) do {} while(0)
++#endif
+ 
+ /*
+  * This code has been heavily tested on a Nokia 770, and lightly
+- * tested on other ads7846 devices (OSK/Mistral, Lubbock).
++ * tested on other ads7846 devices (OSK/Mistral, Lubbock, Spitz).
+  * TSC2046 is just newer ads7846 silicon.
+  * Support for ads7843 tested on Atmel at91sam926x-EK.
+  * Support for ads7845 has only been stubbed in.
+@@ -43,7 +47,7 @@
+  * have to maintain our own SW IRQ disabled status. This should be
+  * removed as soon as the affected platform's IRQ handling is fixed.
+  *
+- * app note sbaa036 talks in more detail about accurate sampling...
++ * App note sbaa036 talks in more detail about accurate sampling...
+  * that ought to help in situations like LCDs inducing noise (which
+  * can also be helped by using synch signals) and more generally.
+  * This driver tries to utilize the measures described in the app
+@@ -566,10 +570,8 @@
+ 	 * once more the measurement
+ 	 */
+ 	if (packet->tc.ignore || Rt > ts->pressure_max) {
+-#ifdef VERBOSE
+-		pr_debug("%s: ignored %d pressure %d\n",
+-			dev_name(&ts->spi->dev), packet->tc.ignore, Rt);
+-#endif
++		dev_dbg(&ts->spi->dev, "ignored %d pressure %d\n",
++			packet->tc.ignore, Rt);
+ 		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
+ 			      HRTIMER_MODE_REL);
+ 		return;
+@@ -584,10 +586,11 @@
+ 			Rt = 0;
+ 	}
+ 
+-	/* NOTE: We can't rely on the pressure to determine the pen down
+-	 * state, even this controller has a pressure sensor.  The pressure
+-	 * value can fluctuate for quite a while after lifting the pen and
+-	 * in some cases may not even settle at the expected value.
++	/* NOTE: We can't rely on the pressure to determine the pen
++	 * down state, not even if this controller has a pressure
++	 * sensor.  The pressure value can fluctuate for quite a while
++	 * after lifting the pen and in some cases may not even settle
++	 * at the expected value.
+ 	 *
+ 	 * The only safe way to check for the pen up condition is in the
+ 	 * timer by reading the pen signal state (it's a GPIO _and_ IRQ).
+@@ -598,9 +601,7 @@
+ 		if (!ts->pendown) {
+ 			input_report_key(input, BTN_TOUCH, 1);
+ 			ts->pendown = 1;
+-#ifdef VERBOSE
+ 			dev_dbg(&ts->spi->dev, "DOWN\n");
+-#endif
+ 		}
+ 
+ 		if (ts->swap_xy)
+@@ -608,12 +609,10 @@
+ 
+ 		input_report_abs(input, ABS_X, x);
+ 		input_report_abs(input, ABS_Y, y);
+-		input_report_abs(input, ABS_PRESSURE, Rt);
++		input_report_abs(input, ABS_PRESSURE, ts->pressure_max-Rt);
+ 
+ 		input_sync(input);
+-#ifdef VERBOSE
+ 		dev_dbg(&ts->spi->dev, "%4d/%4d/%4d\n", x, y, Rt);
+-#endif
+ 	}
+ 
+ 	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
+@@ -723,9 +722,7 @@
+ 			input_sync(input);
+ 
+ 			ts->pendown = 0;
+-#ifdef VERBOSE
+ 			dev_dbg(&ts->spi->dev, "UP\n");
+-#endif
+ 		}
+ 
+ 		/* measurement cycle ended */
+Binary files linux-rc/drivers/input.ofic/touchscreen/ads7846.o and linux-rc/drivers/input/touchscreen/ads7846.o differ
+Binary files linux-rc/drivers/input.ofic/touchscreen/built-in.o and linux-rc/drivers/input/touchscreen/built-in.o differ
 
-> + * @lock: pointer to the spinlock to use for locking.
->  *
-> - * This function copies at most @len bytes from the @buffer into
-> + * This function copies at most @len bytes from the @from buffer into
->  * the FIFO depending on the free space, and returns the number of
->  * bytes copied.
->  */
-> -static inline unsigned int kfifo_put(struct kfifo *fifo,
-> -                               const unsigned char *buffer, unsigned int len)
-> +static inline __must_check unsigned int kfifo_put_locked(struct kfifo *fifo,
-> +               const unsigned char *from, unsigned int n, spinlock_t *lock)
->  {
->        unsigned long flags;
->        unsigned int ret;
->
-> -       spin_lock_irqsave(fifo->lock, flags);
-> +       spin_lock_irqsave(lock, flags);
->
-> -       ret = __kfifo_put(fifo, buffer, len);
-> +       ret = __kfifo_put(fifo, from, n);
->
-> -       spin_unlock_irqrestore(fifo->lock, flags);
-> +       spin_unlock_irqrestore(lock, flags);
->
->        return ret;
->  }
->
->  /**
-> - * kfifo_get - gets some data from the FIFO
-> + * kfifo_get_locked - gets some data from the FIFO using a spinlock for locking
->  * @fifo: the fifo to be used.
-> - * @buffer: where the data must be copied.
-> + * @to: where the data must be copied.
->  * @len: the size of the destination buffer.
-
-should be @n
-
-> + * @lock: pointer to the spinlock to use for locking.
->  *
->  * This function copies at most @len bytes from the FIFO into the
-> - * @buffer and returns the number of copied bytes.
-> + * @to buffer and returns the number of copied bytes.
->  */
-> -static inline unsigned int kfifo_get(struct kfifo *fifo,
-> -                                    unsigned char *buffer, unsigned int len)
-> +static inline __must_check unsigned int kfifo_get_locked(struct kfifo *fifo,
-> +       unsigned char *to, unsigned int n, spinlock_t *lock)
->  {
->        unsigned long flags;
->        unsigned int ret;
->
-> -       spin_lock_irqsave(fifo->lock, flags);
-> +       spin_lock_irqsave(lock, flags);
->
-> -       ret = __kfifo_get(fifo, buffer, len);
-> +       ret = __kfifo_get(fifo, to, n);
->
->        /*
->         * optimization: if the FIFO is empty, set the indices to 0
-> @@ -118,36 +126,18 @@
->        if (fifo->in == fifo->out)
->                fifo->in = fifo->out = 0;
->
-> -       spin_unlock_irqrestore(fifo->lock, flags);
-> +       spin_unlock_irqrestore(lock, flags);
->
->        return ret;
->  }
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
