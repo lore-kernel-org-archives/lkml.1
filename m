@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZKQCcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZKQCrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbZKQCcX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 21:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZKQCcX
+	id S1753230AbZKQCrF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 21:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZKQCrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 21:32:23 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41894 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752015AbZKQCcW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 21:32:22 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAMOYAUtGGN1W/2dsb2JhbACBS9YdhDwE
-Date: Mon, 16 Nov 2009 21:32:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org, pierre-marc.fournier@polymtl.ca,
-       william.bourque@polymtl.ca
-Subject: [RELEASE] LTTng 0.171 and LTTV 0.12.21 (trace format 2.4)
-Message-ID: <20091117023224.GA20305@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Nov 2009 21:47:04 -0500
+Received: from THUNK.ORG ([69.25.196.29]:57666 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752093AbZKQCrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 21:47:03 -0500
+Date: Mon, 16 Nov 2009 21:43:18 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Subject: Re: [Bug #14620] WARNING: at mm/page_alloc.c:1805
+	__alloc_pages_nodemask
+Message-ID: <20091117024318.GC23066@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	=?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.SJG.7SdALB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 21:23:29 up 90 days, 13:13,  4 users,  load average: 0.98, 0.46,
-	0.24
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <xXQGFmujPl.A.SJG.7SdALB@chimera>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Nov 16, 2009 at 11:37:47PM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14620
+> Subject		: WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask
+> Submitter	: Rogério Brito <rbrito@ime.usp.br>
+> Date		: 2009-11-06 23:10 (11 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125754907413892&w=4
 
-I just released LTTng 0.171 and LTTV 0.12.21, which move the trace
-format to 2.4 (therefore not compatible with older versions).
+This isn't technically a regression, since the warning is simply
+complaining about something that apparently ext4 has been doing for a
+long time, which is that it allocates some very large order data
+buffers.  So the change referenced simply printed a warning message
+that complained about the fact.
 
-The reason:
+The actual problem will be fixed in 2.6.32, as we no longer allocate
+the big data buffers at mount time.
 
-"Do not limit alignment on architecture size anymore, because uint64_t
-types are aligned on 64-bit even on 32-bit archs. It's a waste of space
-for 32-bit architectures, but makes our format compatible with gcc."
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+						- Ted
