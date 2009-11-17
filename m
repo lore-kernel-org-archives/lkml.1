@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZKQVLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZKQVRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbZKQVLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 16:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZKQVLl
+	id S1753894AbZKQVRb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 16:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZKQVRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 16:11:41 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:55260 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbZKQVLk convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 16:17:30 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:50311 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752921AbZKQVR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 16:11:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YBR9RCzGIAsBTa6Yt7hwt3Kw9njz8JfTVcy/0bpEANImVQnAeuLaWOgdn2iM2x7T+C
-         w9RlYIXqe5Q94Icx5SBBlu7W070AQbCsL5AzzJ0u4ENtT9hFa8DvLXE/ynClFDA7oYWA
-         iyZLmKlmH1OcmFbp8Tufy/5WClyC3SWec8diI=
-MIME-Version: 1.0
-In-Reply-To: <4B030799.9020402@zytor.com>
-References: <20091117191752.164451000@alcatraz.americas.sgi.com>
-	 <20091117191757.651569000@alcatraz.americas.sgi.com>
-	 <86802c440911171210x4780c08cg3b3260afd5d2bc5d@mail.gmail.com>
-	 <4B030799.9020402@zytor.com>
-Date: Tue, 17 Nov 2009 13:11:46 -0800
-Message-ID: <86802c440911171311s1313abf5h4059422b1214ec75@mail.gmail.com>
-Subject: Re: [PATCH 1/5] x86: Limit the number of processor bootup messages
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Nov 2009 16:17:29 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av8EAAafAktGGN1W/2dsb2JhbACBTdV8hDsE
+Date: Tue, 17 Nov 2009 16:17:34 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: [RELEASE] LTTng 0.173, ltt-control 0.76, lttv 0.12.22, trace
+	format 2.5
+Message-ID: <20091117211734.GA27103@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 16:13:14 up 91 days,  8:02,  4 users,  load average: 0.44, 0.28,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 12:29 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 11/17/2009 12:10 PM, Yinghai Lu wrote:
->>>
->>> The following lines have been removed:
->>>
->>>        CPU: Physical Processor ID:
->>>        CPU: Processor Core ID:
->>>        CPU %d/0x%x -> Node %d
->>
->> please don't.
->>
->
-> Why not?
->
-> Or, more formally: please state the rationale for keeping them.
->
-at least one distribution: SLES 11 mess it up when BSP is from socket
-1 instead of socket0
+LTTng 0.173 add support for variable-sized subbuffer transfers. Useful
+for network trace streaming with a periodic timer to flush the buffers
+periodically: only the actual payload (aligned to the next page) will be
+sent.
 
-and above message does show kernel think BSP still from socket0, and
-other cores in that package are from socket1.
+LTTV now uses a block index to map the beginning of block offsets. It
+does not require all blocks to have the same size anymore.
+These changed required to push the trace format version to 2.5.
 
-YH
+As always, all the goodies are available at http://lttng.org.
+
+Thanks,
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
