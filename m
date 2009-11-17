@@ -1,51 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZKQLat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbZKQLbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbZKQLat (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:30:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbZKQLat
+	id S1755004AbZKQLbp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZKQLbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:30:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59584 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754442AbZKQLas (ORCPT
+	Tue, 17 Nov 2009 06:31:44 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33920 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbZKQLbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:30:48 -0500
-Subject: Re: [PATCH 5/7 v6] hw-breakpoints: Rewrite the hw-breakpoints
- layer on top of perf events
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <1257694141-5670-6-git-send-email-fweisbec@gmail.com>
-References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com>
-	 <1257694141-5670-6-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 12:30:43 +0100
-Message-ID: <1258457443.7816.188.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 06:31:43 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Rodolfo Giometti <giometti@linux.it>, raffaele.recalcati@bticino.it
+Date: Tue, 17 Nov 2009 12:31:09 +0100
+Message-Id: <1258457469-16145-1-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 192.168.32.37
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH] gpio: show IRQ settings even if GPIO direction is "output"
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-08 at 16:28 +0100, Frederic Weisbecker wrote:
-> @@ -643,6 +662,8 @@ struct perf_event {
->  
->         perf_callback_t                 callback;
->  
-> +       perf_callback_t                 event_callback;
-> +
->  #endif /* CONFIG_PERF_EVENTS */
->  }; 
+Some architectures (as PXA 27x for example) may define GPIO IRQ lines
+as outputs since internal circuitry supports such configuration.
 
-And here you add another one.. which is 100% unused in this patch..
+This patch simply detects if a GPIO is a IRQ line or not just looking
+for IRQ line number, "desc" and "desc->action" fields.
+
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+Cc: raffaele.recalcati@bticino.it
+---
+ drivers/gpio/gpiolib.c |   82 ++++++++++++++++++++++++------------------------
+ 1 files changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 50de0f5..298b66f 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1381,6 +1381,8 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+ 	unsigned		gpio = chip->base;
+ 	struct gpio_desc	*gdesc = &gpio_desc[gpio];
+ 	int			is_out;
++	int			irq;
++	struct irq_desc		*desc;
+ 
+ 	for (i = 0; i < chip->ngpio; i++, gpio++, gdesc++) {
+ 		if (!test_bit(FLAG_REQUESTED, &gdesc->flags))
+@@ -1394,48 +1396,46 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+ 				? (chip->get(chip, i) ? "hi" : "lo")
+ 				: "?  ");
+ 
+-		if (!is_out) {
+-			int		irq = gpio_to_irq(gpio);
+-			struct irq_desc	*desc = irq_to_desc(irq);
+-
+-			/* This races with request_irq(), set_irq_type(),
+-			 * and set_irq_wake() ... but those are "rare".
+-			 *
+-			 * More significantly, trigger type flags aren't
+-			 * currently maintained by genirq.
+-			 */
+-			if (irq >= 0 && desc->action) {
+-				char *trigger;
+-
+-				switch (desc->status & IRQ_TYPE_SENSE_MASK) {
+-				case IRQ_TYPE_NONE:
+-					trigger = "(default)";
+-					break;
+-				case IRQ_TYPE_EDGE_FALLING:
+-					trigger = "edge-falling";
+-					break;
+-				case IRQ_TYPE_EDGE_RISING:
+-					trigger = "edge-rising";
+-					break;
+-				case IRQ_TYPE_EDGE_BOTH:
+-					trigger = "edge-both";
+-					break;
+-				case IRQ_TYPE_LEVEL_HIGH:
+-					trigger = "level-high";
+-					break;
+-				case IRQ_TYPE_LEVEL_LOW:
+-					trigger = "level-low";
+-					break;
+-				default:
+-					trigger = "?trigger?";
+-					break;
+-				}
+-
+-				seq_printf(s, " irq-%d %s%s",
+-					irq, trigger,
+-					(desc->status & IRQ_WAKEUP)
+-						? " wakeup" : "");
++		irq = gpio_to_irq(gpio);
++		desc = irq_to_desc(irq);
++
++		/* This races with request_irq(), set_irq_type(),
++		 * and set_irq_wake() ... but those are "rare".
++		 *
++		 * More significantly, trigger type flags aren't
++		 * currently maintained by genirq.
++		 */
++		if (irq >= 0 && desc && desc->action) {
++			char *trigger;
++
++			switch (desc->status & IRQ_TYPE_SENSE_MASK) {
++			case IRQ_TYPE_NONE:
++				trigger = "(default)";
++				break;
++			case IRQ_TYPE_EDGE_FALLING:
++				trigger = "edge-falling";
++				break;
++			case IRQ_TYPE_EDGE_RISING:
++				trigger = "edge-rising";
++				break;
++			case IRQ_TYPE_EDGE_BOTH:
++				trigger = "edge-both";
++				break;
++			case IRQ_TYPE_LEVEL_HIGH:
++				trigger = "level-high";
++				break;
++			case IRQ_TYPE_LEVEL_LOW:
++				trigger = "level-low";
++				break;
++			default:
++				trigger = "?trigger?";
++				break;
+ 			}
++
++			seq_printf(s, " irq-%d %s%s",
++				irq, trigger,
++				(desc->status & IRQ_WAKEUP)
++					? " wakeup" : "");
+ 		}
+ 
+ 		seq_printf(s, "\n");
+-- 
+1.6.3.3
 
