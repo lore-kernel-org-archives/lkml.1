@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZKQXVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZKQXZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753707AbZKQXVz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 18:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKQXVy
+	id S1756032AbZKQXZA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 18:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZKQXY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 18:21:54 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:34872 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbZKQXVy (ORCPT
+	Tue, 17 Nov 2009 18:24:58 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:49963 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbZKQXY5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 18:21:54 -0500
-Date: Wed, 18 Nov 2009 00:22:05 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-mips@linux-mips.org
-Subject: Re: [patch 08/13] mips: Fixup last users of irq_chip->typename
-Message-ID: <20091117232205.GB1866@linux-mips.org>
-References: <20091117224852.846805939@linutronix.de> <20091117224916.642102675@linutronix.de> <20091117230544.GA1866@linux-mips.org> <alpine.LFD.2.00.0911180007340.24119@localhost.localdomain>
+	Tue, 17 Nov 2009 18:24:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=LnhJj6pp8lw0VKsmmA00Ypj+YV7o8jamhLVWWI24jxv1ofZY6Ha8ELg9RTNBkXUk1a
+         0g0XaiPk45Y5vZ55ME/IHFImTxEldcKZmpBhzkcwAFxDvbpyFYRyzBwiL5OB/leeJwsl
+         kCrPPnIHSdcOH0+vtxcSZxJ3n27zk4PY5tv0Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911180007340.24119@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091117141314.0238a49b.akpm@linux-foundation.org>
+References: <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> 
+	<7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> 
+	<1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> 
+	<6207.1255706090@redhat.com> <23382.1255707790@redhat.com> 
+	<1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> <20091117141314.0238a49b.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 17 Nov 2009 18:24:43 -0500
+Message-ID: <8bd0f97a0911171524r35783fa3o393c9584cc8f6634@mail.gmail.com>
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Paris <eparis@redhat.com>, David Howells <dhowells@redhat.com>,
+       graff.yang@gmail.com, linux-kernel@vger.kernel.org,
+       gyang@blackfin.uclinux.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 12:09:19AM +0100, Thomas Gleixner wrote:
+On Tue, Nov 17, 2009 at 17:13, Andrew Morton wrote:
+> On Fri, 16 Oct 2009 11:55:29 -0400 Eric Paris wrote:
+>> On Fri, 2009-10-16 at 16:43 +0100, David Howells wrote:
+>> > Eric Paris <eparis@redhat.com> wrote:
+>> > > That would still call cap_file_mmap() and wouldn't solve your problem.
+>> >
+>> > Hmmm...  I guess I don't see the problem occur because I always run the
+>> > programs as root.
+>>
+>> most likely yes, your processes are going to have CAP_SYS_RAWIO and will
+>> happily sail through the cap_file_mmap().
+>>
+>> > I would guess that cap_file_mmap() and selinux_file_mmap() are, perhaps, too
+>> > strict.  The hint shouldn't be rejected unless MAP_FIXED is also set, surely,
+>> > but should rather be revised upwards.
+>>
+>> On the mmu side we don't check until the kernel has turned the hint into
+>> a real address.  Which is apparently different then where the hook was
+>> originally placed in the nommu side.
+>>
+>> > Certainly, addr==NULL and !MAP_FIXED is a reasonable case to permit, even in
+>> > tightly secured MMU and SELinux mode...  After all, the manual page says:
+>> >
+>> >     If addr is NULL, then the kernel chooses the address at which to create
+>> >     the mapping; this is the most portable method of creating  a  new  map-
+>> >     ping.
+>>
+>> I agree, I think the choices are
+>>
+>> A) agree that we just shouldn't check the address on nommu
+>>    A1) change kconfig to not allow the setting of these
+>>       (easy to do for the LSM check, but not easy as it stands today
+>>        for the cap_file_mmap() check)
+>>    A2) change the addr_only to be a flags which indicate not to check
+>>       (my original suggestion)
+>>    A3) push the config_nommu down into the security code
+>>       (your patch)
+>> B) actually check the address, which requires moving the hook to a
+>> location where it has been resolved.
+>>       (graff yang's patch)
+>>
+>> I'll leave it up to you to determine which you like the best since you
+>> know the implications of nommu.
+>
+> So what's the status of this issue now?  Should I merge the below into
+> 2.6.32?
 
-> > > The typename member of struct irq_chip was kept for migration purposes
-> > > and is obsolete since more than 2 years. Fix up the leftovers.
-> > > 
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > > Cc: Ralf Baechle <ralf@linux-mips.org>
-> > > Cc: linux-mips@linux-mips.org
-> > 
-> > Looks good.  I assume you want to merge the whole series via tip, so
-> > 
-> > Acked-by: Ralf Baechle <ralf@linux-mips.org>
-> 
-> You can pick it up as well. The patches are independent, just the last
-> one which removes typename from irq_chip depends on the arch patches
-> being merged. Either way works fine.
-
-Okay, queued for 2.6.33 then.
-
-Thanks!
-
-  Ralf
+i think the patch as posted is the way to go, at least for now, and
+should be merged.  it certainly works for us under Blackfin going by
+Graff's tests.  but obviously this is ultimately David's call.
+-mike
