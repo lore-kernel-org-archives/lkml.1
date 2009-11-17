@@ -1,78 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZKQMH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbZKQMHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbZKQMH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZKQMH3
+	id S1756094AbZKQMHy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZKQMHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:07:29 -0500
-Received: from mail1.radix.net ([207.192.128.31]:42014 "EHLO mail1.radix.net"
+	Tue, 17 Nov 2009 07:07:42 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:35927 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754748AbZKQMH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:07:28 -0500
-Subject: Re: [PATCH 17/21] workqueue: simple reimplementation of
- SINGLE_THREAD workqueue
-From: Andy Walls <awalls@radix.net>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, jens.axboe@oracle.com,
-       rusty@rustcorp.com.au, cl@linux-foundation.org, dhowells@redhat.com,
-       arjan@linux.intel.com, torvalds@linux-foundation.org, avi@redhat.com,
-       peterz@infradead.org, andi@firstfloor.org, fweisbec@gmail.com
-In-Reply-To: <4B023340.90004@kernel.org>
-References: <1258391726-30264-1-git-send-email-tj@kernel.org>
-	 <1258391726-30264-18-git-send-email-tj@kernel.org>
-	 <1258418872.4096.28.camel@palomino.walls.org>  <4B023340.90004@kernel.org>
-Content-Type: text/plain
-Date: Tue, 17 Nov 2009 07:05:25 -0500
-Message-Id: <1258459525.3214.17.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1755092AbZKQMHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 07:07:37 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7 without CONFIG_XICS set
+Date: Tue, 17 Nov 2009 12:07:35 +0000
+Message-Id: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 14:23 +0900, Tejun Heo wrote:
-> Hello,
-> 
-> 11/17/2009 09:47 AM, Andy Walls wrote:
-> > An important property of the single threaded workqueue, upon which the
-> > cx18 driver relies, is that work objects will be processed strictly in
-> > the order in which they were queued.  The cx18 driver has a pool of
-> > "work orders" and multiple active work orders can be queued up on the
-> > workqueue especially if multiple streams are active.  If these work
-> > orders were to be processed out of order, video artifacts would result
-> > in video display applications.
-> 
-> That's an interesting use of single thread workqueue.  Most of single
-> thread workqueues seem to be made single thread just to save number of
-> threads.  Some seem to depend on single thread of execution but I
-> never knew there are ones which depend on the exact execution order.
-> Do you think that usage is wide-spread?
+KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but if
+it's not set, there are numerous small build errors. This is a small series
+of patches to allow CONFIG_XICS to be unset in the config.
 
-I doubt it.
+XICS appears to be some sort of interrupt controller but I'm not sure how
+common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
+universally requires CONFIG_XICS, the better path might be to force it to
+be set.
 
-Most that I have seen use the singlethreaded workqueue object with a
-queue depth of essentially 1 for syncronization - as you have noted.
-
-
->   Implementing strict ordering
-> shouldn't be too difficult but I can't help but feeling that such
-> assumption is abuse of implementation detail.
-
-Hmmm, does not the "queue" in workqueue mean "FIFO"?
-
-If not for strict ordering, why else would a driver absolutely need a
-singlethreaded workqueue object?  It seems to me the strict ording is
-the driving requirement for a singlethreaded workqueue at all.  Your
-patch series indicates to me that the performance and synchronization
-use cases are not driving requirements for a singlethreaded workqueue.
-
-Thanks for your consideration.
-
-Regards,
-Andy
-
-> Thanks.
-
-
+Testing was building with make oldconfig a configuration from 2.6.31 on
+a PPC970.
