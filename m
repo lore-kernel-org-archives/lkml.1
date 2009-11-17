@@ -1,57 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZKQJdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbZKQJcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbZKQJdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 04:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZKQJdb
+	id S1753777AbZKQJcA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZKQJcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 04:33:31 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:58310 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbZKQJda (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 04:33:30 -0500
-Date: Tue, 17 Nov 2009 10:33:30 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: myuboot@fastmail.fm
-Cc: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
-Subject: Re: problem bring up initramfs and busybox
-Message-ID: <20091117093330.GA24000@linux-mips.org>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com> <4AD906D8.3020404@caviumnetworks.com> <1257898975.30125.1344591929@webmail.messagingengine.com> <4AFA6B7F.10404@walsimou.com> <1258417281.1921.1345554581@webmail.messagingengine.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258417281.1921.1345554581@webmail.messagingengine.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 17 Nov 2009 04:32:00 -0500
+Received: from mga09.intel.com ([134.134.136.24]:21249 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbZKQJb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 04:31:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,757,1249282800"; 
+   d="scan'208";a="467991225"
+Subject: Re: [MM] Make mm counters per cpu instead of atomic
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <1258443101.11321.33.camel@localhost>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
+	 <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 17 Nov 2009 17:34:25 +0800
+Message-Id: <1258450465.11321.36.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 06:21:21PM -0600, myuboot@fastmail.fm wrote:
-
-> I have been struggling to bring up a MIPS 32 board with busybox with or
-> without initramfs.
-> The kernel stucks there without the shell coming up.
+On Tue, 2009-11-17 at 15:31 +0800, Zhang, Yanmin wrote:
+> On Tue, 2009-11-17 at 14:48 +0800, Zhang, Yanmin wrote:
+> > On Wed, 2009-11-04 at 14:14 -0500, Christoph Lameter wrote:
+> > > From: Christoph Lameter <cl@linux-foundation.org>
+> > > Subject: Make mm counters per cpu
+> > > 
+> > > Changing the mm counters to per cpu counters is possible after the introduction
+> > > of the generic per cpu operations (currently in percpu and -next).
+> > > 
+> > > With that the contention on the counters in mm_struct can be avoided. The
+> > > USE_SPLIT_PTLOCKS case distinction can go away. Larger SMP systems do not
+> > > need to perform atomic updates to mm counters anymore. Various code paths
+> > > can be simplified since per cpu counter updates are fast and batching
+> > > of counter updates is no longer needed.
+> > > 
+> > > One price to pay for these improvements is the need to scan over all percpu
+> > > counters when the actual count values are needed.
+> > > 
+> > > Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> > > 
+> > > ---
+> > >  fs/proc/task_mmu.c       |   14 +++++++++-
+> > >  include/linux/mm_types.h |   16 ++++--------
+> > >  include/linux/sched.h    |   61 ++++++++++++++++++++---------------------------
+> > >  kernel/fork.c            |   25 ++++++++++++++-----
+> > >  mm/filemap_xip.c         |    2 -
+> > >  mm/fremap.c              |    2 -
+> > >  mm/init-mm.c             |    3 ++
+> > >  mm/memory.c              |   20 +++++++--------
+> > >  mm/rmap.c                |   10 +++----
+> > >  mm/swapfile.c            |    2 -
+> > >  10 files changed, 84 insertions(+), 71 deletions(-)
+> > > 
+> > > Index: linux-2.6/include/linux/mm_types.h
+> > > ===================================================================
+> > > --- linux-2.6.orig/include/linux/mm_types.h	2009-11-04 13:08:33.000000000 -0600
+> > > +++ linux-2.6/include/linux/mm_types.h	2009-11-04 13:13:42.000000000 -0600
+> > > @@ -24,11 +24,10 @@ struct address_space;
+> > 
+> > > Index: linux-2.6/kernel/fork.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/kernel/fork.c	2009-11-04 13:08:33.000000000 -0600
+> > > +++ linux-2.6/kernel/fork.c	2009-11-04 13:14:19.000000000 -0600
+> > > @@ -444,6 +444,8 @@ static void mm_init_aio(struct mm_struct
+> > > 
+> > >  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+> > >  {
+> > > +	int cpu;
+> > > +
+> > >  	atomic_set(&mm->mm_users, 1);
+> > >  	atomic_set(&mm->mm_count, 1);
+> > >  	init_rwsem(&mm->mmap_sem);
+> > > @@ -452,8 +454,11 @@ static struct mm_struct * mm_init(struct
+> > >  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
+> > >  	mm->core_state = NULL;
+> > >  	mm->nr_ptes = 0;
+> > > -	set_mm_counter(mm, file_rss, 0);
+> > > -	set_mm_counter(mm, anon_rss, 0);
+> > > +	for_each_possible_cpu(cpu) {
+> > > +		struct mm_counter *m;
+> > > +
+> > > +		memset(m, sizeof(struct mm_counter), 0);
+> > Above memset is wrong.
+> > 1) m isn't initiated;
+> > 2) It seems the 2nd and the 3rd parameters should be interchanged.
+> Changing it to below fixes the command hang issue.
 > 
-> [    1.153000] nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-> [    1.161000] ip_tables: (C) 2000-2006 Netfilter Core Team
-> [    1.167000] TCP cubic registered
-> [    1.170000] NET: Registered protocol family 17
-> [   25.971000] Freeing unused kernel memory: 1032k freed
-> [   39.969000] Algorithmics/MIPS FPU Emulator v1.5
+>         for_each_possible_cpu(cpu) {
+>                 struct mm_counter *m = per_cpu(mm->rss->readers, cpu);
 > 
-> 
-> What I tried here is to use initramfs with statically linked busybox.
-> The initramfs seems to be up, and runs the commands in the /init one by
-> one, and then it goes to a inifite loop in r4k_wait at
-> arch/mips/kernel/genex.S.
+>                 memset(m, 0, sizeof(struct mm_counter));
+>         }
 
-r4k_wait is called by the idle loop.  Which means the kernel has no process
-to run so runs the idle loop.  This might be because there is no other
-process left running or because all processes are waiting for I/O for
-example.  So it's not uncommon that even busy systems ocasionally briefly
-run the idle loop.  In other words, seeing the processor executing
-r4k_wait does not necessarily mean something went wrong.  In this case -
-also along with the other information you've provieded it's not obvious
-what has gone wrong.
+Sorry. I was too optimistic and used another kernel to boot.
+The right change above should be:
+ struct mm_counter *m = per_cpu_ptr(mm->rss, cpu);
 
-  Ralf
+Compiler doesn't report error/warning when I use any member.
+
+With the change, command 'make oldconfig' and a boot command still
+hangs.
+
+Yanmin
+
+
