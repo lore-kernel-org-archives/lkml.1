@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZKQNLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZKQNLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbZKQNLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 08:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKQNK7
+	id S1752411AbZKQNLj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 08:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZKQNLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 08:10:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21395 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZKQNK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 08:10:59 -0500
-Date: Tue, 17 Nov 2009 14:08:52 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Spencer Candland <spencer@bluehost.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
-Message-ID: <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
-References: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com> <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B01A8DB.6090002@bluehost.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 17 Nov 2009 08:11:38 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:49738 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbZKQNLh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 08:11:37 -0500
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Marco Stornelli <marco.stornelli@gmail.com>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David VomLehn <dvomlehn@cisco.com>, linux-embedded@vger.kernel.org,
+       akpm@linux-foundation.org, dwm2@infradead.org,
+       linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com
+In-Reply-To: <2ea1731b0911170445x13225c19w797388d2211de2d9@mail.gmail.com>
+References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>
+	 <4AFC4D31.2000101@gmail.com>
+	 <20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>
+	 <20091113091031.3f6d4bba@marrow.netinsight.se>
+	 <1258112748.21596.1227.camel@localhost> <4AFE6A14.4010507@gmail.com>
+	 <1258447997.27437.76.camel@localhost>
+	 <2ea1731b0911170445x13225c19w797388d2211de2d9@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 17 Nov 2009 15:10:04 +0200
+Message-Id: <1258463404.27437.103.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Nov 2009 13:10:10.0420 (UTC) FILETIME=[4AA73B40:01CA6787]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 12:32:43PM -0700, Spencer Candland wrote:
-> > seems you have more test cases for utime decreasing issues,
-> > could you send links to me ? Somehow I could not find them 
-> > by my own. Particularly test case used in development this commit
-> > is interested:
-> > 
-> >   commit 49048622eae698e5c4ae61f7e71200f265ccc529
-> >   Author: Balbir Singh <balbir@linux.vnet.ibm.com>
-> >   Date:   Fri Sep 5 18:12:23 2008 +0200
-> >     sched: fix process time monotonicity
+On Tue, 2009-11-17 at 13:45 +0100, Marco Stornelli wrote:
+> 2009/11/17 Artem Bityutskiy <dedekind1@gmail.com>:
+> > Take a look at my mails where I describe different complications we have
+> > in our system. We really want to have an OOPS/panic + our environment
+> > stuff to go together, at once. This makes things so much simpler.
+> >
+> > Really, what is the problem providing this trivial panic-note
+> > capability, where user-space can give the kernel a small buffer, and ask
+> > the kernel to print this buffer at the oops/panic time. Very simple and
+> > elegant, and just solves the problem.
+> >
+> > Why perversions with time-stamps, separate storages are needed?
+> >
+> > IOW, you suggest a complicated approach, and demand explaining why we do
+> > not go for it. Simply because it is unnecessarily complex.
 > 
-> I had originally noticed that in a production web server, so my test
-> case was designed to mirror what I was seeing there, which was just
-> running apache with worker mpm, and running a simple apache bench while
-> watching the utime/stime of the apache children.  Unfortunately that
-> method was not terribly reliable at reproducing the issue, which is why
-> I felt it necessary to try to come up with a better test case this time
-> around.
+> I don't think it's a complicated approach we are talking of a system
+> log like syslog with a temporal information, nothing more.
 
-No wonder I could not find anything on google and in mailing list
-archives :)
+We need to store this information of NAND flash. Implementing logs on
+NAND flash is about handling bad blocks, choosing format of records, and
+may be even handling wear-levelling. This is not that simple.
 
-Seems issue reported then was exactly the same as reported now by
-you. Looks like commit 49048622eae698e5c4ae61f7e71200f265ccc529 just
-make probability of bug smaller and you did not note it until now.  
+And then I have match oops to the userspace environment prints, using I
+guess timestamps, which is also about complications in userspace.
 
-Could you please test this patch, if it solve all utime decrease
-problems for you:
+> > This patch solves the problem gracefully, and I'd rather demand you to point what
+> > is the technical problem with the patches.
+> >
+> 
+> Simply because I think that we should avoid to include in the kernel
+> things we can do in a simply way at user space level.
 
-http://patchwork.kernel.org/patch/59795/
+If it is much easier to have in the kernel, then this argument does not
+work, IMHO.
 
-If you confirm it work, I think we should apply it. Otherwise
-we need to go to propagate task_{u,s}time everywhere, which is not
-(my) preferred solution.
+>  I think this
+> patch is well done but it's one of the patches that are solutions "for
+> embedded only", but it's only my opinion.
 
-Stanislaw
+Also IMHO, but having embedded-only things is not bad at all.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
+
