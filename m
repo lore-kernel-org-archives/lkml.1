@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZKQXim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZKQXkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZKQXim (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 18:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZKQXil
+	id S1756293AbZKQXkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 18:40:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZKQXkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 18:38:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36412 "EHLO smtps.tip.net.au"
+	Tue, 17 Nov 2009 18:40:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24591 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753650AbZKQXik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 18:38:40 -0500
-Date: Wed, 18 Nov 2009 10:38:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?UTF-8?B?IkFuZHLDqSBHb2RkYXJkIFJvc2Ei?= <andre.goddard@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the wireless
- tree
-Message-Id: <20091118103840.ae9d66ad.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LSU.2.00.0911172317560.15039@wotan.suse.de>
-References: <20091117154957.a23c959b.sfr@canb.auug.org.au>
-	<alpine.LSU.2.00.0911172317560.15039@wotan.suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__18_Nov_2009_10_38_40_+1100_2E.aJvEyhHayUmPW"
+	id S1755539AbZKQXkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 18:40:31 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 0/3] tracepoint: Add signal events
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 17 Nov 2009 18:41:17 -0500
+Message-ID: <20091117234117.30589.61311.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__18_Nov_2009_10_38_40_+1100_2E.aJvEyhHayUmPW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Jiri,
+These patches add signal related tracepoints including
+signal generation, delivery, and loss. First patch also
+moves signal-sending tracepoint from events/sched.h to
+events/signal.h.
 
-On Tue, 17 Nov 2009 23:18:25 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrot=
-e:
->
-> Thanks for letting me know, I have dropped the rt2800usb bits from my=20
-> queue, so this conflict should now be gone.
+TODO:
+- Add signal-wakeup event?
 
-Great, thanks.
+Thank you,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+---
 
---Signature=_Wed__18_Nov_2009_10_38_40_+1100_2E.aJvEyhHayUmPW
-Content-Type: application/pgp-signature
+Masami Hiramatsu (3):
+      tracepoint: Add signal loss events
+      tracepoint: Add signal deliver event
+      tracepoint: Move signal sending tracepoint to events/signal.h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAksDNAEACgkQjjKRsyhoI8w0AQCbB7WSIYJYJotQ67GDobK4RJFc
-65UAoKEYwPhSD4jtHfQ/XA5Fhzm0Pj7b
-=Kbp+
------END PGP SIGNATURE-----
+ include/trace/events/sched.h  |   25 --------
+ include/trace/events/signal.h |  133 +++++++++++++++++++++++++++++++++++++++++
+ kernel/signal.c               |   27 ++++++--
+ 3 files changed, 153 insertions(+), 32 deletions(-)
+ create mode 100644 include/trace/events/signal.h
 
---Signature=_Wed__18_Nov_2009_10_38_40_+1100_2E.aJvEyhHayUmPW--
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+e-mail: mhiramat@redhat.com
