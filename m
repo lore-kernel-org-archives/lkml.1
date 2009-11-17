@@ -1,135 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZKQRmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZKQRmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZKQRmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZKQRmt
+	id S1754294AbZKQRmG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZKQRmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:42:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52871 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751986AbZKQRms (ORCPT
+	Tue, 17 Nov 2009 12:42:05 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:52466 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753351AbZKQRmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:42:48 -0500
-Date: Tue, 17 Nov 2009 09:41:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] strcmp: fix overflow error
-In-Reply-To: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Message-ID: <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
-References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 17 Nov 2009 12:42:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kZb1LbxFEeQAPqe4E0sH77mmxDN6nud5nH4uAfilGCD5Ctze0j1IeIHx5UsKjIe+j1
+         3ZH3SKC2clbwQY9EbXg5RURLaaqOOgoD82JodFXqmH/kdvlvrBgU3M7esumu7+USmCJR
+         HvF2Aci1Wc9rJcKk45aiA8NvNJcXRVwohrv5s=
+Date: Tue, 17 Nov 2009 20:42:04 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: hpa@zytor.com, mingo@elte.hu, travis@sgi.com, tglx@linutronix.de,
+       akpm@linux-foundation.org, heiko.carstens@de.ibm.com, rdreier@cisco.com,
+       rdunlap@xenotime.net, tj@kernel.org, andi@firstfloor.org,
+       gregkh@suse.de, yhlu.kernel@gmail.com, rientjes@google.com,
+       rostedt@goodmis.org, rusty@rustcorp.com.au,
+       seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com, fweisbec@gmail.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration
+	bootup messages
+Message-ID: <20091117174204.GD5476@lenovo>
+References: <20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net> <20091117155946.GA5476@lenovo> <20091117.082928.10537098.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117.082928.10537098.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 17, 2009 at 08:29:28AM -0800, David Miller wrote:
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> Date: Tue, 17 Nov 2009 18:59:46 +0300
+> 
+> > Perhaps for other archs like SPARC64, where as you said no need to
+> > remember boot cpu id at all, we should define some __weak per-kernel
+> > global helper which would return 0 and every arch would implement
+> > own helper boot_cpu_id().
+> 
+> On many of my machines none of my cpus are numbered "0", so that
+> wouldn't be a legitimate implementation on sparc64.
+> 
+> I see no reason for a platform the be required to remember the boot
+> cpu ID, there is nothing special about that processor generically.
 
+I fear we still need it and it's special due to code structure at
+least. For SMP compiled kernel say callin() do change its behaviour
+depending on which cpu it's called.
 
-On Tue, 17 Nov 2009, Uwe Kleine-König wrote:
->
-> strcmp("\x01", "\xef") returns 18 but it should return something < 0.
-> The reason is that the variable holding the result of the subtraction is
-> too small and overflows.
+Also iy seems a differ techhique used to find out on which cpu
+the code is running: there is smp_processor_id() == 0 and raw version
+and boot_cpu_id and cpu == 0, so having one general boot_cpu_id() would
+be more clear (though we will need to clean code up then :)
 
-No. The reason is that whoever wrote that function is a moron and doesn't 
-know the standard. And your fix is not correct _either_
+So plain hard_smp_processor_id() wouldn't help since it doesn't
+say if this is a boot cpu or not.
 
-The comparison should be done as *unsigned char*. As specified by POSIX
+> 
+> And if we do need it generically, it's available there as
+> hard_smp_processor_id() when start_kernel() is called.  So init/main.c
+> could remember that value in an __initdata annotated static variable.
+> 
+> But just using a boolean for this "did I print the bogomips message
+> already?" thing seems more than sufficient.
+> 
 
-  "The sign of a non-zero return value shall be determined by the sign of 
-   the difference between the values of the first pair of bytes (both 
-   interpreted as type unsigned char) that differ in the strings being 
-   compared."
+Yes. As I see Mike already pick it up. Thanks David!
 
-and both the original code and your change gets it wrong in different 
-ways.
-
->  int strcmp(const char *cs, const char *ct)
->  {
-> -	signed char __res;
-> +	int __res;
->  
->  	while (1) {
->  		if ((__res = *cs - *ct++) != 0 || !*cs++)
-
-So this is fundamentally incorrect both with "signed char __res" _and_ 
-with "int __res", because '*cs' and '*ct' are both (possibly - it depends 
-on the compiler and architecture) signed chars.
-
-So in the case you mention, strcmp() _should_ return a negative value, 
-because "\x01" is smaller than "\xef", but you have:
-
- - *cs = 1, *ct = (char) 0xef = -17 _OR_ 239 depending on sign of 'char'
-
-and as a result:
-
- - signed char __res = 18 (incorrect, regardless: ct is larger)
-
- - int __res = 18 (incorrect) or -238 (correct) depending on sign of char
-
-so your patch doesn't actually help at all.
-
-What would help is something like the appended, but I have not tested it 
-AT ALL. It may be total and utter crap too. Maybe it doesn't compile, 
-maybe it buggers your pet hedgehog. I just don't know.
-
-		Linus
-
----
- lib/string.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/lib/string.c b/lib/string.c
-index b19b87a..e96421a 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -246,13 +246,17 @@ EXPORT_SYMBOL(strlcat);
- #undef strcmp
- int strcmp(const char *cs, const char *ct)
- {
--	signed char __res;
-+	unsigned char c1, c2;
- 
- 	while (1) {
--		if ((__res = *cs - *ct++) != 0 || !*cs++)
-+		c1 = *cs++;
-+		c2 = *ct++;
-+		if (c1 != c2)
-+			return c1 < c2 ? -1 : 1;
-+		if (!c1)
- 			break;
- 	}
--	return __res;
-+	return 0;
- }
- EXPORT_SYMBOL(strcmp);
- #endif
-@@ -266,14 +270,18 @@ EXPORT_SYMBOL(strcmp);
-  */
- int strncmp(const char *cs, const char *ct, size_t count)
- {
--	signed char __res = 0;
-+	unsigned char c1, c2;
- 
- 	while (count) {
--		if ((__res = *cs - *ct++) != 0 || !*cs++)
-+		c1 = *cs++;
-+		c2 = *ct++;
-+		if (c1 != c2)
-+			return c1 < c2 ? -1 : 1;
-+		if (!c1)
- 			break;
- 		count--;
- 	}
--	return __res;
-+	return 0;
- }
- EXPORT_SYMBOL(strncmp);
- #endif
+	-- Cyrill
