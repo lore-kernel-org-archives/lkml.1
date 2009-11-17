@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZKQL7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZKQL5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbZKQL7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbZKQL7N
+	id S1755960AbZKQL5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZKQL5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:59:13 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:45697 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997AbZKQL7K (ORCPT
+	Tue, 17 Nov 2009 06:57:50 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36852 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755042AbZKQL5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:59:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=D4AfUvC9Vj72Pt6MX4lOgF6OWNKGNtfiSmYSMCHvZBcnItQx2NQFGSoCe9saGbBpuW
-         d6uS//WXjEbGxwuZ7F6Sv177E+hkaHaPq85rbaF+lXTJ/UlZtOofbXFs+bM/EZ5adGwd
-         MExfjHNzdKW+D5/I7AVkfhuBRtFEfJ4h/dDyQ=
-Message-ID: <4B029012.6030202@gmail.com>
-Date: Tue, 17 Nov 2009 06:59:14 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linville@tuxdriver.com
-Subject: Re: net-next-2.6 compilation errors: missing wireless/i82593.h
-References: <4B028A37.1010202@gmail.com> <20091117.034428.47467823.davem@davemloft.net>
-In-Reply-To: <20091117.034428.47467823.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Nov 2009 06:57:49 -0500
+Date: Tue, 17 Nov 2009 11:59:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091117115929.4ba23c49@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca>
+References: <4AF4526B.4060101@zytor.com>
+	<40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
+	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
+	<4AF886D4.1080108@zytor.com>
+	<20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
+	<20091112121805.GF1394@ucw.cz>
+	<20091113162301.GU15157@caffeine.csclub.uwaterloo.ca>
+	<20091113165730.0b9b2676@lxorguk.ukuu.org.uk>
+	<20091113192412.GY15157@caffeine.csclub.uwaterloo.ca>
+	<20091113212148.5cb829d4@lxorguk.ukuu.org.uk>
+	<20091116175006.GA15157@caffeine.csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: William Allen Simpson <william.allen.simpson@gmail.com>
-> Date: Tue, 17 Nov 2009 06:34:15 -0500
+> Trying rdmsr from msr-tools 1.2 gives me:
 > 
->> For the past 9-10 days, net-next-2.6 has failed to compile.  In
->> addition to the errors and warnings already reported here last week,
+> # ./rdmsr -x 0x00001810
+> rdmsr: CPU 0 cannot read MSR 0x00001810
 > 
-> Those seemed to be for Android drivers and such, so I hope you
-> reported those failures to the driver maintainers as well as
-> linux-kernel.
-> 
-I did, at least some of them.  Nothing seems to have been fixed yet.
+> Hmm, now what?
 
+Beats me - I thought the region registers were read/write.
 
-> For the time being could you just disable those drivers in your
-> build just to get work done or do you absolutely need them?
-> 
-I did, at least some of them.  Of course, since I'm making changes to
-linux/tcp.h and net/tcp.h, an awful lot of drivers seem to include them
-one way or another, and I'm trying to ensure nothing breaks (at least
-for compilation purposes).
-
-
->> since Nov 12th there has been another missing file.  I kept hoping
->> it was temporary, but no joy.
->>
->> /home/administer/net-next-2.6/drivers/net/znet.c:107:29: error:
->> wireless/i82593.h: No such file or directory
-> 
-> That header file got moved out to drivers/staging along with the
-> wavelan driver.
-> 
-Too bad that CONFIG_STAGING "N" (# CONFIG_STAGING is not set) doesn't
-actually turn off all the staging....
-
-
-> John please fix this up, thanks!
-> 
-Please.
