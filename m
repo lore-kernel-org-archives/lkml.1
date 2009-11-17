@@ -1,94 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZKQLyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZKQLzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZKQLyt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZKQLyr
+	id S1755985AbZKQLzF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:55:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZKQLzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:54:47 -0500
-Received: from szxga01-in.huawei.com ([119.145.14.64]:36431 "EHLO
-	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755957AbZKQLyq (ORCPT
+	Tue, 17 Nov 2009 06:55:04 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:37474 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755820AbZKQLzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:54:46 -0500
-Date: Tue, 17 Nov 2009 19:54:43 +0800
-From: Franko Fang <huananhu@huawei.com>
-Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
-To: Jarek Poplawski <jarkao2@gmail.com>,
-       William Allen Simpson <william.allen.simpson@gmail.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-id: <00b301ca677c$c03f25d0$76900b0a@china.huawei.com>
-MIME-version: 1.0
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
-X-Mailer: Microsoft Outlook Express 6.00.2900.3598
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-X-Priority: 3
-X-MSMail-priority: Normal
-References: <20091117111454.GA8341@ff.dom.local>
+	Tue, 17 Nov 2009 06:55:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=kPZ9UwjnuMP5Lo/peT9+2QsAZ9W2QV17gDxyMjWfcxfnMcMAIEU16uqMOTnx3URvGG
+         lJjclvIdQH2JEZ2AMqLAdarfwbjgo5GMbPpwSum7QrE1KkbpBnp7epy1MahIrA+7Jvmn
+         Khp+8SjEwihSBUN/ayvQLHOvKOutd8vclbKy4=
+Date: Tue, 17 Nov 2009 14:55:03 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, alan@lxorguk.ukuu.org.uk,
+       mgarski@post.pl
+Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for
+ non-ASCII
+Message-ID: <20091117115503.GB1657@x200>
+References: <20091116135114.GA2719@x200>
+ <20091116190739.GJ4764@const.famille.thibault.fr>
+ <20091116195313.GB4462@x200>
+ <20091116222738.GQ4764@const.famille.thibault.fr>
+ <20091116225429.GB4764@const.famille.thibault.fr>
+ <20091116230523.GC24961@x200>
+ <20091116231520.GD4764@const.famille.thibault.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091116231520.GD4764@const.famille.thibault.fr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, yes, I think that it misses the tab.
+On Tue, Nov 17, 2009 at 12:15:20AM +0100, Samuel Thibault wrote:
+> Alexey Dobriyan, le Tue 17 Nov 2009 02:05:23 +0300, a écrit :
+> > On Mon, Nov 16, 2009 at 11:54:29PM +0100, Samuel Thibault wrote:
+> > > Samuel Thibault, le Mon 16 Nov 2009 23:27:38 +0100, a écrit :
+> > > > > My keymap contains
+> > > > > 
+> > > > > 				keycode 44 = +z
+> > > > > 		shift           keycode 44 = +Z
+> > > > > 	altgr                   keycode 44 = U+044F        # CYRILLIC SMALL LETTER YA
+> > > > > 	altgr   shift           keycode 44 = U+042F        # CYRILLIC CAPITAL LETTER YA
+> > > > 
+> > > > And U+044F / U+042F is not KT_LETTER.
+> > > > 
+> > > > Yes, there's no way you can express a unicode character in KT_LETTER.
+> > > > Limited interface, but that's not a reason to break other interfaces.
+> > > 
+> > > One way to go would be to decrete that keysyms between 0xD800 and 0xE000
+> > 
+> > And this is going to help me with U+042F/U+044F how?
 
-I will update the patch, and resubmit it again.
+> --- a/drivers/char/keyboard.c
+> +++ b/drivers/char/keyboard.c
+> @@ -1258,6 +1258,15 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+>  	type = KTYP(keysym);
+>  
+>  	if (type < 0xf0) {
+> +		if (keysym >= 0xD800 && keysym < 0xE000) {
 
- Thanks for all  .
------ Original Message ----- 
-From: "Jarek Poplawski" <jarkao2@gmail.com>
-To: "William Allen Simpson" <william.allen.simpson@gmail.com>
-Cc: <huananhu@huawei.com>; "David Miller" <davem@davemloft.net>; <netdev@vger.kernel.org>; <linux-kernel@vger.kernel.org>
-Sent: Tuesday, November 17, 2009 7:14 PM
-Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
+keysym is 0x044F at this point.
 
+> +			/* Surrogates in Unicode, here KT_LETTER variants of unicode U+0000-U+07FF */
+> +			keysym -= 0xD800;
+> +			if (vc_kbd_led(kbd, VC_CAPSLOCK)) {
+> +				key_map = key_maps[shift_final ^ (1 << KG_SHIFT)];
+> +				if (key_map)
+> +					keysym = key_map[keycode];
+> +			}
+> +		}
+>  		param.value = keysym;
+>  		if (atomic_notifier_call_chain(&keyboard_notifier_list, KBD_UNICODE, &param) == NOTIFY_STOP)
+>  			return;
+> 
+> Which BTW is correct while the proposed patch earlier wasn't: the
+> param.value needs to be the final keysym.
 
-> On 17-11-2009 11:20, William Allen Simpson wrote:
->> David Miller wrote:
->>> Your patch is broken, please don't wate my time like this.
->>>
->>> + git apply --check --whitespace=error-all diff
->>> error: patch failed: drivers/net/ppp_async.c:36
->>> error: drivers/net/ppp_async.c: patch does not apply
->>>
->> What David may have meant, had he followed Documentation/ManagementStyle
->> or had any project management skills what-so-ever, is that you need to
->> follow Documentation/SubmittingPatches more carefully.
+OK, this I should fix.
+
+> But again, that only solves the problem of the limited range
+> U+0000-U+0800 and doesn't solve the é/É french keyboard problem.
 > 
-> I think this time it was only about a missing tab ;-)
-> 
-> Jarek P.
-> 
->> 
->> Look at 15) The canonical patch format
->> 
->> [PATCH 17/11] makes no sense, you don't have 11 patches, and the 17th
->> patch of 11 can never exist.
->> 
->> Need a better "subsystem: summary phrase", perhaps
->>    "net: PPP buffer too small for higher speed connections"
->> 
->> A marker line containing simply "---".
->> 
->> And your trailer boilerplate badly breaks the system, because it's
->> missing the SMTP email standard "--" line in front of it.
->> 
->> You'll get nicer formatting with 'git format-patch -o ~ HEAD~1' after you
->> do a 'git commit -a' on your git tree.
->> 
->> It takes some time, even for a simple 1 line fix like this....
->> 
->> Hope that helps.
->> --
->> To unsubscribe from this list: send the line "unsubscribe netdev" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Adding an interface to change the modifier lock / LED assignation would
+> on the other hand permit kbd and console-setup to properly do proper
+> capslock processing correctly.
