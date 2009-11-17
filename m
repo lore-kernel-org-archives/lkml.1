@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbZKQM66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZKQNLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751869AbZKQM66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbZKQM65
+	id S1752187AbZKQNLA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 08:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZKQNK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:58:57 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41260 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750905AbZKQM65 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:58:57 -0500
-Date: Tue, 17 Nov 2009 12:59:01 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>,
-       alsa-devel@alsa-project.org, linux-pm@lists.linux-foundation.org,
-       Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org
-Subject: Re: Null suspend/resume functions
-Message-ID: <20091117125901.GF823@rakim.wolfsonmicro.main>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
- <20091109105858.GB1245@sirena.org.uk>
- <20091109133136.GC1245@sirena.org.uk>
- <20091116153000.GB29479@sirena.org.uk>
- <aec7e5c30911170446n71031671i48aca11f5276405d@mail.gmail.com>
+	Tue, 17 Nov 2009 08:10:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21395 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZKQNK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 08:10:59 -0500
+Date: Tue, 17 Nov 2009 14:08:52 +0100
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Spencer Candland <spencer@bluehost.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
+Message-ID: <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
+References: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com> <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aec7e5c30911170446n71031671i48aca11f5276405d@mail.gmail.com>
-X-Cookie: That's no moon...
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B01A8DB.6090002@bluehost.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 09:46:35PM +0900, Magnus Damm wrote:
+On Mon, Nov 16, 2009 at 12:32:43PM -0700, Spencer Candland wrote:
+> > seems you have more test cases for utime decreasing issues,
+> > could you send links to me ? Somehow I could not find them 
+> > by my own. Particularly test case used in development this commit
+> > is interested:
+> > 
+> >   commit 49048622eae698e5c4ae61f7e71200f265ccc529
+> >   Author: Balbir Singh <balbir@linux.vnet.ibm.com>
+> >   Date:   Fri Sep 5 18:12:23 2008 +0200
+> >     sched: fix process time monotonicity
+> 
+> I had originally noticed that in a production web server, so my test
+> case was designed to mirror what I was seeing there, which was just
+> running apache with worker mpm, and running a simple apache bench while
+> watching the utime/stime of the apache children.  Unfortunately that
+> method was not terribly reliable at reproducing the issue, which is why
+> I felt it necessary to try to come up with a better test case this time
+> around.
 
-> On SuperH we have Runtime PM enabled on a few platforms together with
-> a few updated drivers. The latest driver to become more power aware is
-> this FSI driver.
+No wonder I could not find anything on google and in mailing list
+archives :)
 
-I understand exactly what the runtime PM stuff and the driver are doing
-here, the issue is the mandatory suspend and resume functions.
+Seems issue reported then was exactly the same as reported now by
+you. Looks like commit 49048622eae698e5c4ae61f7e71200f265ccc529 just
+make probability of bug smaller and you did not note it until now.  
 
-> At this point the SuperH specific platform bus code requires the
-> callbacks ->runtime_suspend() and ->runtime_resume() to be present. It
-> may be a good idea to allow them to be NULL in the future or maybe
-> having some shared functions, but before starting to break out stuff
-> I'd like to see how other Runtime PM implementations deal with this.
-> So unless people object I prefer to keep it as-is for now.
+Could you please test this patch, if it solve all utime decrease
+problems for you:
 
-What is the reason for requiring that the driver provide stub functions?
-For me the issue is that if it's mandatory for the driver to provide the
-functions then having stub functions in there makes the driver look like
-it is abusing the API by not implementing mandatory functionality.
+http://patchwork.kernel.org/patch/59795/
 
-Given that the arch is now dealing with clocking and power for the
-device using the runtime PM system it seems fairly clear that there are
-going to be drivers like this one that can at least skip the suspend
-part and may not need to do anything at resume time either.
+If you confirm it work, I think we should apply it. Otherwise
+we need to go to propagate task_{u,s}time everywhere, which is not
+(my) preferred solution.
+
+Stanislaw
