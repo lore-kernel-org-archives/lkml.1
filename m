@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZKQPgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZKQPho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbZKQPgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 10:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZKQPgV
+	id S1754572AbZKQPho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZKQPho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 10:36:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37548
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753924AbZKQPgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 10:36:21 -0500
-Date: Tue, 17 Nov 2009 07:36:37 -0800 (PST)
-Message-Id: <20091117.073637.144156682.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       william.allen.simpson@gmail.com
-Subject: Re: [PATCH] znet: fix build failure from i82593.h relocation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1258471249-6531-1-git-send-email-linville@tuxdriver.com>
-References: <20091117.034428.47467823.davem@davemloft.net>
-	<1258471249-6531-1-git-send-email-linville@tuxdriver.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 10:37:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44760 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753834AbZKQPhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 10:37:43 -0500
+Date: Tue, 17 Nov 2009 16:37:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, paulus@samba.org,
+       fweisbec@gmail.com, ling.ma@intel.com
+Subject: Re: [PATCH v2 4/4] perf bench: Modify Makefile for new source file
+ mem-memcpy.c
+Message-ID: <20091117153717.GA3514@elte.hu>
+References: <20091118.001135.11492872.mitake@dcl.info.waseda.ac.jp>
+ <1258470903-29577-4-git-send-email-mitake@dcl.info.waseda.ac.jp>
+ <20091118.001801.107761308.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118.001801.107761308.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Tue, 17 Nov 2009 10:20:49 -0500
 
-> I'll just include this with the wireless-next-2.6 pull request I intend
-> to send later today...
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-Sounds good.
+> From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Subject: [PATCH v2 4/4] perf bench: Modify Makefile for new source file mem-memcpy.c
+> Date: Wed, 18 Nov 2009 00:15:03 +0900
+> 
+> VEERRRYYY SORRY...
+> 
+> I sent old files...
+> I'll send new ones later. It's time to sleep...
+
+No problem - i'll sort it out.
+
+	Ingo
