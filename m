@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZKQTGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZKQTNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbZKQTGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 14:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZKQTGb
+	id S1756167AbZKQTNL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 14:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZKQTNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 14:06:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50087 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754968AbZKQTGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 14:06:31 -0500
-Date: Tue, 17 Nov 2009 20:06:35 +0100
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Greg KH <gregkh@suse.de>, JiSheng Zhang <jszhang3@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org,
-       jack@suse.cz
-Subject: Re: [BUG]2.6.27.y some contents lost after writing to mmaped file
-Message-ID: <20091117190635.GB31105@duck.suse.cz>
-References: <2df346410911151938r1eb5c5e4q9930ac179d61ef01@mail.gmail.com> <20091117015655.GA8683@suse.de> <20091117123622.GI27677@think>
+	Tue, 17 Nov 2009 14:13:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752618AbZKQTNK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 14:13:10 -0500
+Date: Tue, 17 Nov 2009 11:12:26 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] strcmp: fix overflow error
+In-Reply-To: <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0911171105350.9384@localhost.localdomain>
+References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain> <20091117185539.GA23385@pengutronix.de> <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091117123622.GI27677@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 17-11-09 07:36:22, Chris Mason wrote:
-> On Mon, Nov 16, 2009 at 05:56:55PM -0800, Greg KH wrote:
-> > On Mon, Nov 16, 2009 at 11:38:57AM +0800, JiSheng Zhang wrote:
-> > > Hi,
-> > > 
-> > > I triggered a failure in an fs test with fsx-linux from ltp. It seems that
-> > > fsx-linux failed at mmap->write sequence.
-> > > 
-> > > Tested kernel is 2.6.27.12 and 2.6.27.39
-> > 
-> > Does this work on any kernel you have tested?  Or is it a regression?
-> > 
-> > > Tested file system: ext3, tmpfs.
-> > > IMHO, it impacts all file systems.
-> > > 
-> > > Some fsx-linux log is:
-> > > 
-> > > READ BAD DATA: offset = 0x2771b, size = 0xa28e
-> > > OFFSET  GOOD    BAD     RANGE
-> > > 0x287e0 0x35c9  0x15a9     0x80
-> > > operation# (mod 256) for the bad datamay be 21
-> > > ...
-> > > 7828: 1257514978.306753 READ     0x23dba thru 0x25699 (0x18e0 bytes)
-> > > 7829: 1257514978.306899 MAPWRITE 0x27eeb thru 0x2a516 (0x262c bytes)
-> > >  ******WWWW
-> > > 7830: 1257514978.307504 READ     0x2771b thru 0x319a8 (0xa28e bytes)
-> > >  ***RRRR***
-> > > Correct content saved for comparison
-> > > ...
-  Hmm, how long does it take to reproduce? I'm running fsx-linux on tmpfs
-for a while on 2.6.27.21 and didn't hit the problem yet.
 
-> > Are you sure that the LTP is correct?  It wouldn't be the first time it
-> > wasn't...
+
+On Tue, 17 Nov 2009, Linus Torvalds wrote:
 > 
-> I'm afraid fsx usually finds bugs.  I thought Jan Kara recently fixed
-> something here in ext3, does 2.6.32-rc work?
-  Yeah, fsx usually finds bugs. Note that he sees the problem also on tmpfs
-so it's not ext3 problem. Anyway, trying to reproduce with 2.6.32-rc? would
-be interesting.
+> Yeah, I looked at the history too. It's so old that it might well be me.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+In fact, it goes back to at least 1.2.13.
+
+And the copyright dates do imply that they could go back way further. 
+
+At least the comment says it all:
+
+	"These are buggy as well.."
+
+so I can at least claim that back in the _original_ 0.01 release, it was 
+correct:
+
+	extern inline int strcmp(const char * cs,const char * ct)
+	{
+	register int __res __asm__("ax");
+	__asm__("cld\n"
+	        "1:\tlodsb\n\t"
+	        "scasb\n\t"
+	        "jne 2f\n\t"
+	        "testb %%al,%%al\n\t"
+	        "jne 1b\n\t"
+	        "xorl %%eax,%%eax\n\t"
+	        "jmp 3f\n"
+	        "2:\tmovl $1,%%eax\n\t"
+	        "jl 3f\n\t"
+	        "negl %%eax\n"
+	        "3:"
+	        :"=a" (__res):"D" (cs),"S" (ct):"si","di");
+	return __res;
+	}
+
+and as far as I can tell, the above is actually correct, even if you have 
+to be a bit crazy to write 'strcmp' as gcc inline asm (hey, I wrote _all_ 
+the string routines that way, and I made gcc do some of them built-in. 
+Because I was a MAN, dammit!).
+
+So the bug was apparently introduced when we went portable.
+
+			Linus
