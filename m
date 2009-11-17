@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZKQTSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZKQTSC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZKQTSq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 14:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZKQTR5
+	id S1756226AbZKQTSC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 14:18:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZKQTR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 14:17:57 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:57082 "EHLO relay.sgi.com"
+	Tue, 17 Nov 2009 14:17:59 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:37645 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754610AbZKQTRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 14:17:55 -0500
-Message-Id: <20091117191800.355249000@alcatraz.americas.sgi.com>
+	id S1756209AbZKQTR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 14:17:57 -0500
+Message-Id: <20091117191801.252881000@alcatraz.americas.sgi.com>
 User-Agent: quilt/0.47-1
-Date: Tue, 17 Nov 2009 13:17:55 -0600
+Date: Tue, 17 Nov 2009 13:17:56 -0600
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
@@ -26,32 +26,60 @@ Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Jack Steiner <steiner@sgi.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] firmware: Limit the number of per cpu firmware messages during bootup
+Subject: [PATCH 4/5] sched: Limit the number of scheduler debug messages
 References: <20091117191752.164451000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=limit_firmware_messages
+Content-Disposition: inline; filename=limit_sched_debug_messages
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Limit the number of per cpu firmware: messages by sending them
-only to the kernel debug log buffer.
-
-	[  170.643130] firmware: requesting intel-ucode/06-2e-0
+Remove the verbose scheduler debug messages unless kernel parameter
+"sched_debug" set.  /proc/sched_debug unchanged.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- drivers/base/firmware_class.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/kernel-parameters.txt |    2 ++
+ kernel/sched.c                      |   13 +++++++++++++
+ 2 files changed, 15 insertions(+)
 
---- linux.orig/drivers/base/firmware_class.c
-+++ linux/drivers/base/firmware_class.c
-@@ -495,7 +495,7 @@
- 	}
+--- linux.orig/Documentation/kernel-parameters.txt
++++ linux/Documentation/kernel-parameters.txt
+@@ -2182,6 +2182,8 @@
  
- 	if (uevent)
--		dev_info(device, "firmware: requesting %s\n", name);
-+		dev_dbg(device, "firmware: requesting %s\n", name);
+ 	sbni=		[NET] Granch SBNI12 leased line adapter
  
- 	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
- 	if (retval)
++	sched_debug	[KNL] Enables verbose scheduler debug messages.
++
+ 	sc1200wdt=	[HW,WDT] SC1200 WDT (watchdog) driver
+ 			Format: <io>[,<timeout>[,<isapnp>]]
+ 
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -7743,6 +7743,16 @@
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+ 
++static __read_mostly int sched_domain_debug_enabled;
++
++static int __init sched_domain_debug_setup(char *str)
++{
++	sched_domain_debug_enabled = 1;
++
++	return 0;
++}
++early_param("sched_debug", sched_domain_debug_setup);
++
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 				  struct cpumask *groupmask)
+ {
+@@ -7829,6 +7839,9 @@
+ 	cpumask_var_t groupmask;
+ 	int level = 0;
+ 
++	if (!sched_domain_debug_enabled)
++		return;
++
+ 	if (!sd) {
+ 		printk(KERN_DEBUG "CPU%d attaching NULL sched-domain.\n", cpu);
+ 		return;
 
