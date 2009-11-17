@@ -1,67 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZKQGOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZKQGep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZKQGOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 01:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZKQGOS
+	id S1755200AbZKQGep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 01:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKQGeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 01:14:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39864 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Nov 2009 01:34:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58749 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbZKQGOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 01:14:17 -0500
-Date: Tue, 17 Nov 2009 07:13:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jim Keniston <jkenisto@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -next 0/3] x86 insn decoder test updates (Re: linux-next:
- Tree for October 29 (x86 posttest))
-Message-ID: <20091117061352.GE30852@elte.hu>
-References: <20091116230611.5250.86656.stgit@harusame>
+	id S1752447AbZKQGem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 01:34:42 -0500
+Date: Tue, 17 Nov 2009 06:31:00 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jkenisto@us.ibm.com, rdunlap@xenotime.net,
+       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mhiramat@redhat.com, mingo@elte.hu,
+       systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jkenisto@us.ibm.com, rdunlap@xenotime.net,
+       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mhiramat@redhat.com, systemtap@sources.redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20091116230618.5250.18762.stgit@harusame>
+References: <20091116230618.5250.18762.stgit@harusame>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/probes] x86: Add verbose option to insn decoder test
+Message-ID: <tip-d65ff75fbe6f8ac7c17f18e4108521898468822c@git.kernel.org>
+Git-Commit-ID: d65ff75fbe6f8ac7c17f18e4108521898468822c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091116230611.5250.86656.stgit@harusame>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  d65ff75fbe6f8ac7c17f18e4108521898468822c
+Gitweb:     http://git.kernel.org/tip/d65ff75fbe6f8ac7c17f18e4108521898468822c
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Mon, 16 Nov 2009 18:06:18 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 17 Nov 2009 07:16:48 +0100
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+x86: Add verbose option to insn decoder test
 
-> Here are the patches which update x86 instruction decoder build-time 
-> test. As Stephen reported on linux-next, sometimes objdump decodes bad 
-> instructions as normal. This will cause a false positive result on x86 
-> insn decoder test. This patches update the test as below;
->
->  - Show more information with V=1
->  - Show in which symbol the difference places.
->  - Just warning instead of build failure.
+Add verbose option to insn decoder test. This dumps decoded
+instruction when building kernel with V=1.
 
-yes, -tip testing was showing such build bugs too:
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+LKML-Reference: <20091116230618.5250.18762.stgit@harusame>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/tools/Makefile       |    9 ++++-
+ arch/x86/tools/test_get_len.c |   74 ++++++++++++++++++++++++++++++++++------
+ 2 files changed, 71 insertions(+), 12 deletions(-)
 
- Error: ffffffff8104aae3:	c5 83 3d 49 80 ee    	lds    0xffffffffee80493d(%rbx),%eax
- Error: objdump says 6 bytes, but insn_get_length() says 3 (attr:0)
-
-it happens with older tools, such as binutils-2.17. Modern binutils 
-(2.19) is fine.
-
-We dont want to remove the build error: it helped us fix a number of 
-real bugs in the decoder - instead please try to create a make based 
-workaround based on binutils, to not run the test with binutils older 
-than 2.19 or so.
-
-Thanks,
-
-	Ingo
+diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
+index 5e295d9..4688f90 100644
+--- a/arch/x86/tools/Makefile
++++ b/arch/x86/tools/Makefile
+@@ -1,6 +1,13 @@
+ PHONY += posttest
++
++ifeq ($(KBUILD_VERBOSE),1)
++  postest_verbose = -v
++else
++  postest_verbose =
++endif
++
+ quiet_cmd_posttest = TEST    $@
+-      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len $(CONFIG_64BIT)
++      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len -$(CONFIG_64BIT) $(posttest_verbose)
+ 
+ posttest: $(obj)/test_get_len vmlinux
+ 	$(call cmd,posttest)
+diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
+index 376d338..5743e51 100644
+--- a/arch/x86/tools/test_get_len.c
++++ b/arch/x86/tools/test_get_len.c
+@@ -20,6 +20,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <assert.h>
++#include <unistd.h>
+ 
+ #define unlikely(cond) (cond)
+ 
+@@ -36,11 +37,16 @@
+  */
+ 
+ const char *prog;
++static int verbose;
++static int x86_64;
+ 
+ static void usage(void)
+ {
+ 	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
+-		" %s [y|n](64bit flag)\n", prog);
++		" %s [-y|-n] [-v] \n", prog);
++	fprintf(stderr, "\t-y	64bit mode\n");
++	fprintf(stderr, "\t-n	32bit mode\n");
++	fprintf(stderr, "\t-v	verbose mode\n");
+ 	exit(1);
+ }
+ 
+@@ -50,6 +56,56 @@ static void malformed_line(const char *line, int line_nr)
+ 	exit(3);
+ }
+ 
++static void dump_field(FILE *fp, const char *name, const char *indent,
++		       struct insn_field *field)
++{
++	fprintf(fp, "%s.%s = {\n", indent, name);
++	fprintf(fp, "%s\t.value = %d, bytes[] = {%x, %x, %x, %x},\n",
++		indent, field->value, field->bytes[0], field->bytes[1],
++		field->bytes[2], field->bytes[3]);
++	fprintf(fp, "%s\t.got = %d, .nbytes = %d},\n", indent,
++		field->got, field->nbytes);
++}
++
++static void dump_insn(FILE *fp, struct insn *insn)
++{
++	fprintf(fp, "Instruction = { \n");
++	dump_field(fp, "prefixes", "\t",	&insn->prefixes);
++	dump_field(fp, "rex_prefix", "\t",	&insn->rex_prefix);
++	dump_field(fp, "vex_prefix", "\t",	&insn->vex_prefix);
++	dump_field(fp, "opcode", "\t",		&insn->opcode);
++	dump_field(fp, "modrm", "\t",		&insn->modrm);
++	dump_field(fp, "sib", "\t",		&insn->sib);
++	dump_field(fp, "displacement", "\t",	&insn->displacement);
++	dump_field(fp, "immediate1", "\t",	&insn->immediate1);
++	dump_field(fp, "immediate2", "\t",	&insn->immediate2);
++	fprintf(fp, "\t.attr = %x, .opnd_bytes = %d, .addr_bytes = %d,\n",
++		insn->attr, insn->opnd_bytes, insn->addr_bytes);
++	fprintf(fp, "\t.length = %d, .x86_64 = %d, .kaddr = %p}\n",
++		insn->length, insn->x86_64, insn->kaddr);
++}
++
++static void parse_args(int argc, char **argv)
++{
++	int c;
++	prog = argv[0];
++	while ((c = getopt(argc, argv, "ynv")) != -1) {
++		switch (c) {
++		case 'y':
++			x86_64 = 1;
++			break;
++		case 'n':
++			x86_64 = 0;
++			break;
++		case 'v':
++			verbose = 1;
++			break;
++		default:
++			usage();
++		}
++	}
++}
++
+ #define BUFSIZE 256
+ 
+ int main(int argc, char **argv)
+@@ -57,15 +113,9 @@ int main(int argc, char **argv)
+ 	char line[BUFSIZE];
+ 	unsigned char insn_buf[16];
+ 	struct insn insn;
+-	int insns = 0;
+-	int x86_64 = 0;
+-
+-	prog = argv[0];
+-	if (argc > 2)
+-		usage();
++	int insns = 0, c;
+ 
+-	if (argc == 2 && argv[1][0] == 'y')
+-		x86_64 = 1;
++	parse_args(argc, argv);
+ 
+ 	while (fgets(line, BUFSIZE, stdin)) {
+ 		char copy[BUFSIZE], *s, *tab1, *tab2;
+@@ -97,8 +147,10 @@ int main(int argc, char **argv)
+ 		if (insn.length != nb) {
+ 			fprintf(stderr, "Error: %s", line);
+ 			fprintf(stderr, "Error: objdump says %d bytes, but "
+-				"insn_get_length() says %d (attr:%x)\n", nb,
+-				insn.length, insn.attr);
++				"insn_get_length() says %d\n", nb,
++				insn.length);
++			if (verbose)
++				dump_insn(stderr, &insn);
+ 			exit(2);
+ 		}
+ 	}
