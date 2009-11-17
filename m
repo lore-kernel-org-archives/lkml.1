@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZKQWPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZKQWSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbZKQWPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZKQWPZ
+	id S1756307AbZKQWSV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbZKQWSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:15:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38480 "EHLO ogre.sisk.pl"
+	Tue, 17 Nov 2009 17:18:21 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54329 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755957AbZKQWPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:15:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Subject: Re: [Bug #14265] ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-Date: Tue, 17 Nov 2009 23:16:58 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-References: <ipicVA1QUFF.A.zWB.1mdALB@chimera> <OWmO9uyC1hM.A.loC.CodALB@chimera> <20091117000911.GA2421@bizet.domek.prywatny>
-In-Reply-To: <20091117000911.GA2421@bizet.domek.prywatny>
+	id S1755950AbZKQWSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:18:20 -0500
+Date: Tue, 17 Nov 2009 23:18:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?ISO-8859-15?Q?=22Andr=E9_Goddard_Rosa=22?= 
+	<andre.goddard@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: linux-next: manual merge of the trivial tree with the wireless
+ tree
+In-Reply-To: <20091117154957.a23c959b.sfr@canb.auug.org.au>
+Message-ID: <alpine.LSU.2.00.0911172317560.15039@wotan.suse.de>
+References: <20091117154957.a23c959b.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911172316.58298.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009, Karol Lewandowski wrote:
-> On Tue, Nov 17, 2009 at 12:01:19AM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14265
-> > Subject		: ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-> > Submitter	: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-> > Date		: 2009-09-15 12:05 (63 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125301636509517&w=4
+On Tue, 17 Nov 2009, Stephen Rothwell wrote:
+
+> Today's linux-next merge of the trivial tree got a conflict in
+> drivers/net/wireless/rt2x00/rt2800usb.h between various commits from the
+> wireless tree and commit 17530b1c635dfd1f258afc6b07b986b425d66ebd
+> ("tree-wide: fix assorted typos all over the place") from the trivial
+> tree.
 > 
-> Bug is still present in 2.6.32-rc7.
+> The wireless tree commits moved the code fixed by the trivial tree, but
+> also fixed it along the way, so I have ignored the trivial fixup for this
+> file.
 
-Thanks for the update.
+Thanks for letting me know, I have dropped the rt2800usb bits from my 
+queue, so this conflict should now be gone.
 
-Rafael
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
