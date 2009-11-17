@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZKQXWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZKQXVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZKQXWP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 18:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZKQXWO
+	id S1753707AbZKQXVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 18:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKQXVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 18:22:14 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:62792 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752308AbZKQXWN convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 18:21:54 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:34872 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbZKQXVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 18:22:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=n1hICV0TgcezCQ4rTGDvv6fdDYyteY0+G+iJwzY3/QXnowQ1JVRDqw+oAt/THF699j
-         wQEItO0wocimpG3ffnXV8hS/C9hDl4S/jX3iDYSJDDIvQbWJa894V9b6dSKw41yMFhN5
-         L+ElvdQFS4wVIlXnn6k3yaS408eANEq41Hz4o=
+	Tue, 17 Nov 2009 18:21:54 -0500
+Date: Wed, 18 Nov 2009 00:22:05 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-mips@linux-mips.org
+Subject: Re: [patch 08/13] mips: Fixup last users of irq_chip->typename
+Message-ID: <20091117232205.GB1866@linux-mips.org>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.642102675@linutronix.de> <20091117230544.GA1866@linux-mips.org> <alpine.LFD.2.00.0911180007340.24119@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20091117165844.0fb043f3@lxorguk.ukuu.org.uk>
-References: <20091117154641.3879.73168.stgit@localhost.localdomain> 
-	<8bd0f97a0911170850x40f68e02y5a3d8ad39c4f9b90@mail.gmail.com> 
-	<20091117165844.0fb043f3@lxorguk.ukuu.org.uk>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 17 Nov 2009 18:21:58 -0500
-Message-ID: <8bd0f97a0911171521t3641a6a2h69c209eccc89a2c9@mail.gmail.com>
-Subject: Re: [RESEND PATCH] gpio_addr_flash: Fix warnings
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Cox <alan@linux.intel.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911180007340.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 11:58, Alan Cox wrote:
-> On Tue, 17 Nov 2009 11:50:24 -0500 Mike Frysinger wrote:
->> On Tue, Nov 17, 2009 at 10:46, Alan Cox wrote:
->> > --- a/drivers/mtd/maps/gpio-addr-flash.c
->> > +++ b/drivers/mtd/maps/gpio-addr-flash.c
->> > -       state->gpio_addrs     = (void *)gpios->start;
->> > +       state->gpio_addrs     = (void *)(unsigned long)gpios->start;
->> > -       state->map.virt       = (void __iomem *)memory->start;
->> > +       state->map.virt       = (void __iomem *)(unsigned long)memory->start;
->>
->> on what system do you see warnings ?  start should be resource_size_t
->> which should be phys_addr_t which should cast fine to a void*.
->
-> 32bit x86 shows it up because resource_size_t is a physaddr_t which is
-> 64bit (because of PAE). Now given you don't seem likely to be using the
-> top bits for any real world example that looks ok but really casting a
-> physical address to a pointer type needs care and the compiler can't
-> deduce your intent there.
+On Wed, Nov 18, 2009 at 12:09:19AM +0100, Thomas Gleixner wrote:
 
-i dont think the casts will work in either case here and it's a good
-thing that the code doesnt compile warning free
+> > > The typename member of struct irq_chip was kept for migration purposes
+> > > and is obsolete since more than 2 years. Fix up the leftovers.
+> > > 
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > > Cc: Ralf Baechle <ralf@linux-mips.org>
+> > > Cc: linux-mips@linux-mips.org
+> > 
+> > Looks good.  I assume you want to merge the whole series via tip, so
+> > 
+> > Acked-by: Ralf Baechle <ralf@linux-mips.org>
+> 
+> You can pick it up as well. The patches are independent, just the last
+> one which removes typename from irq_chip depends on the arch patches
+> being merged. Either way works fine.
 
-the gpio_addrs member is an array of gpio ids which are 32bit unsigned
-values.  overlaying an array of 64bit values isnt going to produce
-correct behavior.
+Okay, queued for 2.6.33 then.
 
-as for the memory->start, i do need to access that directly, so that
-should probably be going through ioremap_nocache() instead.
+Thanks!
 
-i.e. i'll have to write/test/post a patch rather than adding casts to
-pretend there isnt a problem
--mike
+  Ralf
