@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZKQQNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZKQQQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbZKQQNr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 11:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZKQQNq
+	id S1752704AbZKQQQi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 11:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZKQQQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 11:13:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51191 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752256AbZKQQNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 11:13:45 -0500
-Message-ID: <4B02CB53.9020708@kernel.org>
-Date: Wed, 18 Nov 2009 01:12:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Tue, 17 Nov 2009 11:16:38 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:41664 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZKQQQh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 11:16:37 -0500
+Message-ID: <4B02CC46.4020506@us.ibm.com>
+Date: Tue, 17 Nov 2009 08:16:06 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andy Walls <awalls@radix.net>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       avi@redhat.com, peterz@infradead.org, andi@firstfloor.org,
-       fweisbec@gmail.com
-Subject: Re: [PATCH 17/21] workqueue: simple reimplementation of SINGLE_THREAD
- workqueue
-References: <1258391726-30264-1-git-send-email-tj@kernel.org>  <1258391726-30264-18-git-send-email-tj@kernel.org> <1258418872.4096.28.camel@palomino.walls.org> <4B023340.90004@kernel.org> <alpine.LFD.2.01.0911170701480.9384@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0911170701480.9384@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Michel Lespinasse <walken@google.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
+References: <20091117074655.GA14023@google.com> <20091117081817.GA7963@elte.hu> <1258448121.7816.29.camel@laptop>
+In-Reply-To: <1258448121.7816.29.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Linus.
-
-11/18/2009 12:05 AM, Linus Torvalds wrote:
->> Do you think that usage is wide-spread?  Implementing strict ordering
->> shouldn't be too difficult but I can't help but feeling that such
->> assumption is abuse of implementation detail.
+Peter Zijlstra wrote:
+> On Tue, 2009-11-17 at 09:18 +0100, Ingo Molnar wrote:
+>> Would you be interested in adding it as a 'perf bench futex' testcase? 
+>> That way kernel developers could monitor futex performance in the future 
+>> as well.
+>>
+>> See 'perf bench' in the latest perf events tree:
+>>
+>>   http://people.redhat.com/mingo/tip.git/README
+>>
+>> Do 'cd tools/perf; make -j install' to install perf.
 > 
-> I think it would be good if it were more than an implementation detail, 
-> and was something documented and known.
+> Darren has recently been putting a lot of effort in making a futex test
+> suite:
 > 
-> The less random and timing-dependent our interfaces are, the better off we 
-> are. Guaranteeing that a single-threaded workqueue is done in order seems 
-> to me to be a GoodThing(tm), regardless of whether much code depends on 
-> it.
+> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
 > 
-> Of course, if there is some fundamental reason why it wouldn't be the 
-> case, that's another thing. But if you think uit should be easy, and since 
-> there _are_ users, then it shouldn't be seen as an "implementation 
-> detail". It's a feature.
+> Its not yet complete, but hopefully it will soon be :-)
+> 
 
-I might have been too early with the 'easy' part but I definitely can
-give it a shot.  What do you think about the scheduler notifier
-implementation?  It seems we'll end up with three callbacks.  It can
-either be three hlist_heads in the struct_task linking each ops or
-single hilst_head links ops tables (like the current preempt
-notifiers).  Which one should I go with?
-
-Thanks.
+Michael, would you be willing to include a version of this test in the 
+above test suite? If so, then in keeping with the rest of the test 
+suite, I would recommend splitting into two tests, one of each opcode 
+being tested, and  add argument to define thread count. The run.sh 
+script would then run each thread count as a separate test run.
 
 -- 
-tejun
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
