@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZKQJf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZKQJwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZKQJf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 04:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZKQJf4
+	id S1753878AbZKQJwJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 04:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZKQJwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 04:35:56 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:49281 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753091AbZKQJfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 04:35:54 -0500
-Date: Tue, 17 Nov 2009 10:35:54 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ben Hutchings <bhutchings@solarflare.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: Shared i2c adapter locking
-Message-ID: <20091117103554.03971b2f@hyperion.delvare>
-In-Reply-To: <20091117193313.b750804e.sfr@canb.auug.org.au>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-	<20091029154317.651904b9@hyperion.delvare>
-	<1256828976.2827.27.camel@achroite>
-	<20091105141122.56b6b4f8@hyperion.delvare>
-	<1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
-	<20091105150715.692b5200@hyperion.delvare>
-	<20091117193313.b750804e.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 04:52:08 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:63777 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753298AbZKQJwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 04:52:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=e2es8HrRnBanQI19jHHZrMfwj06i+i7fSMMwV1P7K6BEp7cSA43vVETowsYfTwdcH1
+         mma5dH1W9BqZVZrp/st3chleorwZGdp3VqggxL2w/9HrvFd3I6cqJSTloQogaG1eg86c
+         44QTALzTD6wAMaSBVLRURK5n9+3dEI8lgju5E=
+From: Jupyung Lee <jupyung@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@redhat.com>,
+       Jupyung Lee <jupyung@gmail.com>
+Subject: [PATCH 1/1] sched: move update_curr() in check_preempt_wakeup() to avoid redundant call
+Date: Tue, 17 Nov 2009 18:51:40 +0900
+Message-Id: <1258451500-6714-1-git-send-email-jupyung@gmail.com>
+X-Mailer: git-send-email 1.6.5.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Impact: micro-optimization
 
-On Tue, 17 Nov 2009 19:33:13 +1100, Stephen Rothwell wrote:
-> Hi Jean,
-> 
-> On Thu, 5 Nov 2009 15:07:15 +0100 Jean Delvare <khali@linux-fr.org> wrote:
-> >
-> > > Presumably this is meant for net-next-2.6, and you'll implement
-> > 
-> > Actually I meant to push this to Linus immediately, through my i2c
-> > tree. This is essentially a no-op: the binary code will be the same as
-> > before the patch, so guaranteed to be safe, and this will solve
-> > conflicts in linux-next.
-> 
-> Any word on this?
+If a RT task is woken up while a non-RT task is running, 
+check_preempt_wakeup() is called to check whether the new task can 
+preempt the old task. The function returns quickly without going deeper 
+because it is apparent that a RT task can always preempt a non-RT task.
 
-Haven't you read this:
-http://www.spinics.net/lists/linux-next/msg07839.html
+In this situation, check_preempt_wakeup() always calls update_curr() to
+update vruntime value of the currently running task. However, the function
+call is unnecessary and redundant at that moment because (1) a non-RT task can 
+always be preempted by a RT task regardless of its vruntime value, and
+(2) update_curr() will be called shortly when the context switch between two occurs.
 
-and the 3 following posts?
+By moving update_curr() in check_preempt_wakeup(), we can avoid redundant
+call to update_curr(), slightly reducing the time taken to wake up RT tasks.
 
-If you did and something is still not clear, please let me know. My
-understanding is that the action token is in David's hands now.
+Signed-off-by: Jupyung Lee <jupyung@gmail.com>
+---
+ kernel/sched_fair.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 37087a7..32256c0 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1596,8 +1596,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+ 	int sync = wake_flags & WF_SYNC;
+ 	int scale = cfs_rq->nr_running >= sched_nr_latency;
+ 
+-	update_curr(cfs_rq);
+-
+ 	if (unlikely(rt_prio(p->prio))) {
+ 		resched_task(curr);
+ 		return;
+@@ -1655,6 +1653,8 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
+ 
+ 	BUG_ON(!pse);
+ 
++	update_curr(cfs_rq);
++
+ 	if (wakeup_preempt_entity(se, pse) == 1) {
+ 		resched_task(curr);
+ 		/*
 -- 
-Jean Delvare
+1.6.5.GIT
+
