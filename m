@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZKQMuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZKQMvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZKQMuw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZKQMuw
+	id S1753148AbZKQMvP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZKQMvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:50:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3040 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbZKQMuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:50:51 -0500
-Date: Tue, 17 Nov 2009 13:48:52 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: utime/stime decreasing on thread exit
-Message-ID: <20091117124851.GA3616@dhcp-lab-161.englab.brq.redhat.com>
-References: <4AF123F5.50407@jp.fujitsu.com> <4AF26176.4080307@jp.fujitsu.com> <1257778154.4108.341.camel@laptop> <20091109172020.GA7751@redhat.com> <1257787903.4108.345.camel@laptop> <20091109192355.GA13724@redhat.com> <20091110104452.GB2391@dhcp-lab-161.englab.brq.redhat.com> <20091110174008.GA12909@redhat.com> <20091110182415.GB6066@dhcp-lab-161.englab.brq.redhat.com> <20091110192327.GA16325@redhat.com>
+	Tue, 17 Nov 2009 07:51:14 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:59367 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752097AbZKQMvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 07:51:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lJp8ESn9gQijn+zfcsUmz5uM9aVeCvYNmabcNPsis1e/bUCrhYHQLPN9IqXxh7mxrB
+         p6QqUf3lm6tQtEjTzIWZe0Rw74g20GFzcq6Rl/C68SMBkOEWemqCSmutK6MCfRvUoAyh
+         pzUJ4i9/VSxqqiJ+qtsZRKKlFjrQetzzcHxvo=
+Message-ID: <4B029C40.2020803@gmail.com>
+Date: Tue, 17 Nov 2009 21:51:12 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091110192327.GA16325@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
+Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
+References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com> <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk> <20091117200618.3DFF.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091117200618.3DFF.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2009 at 08:23:27PM +0100, Oleg Nesterov wrote:
-> > > Can't we ensure that fastpath_timer_check() never do while_each_thread() ?
-> >
-> > Removing possibility to call while_each_tread() from fastpath_timer_check()
-> > was exactly my intension here, perhaps I was not clear.
+Sorry for the noise. 
+While I am typing, my mail client already send the mail. :(.
+This is genuine.
+
+KOSAKI Motohiro wrote:
+>> On Tue, 17 Nov 2009 16:17:50 +0900 (JST)
+>> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>>
+>>> Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
+>>> memory, anyone must not prevent it. Otherwise the system cause
+>>> mysterious hang-up and/or OOM Killer invokation.
+>> So now what happens if we are paging and all our memory is tied up for
+>> writeback to a device or CIFS etc which can no longer allocate the memory
+>> to complete the write out so the MM can reclaim ?
 > 
-> Yes, yes, I understand.
+> Probably my answer is not so simple. sorry.
 > 
-> I meant, perhaps we can ensure this shouldn't happen "by design", instead
-> of checking ->running in fastpath_timer_check().
+> reason1: MM reclaim does both dropping clean memory and writing out dirty pages.
 
-Rule "sig->cputimer_expire != zero implies sig->cputimer.running == true" is
-_almost_ assured (after fix in next mail). IMHO there is only one problem with
-that functions: posix_cpu_timer_set() and posix_cpu_timer_schedule().
+Who write out dirty pages?
+If block driver can't allocate pages for flushing, It means VM can't reclaim
+dirty pages after all.
 
-These functions first call thread_group_cputimer() without
-tsk->sighand->siglock (only tasklist_lock is taken) and then
-arm_timer(), which setups list and cputime_expires cache.
+> reason2: if all memory is exhausted, maybe we can't recover it. it is
+> fundamental limitation of Virtual Memory subsystem. and, min-watermark is
+> decided by number of system physcal memory, but # of I/O issue (i.e. # of
+> pages of used by writeback thread) is mainly decided # of devices. 
+> then, we can't gurantee min-watermark is sufficient on any systems.
+> Only reasonable solution is mempool like reservation, I think.
 
-When there is some timer expiring already we can have situation like below:
+I think it's because mempool reserves memory. 
+(# of I/O issue\0 is hard to be expected.
+How do we determine mempool size of each block driver?
+For example,  maybe, server use few I/O for nand. 
+but embedded system uses a lot of I/O. 
 
-cpu_timer_sample_group()
-				check_process_timers()
-					stop_process_timers()
-arm_timer()
+We need another knob for each block driver?
 
-At the end we end with cputimer_expire != zero and ->running == false.
-Very unlikely situation indeed, but possible. To address this
-we can do in arm_timer() something like that:
-
-	if (unlikely(!sig->cputimer.running)) {
-		cpu_timer_sample_group()
-		bump_cpu_timer();
-	}
-
-Since we have this we can do optimization, you proposed here:
-
-http://lkml.org/lkml/2009/3/23/381
-
-Use cputimer->running in fastpath_timer_check(). I'm going to work on
-it as well on some other optimizations in posix-cpu-timer.c
+I understand your point. but it's not simple. 
+I think, for making sure VM's pages, block driver need to distinguish 
+normal flush path and flush patch for reclaiming. 
+So In case of flushing for reclaiming, block driver have to set PF_MEMALLOC. 
+otherwise, it shouldn't set PF_MEMALLOC.
 
 
-> Still. check_process_timers() updates sig->cputime_expires at the end,
-> but it never clears it. For example,
+> IOW, any reservation memory shouldn't share unrelated subsystem. otherwise
+> we lost any gurantee.
 > 
-> 	if (sched_expires != 0 &&
-> 	    (sig->cputime_expires.sched_exp == 0 ||
-> 	     sig->cputime_expires.sched_exp > sched_expires))
-> 		sig->cputime_expires.sched_exp = sched_expires;
+> So, I think we need to hear why many developer don't use mempool,
+> instead use PF_MEMALLOC.
 > 
-> Why?
+>> Am I missing something or is this patch set not addressing the case where
+>> the writeback thread needs to inherit PF_MEMALLOC somehow (at least for
+>> the I/O in question and those blocking it)
 > 
-> Now suppose that (say) sig->cputime_expires.sched_exp != 0, there are
-> no cpu timers, ->running == F.
+> Yes, probably my patchset isn't perfect. honestly I haven't understand
+> why so many developer prefer to use PF_MEMALLOC.
 > 
-> In this case fastpath_timer_check() always returns T and triggers the
-> slow path which does nothing, not good.
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-This is real bug. I will fix it in the next patch. 
-
-Stanislaw
