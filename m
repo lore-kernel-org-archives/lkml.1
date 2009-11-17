@@ -1,137 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZKQSQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZKQSR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZKQSQl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 13:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZKQSQk
+	id S1754404AbZKQSR4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 13:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZKQSRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 13:16:40 -0500
-Received: from bu3sch.de ([62.75.166.246]:46971 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbZKQSQk convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 13:17:55 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:23567 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbZKQSRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 13:16:40 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] strcmp: fix overflow error
-Date: Tue, 17 Nov 2009 19:16:40 +0100
-User-Agent: KMail/1.9.9
-Cc: Uwe =?utf-8?q?Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
-X-Move-Along: Nothing to see here. No, really... Nothing.
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200911171916.41727.mb@bu3sch.de>
+	Tue, 17 Nov 2009 13:17:54 -0500
+Date: Tue, 17 Nov 2009 10:17:42 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       devel@driverdev.osuosl.org
+Subject: [PATCH -next] sep: fix 2 warnings
+Message-Id: <20091117101742.d512100e.randy.dunlap@oracle.com>
+In-Reply-To: <20091117195309.6cc3ead0.sfr@canb.auug.org.au>
+References: <20091117195309.6cc3ead0.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B02E8CD.012C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009 18:41:58 Linus Torvalds wrote:
-> 
-> On Tue, 17 Nov 2009, Uwe Kleine-König wrote:
-> >
-> > strcmp("\x01", "\xef") returns 18 but it should return something < 0.
-> > The reason is that the variable holding the result of the subtraction is
-> > too small and overflows.
-> 
-> No. The reason is that whoever wrote that function is a moron and doesn't 
-> know the standard. And your fix is not correct _either_
-> 
-> The comparison should be done as *unsigned char*. As specified by POSIX
-> 
->   "The sign of a non-zero return value shall be determined by the sign of 
->    the difference between the values of the first pair of bytes (both 
->    interpreted as type unsigned char) that differ in the strings being 
->    compared."
-> 
-> and both the original code and your change gets it wrong in different 
-> ways.
-> 
-> >  int strcmp(const char *cs, const char *ct)
-> >  {
-> > -	signed char __res;
-> > +	int __res;
-> >  
-> >  	while (1) {
-> >  		if ((__res = *cs - *ct++) != 0 || !*cs++)
-> 
-> So this is fundamentally incorrect both with "signed char __res" _and_ 
-> with "int __res", because '*cs' and '*ct' are both (possibly - it depends 
-> on the compiler and architecture) signed chars.
-> 
-> So in the case you mention, strcmp() _should_ return a negative value, 
-> because "\x01" is smaller than "\xef", but you have:
-> 
->  - *cs = 1, *ct = (char) 0xef = -17 _OR_ 239 depending on sign of 'char'
-> 
-> and as a result:
-> 
->  - signed char __res = 18 (incorrect, regardless: ct is larger)
-> 
->  - int __res = 18 (incorrect) or -238 (correct) depending on sign of char
-> 
-> so your patch doesn't actually help at all.
-> 
-> What would help is something like the appended, but I have not tested it 
-> AT ALL. It may be total and utter crap too. Maybe it doesn't compile, 
-> maybe it buggers your pet hedgehog. I just don't know.
-> 
-> 		Linus
-> 
-> ---
->  lib/string.c |   20 ++++++++++++++------
->  1 files changed, 14 insertions(+), 6 deletions(-)
-> 
-> diff --git a/lib/string.c b/lib/string.c
-> index b19b87a..e96421a 100644
-> --- a/lib/string.c
-> +++ b/lib/string.c
-> @@ -246,13 +246,17 @@ EXPORT_SYMBOL(strlcat);
->  #undef strcmp
->  int strcmp(const char *cs, const char *ct)
->  {
-> -	signed char __res;
-> +	unsigned char c1, c2;
->  
->  	while (1) {
-> -		if ((__res = *cs - *ct++) != 0 || !*cs++)
-> +		c1 = *cs++;
-> +		c2 = *ct++;
-> +		if (c1 != c2)
-> +			return c1 < c2 ? -1 : 1;
-> +		if (!c1)
->  			break;
->  	}
-> -	return __res;
-> +	return 0;
->  }
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Well, that doesn't actually return the difference at all. Is that allowed?
+Fix printk format warning:
+drivers/staging/sep/sep_driver.c:276: warning: format '%08llx' expects type 'long long unsigned int', but argument 2 has type 'dma_addr_t'
 
-What about this? (Manually hacked pseudo patch)
+and variable may be used uninitialized (correct):
+drivers/staging/sep/sep_driver.c:1774: warning: 'error' may be used uninitialized in this function
 
-diff --git a/lib/string.c b/lib/string.c
-index b19b87a..661ff06 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -246,7 +246,7 @@ EXPORT_SYMBOL(strlcat);
- #undef strcmp
- int strcmp(const char *cs, const char *ct)
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/sep/sep_driver.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- linux-next-20091117.orig/drivers/staging/sep/sep_driver.c
++++ linux-next-20091117/drivers/staging/sep/sep_driver.c
+@@ -273,7 +273,8 @@ static dma_addr_t sep_shared_virt_to_bus
+ 						void *virt_address)
  {
--       signed char __res;
-+       int __res;
+ 	dma_addr_t pa = sep->shared_bus + (virt_address - sep->shared_addr);
+-	edbg("sep: virt to bus b %08llx v %p\n", pa, virt_address);
++	edbg("sep: virt to bus b %08llx v %p\n",
++		(unsigned long long)pa, virt_address);
+ 	return pa;
+ }
  
-        while (1) {
--                if ((__res = *cs - *ct++) != 0 || !*cs++)
-+                if ((__res = (unsigned char)(*cs) - (unsigned char)(*ct++)) != 0 || !*cs++)
-@@ -266,7 +266,7 @@ EXPORT_SYMBOL(strcmp);
-  */
-
--- 
-Greetings, Michael.
+@@ -1788,6 +1789,7 @@ static int sep_create_flow_dma_tables_ha
+ 	first_table_data.physical_address = 0xffffffff;
+ 
+ 	/* find the free structure for flow data */
++	error = -EINVAL;
+ 	flow_context_ptr = sep_find_flow_context(sep, SEP_FREE_FLOW_ID);
+ 	if (flow_context_ptr == NULL)
+ 		goto end_function;
