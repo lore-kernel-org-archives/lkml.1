@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbZKQIGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZKQIHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbZKQIGj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZKQIGi
+	id S1754562AbZKQIHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:07:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZKQIHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:06:38 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:59767 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbZKQIGh convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 03:07:06 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53261
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752488AbZKQIHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:06:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YMkqwiBkBigYP8fnowewWX2YmQupyZp5GQc4UKg51etvfHhnCHe9TeOwlMQB0MnZcx
-         maOrbRz40iwooPCOtrrEIM61OwPZZS2UtbUYS3sjuheEtNstpqKNwA7bCpVBzTjWcKCh
-         G8V8KaYJKnr9XSRAvsdS8Nm/FNDPxtpFBZj4Y=
-MIME-Version: 1.0
-In-Reply-To: <OWmO9uyC1hM.A.-xD.GqdALB@chimera>
-References: <ipicVA1QUFF.A.zWB.1mdALB@chimera>
-	 <OWmO9uyC1hM.A.-xD.GqdALB@chimera>
-Date: Tue, 17 Nov 2009 09:06:42 +0100
-Message-ID: <b637ec0b0911170006j1b77b538na35923ab5855aa41@mail.gmail.com>
-Subject: Re: [Bug #13943] WARNING: at net/mac80211/mlme.c:2292 with ath5k
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Nov 2009 03:07:04 -0500
+Date: Tue, 17 Nov 2009 00:07:20 -0800 (PST)
+Message-Id: <20091117.000720.01506428.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, w.sang@pengutronix.de, chripell@fsfe.org,
+       wg@grandegger.com, anantgole@ti.com, oliver@hartkopp.net
+Subject: Re: linux-next: manual merge of the net tree with the net-current
+ tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091117131637.3a35f898.sfr@canb.auug.org.au>
+References: <20091117131637.3a35f898.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Still present last time I tried .31 series.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 17 Nov 2009 13:16:37 +1100
 
-On Tue, Nov 17, 2009 at 12:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13943
-> Subject         : WARNING: at net/mac80211/mlme.c:2292 with ath5k
-> Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
-> Date            : 2009-08-06 20:15 (103 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124958978600600&w=4
->
->
->
+> I fixed it up (see below) and can carry the fix for a while. (I am not
+> sure the fix is entirely correct.)
+
+I'll merge net-2.6 into net-next-2.6 so you won't see this tomorrow.
+
+Thanks!
