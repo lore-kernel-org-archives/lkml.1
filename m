@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZKQSR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbZKQSTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbZKQSR4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 13:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZKQSRz
+	id S1754266AbZKQSTh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 13:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZKQSTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 13:17:55 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:23567 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbZKQSRy (ORCPT
+	Tue, 17 Nov 2009 13:19:36 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35850 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751770AbZKQSTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 13:17:54 -0500
-Date: Tue, 17 Nov 2009 10:17:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       devel@driverdev.osuosl.org
-Subject: [PATCH -next] sep: fix 2 warnings
-Message-Id: <20091117101742.d512100e.randy.dunlap@oracle.com>
-In-Reply-To: <20091117195309.6cc3ead0.sfr@canb.auug.org.au>
-References: <20091117195309.6cc3ead0.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 17 Nov 2009 13:19:36 -0500
+Date: Tue, 17 Nov 2009 18:21:31 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2/5] pata_sis: Implement MWDMA for the UDMA 133 capable
+ chips
+Message-ID: <20091117182131.0d91fc0e@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911171857.01805.bzolnier@gmail.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+	<200911171827.29891.bzolnier@gmail.com>
+	<20091117173823.217b95a7@lxorguk.ukuu.org.uk>
+	<200911171857.01805.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B02E8CD.012C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> > I'm not convinced because for the majority of drivers the libata timing
+> > interface handles it. SiS needs it just because it does things by
+> > precomputed tables. It's a one off interface.
+> 
+> Controllers based on *Intel* PIIX are in the disagreement with the above
 
-Fix printk format warning:
-drivers/staging/sep/sep_driver.c:276: warning: format '%08llx' expects type 'long long unsigned int', but argument 2 has type 'dma_addr_t'
+No the PIIX is quite different. You use the matching PIO timing (which is
+a short lookup and shorter code than even a helper function call). You do
+not use the clipping instead you set bit 3 to ensure that PIO cycles
+occur at low speed but MWDMA runs at the right speed. That is usually a
+win over picking a lower mode as the PIIX can do ATAPI DMA happily.
 
-and variable may be used uninitialized (correct):
-drivers/staging/sep/sep_driver.c:1774: warning: 'error' may be used uninitialized in this function
+So the only thing you can "share" is what would be a 4 byte table.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/sep/sep_driver.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> paragraph and having generic helper to do conversion (without a clipping)
+> would bring us a little step closer to killing a needless code duplication
+> currently present in their ->set_piomode and ->set_dmamode methods.
+> 
+> [ In case somebody wonders: no, 'old' drivers don't have such duplication
+>   and 'whoever did it didn't port it across' cause said 'whoever'-s were not
+>   into the development of the square wheels.... ]
 
---- linux-next-20091117.orig/drivers/staging/sep/sep_driver.c
-+++ linux-next-20091117/drivers/staging/sep/sep_driver.c
-@@ -273,7 +273,8 @@ static dma_addr_t sep_shared_virt_to_bus
- 						void *virt_address)
- {
- 	dma_addr_t pa = sep->shared_bus + (virt_address - sep->shared_addr);
--	edbg("sep: virt to bus b %08llx v %p\n", pa, virt_address);
-+	edbg("sep: virt to bus b %08llx v %p\n",
-+		(unsigned long long)pa, virt_address);
- 	return pa;
- }
- 
-@@ -1788,6 +1789,7 @@ static int sep_create_flow_dma_tables_ha
- 	first_table_data.physical_address = 0xffffffff;
- 
- 	/* find the free structure for flow data */
-+	error = -EINVAL;
- 	flow_context_ptr = sep_find_flow_context(sep, SEP_FREE_FLOW_ID);
- 	if (flow_context_ptr == NULL)
- 		goto end_function;
+There is no duplication in the old drivers because they don't implement
+the needed check and clipping/bit setting that I can see ;)
+
+Alan
