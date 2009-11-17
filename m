@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZKQQul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKQQvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbZKQQul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 11:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZKQQul
+	id S1755480AbZKQQvg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 11:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZKQQvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 11:50:41 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:46557 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752988AbZKQQuk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 11:50:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=bFSQC6XRlxrTAo5wi9nZesNHaCihpXAVSWarrgEq2/XjhlMYjDry5Fj3vSQJ7Po+Qz
-         esPzC56qwA1PLd9tJFhdNc97x6Uoy/XzbKVzKe1zOJtA+blFcUNDL6IK/PsVG5vbZnJD
-         EHfkDNzFMXKuIw75fgCH3yeWgU2SWzLZYxJwg=
+	Tue, 17 Nov 2009 11:51:36 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:44987 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752245AbZKQQvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 11:51:35 -0500
+Message-ID: <4B02D493.7000305@sgi.com>
+Date: Tue, 17 Nov 2009 08:51:31 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091117154641.3879.73168.stgit@localhost.localdomain>
-References: <20091117154641.3879.73168.stgit@localhost.localdomain>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 17 Nov 2009 11:50:24 -0500
-Message-ID: <8bd0f97a0911170850x40f68e02y5a3d8ad39c4f9b90@mail.gmail.com>
-Subject: Re: [RESEND PATCH] gpio_addr_flash: Fix warnings
-To: Alan Cox <alan@linux.intel.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: David Miller <davem@davemloft.net>
+CC: gorcunov@gmail.com, hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de,
+       akpm@linux-foundation.org, heiko.carstens@de.ibm.com, rdreier@cisco.com,
+       rdunlap@xenotime.net, tj@kernel.org, andi@firstfloor.org,
+       gregkh@suse.de, yhlu.kernel@gmail.com, rientjes@google.com,
+       rostedt@goodmis.org, rusty@rustcorp.com.au,
+       seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com, fweisbec@gmail.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration bootup
+ messages
+References: <20091116214302.GJ5653@lenovo>	<4B01C81F.9040000@zytor.com>	<20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net>
+In-Reply-To: <20091116.190922.182816918.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 10:46, Alan Cox wrote:
-> --- a/drivers/mtd/maps/gpio-addr-flash.c
-> +++ b/drivers/mtd/maps/gpio-addr-flash.c
-> -       state->gpio_addrs     = (void *)gpios->start;
-> +       state->gpio_addrs     = (void *)(unsigned long)gpios->start;
-> -       state->map.virt       = (void __iomem *)memory->start;
-> +       state->map.virt       = (void __iomem *)(unsigned long)memory->start;
 
-on what system do you see warnings ?  start should be resource_size_t
-which should be phys_addr_t which should cast fine to a void*.
--mike
+
+David Miller wrote:
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> Date: Tue, 17 Nov 2009 00:50:52 +0300
+> 
+>> On Mon, Nov 16, 2009 at 01:46:07PM -0800, H. Peter Anvin wrote:
+>>> On 11/16/2009 01:43 PM, Cyrill Gorcunov wrote:
+>>>> It seems we have one
+>>>>
+>>>> 	arch/x86/kernel/setup.c:125:unsigned int boot_cpu_id __read_mostly;
+>>>>
+>>>> 	-- Cyrill
+>>> We probably should make it an inline function so that if other arches
+>>> want to define it to be a constant or some other kind of special thing
+>>> they can.
+>> IA-64 and SPARC already has this variable. But boot_cpu_id() as an
+>> inline function seem to be more natural/portable ineed.
+> 
+> Only 32-bit SPARC actually has it.  On sparc64 we have no reason to
+> remember which processor was the boot cpu, and remembering it merely
+> for the sake of only printing out the bogomips message once seems a
+> bit excessive?
+> 
+> How about:
+> 
+> 	static bool printed;
+> 
+> 	if (!printed) {
+> 		printk(...);
+> 		printed = true;
+> 	}
+> 
+> Or, alternatively, use an atomic_t instead of a bool if you think
+> races matter this early in the boot process.
+
+Yeah, I was thinking along these same lines.  Thanks for the feedback!
+
+Mike
