@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZKQIdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZKQIdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZKQIdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZKQIdT
+	id S1754840AbZKQIdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:33:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZKQIdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:33:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55569 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494AbZKQIdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:33:18 -0500
-Date: Tue, 17 Nov 2009 19:33:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Ben Hutchings <bhutchings@solarflare.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mika Kuoppala <mika.kuoppala@nokia.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: Shared i2c adapter locking
-Message-Id: <20091117193313.b750804e.sfr@canb.auug.org.au>
-In-Reply-To: <20091105150715.692b5200@hyperion.delvare>
-References: <20091026133757.7cf87e49.sfr@canb.auug.org.au>
-	<20091029154317.651904b9@hyperion.delvare>
-	<1256828976.2827.27.camel@achroite>
-	<20091105141122.56b6b4f8@hyperion.delvare>
-	<1257429444.2793.2.camel@achroite.uk.solarflarecom.com>
-	<20091105150715.692b5200@hyperion.delvare>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__17_Nov_2009_19_33_13_+1100_.m=8U0Qtf1ssOISm"
+	Tue, 17 Nov 2009 03:33:46 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33843 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754617AbZKQIdq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 03:33:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH 0/7] Kill PF_MEMALLOC abuse
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0911170004380.1564@chino.kir.corp.google.com>
+References: <20091117161551.3DD4.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0911170004380.1564@chino.kir.corp.google.com>
+Message-Id: <20091117172802.3DF4.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 17 Nov 2009 17:33:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__17_Nov_2009_19_33_13_+1100_.m=8U0Qtf1ssOISm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 17 Nov 2009, KOSAKI Motohiro wrote:
+> 
+> > 
+> > PF_MEMALLOC have following effects.
+> >   (1) Ignore zone watermark
+> >   (2) Don't call reclaim although allocation failure, instead return ENOMEM
+> >   (3) Don't invoke OOM Killer
+> >   (4) Don't retry internally in page alloc
+> > 
+> > Some subsystem paid attention (1) only, and start to use PF_MEMALLOC abuse.
+> > But, the fact is, PF_MEMALLOC is the promise of "I have lots freeable memory.
+> > if I allocate few memory, I can return more much meory to the system!".
+> > Non MM subsystem must not use PF_MEMALLOC. Memory reclaim
+> > need few memory, anyone must not prevent it. Otherwise the system cause
+> > mysterious hang-up and/or OOM Killer invokation.
+> > 
+> > if many subsystem will be able to use emergency memory without any
+> > usage rule, it isn't for emergency. it can become empty easily.
+> > 
+> > Plus, characteristics (2)-(4) mean PF_MEMALLOC don't fit to general
+> > high priority memory allocation.
+> > 
+> > Thus, We kill all PF_MEMALLOC usage in no MM subsystem.
+> 
+> I agree in principle with removing non-VM users of PF_MEMALLOC, but I 
+> think it should be left to the individual subsystem maintainers to apply 
+> or ack since the allocations may depend on the __GFP_NORETRY | ~__GFP_WAIT 
+> behavior of PF_MEMALLOC.  This could be potentially dangerous for a 
+> PF_MEMALLOC user if allocations made by the kthread, for example, should 
+> never retry for orders smaller than PAGE_ALLOC_COSTLY_ORDER or block on 
+> direct reclaim.
 
-Hi Jean,
+if there is so such reason. we might need to implement another MM trick.
+but keeping this strage usage is not a option. All memory freeing activity
+(e.g. page out, task killing) need some memory. we need to protect its
+emergency memory. otherwise linux reliability decrease dramatically when
+the system face to memory stress.
 
-On Thu, 5 Nov 2009 15:07:15 +0100 Jean Delvare <khali@linux-fr.org> wrote:
->
-> > Presumably this is meant for net-next-2.6, and you'll implement
->=20
-> Actually I meant to push this to Linus immediately, through my i2c
-> tree. This is essentially a no-op: the binary code will be the same as
-> before the patch, so guaranteed to be safe, and this will solve
-> conflicts in linux-next.
 
-Any word on this?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__17_Nov_2009_19_33_13_+1100_.m=8U0Qtf1ssOISm
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksCX8kACgkQjjKRsyhoI8wh4wCgjjbOxLXKpfD46dgZudQt8F0G
-GTUAoJJtBZcV1xUtVw8tP9A34tgBn5dw
-=/oxd
------END PGP SIGNATURE-----
-
---Signature=_Tue__17_Nov_2009_19_33_13_+1100_.m=8U0Qtf1ssOISm--
