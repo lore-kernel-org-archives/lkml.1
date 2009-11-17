@@ -1,92 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbZKQKlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZKQKeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbZKQKlD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 05:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZKQKlC
+	id S1754761AbZKQKeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 05:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZKQKeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 05:41:02 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:50755 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbZKQKlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 05:41:00 -0500
-X-Greylist: delayed 679 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Nov 2009 05:41:00 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=Ue0DWsoH6n3sZffEaCWTSWTpLc8hlAOlqMN/d1zra5BbtfOLMZG7Ft7OjITIT3qPYM
-         w2vziGIIfrtoqOw5DOpPwJJeIZZ63qSc1pSQFDfaMmdIb1oa6Q/U9sN+ZF8IdajOD7OC
-         GC+X1s+NrwVCBAakU0mFXkvI91rEehG3+LMeg=
-Date: Tue, 17 Nov 2009 11:33:20 +0100
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Bug #14267] Disassociating atheros wlan
-Message-Id: <20091117113320.8aef894a.kristoffer.ericson@gmail.com>
-In-Reply-To: <4B01F3FE.8040707@gmail.com>
-References: <ipicVA1QUFF.A.zWB.1mdALB@chimera>
-	<OWmO9uyC1hM.A.yiC._ndALB@chimera>
-	<4B01F3FE.8040707@gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 05:34:21 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39804 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753549AbZKQKeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 05:34:19 -0500
+Date: Tue, 17 Nov 2009 10:34:21 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double
+	check it should be asleep fix 1
+Message-ID: <20091117103420.GX29804@csn.ul.ie>
+References: <20091113142558.33B6.A69D9226@jp.fujitsu.com> <20091113141303.GI29804@csn.ul.ie> <20091114023901.3DA8.A69D9226@jp.fujitsu.com> <20091113181740.GN29804@csn.ul.ie> <2f11576a0911140134u21eafa83t9642bb25ccd953de@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <2f11576a0911140134u21eafa83t9642bb25ccd953de@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009 16:53:18 -0800
-"Justin P. Mattock" <justinmattock@gmail.com> wrote:
+When checking if kswapd is sleeping prematurely, all populated zones are
+checked instead of the zones the instance of kswapd is responsible for.
+The counters for kswapd going to sleep prematurely are also named poorly.
+This patch makes kswapd only check its own zones and renames the relevant
+counters.
 
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
-> > Subject		: Disassociating atheros wlan
-> > Submitter	: Kristoffer Ericson<kristoffer.ericson@gmail.com>
-> > Date		: 2009-09-24 10:16 (54 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
-> >
-> >
-> >
-> >    
-> I'm not sure(I've been procrastinating on this one
-> with reverting commits to see if it helps
-> the guy that reported this).
-> 
->  From over here though there never was a problem
-> on my side with the wireless connection(maybe a few disconnects,
-> but nothing too harsh).
-> 
-> At this point the best thing to do is to see what the
-> response is from the two gentlemen who where really
-> hitting this and seem to be running into issues
-> then go from there.
+This is a fix to the patch
+vmscan-have-kswapd-sleep-for-a-short-interval-and-double-check-it-should-be-asleep.patch
+and is based on top of mmotm-2009-11-13-19-59. It would be preferable if
+Kosaki Motohiro signed off on it as he had comments on the patch but the
+discussion petered out without a solid conclusion.
 
-Im still hitting this so basicly using 2.6.30 until it get sorted. Will try and make
-some time to test the different commits. Last time I waited for it to disconnect which
-could take 10-40min. Since it depends on the network load Im now going to increase
-the load to see if I hit it quicker (and thus finding the error commit).
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ include/linux/vmstat.h |    2 +-
+ mm/vmscan.c            |   20 +++++++++++++-------
+ mm/vmstat.c            |    4 ++--
+ 3 files changed, 16 insertions(+), 10 deletions(-)
 
-So in short, its still valid and I will try and make time to fix it :)
-
-
-> 
-> Justin P. Mattock
-> 
-> 
-
-
--- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 70c8093..117f0dd 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -40,7 +40,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		PGSCAN_ZONE_RECLAIM_FAILED,
+ #endif
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+-		KSWAPD_PREMATURE_FAST, KSWAPD_PREMATURE_SLOW,
++		KSWAPD_LOW_WMARK_HIT_QUICKLY, KSWAPD_HIGH_WMARK_HIT_QUICKLY,
+ 		KSWAPD_SKIP_CONGESTION_WAIT,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+ #ifdef CONFIG_HUGETLB_PAGE
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 81ef29b..da6cf42 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1907,19 +1907,25 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+ #endif
+ 
+ /* is kswapd sleeping prematurely? */
+-static int sleeping_prematurely(int order, long remaining)
++static int sleeping_prematurely(pg_data_t *pgdat, int order, long remaining)
+ {
+-	struct zone *zone;
++	int i;
+ 
+ 	/* If a direct reclaimer woke kswapd within HZ/10, it's premature */
+ 	if (remaining)
+ 		return 1;
+ 
+ 	/* If after HZ/10, a zone is below the high mark, it's premature */
+-	for_each_populated_zone(zone)
++	for (i = 0; i < pgdat->nr_zones; i++) {
++		struct zone *zone = pgdat->node_zones + i;
++
++		if (!populated_zone(zone))
++			continue;
++
+ 		if (!zone_watermark_ok(zone, order, high_wmark_pages(zone),
+ 								0, 0))
+ 			return 1;
++	}
+ 
+ 	return 0;
+ }
+@@ -2227,7 +2233,7 @@ static int kswapd(void *p)
+ 				long remaining = 0;
+ 
+ 				/* Try to sleep for a short interval */
+-				if (!sleeping_prematurely(order, remaining)) {
++				if (!sleeping_prematurely(pgdat, order, remaining)) {
+ 					remaining = schedule_timeout(HZ/10);
+ 					finish_wait(&pgdat->kswapd_wait, &wait);
+ 					prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
+@@ -2238,13 +2244,13 @@ static int kswapd(void *p)
+ 				 * premature sleep. If not, then go fully
+ 				 * to sleep until explicitly woken up
+ 				 */
+-				if (!sleeping_prematurely(order, remaining))
++				if (!sleeping_prematurely(pgdat, order, remaining))
+ 					schedule();
+ 				else {
+ 					if (remaining)
+-						count_vm_event(KSWAPD_PREMATURE_FAST);
++						count_vm_event(KSWAPD_LOW_WMARK_HIT_QUICKLY);
+ 					else
+-						count_vm_event(KSWAPD_PREMATURE_SLOW);
++						count_vm_event(KSWAPD_HIGH_WMARK_HIT_QUICKLY);
+ 				}
+ 			}
+ 
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 889254f..6051fba 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -683,8 +683,8 @@ static const char * const vmstat_text[] = {
+ 	"slabs_scanned",
+ 	"kswapd_steal",
+ 	"kswapd_inodesteal",
+-	"kswapd_slept_prematurely_fast",
+-	"kswapd_slept_prematurely_slow",
++	"kswapd_low_wmark_hit_quickly",
++	"kswapd_high_wmark_hit_quickly",
+ 	"kswapd_skip_congestion_wait",
+ 	"pageoutrun",
+ 	"allocstall",
