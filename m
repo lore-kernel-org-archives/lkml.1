@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbZKQMhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZKQMip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbZKQMhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZKQMho
+	id S1755092AbZKQMip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbZKQMio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:37:44 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:19929 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbZKQMhn (ORCPT
+	Tue, 17 Nov 2009 07:38:44 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:48033 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151AbZKQMin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:37:43 -0500
-Date: Tue, 17 Nov 2009 07:36:22 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: JiSheng Zhang <jszhang3@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, stable@kernel.org, jack@suse.cz
-Subject: Re: [BUG]2.6.27.y some contents lost after writing to mmaped file
-Message-ID: <20091117123622.GI27677@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Greg KH <gregkh@suse.de>, JiSheng Zhang <jszhang3@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org,
-	jack@suse.cz
-References: <2df346410911151938r1eb5c5e4q9930ac179d61ef01@mail.gmail.com>
- <20091117015655.GA8683@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091117015655.GA8683@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B0298FA.00D8:SCFMA4539814,ss=1,fgs=0
+	Tue, 17 Nov 2009 07:38:43 -0500
+Subject: Re: [RFC] Block IO Controller V2 - some results
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+In-Reply-To: <20091116221827.GL13235@redhat.com>
+References: <1258404660.3533.150.camel@cail>
+	 <20091116221827.GL13235@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 17 Nov 2009 07:38:47 -0500
+Message-ID: <1258461527.2862.2.camel@cail>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 05:56:55PM -0800, Greg KH wrote:
-> On Mon, Nov 16, 2009 at 11:38:57AM +0800, JiSheng Zhang wrote:
-> > Hi,
-> > 
-> > I triggered a failure in an fs test with fsx-linux from ltp. It seems that
-> > fsx-linux failed at mmap->write sequence.
-> > 
-> > Tested kernel is 2.6.27.12 and 2.6.27.39
+On Mon, 2009-11-16 at 17:18 -0500, Vivek Goyal wrote:
+> On Mon, Nov 16, 2009 at 03:51:00PM -0500, Alan D. Brunelle wrote:
 > 
-> Does this work on any kernel you have tested?  Or is it a regression?
-> 
-> > Tested file system: ext3, tmpfs.
-> > IMHO, it impacts all file systems.
+> [..]
+> > ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 > > 
-> > Some fsx-linux log is:
+> > The next thing to look at is to see what the "penalty" is for the
+> > additional code: see how much bandwidth we lose for the capability
+> > added. Here we see the sum of the system's throughput for the various
+> > tests:
 > > 
-> > READ BAD DATA: offset = 0x2771b, size = 0xa28e
-> > OFFSET  GOOD    BAD     RANGE
-> > 0x287e0 0x35c9  0x15a9     0x80
-> > operation# (mod 256) for the bad datamay be 21
-> > ...
-> > 7828: 1257514978.306753 READ     0x23dba thru 0x25699 (0x18e0 bytes)
-> > 7829: 1257514978.306899 MAPWRITE 0x27eeb thru 0x2a516 (0x262c bytes)
-> >  ******WWWW
-> > 7830: 1257514978.307504 READ     0x2771b thru 0x319a8 (0xa28e bytes)
-> >  ***RRRR***
-> > Correct content saved for comparison
-> > ...
+> > ---- ---- - ----------- ----------- ----------- ----------- 
+> > Mode RdWr N    base       ioc off   ioc no idle  ioc idle   
+> > ---- ---- - ----------- ----------- ----------- ----------- 
+> >  rnd   rd 2        17.3        17.1         9.4         9.1 
+> >  rnd   rd 4        27.1        27.1         8.1         8.2 
+> >  rnd   rd 8        37.1        37.1         6.8         7.1 
+> > 
 > 
-> Are you sure that the LTP is correct?  It wouldn't be the first time it
-> wasn't...
+> Hi Alan,
+> 
+> This seems to be the most notable result in terms of performance degradation.
+> 
+> I ran two random readers on a locally attached SATA disk. There in fact
+> I gain in terms of performance because we perform less number of seeks
+> now as we allocate a continous slice to one group and then move onto
+> next group.
+> 
+> But in your setup it looks like there is a striped set of disks and seek
+> cost is less and waiting per group for sync-noidle workload is hurting
+> instead.
 
-I'm afraid fsx usually finds bugs.  I thought Jan Kara recently fixed
-something here in ext3, does 2.6.32-rc work?
 
--chris
+That is correct - there are 4 back-end buses on an MSA1000, and each LUN
+that is exported is constructed from 1 drive from each bus (hardware
+striped RAID). [There is _no_ SW RAID involved.]
+
+
+> 
+> One simple way to test that would be to set slice_idle=0 so that CFQ does
+> not try to do any idling at all. Can you please re-run above test. This
+> will help in figuring out whether above performance regression is coming
+> from idling on sync-noidle workload group per cgroup or not.
+
+I'll put that in the queue - first I'm going to re-run w/ synchronous
+direct I/O for the writes. I'm also going to pair this down to just
+doing 2-processes per disk runs (to simplify results & speed up tests).
+Once we get that working better, I can expand things back out.
+
+> 
+> Above numbers are in what units?
+
+These are in MiB/second (derived from the FIO output).
+
+> 
+> Thanks
+> Vivek
+
+
 
