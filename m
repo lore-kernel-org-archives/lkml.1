@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZKQAlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZKQAuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbZKQAlo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 19:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZKQAln
+	id S1755233AbZKQAuQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 19:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZKQAuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 19:41:43 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:2120 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751708AbZKQAln convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 19:41:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Eywvy2yjh5SCtUfHknCMjVDIP0a7KlbWQ/O1Zzln47btWJeSkiUVWf6xJA+1EIMHXR
-         /w6WOaVetPaR+2Ja69geyAgQUdF8WhqBKbRWiIb5DOj/DExVfX5IsbmqWqjWvrUkJ42G
-         naXL5vZ+JNwjeWbWJe/a9LXE8ZtaDFmUYmLt8=
-MIME-Version: 1.0
-In-Reply-To: <43e72e890911161515q64ff527cyefd7d769f3c501b@mail.gmail.com>
-References: <4ADE2F66.1070703@gmail.com>
-	 <43e72e890911161515q64ff527cyefd7d769f3c501b@mail.gmail.com>
-Date: Mon, 16 Nov 2009 19:41:47 -0500
-Message-ID: <a44ae5cd0911161641n36d3c746pb69a9cac1eba1784@mail.gmail.com>
-Subject: Re: 2.6.32-rc5-git1 -- BUG kmalloc-8192: Poison overwritten (ath9k 
-	implicated)
-From: Miles Lane <miles.lane@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Felix Bitterli <ic.felix@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Nov 2009 19:50:06 -0500
+Received: from mail1.radix.net ([207.192.128.31]:64156 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754478AbZKQAuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 19:50:05 -0500
+Subject: Re: [PATCH 17/21] workqueue: simple reimplementation of
+ SINGLE_THREAD workqueue
+From: Andy Walls <awalls@radix.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, jeff@garzik.org,
+       mingo@elte.hu, akpm@linux-foundation.org, jens.axboe@oracle.com,
+       rusty@rustcorp.com.au, cl@linux-foundation.org, dhowells@redhat.com,
+       arjan@linux.intel.com, torvalds@linux-foundation.org, avi@redhat.com,
+       peterz@infradead.org, andi@firstfloor.org, fweisbec@gmail.com
+In-Reply-To: <1258391726-30264-18-git-send-email-tj@kernel.org>
+References: <1258391726-30264-1-git-send-email-tj@kernel.org>
+	 <1258391726-30264-18-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Date: Mon, 16 Nov 2009 19:47:52 -0500
+Message-Id: <1258418872.4096.28.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 6:15 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> On Tue, Oct 20, 2009 at 1:45 PM, Miles Lane <miles.lane@gmail.com> wrote:
->> Let me know if you want my .config file.  I think this was triggered by
->> suspending my laptop.
->>
->> BUG kmalloc-8192: Poison overwritten
->
-> Thanks for your report Miles.
->
-> Are you using Linus' tree? Felix wrote some patches that got rid of
-> the rate control private area which we kmalloc/kfree and at least one
-> user reported that these patches fixed a memory leak. I'm curious if
-> the same patches would resolve this issue.
->
-> Only thing is these patches apply against wireless-testing and not
-> 2.6.32. To test them you'd have to pull wireless-testing master to
-> your tree and then apply the patches both before and after.
->
-> Would you be up to try that?
+On Tue, 2009-11-17 at 02:15 +0900, Tejun Heo wrote:
+> SINGLE_THREAD workqueues are used to reduce the number of worker
+> threads and ease synchronization.  The first reason will be irrelevant
+> with concurrency managed workqueue implementation.  Simplify
+> SINGLE_THREAD implementation by creating the workqueues the same but
+> making the worker grab mutex before actually executing works on the
+> workqueue.  In the long run, most SINGLE_THREAD workqueues will be
+> replaced with generic ones.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> 
+> ---
+> kernel/workqueue.c |  151 ++++++++++++++++++----------------------------------
+>  1 files changed, 52 insertions(+), 99 deletions(-)
+> 
+> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> index 5392939..82b03a1 100644
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/kallsyms.h>
+>  #include <linux/debug_locks.h>
+>  #include <linux/lockdep.h>
+> +#include <linux/mutex.h>
+>  
+>  /*
+>   * Structure fields follow one of the following exclusion rules.
+> @@ -71,6 +72,7 @@ struct workqueue_struct {
+>  	struct cpu_workqueue_struct *cpu_wq;	/* I: cwq's */
+>  	struct list_head	list;		/* W: list of all workqueues */
+>  	const char		*name;		/* I: workqueue name */
+> +	struct mutex		single_thread_mutex; /* for SINGLE_THREAD wq */
+>  #ifdef CONFIG_LOCKDEP
+>  	struct lockdep_map	lockdep_map;
+>  #endif
 
-Yes, definitely.  Thanks.  I will try to accomplish this and let you
-know if I get stuck.
 
-Miles
+> @@ -410,6 +387,8 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+>  static void process_one_work(struct cpu_workqueue_struct *cwq,
+>  			     struct work_struct *work)
+>  {
+> +	struct workqueue_struct *wq = cwq->wq;
+> +	bool single_thread = wq->flags & WQ_SINGLE_THREAD;
+>  	work_func_t f = work->func;
+>  #ifdef CONFIG_LOCKDEP
+>  	/*
+> @@ -430,11 +409,18 @@ static void process_one_work(struct cpu_workqueue_struct *cwq,
+>  
+>  	BUG_ON(get_wq_data(work) != cwq);
+>  	work_clear_pending(work);
+> -	lock_map_acquire(&cwq->wq->lockdep_map);
+> +	lock_map_acquire(&wq->lockdep_map);
+>  	lock_map_acquire(&lockdep_map);
+> -	f(work);
+> +
+> +	if (unlikely(single_thread)) {
+> +		mutex_lock(&wq->single_thread_mutex);
+> +		f(work);
+> +		mutex_unlock(&wq->single_thread_mutex);
+> +	} else
+> +		f(work);
+> +
+
+An important property of the single threaded workqueue, upon which the
+cx18 driver relies, is that work objects will be processed strictly in
+the order in which they were queued.  The cx18 driver has a pool of
+"work orders" and multiple active work orders can be queued up on the
+workqueue especially if multiple streams are active.  If these work
+orders were to be processed out of order, video artifacts would result
+in video display applications.
+
+
+With multiple work handling threads, I don't think the 
+
+	mutex_lock(&wq->single_thread_mutex);
+	f(work);
+	
+here can guarantee work requests from the workqueue will always be
+processed in the order they are received.
+
+Am I missing something?
+
+Regards,
+Andy
+
