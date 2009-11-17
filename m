@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZKQWSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbZKQWS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZKQWSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbZKQWSV
+	id S1756338AbZKQWS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbZKQWS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:18:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54329 "EHLO mx2.suse.de"
+	Tue, 17 Nov 2009 17:18:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38519 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755950AbZKQWSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:18:20 -0500
-Date: Tue, 17 Nov 2009 23:18:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?ISO-8859-15?Q?=22Andr=E9_Goddard_Rosa=22?= 
-	<andre.goddard@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the wireless
- tree
-In-Reply-To: <20091117154957.a23c959b.sfr@canb.auug.org.au>
-Message-ID: <alpine.LSU.2.00.0911172317560.15039@wotan.suse.de>
-References: <20091117154957.a23c959b.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S1756286AbZKQWS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:18:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [Bug #14352] WARNING: at net/mac80211/scan.c:267
+Date: Tue, 17 Nov 2009 23:19:49 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.o1.bUdALB@chimera> <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com>
+In-Reply-To: <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911172319.49198.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009, Stephen Rothwell wrote:
-
-> Today's linux-next merge of the trivial tree got a conflict in
-> drivers/net/wireless/rt2x00/rt2800usb.h between various commits from the
-> wireless tree and commit 17530b1c635dfd1f258afc6b07b986b425d66ebd
-> ("tree-wide: fix assorted typos all over the place") from the trivial
-> tree.
+On Tuesday 17 November 2009, Maciej Rutecki wrote:
+> 2009/11/16 Rafael J. Wysocki <rjw@sisk.pl>:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14352
+> > Subject         : WARNING: at net/mac80211/scan.c:267
+> > Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
+> > Date            : 2009-10-08 00:30 (40 days old)
+> > References      : http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089#c7
+> >
+> >
 > 
-> The wireless tree commits moved the code fixed by the trivial tree, but
-> also fixed it along the way, so I have ignored the trivial fixup for this
-> file.
+> In 2.6.32-rc7 problem seems be fixed.
 
-Thanks for letting me know, I have dropped the rt2800usb bits from my 
-queue, so this conflict should now be gone.
+Thanks, closing.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Rafael
