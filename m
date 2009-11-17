@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZKQCAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZKQCGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbZKQCAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 21:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZKQCAn
+	id S1755716AbZKQCGY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 21:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbZKQCGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 21:00:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39363 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbZKQCAl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 21:00:41 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 2/6] mm: mlocking in try_to_unmap_one
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0911152217030.29917@sister.anvils>
-References: <20091113143930.33BF.A69D9226@jp.fujitsu.com> <Pine.LNX.4.64.0911152217030.29917@sister.anvils>
-Message-Id: <20091117103620.3DC4.A69D9226@jp.fujitsu.com>
+	Mon, 16 Nov 2009 21:06:24 -0500
+Received: from THUNK.ORG ([69.25.196.29]:36371 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752942AbZKQCGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 21:06:23 -0500
+Date: Mon, 16 Nov 2009 21:02:02 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Frank Mayhar <fmayhar@google.com>, Holger Freyther <zecke@selfish.org>
+Subject: Re: [Bug #14354] Bad corruption with 2.6.32-rc1 and upwards
+Message-ID: <20091117020202.GA23066@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	Frank Mayhar <fmayhar@google.com>,
+	Holger Freyther <zecke@selfish.org>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.6w.YUdALB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 17 Nov 2009 11:00:43 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <xXQGFmujPl.A.6w.YUdALB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 13 Nov 2009, KOSAKI Motohiro wrote:
-> > if so, following additional patch makes more consistent?
-> > ----------------------------------
-> > From 3fd3bc58dc6505af73ecf92c981609ecf8b6ac40 Mon Sep 17 00:00:00 2001
-> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Date: Fri, 13 Nov 2009 16:52:03 +0900
-> > Subject: [PATCH] [RFC] mm: non linear mapping page don't mark as PG_mlocked
-> > 
-> > Now, try_to_unmap_file() lost the capability to treat VM_NONLINEAR.
+On Mon, Nov 16, 2009 at 11:37:39PM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Now?
-> Genuine try_to_unmap_file() deals with VM_NONLINEAR (including VM_LOCKED)
-> much as it always did, I think.  But try_to_munlock() on a VM_NONLINEAR
-> has not being doing anything useful, I assume ever since it was added,
-> but haven't checked the history.
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> But so what?  try_to_munlock() has those down_read_trylock()s which make
-> it never quite reliable.  In the VM_NONLINEAR case it has simply been
-> giving up rather more easily.
-
-I catched your point, maybe. thanks, correct me. I agree your lazy 
-discovery method.
-
-So, Can we add more kindly comment? (see below)
-
-
-
-> > Then, mlock() shouldn't mark the page of non linear mapping as
-> > PG_mlocked. Otherwise the page continue to drinker walk between
-> > evictable and unevictable lru.
 > 
-> I do like your phrase "drinker walk".  But is it really worse than
-> the lazy discovery of the page being locked, which is how I thought
-> this stuff was originally supposed to work anyway.  I presume cases
-> were found in which the counts got so far out that it was a problem?
-> 
-> I liked the lazy discovery much better than trying to keep count;
-> can we just accept that VM_NONLINEAR may leave the counts further
-> away from exactitude?
-> 
-> I don't think this patch makes things more consistent, really.
-> It does make sys_remap_file_pages on an mlocked area inconsistent
-> with mlock on a sys_remap_file_pages area, doesn't it?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14354
+> Subject		: Bad corruption with 2.6.32-rc1 and upwards
+> Submitter	: Holger Freyther <zecke@selfish.org>
+> Date		: 2009-10-09 15:42 (39 days old)
 
-you are right.
+Um, this was marked as resolved, until you reopened it and then reset
+the state to New.  Why did you do this?
 
+It's fixed in mainline as of commit d4da6c9 when Linus reverted commit
+d0646f7.  Users could still see it if they mount a file system with -o
+journal_checksum, but (a) it's no longer the default, and (b)
+corruption if you use the non-default journal_checksum mount option is
+not a regression.
 
+We have fixes to make journal_checksum safe queued for 2.6.33, but the
+revert fixes the regression problem.
 
->From 7332f765dbaa1fbfe48cf8d53b20048f7f8105e0 Mon Sep 17 00:00:00 2001
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Tue, 17 Nov 2009 10:46:51 +0900
-Subject: comment adding to mlocking in try_to_unmap_one
-
-Current code doesn't tell us why we don't bother to nonlinear kindly.
-This patch added small adding explanation.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/rmap.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 81a168c..c631407 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -1061,7 +1061,11 @@ static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
- 	if (list_empty(&mapping->i_mmap_nonlinear))
- 		goto out;
- 
--	/* We don't bother to try to find the munlocked page in nonlinears */
-+	/*
-+	 * We don't bother to try to find the munlocked page in nonlinears.
-+	 * It's costly. Instead, later, page reclaim logic may call
-+	 * try_to_unmap(TTU_MUNLOCK) and recover PG_mlocked lazily.
-+	 */
- 	if (MLOCK_PAGES && TTU_ACTION(flags) == TTU_MUNLOCK)
- 		goto out;
- 
--- 
-1.6.2.5
-
-
-
+						- Ted
