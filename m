@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZKQPHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbZKQPHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbZKQPHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 10:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZKQPHa
+	id S1754430AbZKQPHq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZKQPHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 10:07:30 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40515 "EHLO
+	Tue, 17 Nov 2009 10:07:45 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40518 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754191AbZKQPHZ (ORCPT
+	with ESMTP id S1754356AbZKQPHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 10:07:25 -0500
+	Tue, 17 Nov 2009 10:07:40 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 2/5] pata_sis: Implement MWDMA for the UDMA 133 capable chips
+Subject: [PATCH 3/5] cmd64x: implement serialization as per notes
 To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Date: Tue, 17 Nov 2009 14:51:17 +0000
-Message-ID: <20091117145111.15430.67106.stgit@localhost.localdomain>
+Date: Tue, 17 Nov 2009 14:51:32 +0000
+Message-ID: <20091117145122.15430.70080.stgit@localhost.localdomain>
 In-Reply-To: <20091117144450.15430.83450.stgit@localhost.localdomain>
 References: <20091117144450.15430.83450.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,199 +25,252 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej pointed out that while this got fixed in the old driver whoever
-did it didn't port it across.
+(Second attempt)
+
+Daniela Engert pointed out that there are some implementation notes for the
+643 and 646 that deal with certain serialization rules. In theory we don't
+need them because they apply when the motherboard decides not to retry PCI
+requests for long enough and the chip is busy doing a DMA transfer on the
+other channel.
+
+The rule basically is "don't touch the taskfile of the other channel while
+a DMA is in progress". To implement that we need to
+
+- not issue a command on a channel when there is a DMA command queued
+- not issue a DMA command on a channel when there are PIO commands queued
+- use the alternative access to the interrupt source so that we do not
+  touch altstatus or status on shared IRQ.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/ata/pata_sis.c |   91 ++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 69 insertions(+), 22 deletions(-)
+ drivers/ata/pata_cmd64x.c |  139 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 131 insertions(+), 8 deletions(-)
 
 
-diff --git a/drivers/ata/pata_sis.c b/drivers/ata/pata_sis.c
-index 488e77b..d70ecec 100644
---- a/drivers/ata/pata_sis.c
-+++ b/drivers/ata/pata_sis.c
-@@ -252,24 +252,25 @@ static void sis_100_set_piomode (struct ata_port *ap, struct ata_device *adev)
+diff --git a/drivers/ata/pata_cmd64x.c b/drivers/ata/pata_cmd64x.c
+index f98dffe..48948ae 100644
+--- a/drivers/ata/pata_cmd64x.c
++++ b/drivers/ata/pata_cmd64x.c
+@@ -31,7 +31,7 @@
+ #include <linux/libata.h>
+ 
+ #define DRV_NAME "pata_cmd64x"
+-#define DRV_VERSION "0.2.5"
++#define DRV_VERSION "0.3.1"
+ 
+ /*
+  * CMD64x specific registers definition.
+@@ -75,6 +75,13 @@ enum {
+ 	DTPR1		= 0x7C
+ };
+ 
++struct cmd_priv
++{
++	int dma_live;		/* Channel using DMA */
++	int irq_t[2];		/* Register to check for IRQ */
++	int irq_m[2];		/* Bit to check */
++};
++
+ static int cmd648_cable_detect(struct ata_port *ap)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+@@ -254,17 +261,114 @@ static void cmd648_bmdma_stop(struct ata_queued_cmd *qc)
  }
  
  /**
-- *	sis_133_set_piomode - Initialize host controller PATA PIO timings
-+ *	sis_133_do_piomode - Initialize host controller PATA PIO/DMA timings
-  *	@ap: Port whose timings we are configuring
-  *	@adev: Device we are configuring for.
+- *	cmd646r1_dma_stop	-	DMA stop callback
++ *	cmd64x_bmdma_stop	-	DMA stop callback
+  *	@qc: Command in progress
   *
-  *	Set PIO mode for device, in host controller PCI config space. This
-- *	function handles PIO set up for the later ATA133 devices.
-+ *	function handles PIO set up for the later ATA133 devices. The same
-+ *	timings are used for MWDMA.
-  *
-  *	LOCKING:
-  *	None (inherited from caller).
+- *	Stub for now while investigating the r1 quirk in the old driver.
++ *	Track the completion of live DMA commands and clear the dma_live
++ *	tracking flag as we do.
   */
  
--static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
-+static void sis_133_do_piomode(struct ata_port *ap, struct ata_device *adev,
-+					int speed)
+-static void cmd646r1_bmdma_stop(struct ata_queued_cmd *qc)
++static void cmd64x_bmdma_stop(struct ata_queued_cmd *qc)
  {
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int port = 0x40;
- 	u32 t1;
- 	u32 reg54;
--	int speed = adev->pio_mode - XFER_PIO_0;
- 
- 	const u32 timing133[] = {
- 		0x28269000,	/* Recovery << 24 | Act << 16 | Ini << 12 */
-@@ -305,6 +306,42 @@ static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
++	struct ata_port *ap = qc->ap;
++	struct cmd_priv *priv = ap->host->private_data;
+ 	ata_bmdma_stop(qc);
++	WARN_ON(priv->dma_live != ap->port_no );
++	priv->dma_live = -1;
  }
  
- /**
-+ *	sis_133_set_piomode - Initialize host controller PATA PIO timings
-+ *	@ap: Port whose timings we are configuring
-+ *	@adev: Device we are configuring for.
++/**
++ *	cmd64x_qc_defer		-	Defer logic for chip limits
++ *	@qc: queued command
 + *
-+ *	Set PIO mode for device, in host controller PCI config space. This
-+ *	function handles PIO set up for the later ATA133 devices.
++ *	Decide whether we can issue the command. Called under the host lock.
++ */
++
++static int cmd64x_qc_defer(struct ata_queued_cmd *qc)
++{
++	struct ata_host *host = qc->ap->host;
++	struct cmd_priv *priv = host->private_data;
++	struct ata_port *alt = host->ports[1 ^ qc->ap->port_no];
++	int rc;
++	int dma = 0;
++
++	/* Apply the ATA rules first */
++	rc = ata_std_qc_defer(qc);
++	if (rc)
++		return rc;
++
++	if (qc->tf.protocol == ATAPI_PROT_DMA ||
++			qc->tf.protocol == ATA_PROT_DMA)
++		dma = 1;
++
++	/* If the other port is not live then issue the command */
++	if (alt == NULL || !alt->qc_active) {
++		if (dma)
++			priv->dma_live = qc->ap->port_no;
++		return 0;
++	}
++	/* If there is a live DMA command then wait */
++	if (priv->dma_live != -1)
++		return 	ATA_DEFER_PORT;
++	if (dma) {
++		/* Cannot overlap our DMA command */
++		if (alt->qc_active)
++			return ATA_DEFER_PORT;
++		/* Claim the DMA */
++		priv->dma_live = qc->ap->port_no;
++	}
++	return 0;
++}
++
++/**
++ *	cmd64x_interrupt - ATA host interrupt handler
++ *	@irq: irq line (unused)
++ *	@dev_instance: pointer to our ata_host information structure
++ *
++ *	Our interrupt handler for PCI IDE devices.  Calls
++ *	ata_sff_host_intr() for each port that is flagging an IRQ. We cannot
++ *	use the defaults as we need to avoid touching status/altstatus during
++ *	a DMA.
 + *
 + *	LOCKING:
-+ *	None (inherited from caller).
-+ */
-+
-+static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
-+{
-+
-+	sis_133_do_piomode(ap, adev, adev->pio_mode - XFER_PIO_0);
-+}
-+
-+/**
-+ *	mwdma_clip_to_pio		-	clip MWDMA mode
-+ *	@adev: device
++ *	Obtains host lock during operation.
 + *
-+ *	As the SiS shared MWDMA and PIO timings we must program the equivalent
-+ *	PIO timing for the MWDMA mode but we must not program one higher than
-+ *	the permitted PIO timing of the device.
++ *	RETURNS:
++ *	IRQ_NONE or IRQ_HANDLED.
 + */
-+
-+static int mwdma_clip_to_pio(struct ata_device *adev)
++irqreturn_t cmd64x_interrupt(int irq, void *dev_instance)
 +{
-+	const int mwdma_to_pio[3] = {
-+		XFER_PIO_0, XFER_PIO_3, XFER_PIO_4
-+	};
-+	return min(mwdma_to_pio[adev->dma_mode - XFER_MW_DMA_0],
-+				adev->pio_mode - XFER_PIO_0);
-+}
++	struct ata_host *host = dev_instance;
++	struct pci_dev *pdev = to_pci_dev(host->dev);
++	struct cmd_priv *priv = host->private_data;
++	unsigned int i;
++	unsigned int handled = 0;
++	unsigned long flags;
 +
-+/**
-  *	sis_old_set_dmamode - Initialize host controller PATA DMA timings
-  *	@ap: Port whose timings we are configuring
-  *	@adev: Device to program
-@@ -332,6 +369,7 @@ static void sis_old_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (adev->dma_mode < XFER_UDMA_0) {
- 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
- 		   the higher bits are dependant on the device */
-+		speed = mwdma_clip_to_pio(adev);
- 		timing &= ~0x870F;
- 		timing |= mwdma_bits[speed];
- 	} else {
-@@ -372,6 +410,7 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (adev->dma_mode < XFER_UDMA_0) {
- 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
- 		   the higher bits are dependant on the device, bit 15 udma */
-+		speed = mwdma_clip_to_pio(adev);
- 		timing &= ~0x870F;
- 		timing |= mwdma_bits[speed];
- 	} else {
-@@ -389,7 +428,7 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
-  *	@adev: Device to program
-  *
-  *	Set UDMA/MWDMA mode for device, in host controller PCI config space.
-- *	Handles UDMA66 and early UDMA100 devices.
-+ *	Handles later UDMA100 devices.
-  *
-  *	LOCKING:
-  *	None (inherited from caller).
-@@ -400,21 +439,25 @@ static void sis_100_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int speed = adev->dma_mode - XFER_MW_DMA_0;
- 	int drive_pci = sis_old_port_base(adev);
--	u8 timing;
-+	u16 timing;
++	/* TODO: make _irqsave conditional on x86 PCI IDE legacy mode */
++	spin_lock_irqsave(&host->lock, flags);
++
++	for (i = 0; i < host->n_ports; i++) {
++		struct ata_port *ap;
++		u8 reg;
++
++		pci_read_config_byte(pdev, priv->irq_t[i], &reg);
++		ap = host->ports[i];
++		if (ap && (reg & priv->irq_m[i]) &&
++		    !(ap->flags & ATA_FLAG_DISABLED)) {
++			struct ata_queued_cmd *qc;
++
++			qc = ata_qc_from_tag(ap, ap->link.active_tag);
++			if (qc && (!(qc->tf.flags & ATA_TFLAG_POLLING)) &&
++			    (qc->flags & ATA_QCFLAG_ACTIVE))
++				handled |= ata_sff_host_intr(ap, qc);
++		}
++	}
++
++	spin_unlock_irqrestore(&host->lock, flags);
++
++	return IRQ_RETVAL(handled);
++}
+ static struct scsi_host_template cmd64x_sht = {
+ 	ATA_BMDMA_SHT(DRV_NAME),
+ };
+@@ -273,6 +377,8 @@ static const struct ata_port_operations cmd64x_base_ops = {
+ 	.inherits	= &ata_bmdma_port_ops,
+ 	.set_piomode	= cmd64x_set_piomode,
+ 	.set_dmamode	= cmd64x_set_dmamode,
++	.bmdma_stop	= cmd64x_bmdma_stop,
++	.qc_defer	= cmd64x_qc_defer,
+ };
  
--	const u8 udma_bits[]  = { 0x8B, 0x87, 0x85, 0x83, 0x82, 0x81};
-+	const u16 udma_bits[]  = {
-+		0x8B00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100};
-+	const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
+ static struct ata_port_operations cmd64x_port_ops = {
+@@ -282,7 +388,6 @@ static struct ata_port_operations cmd64x_port_ops = {
  
--	pci_read_config_byte(pdev, drive_pci + 1, &timing);
-+	pci_read_config_word(pdev, drive_pci, &timing);
+ static struct ata_port_operations cmd646r1_port_ops = {
+ 	.inherits	= &cmd64x_base_ops,
+-	.bmdma_stop	= cmd646r1_bmdma_stop,
+ 	.cable_detect	= ata_cable_40wire,
+ };
  
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
-+		speed = mwdma_clip_to_pio(adev);
-+		timing &= ~0x80FF;
-+		timing |= mwdma_bits[speed];
- 	} else {
- 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
- 		speed = adev->dma_mode - XFER_UDMA_0;
--		timing &= ~0x8F;
-+		timing &= ~0x8F00;
- 		timing |= udma_bits[speed];
+@@ -290,6 +395,7 @@ static struct ata_port_operations cmd648_port_ops = {
+ 	.inherits	= &cmd64x_base_ops,
+ 	.bmdma_stop	= cmd648_bmdma_stop,
+ 	.cable_detect	= cmd648_cable_detect,
++	.qc_defer	= ata_std_qc_defer
+ };
+ 
+ static int cmd64x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+@@ -340,6 +446,8 @@ static int cmd64x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	const struct ata_port_info *ppi[] = { &cmd_info[id->driver_data], NULL };
+ 	u8 mrdmode;
+ 	int rc;
++	struct ata_host *host;
++	struct cmd_priv *cpriv;
+ 
+ 	rc = pcim_enable_device(pdev);
+ 	if (rc)
+@@ -348,6 +456,17 @@ static int cmd64x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	pci_read_config_dword(pdev, PCI_CLASS_REVISION, &class_rev);
+ 	class_rev &= 0xFF;
+ 
++	cpriv = devm_kzalloc(&pdev->dev, sizeof(*cpriv), GFP_KERNEL);
++	if (cpriv == NULL)
++		return -ENOMEM;
++	cpriv->dma_live = -1;
++
++	/* Table for IRQ checking */
++	cpriv->irq_t[0] = CFR;
++	cpriv->irq_m[0] = 1 << 2;
++	cpriv->irq_t[1] = ARTTIM23;
++	cpriv->irq_m[1] = 1 << 4;
++
+ 	if (id->driver_data == 0)	/* 643 */
+ 		ata_pci_bmdma_clear_simplex(pdev);
+ 
+@@ -360,20 +479,24 @@ static int cmd64x_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 			ppi[0] = &cmd_info[3];
  	}
--	pci_write_config_byte(pdev, drive_pci + 1, timing);
-+	pci_write_config_word(pdev, drive_pci, timing);
- }
  
- /**
-@@ -434,21 +477,26 @@ static void sis_133_early_set_dmamode (struct ata_port *ap, struct ata_device *a
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int speed = adev->dma_mode - XFER_MW_DMA_0;
- 	int drive_pci = sis_old_port_base(adev);
--	u8 timing;
--	/* Low 4 bits are timing */
--	static const u8 udma_bits[]  = { 0x8F, 0x8A, 0x87, 0x85, 0x83, 0x82, 0x81};
-+	u16 timing;
-+	/* Bits 15-12  are timing */
-+	static const u16 udma_bits[]  = {
-+		0x8F00, 0x8A00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100
-+	};
-+	static const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
++
+ 	pci_write_config_byte(pdev, PCI_LATENCY_TIMER, 64);
+ 	pci_read_config_byte(pdev, MRDMODE, &mrdmode);
+ 	mrdmode &= ~ 0x30;	/* IRQ set up */
+ 	mrdmode |= 0x02;	/* Memory read line enable */
+ 	pci_write_config_byte(pdev, MRDMODE, mrdmode);
  
--	pci_read_config_byte(pdev, drive_pci + 1, &timing);
-+	pci_read_config_word(pdev, drive_pci, &timing);
- 
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
-+		speed = mwdma_clip_to_pio(adev);
-+		timing &= ~0x80FF;
-+		timing = mwdma_bits[speed];
- 	} else {
- 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
- 		speed = adev->dma_mode - XFER_UDMA_0;
--		timing &= ~0x8F;
-+		timing &= ~0x8F00;
- 		timing |= udma_bits[speed];
- 	}
--	pci_write_config_byte(pdev, drive_pci + 1, timing);
-+	pci_write_config_word(pdev, drive_pci, timing);
- }
- 
- /**
-@@ -479,13 +527,12 @@ static void sis_133_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (reg54 & 0x40000000)
- 		port = 0x70;
- 	port += (8 * ap->port_no) +  (4 * adev->devno);
+-	/* Force PIO 0 here.. */
 -
- 	pci_read_config_dword(pdev, port, &t1);
+ 	/* PPC specific fixup copied from old driver */
+ #ifdef CONFIG_PPC
+ 	pci_write_config_byte(pdev, UDIDETCR0, 0xF0);
+ #endif
++	rc = ata_pci_sff_prepare_host(pdev, ppi, &host);
++	if (rc)
++		return rc;
++	host->private_data = cpriv;
  
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		t1 &= ~0x00000004;
--		/* FIXME: need data sheet to add MWDMA here. Also lacking on
--		   ide/pci driver */
-+		speed = mwdma_clip_to_pio(adev);
-+		sis_133_do_piomode(ap, adev, speed);
-+		t1 &= ~4;	/* UDMA off */
- 	} else {
- 		speed = adev->dma_mode - XFER_UDMA_0;
- 		/* if & 8 no UDMA133 - need info for ... */
+-	return ata_pci_sff_init_one(pdev, ppi, &cmd64x_sht, NULL);
++	pci_set_master(pdev);
++	return ata_pci_sff_activate_host(host, cmd64x_interrupt, &cmd64x_sht);
+ }
+ 
+ #ifdef CONFIG_PM
 
