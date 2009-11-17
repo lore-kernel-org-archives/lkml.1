@@ -1,631 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZKQIue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZKQIxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbZKQIue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZKQIud
+	id S1753194AbZKQIxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZKQIxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:50:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52979 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbZKQIuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:50:32 -0500
-Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michel Lespinasse <walken@google.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20091117074655.GA14023@google.com>
-References: <20091117074655.GA14023@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 09:50:07 +0100
-Message-ID: <1258447807.7816.20.camel@laptop>
+	Tue, 17 Nov 2009 03:53:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51067 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752187AbZKQIxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 03:53:10 -0500
+Date: Tue, 17 Nov 2009 19:53:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 17
+Message-Id: <20091117195309.6cc3ead0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__17_Nov_2009_19_53_09_+1100_gJ8cO2nuEma7_lAP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(long quote for Linus' benefit, added an old patch to the tail)
+--Signature=_Tue__17_Nov_2009_19_53_09_+1100_gJ8cO2nuEma7_lAP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2009-11-16 at 23:46 -0800, Michel Lespinasse wrote:
-> 
-> I would like to propose adding a new FUTEX_SET_WAIT operation to the futex
-> code, as per the following patch against 2.6.32-rc7
-> 
-> The change adds a new FUTEX_SET_WAIT operation, which is similar to
-> FUTEX_WAIT_BITSET except for the addition of an additional 'val2'
-> parameter, which is an integer and is passed in place of the 'uaddr2'
-> parameter to the futex syscall.
-> 
-> When val2==val, the behavior is identical to FUTEX_WAIT_BITSET: The
-> kernel verifies that *uval == val, and waits if that condition is
-> satisfied. The typical use case is that userspace inspects the futex
-> value, finds out that it needs to block based on that value, changes the
-> value to something that indicates it wants to be woken up, and then goes
-> to execute the futex syscall with a FUTEX_WAIT or FUTEX_WAIT_BITSET
-> operation.
-> 
-> With the new FUTEX_SET_WAIT operation, the change of the futex value to
-> indicate a wakeup is desired is done atomically with the kernel's
-> inspection of the futex value to figure out if it is still necessary to
-> wait. That is, the kernel inspects the futex value and if 'val' is
-> found, atomically changes it to 'val2'. Then if the new futex value is
-> 'val2' (either because that was the original value when the kernel first
-> inspected it, or because the atomic update from val to val2 succeeded),
-> the thread goes to wait on the futex.
+Hi all,
 
-Right, so this is something I was needing to make adaptive spinning work
-with futexes (aside from braving the glibc futex horror).
+Changes since 20091116:
 
-I've attached an old patch (which was never actually tested), that shows
-how to do the adaptive wait. It also does the cmpxchg thing you do, and
-it imposes a structure on the futex value.
+New tree:
+	edac-amd (returned rather than new)
 
-Maybe we can merge these things.. One more point below.
+The mips tree lost its conflicts.
 
-> By doing the futex value update atomically with the kernel's inspection
-> of it to decide to wait, we avoid the time window where the futex has
-> been set to the 'please wake me up' state, but the thread has not been
-> queued onto the hash bucket yet. This has two effects:
-> - Avoids a futex syscall with the FUTEX_WAKE operation if there is no
->   thread to be woken yet
-> - In the heavily contended case, avoids waking an extra thread that's
->   only likely to make the contention problem worse.
+The kvm tree lost its conflict.
 
-  - avoids lock stealing, which might make real world loads suck a
-    little?
+The net tree gained a conflict against the net-current tree.
 
-> Sample test results, on a sun x4600 M2, using the test program included
-> after the diff (dumb lock/unlock stress test, comparing FUTEX_SET_WAIT
-> with FUTEX_WAIT):
+The trivial tree gained conflicts against the wireless and pci trees.
 
-[ snipped results showing FUTEX_SET_WAIT is faster for this workload ]
+The tip tree lost its build error in the sparc build.
 
-> Signed-off-by: Michel Lespinasse <walken@google.com>
-> 
-> diff --git a/include/linux/futex.h b/include/linux/futex.h
-> index 1e5a26d..c5e887d 100644
-> --- a/include/linux/futex.h
-> +++ b/include/linux/futex.h
-> @@ -20,6 +20,7 @@
->  #define FUTEX_WAKE_BITSET      10
->  #define FUTEX_WAIT_REQUEUE_PI  11
->  #define FUTEX_CMP_REQUEUE_PI   12
-> +#define FUTEX_SET_WAIT         13
->  
->  #define FUTEX_PRIVATE_FLAG     128
->  #define FUTEX_CLOCK_REALTIME   256
-> @@ -39,6 +40,7 @@
->                                          FUTEX_PRIVATE_FLAG)
->  #define FUTEX_CMP_REQUEUE_PI_PRIVATE   (FUTEX_CMP_REQUEUE_PI | \
->                                          FUTEX_PRIVATE_FLAG)
-> +#define FUTEX_SET_WAIT_PRIVATE         (FUTEX_SET_WAIT | FUTEX_PRIVATE_FLAG)
->  
->  /*
->   * Support for robust futexes: the kernel cleans up held futexes at
-> diff --git a/include/linux/thread_info.h b/include/linux/thread_info.h
-> index a8cc4e1..a199606 100644
-> --- a/include/linux/thread_info.h
-> +++ b/include/linux/thread_info.h
-> @@ -25,6 +25,7 @@ struct restart_block {
->                 struct {
->                         u32 *uaddr;
->                         u32 val;
-> +                       u32 val2;
->                         u32 flags;
->                         u32 bitset;
->                         u64 time;
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index fb65e82..be9de2b 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -1694,6 +1694,7 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
->   * futex_wait_setup() - Prepare to wait on a futex
->   * @uaddr:     the futex userspace address
->   * @val:       the expected value
-> + * @val2:      the value we want to set, in replacement of val
->   * @fshared:   whether the futex is shared (1) or not (0)
->   * @q:         the associated futex_q
->   * @hb:                storage for hash_bucket pointer to be returned to caller
-> @@ -1704,10 +1705,10 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
->   * with no q.key reference on failure.
->   *
->   * Returns:
-> - *  0 - uaddr contains val and hb has been locked
-> + *  0 - uaddr contains val2 and hb has been locked
->   * <1 - -EFAULT or -EWOULDBLOCK (uaddr does not contain val) and hb is unlcoked
->   */
-> -static int futex_wait_setup(u32 __user *uaddr, u32 val, int fshared,
-> +static int futex_wait_setup(u32 __user *uaddr, u32 val, u32 val2, int fshared,
->                            struct futex_q *q, struct futex_hash_bucket **hb)
->  {
->         u32 uval;
-> @@ -1722,52 +1723,61 @@ static int futex_wait_setup(u32 __user *uaddr, u32 val, int fshared,
->          *
->          * The basic logical guarantee of a futex is that it blocks ONLY
->          * if cond(var) is known to be true at the time of blocking, for
-> -        * any cond.  If we queued after testing *uaddr, that would open
-> -        * a race condition where we could block indefinitely with
-> +        * any cond.  If we locked the hash-bucket after testing *uaddr, that
-> +        * would open a race condition where we could block indefinitely with
->          * cond(var) false, which would violate the guarantee.
->          *
-> -        * A consequence is that futex_wait() can return zero and absorb
-> -        * a wakeup when *uaddr != val on entry to the syscall.  This is
-> -        * rare, but normal.
-> +        * On the other hand, we insert q and release the hash-bucket only
-> +        * after testing *uaddr. This guarantees that futex_wait() will NOT
-> +        * absorb a wakeup if *uaddr does not match the desired values
-> +        * while the syscall executes.
->          */
->  retry:
->         q->key = FUTEX_KEY_INIT;
-> -       ret = get_futex_key(uaddr, fshared, &q->key, VERIFY_READ);
-> +       ret = get_futex_key(uaddr, fshared, &q->key,
-> +                           (val == val2) ? VERIFY_READ : VERIFY_WRITE);
->         if (unlikely(ret != 0))
->                 return ret;
->  
->  retry_private:
->         *hb = queue_lock(q);
->  
-> -       ret = get_futex_value_locked(&uval, uaddr);
-> -
-> -       if (ret) {
-> +       pagefault_disable();
-> +       if (unlikely(__copy_from_user_inatomic(&uval, uaddr, sizeof(u32)))) {
-> +               pagefault_enable();
->                 queue_unlock(q, *hb);
-> -
->                 ret = get_user(uval, uaddr);
-> +       fault_common:
->                 if (ret)
->                         goto out;
-> -
->                 if (!fshared)
->                         goto retry_private;
-> -
->                 put_futex_key(fshared, &q->key);
->                 goto retry;
->         }
-> -
-> -       if (uval != val) {
-> -               queue_unlock(q, *hb);
-> -               ret = -EWOULDBLOCK;
-> +       if (val != val2 && uval == val) {
-> +               uval = futex_atomic_cmpxchg_inatomic(uaddr, val, val2);
-> +               if (unlikely(uval == -EFAULT)) {
-> +                       pagefault_enable();
-> +                       queue_unlock(q, *hb);
-> +                       ret = fault_in_user_writeable(uaddr);
-> +                       goto fault_common;
-> +               }
->         }
-> +       pagefault_enable();
-> +
-> +       if (uval == val || uval == val2)
-> +               return 0;  /* success */
->  
-> +       queue_unlock(q, *hb);
-> +       ret = -EWOULDBLOCK;
->  out:
-> -       if (ret)
-> -               put_futex_key(fshared, &q->key);
-> +       put_futex_key(fshared, &q->key);
->         return ret;
->  }
->  
-> -static int futex_wait(u32 __user *uaddr, int fshared,
-> -                     u32 val, ktime_t *abs_time, u32 bitset, int clockrt)
-> +static int futex_wait(u32 __user *uaddr, int fshared, u32 val, u32 val2,
-> +                     ktime_t *abs_time, u32 bitset, int clockrt)
->  {
->         struct hrtimer_sleeper timeout, *to = NULL;
->         struct restart_block *restart;
-> @@ -1795,7 +1805,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
->  
->  retry:
->         /* Prepare to wait on uaddr. */
-> -       ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
-> +       ret = futex_wait_setup(uaddr, val, val2, fshared, &q, &hb);
->         if (ret)
->                 goto out;
->  
-> @@ -1827,6 +1837,7 @@ retry:
->         restart->fn = futex_wait_restart;
->         restart->futex.uaddr = (u32 *)uaddr;
->         restart->futex.val = val;
-> +       restart->futex.val2 = val2;
->         restart->futex.time = abs_time->tv64;
->         restart->futex.bitset = bitset;
->         restart->futex.flags = FLAGS_HAS_TIMEOUT;
-> @@ -1862,8 +1873,8 @@ static long futex_wait_restart(struct restart_block *restart)
->         restart->fn = do_no_restart_syscall;
->         if (restart->futex.flags & FLAGS_SHARED)
->                 fshared = 1;
-> -       return (long)futex_wait(uaddr, fshared, restart->futex.val, tp,
-> -                               restart->futex.bitset,
-> +       return (long)futex_wait(uaddr, fshared, restart->futex.val,
-> +                               restart->futex.val2, tp, restart->futex.bitset,
->                                 restart->futex.flags & FLAGS_CLOCKRT);
->  }
->  
-> @@ -2219,7 +2230,7 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
->         q.requeue_pi_key = &key2;
->  
->         /* Prepare to wait on uaddr. */
-> -       ret = futex_wait_setup(uaddr, val, fshared, &q, &hb);
-> +       ret = futex_wait_setup(uaddr, val, val, fshared, &q, &hb);
->         if (ret)
->                 goto out_key2;
->  
-> @@ -2532,14 +2543,18 @@ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
->                 fshared = 1;
->  
->         clockrt = op & FUTEX_CLOCK_REALTIME;
-> -       if (clockrt && cmd != FUTEX_WAIT_BITSET && cmd != FUTEX_WAIT_REQUEUE_PI)
-> +       if (clockrt && cmd != FUTEX_WAIT_BITSET &&
-> +           cmd != FUTEX_WAIT_REQUEUE_PI && cmd != FUTEX_SET_WAIT)
->                 return -ENOSYS;
->  
->         switch (cmd) {
->         case FUTEX_WAIT:
->                 val3 = FUTEX_BITSET_MATCH_ANY;
->         case FUTEX_WAIT_BITSET:
-> -               ret = futex_wait(uaddr, fshared, val, timeout, val3, clockrt);
-> +               val2 = val;
-> +       case FUTEX_SET_WAIT:
-> +               ret = futex_wait(uaddr, fshared, val, val2, timeout, val3,
-> +                                clockrt);
->                 break;
->         case FUTEX_WAKE:
->                 val3 = FUTEX_BITSET_MATCH_ANY;
-> @@ -2595,7 +2610,7 @@ SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
->  
->         if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI ||
->                       cmd == FUTEX_WAIT_BITSET ||
-> -                     cmd == FUTEX_WAIT_REQUEUE_PI)) {
-> +                     cmd == FUTEX_WAIT_REQUEUE_PI || cmd == FUTEX_SET_WAIT)) {
->                 if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
->                         return -EFAULT;
->                 if (!timespec_valid(&ts))
-> @@ -2609,10 +2624,16 @@ SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
->         /*
->          * requeue parameter in 'utime' if cmd == FUTEX_*_REQUEUE_*.
->          * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
-> +        * new uval value in 'uaddr2' if cmd == FUTEX_SET_WAIT.
->          */
->         if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
->             cmd == FUTEX_CMP_REQUEUE_PI || cmd == FUTEX_WAKE_OP)
->                 val2 = (u32) (unsigned long) utime;
-> +       else if (cmd == FUTEX_SET_WAIT) {
-> +               if (!futex_cmpxchg_enabled)
-> +                       return -ENOSYS;
-> +               val2 = (u32) (unsigned long) uaddr2;
-> +       }
->  
->         return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
->  }
-> 
+The sysctl tree gained conflicts against Linus' and the net trees.
 
+----------------------------------------------------------------------------
 
---- 
-Subject: futex: implement adaptive spin
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue Jan 20 14:40:36 CET 2009
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-Implement kernel side adaptive spining for futexes.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
 
-This is implemented as a new futex op: FUTEX_WAIT_ADAPTIVE, because it
-requires the futex lock field to contain a TID and regular futexes do
-not have that restriction.
+Below is a summary of the state of the merge.
 
-FUTEX_WAIT_ADAPTIVE will spin while the lock owner is running (on a 
-different cpu) or until the task gets preempted. After that it behaves
-like FUTEX_WAIT.
+We are up to 151 trees (counting Linus' and 22 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
 
-The spin loop tries to acquire the lock by cmpxchg(lock, 0, tid) == tid
-on the lower 30 bits (TID_MASK) of the lock field -- leaving the
-WAITERS and OWNER_DIED flags in tact.
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
-NOTE: we could fold mutex_spin_on_owner() and futex_spin_on_owner() by
-adding a lock_owner function argument.
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
 
-  void lock_spin_on_owner(struct thread_info *(*lock_owner)(void *lock),
-                          void *lock, struct thread_info *owner);
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/futex.h |    2 +
- include/linux/sched.h |    1 
- kernel/futex.c        |   96 ++++++++++++++++++++++++++++++++++++++++++--------
- kernel/sched.c        |   59 ++++++++++++++++++++++++++++++
- 4 files changed, 143 insertions(+), 15 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Index: linux-2.6/include/linux/futex.h
-===================================================================
---- linux-2.6.orig/include/linux/futex.h
-+++ linux-2.6/include/linux/futex.h
-@@ -23,6 +23,7 @@ union ktime;
- #define FUTEX_TRYLOCK_PI	8
- #define FUTEX_WAIT_BITSET	9
- #define FUTEX_WAKE_BITSET	10
-+#define FUTEX_WAIT_ADAPTIVE	11
- 
- #define FUTEX_PRIVATE_FLAG	128
- #define FUTEX_CLOCK_REALTIME	256
-@@ -171,6 +172,7 @@ union futex_key {
- extern void exit_robust_list(struct task_struct *curr);
- extern void exit_pi_state_list(struct task_struct *curr);
- extern int futex_cmpxchg_enabled;
-+extern struct thread_info *futex_owner(u32 __user *uaddr);
- #else
- static inline void exit_robust_list(struct task_struct *curr)
- {
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -341,6 +341,7 @@ extern signed long schedule_timeout_unin
- asmlinkage void __schedule(void);
- asmlinkage void schedule(void);
- extern int mutex_spin_on_owner(struct mutex *lock, struct thread_info *owner);
-+extern int futex_spin_on_owner(u32 __user *uaddr, struct thread_info *owner);
- 
- struct nsproxy;
- struct user_namespace;
-Index: linux-2.6/kernel/futex.c
-===================================================================
---- linux-2.6.orig/kernel/futex.c
-+++ linux-2.6/kernel/futex.c
-@@ -1158,10 +1158,40 @@ handle_fault:
-  */
- #define FLAGS_SHARED		0x01
- #define FLAGS_CLOCKRT		0x02
-+#define FLAGS_ADAPTIVE		0x03
- 
- static long futex_wait_restart(struct restart_block *restart);
- 
--static int futex_wait(u32 __user *uaddr, int fshared,
-+#ifdef CONFIG_SMP
-+struct thread_info *futex_owner(u32 __user *uaddr)
-+{
-+	struct thread_info *ti = NULL;
-+	struct task_struct *p;
-+	pid_t pid;
-+	u32 uval;
-+
-+	if (get_futex_value_locked(&uval, uaddr))
-+		return NULL;
-+
-+	pid = uval & FUTEX_TID_MASK;
-+	rcu_read_lock();
-+	p = find_taks_by_vpid(pid);
-+	if (p) {
-+		const struct cred *cred, *pcred;
-+
-+		cread = current_cred();
-+		pcred = __task_cred(p);
-+		if (cred->euid == pcred->euid ||
-+		    cred->euid == pcred->uid)
-+			ti = task_thread_info(p);
-+	}
-+	rcu_read_unlock();
-+
-+	return ti;
-+}
-+#endif
-+
-+static int futex_wait(u32 __user *uaddr, int flags,
- 		      u32 val, ktime_t *abs_time, u32 bitset, int clockrt)
- {
- 	struct task_struct *curr = current;
-@@ -1176,11 +1206,43 @@ static int futex_wait(u32 __user *uaddr,
- 	if (!bitset)
- 		return -EINVAL;
- 
-+#ifdef CONFIG_SMP
-+	if (!futex_cmpxchg_enabled || !(flags & FLAGS_ADAPTIVE))
-+		goto skip_adaptive;
-+
-+	preempt_disable();
-+	for (;;) {
-+		struct thread_info *owner;
-+		u32 curval = 0, newval = task_pid_vnr(curr);
-+
-+		owner = futex_owner(uaddr);
-+		if (owner && futex_spin_on_owner(uaddr, owner))
-+			break;
-+
-+		if (get_futex_value_locked(&uval, uaddr))
-+			break;
-+
-+		curval |= uval & ~FUTEX_TID_MASK;
-+		newval |= uval & ~FUTEX_TID_MASK;
-+
-+		if (cmpxchg_futex_value_locked(uaddr, curval, newval)
-+				== newval)
-+			return 0;
-+
-+		if (!owner && (need_resched() || rt_task(curr)))
-+			break;
-+
-+		cpu_relax();
-+	}
-+	preempt_enable();
-+skip_adaptive:
-+#endif
-+
- 	q.pi_state = NULL;
- 	q.bitset = bitset;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key);
-+	ret = get_futex_key(uaddr, flags & FLAGS_SHARED, &q.key);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1210,7 +1272,7 @@ retry:
- 
- 	if (unlikely(ret)) {
- 		queue_unlock(&q, hb);
--		put_futex_key(fshared, &q.key);
-+		put_futex_key(flags & FLAGS_SHARED, &q.key);
- 
- 		ret = get_user(uval, uaddr);
- 
-@@ -1305,7 +1367,7 @@ retry:
- 		restart->futex.bitset = bitset;
- 		restart->futex.flags = 0;
- 
--		if (fshared)
-+		if (flags & FLAGS_SHARED)
- 			restart->futex.flags |= FLAGS_SHARED;
- 		if (clockrt)
- 			restart->futex.flags |= FLAGS_CLOCKRT;
-@@ -1314,7 +1376,7 @@ retry:
- 
- out_unlock_put_key:
- 	queue_unlock(&q, hb);
--	put_futex_key(fshared, &q.key);
-+	put_futex_key(flags & FLAGS_SHARED, &q.key);
- 
- out:
- 	return ret;
-@@ -1929,46 +1991,50 @@ long do_futex(u32 __user *uaddr, int op,
- {
- 	int clockrt, ret = -ENOSYS;
- 	int cmd = op & FUTEX_CMD_MASK;
--	int fshared = 0;
-+	int flags = 0;
- 
- 	if (!(op & FUTEX_PRIVATE_FLAG))
--		fshared = 1;
-+		flags |= FLAGS_SHARED;
- 
- 	clockrt = op & FUTEX_CLOCK_REALTIME;
- 	if (clockrt && cmd != FUTEX_WAIT_BITSET)
- 		return -ENOSYS;
- 
- 	switch (cmd) {
-+	case FUTEX_WAIT_ADAPTIVE:
-+		flags |= FLAGS_ADAPTIVE;
- 	case FUTEX_WAIT:
- 		val3 = FUTEX_BITSET_MATCH_ANY;
- 	case FUTEX_WAIT_BITSET:
--		ret = futex_wait(uaddr, fshared, val, timeout, val3, clockrt);
-+		ret = futex_wait(uaddr, flags, val, timeout, val3, clockrt);
- 		break;
-+
- 	case FUTEX_WAKE:
- 		val3 = FUTEX_BITSET_MATCH_ANY;
- 	case FUTEX_WAKE_BITSET:
--		ret = futex_wake(uaddr, fshared, val, val3);
-+		ret = futex_wake(uaddr, flags, val, val3);
- 		break;
-+
- 	case FUTEX_REQUEUE:
--		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, NULL);
-+		ret = futex_requeue(uaddr, flags, uaddr2, val, val2, NULL);
- 		break;
- 	case FUTEX_CMP_REQUEUE:
--		ret = futex_requeue(uaddr, fshared, uaddr2, val, val2, &val3);
-+		ret = futex_requeue(uaddr, flags, uaddr2, val, val2, &val3);
- 		break;
- 	case FUTEX_WAKE_OP:
--		ret = futex_wake_op(uaddr, fshared, uaddr2, val, val2, val3);
-+		ret = futex_wake_op(uaddr, flags, uaddr2, val, val2, val3);
- 		break;
- 	case FUTEX_LOCK_PI:
- 		if (futex_cmpxchg_enabled)
--			ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
-+			ret = futex_lock_pi(uaddr, flags, val, timeout, 0);
- 		break;
- 	case FUTEX_UNLOCK_PI:
- 		if (futex_cmpxchg_enabled)
--			ret = futex_unlock_pi(uaddr, fshared);
-+			ret = futex_unlock_pi(uaddr, flags);
- 		break;
- 	case FUTEX_TRYLOCK_PI:
- 		if (futex_cmpxchg_enabled)
--			ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
-+			ret = futex_lock_pi(uaddr, flags, 0, timeout, 1);
- 		break;
- 	default:
- 		ret = -ENOSYS;
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -4834,6 +4834,65 @@ int mutex_spin_on_owner(struct mutex *lo
- out:
- 	return 1;
- }
-+
-+#ifdef CONFIG_FUTEX
-+#include <linux/futex.h>
-+
-+int futex_spin_on_owner(u32 __user *uaddr, struct thread_info *owner)
-+{
-+	unsigned int cpu;
-+	struct rq *rq;
-+
-+	if (!sched_feat(OWNER_SPIN))
-+		return 0;
-+
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	/*
-+	 * Need to access the cpu field knowing that
-+	 * DEBUG_PAGEALLOC could have unmapped it if
-+	 * the mutex owner just released it and exited.
-+	 */
-+	if (probe_kernel_address(&owner->cpu, cpu))
-+		goto out;
-+#else
-+	cpu = owner->cpu;
-+#endif
-+
-+	/*
-+	 * Even if the access succeeded (likely case),
-+	 * the cpu field may no longer be valid.
-+	 */
-+	if (cpu >= nr_cpumask_bits)
-+		goto out;
-+
-+	/*
-+	 * We need to validate that we can do a
-+	 * get_cpu() and that we have the percpu area.
-+	 */
-+	if (!cpu_online(cpu))
-+		goto out;
-+
-+	rq = cpu_rq(cpu);
-+
-+	for (;;) {
-+		/*
-+		 * Owner changed, break to re-assess state.
-+		 */
-+		if (futex_owner(uaddr) != owner)
-+			break;
-+
-+		/*
-+		 * Is that owner really running on that cpu?
-+		 */
-+		if (task_thread_info(rq->curr) != owner || need_resched())
-+			return 0;
-+
-+		cpu_relax();
-+	}
-+out:
-+	return 1;
-+}
-+#endif
- #endif
- 
- #ifdef CONFIG_PREEMPT
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/common/tuners/tda18271-=
+fe.c
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/can/Kconfig
+CONFLICT (delete/modify): drivers/net/sfc/sfe4001.c deleted in net/master a=
+nd modified in HEAD. Version HEAD of drivers/net/sfc/sfe4001.c left in tree.
+CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/cmd.c
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/rtl8187se/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/rtl8192e/Kconfig
+$ git rm -f drivers/net/sfc/sfe4001.c
+Applying: net: merge fixup for drivers/net/sfc/falcon_boards.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+Merging quilt/rr
+Applying: modpost: autoconf.h has moved to include/generated
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ray_cs.c
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+CONFLICT (content): Merge conflict in Documentation/dontdiff
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in arch/x86/pci/amd_bus.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2800usb=
+.h
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/afs/write.c
+CONFLICT (content): Merge conflict in fs/ubifs/file.c
+CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
+CONFLICT (content): Merge conflict in net/socket.c
+Merging irda/for-next
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in drivers/net/Kconfig
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Applying: i7core_edac: do not export static functions
+Merging devicetree/next-devicetree
+Merging limits/writable_limits
+Merging omap_dss2/for-next
+CONFLICT (content): Merge conflict in arch/arm/configs/omap_3430sdp_defconf=
+ig
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
+CONFLICT (content): Merge conflict in kernel/irq/chip.c
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
+.S
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in kernel/softlockup.c
+Applying: percpu: merge fixup for variable renaming
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+CONFLICT (content): Merge conflict in net/decnet/sysctl_net_decnet.c
+CONFLICT (content): Merge conflict in net/ipv6/addrconf.c
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/cb_das=
+16_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
+pc_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
+_cs.c
+Merging scsi-post-merge/master
 
+--Signature=_Tue__17_Nov_2009_19_53_09_+1100_gJ8cO2nuEma7_lAP
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAksCZHUACgkQjjKRsyhoI8yvzACeIrrMKcvM08us7UUCnyExXvTf
+BfoAn0p9km7WUtzOtyCV8vcIRgGbU9eb
+=W0ah
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__17_Nov_2009_19_53_09_+1100_gJ8cO2nuEma7_lAP--
