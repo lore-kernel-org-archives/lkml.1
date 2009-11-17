@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZKQNhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZKQNuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZKQNhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 08:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZKQNg7
+	id S1753139AbZKQNuM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 08:50:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZKQNuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 08:36:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60570 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZKQNg6 (ORCPT
+	Tue, 17 Nov 2009 08:50:11 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:43041 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbZKQNuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 08:36:58 -0500
-Subject: Re: [PATCH] tracing: prevent build warning: 'ftrace_graph_buf'
- defined but not used
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B0254D7.2080503@cn.fujitsu.com>
-References: <4AF24381.5060307@cn.fujitsu.com>
-	 <20091105063917.GA4896@nowhere>  <4B0254D7.2080503@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 17 Nov 2009 08:37:03 -0500
-Message-Id: <1258465023.22249.459.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 08:50:10 -0500
+Date: Tue, 17 Nov 2009 14:50:03 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+       alsa-devel@alsa-project.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, Wu Zhangjin <wuzj@lemote.com>
+Subject: Re: [PATCH] MIPS: Fixups of ALSA memory maps
+Message-ID: <20091117135003.GB27085@linux-mips.org>
+References: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com> <20091116170641.GD14948@linux-mips.org> <s5hbpj2ie8p.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hbpj2ie8p.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 15:46 +0800, Lai Jiangshan wrote:
-> Frederic Weisbecker wrote:
-> > On Thu, Nov 05, 2009 at 11:16:17AM +0800, Lai Jiangshan wrote:
-> >> prevent build warning when !CONFIG_FUNCTION_GRAPH_TRACER
-> >>
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+On Mon, Nov 16, 2009 at 06:14:14PM +0100, Takashi Iwai wrote:
+
+> > > Seems this is MIPS specific, but it's not that easy to move this patch
+> > > into the arch/mips part, So, any better solution?
+> > > 
+> > > Thanks & Regards,
+> > >        Wu Zhangjin
+> > > 
+> > > ------------------------
+> > > 
+> > > The user application mmap audio dma regions must be dma-coherent. This
+> > > patch fix it.
+> > > 
+> > > Without this patch, artsd will fail on boot, and mplayer will exit with
+> > > "Segmentation fault". (this happens on YeeLoong netbook, fuloong2f
+> > > mini pc with snd_cs5535 audio card)
+> > > 
+> > > This is originally from the to-mips branch of
+> > > http://dev.lemote.com/code/linux_loongson, and contributed by Yanhua
+> > > from Lemote Inc.
+> > > 
+> > > Reported-by: qiaochong <qiaochong@gmail.com>
+> > > Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
 > > 
+> > This issue is an old ghost still around, see:
 > > 
-> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> >    http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=20060124.132832.37533152.nemoto%40toshiba-tops.co.jp
+> > 
+> > which is a superset of your proposed patch and which itself is refering to
+> > an even older posting from 2003:
+> > 
+> >    http://www.linux-mips.org/cgi-bin/mesg.cgi?a=linux-mips&i=20030523215935.71373.qmail%40web11901.mail.yahoo.com
+> > 
+> > The #ifdef'ed solution doesn't cut it for sure.  Let's see what better we
+> > can find ...
 > 
-> Hi, Ingo,
+> Indeed.  My preference option is to deploy dma_mmap_coherent() to
+> possible architectures and use it commonly in the ALSA core code.
 > 
-> Could you apply this cleanup patch for -tip?
+> But, as a temporary workaround, I'm fine with ifdef until the API is
+> defined...
 
-I'll pull it in. I'm going to try one more patch set for 32.
+There is a MIPS platform which may be based on a variety of system
+controllers only one of which supports cache coherency.  So we want to
+deciede at runtime not at compile time.
 
--- Steve
-
-
+  Ralf
