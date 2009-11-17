@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZKQEx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZKQFO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZKQEx7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 23:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZKQEx6
+	id S1752883AbZKQFO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 00:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZKQFOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 23:53:58 -0500
-Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:55634 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbZKQEx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 23:53:58 -0500
-Subject: Re: [BUG] intel KMS bug on i915
-From: Eric Anholt <eric@anholt.net>
-To: Mathieu Taillefumier <mathieu.taillefumier@free.fr>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4AFAA396.5040903@free.fr>
-References: <4AFAA396.5040903@free.fr>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Wnb7eFM/854RNMmiLQPz"
-Date: Mon, 16 Nov 2009 20:54:21 -0800
-Message-Id: <1258433661.4882.5.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Tue, 17 Nov 2009 00:14:25 -0500
+Received: from ozlabs.org ([203.10.76.45]:58488 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390AbZKQFOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 00:14:25 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 08/21] scheduler: implement force_cpus_allowed_ptr()
+Date: Tue, 17 Nov 2009 15:44:25 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
+       andi@firstfloor.org, fweisbec@gmail.com
+References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-9-git-send-email-tj@kernel.org>
+In-Reply-To: <1258391726-30264-9-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911171544.25355.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Nov 2009 03:45:13 am Tejun Heo wrote:
+> Implement force_cpus_allowed_ptr() which is similar to
+> set_cpus_allowed_ptr() but bypasses PF_THREAD_BOUND check and ignores
+> cpu_active() status as long as the target cpu is online.  This will be
+> used for concurrency-managed workqueue.
 
---=-Wnb7eFM/854RNMmiLQPz
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Can we drop the silly _ptr() postfix?  It was a hack someone added to
+avoid churning set_cpus_allowed(), and no need to repeat here.
 
-On Wed, 2009-11-11 at 12:44 +0100, Mathieu Taillefumier wrote:
-> Hello,
->=20
-> I recently switched to the last git kernel (the rc6) and have a serious=20
-> problem with KMS and xorg. I reported it to the xorg list but after some=20
-> research it seems that this problem is caused by some recent change in=20
-> the intel KMS stack. Some warnings and errors are reported by the=20
-> kernel. they are the following (only a small part of it):
->=20
-> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-> render error detected, EIR: 0x00000000
-> i915: Waking up sleeping processes
-> [drm:i915_wait_request] *ERROR* i915_wait_request returns -5 (awaiting 2=20
-> at 1)
-> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-> render error detected, EIR: 0x00000000
->=20
-> This problem is recurrent with all 2.6.32-rc versions and gives rise to=20
-> an unusable xorg (independent of the version), while the same xorg stack=20
-> works pretty well with the 2.6.31 kernel. The hardware is a sony laptop=20
-> with a intel 965 chipset and the bug can be reproduced at 100%
-
-Could you bisect the problem?  I don't think I've seen reports of this
-(fails at a time other than resume)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-Wnb7eFM/854RNMmiLQPz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAksCLHwACgkQHUdvYGzw6vf7dACggjzJRg04UGM1jFaBvxYSXiTU
-FXEAniTHSuAEsy4qvqleDECgWdi3mirj
-=VLCQ
------END PGP SIGNATURE-----
-
---=-Wnb7eFM/854RNMmiLQPz--
-
+Thanks,
+Rusty.
