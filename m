@@ -1,312 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbZKQOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZKQPHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbZKQOvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 09:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZKQOvT
+	id S1754337AbZKQPHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZKQPHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 09:51:19 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:39826 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572AbZKQOvS (ORCPT
+	Tue, 17 Nov 2009 10:07:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40515 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754191AbZKQPHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 09:51:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=xEw66N/vVmq3kgLIkGCmeac7b04JG7kIJ6A3wQP+PTIjdXlxvOqWMzlMmu2JLR9UJJ
-         qkomtWiWmJ7y+Qg789R66dycBglb33wjKumVp4fH64Fg20WEeqFN7WlBu9BRGiWjtpNe
-         d+MbYfeLLhChvaTBRHxErPe2KDu+kGQMmA8QE=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: [RFC,RFT,PATCH] cfq: autotuning support
-Date: Tue, 17 Nov 2009 15:51:14 +0100
-User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
+	Tue, 17 Nov 2009 10:07:25 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 2/5] pata_sis: Implement MWDMA for the UDMA 133 capable chips
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Date: Tue, 17 Nov 2009 14:51:17 +0000
+Message-ID: <20091117145111.15430.67106.stgit@localhost.localdomain>
+In-Reply-To: <20091117144450.15430.83450.stgit@localhost.localdomain>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911171551.14601.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, this is my first attempt at autotuning cfq parameters, and should apply on top of for-2.6.33 branch.
-Jeff and Vivek, if you can test this on your NCQ SSDs, it will help me to have your feedback (please include 
-the output of: 'grep -r . /sys/block/sdX/queue/iosched' after you run your tests).
+Bartlomiej pointed out that while this got fixed in the old driver whoever
+did it didn't port it across.
 
-The patch introduces code to sample the request service time distribution, and analyze it,
-in order to compute the following cfq parameters:
-* slice_idle, is computed as the expected service time of random request
-* cfq_slice[1] (i.e. the slice for sync queues)
-* cfq_slice[0] (i.e. the slice for async queues)
-
-The sync and async slices are scaled from default values proportionally to the new computed slice_idle.
-
-Autotuning will be enabled by default only on kernels compiled with HZ >= 500.
-With smaller HZ, I don't think jiffies is reliable to estimate those parameters.
-
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
- block/cfq-iosched.c |  166 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 163 insertions(+), 3 deletions(-)
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 6925ab9..d786a0b 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -32,6 +32,12 @@ static const int cfq_target_latency = HZ * 3/10; /* 300 ms */
- static const int cfq_hist_divisor = 4;
- 
- /*
-+ * Number of samples to collect before updating autotune
-+ * higher # makes the measurements more stable
-+ */
-+#define CFQ_AUTOTUNE_SAMPLES	(10)
-+
-+/*
-  * offset from end of service tree
-  */
- #define CFQ_IDLE_DELAY		(HZ / 5)
-@@ -201,6 +207,21 @@ struct cfq_data {
- 	unsigned int hw_tag_samples;
- 
- 	/*
-+	 * disk performance measurements
-+	 */
-+	unsigned long observation_start;
-+	/*
-+	 * measures are split (READ vs WRITE)
-+	 */
-+	unsigned long processed_rq[2];
-+	/*
-+	 * We store an histogram of samples for the service time
-+	 * in log scale [0..5]; [6] is a count, that is reset every
-+	 * time autotuning is done (i.e. every CFQ_AUTOTUNE_SAMPLES)
-+	 */
-+	unsigned int serv_time_samples[2][7];
-+
-+	/*
- 	 * idle window management
- 	 */
- 	struct timer_list idle_slice_timer;
-@@ -228,6 +249,7 @@ struct cfq_data {
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
- 	unsigned int cfq_latency;
-+	unsigned int cfq_autotune;
- 
- 	struct list_head cic_list;
- 
-@@ -891,6 +913,12 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
- 
-+	if (!rq_in_driver(cfqd)) {
-+		cfqd->observation_start = jiffies;
-+		cfqd->processed_rq[0] = 0;
-+		cfqd->processed_rq[1] = 0;
-+	}
-+
- 	cfqd->rq_in_driver[rq_is_sync(rq)]++;
- 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
- 						rq_in_driver(cfqd));
-@@ -2562,14 +2590,120 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
- 		cfqd->hw_tag = 0;
+ drivers/ata/pata_sis.c |   91 ++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 69 insertions(+), 22 deletions(-)
+
+
+diff --git a/drivers/ata/pata_sis.c b/drivers/ata/pata_sis.c
+index 488e77b..d70ecec 100644
+--- a/drivers/ata/pata_sis.c
++++ b/drivers/ata/pata_sis.c
+@@ -252,24 +252,25 @@ static void sis_100_set_piomode (struct ata_port *ap, struct ata_device *adev)
  }
  
-+
-+/*
-+ * Update the histogram to compute service time
-+ * Returns true if we collected enough samples to re-run autotune
-+ */
-+static bool cfq_update_stime(unsigned samples[6], unsigned long stime)
-+{
-+	unsigned idx = (stime > 15) + (stime > 7) + (stime > 3)
-+		       + (stime > 1) + (stime > 0);
-+	samples[idx]++;
-+	if (samples[idx] > (1U<<31))
-+		for (idx = 0; idx < 6; ++idx) {
-+			samples[idx]++;
-+			samples[idx] >>= 1;
-+		}
-+
-+	if (samples[6]++ < CFQ_AUTOTUNE_SAMPLES)
-+		return false;
-+	samples[6] = 0;
-+	return true;
-+}
-+
-+/*
-+ * Currently, we measure only service time for pure READ or WRITE requests
-+ * and we update autotune when we have collected enough READ requests
-+ */
-+static bool cfq_update_perf_measures(struct cfq_data *cfqd, unsigned long now)
-+{
-+	unsigned long tot_proc = cfqd->processed_rq[0] + cfqd->processed_rq[1];
-+	unsigned long obstime = now - cfqd->observation_start;
-+	unsigned long stime = obstime / tot_proc;
-+
-+	cfqd->observation_start = now;
-+
-+	if (!cfqd->processed_rq[READ])
-+		cfq_update_stime(cfqd->serv_time_samples[WRITE], stime);
-+	if (!cfqd->processed_rq[WRITE])
-+		return cfq_update_stime(cfqd->serv_time_samples[READ], stime);
-+	return false;
-+}
-+
-+/*
-+ * Compute service time from the sampled distribution in the histogram
-+ * The real service time distribution is a super-position of two distinct
-+ * distributions:
-+ * the one for sequential requests (usually this has a small mean)
-+ * the one for random requests (usually with a larger mean)
-+ * and we want to identify the random request one
-+ */
-+static unsigned cfq_service_time(unsigned samples[6])
-+{
-+	unsigned last_max = 0, i;
-+	/* Random request service time corresponds to the
-+	 * largest maximum in the histogram */
-+	for (i = 1; i < 6; ++i)
-+		if (samples[i] > samples[i-1])
-+			last_max = i;
-+	/*
-+	 * Unfortunately, if sequential requests overwhelm
-+	 * random ones, and the two peaks are too near,
-+	 * the second peak could be masked by the tail of the first.
-+	 * To catch this, we check if the tail has enough weight,
-+	 * and in this case we take the next bin as maximum
-+	 */
-+	if (last_max < 5) {
-+		unsigned total = 0;
-+		for (i = last_max + 1; i < 6; ++i)
-+			total += samples[i];
-+		if (total > samples[last_max])
-+			++last_max;
-+	}
-+	if (!last_max)
-+		return 0;
-+	return 1U << last_max;
-+}
-+
-+static void cfq_update_autotune(struct cfq_data *cfqd)
-+{
-+	unsigned long base, baseW;
-+	if (!cfqd->cfq_autotune)
-+		return;
-+	base = cfq_service_time(cfqd->serv_time_samples[READ]);
-+	baseW = cfq_service_time(cfqd->serv_time_samples[WRITE]);
-+
-+	/* Compute slice_idle */
-+	if (!base)
-+		base = baseW;
-+	if (base > cfq_slice_idle)
-+		base = min_t(unsigned long,
-+			     (base + cfq_slice_idle) / 2, 2 * cfq_slice_idle);
-+
-+	cfqd->cfq_slice_idle = base;
-+
-+	/* Compute derived cfq_slice[*]
-+	 * Note: those cannot be 0
-+	 */
-+	if (!base)
-+		base = 1;
-+
-+	if (baseW)
-+		baseW = min(base, baseW * cfq_slice_sync / cfq_slice_async);
-+	else
-+		baseW = base;
-+
-+	cfqd->cfq_slice[1] = base * cfq_slice_sync / cfq_slice_idle;
-+	cfqd->cfq_slice[0] = baseW * cfq_slice_async / cfq_slice_idle;
-+}
-+
- static void cfq_completed_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
- 	struct cfq_data *cfqd = cfqq->cfqd;
- 	const int sync = rq_is_sync(rq);
--	unsigned long now;
--
--	now = jiffies;
-+	unsigned long now = jiffies;
- 	cfq_log_cfqq(cfqd, cfqq, "complete");
- 
- 	cfq_update_hw_tag(cfqd);
-@@ -2578,6 +2712,10 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 	WARN_ON(!cfqq->dispatched);
- 	cfqd->rq_in_driver[sync]--;
- 	cfqq->dispatched--;
-+	cfqd->processed_rq[rq_data_dir(rq)]++;
-+
-+	if (!rq_in_driver(cfqd) && cfq_update_perf_measures(cfqd, now))
-+		cfq_update_autotune(cfqd);
- 
- 	if (cfq_cfqq_sync(cfqq))
- 		cfqd->sync_flight--;
-@@ -2966,6 +3104,7 @@ static void *cfq_init_queue(struct request_queue *q)
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
- 	cfqd->cfq_latency = 1;
-+	cfqd->cfq_autotune = (HZ >= 500);
- 	cfqd->hw_tag = -1;
- 	cfqd->last_end_sync_rq = jiffies;
- 	return cfqd;
-@@ -3002,6 +3141,23 @@ fail:
- /*
-  * sysfs parts below -->
+ /**
+- *	sis_133_set_piomode - Initialize host controller PATA PIO timings
++ *	sis_133_do_piomode - Initialize host controller PATA PIO/DMA timings
+  *	@ap: Port whose timings we are configuring
+  *	@adev: Device we are configuring for.
+  *
+  *	Set PIO mode for device, in host controller PCI config space. This
+- *	function handles PIO set up for the later ATA133 devices.
++ *	function handles PIO set up for the later ATA133 devices. The same
++ *	timings are used for MWDMA.
+  *
+  *	LOCKING:
+  *	None (inherited from caller).
   */
-+static ssize_t autotune_stats_show(struct elevator_queue *e, char *page)
+ 
+-static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
++static void sis_133_do_piomode(struct ata_port *ap, struct ata_device *adev,
++					int speed)
+ {
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	int port = 0x40;
+ 	u32 t1;
+ 	u32 reg54;
+-	int speed = adev->pio_mode - XFER_PIO_0;
+ 
+ 	const u32 timing133[] = {
+ 		0x28269000,	/* Recovery << 24 | Act << 16 | Ini << 12 */
+@@ -305,6 +306,42 @@ static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
+ }
+ 
+ /**
++ *	sis_133_set_piomode - Initialize host controller PATA PIO timings
++ *	@ap: Port whose timings we are configuring
++ *	@adev: Device we are configuring for.
++ *
++ *	Set PIO mode for device, in host controller PCI config space. This
++ *	function handles PIO set up for the later ATA133 devices.
++ *
++ *	LOCKING:
++ *	None (inherited from caller).
++ */
++
++static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
 +{
-+	struct cfq_data *cfqd = e->elevator_data;
-+	int pos = 0, i, j;
-+#if HZ < 500
-+	pos += sprintf(page, "Autotune may work incorrectly with HZ < 500\n");
-+#endif
-+	for (j = 0; j < 2; ++j) {
-+		for (i = 0; i < 6; ++i)
-+			pos += sprintf(page+pos, "[%2u]",
-+				cfqd->serv_time_samples[j][i]);
-+		page[pos++] = '\n';
-+	}
-+	page[pos] = '\0';
-+	return pos;
++
++	sis_133_do_piomode(ap, adev, adev->pio_mode - XFER_PIO_0);
 +}
 +
- static ssize_t
- cfq_var_show(unsigned int var, char *page)
- {
-@@ -3036,6 +3192,7 @@ SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
- SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
- SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
- SHOW_FUNCTION(cfq_low_latency_show, cfqd->cfq_latency, 0);
-+SHOW_FUNCTION(cfq_autotune_show, cfqd->cfq_autotune, 0);
- #undef SHOW_FUNCTION
++/**
++ *	mwdma_clip_to_pio		-	clip MWDMA mode
++ *	@adev: device
++ *
++ *	As the SiS shared MWDMA and PIO timings we must program the equivalent
++ *	PIO timing for the MWDMA mode but we must not program one higher than
++ *	the permitted PIO timing of the device.
++ */
++
++static int mwdma_clip_to_pio(struct ata_device *adev)
++{
++	const int mwdma_to_pio[3] = {
++		XFER_PIO_0, XFER_PIO_3, XFER_PIO_4
++	};
++	return min(mwdma_to_pio[adev->dma_mode - XFER_MW_DMA_0],
++				adev->pio_mode - XFER_PIO_0);
++}
++
++/**
+  *	sis_old_set_dmamode - Initialize host controller PATA DMA timings
+  *	@ap: Port whose timings we are configuring
+  *	@adev: Device to program
+@@ -332,6 +369,7 @@ static void sis_old_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ 	if (adev->dma_mode < XFER_UDMA_0) {
+ 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
+ 		   the higher bits are dependant on the device */
++		speed = mwdma_clip_to_pio(adev);
+ 		timing &= ~0x870F;
+ 		timing |= mwdma_bits[speed];
+ 	} else {
+@@ -372,6 +410,7 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ 	if (adev->dma_mode < XFER_UDMA_0) {
+ 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
+ 		   the higher bits are dependant on the device, bit 15 udma */
++		speed = mwdma_clip_to_pio(adev);
+ 		timing &= ~0x870F;
+ 		timing |= mwdma_bits[speed];
+ 	} else {
+@@ -389,7 +428,7 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+  *	@adev: Device to program
+  *
+  *	Set UDMA/MWDMA mode for device, in host controller PCI config space.
+- *	Handles UDMA66 and early UDMA100 devices.
++ *	Handles later UDMA100 devices.
+  *
+  *	LOCKING:
+  *	None (inherited from caller).
+@@ -400,21 +439,25 @@ static void sis_100_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	int speed = adev->dma_mode - XFER_MW_DMA_0;
+ 	int drive_pci = sis_old_port_base(adev);
+-	u8 timing;
++	u16 timing;
  
- #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
-@@ -3068,6 +3225,7 @@ STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
- 		UINT_MAX, 0);
- STORE_FUNCTION(cfq_low_latency_store, &cfqd->cfq_latency, 0, 1, 0);
-+STORE_FUNCTION(cfq_autotune_store, &cfqd->cfq_autotune, 0, 1, 0);
- #undef STORE_FUNCTION
+-	const u8 udma_bits[]  = { 0x8B, 0x87, 0x85, 0x83, 0x82, 0x81};
++	const u16 udma_bits[]  = {
++		0x8B00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100};
++	const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
  
- #define CFQ_ATTR(name) \
-@@ -3084,6 +3242,8 @@ static struct elv_fs_entry cfq_attrs[] = {
- 	CFQ_ATTR(slice_async_rq),
- 	CFQ_ATTR(slice_idle),
- 	CFQ_ATTR(low_latency),
-+	CFQ_ATTR(autotune),
-+	__ATTR_RO(autotune_stats),
- 	__ATTR_NULL
- };
+-	pci_read_config_byte(pdev, drive_pci + 1, &timing);
++	pci_read_config_word(pdev, drive_pci, &timing);
  
--- 
-1.6.2.5
-
+ 	if (adev->dma_mode < XFER_UDMA_0) {
+-		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
++		speed = mwdma_clip_to_pio(adev);
++		timing &= ~0x80FF;
++		timing |= mwdma_bits[speed];
+ 	} else {
+ 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
+ 		speed = adev->dma_mode - XFER_UDMA_0;
+-		timing &= ~0x8F;
++		timing &= ~0x8F00;
+ 		timing |= udma_bits[speed];
+ 	}
+-	pci_write_config_byte(pdev, drive_pci + 1, timing);
++	pci_write_config_word(pdev, drive_pci, timing);
+ }
+ 
+ /**
+@@ -434,21 +477,26 @@ static void sis_133_early_set_dmamode (struct ata_port *ap, struct ata_device *a
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	int speed = adev->dma_mode - XFER_MW_DMA_0;
+ 	int drive_pci = sis_old_port_base(adev);
+-	u8 timing;
+-	/* Low 4 bits are timing */
+-	static const u8 udma_bits[]  = { 0x8F, 0x8A, 0x87, 0x85, 0x83, 0x82, 0x81};
++	u16 timing;
++	/* Bits 15-12  are timing */
++	static const u16 udma_bits[]  = {
++		0x8F00, 0x8A00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100
++	};
++	static const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
+ 
+-	pci_read_config_byte(pdev, drive_pci + 1, &timing);
++	pci_read_config_word(pdev, drive_pci, &timing);
+ 
+ 	if (adev->dma_mode < XFER_UDMA_0) {
+-		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
++		speed = mwdma_clip_to_pio(adev);
++		timing &= ~0x80FF;
++		timing = mwdma_bits[speed];
+ 	} else {
+ 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
+ 		speed = adev->dma_mode - XFER_UDMA_0;
+-		timing &= ~0x8F;
++		timing &= ~0x8F00;
+ 		timing |= udma_bits[speed];
+ 	}
+-	pci_write_config_byte(pdev, drive_pci + 1, timing);
++	pci_write_config_word(pdev, drive_pci, timing);
+ }
+ 
+ /**
+@@ -479,13 +527,12 @@ static void sis_133_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ 	if (reg54 & 0x40000000)
+ 		port = 0x70;
+ 	port += (8 * ap->port_no) +  (4 * adev->devno);
+-
+ 	pci_read_config_dword(pdev, port, &t1);
+ 
+ 	if (adev->dma_mode < XFER_UDMA_0) {
+-		t1 &= ~0x00000004;
+-		/* FIXME: need data sheet to add MWDMA here. Also lacking on
+-		   ide/pci driver */
++		speed = mwdma_clip_to_pio(adev);
++		sis_133_do_piomode(ap, adev, speed);
++		t1 &= ~4;	/* UDMA off */
+ 	} else {
+ 		speed = adev->dma_mode - XFER_UDMA_0;
+ 		/* if & 8 no UDMA133 - need info for ... */
 
