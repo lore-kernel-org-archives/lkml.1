@@ -1,143 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZKQLoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbZKQLoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755098AbZKQLoo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZKQLon
+	id S1755749AbZKQLoz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZKQLoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:44:43 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44882 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753812AbZKQLom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:44:42 -0500
-Date: Tue, 17 Nov 2009 11:44:44 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and
-	double check it should be asleep
-Message-ID: <20091117114444.GY29804@csn.ul.ie>
-References: <2f11576a0911140134u21eafa83t9642bb25ccd953de@mail.gmail.com> <20091114154636.GR29804@csn.ul.ie> <20091117141638.3DCB.A69D9226@jp.fujitsu.com>
+	Tue, 17 Nov 2009 06:44:54 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:48661 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755574AbZKQLox convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 06:44:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FjzbxVQNwl0W6hBY16FZ+E6wt2IoGwQzficarfmTwSPsQ6KD2HZ0jMkS1NASpf5/Rq
+         gi1fgHNQNWs4O5Yn+W13lETJXLfFTx3wcC025viZCz/HBzPhpKJW/NfzowveOghjVGjn
+         Z0HTZH6RjjQVNNFJTMhEofBP0BDqYU9a13a3g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091117141638.3DCB.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1258372718.31356.10.camel@wall-e>
+References: <1258372242.31356.1.camel@wall-e>
+	 <1258372718.31356.10.camel@wall-e>
+Date: Tue, 17 Nov 2009 17:14:57 +0530
+Message-ID: <b90c0690911170344l23d4ca11x5f3d6b04fee89aab@mail.gmail.com>
+Subject: Re: [PATCH 2/7] kfifo: move out spinlock
+From: Roger Quadros <quadros.roger@gmail.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 08:03:21PM +0900, KOSAKI Motohiro wrote:
-> I'm sorry for the long delay.
-> 
-> > On Sat, Nov 14, 2009 at 06:34:23PM +0900, KOSAKI Motohiro wrote:
-> > > 2009/11/14 Mel Gorman <mel@csn.ul.ie>:
-> > > > On Sat, Nov 14, 2009 at 03:00:57AM +0900, KOSAKI Motohiro wrote:
-> > > >> > On Fri, Nov 13, 2009 at 07:43:09PM +0900, KOSAKI Motohiro wrote:
-> > > >> > > > After kswapd balances all zones in a pgdat, it goes to sleep. In the event
-> > > >> > > > of no IO congestion, kswapd can go to sleep very shortly after the high
-> > > >> > > > watermark was reached. If there are a constant stream of allocations from
-> > > >> > > > parallel processes, it can mean that kswapd went to sleep too quickly and
-> > > >> > > > the high watermark is not being maintained for sufficient length time.
-> > > >> > > >
-> > > >> > > > This patch makes kswapd go to sleep as a two-stage process. It first
-> > > >> > > > tries to sleep for HZ/10. If it is woken up by another process or the
-> > > >> > > > high watermark is no longer met, it's considered a premature sleep and
-> > > >> > > > kswapd continues work. Otherwise it goes fully to sleep.
-> > > >> > > >
-> > > >> > > > This adds more counters to distinguish between fast and slow breaches of
-> > > >> > > > watermarks. A "fast" premature sleep is one where the low watermark was
-> > > >> > > > hit in a very short time after kswapd going to sleep. A "slow" premature
-> > > >> > > > sleep indicates that the high watermark was breached after a very short
-> > > >> > > > interval.
-> > > >> > > >
-> > > >> > > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > > >> > >
-> > > >> > > Why do you submit this patch to mainline? this is debugging patch
-> > > >> > > no more and no less.
-> > > >> > >
-> > > >> >
-> > > >> > Do you mean the stats part? The stats are included until such time as the page
-> > > >> > allocator failure reports stop or are significantly reduced. In the event a
-> > > >> > report is received, the value of the counters help determine if kswapd was
-> > > >> > struggling or not. They should be removed once this mess is ironed out.
-> > > >> >
-> > > >> > If there is a preference, I can split out the stats part and send it to
-> > > >> > people with page allocator failure reports for retesting.
-> > > >>
-> > > >> I'm sorry my last mail didn't have enough explanation.
-> > > >> This stats help to solve this issue. I agreed. but after solving this issue,
-> > > >> I don't imagine administrator how to use this stats. if KSWAPD_PREMATURE_FAST or
-> > > >> KSWAPD_PREMATURE_SLOW significantly increased, what should admin do?
-> > > >
-> > > > One possible workaround would be to raise min_free_kbytes while a fix is
-> > > > being worked on.
-> > > 
-> > > Please correct me, if I said wrong thing.
-> > 
-> > You didn't.
-> > 
-> > > if I was admin, I don't watch this stats because kswapd frequently
-> > > wakeup doesn't mean any trouble. instead I watch number of allocation
-> > > failure.
-> > 
-> > The stats are not tracking when kswapd wakes up. It helps track how
-> > quickly the high or low watermarks are going under once kswapd tries to
-> > go back to sleep.
-> 
-> Umm, honestly I'm still puzlled. probably we need go back one step at once.
-> kswapd wake up when memory amount less than low watermark and sleep
-> when memory amount much than high watermask. We need to know 
-> GFP_ATOMIC failure sign.
-> 
-> My point is, kswapd wakeup only happen after kswapd sleeping. but if the system is
-> under heavy pressure and memory amount go up and down between low watermark
-> and high watermark, this stats don't increase at all. IOW, this stats is strong related to
-> high watermark.
-> 
+Hi Stefani,
 
-Yes, this is true but as long as kswapd is awake and doing its job, it
-will continue taking direction on what order it should be reclaiming from
-processes that failed the low_watermark test.  The GFP_ATOMIC allocations
-will be allowed to go under this low watermark but will have informed kswapd
-what order it should be reclaiming at so it stays working.
+ minor typo.
 
-A stat that increases between the low and high watermark would indicate
-that memory pressure is there or that the reclaim algorithm is not
-working as expected but that's checking for a different problem.
+> diff -u -N -r kfifo1/include/linux/kfifo.h kfifo2/include/linux/kfifo.h
+> --- kfifo1/include/linux/kfifo.h        2009-10-19 20:39:24.000000000 +0200
+> +++ kfifo2/include/linux/kfifo.h        2009-10-19 20:58:34.000000000 +0200
+> @@ -30,13 +30,12 @@
+>        unsigned int size;      /* the size of the allocated buffer */
+>        unsigned int in;        /* data is added at offset (in % size) */
+>        unsigned int out;       /* data is extracted from off. (out % size) */
+> -       spinlock_t *lock;       /* protects concurrent modifications */
+>  };
+>
+>  extern void kfifo_init(struct kfifo *fifo, unsigned char *buffer,
+> -                       unsigned int size, spinlock_t *lock);
+> +                       unsigned int size);
+>  extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
+> -                       gfp_t gfp_mask, spinlock_t *lock);
+> +                       gfp_t gfp_mask);
+>  extern void kfifo_free(struct kfifo *fifo);
+>  extern unsigned int __kfifo_put(struct kfifo *fifo,
+>                                const unsigned char *buffer, unsigned int len);
+> @@ -58,58 +57,67 @@
+>  */
+>  static inline void kfifo_reset(struct kfifo *fifo)
+>  {
+> -       unsigned long flags;
+> -
+> -       spin_lock_irqsave(fifo->lock, flags);
+> -
+>        __kfifo_reset(fifo);
+> +}
+> +
+> +/**
+> + * __kfifo_len - returns the number of bytes available in the FIFO
+> + * @fifo: the fifo to be used.
+> + */
+> +static inline unsigned int __kfifo_len(struct kfifo *fifo)
+> +{
+> +       register unsigned int   out;
+>
+> -       spin_unlock_irqrestore(fifo->lock, flags);
+> +       out = fifo->out;
+> +       smp_rmb();
+> +       return fifo->in - out;
+>  }
+>
+>  /**
+> - * kfifo_put - puts some data into the FIFO
+> + * kfifo_put_locked - puts some data into the FIFO using a spinlock for locking
+>  * @fifo: the fifo to be used.
+> - * @buffer: the data to be added.
+> + * @from: the data to be added.
+>  * @len: the length of the data to be added.
 
-What I was looking at was  kswapd going to sleep and the low or min watermarks
-being hit very quickly after that so that kswapd pre-emptively kicks in
-before allocations start failing again.
+should be @n:
 
-> Probaby, min watermark or low watermark are more useful for us.
-> 
+> + * @lock: pointer to the spinlock to use for locking.
+>  *
+> - * This function copies at most @len bytes from the @buffer into
+> + * This function copies at most @len bytes from the @from buffer into
+>  * the FIFO depending on the free space, and returns the number of
+>  * bytes copied.
+>  */
+> -static inline unsigned int kfifo_put(struct kfifo *fifo,
+> -                               const unsigned char *buffer, unsigned int len)
+> +static inline __must_check unsigned int kfifo_put_locked(struct kfifo *fifo,
+> +               const unsigned char *from, unsigned int n, spinlock_t *lock)
+>  {
+>        unsigned long flags;
+>        unsigned int ret;
+>
+> -       spin_lock_irqsave(fifo->lock, flags);
+> +       spin_lock_irqsave(lock, flags);
+>
+> -       ret = __kfifo_put(fifo, buffer, len);
+> +       ret = __kfifo_put(fifo, from, n);
+>
+> -       spin_unlock_irqrestore(fifo->lock, flags);
+> +       spin_unlock_irqrestore(lock, flags);
+>
+>        return ret;
+>  }
+>
+>  /**
+> - * kfifo_get - gets some data from the FIFO
+> + * kfifo_get_locked - gets some data from the FIFO using a spinlock for locking
+>  * @fifo: the fifo to be used.
+> - * @buffer: where the data must be copied.
+> + * @to: where the data must be copied.
+>  * @len: the size of the destination buffer.
 
-Why? kswapd is awake between those points.
+should be @n
 
-> # of called wake_all_kswapd() is related to low watermark. and It's conteniously
-> increase although the system have strong memroy pressure. I'm ok.
-> KSWAPD_NO_CONGESTION_WAIT is related to min watermark. I'm ok too..
-> # of page allocation failure is related to  min watermark too. I'm ok too.
-> 
-> IOW, I only dislike this stat stop increase strong memory pressure (above explanation).
-> Can you please tell me why you think kswapd slept time is so important?
-> 
-
-I don't think the amount of time it has slept is important. I think it's
-important to know if the system is getting back into watermark trouble very
-shortly after kswapd reached the high watermark.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> + * @lock: pointer to the spinlock to use for locking.
+>  *
+>  * This function copies at most @len bytes from the FIFO into the
+> - * @buffer and returns the number of copied bytes.
+> + * @to buffer and returns the number of copied bytes.
+>  */
+> -static inline unsigned int kfifo_get(struct kfifo *fifo,
+> -                                    unsigned char *buffer, unsigned int len)
+> +static inline __must_check unsigned int kfifo_get_locked(struct kfifo *fifo,
+> +       unsigned char *to, unsigned int n, spinlock_t *lock)
+>  {
+>        unsigned long flags;
+>        unsigned int ret;
+>
+> -       spin_lock_irqsave(fifo->lock, flags);
+> +       spin_lock_irqsave(lock, flags);
+>
+> -       ret = __kfifo_get(fifo, buffer, len);
+> +       ret = __kfifo_get(fifo, to, n);
+>
+>        /*
+>         * optimization: if the FIFO is empty, set the indices to 0
+> @@ -118,36 +126,18 @@
+>        if (fifo->in == fifo->out)
+>                fifo->in = fifo->out = 0;
+>
+> -       spin_unlock_irqrestore(fifo->lock, flags);
+> +       spin_unlock_irqrestore(lock, flags);
+>
+>        return ret;
+>  }
