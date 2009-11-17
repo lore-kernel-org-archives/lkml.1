@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZKQHrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZKQHq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbZKQHrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 02:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZKQHq7
+	id S1755911AbZKQHq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 02:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbZKQHq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 02:46:59 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57250 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbZKQHq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 02:46:59 -0500
-Message-ID: <4B0254D7.2080503@cn.fujitsu.com>
-Date: Tue, 17 Nov 2009 15:46:31 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: prevent build warning: 'ftrace_graph_buf'	defined
- but not used
-References: <4AF24381.5060307@cn.fujitsu.com> <20091105063917.GA4896@nowhere>
-In-Reply-To: <20091105063917.GA4896@nowhere>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 17 Nov 2009 02:46:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60330
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752712AbZKQHq1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 02:46:27 -0500
+Date: Mon, 16 Nov 2009 23:46:43 -0800 (PST)
+Message-Id: <20091116.234643.137631670.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-11-16
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091116162655.GD14410@tuxdriver.com>
+References: <20091116162655.GD14410@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Thu, Nov 05, 2009 at 11:16:17AM +0800, Lai Jiangshan wrote:
->> prevent build warning when !CONFIG_FUNCTION_GRAPH_TRACER
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> 
-> 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 16 Nov 2009 11:26:55 -0500
 
-Hi, Ingo,
+> The biggest is a revert of the patch that added cfg80211 support
+> to ipw2200.  It was ill conceived and inadvertantly caused problems
+> for ipw2100.  There are fixes available now, but they are just as
+> big as the revert -- I'll restage them for 2.6.33.  There is little
+> activity in ipw2200, so it the revert should be set.  Plus, I've
+> tested the revert locally.
+ ...
+>   git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
 
-Could you apply this cleanup patch for -tip?
-
-Lai
-
-> 
-> 
-> 
->> ---
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 7cb6f19..892e3ea 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -2274,7 +2274,6 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
->>  #define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
->>  static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
->>  static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
->> -static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
->>  
->>  static int __init set_ftrace_notrace(char *str)
->>  {
->> @@ -2291,6 +2290,7 @@ static int __init set_ftrace_filter(char *str)
->>  __setup("ftrace_filter=", set_ftrace_filter);
->>  
->>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->> +static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
->>  static int __init set_graph_function(char *str)
->>  {
->>  	strlcpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
->>
-> 
-> 
-> 
-
+Pulled, thanks a lot.
