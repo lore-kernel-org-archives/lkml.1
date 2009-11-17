@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZKQWwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZKQW4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZKQWwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZKQWw1
+	id S1756809AbZKQW4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZKQW4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:52:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38756 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756603AbZKQWwZ convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 17:56:47 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:52385 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756792AbZKQW4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:52:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [Bug #14620] WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask
-Date: Tue, 17 Nov 2009 23:53:50 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       =?iso-8859-1?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.SJG.7SdALB@chimera> <20091117024318.GC23066@mit.edu>
-In-Reply-To: <20091117024318.GC23066@mit.edu>
+	Tue, 17 Nov 2009 17:56:46 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org, Jens Osterkamp <jens@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] macvlan: add vepa and bridge mode
+Date: Tue, 17 Nov 2009 23:56:41 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick McHardy <kaber@trash.net>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       virtualization@lists.linux-foundation.org
+References: <1258497551-25959-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1258497551-25959-1-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911172353.50156.rjw@sisk.pl>
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911172356.41459.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+x5qoVfsBMeY3+p1RATNcfnUElu2WH93F5v4G
+ 0P2/vlGMxwCKr5xZF3ahHq2/AaDTb1J8BYr4vUQb5/0+bDexSA
+ 8UlQZXC66eNKUX7fIiXCA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009, Theodore Tso wrote:
-> On Mon, Nov 16, 2009 at 11:37:47PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14620
-> > Subject		: WARNING: at mm/page_alloc.c:1805 __alloc_pages_nodemask
-> > Submitter	: Rogério Brito <rbrito@ime.usp.br>
-> > Date		: 2009-11-06 23:10 (11 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125754907413892&w=4
-> 
-> This isn't technically a regression, since the warning is simply
-> complaining about something that apparently ext4 has been doing for a
-> long time, which is that it allocates some very large order data
-> buffers.  So the change referenced simply printed a warning message
-> that complained about the fact.
-> 
-> The actual problem will be fixed in 2.6.32, as we no longer allocate
-> the big data buffers at mount time.
+Sorry, I used the wrong address for the virtualization mailing list
+at first. Please correct this to <virtualization@lists.linux-foundation.org>
+when replying to the other mails.
 
-Thanks, I'm going to close the bug.
+For people only subscribed to virtualization, you can find the actual
+patches at
+http://patchwork.kernel.org/patch/60810/
+http://patchwork.kernel.org/patch/60811/
+http://patchwork.kernel.org/patch/60813/
+http://patchwork.kernel.org/patch/60814/
 
-Rafael
+	Arnd <><
+
+On Tuesday 17 November 2009, Arnd Bergmann wrote:
+> This is based on an earlier patch from Eric Biederman adding
+> forwarding between macvlans. I extended his approach to
+> allow the administrator to choose the mode for each macvlan,
+> and to implement a functional VEPA between macvlan.
+> 
+> Still missing from this is support for communication between
+> the lower device that the macvlans are based on. This would
+> be extremely useful but as others have found out before me
+> requires significant changes not only to macvlan but also
+> to the common transmit path.
+> 
+> I've seen one panic during testing this that I still need
+> to track down, but it generally does what is advertised.
+> I've tested VEPA operation with the hairpin support
+> added to the bridge driver by Anna Fischer.
+> 
+> My current plan is to submit this for inclusion in 2.6.33
+> when people are happy with it and I tracked down any
+> remaining bugs, and possibly to do the communication with
+> the lower device one release later.
+> 
+> 	Arnd <><
+> 
+> ---
+> 
+> Arnd Bergmann (3):
+>   macvlan: implement VEPA and private mode
+>   macvlan: export macvlan mode through netlink
+>   iplink: add macvlan options for bridge mode
+> 
+> Eric Biederman (1):
+>   macvlan: Reflect macvlan packets meant for other macvlan devices
+> 
+>  linux/drivers/net/macvlan.c   |  170 +++++++++++++++++++++++++++++++++-----
+>  linux/include/linux/if_link.h |   15 +++
+>  2 files changed, 161 insertions(+), 24 deletions(-)
+> 
+>  iproute2/include/linux/if_link.h |   15 +++
+>  iproute2/ip/Makefile             |    3 +-
+>  iproute2/ip/iplink_macvlan.c     |   93 ++++++++++++++++++
+>  3 files changed, 110 insertions(+), 1 deletions(-)
+>  create mode 100644 ip/iplink_macvlan.c
+> 
+
