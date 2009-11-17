@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbZKQWLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZKQWLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbZKQWLy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbZKQWLx
+	id S1755573AbZKQWLN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbZKQWLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:11:53 -0500
-Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:49150 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755122AbZKQWLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Nov 2009 17:11:11 -0500
-Date: Wed, 18 Nov 2009 09:11:08 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 7/7] xfs: Don't use PF_MEMALLOC
-Message-ID: <20091117221108.GK9467@discord.disaster>
-References: <20091117161551.3DD4.A69D9226@jp.fujitsu.com> <20091117162235.3DEB.A69D9226@jp.fujitsu.com>
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:3975 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754968AbZKQWLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:11:09 -0500
+Subject: [PATCH 0/3] cpufreq / linux-next build fixes
+To: davej@redhat.com
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Date: Tue, 17 Nov 2009 15:11:15 -0700
+Message-ID: <20091117220729.25933.57884.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091117162235.3DEB.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 04:23:43PM +0900, KOSAKI Motohiro wrote:
-> 
-> Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
-> memory, anyone must not prevent it. Otherwise the system cause
-> mysterious hang-up and/or OOM Killer invokation.
+Hi Dave,
 
-The xfsbufd is a woken run by a registered memory shaker. i.e. it
-runs when the system needs to reclaim memory. It forceѕ the
-delayed write metadata buffers (of which there can be a lot) to disk
-so that they can be reclaimed on IO completion. This IO submission
-may require ѕome memory to be allocated to be able to free that
-memory.
+I tripped over a build error when building /without/ CONFIG_CPU_FREQ.
 
-Hence, AFAICT the use of PF_MEMALLOC is valid here.
+I found this by way of the mmotm tree which I think sucks in linux-next.
+I haven't checked your cpufreq tree directly, so apologies if these are
+already fixed...
 
-Cheers,
+I build tested my changes with both CONFIG_CPU_FREQ set and unset, and
+looked at the sparse output too, and all seems to be well. I did not
+run-time test these changes.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks,
+/ac
+
+---
+
+Alex Chiang (3):
+      [CPUFREQ] make ACPI P-state cpufreq drivers depend on CONFIG_CPU_FREQ
+      ACPI: do not define acpi_processor_get_bios_limit() in processor.h
+      [CPUFREQ] make internal cpufreq_add_dev_* static
+
+
+ arch/x86/kernel/cpu/cpufreq/Kconfig |    6 +++---
+ drivers/cpufreq/cpufreq.c           |    6 +++---
+ include/acpi/processor.h            |    5 -----
+ 3 files changed, 6 insertions(+), 11 deletions(-)
+
