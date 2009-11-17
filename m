@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbZKQIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbZKQI7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbZKQIzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZKQIzh
+	id S1753401AbZKQI7v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZKQI7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:55:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40002 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752187AbZKQIzh (ORCPT
+	Tue, 17 Nov 2009 03:59:51 -0500
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:41841 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753082AbZKQI7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:55:37 -0500
-Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michel Lespinasse <walken@google.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <20091117081817.GA7963@elte.hu>
-References: <20091117074655.GA14023@google.com>
-	 <20091117081817.GA7963@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 09:55:21 +0100
-Message-ID: <1258448121.7816.29.camel@laptop>
+	Tue, 17 Nov 2009 03:59:50 -0500
+Date: Tue, 17 Nov 2009 09:59:55 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: tglx@linutronix.de, mingo@elte.hu,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix clock_gettime vsyscall time warp
+Message-ID: <20091117095955.0df508a5@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <1258436990.17765.83.camel@minggr.sh.intel.com>
+References: <1258436990.17765.83.camel@minggr.sh.intel.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 09:18 +0100, Ingo Molnar wrote:
-> 
-> Would you be interested in adding it as a 'perf bench futex' testcase? 
-> That way kernel developers could monitor futex performance in the future 
-> as well.
-> 
-> See 'perf bench' in the latest perf events tree:
-> 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> Do 'cd tools/perf; make -j install' to install perf.
+On Tue, 17 Nov 2009 13:49:50 +0800
+Lin Ming <ming.m.lin@intel.com> wrote:
 
-Darren has recently been putting a lot of effort in making a futex test
-suite:
+> The root cause is the NTP adjusted clock multiplier(timekeeper.mult) is
+> not updated to vsyscall gtod data(vsyscall_gtod_data.clock.mult). 
+> 
+> Since commit 0a544198 "timekeeping: Move NTP adjusted clock multiplier
+> to struct timekeeper", clock->mult is only the unmodified multiplier.
+> 
+> Below patch passes the adjusted clock multiplier to update_vsyscall.
+> -void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+> +void update_vsyscall(struct timespec *wall_time, struct clocksource *clock, u32 mult)
+> 
+> With this patch applied to 2.6.32-rc7, I have been running
+> time-warp-test for many hours without any time warp on both x86_64 and
+> ia64 machines.
+> 
+> This patch also touches the powerpc code, so it would be very
+> appreciated if anyone can help to test it on powerpc.
 
-http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
+Ouch! Yes, good catch. That patch needs to go into 2.6.32.
 
-Its not yet complete, but hopefully it will soon be :-)
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
