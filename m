@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZKQMdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbZKQMhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZKQMdr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZKQMdq
+	id S1753214AbZKQMhp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZKQMho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:33:46 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:53161 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891AbZKQMdp (ORCPT
+	Tue, 17 Nov 2009 07:37:44 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:19929 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZKQMhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:33:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=biuq7CBkhZsPm8ZI3OQ6+xR6HrilQTXF9Dk2pw4qmow+5x4Ta2bTkArILuZevre/tG
-         4n0rSUvXYDW5YGbs+I42fp9ke3D+dIdoj3UpGZ/ZlWaXwZ6yuDoFTWFLdEbobl6HPE1H
-         25CEg4iGZWZopjdJ3n/MgS4xGcZ+nT+8vZhwk=
-Message-ID: <4B02982B.9070004@gmail.com>
-Date: Tue, 17 Nov 2009 07:33:47 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 17 Nov 2009 07:37:43 -0500
+Date: Tue, 17 Nov 2009 07:36:22 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: JiSheng Zhang <jszhang3@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, stable@kernel.org, jack@suse.cz
+Subject: Re: [BUG]2.6.27.y some contents lost after writing to mmaped file
+Message-ID: <20091117123622.GI27677@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Greg KH <gregkh@suse.de>, JiSheng Zhang <jszhang3@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org,
+	jack@suse.cz
+References: <2df346410911151938r1eb5c5e4q9930ac179d61ef01@mail.gmail.com>
+ <20091117015655.GA8683@suse.de>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: David Miller <davem@davemloft.net>, ghaskins@novell.com, mst@redhat.com,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC PATCH] net: add dataref destructor to sk_buff
-References: <4AF98A8C.9040201@novell.com> <20091114011229.GA18580@gondor.apana.org.au> <4AFE08EF.2030308@gmail.com> <20091113.190438.78469912.davem@davemloft.net> <4B016041.5030000@gmail.com> <20091117010238.GA10029@gondor.apana.org.au>
-In-Reply-To: <20091117010238.GA10029@gondor.apana.org.au>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig14FCFE4AEA081A13D5F2A978"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117015655.GA8683@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B0298FA.00D8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig14FCFE4AEA081A13D5F2A978
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Nov 16, 2009 at 05:56:55PM -0800, Greg KH wrote:
+> On Mon, Nov 16, 2009 at 11:38:57AM +0800, JiSheng Zhang wrote:
+> > Hi,
+> > 
+> > I triggered a failure in an fs test with fsx-linux from ltp. It seems that
+> > fsx-linux failed at mmap->write sequence.
+> > 
+> > Tested kernel is 2.6.27.12 and 2.6.27.39
+> 
+> Does this work on any kernel you have tested?  Or is it a regression?
+> 
+> > Tested file system: ext3, tmpfs.
+> > IMHO, it impacts all file systems.
+> > 
+> > Some fsx-linux log is:
+> > 
+> > READ BAD DATA: offset = 0x2771b, size = 0xa28e
+> > OFFSET  GOOD    BAD     RANGE
+> > 0x287e0 0x35c9  0x15a9     0x80
+> > operation# (mod 256) for the bad datamay be 21
+> > ...
+> > 7828: 1257514978.306753 READ     0x23dba thru 0x25699 (0x18e0 bytes)
+> > 7829: 1257514978.306899 MAPWRITE 0x27eeb thru 0x2a516 (0x262c bytes)
+> >  ******WWWW
+> > 7830: 1257514978.307504 READ     0x2771b thru 0x319a8 (0xa28e bytes)
+> >  ***RRRR***
+> > Correct content saved for comparison
+> > ...
+> 
+> Are you sure that the LTP is correct?  It wouldn't be the first time it
+> wasn't...
 
-Herbert Xu wrote:
-> On Mon, Nov 16, 2009 at 09:22:57AM -0500, Gregory Haskins wrote:
->> But really, this is somewhat orthogonal to the original problem, so le=
-t
->> me see if we can bring it back on topic.  Michael stated that this pat=
-ch
->> in question may be problematic because there are places in the stack
->> that can get_page() without also maintaining a reference to the shinfo=
+I'm afraid fsx usually finds bugs.  I thought Jan Kara recently fixed
+something here in ext3, does 2.6.32-rc work?
 
->> object.  Evgeniy seems to say the opposite.  I am not sure who is righ=
-t,
->> or if I misunderstood one or both of them.  Any thoughts?
->=20
-> There are loads of places where this can happen.  Start with
-> pskb_expand_head.
+-chris
 
-Indeed, I see your point.  Looks like we can potentially solve that with
-an extra level of indirection.  E.g. skb->shinfo->owner, with a
-ref-count+callback.  Thoughts?
-
-Kind Regards,
--Greg
-
-
-
---------------enig14FCFE4AEA081A13D5F2A978
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksCmCsACgkQP5K2CMvXmqEBHACfZqq+/JO3jy6r51tAidUP8S5E
-pA4AnjnBVnGhT8F4l3nYH9QiG5P6AK0L
-=Pu3Q
------END PGP SIGNATURE-----
-
---------------enig14FCFE4AEA081A13D5F2A978--
