@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZKQIF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZKQIAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbZKQIF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 03:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZKQIF0
+	id S1754126AbZKQIAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 03:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZKQIAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 03:05:26 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:58682 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZKQIFZ convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 03:00:40 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:43514 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbZKQIAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 03:05:25 -0500
-X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Nov 2009 03:05:25 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MT9/THk/YK7//oFxQTcfYJNaKfd2Vhqdeivob/kIxSOIHLhjgAoH4SLmv5ojIXLa1E
-         UVAlNnTyui6uuiOlXZhhDzpqyuCnfL6JsBgYyWdJscUiEPJIhhsZwANlsLfwBgnbq8VD
-         AiNUh+z5VNcJYkWJEMyhWSQKF9Qihf9tZVnpQ=
+	Tue, 17 Nov 2009 03:00:39 -0500
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW22CjDNNVyn5BfohAbc5z
+X-RZG-CLASS-ID: mo00
+Message-ID: <4B025812.6060807@hartkopp.net>
+Date: Tue, 17 Nov 2009 09:00:18 +0100
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <xXQGFmujPl.A.zf.FUdALB@chimera>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.zf.FUdALB@chimera>
-Date: Tue, 17 Nov 2009 08:59:12 +0100
-Message-ID: <b637ec0b0911162359y188f0829if277467229b095b3@mail.gmail.com>
-Subject: Re: [Bug #14372] ath5k wireless not working after suspend-resume - 
-	eeepc
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Christian Pellegrin <chripell@fsfe.org>,
+       Wolfgang Grandegger <wg@grandegger.com>, Anant Gole <anantgole@ti.com>
+Subject: Re: linux-next: manual merge of the net tree with the net-current
+ tree
+References: <20091117131637.3a35f898.sfr@canb.auug.org.au>
+In-Reply-To: <20091117131637.3a35f898.sfr@canb.auug.org.au>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The offending commit got reverted in -rc7, therefore this regression is solved.
+Hello Stephen,
 
-On Mon, Nov 16, 2009 at 11:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14372
-> Subject         : ath5k wireless not working after suspend-resume - eeepc
-> Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
-> Date            : 2009-10-03 15:36 (45 days old)
-> References      : http://lkml.org/lkml/2009/10/3/91
->
->
->
+Stephen Rothwell wrote:
+
+> Today's linux-next merge of the net tree got a conflict in
+> drivers/net/can/Kconfig between commit
+> b93cf3f0bb45560d2ce62bdcc2181c40660cfdbf ("can: Fix driver Kconfig
+> structure") from the net-current tree 
+
+Indeed this cleanup was made in net-2.6 to fix the Kconfig structure before
+2.6.32 is finalized.
+
+The commits
+
+> 3758bf25db8caeec667e4e56e030da0ec3060529 ("can: add TI CAN (HECC)
+> driver"), e0000163e30eeb112b41486ea113fd54f64e1f17 ("can: Driver for the
+> Microchip MCP251x SPI CAN controllers") and
+> afa17a500a3667f66df450100538d06769529bba ("net/can: add driver for mscan
+> family & mpc52xx_mscan") from the net tree.
+
+added Kconfig entries right behind the CAN_AT91 driver - and that's because
+the net-2.6 patch "can: Fix driver Kconfig structure" refuses to apply cleanly
+on net-next-2.6 ...
+
+> 
+> I fixed it up (see below) and can carry the fix for a while. (I am not
+> sure the fix is entirely correct.)
+> 
+
+Yes. You only added the new Kconfig entries (for CAN_TI_HECC, CAN_MCP251X,
+CAN_MSCAN, ...) to the patch "can: Fix driver Kconfig structure", right?
+
+These are the only added items in drivers/net/can/Kconfig from net-2.6 to
+net-next-2.6.
+
+Thanks,
+Oliver
