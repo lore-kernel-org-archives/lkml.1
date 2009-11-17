@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZKQTNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZKQTQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZKQTNL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 14:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbZKQTNK
+	id S1756164AbZKQTQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 14:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZKQTQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 14:13:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52258 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752618AbZKQTNK (ORCPT
+	Tue, 17 Nov 2009 14:16:15 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:40919 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754610AbZKQTQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 14:13:10 -0500
-Date: Tue, 17 Nov 2009 11:12:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] strcmp: fix overflow error
-In-Reply-To: <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0911171105350.9384@localhost.localdomain>
-References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain> <20091117185539.GA23385@pengutronix.de> <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Nov 2009 14:16:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=PKXhADaq6U4cyhlh7ffBObyWQaDtZBw36s78Ommj54W1FsKtlp8pFf3g63xjyDf/hI
+         2hw+FmSMB0L/aodJaSq+uIr4TVisyXYGTUd4UAamzHGdQNrrv7rhs6iWbX0p87pszmO9
+         WiPCHY+aHR4ZMg17f3cG7QwmgiEt6zXUVRx5g=
+Date: Tue, 17 Nov 2009 20:16:20 +0100
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+Message-Id: <20091117201620.d78e350e.kristoffer.ericson@gmail.com>
+In-Reply-To: <4B02F3B7.2090907@gmail.com>
+References: <ipicVA1QUFF.A.zWB.1mdALB@chimera>
+	<OWmO9uyC1hM.A.yiC._ndALB@chimera>
+	<4B01F3FE.8040707@gmail.com>
+	<20091117113320.8aef894a.kristoffer.ericson@gmail.com>
+	<4B02E64D.2010700@gmail.com>
+	<20091117191357.7c64ba70.kristoffer.ericson@gmail.com>
+	<4B02F3B7.2090907@gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Nov 2009 11:04:23 -0800
+"Justin P. Mattock" <justinmattock@gmail.com> wrote:
 
-
-On Tue, 17 Nov 2009, Linus Torvalds wrote:
+> Kristoffer Ericson wrote:
+> > On Tue, 17 Nov 2009 10:07:09 -0800
+> > "Justin P. Mattock"<justinmattock@gmail.com>  wrote:
+> >
+> >    
+> >> Kristoffer Ericson wrote:
+> >>      
+> >>> Im still hitting this so basicly using 2.6.30 until it get sorted. Will try and make
+> >>> some time to test the different commits. Last time I waited for it to disconnect which
+> >>> could take 10-40min. Since it depends on the network load Im now going to increase
+> >>> the load to see if I hit it quicker (and thus finding the error commit).
+> >>>
+> >>> So in short, its still valid and I will try and make time to fix it :)
+> >>>
+> >>>
+> >>>
+> >>>
+> >>>        
+> >> o.k. so it is something that is enough to
+> >> cause an inconvenience.
+> >>      
+> >
+> > Especially if you are using your computer as a router to other computers
+> > and they start screaming every time internet goes down. :(
+> >
+> >    
+> >>      
+> >
+> >
+> >    
+> ah. yeah I'm not doing that over here
+> just simply connecting to a router and streaming music.
+> my guess is you can try the commits that I found
+> but then again might not get you in the right
+> direction i.g. during the bisect I was watching the
+> "retry" in dmesg with ath* as soon as I saw that it was git bisect bad
+> (seems like a new mechanism) as soon as I didn't see
+> that the commit was good.
 > 
-> Yeah, I looked at the history too. It's so old that it might well be me.
+> In your case you might be seeing something different(not sure though)
+> because of having the computer as a router etc..
 
-In fact, it goes back to at least 1.2.13.
+I think its related since ath was rock solid until 2.6.31. I can go 24/7 without
+ever getting disconnected from wifihub with 2.6.30. If we both are experiencing 
+issues post 2.6.30 atleast it should be related to same bunch of patches.
+Will see if I can use gfs computer for a couple of hours tommorow
+since I need to feed it with traffic. Will start with your commits, will notice
+if those turn out same for me.
 
-And the copyright dates do imply that they could go back way further. 
 
-At least the comment says it all:
+> 
+> Justin P. Mattock
 
-	"These are buggy as well.."
 
-so I can at least claim that back in the _original_ 0.01 release, it was 
-correct:
-
-	extern inline int strcmp(const char * cs,const char * ct)
-	{
-	register int __res __asm__("ax");
-	__asm__("cld\n"
-	        "1:\tlodsb\n\t"
-	        "scasb\n\t"
-	        "jne 2f\n\t"
-	        "testb %%al,%%al\n\t"
-	        "jne 1b\n\t"
-	        "xorl %%eax,%%eax\n\t"
-	        "jmp 3f\n"
-	        "2:\tmovl $1,%%eax\n\t"
-	        "jl 3f\n\t"
-	        "negl %%eax\n"
-	        "3:"
-	        :"=a" (__res):"D" (cs),"S" (ct):"si","di");
-	return __res;
-	}
-
-and as far as I can tell, the above is actually correct, even if you have 
-to be a bit crazy to write 'strcmp' as gcc inline asm (hey, I wrote _all_ 
-the string routines that way, and I made gcc do some of them built-in. 
-Because I was a MAN, dammit!).
-
-So the bug was apparently introduced when we went portable.
-
-			Linus
+-- 
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
