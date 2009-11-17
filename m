@@ -1,203 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZKQKzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZKQLDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZKQKzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 05:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZKQKzW
+	id S1754862AbZKQLDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZKQLDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 05:55:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43679 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753442AbZKQKzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 05:55:21 -0500
-Date: Tue, 17 Nov 2009 10:54:44 GMT
-From: tip-bot for Lin Ming <ming.m.lin@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       schwidefsky@de.ibm.com, yanmin_zhang@linux.intel.com,
-       tony.luck@intel.com, benh@kernel.crashing.org, ming.m.lin@intel.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yanmin_zhang@linux.intel.com, schwidefsky@de.ibm.com,
-       tony.luck@intel.com, benh@kernel.crashing.org, ming.m.lin@intel.com,
-       tglx@linutronix.de
-In-Reply-To: <1258436990.17765.83.camel@minggr.sh.intel.com>
-References: <1258436990.17765.83.camel@minggr.sh.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] timekeeping: Fix clock_gettime vsyscall time warp
-Message-ID: <tip-0696b711e4be45fa104c12329f617beb29c03f78@git.kernel.org>
-Git-Commit-ID: 0696b711e4be45fa104c12329f617beb29c03f78
-X-Mailer: tip-git-log-daemon
+	Tue, 17 Nov 2009 06:03:20 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34942 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbZKQLDT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 06:03:19 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20091114154636.GR29804@csn.ul.ie>
+References: <2f11576a0911140134u21eafa83t9642bb25ccd953de@mail.gmail.com> <20091114154636.GR29804@csn.ul.ie>
+Message-Id: <20091117141638.3DCB.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 17 Nov 2009 20:03:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0696b711e4be45fa104c12329f617beb29c03f78
-Gitweb:     http://git.kernel.org/tip/0696b711e4be45fa104c12329f617beb29c03f78
-Author:     Lin Ming <ming.m.lin@intel.com>
-AuthorDate: Tue, 17 Nov 2009 13:49:50 +0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 17 Nov 2009 11:52:34 +0100
+I'm sorry for the long delay.
 
-timekeeping: Fix clock_gettime vsyscall time warp
+> On Sat, Nov 14, 2009 at 06:34:23PM +0900, KOSAKI Motohiro wrote:
+> > 2009/11/14 Mel Gorman <mel@csn.ul.ie>:
+> > > On Sat, Nov 14, 2009 at 03:00:57AM +0900, KOSAKI Motohiro wrote:
+> > >> > On Fri, Nov 13, 2009 at 07:43:09PM +0900, KOSAKI Motohiro wrote:
+> > >> > > > After kswapd balances all zones in a pgdat, it goes to sleep. In the event
+> > >> > > > of no IO congestion, kswapd can go to sleep very shortly after the high
+> > >> > > > watermark was reached. If there are a constant stream of allocations from
+> > >> > > > parallel processes, it can mean that kswapd went to sleep too quickly and
+> > >> > > > the high watermark is not being maintained for sufficient length time.
+> > >> > > >
+> > >> > > > This patch makes kswapd go to sleep as a two-stage process. It first
+> > >> > > > tries to sleep for HZ/10. If it is woken up by another process or the
+> > >> > > > high watermark is no longer met, it's considered a premature sleep and
+> > >> > > > kswapd continues work. Otherwise it goes fully to sleep.
+> > >> > > >
+> > >> > > > This adds more counters to distinguish between fast and slow breaches of
+> > >> > > > watermarks. A "fast" premature sleep is one where the low watermark was
+> > >> > > > hit in a very short time after kswapd going to sleep. A "slow" premature
+> > >> > > > sleep indicates that the high watermark was breached after a very short
+> > >> > > > interval.
+> > >> > > >
+> > >> > > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > >> > >
+> > >> > > Why do you submit this patch to mainline? this is debugging patch
+> > >> > > no more and no less.
+> > >> > >
+> > >> >
+> > >> > Do you mean the stats part? The stats are included until such time as the page
+> > >> > allocator failure reports stop or are significantly reduced. In the event a
+> > >> > report is received, the value of the counters help determine if kswapd was
+> > >> > struggling or not. They should be removed once this mess is ironed out.
+> > >> >
+> > >> > If there is a preference, I can split out the stats part and send it to
+> > >> > people with page allocator failure reports for retesting.
+> > >>
+> > >> I'm sorry my last mail didn't have enough explanation.
+> > >> This stats help to solve this issue. I agreed. but after solving this issue,
+> > >> I don't imagine administrator how to use this stats. if KSWAPD_PREMATURE_FAST or
+> > >> KSWAPD_PREMATURE_SLOW significantly increased, what should admin do?
+> > >
+> > > One possible workaround would be to raise min_free_kbytes while a fix is
+> > > being worked on.
+> > 
+> > Please correct me, if I said wrong thing.
+> 
+> You didn't.
+> 
+> > if I was admin, I don't watch this stats because kswapd frequently
+> > wakeup doesn't mean any trouble. instead I watch number of allocation
+> > failure.
+> 
+> The stats are not tracking when kswapd wakes up. It helps track how
+> quickly the high or low watermarks are going under once kswapd tries to
+> go back to sleep.
 
-Since commit 0a544198 "timekeeping: Move NTP adjusted clock multiplier
-to struct timekeeper" the clock multiplier of vsyscall is updated with
-the unmodified clock multiplier of the clock source and not with the
-NTP adjusted multiplier of the timekeeper.
+Umm, honestly I'm still puzlled. probably we need go back one step at once.
+ kswapd wake up when memory amount less than low watermark and sleep
+when memory amount much than high watermask. We need to know 
+GFP_ATOMIC failure sign.
 
-This causes user space observerable time warps:
-new CLOCK-warp maximum: 120 nsecs,  00000025c337c537 -> 00000025c337c4bf
+My point is, kswapd wakeup only happen after kswapd sleeping. but if the system is
+under heavy pressure and memory amount go up and down between low watermark
+and high watermark, this stats don't increase at all. IOW, this stats is strong related to
+high watermark.
 
-Add a new argument "mult" to update_vsyscall() and hand in the
-timekeeping internal NTP adjusted multiplier.
+Probaby, min watermark or low watermark are more useful for us.
 
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Cc: "Zhang Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Tony Luck <tony.luck@intel.com>
-LKML-Reference: <1258436990.17765.83.camel@minggr.sh.intel.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/ia64/kernel/time.c       |    4 ++--
- arch/powerpc/kernel/time.c    |    5 +++--
- arch/s390/kernel/time.c       |    3 ++-
- arch/x86/kernel/vsyscall_64.c |    5 +++--
- include/linux/clocksource.h   |    6 ++++--
- kernel/time/timekeeping.c     |    6 +++---
- 6 files changed, 17 insertions(+), 12 deletions(-)
+# of called wake_all_kswapd() is related to low watermark. and It's conteniously
+increase although the system have strong memroy pressure. I'm ok.
+KSWAPD_NO_CONGESTION_WAIT is related to min watermark. I'm ok too..
+# of page allocation failure is related to  min watermark too. I'm ok too.
 
-diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-index 4990495..a35c661 100644
---- a/arch/ia64/kernel/time.c
-+++ b/arch/ia64/kernel/time.c
-@@ -473,7 +473,7 @@ void update_vsyscall_tz(void)
- {
- }
- 
--void update_vsyscall(struct timespec *wall, struct clocksource *c)
-+void update_vsyscall(struct timespec *wall, struct clocksource *c, u32 mult)
- {
-         unsigned long flags;
- 
-@@ -481,7 +481,7 @@ void update_vsyscall(struct timespec *wall, struct clocksource *c)
- 
-         /* copy fsyscall clock data */
-         fsyscall_gtod_data.clk_mask = c->mask;
--        fsyscall_gtod_data.clk_mult = c->mult;
-+        fsyscall_gtod_data.clk_mult = mult;
-         fsyscall_gtod_data.clk_shift = c->shift;
-         fsyscall_gtod_data.clk_fsys_mmio = c->fsys_mmio;
-         fsyscall_gtod_data.clk_cycle_last = c->cycle_last;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index a136a11..3971331 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -828,7 +828,8 @@ static cycle_t timebase_read(struct clocksource *cs)
- 	return (cycle_t)get_tb();
- }
- 
--void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock,
-+		     u32 mult)
- {
- 	u64 t2x, stamp_xsec;
- 
-@@ -841,7 +842,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 
- 	/* XXX this assumes clock->shift == 22 */
- 	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
--	t2x = (u64) clock->mult * 4611686018ULL;
-+	t2x = (u64) mult * 4611686018ULL;
- 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
- 	do_div(stamp_xsec, 1000000000);
- 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index 34162a0..68e1ecf 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -214,7 +214,8 @@ struct clocksource * __init clocksource_default_clock(void)
- 	return &clocksource_tod;
- }
- 
--void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock,
-+		     u32 mult)
- {
- 	if (clock != &clocksource_tod)
- 		return;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 8cb4974..62f39d7 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -73,7 +73,8 @@ void update_vsyscall_tz(void)
- 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
- 
--void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock,
-+		     u32 mult)
- {
- 	unsigned long flags;
- 
-@@ -82,7 +83,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	vsyscall_gtod_data.clock.vread = clock->vread;
- 	vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
- 	vsyscall_gtod_data.clock.mask = clock->mask;
--	vsyscall_gtod_data.clock.mult = clock->mult;
-+	vsyscall_gtod_data.clock.mult = mult;
- 	vsyscall_gtod_data.clock.shift = clock->shift;
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 83d2fbd..95e4995 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -280,10 +280,12 @@ extern struct clocksource * __init __weak clocksource_default_clock(void);
- extern void clocksource_mark_unstable(struct clocksource *cs);
- 
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL
--extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
-+extern void
-+update_vsyscall(struct timespec *ts, struct clocksource *c, u32 mult);
- extern void update_vsyscall_tz(void);
- #else
--static inline void update_vsyscall(struct timespec *ts, struct clocksource *c)
-+static inline void
-+update_vsyscall(struct timespec *ts, struct clocksource *c, u32 mult)
- {
- }
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index c3a4e29..2a6d3e3 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -177,7 +177,7 @@ void timekeeping_leap_insert(int leapsecond)
- {
- 	xtime.tv_sec += leapsecond;
- 	wall_to_monotonic.tv_sec -= leapsecond;
--	update_vsyscall(&xtime, timekeeper.clock);
-+	update_vsyscall(&xtime, timekeeper.clock, timekeeper.mult);
- }
- 
- #ifdef CONFIG_GENERIC_TIME
-@@ -337,7 +337,7 @@ int do_settimeofday(struct timespec *tv)
- 	timekeeper.ntp_error = 0;
- 	ntp_clear();
- 
--	update_vsyscall(&xtime, timekeeper.clock);
-+	update_vsyscall(&xtime, timekeeper.clock, timekeeper.mult);
- 
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
-@@ -811,7 +811,7 @@ void update_wall_time(void)
- 	update_xtime_cache(nsecs);
- 
- 	/* check to see if there is a new clocksource to use */
--	update_vsyscall(&xtime, timekeeper.clock);
-+	update_vsyscall(&xtime, timekeeper.clock, timekeeper.mult);
- }
- 
- /**
+IOW, I only dislike this stat stop increase strong memory pressure (above explanation).
+Can you please tell me why you think kswapd slept time is so important?
+
+
+
