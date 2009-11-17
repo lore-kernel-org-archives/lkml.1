@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZKQR7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbZKQSBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbZKQR7J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:59:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZKQR7I
+	id S1755607AbZKQSBk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 13:01:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbZKQSBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:59:08 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56154 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754535AbZKQR7H (ORCPT
+	Tue, 17 Nov 2009 13:01:39 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:56867 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755395AbZKQSBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:59:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Wm+yoZ18Vos5OjP0e1fa1lHTVdC5aC3V8QF1BMoWMU+d7tIJub5p8UtuJddgdIxfGA
-         fIfZPbRiV8PE/7Xdz0HrzcehX1nau16C3M7LJ9kfZirsh49yn2Q4Ft+3Q/7IL1FfU+fX
-         nJ/bh64xbAVmbAIlU+S17dkIxbrLYY58cmJ4A=
-Message-ID: <4B02E300.8080409@gmail.com>
-Date: Tue, 17 Nov 2009 18:53:04 +0100
-From: Marco Stornelli <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 17 Nov 2009 13:01:39 -0500
+Message-ID: <4B02E354.9060102@zytor.com>
+Date: Tue, 17 Nov 2009 09:54:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: dedekind1@gmail.com
-CC: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David VomLehn <dvomlehn@cisco.com>, linux-embedded@vger.kernel.org,
-       akpm@linux-foundation.org, dwm2@infradead.org,
-       linux-kernel@vger.kernel.org, mpm@selenic.com,
-       paul.gortmaker@windriver.com
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-References: <20091112021322.GA6166@dvomlehn-lnx2.corp.sa.net>	 <4AFC4D31.2000101@gmail.com>	 <20091112215649.GA28349@dvomlehn-lnx2.corp.sa.net>	 <20091113091031.3f6d4bba@marrow.netinsight.se>	 <1258112748.21596.1227.camel@localhost> <4AFE6A14.4010507@gmail.com>	 <1258447997.27437.76.camel@localhost>	 <2ea1731b0911170445x13225c19w797388d2211de2d9@mail.gmail.com> <1258463404.27437.103.camel@localhost>
-In-Reply-To: <1258463404.27437.103.camel@localhost>
+To: Mike Travis <travis@sgi.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, David Miller <davem@davemloft.net>,
+       mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, rdreier@cisco.com, rdunlap@xenotime.net,
+       tj@kernel.org, andi@firstfloor.org, gregkh@suse.de,
+       yhlu.kernel@gmail.com, rientjes@google.com, rostedt@goodmis.org,
+       rusty@rustcorp.com.au, seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com,
+       fweisbec@gmail.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration	bootup
+ messages
+References: <20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net> <20091117155946.GA5476@lenovo> <20091117.082928.10537098.davem@davemloft.net> <20091117174204.GD5476@lenovo> <4B02E242.8040800@sgi.com>
+In-Reply-To: <4B02E242.8040800@sgi.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> On Tue, 2009-11-17 at 13:45 +0100, Marco Stornelli wrote:
->> 2009/11/17 Artem Bityutskiy <dedekind1@gmail.com>:
->
-> We need to store this information of NAND flash. Implementing logs on
-> NAND flash is about handling bad blocks, choosing format of records, and
-> may be even handling wear-levelling. This is not that simple.
+On 11/17/2009 09:49 AM, Mike Travis wrote:
 > 
-> And then I have match oops to the userspace environment prints, using I
-> guess timestamps, which is also about complications in userspace.
+> I'd like to say that, but Peter wanted it to become an inlined function
+> return value, and there are too many references in too many arches to
+> a scalar value, so that moves it out of the scope of this patch set.
 > 
 
-Indeed my suggestion was to use a persistent ram, not difficult to use.
+Another thing: if we do a lot of testing for "are we running on the boot
+CPU", an is_boot_cpu() or is_boot_cpu(cpu) function might be a nice
+piece of syntactic sugar (and more immediately implementable.)
 
->>> This patch solves the problem gracefully, and I'd rather demand you to point what
->>> is the technical problem with the patches.
->>>
->> Simply because I think that we should avoid to include in the kernel
->> things we can do in a simply way at user space level.
-> 
-> If it is much easier to have in the kernel, then this argument does not
-> work, IMHO.
-> 
->>  I think this
->> patch is well done but it's one of the patches that are solutions "for
->> embedded only", but it's only my opinion.
-> 
-> Also IMHO, but having embedded-only things is not bad at all.
-> 
+	-hpa
 
-In the past other patches are not accepted in main line for this, maybe
-you'll be luckier.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Marco
