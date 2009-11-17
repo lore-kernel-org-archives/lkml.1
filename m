@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbZKQRiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZKQRhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbZKQRiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZKQRiW
+	id S1752844AbZKQRhL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZKQRhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:38:22 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:48285 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbZKQRiV (ORCPT
+	Tue, 17 Nov 2009 12:37:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41208 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752351AbZKQRhJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:38:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=HZ/18eDE/sMtwwKEC0lbI0eztINRfAzuTRu6/SY8ka1oecBOchakx3JVGDUkYp1AtJ
-         LjQKp4sf3cdWbm9HT9BEzl2GHM1LADfIqto06bb2/udVybsEsMRM2/0uQyCgCX9aLXgF
-         OmdHJbgB2d4UjC75PA3Cn/F+m3g/PjkPTmSyM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH 3/5] cmd64x: implement serialization as per notes
-Date: Tue, 17 Nov 2009 18:35:05 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091117145122.15430.70080.stgit@localhost.localdomain>
-In-Reply-To: <20091117145122.15430.70080.stgit@localhost.localdomain>
+	Tue, 17 Nov 2009 12:37:09 -0500
+From: Andreas Schwab <schwab@redhat.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] strcmp: fix overflow error
+References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Yow: I want DUSTIN HOFFMAN!! .. I want LIBERACE!!  YOW!!
+Date: Tue, 17 Nov 2009 18:36:41 +0100
+In-Reply-To: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	("Uwe =?utf-8?Q?Kleine-K=C3=B6nig=22's?= message of "Tue, 17 Nov 2009
+ 17:51:40 +0100")
+Message-ID: <m3lji5xdcm.fsf@hase.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Message-Id: <200911171835.05232.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009 15:51:32 Alan Cox wrote:
+Uwe Kleine-König <u.kleine-koenig@pengutronix.de> writes:
 
-> +struct cmd_priv
-> +{
-> +	int dma_live;		/* Channel using DMA */
-> +	int irq_t[2];		/* Register to check for IRQ */
-> +	int irq_m[2];		/* Bit to check */
-> +};
+> strcmp("\x01", "\xef") returns 18 but it should return something < 0.
+> The reason is that the variable holding the result of the subtraction is
+> too small and overflows.
 
-irq_t and irq_m content will be identical for all host instances
-so you may as well add one instance for it, use ->private_data to
-store dma_live information and remove cmd_priv allocation
+When char is signed strcmp("\xef", "\x01") still returns something < 0.
+You need to cast to unsigned char first.
 
-> +	/* If the other port is not live then issue the command */
-> +	if (alt == NULL || !alt->qc_active) {
-> +		if (dma)
-> +			priv->dma_live = qc->ap->port_no;
-> +		return 0;
-> +	}
-> +	/* If there is a live DMA command then wait */
-> +	if (priv->dma_live != -1)
-> +		return 	ATA_DEFER_PORT;
-> +	if (dma) {
-> +		/* Cannot overlap our DMA command */
-> +		if (alt->qc_active)
-> +			return ATA_DEFER_PORT;
-
-no need to check alt->qc_active again here
+Andreas.
 
 -- 
-Bartlomiej Zolnierkiewicz
+Andreas Schwab, schwab@redhat.com
+GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
+"And now for something completely different."
