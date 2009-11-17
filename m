@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbZKQAFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbZKQAIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbZKQAFD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 19:05:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZKQAFD
+	id S1754872AbZKQAIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 19:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZKQAIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 19:05:03 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:51533 "EHLO mail.vyatta.com"
+	Mon, 16 Nov 2009 19:08:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37003 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbZKQAFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 19:05:00 -0500
-Date: Mon, 16 Nov 2009 16:04:49 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@lst.de>, Jan Kara <jack@suse.cz>,
-       Nick Piggin <npiggin@suse.de>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH] ext2: clear uptodate flag on super block I/O error
-Message-ID: <20091116160449.3fc5e958@nehalam>
-In-Reply-To: <20091113150719.9d31dde2.akpm@linux-foundation.org>
-References: <20091111123340.703f5c86@nehalam>
-	<200911112234.24180.elendil@planet.nl>
-	<20091113144727.575cf038@nehalam>
-	<20091113150719.9d31dde2.akpm@linux-foundation.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754609AbZKQAIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 19:08:21 -0500
+Message-ID: <4B01E96C.9070306@kernel.org>
+Date: Tue, 17 Nov 2009 09:08:12 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
+       andi@firstfloor.org, Andi Kleen <ak@linux.intel.com>,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 01/21] workqueue: fix race condition in	schedule_on_each_cpu()
+References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-2-git-send-email-tj@kernel.org> <20091116230427.GD5293@nowhere>
+In-Reply-To: <20091116230427.GD5293@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a WARN backtrace in mark_buffer_dirty() that occurs during
-unmount when a USB or floppy device is removed. I reported this a kernel
-regression, but looks like it might have been there for longer
-than that.
+11/17/2009 08:04 AM, Frederic Weisbecker wrote:
+> Shouldn't this patch go to .32 ?
+> This looks like an important fix.
 
-The super block update from a previous operation has marked the buffer
-as in error, and the flag has to be cleared before doing the update.
-(Similar code already exists in ext4).
+This one and the next one are already on their way to .32.
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+Thanks.
 
---- a/fs/ext2/super.c	2009-11-16 15:55:36.399078475 -0800
-+++ b/fs/ext2/super.c	2009-11-16 15:59:49.814765923 -0800
-@@ -1121,8 +1121,20 @@ static void ext2_sync_super(struct super
- static int ext2_sync_fs(struct super_block *sb, int wait)
- {
- 	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
-+	struct buffer_head *sbh = EXT2_SB(sb)->s_sbh;
- 
- 	lock_kernel();
-+	if (buffer_write_io_error(sbh)) {
-+		/*
-+		 * This happens if USB or floppy device is yanked out.
-+		 * Maybe user put device back in so warn and update again.
-+		 */
-+		printk(KERN_ERR
-+		       "EXT2-fs: previous I/O error to superblock detected\n");
-+		clear_buffer_write_io_error(sbh);
-+		set_buffer_uptodate(sbh);
-+	}
-+
- 	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
- 		ext2_debug("setting valid to 0\n");
- 		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
+-- 
+tejun
