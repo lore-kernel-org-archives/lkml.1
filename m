@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZKQP4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZKQP4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZKQP4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 10:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZKQPz7
+	id S1755174AbZKQP4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZKQP4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 10:55:59 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:58686 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZKQPz6 (ORCPT
+	Tue, 17 Nov 2009 10:56:11 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:36877 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbZKQP4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 10:55:58 -0500
+	Tue, 17 Nov 2009 10:56:08 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Benjamin LaHaise <bcrl@lhnet.ca>
+Subject: Re: [PATCH 0/13] sysfs lazification.
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+	<20091106224857.GB32205@kroah.com> <m1lji5h5xh.fsf@fess.ebiederm.org>
+	<20091117154116.GA22756@kroah.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 17 Nov 2009 07:56:03 -0800
+In-Reply-To: <20091117154116.GA22756@kroah.com> (Greg KH's message of "Tue\, 17 Nov 2009 07\:41\:16 -0800")
+Message-ID: <m1hbstf8mk.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1258468659-5446-1-git-send-email-mjg@redhat.com>
-References: <1258468659-5446-1-git-send-email-mjg@redhat.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 17 Nov 2009 16:55:46 +0100
-Message-ID: <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
-	changes
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-hotplug@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 15:37, Matthew Garrett <mjg@redhat.com> wrote:
-> Userspace may wish to know whether a given disk is active or idle, for
-> example to modify power management policy based on access patterns. This
-> patch adds a deferrable timer to the block layer which will fire if the
-> disk is idle for a user-definable period of time, generating a uevent. A
-> uevent will also be generated if an access is received while the disk is
-> classified as idle.
+Greg KH <greg@kroah.com> writes:
+
+> On Tue, Nov 17, 2009 at 01:11:22AM -0800, Eric W. Biederman wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> 
+>> > On Tue, Nov 03, 2009 at 03:53:56AM -0800, Eric W. Biederman wrote:
+>> >> 
+>> >> The sysfs code updates the vfs caches immediately when the sysfs data
+>> >> structures change causing a lot of unnecessary complications.  The
+>> >> following patchset untangles that beast.  Allowing for simpler
+>> >> more straight forward code, the removal of a hack from the vfs
+>> >> to support sysfs, and human comprehensible locking on sysfs.
+>> >> 
+>> >> Most of these patches have already been reviewed and acked from the
+>> >> last time I had time to work on sysfs.
+>> >> 
+>> >> In net the patches look like:
+>> >
+>> > Can you resend these based on the review that you just got, with the new
+>> > acks and changes so that I can apply them?
+>> 
+>> Are you going to apply them soon?  If you don't have time I can start
+>> a sysfs tree and just ask Linus to pull them.
 >
-> This patch seems to work as designed, but introduces a noticable amount of
-> userspace overhead in udevd. I'm guessing that this is because change events
-> on block devices are normally associated with disk removal/insertion, so
-> a large quantity of complex rules end up getting run in order to deal with
-> RAID setup or whatever. Is there a better way to deliver these events?
+> Well, as the merge window is not open right now, that might be tough to
+> get Linus to take them at the moment :)
 
-I guess, at the moment the disk tells it's idle, udev will open() the
-disk and look for changed signatures, and end its idle state. :)
+True. ;)
 
-Uevents might not be the right interface, they are usually used if the
-device needs to be (re-)examined, which will the idle thing into a
-loop with the current setups, I guess.
+> I was away last week, and will apply them to my tree this week, thanks
+> for your patience.
 
-Maybe we can use a sysfs file which can be open()'d and something can
-watch with poll(), and gets woken up by the kernel, after the drive
-changes its state? MD raid, as an example, has files like this in
-sysfs to allow monitoring. That way, there is also no overhead, if the
-requesting process goes away, which is usually the nicer interface,
-than a global switch, which does not care about if the requesting
-process still exists.
+I'm working on it.
 
-Thanks,
-Kay
+Eric
