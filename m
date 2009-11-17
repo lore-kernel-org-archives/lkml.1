@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbZKQR6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbZKQR75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbZKQR6O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZKQR6N
+	id S1755064AbZKQR75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:59:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZKQR74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:58:13 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:40257 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbZKQR6L (ORCPT
+	Tue, 17 Nov 2009 12:59:56 -0500
+Received: from mail-qy0-f174.google.com ([209.85.221.174]:57368 "EHLO
+	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753639AbZKQR7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:58:11 -0500
+	Tue, 17 Nov 2009 12:59:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=gf7Fgg47ZiQ/CtEhHbGS/22ykhAL4EWuRNHfklyQLVb2A1/EuErVzYrUMhgDvElwDh
-         4YIU+NdO6Ik85L3ulOhDjZ0EGAnskDFI1ULl5fAjxZMbWyv4Wi+ZRQNdQQK2JQj0BUo5
-         /lo43aJ7BL9AmwMMuReYuX6QRwrhafYwQqUS8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/5] pata_sis: Implement MWDMA for the UDMA 133 capable chips
-Date: Tue, 17 Nov 2009 18:57:01 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911171827.29891.bzolnier@gmail.com> <20091117173823.217b95a7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091117173823.217b95a7@lxorguk.ukuu.org.uk>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vTsezK9xfDKSjheSJc0q41I1ZKx09J5P5HN4FSW47OugtTJCHuJUnZcym8E2O1frD6
+         ivNmdxucpoWJpX6fp8ELEkfuDmO1LKTqt+QxYskPO4zDw2zWvA7dzVS8wkEtEXHm1DB5
+         vItaoaiu1jab20YJsTJOOVzpcNCy5cDXW7DgQ=
+Date: Tue, 17 Nov 2009 20:59:47 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: David Miller <davem@davemloft.net>, hpa@zytor.com, mingo@elte.hu,
+       tglx@linutronix.de, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, rdreier@cisco.com, rdunlap@xenotime.net,
+       tj@kernel.org, andi@firstfloor.org, gregkh@suse.de,
+       yhlu.kernel@gmail.com, rientjes@google.com, rostedt@goodmis.org,
+       rusty@rustcorp.com.au, seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com,
+       fweisbec@gmail.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration
+	bootup messages
+Message-ID: <20091117175947.GE5476@lenovo>
+References: <20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net> <20091117155946.GA5476@lenovo> <20091117.082928.10537098.davem@davemloft.net> <20091117174204.GD5476@lenovo> <4B02E242.8040800@sgi.com>
 MIME-Version: 1.0
-Message-Id: <200911171857.01805.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B02E242.8040800@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009 18:38:23 Alan Cox wrote:
-> > > +static int mwdma_clip_to_pio(struct ata_device *adev)
-> > > +{
-> > > +	const int mwdma_to_pio[3] = {
-> > > +		XFER_PIO_0, XFER_PIO_3, XFER_PIO_4
-> > > +	};
-> > > +	return min(mwdma_to_pio[adev->dma_mode - XFER_MW_DMA_0],
-> > > +				adev->pio_mode - XFER_PIO_0);
-> > > +}
-> > 
-> > This wants to be in the generic libata code.
-> 
-> I'm not convinced because for the majority of drivers the libata timing
-> interface handles it. SiS needs it just because it does things by
-> precomputed tables. It's a one off interface.
+On Tue, Nov 17, 2009 at 09:49:54AM -0800, Mike Travis wrote:
+...
+>>> And if we do need it generically, it's available there as
+>>> hard_smp_processor_id() when start_kernel() is called.  So init/main.c
+>>> could remember that value in an __initdata annotated static variable.
+>>>
+>>> But just using a boolean for this "did I print the bogomips message
+>>> already?" thing seems more than sufficient.
+>>>
+>>
+>> Yes. As I see Mike already pick it up. Thanks David!
+>>
+>> 	-- Cyrill
+>
+> I'd like to say that, but Peter wanted it to become an inlined function
+> return value, and there are too many references in too many arches to
+> a scalar value, so that moves it out of the scope of this patch set.
 
-Controllers based on *Intel* PIIX are in the disagreement with the above
-paragraph and having generic helper to do conversion (without a clipping)
-would bring us a little step closer to killing a needless code duplication
-currently present in their ->set_piomode and ->set_dmamode methods.
+I meant only "local static variable being used for printing to suppress recursion"
+idea rather then boot_cpu_id() inliner at moment [btw there was some thread
+someday about printk_once (or something like that) though I'm not sure if patches
+were merged] :) As only the inliner will be ready we will just switch to use it
+eliminating this static variable. That is how I imagine it.
 
-[ In case somebody wonders: no, 'old' drivers don't have such duplication
-  and 'whoever did it didn't port it across' cause said 'whoever'-s were not
-  into the development of the square wheels.... ]
-
--- 
-Bartlomiej Zolnierkiewicz
+> Thanks,
+> Mike
+>
+	-- Cyrill
