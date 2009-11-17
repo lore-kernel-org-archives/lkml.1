@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZKQGfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZKQGcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbZKQGfD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 01:35:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZKQGfB
+	id S1753902AbZKQGcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 01:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZKQGcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 01:35:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58769 "EHLO hera.kernel.org"
+	Tue, 17 Nov 2009 01:32:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58513 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbZKQGfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 01:35:00 -0500
-Date: Tue, 17 Nov 2009 06:31:17 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, rdunlap@xenotime.net,
-       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mhiramat@redhat.com, mingo@elte.hu,
-       systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkenisto@us.ibm.com, rdunlap@xenotime.net,
-       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       mingo@elte.hu
-In-Reply-To: <20091116230624.5250.49813.stgit@harusame>
-References: <20091116230624.5250.49813.stgit@harusame>
+	id S1753032AbZKQGcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 01:32:15 -0500
+Date: Tue, 17 Nov 2009 06:31:37 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, efault@gmx.de,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1258407027-384-1-git-send-email-acme@infradead.org>
+References: <1258407027-384-1-git-send-email-acme@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] x86: Show symbol name if insn decoder test failed
-Message-ID: <tip-35039eb6b199749943547c8572be6604edf00229@git.kernel.org>
-Git-Commit-ID: 35039eb6b199749943547c8572be6604edf00229
+Subject: [tip:perf/core] perf tools: Don't die in perf_header_attr__new()
+Message-ID: <tip-dc79c0fc08a94b857aed446bfb47cdfde529400c@git.kernel.org>
+Git-Commit-ID: dc79c0fc08a94b857aed446bfb47cdfde529400c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -35,80 +31,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  35039eb6b199749943547c8572be6604edf00229
-Gitweb:     http://git.kernel.org/tip/35039eb6b199749943547c8572be6604edf00229
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Mon, 16 Nov 2009 18:06:24 -0500
+Commit-ID:  dc79c0fc08a94b857aed446bfb47cdfde529400c
+Gitweb:     http://git.kernel.org/tip/dc79c0fc08a94b857aed446bfb47cdfde529400c
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Mon, 16 Nov 2009 19:30:26 -0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 17 Nov 2009 07:16:50 +0100
+CommitDate: Tue, 17 Nov 2009 07:19:52 +0100
 
-x86: Show symbol name if insn decoder test failed
+perf tools: Don't die in perf_header_attr__new()
 
-Show symbol name if insn decoder test find a difference.
-This will help us to find out where the issue is.
+We really should propagate such kinds of errors so that users of
+these library functions decide what to do in such cases instead
+of exiting in random places like now.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-LKML-Reference: <20091116230624.5250.49813.stgit@harusame>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1258407027-384-1-git-send-email-acme@infradead.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/tools/distill.awk    |    5 +++++
- arch/x86/tools/test_get_len.c |   10 +++++++++-
- 2 files changed, 14 insertions(+), 1 deletions(-)
+ tools/perf/builtin-record.c |    5 ++++-
+ tools/perf/util/header.c    |   22 ++++++++++++----------
+ tools/perf/util/header.h    |    4 +---
+ 3 files changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/tools/distill.awk b/arch/x86/tools/distill.awk
-index d433619..c13c0ee 100644
---- a/arch/x86/tools/distill.awk
-+++ b/arch/x86/tools/distill.awk
-@@ -15,6 +15,11 @@ BEGIN {
- 	fwait_str="9b\tfwait"
- }
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 04f335e..4c03bb7 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -220,7 +220,8 @@ static struct perf_header_attr *get_header_attr(struct perf_event_attr *a, int n
+ 		h_attr = header->attr[nr];
+ 	} else {
+ 		h_attr = perf_header_attr__new(a);
+-		perf_header__add_attr(header, h_attr);
++		if (h_attr != NULL)
++			perf_header__add_attr(header, h_attr);
+ 	}
  
-+/^ *[0-9a-f]+ <[^>]*>:/ {
-+	# Symbol entry
-+	printf("%s%s\n", $2, $1)
-+}
-+
- /^ *[0-9a-f]+:/ {
- 	if (split($0, field, "\t") < 3) {
- 		# This is a continuation of the same insn.
-diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
-index 5743e51..af75e07 100644
---- a/arch/x86/tools/test_get_len.c
-+++ b/arch/x86/tools/test_get_len.c
-@@ -110,7 +110,7 @@ static void parse_args(int argc, char **argv)
+ 	return h_attr;
+@@ -308,6 +309,8 @@ try_again:
+ 	}
  
- int main(int argc, char **argv)
+ 	h_attr = get_header_attr(attr, counter);
++	if (h_attr == NULL)
++		die("nomem\n");
+ 
+ 	if (!file_new) {
+ 		if (memcmp(&h_attr->attr, attr, sizeof(*attr))) {
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index d8416f0..2f07a23 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -19,16 +19,16 @@ struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr)
  {
--	char line[BUFSIZE];
-+	char line[BUFSIZE], sym[BUFSIZE] = "<unknown>";
- 	unsigned char insn_buf[16];
- 	struct insn insn;
- 	int insns = 0, c;
-@@ -122,6 +122,12 @@ int main(int argc, char **argv)
- 		int nb = 0;
- 		unsigned int b;
+ 	struct perf_header_attr *self = malloc(sizeof(*self));
  
-+		if (line[0] == '<') {
-+			/* Symbol line */
-+			strcpy(sym, line);
-+			continue;
+-	if (!self)
+-		die("nomem");
+-
+-	self->attr = *attr;
+-	self->ids = 0;
+-	self->size = 1;
+-	self->id = malloc(sizeof(u64));
+-
+-	if (!self->id)
+-		die("nomem");
++	if (self != NULL) {
++		self->attr = *attr;
++		self->ids  = 0;
++		self->size = 1;
++		self->id   = malloc(sizeof(u64));
++		if (self->id == NULL) {
++			free(self);
++			self = NULL;
 +		}
-+
- 		insns++;
- 		memset(insn_buf, 0, 16);
- 		strcpy(copy, line);
-@@ -145,6 +151,8 @@ int main(int argc, char **argv)
- 		insn_init(&insn, insn_buf, x86_64);
- 		insn_get_length(&insn);
- 		if (insn.length != nb) {
-+			fprintf(stderr, "Error: %s found a difference at %s\n",
-+				prog, sym);
- 			fprintf(stderr, "Error: %s", line);
- 			fprintf(stderr, "Error: objdump says %d bytes, but "
- 				"insn_get_length() says %d\n", nb,
++	}
+ 
+ 	return self;
+ }
+@@ -423,6 +423,8 @@ struct perf_header *perf_header__read(int fd)
+ 		tmp = lseek(fd, 0, SEEK_CUR);
+ 
+ 		attr = perf_header_attr__new(&f_attr.attr);
++		if (attr == NULL)
++			 die("nomem");
+ 
+ 		nr_ids = f_attr.ids.size / sizeof(u64);
+ 		lseek(fd, f_attr.ids.offset, SEEK_SET);
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index f1b3bf7..0cbd4c9 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -64,9 +64,7 @@ void perf_header__add_attr(struct perf_header *self,
+ void perf_header__push_event(u64 id, const char *name);
+ char *perf_header__find_event(u64 id);
+ 
+-
+-struct perf_header_attr *
+-perf_header_attr__new(struct perf_event_attr *attr);
++struct perf_header_attr *perf_header_attr__new(struct perf_event_attr *attr);
+ void perf_header_attr__add_id(struct perf_header_attr *self, u64 id);
+ 
+ u64 perf_header__sample_type(struct perf_header *header);
