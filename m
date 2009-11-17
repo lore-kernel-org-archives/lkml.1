@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZKQRZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZKQR3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbZKQRZL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:25:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZKQRZK
+	id S1756112AbZKQR3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZKQR3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:25:10 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:52756 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752580AbZKQRZJ (ORCPT
+	Tue, 17 Nov 2009 12:29:52 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:54217 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbZKQR3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:25:09 -0500
-Date: Tue, 17 Nov 2009 12:25:15 -0500
-To: Valdis.Kletnieks@vt.edu
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091117172515.GI15159@caffeine.csclub.uwaterloo.ca>
-References: <4AF886D4.1080108@zytor.com> <20091109212333.GE15159@caffeine.csclub.uwaterloo.ca> <20091112121805.GF1394@ucw.cz> <20091113162301.GU15157@caffeine.csclub.uwaterloo.ca> <20091113165730.0b9b2676@lxorguk.ukuu.org.uk> <20091113192412.GY15157@caffeine.csclub.uwaterloo.ca> <20091113212148.5cb829d4@lxorguk.ukuu.org.uk> <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca> <20091117115929.4ba23c49@lxorguk.ukuu.org.uk> <7332.1258476527@turing-police.cc.vt.edu>
+	Tue, 17 Nov 2009 12:29:51 -0500
+Date: Tue, 17 Nov 2009 12:25:37 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [MM] Make mm counters per cpu instead of atomic
+In-Reply-To: <1258450465.11321.36.camel@localhost>
+Message-ID: <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>  <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost> <1258450465.11321.36.camel@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7332.1258476527@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 11:48:47AM -0500, Valdis.Kletnieks@vt.edu wrote:
-> Umm...  'modprobe msr'?
-> 
-> (Recently I had what *looked* like an xorg server bug, turned out to be a
-> missing CONFIG_INPUT_EVDEV.. Whoops. ;)
+On Tue, 17 Nov 2009, Zhang, Yanmin wrote:
 
-I did.  Makes no difference.  If I unload it I get the same error.
+> The right change above should be:
+>  struct mm_counter *m = per_cpu_ptr(mm->rss, cpu);
 
-# modinfo msr
-filename:       /lib/modules/2.6.26-2-gx1/kernel/arch/x86/kernel/msr.ko
-author:         H. Peter Anvin <hpa@zytor.com>
-description:    x86 generic MSR driver
-license:        GPL
-vermagic:       2.6.26-2-gx1 mod_unload GEODEGX1
-depends:
+Right.
 
-# lsmod |grep msr
-msr                     2692  0
+> With the change, command 'make oldconfig' and a boot command still
+> hangs.
 
-I don't get it.
+Not sure if its worth spending more time on this but if you want I will
+consolidate the fixes so far and put out another patchset.
 
--- 
-Len Sorensen
+Where does it hang during boot?
+
