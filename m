@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZKQOno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZKQPAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbZKQOno (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 09:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZKQOnn
+	id S1753215AbZKQPAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZKQPAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 09:43:43 -0500
-Received: from mail.digidescorp.com ([66.244.163.200]:38192 "EHLO
-	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbZKQOnm (ORCPT
+	Tue, 17 Nov 2009 10:00:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54227 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752631AbZKQPAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 09:43:42 -0500
-X-Spam-Processed: digidescorp.com, Tue, 17 Nov 2009 08:43:47 -0600
-X-Authenticated-Sender: steve@digidescorp.com
-X-Return-Path: prvs=1572194246=steve@digidescorp.com
-X-Envelope-From: steve@digidescorp.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-From: steve@digidescorp.com
-To: microblaze-uclinux@itee.uq.edu.au
-Cc: monstr@monstr.eu, linux-kernel@vger.kernel.org,
-       "Steven J. Magnani" <steve@digidescorp.com>
-Subject: [PATCH, RESEND] microblaze: Fix level interrupt ACKing
-Date: Tue, 17 Nov 2009 08:43:39 -0600
-Message-Id: <1258469019-3863-1-git-send-email-steve@digidescorp.com>
-X-Mailer: git-send-email 1.6.0.6
+	Tue, 17 Nov 2009 10:00:37 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 0/4] Series short description
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Date: Tue, 17 Nov 2009 14:44:28 +0000
+Message-ID: <20091117144413.15356.34793.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Level interrupts need to be ack'd in the unmask handler, as in powerpc. 
-Among other issues, this bug causes the system clock to appear to run at 
-double-speed.
+The following series implements...
 
-Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
 ---
-diff -uprN a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
---- a/arch/microblaze/kernel/intc.c	2009-06-02 15:26:28.000000000 -0500
-+++ b/arch/microblaze/kernel/intc.c	2009-06-02 15:27:39.000000000 -0500
-@@ -41,8 +41,16 @@ unsigned int nr_irq;
- 
- static void intc_enable_or_unmask(unsigned int irq)
- {
-+	unsigned long mask = 1 << irq;
- 	pr_debug("enable_or_unmask: %d\n", irq);
--	out_be32(INTC_BASE + SIE, 1 << irq);
-+	out_be32(INTC_BASE + SIE, mask);
-+
-+	/* ack level irqs because they can't be acked during
-+	 * ack function since the handle_level_irq function
-+	 * acks the irq before calling the interrupt handler
-+	 */
-+	if (irq_desc[irq].status & IRQ_LEVEL)
-+		out_be32(INTC_BASE + IAR, mask);
- }
- 
- static void intc_disable_or_mask(unsigned int irq)
 
+Alan Cox (4):
+      pata: Update experimental tags
+      cmd64x: implement serialization as per notes
+      pata_sis: Implement MWDMA for the UDMA 133 capable chips
+      pata_via: Blacklist some combinations of Transcend Flash and via
+
+
+ drivers/ata/Kconfig       |    8 +--
+ drivers/ata/pata_cmd64x.c |  132 ++++++++++++++++++++++++++++++++++++++++++---
+ drivers/ata/pata_sis.c    |   88 +++++++++++++++++++++++-------
+ drivers/ata/pata_via.c    |   27 +++++++++
+ 4 files changed, 222 insertions(+), 33 deletions(-)
+
+-- 
+Signature
