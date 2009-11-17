@@ -1,150 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZKQDS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbZKQDTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZKQDS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 22:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZKQDSV
+	id S1755127AbZKQDTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 22:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZKQDTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 22:18:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41292 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbZKQDSS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 22:18:18 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 4/4] perf tools: Don't die() in do_write
-Date: Tue, 17 Nov 2009 01:18:12 -0200
-Message-Id: <1258427892-16312-4-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258427892-16312-3-git-send-email-acme@infradead.org>
-References: <1258427892-16312-1-git-send-email-acme@infradead.org>
- <1258427892-16312-2-git-send-email-acme@infradead.org>
- <1258427892-16312-3-git-send-email-acme@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 16 Nov 2009 22:19:33 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:50959 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754661AbZKQDTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 22:19:31 -0500
+Message-ID: <4B021646.5040102@garzik.org>
+Date: Mon, 16 Nov 2009 22:19:34 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Shaohua Li <shaohua.li@intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jgarzik@redhat.com, sean.hefty@intel.com,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: [PATCH]AHCI: disable sntf cap for ich8
+References: <20091116015605.GA21717@sli10-desk.sh.intel.com>
+In-Reply-To: <20091116015605.GA21717@sli10-desk.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On 11/15/2009 08:56 PM, Shaohua Li wrote:
+> I obseved there is a sata_async_notification() for every ahci interrupt. But the
+> async notification does nothing (this is hard disk drive and no pmp). This cause
+> cpu wastes some time on sntf register access.
+>
+> It appears ICH AHCI doesn't support SNotification register, but the controller
+> reports it does. After quirking it, the async notification disappears.
 
-Propagate the errors instead, the users are the ones to decide what
-to do if a library call fails.
+Patch applied.
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/header.c |   33 ++++++++++++++++++++++-----------
- 1 files changed, 22 insertions(+), 11 deletions(-)
 
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 726a0eb..b01a953 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -161,31 +161,36 @@ bool perf_header__has_feat(const struct perf_header *self, int feat)
- 	return test_bit(feat, self->adds_features);
- }
- 
--static void do_write(int fd, void *buf, size_t size)
-+static int do_write(int fd, const void *buf, size_t size)
- {
- 	while (size) {
- 		int ret = write(fd, buf, size);
- 
- 		if (ret < 0)
--			die("failed to write");
-+			return -1;
- 
- 		size -= ret;
- 		buf += ret;
- 	}
-+
-+	return 0;
- }
- 
--static void write_buildid_table(int fd, struct list_head *id_head)
-+static int write_buildid_table(int fd, struct list_head *id_head)
- {
- 	struct build_id_list *iter, *next;
- 
- 	list_for_each_entry_safe(iter, next, id_head, list) {
- 		struct build_id_event *b = &iter->event;
- 
--		do_write(fd, b, sizeof(*b));
--		do_write(fd, (void *)iter->dso_name, iter->len);
-+		if (do_write(fd, b, sizeof(*b)) < 0 ||
-+		    do_write(fd, iter->dso_name, iter->len) < 0)
-+			return -1;
- 		list_del(&iter->list);
- 		free(iter);
- 	}
-+
-+	return 0;
- }
- 
- static void
-@@ -233,12 +238,14 @@ perf_header__adds_write(struct perf_header *self, int fd)
- 
- 		/* Write build-ids */
- 		buildid_sec->offset = lseek(fd, 0, SEEK_CUR);
--		write_buildid_table(fd, &id_list);
-+		if (write_buildid_table(fd, &id_list) < 0)
-+			die("failed to write buildid table");
- 		buildid_sec->size = lseek(fd, 0, SEEK_CUR) - buildid_sec->offset;
- 	}
- 
- 	lseek(fd, sec_start, SEEK_SET);
--	do_write(fd, feat_sec, sec_size);
-+	if (do_write(fd, feat_sec, sec_size) < 0)
-+		die("failed to write feature section");
- 	free(feat_sec);
- }
- 
-@@ -256,7 +263,8 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 		attr = self->attr[i];
- 
- 		attr->id_offset = lseek(fd, 0, SEEK_CUR);
--		do_write(fd, attr->id, attr->ids * sizeof(u64));
-+		if (do_write(fd, attr->id, attr->ids * sizeof(u64)) < 0)
-+			die("failed to write perf header");
- 	}
- 
- 
-@@ -272,13 +280,15 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 				.size   = attr->ids * sizeof(u64),
- 			}
- 		};
--		do_write(fd, &f_attr, sizeof(f_attr));
-+		if (do_write(fd, &f_attr, sizeof(f_attr)) < 0)
-+			die("failed to write perf header attribute");
- 	}
- 
- 	self->event_offset = lseek(fd, 0, SEEK_CUR);
- 	self->event_size = event_count * sizeof(struct perf_trace_event_type);
- 	if (events)
--		do_write(fd, events, self->event_size);
-+		if (do_write(fd, events, self->event_size) < 0)
-+			die("failed to write perf header events");
- 
- 	self->data_offset = lseek(fd, 0, SEEK_CUR);
- 
-@@ -306,7 +316,8 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 	memcpy(&f_header.adds_features, &self->adds_features, sizeof(self->adds_features));
- 
- 	lseek(fd, 0, SEEK_SET);
--	do_write(fd, &f_header, sizeof(f_header));
-+	if (do_write(fd, &f_header, sizeof(f_header)) < 0)
-+		die("failed to write perf header");
- 	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	self->frozen = 1;
--- 
-1.6.2.5
+> PS. it appears all ICH don't support SNotification register from ICH manual, don't
+> know if we need quirk all ICH. I don't have machines with all kinds of ICH.
+
+You work for Intel -- you or somebody needs to research and figure this 
+out...  This is an Intel vendor issue that only Intel can definitively 
+resolve.
+
+	Jeff
+
 
