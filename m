@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZKQPZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZKQPYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbZKQPZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 10:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZKQPZb
+	id S1753355AbZKQPYi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:24:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZKQPYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 10:25:31 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:52682 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbZKQPZa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 10:25:30 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ondrej Zary <linux@rainbow-software.org>, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] NEXIO (or iNexio) support for usbtouchscreen
-Date: Tue, 17 Nov 2009 16:25:34 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: daniel.ritz@gmx.ch, linux-kernel@vger.kernel.org
-References: <200911161515.00907.linux@rainbow-software.org>
-In-Reply-To: <200911161515.00907.linux@rainbow-software.org>
+	Tue, 17 Nov 2009 10:24:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26888 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbZKQPYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 10:24:37 -0500
+Message-ID: <4B02C0A6.9030605@redhat.com>
+Date: Tue, 17 Nov 2009 10:26:30 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Roland McGrath <roland@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip 3/3] Add get_signal tracepoint
+References: <20091113225226.15079.90813.stgit@harusame>  <20091113225240.15079.4863.stgit@harusame>  <20091113235333.0E3CC15E8@magilla.sf.frob.com>  <20091114001020.GB24738@elte.hu>  <4B01C95B.1070302@redhat.com> <20091117060130.GB30852@elte.hu>
+In-Reply-To: <20091117060130.GB30852@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911171625.34696.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 16. November 2009 15:14:59 schrieb Ondrej Zary:
+Ingo Molnar wrote:
+> 
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>>>  - signal IPI/wakeup events
+>>
+>> All signals might be used for IPI, isn't it? :-)
+> 
+> I mean, to analyze the various dynamic delivery details of how a signal 
+> send affects a target task:
+> 
+>  1) which task/PID was selected to be woken
+> 
+>  2) if the task got woken (from sleep) due to the signal sending
+> 
+>  3) if it was already woken, whether it needed an IPI via kick_process()
 
-Hi,
+Hmm, as far as I can see, some of these events can be caught by
+sched layer too.
+- trace_signal_send() will record target task.
+- wake_up_state() just calls try_to_wake_up(), and trace_sched_wakeup()
+  will be called from it.
+- kick_process() might better have its own tracepoint.
 
-firstly can you please send patches with -up? It makes them more readable.
-> ---
+And also, I think signal_wake_up() might not be a good tracepoint for
+signal event, since there is no signr. Moreover some signal_wake_up()
+caller(e.g. recalc_sigpending*) silently wake up processes :-(.
 
-> @@ -92,7 +95,7 @@
->  	dma_addr_t data_dma;
->  	unsigned char *buffer;
->  	int buf_len;
-> -	struct urb *irq;
-> +	struct urb *irq, *ack;
+> What proportion of signals were wakeups and what proportion hit an 
+> already running task is a relevant question to ask when analyzing the 
+> performance characteristics of signals.
 
-Where is this urb handled in case of disconnection?
+Hmm, does it really require wakeup events in signal layer?
+I think that we can analyze the characteristics by combination
+of signal events and sched events.
 
-> +#ifdef CONFIG_TOUCHSCREEN_USB_NEXIO
-> +	/* ignore the comm interface */
-> +	{USB_DEVICE_AND_INTERFACE_INFO(0x10f0, 0x2002, 0x02, 0x02, 0x00),
-> +		.driver_info = DEVTYPE_IGNORE},
-> +	{USB_DEVICE_AND_INTERFACE_INFO(0x1870, 0x0001, 0x02, 0x02, 0x00),
-> +		.driver_info = DEVTYPE_IGNORE},
-> +	/* normal device IDs */
-> +	{USB_DEVICE(0x10f0, 0x2002), .driver_info = DEVTYPE_NEXIO},
-> +	{USB_DEVICE(0x1870, 0x0001), .driver_info = DEVTYPE_NEXIO},
+Thank you,
+-- 
+Masami Hiramatsu
 
-Why not go for the interfaces you want?
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> +static unsigned char nexio_ack[2] = { 0xaa, 0x02 };
-> +
-> +static int nexio_init(struct usbtouch_usb *usbtouch)
-> +{
-> +	struct usb_device *dev = usbtouch->udev;
-> +	int ret = -ENOMEM;
-> +	int actual_len;
-> +	unsigned char *buf;
-> +	unsigned char init[4] = { 0x82, 0x04, 0x0a, 0x0f };
-> +	char *firmware_ver;
-> +
-> +	buf = kmalloc(NEXIO_BUFSIZE, GFP_KERNEL);
-> +	if (!buf)
-> +		goto err_nobuf;
-> +	/* two reads */
-> +	ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP), buf,
-> +			   NEXIO_BUFSIZE, &actual_len, NEXIO_TIMEOUT);
-> +	if (ret < 0)
-> +		goto err_out;
-> +	ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP), buf,
-> +			   NEXIO_BUFSIZE, &actual_len, NEXIO_TIMEOUT);
-> +	if (ret < 0)
-> +		goto err_out;
-> +	/* send init command */
-> +	ret = usb_bulk_msg(dev, usb_sndbulkpipe(dev, NEXIO_OUTPUT_EP), init,
-> +			   sizeof(init), &actual_len, NEXIO_TIMEOUT);
-
-DMA on the kernel stack
-
-	Regards
-		Oliver
-
+e-mail: mhiramat@redhat.com
 
