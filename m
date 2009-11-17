@@ -1,84 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZKQTSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZKQTTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZKQTSF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 14:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbZKQTSD
+	id S1756248AbZKQTTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 14:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZKQTTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 14:18:03 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:46646 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756211AbZKQTR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 14:17:59 -0500
-Message-Id: <20091117191802.926927000@alcatraz.americas.sgi.com>
-User-Agent: quilt/0.47-1
-Date: Tue, 17 Nov 2009 13:17:57 -0600
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 17 Nov 2009 14:19:20 -0500
+Received: from mail.perches.com ([173.55.12.10]:1095 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753587AbZKQTTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 14:19:19 -0500
+Date: Tue, 17 Nov 2009 11:19:13 -0800 (PST)
+From: Joe Perches <joe@mail.perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       <linux-kernel@vger.kernel.org>, Michael Buesch <mb@bu3sch.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] x86: Limit number of per cpu TSC sync messages
-References: <20091117191752.164451000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=limit_tsc_sync_messages
+Subject: Re: [PATCH] strcmp: fix overflow error
+In-Reply-To: <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
+Message-ID: <Pine.LNX.4.30.0911171112240.8119-100000@mail.perches.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Limit the number of per cpu TSC sync messages by only printing
-to the console if an error occurs, otherwise print as a DEBUG
-message.
 
-The info message "Skipping synchronization ..." is only printed
-after the last cpu has booted.
+It's been like that for awhile.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/kernel/tsc_sync.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
---- linux.orig/arch/x86/kernel/tsc_sync.c
-+++ linux/arch/x86/kernel/tsc_sync.c
-@@ -114,13 +114,12 @@
- 		return;
- 
- 	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE)) {
--		printk_once(KERN_INFO "Skipping synchronization checks as TSC is reliable.\n");
-+		if (cpu == (nr_cpu_ids-1) || system_state != SYSTEM_BOOTING)
-+			pr_info(
-+			"Skipped synchronization checks as TSC is reliable.\n");
- 		return;
- 	}
- 
--	pr_info("checking TSC synchronization [CPU#%d -> CPU#%d]:",
--		smp_processor_id(), cpu);
--
- 	/*
- 	 * Reset it - in case this is a second bootup:
- 	 */
-@@ -142,12 +141,14 @@
- 		cpu_relax();
- 
- 	if (nr_warps) {
--		printk("\n");
-+		pr_warning("TSC synchronization [CPU#%d -> CPU#%d]:\n",
-+			smp_processor_id(), cpu);
- 		pr_warning("Measured %Ld cycles TSC warp between CPUs, "
- 			   "turning off TSC clock.\n", max_warp);
- 		mark_tsc_unstable("check_tsc_sync_source failed");
- 	} else {
--		printk(" passed.\n");
-+		pr_debug("TSC synchronization [CPU#%d -> CPU#%d]: passed\n",
-+			smp_processor_id(), cpu);
- 	}
- 
- 	/*
+http://www.linuxhq.com/kernel/v1.1/75/lib/string.c
 
