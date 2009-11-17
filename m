@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZKQRZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZKQR1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbZKQRZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZKQRZi
+	id S1756014AbZKQR1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZKQR1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:25:38 -0500
-Received: from mga11.intel.com ([192.55.52.93]:55496 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbZKQRZh convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 12:27:11 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55961 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755046AbZKQR1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:25:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,759,1249282800"; 
-   d="scan'208";a="747860551"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 17 Nov 2009 09:25:42 -0800
-Subject: RE: [PATCH] ia64 support for tools/perf/
-Thread-Topic: [PATCH] ia64 support for tools/perf/
-Thread-Index: AcpnqoahkiWnc3AFQN6vOKUXAptJrgAACiZw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3876A5B@orsmsx505.amr.corp.intel.com>
-References: <4b02d7f43514327a@agluck-desktop.sc.intel.com>
- <20091117172139.GB5967@elte.hu>
-In-Reply-To: <20091117172139.GB5967@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Nov 2009 12:27:11 -0500
+Message-ID: <4B02DCE4.1080509@us.ibm.com>
+Date: Tue, 17 Nov 2009 09:27:00 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Michel Lespinasse <walken@google.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
+References: <20091117074655.GA14023@google.com> <20091117081817.GA7963@elte.hu> <1258448121.7816.29.camel@laptop> <20091117172456.GA14749@elte.hu>
+In-Reply-To: <20091117172456.GA14749@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Btw., are you planning HAVE_PERF_EVENTS support for IA64? (It's nice 
-> stuff, i can only recommend it! ;-)
+Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+>> On Tue, 2009-11-17 at 09:18 +0100, Ingo Molnar wrote:
+>>> Would you be interested in adding it as a 'perf bench futex' testcase? 
+>>> That way kernel developers could monitor futex performance in the future 
+>>> as well.
+>>>
+>>> See 'perf bench' in the latest perf events tree:
+>>>
+>>>   http://people.redhat.com/mingo/tip.git/README
+>>>
+>>> Do 'cd tools/perf; make -j install' to install perf.
+>> Darren has recently been putting a lot of effort in making a futex test
+>> suite:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
+>>
+>> Its not yet complete, but hopefully it will soon be :-)
+> 
+> Looks nice! Any futex performance measurements within it could be added 
+> to perf bench - with standardized options and output, etc.
+> 
+> 	Ingo
 
-My first goal is getting the s/w events hooked up and working.  I'm still
-wondering about how to get the h/w counters to co-exist with perfmon (which
-has been part of ia64 API for many years).
+I'll take a look at perf this week and see what would be required to 
+share (?) tests between perf and futextest.
 
--Tony
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
