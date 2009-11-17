@@ -1,110 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZKQAVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbZKQAU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbZKQAVR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 19:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZKQAVQ
+	id S1755293AbZKQAU5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 19:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZKQAU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 19:21:16 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:51357 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754882AbZKQAVP (ORCPT
+	Mon, 16 Nov 2009 19:20:56 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:43443 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754798AbZKQAU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 19:21:15 -0500
-Message-Id: <1258417281.1921.1345554581@webmail.messagingengine.com>
-X-Sasl-Enc: bvpGpm/8DHUaNNsGDMFTIrRViW7GfSnYa0KaYHMPfaxv 1258417281
-From: myuboot@fastmail.fm
-To: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
+	Mon, 16 Nov 2009 19:20:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yCQ9D0atiiQivIZgx5EPDn8wts+jJP3YJZk3KASUNQouYJTDwk32i0hU878/GQee1g
+         LjobsGiuyp/W10s9cQMlK4ZjivS2gSXz9YDRlov7R1VxMtrEMeB/WJXszEXqgkWzzOfD
+         k8Hw53vNMi5DzMjNMXQu1JVb7YKdgRjActhrs=
+Message-ID: <4B01EC95.7070109@gmail.com>
+Date: Mon, 16 Nov 2009 16:21:41 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [Bug #14483] Interrupts enabled after irqrouter_resume - iMac9,1
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.-yG.OTdALB@chimera>
+In-Reply-To: <xXQGFmujPl.A.-yG.OTdALB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <4AFA6B7F.10404@walsimou.com>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com>
- <4AD906D8.3020404@caviumnetworks.com>
- <1257898975.30125.1344591929@webmail.messagingengine.com>
- <4AFA6B7F.10404@walsimou.com>
-Subject: problem bring up initramfs and busybox
-Date: Mon, 16 Nov 2009 18:21:21 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been struggling to bring up a MIPS 32 board with busybox with or
-without initramfs.
-The kernel stucks there without the shell coming up.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14483
+> Subject		: Interrupts enabled after irqrouter_resume - iMac9,1
+> Submitter	: Justin Mattock<justinmattock@gmail.com>
+> Date		: 2009-10-25 19:58 (23 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125650070420168&w=4
+>
+>
+>
+>    
+I have to say that doing a bisect on this
+was more than I had anticipated.
+(still need to go through and revert commits,
+to see if I can find exactly where).
 
-[    1.153000] nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-[    1.161000] ip_tables: (C) 2000-2006 Netfilter Core Team
-[    1.167000] TCP cubic registered
-[    1.170000] NET: Registered protocol family 17
-[   25.971000] Freeing unused kernel memory: 1032k freed
-[   39.969000] Algorithmics/MIPS FPU Emulator v1.5
+So yes this should still be open.
 
-
-What I tried here is to use initramfs with statically linked busybox.
-The initramfs seems to be up, and runs the commands in the /init one by
-one, and then it goes to a inifite loop in r4k_wait at
-arch/mips/kernel/genex.S.
-
-The following is the execution sequense when it runs /init. Can anyone
-give me some idea what is wrong?
-
-Thanks, Andrew
-
-
-Breakpoint 2, do_execve (filename=0x9780a000 "/bin/sh", argv=0x4f73a4,
-envp=0x4f73ac, regs=0x97997f30) at fs/exec.c:1293
-1293            retval = unshare_files(&displaced);
-(gdb) c
-Continuing.
-
-Breakpoint 2, do_execve (filename=0x9780a000 "/sbin/switch_root",
-argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
-1293            retval = unshare_files(&displaced);
-(gdb) c
-Continuing.
-
-Breakpoint 2, do_execve (filename=0x9780a000 "/usr/sbin/switch_root",
-argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
-1293            retval = unshare_files(&displaced);
-(gdb) c
-Continuing.
-
-Breakpoint 2, do_execve (filename=0x9780a000 "/bin/switch_root",
-argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
-1293            retval = unshare_files(&displaced);
-(gdb) c
-Continuing.
-
-Breakpoint 2, do_execve (filename=0x9780a000 "/usr/bin/switch_root",
-argv=0x4f7450, envp=0x4f7464, regs=0x97819f30) at fs/exec.c:1293
-1293            retval = unshare_files(&displaced);
-(gdb) c
-Continuing.
-^C
-Program received signal SIGSTOP, Stopped (signal).
-r4k_wait () at arch/mips/kernel/genex.S:147
-147             jr      ra
-
--- And here is the content of /init script - 
-#!/bin/busybox sh
-
-# Mount the /proc and /sys filesystems.
-mount -t proc none /proc
-mount -t sysfs none /sys
-
-mdev -s
-/bin/sh
-
-# Do your stuff here.
-echo "This script mounts rootfs and boots it up, nothing more!"
-
-# Mount the root filesystem.
-mount -o ro /dev/mtdblock4 /mnt/root
-
-# Clean up.
-umount /proc
-umount /sys
-
-# Boot the real thing.
-exec switch_root /mnt/root /sbin/init
+Justin P. Mattock
