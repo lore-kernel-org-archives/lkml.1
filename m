@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZKQNZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZKQNZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbZKQNZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 08:25:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZKQNZI
+	id S1753160AbZKQNZf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 08:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZKQNZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 08:25:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44504 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbZKQNZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 08:25:07 -0500
-Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stanislaw Gruszka <sgruszka@redhat.com>
-Cc: Spencer Candland <spencer@bluehost.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
-In-Reply-To: <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
-References: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com>
-	 <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com>
-	 <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com>
-	 <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com>
-	 <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com>
-	 <1258038038.4039.467.camel@laptop>
-	 <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com>
-	 <4B01A8DB.6090002@bluehost.com>
-	 <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 14:24:48 +0100
-Message-ID: <1258464288.7816.305.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 08:25:35 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48311 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbZKQNZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 08:25:34 -0500
+Date: Tue, 17 Nov 2009 13:25:37 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
+	without CONFIG_XICS set
+Message-ID: <20091117132537.GA29804@csn.ul.ie>
+References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie> <1258461544.24093.72.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1258461544.24093.72.camel@concordia>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 14:08 +0100, Stanislaw Gruszka wrote:
-> On Mon, Nov 16, 2009 at 12:32:43PM -0700, Spencer Candland wrote:
-> > > seems you have more test cases for utime decreasing issues,
-> > > could you send links to me ? Somehow I could not find them 
-> > > by my own. Particularly test case used in development this commit
-> > > is interested:
-> > > 
-> > >   commit 49048622eae698e5c4ae61f7e71200f265ccc529
-> > >   Author: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > >   Date:   Fri Sep 5 18:12:23 2008 +0200
-> > >     sched: fix process time monotonicity
+On Tue, Nov 17, 2009 at 11:39:04PM +1100, Michael Ellerman wrote:
+> On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
+> > KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but if
+> > it's not set, there are numerous small build errors. This is a small series
+> > of patches to allow CONFIG_XICS to be unset in the config.
 > > 
-> > I had originally noticed that in a production web server, so my test
-> > case was designed to mirror what I was seeing there, which was just
-> > running apache with worker mpm, and running a simple apache bench while
-> > watching the utime/stime of the apache children.  Unfortunately that
-> > method was not terribly reliable at reproducing the issue, which is why
-> > I felt it necessary to try to come up with a better test case this time
-> > around.
+> > XICS appears to be some sort of interrupt controller but I'm not sure how
+> > common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
+> > universally requires CONFIG_XICS, the better path might be to force it to
+> > be set.
 > 
-> No wonder I could not find anything on google and in mailing list
-> archives :)
+> It is indeed 'some sort of interrupt controller' :)
 > 
-> Seems issue reported then was exactly the same as reported now by
-> you. Looks like commit 49048622eae698e5c4ae61f7e71200f265ccc529 just
-> make probability of bug smaller and you did not note it until now.  
+> All the virtualised PSERIES systems have, or appear to have, a XICS. So
+> it's pretty common.
 > 
-> Could you please test this patch, if it solve all utime decrease
-> problems for you:
+> I think the only time you see an MPIC is on older machines, and even
+> then maybe only if you're running bare metal.
 > 
-> http://patchwork.kernel.org/patch/59795/
+> So it is pretty much required for a PSERIES kernel, but perhaps there
+> are cases where the BML guys want to be able to turn it off.
 > 
-> If you confirm it work, I think we should apply it. Otherwise
-> we need to go to propagate task_{u,s}time everywhere, which is not
-> (my) preferred solution.
 
-That patch will create another issue, it will allow a process to hide
-from top by arranging to never run when the tick hits.
+Do you want to take ownership of the series as I'm a bit unclear on how
+and when XICS should be used? If not, I don't mind fixing the series up
+as you suggested but I wouldn't be in the best position to determine if
+the final result is sensible or not.
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
