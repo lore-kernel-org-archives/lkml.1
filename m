@@ -1,42 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZKQTDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZKQTDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZKQTDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 14:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZKQTDu
+	id S1756157AbZKQTDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 14:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZKQTDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 14:03:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43387 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756165AbZKQTDs (ORCPT
+	Tue, 17 Nov 2009 14:03:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:10499 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753587AbZKQTDk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 14:03:48 -0500
-Date: Tue, 17 Nov 2009 11:02:46 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] strcmp: fix overflow error
-In-Reply-To: <20091117185539.GA23385@pengutronix.de>
-Message-ID: <alpine.LFD.2.01.0911171102210.9384@localhost.localdomain>
-References: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain> <20091117185539.GA23385@pengutronix.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 17 Nov 2009 14:03:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Kma6384OkmZghnbNzkq7HNDxj5HHYf1TjUB7MSF+yU1YE6aGD4cjK3p82fp+115lIg
+         n4g7p0LAlyQxtbEhg59tWtkarr0szdFOQPdVLBTUhuslJ5IbhfJP0+U8euMAxrzJPTV/
+         0m+JWoncWJyM//P9rzrgqGLruxssCKFrXYtLI=
+Message-ID: <4B02F3B7.2090907@gmail.com>
+Date: Tue, 17 Nov 2009 11:04:23 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+References: <ipicVA1QUFF.A.zWB.1mdALB@chimera>	<OWmO9uyC1hM.A.yiC._ndALB@chimera>	<4B01F3FE.8040707@gmail.com>	<20091117113320.8aef894a.kristoffer.ericson@gmail.com>	<4B02E64D.2010700@gmail.com> <20091117191357.7c64ba70.kristoffer.ericson@gmail.com>
+In-Reply-To: <20091117191357.7c64ba70.kristoffer.ericson@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 17 Nov 2009, Uwe Kleine-König wrote:
+Kristoffer Ericson wrote:
+> On Tue, 17 Nov 2009 10:07:09 -0800
+> "Justin P. Mattock"<justinmattock@gmail.com>  wrote:
 >
-> (BTW, this was already broken in 2.4.0, so I was unable to find out who
-> is the moron :-)
+>    
+>> Kristoffer Ericson wrote:
+>>      
+>>> Im still hitting this so basicly using 2.6.30 until it get sorted. Will try and make
+>>> some time to test the different commits. Last time I waited for it to disconnect which
+>>> could take 10-40min. Since it depends on the network load Im now going to increase
+>>> the load to see if I hit it quicker (and thus finding the error commit).
+>>>
+>>> So in short, its still valid and I will try and make time to fix it :)
+>>>
+>>>
+>>>
+>>>
+>>>        
+>> o.k. so it is something that is enough to
+>> cause an inconvenience.
+>>      
+>
+> Especially if you are using your computer as a router to other computers
+> and they start screaming every time internet goes down. :(
+>
+>    
+>>      
+>
+>
+>    
+ah. yeah I'm not doing that over here
+just simply connecting to a router and streaming music.
+my guess is you can try the commits that I found
+but then again might not get you in the right
+direction i.g. during the bisect I was watching the
+"retry" in dmesg with ath* as soon as I saw that it was git bisect bad
+(seems like a new mechanism) as soon as I didn't see
+that the commit was good.
 
-Yeah, I looked at the history too. It's so old that it might well be me.
+In your case you might be seeing something different(not sure though)
+because of having the computer as a router etc..
 
-			Linus
+Justin P. Mattock
