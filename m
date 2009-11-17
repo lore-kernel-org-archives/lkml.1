@@ -1,111 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZKQRui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZKQRty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZKQRui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 12:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZKQRuh
+	id S1754729AbZKQRty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZKQRty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 12:50:37 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:18286 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbZKQRug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 12:50:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=Q+EbWJ+ux2DlbpipnzWEUlHwKfhI5xLDvsYj7mY8INUP5XD9JgOyrZzfIQeaJpQF6l
-         dJomwDQkZ9PoFDcIPitChh9pxxCoxymFOePRZStuFgscdYsAvReuGmIYmySzn/5k+fuv
-         dCCcfjfk3HCcz3VgG1xhWvTqyZ4zufGsFsxKI=
-From: Florian Fainelli <florian@openwrt.org>
-Organization: OpenWrt
-To: myuboot@fastmail.fm
-Subject: Re: problem bring up initramfs and busybox
-Date: Tue, 17 Nov 2009 18:48:43 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-server; KDE/4.3.2; x86_64; ; )
-Cc: "Ralf Baechle" <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
-       "linux-mips" <linux-mips@linux-mips.org>
-References: <1255735395.30097.1340523469@webmail.messagingengine.com> <20091117093330.GA24000@linux-mips.org> <1258479580.17116.1345691629@webmail.messagingengine.com>
-In-Reply-To: <1258479580.17116.1345691629@webmail.messagingengine.com>
+	Tue, 17 Nov 2009 12:49:54 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:49458 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753997AbZKQRtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 12:49:53 -0500
+Message-ID: <4B02E242.8040800@sgi.com>
+Date: Tue, 17 Nov 2009 09:49:54 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: David Miller <davem@davemloft.net>, hpa@zytor.com, mingo@elte.hu,
+       tglx@linutronix.de, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, rdreier@cisco.com, rdunlap@xenotime.net,
+       tj@kernel.org, andi@firstfloor.org, gregkh@suse.de,
+       yhlu.kernel@gmail.com, rientjes@google.com, rostedt@goodmis.org,
+       rusty@rustcorp.com.au, seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com,
+       fweisbec@gmail.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration	bootup
+ messages
+References: <20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net> <20091117155946.GA5476@lenovo> <20091117.082928.10537098.davem@davemloft.net> <20091117174204.GD5476@lenovo>
+In-Reply-To: <20091117174204.GD5476@lenovo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911171848.44137.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tuesday 17 November 2009 18:39:40 myuboot@fastmail.fm wrote:
-> On Tue, 17 Nov 2009 10:33 +0100, "Ralf Baechle" <ralf@linux-mips.org>
-> 
-> wrote:
-> > On Mon, Nov 16, 2009 at 06:21:21PM -0600, myuboot@fastmail.fm wrote:
-> > > I have been struggling to bring up a MIPS 32 board with busybox with or
-> > > without initramfs.
-> > > The kernel stucks there without the shell coming up.
-> > >
-> > > [    1.153000] nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-> > > [    1.161000] ip_tables: (C) 2000-2006 Netfilter Core Team
-> > > [    1.167000] TCP cubic registered
-> > > [    1.170000] NET: Registered protocol family 17
-> > > [   25.971000] Freeing unused kernel memory: 1032k freed
-> > > [   39.969000] Algorithmics/MIPS FPU Emulator v1.5
-> > >
-> > >
-> > > What I tried here is to use initramfs with statically linked busybox.
-> > > The initramfs seems to be up, and runs the commands in the /init one by
-> > > one, and then it goes to a inifite loop in r4k_wait at
-> > > arch/mips/kernel/genex.S.
-> >
-> > r4k_wait is called by the idle loop.  Which means the kernel has no
-> > process
-> > to run so runs the idle loop.  This might be because there is no other
-> > process left running or because all processes are waiting for I/O for
-> > example.  So it's not uncommon that even busy systems ocasionally briefly
-> > run the idle loop.  In other words, seeing the processor executing
-> > r4k_wait does not necessarily mean something went wrong.  In this case -
-> > also along with the other information you've provieded it's not obvious
-> > what has gone wrong.
-> >
-> >   Ralf
-> 
-> According to an email from Kevin, I added a symbolic link from
-> switch_root to busybox. The switch_root seems to be found now based on
-> the execution sequence, but I got the following error - "Kernel panic -
-> not syncing: Attempted to kill init!". This is the same error when I
-> tried to start the shell without initramfs. Something must be wrong, but
-> I can't quite figure out.
-> 
-> [    9.250000] Freeing unused kernel memory: 1032k freed
-> [   10.463000] Algorithmics/MIPS FPU Emulator v1.5
-> [   41.695000] Kernel panic - not syncing: Attempted to kill init!
-> [   41.701000] Rebooting in 3 seconds.
-> 
-> Thanks for your help. Andrew
-> 
-> (gdb) c
-> Continuing.
-> 
-> Breakpoint 2, do_execve (filename=0x9780a000 "/init", argv=0x943dd2bc,
-> envp=0x943dd230, regs=0x97819e30)
->     at fs/exec.c:1293
-> 1293            retval = unshare_files(&displaced);
-> (gdb) c
-> Continuing.
-> 
-> Breakpoint 2, do_execve (filename=0x9780a000 "/sbin/switch_root",
-> argv=0x4f7450, envp=0x4f7464, regs=0x97819f30)
->     at fs/exec.c:1293
-> 1293            retval = unshare_files(&displaced);
-> (gdb) c
-> Continuing.
 
-If you happen to use uClibc and gcc-4.4.0 or superior, make sure that you have 
-that patch applied to uClibc: http://www.mail-
-archive.com/uclibc@uclibc.org/msg04483.html
---
-WBR, Florian
+Cyrill Gorcunov wrote:
+> On Tue, Nov 17, 2009 at 08:29:28AM -0800, David Miller wrote:
+>> From: Cyrill Gorcunov <gorcunov@gmail.com>
+>> Date: Tue, 17 Nov 2009 18:59:46 +0300
+>>
+>>> Perhaps for other archs like SPARC64, where as you said no need to
+>>> remember boot cpu id at all, we should define some __weak per-kernel
+>>> global helper which would return 0 and every arch would implement
+>>> own helper boot_cpu_id().
+>> On many of my machines none of my cpus are numbered "0", so that
+>> wouldn't be a legitimate implementation on sparc64.
+>>
+>> I see no reason for a platform the be required to remember the boot
+>> cpu ID, there is nothing special about that processor generically.
+> 
+> I fear we still need it and it's special due to code structure at
+> least. For SMP compiled kernel say callin() do change its behaviour
+> depending on which cpu it's called.
+> 
+> Also iy seems a differ techhique used to find out on which cpu
+> the code is running: there is smp_processor_id() == 0 and raw version
+> and boot_cpu_id and cpu == 0, so having one general boot_cpu_id() would
+> be more clear (though we will need to clean code up then :)
+> 
+> So plain hard_smp_processor_id() wouldn't help since it doesn't
+> say if this is a boot cpu or not.
+> 
+>> And if we do need it generically, it's available there as
+>> hard_smp_processor_id() when start_kernel() is called.  So init/main.c
+>> could remember that value in an __initdata annotated static variable.
+>>
+>> But just using a boolean for this "did I print the bogomips message
+>> already?" thing seems more than sufficient.
+>>
+> 
+> Yes. As I see Mike already pick it up. Thanks David!
+> 
+> 	-- Cyrill
+
+I'd like to say that, but Peter wanted it to become an inlined function
+return value, and there are too many references in too many arches to
+a scalar value, so that moves it out of the scope of this patch set.
+
+Thanks,
+Mike
