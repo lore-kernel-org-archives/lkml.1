@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbZKQWS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbZKQWTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbZKQWS7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbZKQWS6
+	id S1756360AbZKQWTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZKQWTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:18:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38519 "EHLO ogre.sisk.pl"
+	Tue, 17 Nov 2009 17:19:49 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56614 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756286AbZKQWS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:18:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [Bug #14352] WARNING: at net/mac80211/scan.c:267
-Date: Tue, 17 Nov 2009 23:19:49 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.o1.bUdALB@chimera> <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com>
-In-Reply-To: <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com>
+	id S1756292AbZKQWTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:19:48 -0500
+Date: Tue, 17 Nov 2009 23:19:53 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?ISO-8859-15?Q?=22Andr=E9_Goddard_Rosa=22?= 
+	<andre.goddard@gmail.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: linux-next: manual merge of the trivial tree with the pci tree
+In-Reply-To: <20091117155417.e0514040.sfr@canb.auug.org.au>
+Message-ID: <alpine.LSU.2.00.0911172318340.15039@wotan.suse.de>
+References: <20091117155417.e0514040.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911172319.49198.rjw@sisk.pl>
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1210159433-1258496393=:15039"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009, Maciej Rutecki wrote:
-> 2009/11/16 Rafael J. Wysocki <rjw@sisk.pl>:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14352
-> > Subject         : WARNING: at net/mac80211/scan.c:267
-> > Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> > Date            : 2009-10-08 00:30 (40 days old)
-> > References      : http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089#c7
-> >
-> >
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--168427776-1210159433-1258496393=:15039
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 17 Nov 2009, Stephen Rothwell wrote:
+
+> Today's linux-next merge of the trivial tree got a conflict in
+> arch/x86/pci/amd_bus.c between commit
+> 99935a7a59eaca0292c1a5880e10bae03f4a5e3d ("x86/PCI: read root resources
+> from IOH on Intel") from the pci tree and commit
+> 17530b1c635dfd1f258afc6b07b986b425d66ebd ("tree-wide: fix assorted typos
+> all over the place") from the trivial tree.
 > 
-> In 2.6.32-rc7 problem seems be fixed.
+> The comment fixed up by the trivial tree patch has moved to
+> arch/x86/pci/bus_numa.h and I haven't bothered to fix it there.
 
-Thanks, closing.
+Thanks for letting me know.
 
-Rafael
+I have dropped the hunk from my queue. Jesse, could you please merge this 
+patch to your tree instead?
+
+
+
+
+From: André Goddard Rosa <andre.goddard@gmail.com>
+Subject: pci: fix comment typo
+
+Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index 572ee97..575f6fe 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -19,7 +19,7 @@
+ 
+ /*
+  * sub bus (transparent) will use entres from 3 to store extra from root,
+- * so need to make sure have enought slot there, increase PCI_BUS_NUM_RESOURCES?
++ * so need to make sure have enough slot there, increase PCI_BUS_NUM_RESOURCES?
+  */
+ #define RES_NUM 16
+ struct pci_root_info {
+--168427776-1210159433-1258496393=:15039--
