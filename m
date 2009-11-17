@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZKQOPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbZKQOP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZKQOPc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 09:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZKQOPa
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 09:15:30 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:40526 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbZKQOP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752942AbZKQOP2 (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 17 Nov 2009 09:15:28 -0500
-Message-ID: <4B02AD9B.5040105@msgid.tls.msk.ru>
-Date: Tue, 17 Nov 2009 17:05:15 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZKQOP1
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 17 Nov 2009 09:15:27 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:57761 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210AbZKQOP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 09:15:26 -0500
+Date: Tue, 17 Nov 2009 09:05:34 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Michael Renzmann <mrenzmann@madwifi-project.org>,
+       madwifi-devel@lists.sourceforge.net,
+       madwifi-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [Madwifi-devel] Survey: What are you using MadWifi for, and
+	why?
+Message-ID: <20091117140534.GD27743@tuxdriver.com>
+References: <2205.95.222.251.107.1258282369.squirrel@webmail.otaku42.de> <43e72e890911161701p61d0db5ag25a1459f900b3ab7@mail.gmail.com>
 MIME-Version: 1.0
-To: Lee Merrill <lee_merrill@yahoo.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Jiffies jumping with the x86 HPET
-References: <768725.48321.qm@web53403.mail.re2.yahoo.com>
-In-Reply-To: <768725.48321.qm@web53403.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890911161701p61d0db5ag25a1459f900b3ab7@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Merrill wrote:
-> We are seeing jiffies go forward occasionally, by 300 seconds, this it appears is due to the following code in the 2.6.16 kernel:
-> 
-> mark_offset_tsc_hpet(void):
-> ...
-> 1       hpet_current = hpet_readl(HPET_COUNTER);
-> 2       rdtsc(last_tsc_low, last_tsc_high);
-> 3
-> 4       /* lost tick compensation */
-> 5       offset = hpet_readl(HPET_T0_CMP) - hpet_tick;
-> 6       if (unlikely(((offset - hpet_last) > hpet_tick) && (hpet_last != 0))
-> 7                                       && detect_lost_ticks) {
-> 8               int lost_ticks = (offset - hpet_last) / hpet_tick;
-> 9               jiffies_64 += lost_ticks;
-> 10      }
-> 11      hpet_last = hpet_current;
+On Mon, Nov 16, 2009 at 05:01:09PM -0800, Luis R. Rodriguez wrote:
 
-There is no such code in current (2.6.31 or even 2.6.27.y) kernel.
-Both hpet support and timer/clock code received huge changes in
-2.6.24+ kernels.  I guess your best bet is to upgrade.
+> If a few developers still exist who are committed to helping maintain
+> madwifi until ath5k gets feature-parred the easiest solution now
+> (since the HAL is open) is to just throw it into staging and hopefully
+> that'll attract more developers to help keep it up to date with actual
+> current kernels.
 
-/mjt
+For the record, I would be generally opposed to adding madwifi to
+drivers/staging.  We already have enough trouble with duplication of
+hardware support between drivers/staging and drivers/net/wireless.
+
+If madwifi has features that people need/want and that ath5k/mac80211
+still lacks, lets talk about how to get them (or reasonabe replacements
+for them) into the mainline kernel.  I'm sure some ideas will meet
+some resistance, but if someone is motivated to continue pursuing
+maintenance of madwifi than they should be motivated enough to at
+least try to convince the rest of us why those features are worth
+having in net/wireless, net/mac80211, and/or drivers/net/wireless.
+Even if the solution is some quirky thing that "normal" people will
+ignore, it is bound to be better to have mainline support than to
+continue working out-of-tree.
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
