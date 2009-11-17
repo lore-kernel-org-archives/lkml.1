@@ -1,153 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZKQQmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbZKQQlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZKQQmM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 11:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZKQQmL
+	id S1753034AbZKQQlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 11:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbZKQQlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 11:42:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32164 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752535AbZKQQmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 11:42:10 -0500
-Date: Tue, 17 Nov 2009 11:40:26 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [RFC] Block IO Controller V2 - some results
-Message-ID: <20091117164026.GE22462@redhat.com>
-References: <1258404660.3533.150.camel@cail> <20091116221827.GL13235@redhat.com> <1258461527.2862.2.camel@cail> <20091117141411.GA22462@redhat.com> <4e5e476b0911170817s39286103g3796f25cba9f623c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0911170817s39286103g3796f25cba9f623c@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 17 Nov 2009 11:41:17 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:44864 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbZKQQlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 11:41:16 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
+Cc: Roel Kluin <roel.kluin@gmail.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       linux-doc@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Wagner <daw@cs.berkeley.edu>
+Subject: Re: [PATCH] Documentation: Fix NUL termination of strncpy
+In-Reply-To: Your message of "Tue, 17 Nov 2009 12:25:03 GMT."
+             <4B02961F.8020108@draigBrady.com>
+From: Valdis.Kletnieks@vt.edu
+References: <4B018405.2030408@gmail.com> <4B019F52.50509@gmail.com>
+            <4B02961F.8020108@draigBrady.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1258476065_3145P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Nov 2009 11:41:05 -0500
+Message-ID: <6806.1258476065@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.14.107 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020205.4B02D222.035D,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 05:17:53PM +0100, Corrado Zoccolo wrote:
-> Hi Vivek,
-> the performance drop reported by Alan was my main concern about your
-> approach. Probably you should mention/document somewhere that when the
-> number of groups is too large, there is large decrease in random read
-> performance.
-> 
+--==_Exmh_1258476065_3145P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hi Corrodo,
+On Tue, 17 Nov 2009 12:25:03 GMT, P=E1draig Brady said:
 
-I thought more about it. We idle on sync-noidle group only in case of 
-rotational media not supporting NCQ (hw_tag = 0). So for all the fast
-hardware out there (SSD and fast arrays), we should not be idling on 
-sync-noidle group hence should not additional idling per group.
+> You need to explicitly NUL terminate strncpy():
+> http://www.pixelbeat.org/programming/gcc/string_buffers.html
 
-This is all subjected to the fact that we have done a good job in
-detecting the queue depth and have updated hw_tag accordingly.
+Umm. Actually, no.  It's *nice* if you explicitly do it.  However, it's
+not strictly *required*. Consider this code:
 
-On slower rotational hardware, where we will actually do idling on
-sync-noidle per group, idling can infact help you because it will reduce
-the number of seeks (As it does on my locally connected SATA disk).
+struct a =7B
+	int b, c;
+	char d=5B20=5D;
+=7D
 
-> However, we can check few things:
-> * is this kernel built with HZ < 1000? The smallest idle CFQ will do
-> is given by 2/HZ, so running with a small HZ will increase the impact
-> of idling.
-> 
-> On Tue, Nov 17, 2009 at 3:14 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > Regarding the reduced throughput for random IO case, ideally we should not
-> > idle on sync-noidle group on this hardware as this seems to be a fast NCQ
-> > supporting hardware. But I guess we might not be detecting the queue depth
-> > properly which leads to idling on per group sync-noidle workload and
-> > forces the queue depth to be 1.
-> 
-> * This can be ruled out testing my NCQ detection fix patch
-> (http://groups.google.com/group/linux.kernel/browse_thread/thread/3b62f0665f0912b6/34ec9456c7da1bb7?lnk=raot)
+bzero(a,sizeof(a)); /* voila=21 a->d=5B19=5D is now a =5C0 */
 
-This will be a good patch to test here. Alan, can you also apply this
-patch and see if we see any improvement.
+Perfectly valid and we do it all the time. Your referenced web page comme=
+nts
+that using memset() or bzero() is inefficient - I wonder if they actually=
 
-My core concern is that hardware Alan is testing on is a fast NCQ
-supporting hardware and we should see hw_tag=1 and hence no idling on 
-sync-noidle group should happen.
+*tested* the difference between using one memset() or bzero() on a large
+structure compared to lots and lots of explicit initialization statements=
 
-> 
-> However, my feeling is that the real problem is having multiple
-> separate sync-noidle trees.
-> Inter group idle is marginal, since each sync-noidle tree already has
-> its end-of-tree idle enabled for rotational devices (The difference in
-> the table is in fact small).
-> > ---- ---- - ----------- ----------- ----------- -----------
-> > Mode RdWr N    base       ioc off   ioc no idle  ioc idle
-> > ---- ---- - ----------- ----------- ----------- -----------
-> >  rnd   rd 2        17.3        17.1         9.4         9.1
-> >  rnd   rd 4        27.1        27.1         8.1         8.2
-> >  rnd   rd 8        37.1        37.1         6.8         7.1
-> 
-> 2 random readers without groups have bw = 17.3 ; this means that a
-> single random reader will have bw > 8.6 (since the two readers go
-> usually in parallel when no groups are involved, unless two random
-> reads are actually queued to the same disk).
-> 
+(i-cache issues probably most important there). The downside is that ther=
+e's a
+greater chance of some programmer refactoring code and bollixing it up. (=
+The
+astute reader will remember a short thread about this not too long ago.. =
+:)
 
-Agreed. Without groups I guess we are driving queue depth as 2 hence
-two random readers are able to work in paralle. Because this is striped
-array of multiple disks, there are chances that reads will happen on
-different disks and we can support more random readers in parallel without
-dropping the throughput of box. 
+And if you're truly careful and always use the strn- variants of the stri=
+ng
+functions, it's actually possible to *not* null-terminate the strings.  B=
+ut
+it results in very brittle code and makes Baby Andrew cry, mostly because=
+ when
+somebody adds a printf() to debug the brittle code, it suddenly becomes e=
+ven
+more brittle... :)=20
 
-> When the random readers are in separate groups, we give the full disk
-> to only one at a time, so the max aggregate bw achievable is the bw of
-> a single random reader less the overhead proportional to number of
-> groups. This is compatible with the numbers.
-> 
+--==_Exmh_1258476065_3145P
+Content-Type: application/pgp-signature
 
-Yes it is but with group_idle=0, we don't wait for a group to get
-backlogged. So in that case we should have been driving queue depth as 2
-and allow both the groups go in parallel. But looking at Alan's number
-with with group_ilde=0, he is not achieving close to 17MB/s and I suspect
-this is coming from that fact that hw_tag=0 somehow and we are idling on
-sync-nodile workload hence effectively driving queue depth as 1.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-> So, an other thing to mention in the docs is that having one process
-> per group is not a good idea (cfq already has I/O priorities to deal
-> with single processes). Groups are coarse grain entities, and they
-> should really be used when you need to get fairness between groups of
-> processes.
-> 
+iD8DBQFLAtIhcC3lWbTT17ARArdkAKD48+QmcTMOfkVTbzlucGKjjGTongCgwR9k
+Kh3MCVIsFLau3Ne03Tdq5D0=
+=80jq
+-----END PGP SIGNATURE-----
 
-I think number of processes in the group will be a more dynamic
-information that changes with time. For example, if we put a virtual
-machine in a group, number of processes will vary depending on what
-virtual machine is doing.
+--==_Exmh_1258476065_3145P--
 
-I think group_idle is a more controllable parameter here. If some group
-has higher weight but low load (like single process running), then should
-we slow down the whole array and give the group exclusive access, or we
-continue we just let slow group go away and continue to dispatch from rest
-of the more active (but possibly low weight) groups. In first case
-probably our latencies might be better as comapred to second case.  
-
-But more I look at it, sounds like on fast arrays, waiting for slow groups
-does not sound very good. It might make sense on rotational hardware with
-single disk head, though.
-
-> * An other thing to do is to try setting rotational = 0, since even
-
-what is rotational=0? Can't find any such tunable variable?
-
-Thanks
-Vivek
-
-> with NCQ correctly detected, if the device is rotational, we still
-> introduce some idle delays (that are good in the root group, but not
-> when you have multiple groups).
-> 
-> >
-> > I am also trying to setup a higher end system here and will do some
-> > experiments.
-> >
-> > Thanks
-> > Vivek
-> 
-> Thanks,
-> Corrado
