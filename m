@@ -1,172 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZKQLeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZKQLpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbZKQLeP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:34:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZKQLeO
+	id S1755836AbZKQLpW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZKQLpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:34:14 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:63902 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbZKQLeN (ORCPT
+	Tue, 17 Nov 2009 06:45:19 -0500
+Received: from bohort.kerlabs.com ([62.160.40.57]:48484 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755042AbZKQLpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:34:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=w+NTWz/Px99xRYtnInxCS1gihDuPZ2aHWtHCU8hnLOBg6w4DrTBsEk02RxCuLxlQlF
-         YF6ib45UIFeZPVguBXNJMEiJ3gBOw6rmJIFJszaks+Q5II+3zP4HEAF+AbBQ4pMVYfBu
-         qXI0VMuJa4qB6tcNVJlVoZINr2dFO6oxKyoO8=
-Message-ID: <4B028A37.1010202@gmail.com>
-Date: Tue, 17 Nov 2009 06:34:15 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
-CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: net-next-2.6 compilation errors: missing wireless/i82593.h
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 17 Nov 2009 06:45:15 -0500
+X-Greylist: delayed 325 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Nov 2009 06:45:14 EST
+Date: Tue, 17 Nov 2009 12:39:52 +0100
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
+       andi@firstfloor.org, fweisbec@gmail.com
+Subject: Re: [PATCH 19/21] workqueue: introduce worker
+Message-ID: <20091117113952.GK4379@hawkmoon.kerlabs.com>
+Mail-Followup-To: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+	jeff@garzik.org, mingo@elte.hu, akpm@linux-foundation.org,
+	jens.axboe@oracle.com, rusty@rustcorp.com.au,
+	cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+	torvalds@linux-foundation.org, avi@redhat.com, peterz@infradead.org,
+	andi@firstfloor.org, fweisbec@gmail.com
+References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-20-git-send-email-tj@kernel.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-17908-1258457936-0001-2"
+Content-Disposition: inline
+In-Reply-To: <1258391726-30264-20-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the past 9-10 days, net-next-2.6 has failed to compile.  In addition to
-the errors and warnings already reported here last week, since Nov 12th
-there has been another missing file.  I kept hoping it was temporary, but
-no joy.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-/home/administer/net-next-2.6/drivers/net/znet.c:107:29: error: wireless/i82593.h: No such file or directory
-/home/administer/net-next-2.6/drivers/net/znet.c:133: error: field ‘i593_init’ has incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_set_multicast_list’:
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:235: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:247: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:248: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:249: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:250: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:251: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:254: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:255: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:256: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:259: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:260: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:261: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:262: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:265: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:266: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:267: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:268: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:271: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:274: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:277: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:278: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:281: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:282: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:283: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:284: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:285: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:286: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:289: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:290: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:291: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:294: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:297: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:298: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:299: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:300: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:301: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:302: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:303: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:304: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:307: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:310: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:311: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:312: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:315: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:316: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:317: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:318: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:319: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:320: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:323: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:324: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:325: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:326: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:327: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:328: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:329: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:330: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:333: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:334: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:340: error: dereferencing pointer to incomplete type
-/home/administer/net-next-2.6/drivers/net/znet.c:345: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:346: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:346: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:346: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:347: error: invalid application of ‘sizeof’ to incomplete type ‘struct i82593_conf_block’
-/home/administer/net-next-2.6/drivers/net/znet.c:348: error: ‘OP0_CONFIGURE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:348: error: (Each undeclared identifier is reported only once
-/home/administer/net-next-2.6/drivers/net/znet.c:348: error: for each function it appears in.)
-/home/administer/net-next-2.6/drivers/net/znet.c:348: error: ‘CR0_CHNL’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_tx_timeout’:
-/home/administer/net-next-2.6/drivers/net/znet.c:512: error: ‘CR0_STATUS_0’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:514: error: ‘CR0_STATUS_1’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:516: error: ‘CR0_STATUS_2’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:518: error: ‘CR0_STATUS_3’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:522: error: ‘TX_LOST_CRS’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:525: error: ‘OP0_RESET’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_send_packet’:
-/home/administer/net-next-2.6/drivers/net/znet.c:549: error: ‘CR0_STATUS_0’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:583: error: ‘OP0_TRANSMIT’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:583: error: ‘CR0_CHNL’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_interrupt’:
-/home/administer/net-next-2.6/drivers/net/znet.c:612: error: ‘CR0_STATUS_0’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:617: error: ‘CR0_STATUS_1’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:619: error: ‘CR0_STATUS_2’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:621: error: ‘CR0_STATUS_3’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:626: error: ‘SR0_INTERRUPT’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:631: error: ‘SR0_EVENT_MASK’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:631: error: ‘SR0_TRANSMIT_DONE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:632: error: ‘SR0_RETRANSMIT_DONE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:633: error: ‘SR0_TRANSMIT_NO_CRC_DONE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:638: error: ‘TX_OK’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:640: error: ‘TX_NCOL_MASK’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:642: error: ‘TX_LOST_CTS’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:642: error: ‘TX_LOST_CRS’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:644: error: ‘TX_UND_RUN’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:646: error: ‘TX_HRT_BEAT’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:648: error: ‘TX_MAX_COL’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:666: error: ‘SR0_RECEPTION’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:667: error: ‘SR0_STOP_REG_HIT’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:671: error: ‘CR0_INT_ACK’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_rx’:
-/home/administer/net-next-2.6/drivers/net/znet.c:688: error: ‘CR0_STATUS_2’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:747: error: ‘RX_RCV_OK’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:749: error: ‘RX_CRC_ERR’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:750: error: ‘RX_ALG_ERR’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:756: error: ‘RX_OVRRUN’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:758: error: ‘RX_SRT_FRM’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘znet_close’:
-/home/administer/net-next-2.6/drivers/net/znet.c:814: error: ‘OP0_RESET’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘hardware_init’:
-/home/administer/net-next-2.6/drivers/net/znet.c:859: error: ‘OP0_RESET’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:885: error: ‘OP0_CONFIGURE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:885: error: ‘CR0_CHNL’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:893: error: ‘OP0_IA_SETUP’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:898: error: ‘OP0_RCV_ENABLE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c: In function ‘update_stop_hit’:
-/home/administer/net-next-2.6/drivers/net/znet.c:904: error: ‘OP0_SWIT_TO_PORT_1’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:904: error: ‘CR0_CHNL’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:907: error: ‘CR1_STOP_REG_UPDATE’ undeclared (first use in this function)
-/home/administer/net-next-2.6/drivers/net/znet.c:909: error: ‘OP1_SWIT_TO_PORT_0’ undeclared (first use in this function)
-make[3]: *** [drivers/net/znet.o] Error 1
-make[3]: *** Waiting for unfinished jobs....
-make[2]: *** [drivers/net] Error 2
-make[1]: *** [drivers] Error 2
-make: *** [sub-make] Error 2
+--=_bohort-17908-1258457936-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Tejun,
+
+On 17/11/09  2:15 +0900, Tejun Heo wrote:
+> Separate out worker thread related information to struct worker from
+> struct cpu_workqueue_struct and implement helper functions to deal
+> with the new struct worker.  The only change which is visible outside
+> is that now workqueue worker are all named "kworker/CPUID:WORKERID"
+> where WORKERID is allocated from per-cpu ida.
+>=20
+> This is in preparation of concurrency managed workqueue where shared
+> multiple workers would be available per cpu.
+>=20
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  kernel/workqueue.c |  219 +++++++++++++++++++++++++++++++++++++---------=
+------
+>  1 files changed, 157 insertions(+), 62 deletions(-)
+>=20
+> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> index dce5ad5..6694b3e 100644
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+
+[...]
+
+> @@ -413,6 +426,105 @@ int queue_delayed_work_on(int cpu, struct workqueue=
+_struct *wq,
+>  }
+>  EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+> =20
+> +static struct worker *alloc_worker(void)
+> +{
+> +	struct worker *worker;
+> +
+> +	worker =3D kzalloc(sizeof(*worker), GFP_KERNEL);
+> +	return worker;
+> +}
+> +
+> +/**
+> + * create_worker - create a new workqueue worker
+> + * @cwq: cwq the new worker will belong to
+> + * @bind: whether to set affinity to @cpu or not
+> + *
+> + * Create a new worker which is bound to @cwq.  The returned worker
+> + * can be started by calling start_worker() or destroyed using
+> + * destroy_worker().
+> + *
+> + * CONTEXT:
+> + * Might sleep.  Does GFP_KERNEL allocations.
+> + *
+> + * RETURNS:
+> + * Pointer to the newly created worker.
+> + */
+> +static struct worker *create_worker(struct cpu_workqueue_struct *cwq, bo=
+ol bind)
+> +{
+> +	int id =3D -1;
+> +	struct worker *worker =3D NULL;
+> +
+> +	spin_lock(&workqueue_lock);
+> +	while (ida_get_new(&per_cpu(worker_ida, cwq->cpu), &id)) {
+> +		spin_unlock_irq(&workqueue_lock);
+> +		if (!ida_pre_get(&per_cpu(worker_ida, cwq->cpu), GFP_KERNEL))
+> +			goto fail;
+> +		spin_lock(&workqueue_lock);
+> +	}
+> +	spin_unlock_irq(&workqueue_lock);
+> +
+> +	worker =3D alloc_worker();
+> +	if (!worker)
+> +		goto fail;
+> +
+> +	worker->cwq =3D cwq;
+> +	worker->id =3D id;
+> +
+> +	worker->task =3D kthread_create(worker_thread, worker, "kworker/%u:%d",
+> +				      cwq->cpu, id);
+> +	if (IS_ERR(worker->task))
+> +		goto fail;
+> +
+> +	if (bind)
+> +		kthread_bind(worker->task, cwq->cpu);
+> +
+> +	return worker;
+> +fail:
+> +	if (id >=3D 0) {
+> +		spin_lock(&workqueue_lock);
+> +		ida_remove(&per_cpu(worker_ida, cwq->cpu), id);
+> +		spin_unlock_irq(&workqueue_lock);
+> +	}
+> +	kfree(worker);
+> +	return NULL;
+> +}
+
+AFAIU create_worker() should call spin_lock_irq() instead of spin_lock().
+
+[...]
+
+Thanks,
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-17908-1258457936-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksCi4gACgkQVKcRuvQ9Q1S5CgCfXTyIkfw1cpXL51qmgECnjqmX
+QmsAn30rBKGBIzfO4N7+pR5KZZiTKrJV
+=P66N
+-----END PGP SIGNATURE-----
+
+--=_bohort-17908-1258457936-0001-2--
