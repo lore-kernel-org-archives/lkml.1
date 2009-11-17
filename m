@@ -1,139 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZKQUiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZKQUkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753238AbZKQUiM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 15:38:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZKQUiK
+	id S1752661AbZKQUkO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 15:40:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZKQUkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 15:38:10 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:5960 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbZKQUiI (ORCPT
+	Tue, 17 Nov 2009 15:40:13 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:33251 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbZKQUkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 15:38:08 -0500
-Subject: Re: [RFC] Block IO Controller V2 - some results
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1258404660.3533.150.camel@cail>
-References: <1258404660.3533.150.camel@cail>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 17 Nov 2009 15:38:09 -0500
-Message-ID: <1258490289.18095.13.camel@cail>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 15:40:12 -0500
+Date: Tue, 17 Nov 2009 21:40:16 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FIX IT
+Message-ID: <20091117204015.GB5746@rhlx01.hs-esslingen.de>
+References: <20091116194015.GA13820@rhlx01.hs-esslingen.de> <20091116203545.GA2028@emergent.ellipticsemi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091116203545.GA2028@emergent.ellipticsemi.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek - 
+On Mon, Nov 16, 2009 at 03:35:45PM -0500, Nick Bowler wrote:
+> On 20:40 Mon 16 Nov     , Andreas Mohr wrote:
+> > --- linux-2.6/init/main.c.orig	2009-11-16 20:13:08.000000000 +0100
+> > +++ linux-2.6/init/main.c	2009-11-16 20:14:51.000000000 +0100
+> > @@ -846,7 +846,8 @@ static noinline int init_post(void)
+> >  	run_init_process("/bin/init");
+> >  	run_init_process("/bin/sh");
+> >  
+> > -	panic("No init found.  Try passing init= option to kernel.");
+> > +	panic("No init found.  Try passing init= option to kernel. "
+> > +	      "See Linux Documentation/init.txt for guidance.");
+> 
+> I think that the people who know where to look after reading this are
+> mainly the people who don't need to read that file, with one exception -
+> point (C) later on.
 
-I've updated the runs - the results are shown at the end, I culled out
-the write-related runs (haven't converted to direct I/O yet for those).
+I'm afraid I have to disagree with some parts in this mail.
 
-Next steps: Going to refresh to V3 of the patches and add in 
+As an LKML regular I've certainly had a rather higher share of problems
+in all this than I'd ever have expected.
 
-http://groups.google.com/group/linux.kernel/browse_thread/thread/3b62f0665f0912b6/34ec9456c7da1bb7?lnk=raot
+As for less-involved people, they will just raise eyebrows on
+"Documentation/init.txt", Google the term (as long as they've got a second
+working computer, that is ;) and be happy.
 
-and convert the write-side to doing direct I/O (that would include the
-rdwr tests, btw). 
+> > +OK, so you've got this pretty unintuitive message (currently located
+> > +in init/main.c) and are wondering what the H*** went wrong.
+> > +Some high-level reasons for failure (listed roughly in order of execution)
+> > +to load the init binary are:
+> > +A) Unable to mount root FS
+> 
+> Whenever the root FS has been unable to mount, I've always received an
+> error message that included the string "VFS: Unable to mount root fs".
+> Has this changed recently?  What sort of setup causes one to receive "No
+> init found" instead?
 
-----------------------------------------------------------------------
+This _might_ be the case (I think it happens often indeed), but you
+never know whether it's correctly output in 100% of these cases
+(e.g. possibly depending on whether "debug" is specified or not, as one
+factor only!).
 
-I've relabeled things:
+And given the avalanchy multitude of problems in this area my
+staunch opinion is that this guidance should be committed NOW regardless
+of whether it's got a "perfect" appearance (i.e. 100% of the content is
+fully accurate, lists all required hints and doesn't contain false positives).
+So far we've provided almost NOTHING, so let's at least add something, soon.
 
-i0 = io control generated in the kernel, but not enabled
-i1 = io control generated in the kernel, and is enabled
+I'll just give further examples:
+a) [same day] saw http://lkml.org/lkml/2009/11/10/526 during some light LKML reading
+b) [same day] _first_ pastebin plea for help that I encountered on #openwrt
+- guess what it was about?
+c) [next day] wasting half a day at work due to Red Hat's sheer
+inability to make a system work with more than 7MB/s on SATA hardware.
+Even worse, trying to fix this up by going the way of building a custom
+2.6.31.5 (something I'm doing all the time elsewhere), I even managed to hit
+SEVERE Red Hat initrd root device issues (culminating in "Init not found."),
+with about a hundred UNSOLVED Google results in trying to make a buggy
+initrd / nash setup accept a different root device.
+Talk about double fault, for crying out loud.
+d) [second next day] private thankful reply of another power user to my patch mail
+citing Debian initrd issues due to ldd issues causing .so's to get lost and
+thus a "No init found." message produced.
 
-g0 = group_idle=0
-g1 = group_idle=1 (default)
+> > +B) init binary doesn't exist on rootfs
+> > +C) other requirements not met
+> 
+> The introduction to this list already stated that it is not exhaustive,
+> so this entry adds no new information.  After reading the detailed
+> explanation, "broken console device" seems more appropriate here.
 
-s8 = slide_idle=8 (default)
-s0 = slice_idle=0
+Indeed, it's better to have one-liners with specific issues and then
+multi-liners elaborating on these issues, I'll update it.
 
-It looks like when the io control stuff is enabled we have random read
-problems. 
+> > +D) binary exists but dependencies not available
+> > +E) binary cannot be loaded
+> 
+> To me, (B), (D) and (E) are the same thing, and could just be "binary
+> cannot be loaded".  The details can be expanded upon in the next
+> section.
+> 
+> > +Detailed explanations:
+> <snip>
+> > +C) Possibly a conflict in console= setup --> initial console unavailable.
+> > +E.g. some serial consoles are unreliable due to serial IRQ issues (e.g. missing
+> > +interrupt-based configuration).
+> > +Try using a different console= device or e.g. netconsole=.
+> 
+> This appears to be by far the most interesting point in this file, since
+> it clarifies that "No init found." might be caused by a configuration
+> problem which seems completely unrelated to loading init.
 
-When it is enabled and slice_idle is set to 0 we see sequential reads
-drop noticeably:
+Users don't care much whether the message is "Init not found." or
+"console broken." or whatever, all they know is that their system
+doesn't work and that they want immediate help and earnest attempts
+in getting this thing resolved.
+Of course it would be nice to have individual areas of problems output
+their fair share of log messages (e.g. console setup), but as long as we
+don't have that entirely and I'm not fully ready to figure out myself
+all places that are lacking certain messages (as opposed to e.g.
+core developers), we need (certainly imperfect) helper documentation NOW.
 
----- ---- - --------- --------- --------- --------- --------- ---------
-Mode RdWr N   base     i0,gX,sX i1,g1,s8  i1,g0,s8  i1,g1,s0  i1,g0,s0
----- ---- - --------- --------- --------- --------- --------- ---------
-rnd  rd   2      17.3      17.1       9.1       9.3       9.4       9.5
-rnd  rd   4      27.1      27.1       8.2       8.0       8.0       8.0
-rnd  rd   8      37.1      37.1       7.1       6.8       6.7       6.8
+> > +D) e.g. crucial library dependencies of the init binary such as
+> > +/lib/ld-linux.so.2 missing or broken. Use readelf -d <INIT>|grep NEEDED
+> > +to find out which libraries are required.
+> > +E) make sure the binary's architecture matches your hardware.
+> > +E.g. i386 vs. x86_64 mismatch, or trying to load x86 on ARM hardware.
+> > +Or did you try loading a non-binary file here!?! (shell script?)
+> 
+> Linux is perfectly happy to load a shell script as init, so this comment
+> is very misleading.
 
-seq  rd   2     610.2     608.1     607.7     611.0     551.1     550.3
-seq  rd   4     608.4     601.5     607.7     609.6     549.6     550.0
-seq  rd   8     605.7     603.7     604.0     605.6     547.2     546.7
+Oh, interesting. I've seen a warning about this in a forum, thus I added
+it here, but I don't have experience with this myself, so I guess it's
+ok after all, thanks!
+(and there are several reports that seem to confirm that a shell script is
+possible, probably since the shebang mechanism likely is ld.so-related)
 
-===============================================================
+This part should thus be altered to mention that a script needs to have its fully
+working interpreter binary plus dependencies available.
 
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-base        rnd  rd   2   8.6   8.6
-base        rnd  rd   4   6.8   6.8   6.8   6.7
-base        rnd  rd   8   4.7   4.6   4.6   4.6   4.6   4.6   4.6   4.6
+I'll submit a new version of this patch very soon.
 
-base        seq  rd   2 306.2 304.0
-base        seq  rd   4 150.1 152.4 151.9 154.0
-base        seq  rd   8  77.2  75.9  75.9  73.9  77.0  75.7  75.0  74.9
+Thanks,
 
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-i0,gX,sX    rnd  rd   2   8.6   8.6
-i0,gX,sX    rnd  rd   4   6.8   6.8   6.7   6.7
-i0,gX,sX    rnd  rd   8   4.7   4.6   4.6   4.7   4.6   4.6   4.6   4.6
-
-i0,gX,sX    seq  rd   2 303.1 305.0
-i0,gX,sX    seq  rd   4 150.8 151.6 149.0 150.2
-i0,gX,sX    seq  rd   8  77.0  76.3  74.5  74.0  77.9  75.5  74.0  74.6
-
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-i1,g1,s8    rnd  rd   2   2.8   6.3
-i1,g1,s8    rnd  rd   4   0.7   1.5   2.5   3.5
-i1,g1,s8    rnd  rd   8   0.2   0.4   0.5   0.7   0.9   1.2   1.4   1.7
-
-i1,g1,s8    seq  rd   2 221.6 386.1
-i1,g1,s8    seq  rd   4  70.6 128.1 181.7 227.3
-i1,g1,s8    seq  rd   8  21.4  40.3  55.8  71.2  85.1  99.1 109.4 121.7
-
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-i1,g0,s8    rnd  rd   2   4.7   4.7
-i1,g0,s8    rnd  rd   4   2.0   2.0   2.0   2.0
-i1,g0,s8    rnd  rd   8   0.9   0.9   0.9   0.8   0.8   0.8   0.9   0.9
-
-i1,g0,s8    seq  rd   2 305.9 305.0
-i1,g0,s8    seq  rd   4 154.0 153.3 151.2 151.1
-i1,g0,s8    seq  rd   8  76.1  76.1  74.5  74.9  75.4  75.8  76.1  76.6
-
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-i1,g1,s0    rnd  rd   2   4.7   4.7
-i1,g1,s0    rnd  rd   4   2.0   2.0   2.0   2.0
-i1,g1,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
-
-i1,g1,s0    seq  rd   2 275.6 275.5
-i1,g1,s0    seq  rd   4 136.0 137.5 137.4 138.7
-i1,g1,s0    seq  rd   8  68.6  68.6  68.5  68.6  67.1  68.6  68.3  68.9
-
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
------------ ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-i1,g0,s0    rnd  rd   2   4.7   4.7
-i1,g0,s0    rnd  rd   4   2.0   2.0   2.0   2.0
-i1,g0,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
-
-i1,g0,s0    seq  rd   2 275.2 275.1
-i1,g0,s0    seq  rd   4 136.7 137.2 137.5 138.7
-i1,g0,s0    seq  rd   8  68.8  68.2  68.5  68.4  67.2  68.8  68.4  68.5
-
-
+Andreas Mohr
