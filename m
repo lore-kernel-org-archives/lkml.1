@@ -1,103 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZKQMvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZKQMwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbZKQMvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 07:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZKQMvO
+	id S1755924AbZKQMwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 07:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZKQMwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 07:51:14 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59367 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZKQMvN (ORCPT
+	Tue, 17 Nov 2009 07:52:18 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:43691 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZKQMwR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 07:51:13 -0500
+	Tue, 17 Nov 2009 07:52:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lJp8ESn9gQijn+zfcsUmz5uM9aVeCvYNmabcNPsis1e/bUCrhYHQLPN9IqXxh7mxrB
-         p6QqUf3lm6tQtEjTzIWZe0Rw74g20GFzcq6Rl/C68SMBkOEWemqCSmutK6MCfRvUoAyh
-         pzUJ4i9/VSxqqiJ+qtsZRKKlFjrQetzzcHxvo=
-Message-ID: <4B029C40.2020803@gmail.com>
-Date: Tue, 17 Nov 2009 21:51:12 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=XGd1Rjg45psgYg0/Dv+5vXZPkgD1B116ZTkGCalFVzf16SC8wl0HVlHvceCaYzLRwR
+         OEdr7UlvpGqNdEs6R95+c1B7lG9ifP1+duDqEw0extcQiaaLICk/hItNK0u5JS2qta+v
+         aEGoF+KeHNNTm8bElLQdYRMQXtcQukB7C5NVo=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #14380] Video tearing/glitching with T400 laptops
+Date: Tue, 17 Nov 2009 13:52:18 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.31-final; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.wG.6TdALB@chimera>
+In-Reply-To: <xXQGFmujPl.A.wG.6TdALB@chimera>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
-Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
-References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com> <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk> <20091117200618.3DFF.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091117200618.3DFF.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911171352.18563.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the noise. 
-While I am typing, my mail client already send the mail. :(.
-This is genuine.
-
-KOSAKI Motohiro wrote:
->> On Tue, 17 Nov 2009 16:17:50 +0900 (JST)
->> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->>
->>> Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
->>> memory, anyone must not prevent it. Otherwise the system cause
->>> mysterious hang-up and/or OOM Killer invokation.
->> So now what happens if we are paging and all our memory is tied up for
->> writeback to a device or CIFS etc which can no longer allocate the memory
->> to complete the write out so the MM can reclaim ?
+On Monday 16 of November 2009, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Probably my answer is not so simple. sorry.
-> 
-> reason1: MM reclaim does both dropping clean memory and writing out dirty pages.
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 
-Who write out dirty pages?
-If block driver can't allocate pages for flushing, It means VM can't reclaim
-dirty pages after all.
+It's mostly gone. It still happens for like 1/4s once per 6hours but jbarnes
+asked me to fill separate bug for that and gave such patch for testing (see below).
 
-> reason2: if all memory is exhausted, maybe we can't recover it. it is
-> fundamental limitation of Virtual Memory subsystem. and, min-watermark is
-> decided by number of system physcal memory, but # of I/O issue (i.e. # of
-> pages of used by writeback thread) is mainly decided # of devices. 
-> then, we can't gurantee min-watermark is sufficient on any systems.
-> Only reasonable solution is mempool like reservation, I think.
+So far haven't seen 1/4s problem with this patch applied.
 
-I think it's because mempool reserves memory. 
-(# of I/O issue\0 is hard to be expected.
-How do we determine mempool size of each block driver?
-For example,  maybe, server use few I/O for nand. 
-but embedded system uses a lot of I/O. 
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 3ba6546..b2cbf7f 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -2491,6 +2491,8 @@ static void g4x_update_wm(struct drm_device *dev,  int planea_clock,
+                /* Use ns/us then divide to preserve precision */
+                sr_entries = (((sr_latency_ns / line_time_us) + 1) *
+                              pixel_size * sr_hdisplay) / 1000;
++               if (sr_entries > G4X_FIFO_SIZE)
++                       sr_entries = G4X_FIFO_SIZE;
+                sr_entries = roundup(sr_entries / cacheline_size, 1);
+                DRM_DEBUG("self-refresh entries: %d\n", sr_entries);
+                I915_WRITE(FW_BLC_SELF, FW_BLC_SELF_EN);
 
-We need another knob for each block driver?
-
-I understand your point. but it's not simple. 
-I think, for making sure VM's pages, block driver need to distinguish 
-normal flush path and flush patch for reclaiming. 
-So In case of flushing for reclaiming, block driver have to set PF_MEMALLOC. 
-otherwise, it shouldn't set PF_MEMALLOC.
-
-
-> IOW, any reservation memory shouldn't share unrelated subsystem. otherwise
-> we lost any gurantee.
-> 
-> So, I think we need to hear why many developer don't use mempool,
-> instead use PF_MEMALLOC.
-> 
->> Am I missing something or is this patch set not addressing the case where
->> the writeback thread needs to inherit PF_MEMALLOC somehow (at least for
->> the I/O in question and those blocking it)
-> 
-> Yes, probably my patchset isn't perfect. honestly I haven't understand
-> why so many developer prefer to use PF_MEMALLOC.
 > 
 > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14380
+> Subject		: Video tearing/glitching with T400 laptops
+> Submitter	: Theodore Ts'o <tytso@mit.edu>
+> Date		: 2009-10-02 22:40 (46 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125452324520623&w=4
+> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Patch		: http://marc.info/?l=linux-kernel&m=125591495325000&w=4
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
+
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
