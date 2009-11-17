@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZKQPmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZKQP6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZKQPmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 10:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZKQPmQ
+	id S1755205AbZKQP6n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 10:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZKQP6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 10:42:16 -0500
-Received: from kroah.org ([198.145.64.141]:55713 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754353AbZKQPmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 10:42:15 -0500
-Date: Tue, 17 Nov 2009 07:41:16 -0800
-From: Greg KH <greg@kroah.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>
-Subject: Re: [PATCH 0/13] sysfs lazification.
-Message-ID: <20091117154116.GA22756@kroah.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org> <20091106224857.GB32205@kroah.com> <m1lji5h5xh.fsf@fess.ebiederm.org>
+	Tue, 17 Nov 2009 10:58:43 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41259 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754661AbZKQP6m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 10:58:42 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] vhost: Fix warnings and bad type handling
+To: mst@redhat.com, linux-kernel@vger.kernel.org
+Date: Tue, 17 Nov 2009 15:42:15 +0000
+Message-ID: <20091117154213.3683.94554.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1lji5h5xh.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 01:11:22AM -0800, Eric W. Biederman wrote:
-> Greg KH <greg@kroah.com> writes:
-> 
-> > On Tue, Nov 03, 2009 at 03:53:56AM -0800, Eric W. Biederman wrote:
-> >> 
-> >> The sysfs code updates the vfs caches immediately when the sysfs data
-> >> structures change causing a lot of unnecessary complications.  The
-> >> following patchset untangles that beast.  Allowing for simpler
-> >> more straight forward code, the removal of a hack from the vfs
-> >> to support sysfs, and human comprehensible locking on sysfs.
-> >> 
-> >> Most of these patches have already been reviewed and acked from the
-> >> last time I had time to work on sysfs.
-> >> 
-> >> In net the patches look like:
-> >
-> > Can you resend these based on the review that you just got, with the new
-> > acks and changes so that I can apply them?
-> 
-> Are you going to apply them soon?  If you don't have time I can start
-> a sysfs tree and just ask Linus to pull them.
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
-Well, as the merge window is not open right now, that might be tough to
-get Linus to take them at the moment :)
+ drivers/vhost/vhost.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-I was away last week, and will apply them to my tree this week, thanks
-for your patience.
 
-greg k-h
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 97233d5..46b20f7 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -334,7 +334,10 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 			r = -EINVAL;
+ 			break;
+ 		}
+-		r = init_used(vq, (struct vring_used __user *)a.used_user_addr);
++		/* For 32bit we will ignore the top 32bits of the user
++		   data */
++		r = init_used(vq, (struct vring_used __user *)(unsigned long)
++						a.used_user_addr);
+ 		if (r)
+ 			break;
+ 		vq->log_used = !!(a.flags & (0x1 << VHOST_VRING_F_LOG));
+
