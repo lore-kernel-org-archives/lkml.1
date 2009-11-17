@@ -1,323 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZKQXRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZKQXFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbZKQXRi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 18:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKQXRi
+	id S1756306AbZKQXFk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 18:05:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZKQXFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 18:17:38 -0500
-Received: from p01c12o144.mxlogic.net ([208.65.145.67]:35527 "EHLO
-	p01c12o144.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbZKQXRg convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 18:05:39 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:55982 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755539AbZKQXFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 18:17:36 -0500
-X-Greylist: delayed 363 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Nov 2009 18:17:36 EST
-X-MXL-Hash: 4b032f16400fc511-a4343e551aa88fc97ac990dbdacc7de22fead381
-X-MXL-Hash: 4b032b8d2bcd2771-84a0b5785070927b2f3b3e95c5bbd83eed5747e7
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 17 Nov 2009 18:05:38 -0500
+Date: Wed, 18 Nov 2009 00:05:44 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-mips@linux-mips.org
+Subject: Re: [patch 08/13] mips: Fixup last users of irq_chip->typename
+Message-ID: <20091117230544.GA1866@linux-mips.org>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.642102675@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network driver 
-Date: Tue, 17 Nov 2009 15:02:36 -0800
-Message-ID: <C43529A246480145B0A6D0234BDB0F0D021299@MELANITE.micrel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network driver 
-Thread-Index: Acpn2g2OuvRdzWIrRv+CZNQn73KRuA==
-From: "Choi, David" <David.Choi@Micrel.Com>
-To: <davem@davemloft.net>
-Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <shemminger@vyatta.com>, <greg@kroah.com>,
-       "Choi, David" <David.Choi@Micrel.Com>
-X-OriginalArrivalTime: 17 Nov 2009 23:02:36.0462 (UTC) FILETIME=[0DBECCE0:01CA67DA]
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009110601)]
-X-MAIL-FROM: <david.choi@micrel.com>
-X-SOURCE-IP: [65.218.208.2]
-X-AnalysisOut: [v=1.0 c=1 a=PWu0QPQ0t50A:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
-X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=DoS_7QlsMBOy1iQCR9cA:9 a=MhiBcUxFeh3djz]
-X-AnalysisOut: [-zfbIA:7 a=Zei1Zz4z6kI8dio0njCp5Hbzt5UA:4 a=yJsD6ztlz_8A:1]
-X-AnalysisOut: [0 a=XvhtcmiZ9odKIpiW:21 a=p9URSD1F3YJKsn8r:21]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117224916.642102675@linutronix.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Tue, Nov 17, 2009 at 10:51:03PM -0000, Thomas Gleixner wrote:
 
-This patch is for ks8851 16bit MLL Ethernet network device driver in order to fix bugs and to enhance functions.
+> The typename member of struct irq_chip was kept for migration purposes
+> and is obsolete since more than 2 years. Fix up the leftovers.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
 
->From 	: David J. Choi <david.choi@micrel.com>
+Looks good.  I assume you want to merge the whole series via tip, so
 
-Summary of Changes:  
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-	-Fix to receive multicast packets by setting the corresponding hardware bit during initialization.
-	-Fix to re-enable the interface [by interface up command(ifup)] while the interface is down.
-	-Fix to down the interface by passing the last parameter correctly to request_irq().
-	-Remove to read 4 extra bytes from the receiving queue after reading a packet, even though it does not cause 
-         a predictable issue now.
-	-Remove occurrences of transmission done interrupt in order to tx throughput enhancement.
-	-Enable IP checksum for packet receiving by setting the corresponding hardware bit during initialization.
-	-Display a message of driver name/base address on the console after driver's initialization.
-	-Relocate ks_enable_int()/ks_disable_int() in order not to declare those functions at the beginning of the file.
-	-Rename ks_enable()/_disable() to ks_enable_qmu()/ks_disable_qmu() in order to give more meaningful names 
-         and relocate them not declaire those functions at the beginning of the file.
-
-Signed-off-by: David J. Choi <david.choi@micrel.com>
-
----
---- linux-2.6.32-rc6/drivers/net/ks8851_mll.c.orig	2009-11-12 09:57:33.000000000 -0800
-+++ linux-2.6.32-rc6/drivers/net/ks8851_mll.c	2009-11-17 13:43:28.000000000 -0800
-@@ -568,6 +568,16 @@ static inline void ks_outblk(struct ks_n
- 		iowrite16(*wptr++, ks->hw_addr);
- }
- 
-+static void ks_disable_int(struct ks_net *ks)
-+{
-+	ks_wrreg16(ks, KS_IER, 0x0000);
-+}  /* ks_disable_int */
-+
-+static void ks_enable_int(struct ks_net *ks)
-+{
-+	ks_wrreg16(ks, KS_IER, ks->rc_ier);
-+}  /* ks_enable_int */
-+
- /**
-  * ks_tx_fifo_space - return the available hardware buffer size.
-  * @ks: The chip information
-@@ -681,6 +691,47 @@ static void ks_soft_reset(struct ks_net 
- }
- 
- 
-+void ks_enable_qmu(struct ks_net *ks)
-+{
-+	u16 w;
-+
-+	w = ks_rdreg16(ks, KS_TXCR);
-+	/* Enables QMU Transmit (TXCR). */
-+	ks_wrreg16(ks, KS_TXCR, w | TXCR_TXE);
-+
-+	/*
-+	 * RX Frame Count Threshold Enable and Auto-Dequeue RXQ Frame
-+	 * Enable
-+	 */
-+
-+	w = ks_rdreg16(ks, KS_RXQCR);
-+	ks_wrreg16(ks, KS_RXQCR, w | RXQCR_RXFCTE);
-+
-+	/* Enables QMU Receive (RXCR1). */
-+	w = ks_rdreg16(ks, KS_RXCR1);
-+	ks_wrreg16(ks, KS_RXCR1, w | RXCR1_RXE);
-+	ks->enabled = true;
-+}  /* ks_enable_qmu */
-+
-+static void ks_disable_qmu(struct ks_net *ks)
-+{
-+	u16	w;
-+
-+	w = ks_rdreg16(ks, KS_TXCR);
-+
-+	/* Disables QMU Transmit (TXCR). */
-+	w  &= ~TXCR_TXE;
-+	ks_wrreg16(ks, KS_TXCR, w);
-+
-+	/* Disables QMU Receive (RXCR1). */
-+	w = ks_rdreg16(ks, KS_RXCR1);
-+	w &= ~RXCR1_RXE ;
-+	ks_wrreg16(ks, KS_RXCR1, w);
-+
-+	ks->enabled = false;
-+
-+}  /* ks_disable_qmu */
-+
- /**
-  * ks_read_qmu - read 1 pkt data from the QMU.
-  * @ks: The chip information
-@@ -752,7 +803,7 @@ static void ks_rcv(struct ks_net *ks, st
- 			(frame_hdr->len < RX_BUF_SIZE) && frame_hdr->len)) {
- 			skb_reserve(skb, 2);
- 			/* read data block including CRC 4 bytes */
--			ks_read_qmu(ks, (u16 *)skb->data, frame_hdr->len + 4);
-+			ks_read_qmu(ks, (u16 *)skb->data, frame_hdr->len);
- 			skb_put(skb, frame_hdr->len);
- 			skb->dev = netdev;
- 			skb->protocol = eth_type_trans(skb, netdev);
-@@ -861,7 +912,7 @@ static int ks_net_open(struct net_device
- 		ks_dbg(ks, "%s - entry\n", __func__);
- 
- 	/* reset the HW */
--	err = request_irq(ks->irq, ks_irq, KS_INT_FLAGS, DRV_NAME, ks);
-+	err = request_irq(ks->irq, ks_irq, KS_INT_FLAGS, DRV_NAME, netdev);
- 
- 	if (err) {
- 		printk(KERN_ERR "Failed to request IRQ: %d: %d\n",
-@@ -869,6 +920,15 @@ static int ks_net_open(struct net_device
- 		return err;
- 	}
- 
-+	/* wake up powermode to normal mode */
-+	ks_set_powermode(ks, PMECR_PM_NORMAL);
-+	mdelay(1);	/* wait for normal mode to take effect */
-+
-+	ks_wrreg16(ks, KS_ISR, 0xffff);
-+	ks_enable_int(ks);
-+	ks_enable_qmu(ks);
-+	netif_start_queue(ks->netdev);
-+
- 	if (netif_msg_ifup(ks))
- 		ks_dbg(ks, "network device %s up\n", netdev->name);
- 
-@@ -892,19 +952,14 @@ static int ks_net_stop(struct net_device
- 
- 	netif_stop_queue(netdev);
- 
--	kfree(ks->frame_head_info);
--
- 	mutex_lock(&ks->lock);
- 
- 	/* turn off the IRQs and ack any outstanding */
- 	ks_wrreg16(ks, KS_IER, 0x0000);
- 	ks_wrreg16(ks, KS_ISR, 0xffff);
- 
--	/* shutdown RX process */
--	ks_wrreg16(ks, KS_RXCR1, 0x0000);
--
--	/* shutdown TX process */
--	ks_wrreg16(ks, KS_TXCR, 0x0000);
-+	/* shutdown RX/TX QMU */
-+	ks_disable_qmu(ks);
- 
- 	/* set powermode to soft power down to save power */
- 	ks_set_powermode(ks, PMECR_PM_SOFTDOWN);
-@@ -929,17 +984,8 @@ static int ks_net_stop(struct net_device
-  */
- static void ks_write_qmu(struct ks_net *ks, u8 *pdata, u16 len)
- {
--	unsigned fid = ks->fid;
--
--	fid = ks->fid;
--	ks->fid = (ks->fid + 1) & TXFR_TXFID_MASK;
--
--	/* reduce the tx interrupt occurrances. */
--	if (!fid)
--		fid |= TXFR_TXIC;       /* irq on completion */
--
- 	/* start header at txb[0] to align txw entries */
--	ks->txh.txw[0] = cpu_to_le16(fid);
-+	ks->txh.txw[0] = 0;
- 	ks->txh.txw[1] = cpu_to_le16(len);
- 
- 	/* 1. set sudo-DMA mode */
-@@ -957,16 +1003,6 @@ static void ks_write_qmu(struct ks_net *
- 		;
- }
- 
--static void ks_disable_int(struct ks_net *ks)
--{
--	ks_wrreg16(ks, KS_IER, 0x0000);
--}  /* ks_disable_int */
--
--static void ks_enable_int(struct ks_net *ks)
--{
--	ks_wrreg16(ks, KS_IER, ks->rc_ier);
--}  /* ks_enable_int */
--
- /**
-  * ks_start_xmit - transmit packet
-  * @skb		: The buffer to transmit
-@@ -1410,25 +1446,6 @@ static int ks_read_selftest(struct ks_ne
- 	return ret;
- }
- 
--static void ks_disable(struct ks_net *ks)
--{
--	u16	w;
--
--	w = ks_rdreg16(ks, KS_TXCR);
--
--	/* Disables QMU Transmit (TXCR). */
--	w  &= ~TXCR_TXE;
--	ks_wrreg16(ks, KS_TXCR, w);
--
--	/* Disables QMU Receive (RXCR1). */
--	w = ks_rdreg16(ks, KS_RXCR1);
--	w &= ~RXCR1_RXE ;
--	ks_wrreg16(ks, KS_RXCR1, w);
--
--	ks->enabled = false;
--
--}  /* ks_disable */
--
- static void ks_setup(struct ks_net *ks)
- {
- 	u16	w;
-@@ -1463,7 +1480,7 @@ static void ks_setup(struct ks_net *ks)
- 	w = TXCR_TXFCE | TXCR_TXPE | TXCR_TXCRC | TXCR_TCGIP;
- 	ks_wrreg16(ks, KS_TXCR, w);
- 
--	w = RXCR1_RXFCE | RXCR1_RXBE | RXCR1_RXUE;
-+	w = RXCR1_RXFCE | RXCR1_RXBE | RXCR1_RXUE | RXCR1_RXME | RXCR1_RXIPFCC;
- 
- 	if (ks->promiscuous)         /* bPromiscuous */
- 		w |= (RXCR1_RXAE | RXCR1_RXINVF);
-@@ -1486,28 +1503,6 @@ static void ks_setup_int(struct ks_net *
- 	ks->rc_ier = (IRQ_LCI | IRQ_TXI | IRQ_RXI);
- }  /* ks_setup_int */
- 
--void ks_enable(struct ks_net *ks)
--{
--	u16 w;
--
--	w = ks_rdreg16(ks, KS_TXCR);
--	/* Enables QMU Transmit (TXCR). */
--	ks_wrreg16(ks, KS_TXCR, w | TXCR_TXE);
--
--	/*
--	 * RX Frame Count Threshold Enable and Auto-Dequeue RXQ Frame
--	 * Enable
--	 */
--
--	w = ks_rdreg16(ks, KS_RXQCR);
--	ks_wrreg16(ks, KS_RXQCR, w | RXQCR_RXFCTE);
--
--	/* Enables QMU Receive (RXCR1). */
--	w = ks_rdreg16(ks, KS_RXCR1);
--	ks_wrreg16(ks, KS_RXCR1, w | RXCR1_RXE);
--	ks->enabled = true;
--}  /* ks_enable */
--
- static int ks_hw_init(struct ks_net *ks)
- {
- #define	MHEADER_SIZE	(sizeof(struct type_frame_head) * MAX_RECV_FRAMES)
-@@ -1568,6 +1563,10 @@ static int __devinit ks8851_probe(struct
- 		goto err_get_irq;
- 	}
- 
-+	printk(KERN_INFO DRV_NAME
-+		" hw_addr at 0x%x, hw_addr_cmd at 0x%x, irq is %d\n",
-+		(int)ks->hw_addr, (int) ks->hw_addr_cmd, ks->irq);
-+
- 	ks->pdev = pdev;
- 
- 	mutex_init(&ks->lock);
-@@ -1612,11 +1611,9 @@ static int __devinit ks8851_probe(struct
- 
- 	ks_soft_reset(ks, GRR_GSR);
- 	ks_hw_init(ks);
--	ks_disable(ks);
-+	ks_disable_qmu(ks);
- 	ks_setup(ks);
- 	ks_setup_int(ks);
--	ks_enable_int(ks);
--	ks_enable(ks);
- 	memcpy(netdev->dev_addr, ks->mac_addr, 6);
- 
- 	data = ks_rdreg16(ks, KS_OBCR);
-@@ -1658,6 +1655,7 @@ static int __devexit ks8851_remove(struc
- 	struct ks_net *ks = netdev_priv(netdev);
- 	struct resource *iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 
-+	kfree(ks->frame_head_info);
- 	unregister_netdev(netdev);
- 	iounmap(ks->hw_addr);
- 	free_netdev(netdev);
--- 
+  Ralf
