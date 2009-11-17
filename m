@@ -1,217 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZKQWk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbZKQWkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZKQWk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbZKQWk0
+	id S1756526AbZKQWkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbZKQWko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:40:26 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:61673 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756429AbZKQWkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:40:25 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick McHardy <kaber@trash.net>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@linux-foundation.com,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] iplink: add macvlan options for bridge mode
-Date: Tue, 17 Nov 2009 22:39:11 +0000
-Message-Id: <1258497551-25959-5-git-send-email-arnd@arndb.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1258497551-25959-1-git-send-email-arnd@arndb.de>
-References: <1258497551-25959-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18DWME6LUseCgqtJhzMVLiuwHXDK9JHeREORbt
- DhQSX3GX4thZ4nABwnnH6R5HjwifRf9IchfBukK8AUSWIfEoze
- teA5KCxFVjaPM0OyvXEAA==
+	Tue, 17 Nov 2009 17:40:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38652 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756469AbZKQWkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:40:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #14483] Interrupts enabled after irqrouter_resume - iMac9,1
+Date: Tue, 17 Nov 2009 23:42:13 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Justin Mattock <justinmattock@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.-yG.OTdALB@chimera> <20091117060554.GC30852@elte.hu>
+In-Reply-To: <20091117060554.GC30852@elte.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911172342.13077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Macvlan can now optionally support forwarding between its
-ports, if they are in "bridge" mode. This adds support
-for this option to "ip link add", "ip link set" and "ip
--d link show".
+On Tuesday 17 November 2009, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14483
+> > Subject		: Interrupts enabled after irqrouter_resume - iMac9,1
+> > Submitter	: Justin Mattock <justinmattock@gmail.com>
+> > Date		: 2009-10-25 19:58 (23 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125650070420168&w=4
+> 
+> Looks like a suspend bug, not an irq bug. The new warnings in the 
+> suspend/resume code might have triggered an old bug in that particular 
+> driver.
 
-The default mode in the kernel is now "vepa" mode, meaning
-"virtual ethernet port aggregator". This mode is used
-together with the "hairpin" mode of an ethernet bridge
-that the parent of the macvlan device is connected to.
-All frames still get sent out to the external interface,
-but the adjacent bridge is able to send them back on
-the same wire in hairpin mode, so the macvlan ports
-are able to see each other, which the bridge can be
-configured to monitor and control traffic between
-all macvlan instances. Multicast traffic coming in
-from the external interface is checked for the source
-MAC address and only delivered to ports that have not
-yet seen it.
+That's quite possible, although that's rather core code than a driver.
 
-In bridge mode, macvlan will send all multicast traffic
-to other interfaces that are also in bridge mode but
-not to those in vepa mode, which get them on the way
-back from the hairpin.
+Anyway, I haven't been able to find the bug in there so far.
 
-The third supported mode is "private", which prevents
-communication between macvlans even if the adjacent
-bridge is in hairpin mode. This behavior is closer to
-the original implementation of macvlan but stricly
-maintains isolation.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- include/linux/if_link.h |   15 ++++++++
- ip/Makefile             |    3 +-
- ip/iplink_macvlan.c     |   93 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 110 insertions(+), 1 deletions(-)
- create mode 100644 ip/iplink_macvlan.c
-
-diff --git a/include/linux/if_link.h b/include/linux/if_link.h
-index b0b9e8a..425c489 100644
---- a/include/linux/if_link.h
-+++ b/include/linux/if_link.h
-@@ -188,4 +188,19 @@ struct ifla_vlan_qos_mapping
- 	__u32 to;
- };
- 
-+/* MACVLAN section */
-+enum {
-+	IFLA_MACVLAN_UNSPEC,
-+	IFLA_MACVLAN_MODE,
-+	__IFLA_MACVLAN_MAX,
-+};
-+
-+enum ifla_macvlan_mode {
-+	MACVLAN_MODE_PRIVATE = 1, /* don't talk to other macvlans */
-+	MACVLAN_MODE_VEPA    = 2, /* talk to other ports through ext bridge */
-+	MACVLAN_MODE_BRIDGE  = 4, /* talk to bridge ports directly */
-+};
-+
-+#define IFLA_MACVLAN_MAX (__IFLA_MACVLAN_MAX - 1)
-+
- #endif /* _LINUX_IF_LINK_H */
-diff --git a/ip/Makefile b/ip/Makefile
-index 51914e8..46a9836 100644
---- a/ip/Makefile
-+++ b/ip/Makefile
-@@ -2,7 +2,8 @@ IPOBJ=ip.o ipaddress.o ipaddrlabel.o iproute.o iprule.o \
-     rtm_map.o iptunnel.o ip6tunnel.o tunnel.o ipneigh.o ipntable.o iplink.o \
-     ipmaddr.o ipmonitor.o ipmroute.o ipprefix.o \
-     ipxfrm.o xfrm_state.o xfrm_policy.o xfrm_monitor.o \
--    iplink_vlan.o link_veth.o link_gre.o iplink_can.o
-+    iplink_vlan.o link_veth.o link_gre.o iplink_can.o \
-+    iplink_macvlan.o
- 
- RTMONOBJ=rtmon.o
- 
-diff --git a/ip/iplink_macvlan.c b/ip/iplink_macvlan.c
-new file mode 100644
-index 0000000..307f559
---- /dev/null
-+++ b/ip/iplink_macvlan.c
-@@ -0,0 +1,93 @@
-+/*
-+ * iplink_vlan.c	VLAN device support
-+ *
-+ *              This program is free software; you can redistribute it and/or
-+ *              modify it under the terms of the GNU General Public License
-+ *              as published by the Free Software Foundation; either version
-+ *              2 of the License, or (at your option) any later version.
-+ *
-+ * Authors:     Patrick McHardy <kaber@trash.net>
-+ *		Arnd Bergmann <arnd@arndb.de>
-+ */
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/socket.h>
-+#include <linux/if_link.h>
-+
-+#include "rt_names.h"
-+#include "utils.h"
-+#include "ip_common.h"
-+
-+static void explain(void)
-+{
-+	fprintf(stderr,
-+		"Usage: ... macvlan mode { private | vepa | bridge }\n"
-+	);
-+}
-+
-+static int mode_arg(void)
-+{
-+        fprintf(stderr, "Error: argument of \"mode\" must be \"private\", "
-+		"\"vepa\" or \"bridge\"\n");
-+        return -1;
-+}
-+
-+static int macvlan_parse_opt(struct link_util *lu, int argc, char **argv,
-+			  struct nlmsghdr *n)
-+{
-+	while (argc > 0) {
-+		if (matches(*argv, "mode") == 0) {
-+			__u32 mode = 0;
-+			NEXT_ARG();
-+
-+			if (strcmp(*argv, "private") == 0)
-+				mode = MACVLAN_MODE_PRIVATE;
-+			else if (strcmp(*argv, "vepa") == 0)
-+				mode = MACVLAN_MODE_VEPA;
-+			else if (strcmp(*argv, "bridge") == 0)
-+				mode = MACVLAN_MODE_BRIDGE;
-+			else 
-+				return mode_arg();
-+
-+			addattr32(n, 1024, IFLA_MACVLAN_MODE, mode);
-+		} else if (matches(*argv, "help") == 0) {
-+			explain();
-+			return -1;
-+		} else {
-+			fprintf(stderr, "macvlan: what is \"%s\"?\n", *argv);
-+			explain();
-+			return -1;
-+		}
-+		argc--, argv++;
-+	}
-+
-+	return 0;
-+}
-+
-+static void macvlan_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
-+{
-+	__u32 mode;
-+
-+	if (!tb)
-+		return;
-+
-+	if (!tb[IFLA_MACVLAN_MODE] ||
-+	    RTA_PAYLOAD(tb[IFLA_MACVLAN_MODE]) < sizeof(__u32))
-+		return;
-+
-+	mode = *(__u32 *)RTA_DATA(tb[IFLA_VLAN_ID]);
-+	fprintf(f, " mode %s ",
-+		  mode == MACVLAN_MODE_PRIVATE ? "private"
-+		: mode == MACVLAN_MODE_VEPA    ? "vepa"
-+		: mode == MACVLAN_MODE_BRIDGE  ? "bridge"
-+		:				 "unknown");
-+}
-+
-+struct link_util macvlan_link_util = {
-+	.id		= "macvlan",
-+	.maxattr	= IFLA_MACVLAN_MAX,
-+	.parse_opt	= macvlan_parse_opt,
-+	.print_opt	= macvlan_print_opt,
-+};
--- 
-1.6.3.3
-
+Thanks,
+Rafael
