@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZKQWLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZKQWLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZKQWLY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbZKQWLV
+	id S1756201AbZKQWLa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZKQWL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:11:21 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:43835 "EHLO
+	Tue, 17 Nov 2009 17:11:29 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:43864 "EHLO
 	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755738AbZKQWLT (ORCPT
+	with ESMTP id S1756049AbZKQWLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:11:19 -0500
-Subject: [PATCH 2/3] ACPI: do not define acpi_processor_get_bios_limit() in
-	processor.h
+	Tue, 17 Nov 2009 17:11:24 -0500
+Subject: [PATCH 3/3] [CPUFREQ] make internal cpufreq_add_dev_* static
 To: davej@redhat.com
 From: Alex Chiang <achiang@hp.com>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, Thomas Renninger <trenn@suse.de>
-Date: Tue, 17 Nov 2009 15:11:25 -0700
-Message-ID: <20091117221125.25933.71150.stgit@bob.kio>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Date: Tue, 17 Nov 2009 15:11:30 -0700
+Message-ID: <20091117221130.25933.92163.stgit@bob.kio>
 In-Reply-To: <20091117220729.25933.57884.stgit@bob.kio>
 References: <20091117220729.25933.57884.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -28,36 +26,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we provide a definition for acpi_processor_get_bios_limit(), we will
-encounter build errors (multiple definitions of the function) when we
-do not have CONFIG_CPU_FREQ configured.
+No need to export these symbols; make them static.
 
-We've already changed the modules that depend on this function to only
-get built when CONFIG_CPU_FREQ is configured, so removing the definition
-when unconfigured is safe.
+	cpufreq_add_dev_policy
+	cpufreq_add_dev_symlink
+	cpufreq_add_dev_interface
 
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- include/acpi/processor.h |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ drivers/cpufreq/cpufreq.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index c94f9f0..9db2159 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -318,11 +318,6 @@ static inline int acpi_processor_ppc_has_changed(struct acpi_processor *pr,
- 	}
- 	return 0;
- }
--int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
--{
--	return -ENODEV;
--}
--
- #endif				/* CONFIG_CPU_FREQ */
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 0315069..e690211 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -783,7 +783,7 @@ static struct kobj_type ktype_cpufreq = {
+  *   0:        Success
+  *   Positive: When we have a managed CPU and the sysfs got symlinked
+  */
+-int cpufreq_add_dev_policy(unsigned int cpu, struct cpufreq_policy *policy,
++static int cpufreq_add_dev_policy(unsigned int cpu, struct cpufreq_policy *policy,
+ 		struct sys_device *sys_dev)
+ {
+ 	int ret = 0;
+@@ -858,7 +858,7 @@ int cpufreq_add_dev_policy(unsigned int cpu, struct cpufreq_policy *policy,
  
- /* in processor_throttling.c */
+ 
+ /* symlink affected CPUs */
+-int cpufreq_add_dev_symlink(unsigned int cpu, struct cpufreq_policy *policy)
++static int cpufreq_add_dev_symlink(unsigned int cpu, struct cpufreq_policy *policy)
+ {
+ 	unsigned int j;
+ 	int ret = 0;
+@@ -885,7 +885,7 @@ int cpufreq_add_dev_symlink(unsigned int cpu, struct cpufreq_policy *policy)
+ 	return ret;
+ }
+ 
+-int cpufreq_add_dev_interface(unsigned int cpu, struct cpufreq_policy *policy,
++static int cpufreq_add_dev_interface(unsigned int cpu, struct cpufreq_policy *policy,
+ 		struct sys_device *sys_dev)
+ {
+ 	struct cpufreq_policy new_policy;
 
