@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZKQL7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZKQL7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbZKQL7D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:59:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbZKQL7D
+	id S1756018AbZKQL7P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbZKQL7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:59:03 -0500
-Received: from szxga03-in.huawei.com ([119.145.14.66]:55377 "EHLO
-	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbZKQL7B (ORCPT
+	Tue, 17 Nov 2009 06:59:13 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:45697 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755997AbZKQL7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:59:01 -0500
-Date: Tue, 17 Nov 2009 19:59:05 +0800
-From: fangxiaozhi 00110321 <huananhu@huawei.com>
-Subject: [PATCH 1/5]net: PPP buffer too small for higher speed connections
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       william.allen.simpson@gmail.com, jarkao2@gmail.com
-Message-id: <fb8cc3511cffa.1cffafb8cc351@huawei.com>
-MIME-version: 1.0
-X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
-Content-type: text/plain; charset=us-ascii
-Content-language: zh-CN
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-Accept-Language: zh-CN
+	Tue, 17 Nov 2009 06:59:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=D4AfUvC9Vj72Pt6MX4lOgF6OWNKGNtfiSmYSMCHvZBcnItQx2NQFGSoCe9saGbBpuW
+         d6uS//WXjEbGxwuZ7F6Sv177E+hkaHaPq85rbaF+lXTJ/UlZtOofbXFs+bM/EZ5adGwd
+         MExfjHNzdKW+D5/I7AVkfhuBRtFEfJ4h/dDyQ=
+Message-ID: <4B029012.6030202@gmail.com>
+Date: Tue, 17 Nov 2009 06:59:14 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linville@tuxdriver.com
+Subject: Re: net-next-2.6 compilation errors: missing wireless/i82593.h
+References: <4B028A37.1010202@gmail.com> <20091117.034428.47467823.davem@davemloft.net>
+In-Reply-To: <20091117.034428.47467823.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: fangxiaozhi <huananhu@huawei.com>
-1. This patch is based on the kernel of 2.6.32-rc7 
-2. In this patch, we enlarge the out buffer size to optimize the upload speed for the ppp connection. Then it can support the upload of HSUPA data cards.
-Signed-off-by: fangxiaozhi <huananhu@huawei.com>
------------------------------------------------------------------------------------------
---- a/drivers/net/ppp_async.c	2009-10-12 05:43:56.000000000 +0800
-+++ b/drivers/net/ppp_async.c	2009-10-15 16:29:56.000000000 +0800
-@@ -36,7 +36,7 @@
- 
- #define PPP_VERSION	"2.4.2"
- 
--#define OBUFSIZE	256
-+#define OBUFSIZE	4096
- 
- /* Structure for storing local state. */
- struct asyncppp {
+David Miller wrote:
+> From: William Allen Simpson <william.allen.simpson@gmail.com>
+> Date: Tue, 17 Nov 2009 06:34:15 -0500
+> 
+>> For the past 9-10 days, net-next-2.6 has failed to compile.  In
+>> addition to the errors and warnings already reported here last week,
+> 
+> Those seemed to be for Android drivers and such, so I hope you
+> reported those failures to the driver maintainers as well as
+> linux-kernel.
+> 
+I did, at least some of them.  Nothing seems to have been fixed yet.
 
 
-******************************************************************************************
- This email and its attachments contain confidential information from HUAWEI, which is intended only for the person or entity whose address is listed above. Any use of the information contained here in any way (including, but not limited to, total or partial disclosure, reproduction, or dissemination) by persons other than the intended recipient(s) is prohibited. If you receive this email in error, please notify the sender by phone or email
- immediately and delete it!
- *****************************************************************************************
+> For the time being could you just disable those drivers in your
+> build just to get work done or do you absolutely need them?
+> 
+I did, at least some of them.  Of course, since I'm making changes to
+linux/tcp.h and net/tcp.h, an awful lot of drivers seem to include them
+one way or another, and I'm trying to ensure nothing breaks (at least
+for compilation purposes).
+
+
+>> since Nov 12th there has been another missing file.  I kept hoping
+>> it was temporary, but no joy.
+>>
+>> /home/administer/net-next-2.6/drivers/net/znet.c:107:29: error:
+>> wireless/i82593.h: No such file or directory
+> 
+> That header file got moved out to drivers/staging along with the
+> wavelan driver.
+> 
+Too bad that CONFIG_STAGING "N" (# CONFIG_STAGING is not set) doesn't
+actually turn off all the staging....
+
+
+> John please fix this up, thanks!
+> 
+Please.
