@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZKQQvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZKQRNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZKQQvg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 11:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZKQQvg
+	id S1755636AbZKQRNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 12:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZKQRNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 11:51:36 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:44987 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752245AbZKQQvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 11:51:35 -0500
-Message-ID: <4B02D493.7000305@sgi.com>
-Date: Tue, 17 Nov 2009 08:51:31 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 17 Nov 2009 12:13:31 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51357 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbZKQRNa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 12:13:30 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Michael Buesch <mb@bu3sch.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] strcmp: fix overflow error
+Date: Tue, 17 Nov 2009 17:51:40 +0100
+Message-Id: <1258476700-21323-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: gorcunov@gmail.com, hpa@zytor.com, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org, heiko.carstens@de.ibm.com, rdreier@cisco.com,
-       rdunlap@xenotime.net, tj@kernel.org, andi@firstfloor.org,
-       gregkh@suse.de, yhlu.kernel@gmail.com, rientjes@google.com,
-       rostedt@goodmis.org, rusty@rustcorp.com.au,
-       seto.hidetoshi@jp.fujitsu.com, steiner@sgi.com, fweisbec@gmail.com,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] INIT: Limit the number of per cpu calibration bootup
- messages
-References: <20091116214302.GJ5653@lenovo>	<4B01C81F.9040000@zytor.com>	<20091116215052.GK5653@lenovo> <20091116.190922.182816918.davem@davemloft.net>
-In-Reply-To: <20091116.190922.182816918.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+strcmp("\x01", "\xef") returns 18 but it should return something < 0.
+The reason is that the variable holding the result of the subtraction is
+too small and overflows.
 
+As strcmp is e.g. used to access data in squashfs this might result in
+not finding files.
 
-David Miller wrote:
-> From: Cyrill Gorcunov <gorcunov@gmail.com>
-> Date: Tue, 17 Nov 2009 00:50:52 +0300
-> 
->> On Mon, Nov 16, 2009 at 01:46:07PM -0800, H. Peter Anvin wrote:
->>> On 11/16/2009 01:43 PM, Cyrill Gorcunov wrote:
->>>> It seems we have one
->>>>
->>>> 	arch/x86/kernel/setup.c:125:unsigned int boot_cpu_id __read_mostly;
->>>>
->>>> 	-- Cyrill
->>> We probably should make it an inline function so that if other arches
->>> want to define it to be a constant or some other kind of special thing
->>> they can.
->> IA-64 and SPARC already has this variable. But boot_cpu_id() as an
->> inline function seem to be more natural/portable ineed.
-> 
-> Only 32-bit SPARC actually has it.  On sparc64 we have no reason to
-> remember which processor was the boot cpu, and remembering it merely
-> for the sake of only printing out the bogomips message once seems a
-> bit excessive?
-> 
-> How about:
-> 
-> 	static bool printed;
-> 
-> 	if (!printed) {
-> 		printk(...);
-> 		printed = true;
-> 	}
-> 
-> Or, alternatively, use an atomic_t instead of a bool if you think
-> races matter this early in the boot process.
+The same problem is fixed in strncmp.
 
-Yeah, I was thinking along these same lines.  Thanks for the feedback!
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Michael Buesch <mb@bu3sch.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+---
+Hello,
 
-Mike
+I didn't hit this problem in the wild, only when checking for something
+else.  Is this stable material anyhow?
+
+Best regards
+Uwe
+
+ lib/string.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/string.c b/lib/string.c
+index b19b87a..661ff06 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -246,7 +246,7 @@ EXPORT_SYMBOL(strlcat);
+ #undef strcmp
+ int strcmp(const char *cs, const char *ct)
+ {
+-	signed char __res;
++	int __res;
+ 
+ 	while (1) {
+ 		if ((__res = *cs - *ct++) != 0 || !*cs++)
+@@ -266,7 +266,7 @@ EXPORT_SYMBOL(strcmp);
+  */
+ int strncmp(const char *cs, const char *ct, size_t count)
+ {
+-	signed char __res = 0;
++	int __res = 0;
+ 
+ 	while (count) {
+ 		if ((__res = *cs - *ct++) != 0 || !*cs++)
+-- 
+1.6.5.2
+
