@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZKQATi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZKQATH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZKQATi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 19:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZKQATh
+	id S1755242AbZKQATH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 19:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZKQATG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 19:19:37 -0500
-Received: from h1047321.serverkompetenz.net ([85.214.67.163]:41970 "EHLO
-	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbZKQATg (ORCPT
+	Mon, 16 Nov 2009 19:19:06 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:43368 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186AbZKQATE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 19:19:36 -0500
-Message-ID: <4B01EC11.4030901@ahsoftware.de>
-Date: Tue, 17 Nov 2009 01:19:29 +0100
-From: Alexander Holler <holler@ahsoftware.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090826)
+	Mon, 16 Nov 2009 19:19:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=RkjHzEORwL/Y4A0ujNnO34WOxlL0zzwXxucev0vaHvdmDR44l1RWiwOI3ie+RgJxJS
+         QSeqOKHbjAicwxvgxlwa0VJtuc9tg6uuhZxPG16k4Nn2+opAZj1lzj1Axahp+8BC6/oZ
+         ZOht54HjAc9fihApn3vNdxfR65hKTQ35xjXu4=
+Message-ID: <4B01EC25.5010703@gmail.com>
+Date: Mon, 16 Nov 2009 16:19:49 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problems with p55-express and sleeping usb-hds
-References: <4AFDDDF6.4050907@ahsoftware.de> <4AFDED47.5070606@ahsoftware.de> <4AFE1B0D.3060404@ahsoftware.de> <200911141106.51948.oliver@neukum.org> <4AFEE981.8060505@ahsoftware.de>
-In-Reply-To: <4AFEE981.8060505@ahsoftware.de>
-Content-Type: text/plain; charset=iso-8859-15
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>
+Subject: Re: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer
+ to expected String
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.UR.8TdALB@chimera>
+In-Reply-To: <xXQGFmujPl.A.UR.8TdALB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14379
+> Subject		: ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
+> Submitter	: Justin Mattock<justinmattock@gmail.com>
+> Date		: 2009-10-08 21:46 (40 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d9adc2e031bd22d5d9607a53a8d3b30e0b675f39
+> References	: http://marc.info/?l=linux-kernel&m=125504031328941&w=4
+> Handled-By	: Alexey Starikovskiy<astarikovskiy@suse.de>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=23347
+>
+>
+>
+>    
+o.k. just pulled the latest to see, and
+the warning message is there.
+so yes this bug report should be open
+until this is fixed.
 
-Alexander Holler schrieb:
-> ...
-> (many lines with hex-numbers, nothing else)
-> ...
-
-shame on me. Sorry, I wasn't aware the logger (with default
-configuration) of the system in question doesn't log every kernel
-message. I've just started another rsync after  I've changed that.
-
-I useful log will follow after I reproduced the failure while logging
-every kernel-message.
-
-Regards,
-
-Alexander
+Justin P. Mattock
