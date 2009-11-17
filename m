@@ -1,215 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZKQDSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZKQDSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZKQDSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 22:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZKQDSQ
+	id S1754519AbZKQDSJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 22:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZKQDSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 22:18:16 -0500
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:64914 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754581AbZKQDSN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 22:18:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type
-	:content-transfer-encoding; q=dns; s=sasl; b=sTuSr8l3AIZ2yoZeXof
-	lksVjtf/UzDaGKT2sZxQaK8UgCkkWIGtYOjry08F15iGTMXFe3ltMmcEKWggkepV
-	juLbvkI/VYaUj9CgJQk13RpSUltG9BwvLlRQnM/KkOusiS5JZO8TSC3WTiaL8by8
-	QDPgoE4TIr6uf/5toCjDw2FM=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.5.3
-From: Junio C Hamano <gitster@pobox.com>
-Date: Mon, 16 Nov 2009 19:18:05 -0800
-Message-ID: <7v4ootltzm.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 16 Nov 2009 22:18:06 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:50955 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754310AbZKQDSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 22:18:04 -0500
+Message-ID: <4B0215F0.8050105@pobox.com>
+Date: Mon, 16 Nov 2009 22:18:08 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-X-Pobox-Relay-ID: D785E032-D327-11DE-9609-EF34BBB5EC2E-77302942!a-pb-sasl-sd.pobox.com
-Content-Transfer-Encoding: 8BIT
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] libata: remove experimental tag on PATA drivers
+References: <4AFCC0D4.9020708@gmail.com>
+In-Reply-To: <4AFCC0D4.9020708@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.5.3 is available at the
-usual places:
+On 11/12/2009 09:13 PM, Robert Hancock wrote:
+> Remove the experimental tag on Parallel ATA drivers. Though some of the
+> individual PATA drivers are still marked as experimental, as a group they can
+> hardly be considered to be, given they've been used in various distros for some
+> time.
+>
+> Signed-off-by: Robert Hancock<hancockrwd@gmail.com>
+>
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index f2df6e2..33133c6 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -3,7 +3,7 @@
+>   #
+>
+>   menuconfig ATA
+> -	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
+> +	tristate "Serial ATA and Parallel ATA drivers"
+>   	depends on HAS_IOMEM
+>   	depends on BLOCK
 
-  http://www.kernel.org/pub/software/scm/git/
+applied
 
-  git-1.6.5.3.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.5.3.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.5.3.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.5.3-1.fc9.$arch.rpm	(RPM)
-
-Git v1.6.5.3 Release Notes
-==========================
-
-Fixes since v1.6.5.2
---------------------
-
- * info/grafts file didn't ignore trailing CR at the end of lines.
-
- * Packages generated on newer FC were unreadable by older versions of
-   RPM as the new default is to use stronger hash.
-
- * output from "git blame" was unreadable when the file ended in an
-   incomplete line.
-
- * "git add -i/-p" didn't handle deletion of empty files correctly.
-
- * "git clone" takes up to two parameters, but did not complain when
-   given more arguments than necessary and silently ignored them.
-
- * "git cvsimport" did not read files given as command line arguments
-   correctly when it is run from a subdirectory.
-
- * "git diff --color-words -U0" didn't work correctly.
-
- * The handling of blank lines at the end of file by "git diff/apply
-   --whitespace" was inconsistent with the other kinds of errors.
-   They are now colored, warned against, and fixed the same way as others.
-
- * There was no way to allow blank lines at the end of file without
-   allowing extra blanks at the end of lines.  You can use blank-at-eof
-   and blank-at-eol whitespace error class to specify them separately.
-   The old trailing-space error class is now a short-hand to set both.
-
- * "-p" option to "git format-patch" was supposed to suppress diffstat
-   generation, but it was broken since 1.6.1.
-
- * "git imap-send" did not compile cleanly with newer OpenSSL.
-
- * "git help -a" outside of a git repository was broken.
-
- * "git ls-files -i" was supposed to be inverse of "git ls-files" without -i
-   with respect to exclude patterns, but it was broken since 1.6.5.2.
-
- * "git ls-remote" outside of a git repository over http was broken.
-
- * "git rebase -i" gave bogus error message when the command word was
-   misspelled.
-
- * "git receive-pack" that is run in response to "git push" did not run
-   garbage collection nor update-server-info, but in larger hosting sites,
-   these almost always need to be run.  To help site administrators, the
-   command now runs "gc --auto" and "u-s-i" by setting receive.autogc
-   and receive.updateserverinfo configuration variables, respectively.
-
- * Release notes spelled the package name with incorrect capitalization.
-
- * "gitweb" did not escape non-ascii characters correctly in the URL.
-
- * "gitweb" showed "patch" link even for merge commits.
-
- * "gitweb" showed incorrect links for blob line numbers in pathinfo mode.
-
-Other minor documentation updates are included.
-
-
-----------------------------------------------------------------
-
-Changes since v1.6.5.2 are as follows:
-
-Björn Gustavsson (1):
-      git-clone.txt: Fix grammar and formatting
-
-Björn Steinbrink (1):
-      pre-commit.sample: Diff against the empty tree when HEAD is invalid
-
-Clemens Buchacher (1):
-      modernize fetch/merge/pull examples
-
-Daniel Barkalow (2):
-      Require a struct remote in transport_get()
-      Allow curl helper to work without a local repository
-
-Dmitry V. Levin (1):
-      Makefile: add compat/bswap.h to LIB_H
-
-Gerrit Pape (1):
-      help -i: properly error out if no info viewer can be found
-
-Gisle Aas (2):
-      More precise description of 'git describe --abbrev'
-      Fix documentation grammar typo
-
-Giuseppe Bilotta (1):
-      gitweb: fix esc_param
-
-Jakub Narebski (1):
-      gitweb: Do not show 'patch' link for merge commits
-
-Jan Krüger (1):
-      rebase -i: more graceful handling of invalid commands
-
-Jari Aalto (3):
-      Documentation/fetch-options.txt: order options alphabetically
-      Documentation/git-pull.txt: Add subtitles above included option files
-      Documentation/merge-options.txt: order options in alphabetical groups
-
-Jeff King (6):
-      cvsimport: fix relative argument filenames
-      push: always load default config
-      add-interactive: handle deletion of empty files
-      ls-files: unbreak "ls-files -i"
-      push: fix typo in usage
-      format-patch: make "-p" suppress diffstat
-
-Johannes Schindelin (3):
-      blame: make sure that the last line ends in an LF
-      help -a: do not unnecessarily look for a repository
-      diff --color-words -U0: fix the location of hunk headers
-
-Jonathan Nieder (4):
-      clone: detect extra arguments
-      Add intermediate build products to .gitignore
-      check-ref-format: update usage string
-      merge: do not setup worktree twice
-
-Junio C Hamano (22):
-      apply --whitespace=fix: fix handling of blank lines at the eof
-      apply --whitespace=fix: detect new blank lines at eof correctly
-      apply.c: split check_whitespace() into two
-      apply --whitespace=warn/error: diagnose blank at EOF
-      apply --whitespace: warn blank but not necessarily empty lines at EOF
-      diff.c: the builtin_diff() deals with only two-file comparison
-      diff --whitespace=warn/error: obey blank-at-eof
-      diff --whitespace=warn/error: fix blank-at-eof check
-      diff --color: color blank-at-eof
-      core.whitespace: split trailing-space into blank-at-{eol,eof}
-      diff --whitespace: fix blank lines at end
-      diff.c: shuffling code around
-      diff.c: split emit_line() from the first char and the rest of the line
-      diff.c: emit_add_line() takes only the rest of the line
-      diff -B: colour whitespace errors
-      info/grafts: allow trailing whitespaces at the end of line
-      gc --auto --quiet: make the notice a bit less verboase
-      receive-pack: run "gc --auto --quiet" and optionally "update-server-info"
-      clone: fix help on options
-      diff --color-words: bit of clean-up
-      check-ref-format -h: it does not know the --print option yet
-      Git 1.6.5.3
-
-Markus Heidelberg (1):
-      t4034-diff-words: add a test for word diff without context
-
-Petr Baudis (1):
-      gitweb: Fix blob linenr links in pathinfo mode
-
-Sebastian Schuberth (1):
-      Do not try to remove directories when removing old links
-
-Stephen Boyd (1):
-      git-add.txt: fix formatting of --patch section
-
-Thomas Rast (1):
-      Quote ' as \(aq in manpages
-
-Todd Zullinger (1):
-      Makefile: Ensure rpm packages can be read by older rpm versions
-
-Vietor Liu (1):
-      imap-send.c: fix compiler warnings for OpenSSL 1.0
 
