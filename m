@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZKQL5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZKQL7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZKQL5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZKQL5u
+	id S1756010AbZKQL7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:59:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbZKQL7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:57:50 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36852 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755042AbZKQL5t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:57:49 -0500
-Date: Tue, 17 Nov 2009 11:59:29 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091117115929.4ba23c49@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca>
-References: <4AF4526B.4060101@zytor.com>
-	<40101cc30911081042n93e268bs66b9436a0174a19a@mail.gmail.com>
-	<20091109201608.GD15159@caffeine.csclub.uwaterloo.ca>
-	<4AF886D4.1080108@zytor.com>
-	<20091109212333.GE15159@caffeine.csclub.uwaterloo.ca>
-	<20091112121805.GF1394@ucw.cz>
-	<20091113162301.GU15157@caffeine.csclub.uwaterloo.ca>
-	<20091113165730.0b9b2676@lxorguk.ukuu.org.uk>
-	<20091113192412.GY15157@caffeine.csclub.uwaterloo.ca>
-	<20091113212148.5cb829d4@lxorguk.ukuu.org.uk>
-	<20091116175006.GA15157@caffeine.csclub.uwaterloo.ca>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Nov 2009 06:59:41 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:55583
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754836AbZKQL7k convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 06:59:40 -0500
+X-SpamScore: -5
+X-BigFish: VPS-5(zz98dNzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KT95BC-01-63F-02
+X-M-MSG: 
+Date: Tue, 17 Nov 2009 13:00:13 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: edac-amd tree (Was: Re: linux-next: Tree for November 16)
+Message-ID: <20091117120013.GC14954@aftab>
+References: <20091116181453.b42247cf.sfr@canb.auug.org.au>
+ <20091116143213.GD30377@aftab>
+ <20091117141935.18a8ed94.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20091117141935.18a8ed94.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 17 Nov 2009 11:59:36.0972 (UTC) FILETIME=[6F5254C0:01CA677D]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Trying rdmsr from msr-tools 1.2 gives me:
-> 
-> # ./rdmsr -x 0x00001810
-> rdmsr: CPU 0 cannot read MSR 0x00001810
-> 
-> Hmm, now what?
+Hi Stephen,
 
-Beats me - I thought the region registers were read/write.
+On Tue, Nov 17, 2009 at 02:19:35PM +1100, Stephen Rothwell wrote:
+> Added back from today.
+
+thanks.
+
+> Just in case I missed you last time:
+
+you didn't but no worries, see below:
+
+> You will need to ensure that the patches/commits in your tree/series have
+> been:
+>      * submitted under GPL v2 (or later) and include the Contributor's
+> 	Signed-off-by,
+
+yes
+
+>      * posted to the relevant mailing list,
+
+yes
+
+>      * reviewed by you (or another maintainer of your subsystem tree),
+
+in progress
+
+>      * successfully unit tested, and 
+
+yes
+
+>      * destined for the current or next Linux merge window.
+
+and yes.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
