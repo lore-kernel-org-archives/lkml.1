@@ -1,157 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZKQGeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbZKQGdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZKQGeI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 01:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZKQGeH
+	id S1754935AbZKQGdv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 01:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZKQGdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 01:34:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58714 "EHLO hera.kernel.org"
+	Tue, 17 Nov 2009 01:33:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50253 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbZKQGeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 01:34:04 -0500
-Date: Tue, 17 Nov 2009 06:33:30 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, efault@gmx.de,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1258427892-16312-4-git-send-email-acme@infradead.org>
-References: <1258427892-16312-4-git-send-email-acme@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Don't die() in do_write()
-Message-ID: <tip-3726cc75e581c157202da93bb2333cce25c15c98@git.kernel.org>
-Git-Commit-ID: 3726cc75e581c157202da93bb2333cce25c15c98
-X-Mailer: tip-git-log-daemon
+	id S1754469AbZKQGdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 01:33:50 -0500
+Date: Tue, 17 Nov 2009 07:33:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/2] perf top: Introduce --hide_{user,kernel}_symbols
+Message-ID: <20091117063332.GA8614@elte.hu>
+References: <1258415125-15019-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1258415125-15019-1-git-send-email-acme@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3726cc75e581c157202da93bb2333cce25c15c98
-Gitweb:     http://git.kernel.org/tip/3726cc75e581c157202da93bb2333cce25c15c98
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Tue, 17 Nov 2009 01:18:12 -0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 17 Nov 2009 07:19:56 +0100
 
-perf tools: Don't die() in do_write()
+btw., the user symbol printouts of perf top cause some display problems 
+- such as below. The DSO printout is way too long to fit into 92 cols, 
+wrapping around in my terminal and making much of the output unreadable.
 
-Propagate the errors instead, the users are the ones to decide
-what to do if a library call fails.
+Could we cut it by default please?
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1258427892-16312-4-git-send-email-acme@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/header.c |   33 ++++++++++++++++++++++-----------
- 1 files changed, 22 insertions(+), 11 deletions(-)
+Also, it would be nice to only print the basename() portion of the DSO. 
+Both the /lib64 and the /opt/crossgcc/cross/libexec/ portion is 
+repetitive and not really important in understanding perf top output. 
+There should perhaps be a 'dso-abs' symbol column that prints out the 
+full pathname?
 
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 726a0eb..b01a953 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -161,31 +161,36 @@ bool perf_header__has_feat(const struct perf_header *self, int feat)
- 	return test_bit(feat, self->adds_features);
- }
- 
--static void do_write(int fd, void *buf, size_t size)
-+static int do_write(int fd, const void *buf, size_t size)
- {
- 	while (size) {
- 		int ret = write(fd, buf, size);
- 
- 		if (ret < 0)
--			die("failed to write");
-+			return -1;
- 
- 		size -= ret;
- 		buf += ret;
- 	}
-+
-+	return 0;
- }
- 
--static void write_buildid_table(int fd, struct list_head *id_head)
-+static int write_buildid_table(int fd, struct list_head *id_head)
- {
- 	struct build_id_list *iter, *next;
- 
- 	list_for_each_entry_safe(iter, next, id_head, list) {
- 		struct build_id_event *b = &iter->event;
- 
--		do_write(fd, b, sizeof(*b));
--		do_write(fd, (void *)iter->dso_name, iter->len);
-+		if (do_write(fd, b, sizeof(*b)) < 0 ||
-+		    do_write(fd, iter->dso_name, iter->len) < 0)
-+			return -1;
- 		list_del(&iter->list);
- 		free(iter);
- 	}
-+
-+	return 0;
- }
- 
- static void
-@@ -233,12 +238,14 @@ perf_header__adds_write(struct perf_header *self, int fd)
- 
- 		/* Write build-ids */
- 		buildid_sec->offset = lseek(fd, 0, SEEK_CUR);
--		write_buildid_table(fd, &id_list);
-+		if (write_buildid_table(fd, &id_list) < 0)
-+			die("failed to write buildid table");
- 		buildid_sec->size = lseek(fd, 0, SEEK_CUR) - buildid_sec->offset;
- 	}
- 
- 	lseek(fd, sec_start, SEEK_SET);
--	do_write(fd, feat_sec, sec_size);
-+	if (do_write(fd, feat_sec, sec_size) < 0)
-+		die("failed to write feature section");
- 	free(feat_sec);
- }
- 
-@@ -256,7 +263,8 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 		attr = self->attr[i];
- 
- 		attr->id_offset = lseek(fd, 0, SEEK_CUR);
--		do_write(fd, attr->id, attr->ids * sizeof(u64));
-+		if (do_write(fd, attr->id, attr->ids * sizeof(u64)) < 0)
-+			die("failed to write perf header");
- 	}
- 
- 
-@@ -272,13 +280,15 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 				.size   = attr->ids * sizeof(u64),
- 			}
- 		};
--		do_write(fd, &f_attr, sizeof(f_attr));
-+		if (do_write(fd, &f_attr, sizeof(f_attr)) < 0)
-+			die("failed to write perf header attribute");
- 	}
- 
- 	self->event_offset = lseek(fd, 0, SEEK_CUR);
- 	self->event_size = event_count * sizeof(struct perf_trace_event_type);
- 	if (events)
--		do_write(fd, events, self->event_size);
-+		if (do_write(fd, events, self->event_size) < 0)
-+			die("failed to write perf header events");
- 
- 	self->data_offset = lseek(fd, 0, SEEK_CUR);
- 
-@@ -306,7 +316,8 @@ void perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 	memcpy(&f_header.adds_features, &self->adds_features, sizeof(self->adds_features));
- 
- 	lseek(fd, 0, SEEK_SET);
--	do_write(fd, &f_header, sizeof(f_header));
-+	if (do_write(fd, &f_header, sizeof(f_header)) < 0)
-+		die("failed to write perf header");
- 	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	self->frozen = 1;
+	Ingo
+
+------------->
+
+$ echo $COLUMNS $LINES
+92 28
+
+$ perf top
+
+------------------------------------------------------------------------------
+   PerfTop:   13676 irqs/sec  kernel:14.3% [1000Hz cycles],  (all, 16 CPUs)
+------------------------------------------------------------------------------
+
+             samples  pcnt function                                 DSO
+             _______ _____ ________________________________ ________________
+
+             2315.00  4.6% ht_lookup_with_hash              /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+             2202.00  4.4% _cpp_lex_direct                  /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+             1490.00  3.0% _int_malloc                      /lib64/libc-2.10.90.so
+             1172.00  2.3% _cpp_clean_line                  /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              887.00  1.8% lex_identifier                   /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              845.00  1.7% clear_page_c                     [kernel]
+              836.00  1.7% cpp_get_token                    /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              795.00  1.6% ggc_alloc_stat                   /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              675.00  1.3% cpp_output_token                 /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              675.00  1.3% __GI_memset                      /lib64/libc-2.10.90.so
+              622.00  1.2% _int_free                        /lib64/libc-2.10.90.so
+              609.00  1.2% page_fault                       [kernel]
+              568.00  1.1% gimplify_expr                    /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              567.00  1.1% _cpp_lex_token                   /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              440.00  0.9% yylex                            /home/mingo/tip/scripts/genksyms/genksyms
+              423.00  0.8% __GI___libc_malloc               /lib64/libc-2.10.90.so
+              417.00  0.8% walk_tree_1                      /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+              416.00  0.8% __GI_memcpy                      /lib64/libc-2.10.90.so
+              377.00  0.7% enter_macro_context              /opt/crossgcc/cross/libexec/gcc/x86_64-linux/4.4.2/cc1
+
+
