@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZKQWbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZKQWgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZKQWbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZKQWbe
+	id S1756450AbZKQWgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZKQWgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:31:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38630 "EHLO ogre.sisk.pl"
+	Tue, 17 Nov 2009 17:36:40 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54570 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756048AbZKQWbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:31:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andy Lutomirski <amluto@gmail.com>
-Subject: Re: [Bug #14472] EXT4 corruption
-Date: Tue, 17 Nov 2009 23:32:42 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andy Lutomirski <luto@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Shawn Starr <shawn.starr@rogers.com>, Theodore Tso <tytso@mit.edu>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.EOH.XTdALB@chimera> <9872C96C-FAE8-46E8-9588-25D917AF0EAD@gmail.com>
-In-Reply-To: <9872C96C-FAE8-46E8-9588-25D917AF0EAD@gmail.com>
+	id S1756346AbZKQWgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:36:39 -0500
+Message-ID: <4B03256C.5000201@garzik.org>
+Date: Tue, 17 Nov 2009 17:36:28 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091117145137.15430.11229.stgit@localhost.localdomain>
+In-Reply-To: <20091117145137.15430.11229.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911172332.43018.rjw@sisk.pl>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009, Andy Lutomirski wrote:
-> I'm think this was the journal checksumming bug, which is fixed.
+On 11/17/2009 09:51 AM, Alan Cox wrote:
+> Signed-off-by: Alan Cox<alan@linux.intel.com>
+> ---
+>
+>   drivers/ata/Kconfig |    8 ++++----
+>   1 files changed, 4 insertions(+), 4 deletions(-)
+>
+>
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index f2df6e2..36931e0 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -374,7 +374,7 @@ config PATA_HPT366
+>   	  If unsure, say N.
+>
+>   config PATA_HPT37X
+> -	tristate "HPT 370/370A/371/372/374/302 PATA support (Experimental)"
+> +	tristate "HPT 370/370A/371/372/374/302 PATA support"
+>   	depends on PCI&&  EXPERIMENTAL
 
-Thanks for the update.
+
+When you change the help string, you must also change the 'depends' line.
+
+	Jeff
 
 
-> On Nov 16, 2009, at 5:37 PM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me  
-> > know
-> > (either way).
-> >
-> >
-> > Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=14472
-> > Subject        : EXT4 corruption
-> > Submitter    : Shawn Starr <shawn.starr@rogers.com>
-> > Date        : 2009-10-13 2:07 (35 days old)
-> > References    : http://marc.info/?l=linux-kernel&m=125539997508256&w=4
-> > Handled-By    : Theodore Tso <tytso@mit.edu>
 
-I'm going to close the bug.
 
-Rafael
