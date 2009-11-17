@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZKQL6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZKQL7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZKQL6G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZKQL6E
+	id S1755982AbZKQL7D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:59:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbZKQL7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:58:04 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39374 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755865AbZKQL6D (ORCPT
+	Tue, 17 Nov 2009 06:59:03 -0500
+Received: from szxga03-in.huawei.com ([119.145.14.66]:55377 "EHLO
+	szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbZKQL7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:58:03 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
-In-Reply-To: <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk>
-References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com> <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk>
-Message-Id: <20091117200618.3DFF.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 17 Nov 2009 20:58:04 +0900 (JST)
+	Tue, 17 Nov 2009 06:59:01 -0500
+Date: Tue, 17 Nov 2009 19:59:05 +0800
+From: fangxiaozhi 00110321 <huananhu@huawei.com>
+Subject: [PATCH 1/5]net: PPP buffer too small for higher speed connections
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       william.allen.simpson@gmail.com, jarkao2@gmail.com
+Message-id: <fb8cc3511cffa.1cffafb8cc351@huawei.com>
+MIME-version: 1.0
+X-Mailer: iPlanet Messenger Express 5.2 HotFix 2.14 (built Aug  8 2006)
+Content-type: text/plain; charset=us-ascii
+Content-language: zh-CN
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-Accept-Language: zh-CN
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 17 Nov 2009 16:17:50 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
-> > memory, anyone must not prevent it. Otherwise the system cause
-> > mysterious hang-up and/or OOM Killer invokation.
-> 
-> So now what happens if we are paging and all our memory is tied up for
-> writeback to a device or CIFS etc which can no longer allocate the memory
-> to complete the write out so the MM can reclaim ?
-
-Probably my answer is not so simple. sorry.
-
-reason1: MM reclaim does both dropping clean memory and writing out dirty pages.
-reason2: if all memory is exhausted, maybe we can't recover it. it is
-fundamental limitation of Virtual Memory subsystem. and, min-watermark is
-decided by number of system physcal memory, but # of I/O issue (i.e. # of
-pages of used by writeback thread) is mainly decided # of devices. 
-then, we can't gurantee min-watermark is sufficient on any systems.
-Only reasonable solution is mempool like reservation, I think.
-IOW, any reservation memory shouldn't share unrelated subsystem. otherwise
-we lost any gurantee.
-
-So, I think we need to hear why many developer don't use mempool,
-instead use PF_MEMALLOC.
-
-> Am I missing something or is this patch set not addressing the case where
-> the writeback thread needs to inherit PF_MEMALLOC somehow (at least for
-> the I/O in question and those blocking it)
-
-Yes, probably my patchset isn't perfect. honestly I haven't understand
-why so many developer prefer to use PF_MEMALLOC.
+From: fangxiaozhi <huananhu@huawei.com>
+1. This patch is based on the kernel of 2.6.32-rc7 
+2. In this patch, we enlarge the out buffer size to optimize the upload speed for the ppp connection. Then it can support the upload of HSUPA data cards.
+Signed-off-by: fangxiaozhi <huananhu@huawei.com>
+-----------------------------------------------------------------------------------------
+--- a/drivers/net/ppp_async.c	2009-10-12 05:43:56.000000000 +0800
++++ b/drivers/net/ppp_async.c	2009-10-15 16:29:56.000000000 +0800
+@@ -36,7 +36,7 @@
+ 
+ #define PPP_VERSION	"2.4.2"
+ 
+-#define OBUFSIZE	256
++#define OBUFSIZE	4096
+ 
+ /* Structure for storing local state. */
+ struct asyncppp {
 
 
-
+******************************************************************************************
+ This email and its attachments contain confidential information from HUAWEI, which is intended only for the person or entity whose address is listed above. Any use of the information contained here in any way (including, but not limited to, total or partial disclosure, reproduction, or dissemination) by persons other than the intended recipient(s) is prohibited. If you receive this email in error, please notify the sender by phone or email
+ immediately and delete it!
+ *****************************************************************************************
