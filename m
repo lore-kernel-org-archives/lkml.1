@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZKQWNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZKQWMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZKQWNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 17:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZKQWNe
+	id S1756006AbZKQWMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 17:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZKQWMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 17:13:34 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:48383 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755504AbZKQWNd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 17:13:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type;
-        b=sN7CT9ctiNRNfoku6qjUKuUFL9kxH69Ygoodp+pKTG80VAJ7H7bHuvWtOZrba60wBQ
-         W+0Svaw3wLLf3Jv9WjVCdex+Ff3LT5ONUtrUo13JsUemA6vwECFijEcJw7Ukeg0iApdB
-         6lO9m6TvgBaTWOb+zBHsMLN/g3PWrMi0V50Wg=
+	Tue, 17 Nov 2009 17:12:33 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38436 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755203AbZKQWMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 17:12:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Null suspend/resume functions
+Date: Tue, 17 Nov 2009 23:14:04 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
+       alsa-devel@alsa-project.org, linux-pm@lists.linux-foundation.org,
+       Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <aec7e5c30911170446n71031671i48aca11f5276405d@mail.gmail.com> <20091117125901.GF823@rakim.wolfsonmicro.main>
+In-Reply-To: <20091117125901.GF823@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-In-Reply-To: <be7a9f3d0911171208w1474dfb3vacc2da9292657da@mail.gmail.com>
-References: <be7a9f3d0911171208w1474dfb3vacc2da9292657da@mail.gmail.com>
-Date: Tue, 17 Nov 2009 20:13:38 -0200
-X-Google-Sender-Auth: de0937db9e741588
-Message-ID: <be7a9f3d0911171413y3c34490er91fdb26b99d1868c@mail.gmail.com>
-Subject: Re: [RFH] Vortex86SX: PCI address collision
-From: Otavio Salvador <otavio@ossystems.com.br>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911172314.04396.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tuesday 17 November 2009, Mark Brown wrote:
+> On Tue, Nov 17, 2009 at 09:46:35PM +0900, Magnus Damm wrote:
+> 
+> > On SuperH we have Runtime PM enabled on a few platforms together with
+> > a few updated drivers. The latest driver to become more power aware is
+> > this FSI driver.
+> 
+> I understand exactly what the runtime PM stuff and the driver are doing
+> here, the issue is the mandatory suspend and resume functions.
+> 
+> > At this point the SuperH specific platform bus code requires the
+> > callbacks ->runtime_suspend() and ->runtime_resume() to be present. It
+> > may be a good idea to allow them to be NULL in the future or maybe
+> > having some shared functions, but before starting to break out stuff
+> > I'd like to see how other Runtime PM implementations deal with this.
+> > So unless people object I prefer to keep it as-is for now.
+> 
+> What is the reason for requiring that the driver provide stub functions?
+> For me the issue is that if it's mandatory for the driver to provide the
+> functions then having stub functions in there makes the driver look like
+> it is abusing the API by not implementing mandatory functionality.
 
-On Tue, Nov 17, 2009 at 6:08 PM, Otavio Salvador
-<otavio@ossystems.com.br> wrote:
-> I got this machine working booting it with "irqpoll" parameter however
-> it drops the performance a lot and I'd like to try to fix the root
-> problem of it.
+In fact, it's not mandatory for bus types, not for drivers.  IMO bus types
+really have to know how to suspend a device and how to resume it,
+otherwise the core framework won't be useful anyway.  What the bus type does
+about drivers not implementing ->runtime_suspend() or ->runtime_resume(), it's
+up to the bus type.  That's even documented IIRC.
 
-I forgot to say that I tested it against both 2.6.31.5 and git HEAD
-(a9366e61b03f55a6e009e687ad10e706714c9907).
-
--- 
-Otavio Salvador                  O.S. Systems
-E-mail: otavio@ossystems.com.br  http://www.ossystems.com.br
-Mobile: +55 53 9981-7854         http://projetos.ossystems.com.br
+Thanks,
+Rafael
