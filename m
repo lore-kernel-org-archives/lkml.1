@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZKQDTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZKQEBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZKQDTl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Nov 2009 22:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZKQDTj
+	id S1754043AbZKQEBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Nov 2009 23:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZKQEBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Nov 2009 22:19:39 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57058 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754356AbZKQDTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Nov 2009 22:19:37 -0500
-Date: Tue, 17 Nov 2009 14:19:35 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: edac-amd tree (Was: Re: linux-next: Tree for November 16)
-Message-Id: <20091117141935.18a8ed94.sfr@canb.auug.org.au>
-In-Reply-To: <20091116143213.GD30377@aftab>
-References: <20091116181453.b42247cf.sfr@canb.auug.org.au>
-	<20091116143213.GD30377@aftab>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__17_Nov_2009_14_19_35_+1100_uNZTm4uJmPuuZQ.l"
+	Mon, 16 Nov 2009 23:01:08 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:41103 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753172AbZKQEBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Nov 2009 23:01:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=c4WEJ+wG1jnMMvqwslme1qhSqk7WrZu3GbRewWnG153ha73gXT8YxQMWWHzOGxSF7j
+         PdnLL+rP6kaUEYYYnvLh7Qa2KLzirvHkJIMnBJz0mY+fSez5K4n+fl/3UmTbkGtcVi8O
+         twFQHFs+8auklKHqlOGl+TU9mqUDD5FZ48Z6Q=
+Date: Mon, 16 Nov 2009 20:01:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14626] oops on boot starting udev
+Message-ID: <20091117040104.GA5792@core.coreip.homeip.net>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.fpF.zSdALB@chimera> <20091117011455.GA7977@kroah.com> <20091117020451.GA27967@core.coreip.homeip.net> <1258426743.9883.53.camel@no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258426743.9883.53.camel@no>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__17_Nov_2009_14_19_35_+1100_uNZTm4uJmPuuZQ.l
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 17, 2009 at 03:59:03AM +0100, Soeren Sonnenburg wrote:
+> On Mon, 2009-11-16 at 18:04 -0800, Dmitry Torokhov wrote:
+> > On Mon, Nov 16, 2009 at 05:14:55PM -0800, Greg KH wrote:
+> > > On Mon, Nov 16, 2009 at 11:37:48PM +0100, Rafael J. Wysocki wrote:
+> > > > This message has been generated automatically as a part of a report
+> > > > of recent regressions.
+> > > > 
+> > > > The following bug entry is on the current list of known regressions
+> > > > from 2.6.31.  Please verify if it still should be listed and let me know
+> > > > (either way).
+> > > > 
+> > > > 
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14626
+> > > > Subject		: oops on boot starting udev
+> > > > Submitter	: Soeren Sonnenburg <sonne@debian.org>
+> > > > Date		: 2009-11-14 10:16 (3 days old)
+> > > > References	: http://marc.info/?l=linux-kernel&m=125819380206800&w=4
+> > > 
+> > > This looks like an input core problem, as the evdev module was just
+> > > loaded and died.
+> > > 
+> > > Any input developers have any ideas?
+> > > 
+> > 
+> > 
+> > Hmm, evdev does:
+> > 
+> > 	dev_set_name(&evdev->dev, "event%d", minor);
+> > 
+> > Not sure how it can go wrong...
+> 
+> Anything I should/could do to narrow it down a bit (apart from
+> bisecting?).
+> 
 
-Hi Boris,
+Umm, I looked through the changes between -rc6 and 7 but nothing jumped
+out at me... You don't happen to have any local changes in your tree?
 
-On Mon, 16 Nov 2009 15:32:13 +0100 Borislav Petkov <borislav.petkov@amd.com=
-> wrote:
->
-> can you please add the edac-amd tree back to the linux-next mix, right
-> after the -tip tree wrt merge order? URL is
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-next
-
-Added back from today.
-
-Just in case I missed you last time:
-
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
-
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
-
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Tue__17_Nov_2009_14_19_35_+1100_uNZTm4uJmPuuZQ.l
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksCFkcACgkQjjKRsyhoI8yfJACfaywiPezyWJRVrSiT33FpkwJ4
-fQwAniSsvRntmrj4E6Pm7XXwGFzdA+1E
-=eX3e
------END PGP SIGNATURE-----
-
---Signature=_Tue__17_Nov_2009_14_19_35_+1100_uNZTm4uJmPuuZQ.l--
+-- 
+Dmitry
