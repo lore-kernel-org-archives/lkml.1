@@ -1,60 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZKQHG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZKQHGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbZKQHG0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 02:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZKQHGZ
+	id S1755442AbZKQHGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 02:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZKQHGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 02:06:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13043 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752258AbZKQHGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 02:06:24 -0500
-Message-ID: <4B024B18.40604@redhat.com>
-Date: Tue, 17 Nov 2009 09:04:56 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 17 Nov 2009 02:06:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:38631 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755167AbZKQHGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 02:06:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FCHPYbZicVVDO7OoTaJNzrJtLhR/1Dbn8P184d8sjYQgg1jLLUJJnbLa0UuAZS+Dra
+         FGVGK3MtuKaYWRuUM9ZG9Y13wz9f5jhvVvGkqr7RoE2mlt33TvQjOPbi95z41Z9xG5eL
+         fQzjx+CkxcsCAqnjU5PA7SrRi45/fDjzhvkxo=
+Date: Tue, 17 Nov 2009 08:06:38 +0100
+From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Travis <travis@sgi.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Borislav Petkov <borislav.petkov@amd.com>, Andreas Mohr <andi@lisas.de>,
+       Jack Steiner <steiner@sgi.com>
+Subject: [PATCH] x86, ucode-amd: Move family check to microcde_amd.c's init
+ function
+Message-ID: <20091117070638.GA27691@alberich.amd.com>
+References: <1257192496.5941.8.camel@dimm>
+ <20091105153742.GA18592@alberich.amd.com>
+ <b647ffbd0911051040r3987f63es1279c87bf349bcf6@mail.gmail.com>
+ <20091106123403.GB18592@alberich.amd.com>
+ <b647ffbd0911060456x5c37ebfapdb2ece392428f66@mail.gmail.com>
+ <20091106194626.GC18592@alberich.amd.com>
+ <b647ffbd0911070422g154c63bbo2fec62ba63c3c106@mail.gmail.com>
+ <b647ffbd0911110807n17933102g39c124a6eff74a44@mail.gmail.com>
+ <20091111193832.GG18592@alberich.amd.com>
+ <20091112113343.GA1386@elte.hu>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       mingo@elte.hu, akpm@linux-foundation.org, jens.axboe@oracle.com,
-       rusty@rustcorp.com.au, cl@linux-foundation.org, dhowells@redhat.com,
-       arjan@linux.intel.com, torvalds@linux-foundation.org,
-       peterz@infradead.org, andi@firstfloor.org,
-       Andi Kleen <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 01/21] workqueue: fix race condition in	schedule_on_each_cpu()
-References: <1258391726-30264-1-git-send-email-tj@kernel.org> <1258391726-30264-2-git-send-email-tj@kernel.org> <20091116230427.GD5293@nowhere>
-In-Reply-To: <20091116230427.GD5293@nowhere>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091112113343.GA1386@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/17/2009 01:04 AM, Frederic Weisbecker wrote:
-> On Tue, Nov 17, 2009 at 02:15:06AM +0900, Tejun Heo wrote:
->    
->> Commit 65a64464349883891e21e74af16c05d6e1eeb4e9 which allows
->> schedule_on_each_cpu() to be called from keventd added a race
->> condition.  schedule_on_each_cpu() may race with cpu hotplug and end
->> up executing the function twice on a cpu.
->>
->> Fix it by moving direct execution into the section protected with
->> get/put_online_cpus().  While at it, update code such that direct
->> execution is done after works have been scheduled for all other cpus
->> and drop unnecessary cpu != orig test from flush loop.
->>
->> Signed-off-by: Tejun Heo<tj@kernel.org>
->> Cc: Andi Kleen<ak@linux.intel.com>
->> Cc: Oleg Nesterov<oleg@redhat.com>
->> ---
->>      
->
-> Shouldn't this patch go to .32 ?
-> This looks like an important fix.
->    
+... to avoid useless trial to load firmware on systems with
+unsupported AMD CPUs.
 
-Is anything using preeempt notifier on affected architectures?
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/microcode_amd.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
 
+Patch is against tip/master.
+
+Regards,
+Andreas
+
+
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 26e33bd..d0bb5ad 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -34,6 +34,7 @@ MODULE_LICENSE("GPL v2");
+ #define UCODE_UCODE_TYPE           0x00000001
+ 
+ const struct firmware *firmware;
++static int supported_cpu;
+ 
+ struct equiv_cpu_entry {
+ 	u32	installed_cpu;
+@@ -73,15 +74,12 @@ static struct equiv_cpu_entry *equiv_cpu_table;
+ 
+ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
+ {
+-	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 	u32 dummy;
+ 
+-	memset(csig, 0, sizeof(*csig));
+-	if (c->x86_vendor != X86_VENDOR_AMD || c->x86 < 0x10) {
+-		pr_warning("microcode: CPU%d: AMD CPU family 0x%x not "
+-			   "supported\n", cpu, c->x86);
++	if (!supported_cpu)
+ 		return -1;
+-	}
++
++	memset(csig, 0, sizeof(*csig));
+ 	rdmsr(MSR_AMD64_PATCH_LEVEL, csig->rev, dummy);
+ 	pr_info("microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
+ 	return 0;
+@@ -331,6 +329,17 @@ static void microcode_fini_cpu_amd(int cpu)
+ void init_microcode_amd(struct device *device)
+ {
+ 	const char *fw_name = "amd-ucode/microcode_amd.bin";
++	struct cpuinfo_x86 *c = &boot_cpu_data;
++
++	BUG_ON(c->x86_vendor != X86_VENDOR_AMD);
++
++	if (c->x86 < 0x10) {
++		pr_warning("microcode: AMD CPU family 0x%x not supported\n",
++			   c->x86);
++		return;
++	}
++	supported_cpu = 1;
++
+ 	if (request_firmware(&firmware, fw_name, device))
+ 		pr_err("microcode: failed to load file %s\n", fw_name);
+ }
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+1.6.5.2
 
