@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZKQLpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZKQLps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbZKQLpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 06:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZKQLp2
+	id S1755914AbZKQLps (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 06:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbZKQLpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 06:45:28 -0500
-Received: from lucidpixels.com ([75.144.35.66]:51969 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754682AbZKQLp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 06:45:26 -0500
-Date: Tue, 17 Nov 2009 06:45:31 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: RE: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
- hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
-In-Reply-To: <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0911170643430.25285@p34.internal.lan>
-References: <alpine.DEB.2.00.0911080932590.4556@p34.internal.lan>  <20091111195016.GB22225@redhat.com>  <alpine.DEB.2.00.0911111608020.5456@p34.internal.lan>  <alpine.DEB.2.00.0911121120330.6976@p34.internal.lan>  <alpine.DEB.2.00.0911121127500.6976@p34.internal.lan>
-  <1f1b08da0911121513l32d47b4x8b9722ad3440ceb6@mail.gmail.com>  <alpine.DEB.2.00.0911121824290.2852@p34.internal.lan>  <1258069232.14894.9.camel@localhost.localdomain>  <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain> 
- <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan>  <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>  <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain>  <1258137165.21141.20.camel@localhost.localdomain> 
- <alpine.DEB.2.00.0911131340140.5316@p34.internal.lan> <1258161139.21141.29.camel@localhost.localdomain> <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 17 Nov 2009 06:45:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:39505 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755568AbZKQLpp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 06:45:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=L8VW8xIEvXHnczUgiK+OufH+H1/4EnrhLCXqt6GFG9K8wfOvdokplUJDshB6mUqtar
+         gjrLIPE+wy8EHLhypjLt66I31Qok9Ckh8X+uMyqbRpETja+RAmTS2dLPVQS/rw2BYMth
+         Q11hOWZMG/mPVX2DVx0gyHm+o4iDnHpXVCFT0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <1258457469-16145-1-git-send-email-giometti@linux.it>
+References: <1258457469-16145-1-git-send-email-giometti@linux.it>
+Date: Tue, 17 Nov 2009 17:15:49 +0530
+Message-ID: <4fb5db50911170345m687ea1fcmff1444250d341240@mail.gmail.com>
+Subject: Re: [PATCH] gpio: show IRQ settings even if GPIO direction is 
+	"output"
+From: Janakiram Sistla <janakiram.sistla@gmail.com>
+To: Rodolfo Giometti <giometti@linux.it>
+Cc: linux-kernel@vger.kernel.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       raffaele.recalcati@bticino.it
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nAHBk116015337
 
+On Tue, Nov 17, 2009 at 5:01 PM, Rodolfo Giometti <giometti@linux.it> wrote:> Some architectures (as PXA 27x for example) may define GPIO IRQ lines> as outputs since internal circuitry supports such configuration.>> This patch simply detects if a GPIO is a IRQ line or not just looking> for IRQ line number, "desc" and "desc->action" fields.>> Signed-off-by: Rodolfo Giometti <giometti@linux.it>> Cc: raffaele.recalcati@bticino.it> --->  drivers/gpio/gpiolib.c |   82 ++++++++++++++++++++++++------------------------>  1 files changed, 41 insertions(+), 41 deletions(-)>> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c> index 50de0f5..298b66f 100644> --- a/drivers/gpio/gpiolib.c> +++ b/drivers/gpio/gpiolib.c> @@ -1381,6 +1381,8 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)>        unsigned                gpio = chip->base;>        struct gpio_desc        *gdesc = &gpio_desc[gpio];>        int                     is_out;> +       int                     irq;> +       struct irq_desc         *desc;>>        for (i = 0; i < chip->ngpio; i++, gpio++, gdesc++) {>                if (!test_bit(FLAG_REQUESTED, &gdesc->flags))> @@ -1394,48 +1396,46 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)>                                ? (chip->get(chip, i) ? "hi" : "lo")>                                : "?  ");>> -               if (!is_out) {> -                       int             irq = gpio_to_irq(gpio);> -                       struct irq_desc *desc = irq_to_desc(irq);> -> -                       /* This races with request_irq(), set_irq_type(),> -                        * and set_irq_wake() ... but those are "rare".> -                        *> -                        * More significantly, trigger type flags aren't> -                        * currently maintained by genirq.> -                        */> -                       if (irq >= 0 && desc->action) {> -                               char *trigger;> -> -                               switch (desc->status & IRQ_TYPE_SENSE_MASK) {> -                               case IRQ_TYPE_NONE:> -                                       trigger = "(default)";> -                                       break;> -                               case IRQ_TYPE_EDGE_FALLING:> -                                       trigger = "edge-falling";> -                                       break;> -                               case IRQ_TYPE_EDGE_RISING:> -                                       trigger = "edge-rising";> -                                       break;> -                               case IRQ_TYPE_EDGE_BOTH:> -                                       trigger = "edge-both";> -                                       break;> -                               case IRQ_TYPE_LEVEL_HIGH:> -                                       trigger = "level-high";> -                                       break;> -                               case IRQ_TYPE_LEVEL_LOW:> -                                       trigger = "level-low";> -                                       break;> -                               default:> -                                       trigger = "?trigger?";> -                                       break;> -                               }> -> -                               seq_printf(s, " irq-%d %s%s",> -                                       irq, trigger,> -                                       (desc->status & IRQ_WAKEUP)> -                                               ? " wakeup" : "");> +               irq = gpio_to_irq(gpio);> +               desc = irq_to_desc(irq);> +> +               /* This races with request_irq(), set_irq_type(),> +                * and set_irq_wake() ... but those are "rare".> +                *> +                * More significantly, trigger type flags aren't> +                * currently maintained by genirq.> +                */> +               if (irq >= 0 && desc && desc->action) {> +                       char *trigger;> +> +                       switch (desc->status & IRQ_TYPE_SENSE_MASK) {> +                       case IRQ_TYPE_NONE:> +                               trigger = "(default)";> +                               break;> +                       case IRQ_TYPE_EDGE_FALLING:> +                               trigger = "edge-falling";> +                               break;> +                       case IRQ_TYPE_EDGE_RISING:> +                               trigger = "edge-rising";> +                               break;> +                       case IRQ_TYPE_EDGE_BOTH:> +                               trigger = "edge-both";> +                               break;> +                       case IRQ_TYPE_LEVEL_HIGH:> +                               trigger = "level-high";> +                               break;> +                       case IRQ_TYPE_LEVEL_LOW:> +                               trigger = "level-low";> +                               break;> +                       default:> +                               trigger = "?trigger?";> +                               break;>                        }> +> +                       seq_printf(s, " irq-%d %s%s",> +                               irq, trigger,> +                               (desc->status & IRQ_WAKEUP)> +                                       ? " wakeup" : "");>                }>>                seq_printf(s, "\n");> --> 1.6.3.3
+Is there any valid test scenario that makes use of thispatch???Detecting GPIO if it is IRQ in kernel what is the advantage?
 
-
-On Sat, 14 Nov 2009, Justin Piszcz wrote:
-
->
->
-> On Fri, 13 Nov 2009, Pallipadi, Venkatesh wrote:
->
->> On Fri, 2009-11-13 at 10:43 -0800, Justin Piszcz wrote:
->>> 
->>> On Fri, 13 Nov 2009, Pallipadi, Venkatesh wrote:
->>> 
->>>> On Fri, 2009-11-13 at 01:38 -0800, Thomas Gleixner wrote:
->>>>> On Thu, 12 Nov 2009, Pallipadi, Venkatesh wrote:
->>>>>> Yes. Yes. This is a hardware errata. I have a patch to workaround this 
->>>>>> and
->>>>>> waiting on the errata description to get published..
-
-1. Do we have an ETA of when this will get published?
-2. Is there a patch available for testing?
-
-Another issue, have you tried rebooting any Linux kernel ~2.6.30+ on the
-DP55KG?  It hangs at reboot unless you specify reboot=a with various
-distributions/live CDs.
-
-Justin.
-
+Regards,Ram.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
