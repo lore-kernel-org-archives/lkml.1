@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZKRVEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZKRVGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932399AbZKRVEz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZKRVEy
+	id S1758296AbZKRVGo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbZKRVGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:04:54 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:55101 "EHLO
+	Wed, 18 Nov 2009 16:06:44 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:38809 "EHLO
 	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932269AbZKRVEx (ORCPT
+	with ESMTP id S1757923AbZKRVGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:04:53 -0500
-Subject: Re: [PATCH] cleanup sched_yield (sys)call nesting.
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0911182153010.24119@localhost.localdomain>
-References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
-	 <20091107210147.3e754278@hyperion.delvare>
-	 <4AF7148C.9090706@thebigcorporation.com>
-	 <20091112211255.09cd884a@hyperion.delvare>
-	 <alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
-	 <20091116155606.GC29479@sirena.org.uk>
-	 <c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
-	 <20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
-	 <c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
-	 <20091118175202.490989d8@hyperion.delvare>
-	 <1258577194.12429.86.camel@sven.thebigcorporation.com>
-	 <alpine.LFD.2.00.0911182153010.24119@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 13:04:50 -0800
-Message-Id: <1258578290.12429.108.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 16:06:43 -0500
+MIME-Version: 1.0
+In-Reply-To: <20091118200712.GA14026@srcf.ucam.org>
+References: <1258468659-5446-1-git-send-email-mjg@redhat.com> 
+	<ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> 
+	<1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> 
+	<ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> 
+	<20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> 
+	<20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> 
+	<20091118200712.GA14026@srcf.ucam.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 18 Nov 2009 22:06:33 +0100
+Message-ID: <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
+	changes
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-hotplug@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-18 at 21:56 +0100, Thomas Gleixner wrote:
-> On Wed, 18 Nov 2009, Sven-Thorsten Dietrich wrote:
-> > On Wed, 2009-11-18 at 17:52 +0100, Jean Delvare wrote:
-> > > On Wed, 18 Nov 2009 17:28:53 +0100, Leon Woestenberg wrote:
-> > > > On Wed, Nov 18, 2009 at 2:05 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > > > Our timers are very efficient and some day we will need to make jiffies a
-> > > > > function and stop the timer ticking for best performance. At that point
-> > > > > timers are probably the most efficient way to do much of this.
-> > > >
-> > > > The problem with I2C bitbanged is the stringent timing, we need a way
-> > > > to have fine-grained sleeping
-> > > > mixed with real-time tasks in order to make this work.
-> > > 
-> > > FWIW, the problem that was initially reported has nothing to do with
-> > > this. i2c-algo-bit used mdelay() during transactions, not yield().
-> > > yield() is used only in once place, _between_ transactions attempts.
-> > > There are no strict timing constraints there.
-> > > 
-> > 
-> > I agree that dropping out sched_yield entirely should maybe start by
-> > deprecating / flagging as a warning in sched_rt.c.
-> 
-> Errm, that's unrelated to sched_rt.c. 
-> 
-> yield() in the kernel in general is needs to be deprecated.
->  
-> > This is just a minimal cleanup I stumbled across while looking at it -
-> > to get away from the uglyness of calling into the syscall interface from
-> > inside the Kernel.
-> 
-> And why exactly is that ugly ?
+On Wed, Nov 18, 2009 at 21:07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
+>
+>> Sure, but what's wrong with reading that file every 50 seconds? Almost
+>> all boxes poll for media changes of optical drives and usb card
+>> readers anyway, so it's not that we are not doing stuff like this
+>> already.
+>
+> We poll for media because there's no event-based way of avoiding it - in
+> this case there is.
 
-Calling from a function returning void into a non-void function and then
-ignoring the return code ?
+That's true, but I think there is a significant difference between
+polling every one or two seconds for media changes, and usually one or
+two minutes for a disk idle. It's not that we poll in a rather hight
+frequency, in an arbitrary interval, and check if some condition is
+met.
 
+I still don't think that we should add new event interfaces which are
+single-subscriber only, and use global values for a specific user.
+What if there will be another independent user for this, which might
+want a different timeout? They fight over the trigger value to set in
+sysfs?
 
+>From my perspective, the once-at-timeout wakeup is more acceptable
+than an in-kernel policy setting for a single-subscriber event
+interface.
 
+Thanks,
+Kay
