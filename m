@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbZKRRya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZKRRzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164AbZKRRya (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZKRRy3
+	id S932153AbZKRRzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbZKRRzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:54:29 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38167 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758074AbZKRRy2 (ORCPT
+	Wed, 18 Nov 2009 12:55:21 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:45335 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932134AbZKRRzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:54:28 -0500
-Date: Wed, 18 Nov 2009 17:55:17 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Jamie Lokier <jamie@shareable.org>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org,
-       "Linux-Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       =?ISO-8859-14?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
-Message-ID: <20091118175517.174ec906@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911181835.55007.oliver@neukum.org>
-References: <1258560457-15129-1-git-send-email-jblunck@suse.de>
-	<20091118171524.4d2f8cec@lxorguk.ukuu.org.uk>
-	<20091118172730.GD28723@shareable.org>
-	<200911181835.55007.oliver@neukum.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 18 Nov 2009 12:55:20 -0500
+Date: Wed, 18 Nov 2009 11:55:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
+Message-ID: <20091118175523.GA12857@b07421-ec1.am.freescale.net>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.566205413@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117224916.566205413@linutronix.de>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Of course, drivers shouldn't be using f_pos outside their llseek
-> > method, as they should all behave the same with pread/pwrite as with
-> > llseek+read/write.
-> 
-> Might not a driver update f_pos after read/write?
+On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
+> Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
+>  }
+>  
+>  static struct irq_chip pq2ads_pci_ic = {
+> -	.typename = "PQ2 ADS PCI",
+> +	.name = "PQ2 ADS PCI",
+>  	.name = "PQ2 ADS PCI",
+>  	.end = pq2ads_pci_unmask_irq,
+>  	.mask = pq2ads_pci_mask_irq,
 
-The driver updates the passed pointer to an offset. It has no idea how to
-lock that and that is isolated and handled higher up the stack.
+Duplicate ".name"...
 
-There are no obvious reasons to peer at f_pos. I've so far checked all of
-drivers/char and that is clean (as well as being the most likely suspect
-for old code). A sweep of the other driver subsystems should be
-enough to find any offenders
-
-Alan
+-Scott
