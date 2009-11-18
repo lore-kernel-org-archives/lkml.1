@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbZKRTAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbZKRTBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932556AbZKRTAe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 14:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbZKRTAe
+	id S1758331AbZKRTBJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZKRTBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 14:00:34 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35601 "EHLO
+	Wed, 18 Nov 2009 14:01:08 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35610 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758311AbZKRTAc (ORCPT
+	with ESMTP id S1753872AbZKRTBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 14:00:32 -0500
+	Wed, 18 Nov 2009 14:01:07 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 18 Nov 2009 20:00:18 +0100 (CET)
+Date: Wed, 18 Nov 2009 20:00:55 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 0/6] DVB: firedtv: simplifications and a portability fix
+Subject: [PATCH 1/6] firedtv: shrink buffer pointer table
 To: linux-media@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
+Message-ID: <tkrat.6b9442a2f97654ef@s5r6.in-berlin.de>
+References: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -24,26 +26,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following three patches are applicable after "firedtv: port to new
-firewire core" from 2009-11-08:
+Cache only addresses of whole pages, not of each buffer chunk.  Besides,
+page addresses can be obtained by page_address() instead of kmap() since
+they were allocated in lowmem.
 
-[PATCH 1/6] firedtv: shrink buffer pointer table
-[PATCH 2/6] firedtv: packet requeuing is likely to succeed
-[PATCH 3/6] firedtv: remove an unnecessary function argument
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/media/dvb/firewire/firedtv-fw.c |   19 ++++++++-----------
+ 1 file changed, 8 insertions(+), 11 deletions(-)
 
-The rest of this patch set additionally requires the latest firedtv as
-of 2.6.32-rc7:
+Index: linux-2.6.32-rc7/drivers/media/dvb/firewire/firedtv-fw.c
+===================================================================
+--- linux-2.6.32-rc7.orig/drivers/media/dvb/firewire/firedtv-fw.c
++++ linux-2.6.32-rc7/drivers/media/dvb/firewire/firedtv-fw.c
+@@ -6,9 +6,9 @@
+ #include <linux/errno.h>
+ #include <linux/firewire.h>
+ #include <linux/firewire-constants.h>
+-#include <linux/highmem.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
+@@ -73,7 +73,7 @@ struct firedtv_receive_context {
+ 	struct fw_iso_buffer buffer;
+ 	int interrupt_packet;
+ 	int current_packet;
+-	char *packets[N_PACKETS];
++	char *pages[N_PAGES];
+ };
+ 
+ static int queue_iso(struct firedtv_receive_context *ctx, int index)
+@@ -100,7 +100,7 @@ static void handle_iso(struct fw_iso_con
+ 	struct firedtv *fdtv = data;
+ 	struct firedtv_receive_context *ctx = fdtv->backend_data;
+ 	__be32 *h, *h_end;
+-	int i = ctx->current_packet, length, err;
++	int length, err, i = ctx->current_packet;
+ 	char *p, *p_end;
+ 
+ 	for (h = header, h_end = h + header_length / 4; h < h_end; h++) {
+@@ -110,7 +110,8 @@ static void handle_iso(struct fw_iso_con
+ 			length = MAX_PACKET_SIZE;
+ 		}
+ 
+-		p = ctx->packets[i];
++		p = ctx->pages[i / PACKETS_PER_PAGE]
++				+ (i % PACKETS_PER_PAGE) * MAX_PACKET_SIZE;
+ 		p_end = p + length;
+ 
+ 		for (p += CIP_HEADER_SIZE + MPEG2_TS_HEADER_SIZE; p < p_end;
+@@ -130,8 +131,7 @@ static int start_iso(struct firedtv *fdt
+ {
+ 	struct firedtv_receive_context *ctx;
+ 	struct fw_device *device = device_of(fdtv);
+-	char *p;
+-	int i, j, k, err;
++	int i, err;
+ 
+ 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+@@ -153,11 +153,8 @@ static int start_iso(struct firedtv *fdt
+ 	ctx->interrupt_packet = 1;
+ 	ctx->current_packet = 0;
+ 
+-	for (i = 0, k = 0; k < N_PAGES; k++) {
+-		p = kmap(ctx->buffer.pages[k]);
+-		for (j = 0; j < PACKETS_PER_PAGE && i < N_PACKETS; j++, i++)
+-			ctx->packets[i] = p + j * MAX_PACKET_SIZE;
+-	}
++	for (i = 0; i < N_PAGES; i++)
++		ctx->pages[i] = page_address(ctx->buffer.pages[i]);
+ 
+ 	for (i = 0; i < N_PACKETS; i++) {
+ 		err = queue_iso(ctx, i);
 
-[PATCH 4/6] firedtv: do not DMA-map stack addresses
-[PATCH 5/6] firedtv: remove check for interrupting signal
-[PATCH 6/6] firedtv: reduce memset()s
-
- drivers/media/dvb/firewire/firedtv-1394.c |   13
- drivers/media/dvb/firewire/firedtv-avc.c  |  520 +++++++++++-----------
- drivers/media/dvb/firewire/firedtv-dvb.c  |    1
- drivers/media/dvb/firewire/firedtv-fw.c   |   39 -
- drivers/media/dvb/firewire/firedtv.h      |    8
- 5 files changed, 306 insertions(+), 275 deletions(-)
 -- 
 Stefan Richter
 -=====-==--= =-== =--=-
