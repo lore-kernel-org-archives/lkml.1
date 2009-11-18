@@ -1,119 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZKREZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZKREp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbZKREZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 23:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZKREZM
+	id S1756745AbZKREp1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 23:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZKREp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 23:25:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60244 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755527AbZKREZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 23:25:11 -0500
-Date: Wed, 18 Nov 2009 05:25:16 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: -rt dbench scalabiltiy issue
-Message-ID: <20091118042516.GC21813@wotan.suse.de>
-References: <1255723519.5135.121.camel@localhost.localdomain> <20091017223902.GA29439@wotan.suse.de> <1258507696.2077.61.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258507696.2077.61.camel@localhost>
-User-Agent: Mutt/1.5.9i
+	Tue, 17 Nov 2009 23:45:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:34574 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755055AbZKREp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 23:45:26 -0500
+Message-ID: <4B037B3A.7010700@zytor.com>
+Date: Tue, 17 Nov 2009 20:42:34 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Masami Hiramatsu <mhiramat@redhat.com>, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jim Keniston <jkenisto@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -next 0/3] x86 insn decoder test updates (Re: linux-next:
+ Tree for October 29 (x86 posttest))
+References: <20091116230611.5250.86656.stgit@harusame> <20091117061352.GE30852@elte.hu>
+In-Reply-To: <20091117061352.GE30852@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
-
-Great stuff, thanks for persisting with this. I've been a little bit busy
-with a bit of distro work recently, but I hope to get back to some mainly
-projects soon.
-
-On Tue, Nov 17, 2009 at 05:28:16PM -0800, john stultz wrote:
-> Hey Nick,
-> 	Just an update here, I moved up to your 09102009 patch, and spent
-> awhile playing with it.
+On 11/16/2009 10:13 PM, Ingo Molnar wrote:
 > 
-> Just as you theorized, moving d_count back to an atomic_t does seem to
-> greatly improve the performance on -rt. 
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> Again, very very rough numbers for an 8-way system:
+>> Here are the patches which update x86 instruction decoder build-time 
+>> test. As Stephen reported on linux-next, sometimes objdump decodes bad 
+>> instructions as normal. This will cause a false positive result on x86 
+>> insn decoder test. This patches update the test as below;
+>>
+>>  - Show more information with V=1
+>>  - Show in which symbol the difference places.
+>>  - Just warning instead of build failure.
 > 
-> 				ext3		ramfs 
-> 2.6.32-rc3:			~1800 MB/sec	~1600 MB/sec
-> 2.6.32-rc3-nick			~1800 MB/sec	~2200 MB/sec
-> 2.6.31.2-rt13:			 ~300 MB/sec	  ~66 MB/sec
-> 2.6.31.2-rt13-nick:		  ~80 MB/sec	 ~126 MB/sec
-> 2.6.31.6-rt19-nick+atomic:	 ~400 MB/sec	~2200 MB/sec
-
-OK, that's very interesting. 09102009 patch contains the lock free path
-walk that I was hoping will improve some of your issues. I guess it did
-improve them a little bit but it is interesting that the atomic_t
-conversion still gave such a huge speedup.
-
-It would be interesting to know what d_count updates are causing the
-most d_lock contention (without your +atomic patch).
-
-One concern I have with +atomic is the extra atomic op required in
-some cases. I still haven't gone over single thread performance with
-a fine tooth comb, but even without +atomic, we have some areas that
-need to be improved.
-
-Nice numbers, btw. I never thought -rt would be able to completely
-match mainline on dbench for that size of system (in vfs performance,
-ie. the ramfs case).
-
-
-> >From the perf report, all of the dcache related overhead has fallen
-> away, and it all seems to be journal related contention at this point
-> that's keeping the ext3 numbers down.
+> yes, -tip testing was showing such build bugs too:
 > 
-> So yes, on -rt, the overhead from lock contention is way way worse then
-> any extra atomic ops. :)
-
-How about overhead for an uncontended lock? Ie. is the problem caused
-because lock *contention* issues are magnified on -rt, or is it
-because uncontended lock overheads are higher? Detailed callgraph
-profiles and lockstat of +/-atomic case would be very interesting.
- 
-Ideally we just eliminate the cause of the d_count update, but I
-concede that at some point and in some workloads, atomic d_count
-is going to scale better.
-
-I'd imagine in dbench case, contention comes on directory dentries
-from like adding child dentries, which causes lockless path walk
-to fail and retry the full locked walk from the root. One important
-optimisation I have left to do is to just continue with locked
-walk at the point where lockless fails, rather than the full path.
-This should naturally help scalability as well as single threaded
-performance.
-
-
-> I'm not totally convinced I did the conversion back to atomic_t's
-> properly, so I'm doing some stress testing, but I'll hopefully have
-> something to send out for review soon. 
+>  Error: ffffffff8104aae3:	c5 83 3d 49 80 ee    	lds    0xffffffffee80493d(%rbx),%eax
+>  Error: objdump says 6 bytes, but insn_get_length() says 3 (attr:0)
 > 
-> As for your concern about dbench being a poor benchmark here, I'll try
-> to get some numbers on iozone or another suggested workload and get
-> those out to you shortly.
+> it happens with older tools, such as binutils-2.17. Modern binutils 
+> (2.19) is fine.
+> 
+> We dont want to remove the build error: it helped us fix a number of 
+> real bugs in the decoder - instead please try to create a make based 
+> workaround based on binutils, to not run the test with binutils older 
+> than 2.19 or so.
+> 
 
-Well I was mostly concerned that we needn't spend *lots* of time
-trying to make dbench work. Bad performing dbench didn't necessarily
-say too much, but good performing dbench is a good indication
-(because it hits the vfs harder and in different ways than a lot
-of other benchmarks).
+One idea might be to instead of binutils to use NASM.  The entire NASM
+disassembler is small enough (about 10,000 lines including build tools
+and instruction database) that we could fit it in the tree in a pinch.
 
-Now, I don't think there is dispute that these patches vastly
-improve scalability. So what I am personally most interested in
-at this stage are any and all single thread performance benchmarks.
-But please, the more numbers the merrier, so anything helps.
+	-hpa
 
-Thanks,
-Nick
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
