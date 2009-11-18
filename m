@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbZKRJtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZKRJ4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbZKRJtb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZKRJta
+	id S1756747AbZKRJ4f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbZKRJ4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:49:30 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:62362 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbZKRJt3 (ORCPT
+	Wed, 18 Nov 2009 04:56:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56531 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756296AbZKRJ4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:49:29 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH 2/3] macvlan: implement VEPA and private mode
-Date: Wed, 18 Nov 2009 10:48:04 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick McHardy <kaber@trash.net>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.com,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
-References: <1258497551-25959-1-git-send-email-arnd@arndb.de> <1258497551-25959-3-git-send-email-arnd@arndb.de> <4B03974D.3010708@gmail.com>
-In-Reply-To: <4B03974D.3010708@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 18 Nov 2009 04:56:33 -0500
+Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
+From: Peter Zijlstra <peterz@infradead.org>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
+In-Reply-To: <28c262360911171601u618ca555o1dd51ea19168575e@mail.gmail.com>
+References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com>
+	 <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk>
+	 <20091117200618.3DFF.A69D9226@jp.fujitsu.com> <4B029C40.2020803@gmail.com>
+	 <1258490826.3918.29.camel@laptop>
+	 <28c262360911171601u618ca555o1dd51ea19168575e@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Nov 2009 10:56:21 +0100
+Message-ID: <1258538181.3918.138.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911181048.04233.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19IuvXI6Y0OvoUz25iuAtUP+rAs4NETdDRBssN
- 7fLxZAG5l/m6rEunV7Jj7jPtzle5D0R9SXTVHo/yvnQU5ud0wq
- 8bLW5GgR+z1vU41OSt2yQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 November 2009, Eric Dumazet wrote:
-> > +                     macvlan_broadcast(skb, port, NULL, MACVLAN_MODE_VEPA
-> > +                             | MACVLAN_MODE_VEPA | MACVLAN_MODE_BRIDGE);
+On Wed, 2009-11-18 at 09:01 +0900, Minchan Kim wrote:
+> Hi, Peter.
 > 
-> typo here, you probably meant MACVLAN_PRIVATE | MACVLAN_VEPA | MACVLAN_BRIDGE 
+> First of all, Thanks for the commenting.
+> 
+> On Wed, Nov 18, 2009 at 5:47 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, 2009-11-17 at 21:51 +0900, Minchan Kim wrote:
+> >> I think it's because mempool reserves memory.
+> >> (# of I/O issue\0 is hard to be expected.
+> >> How do we determine mempool size of each block driver?
+> >> For example,  maybe, server use few I/O for nand.
+> >> but embedded system uses a lot of I/O.
+> >
+> > No, you scale the mempool to the minimum amount required to make
+> > progress -- this includes limiting the 'concurrency' when handing out
+> > mempool objects.
+> >
+> > If you run into such tight corners often enough to notice it, there's
+> > something else wrong.
+> >
+> > I fully agree with ripping out PF_MEMALLOC from pretty much everything,
+> > including the VM, getting rid of the various abuse outside of the VM
+> > seems like a very good start.
+> >
+> 
+> I am not against removing PF_MEMALLOC.
+> Totally, I agree to prevent abusing of PF_MEMALLOC.
+> 
+> What I have a concern is per-block mempool.
+> Although it's minimum amount of mempool, it can be increased
+> by adding new block driver. I am not sure how many we will have block driver.
+> 
+> And, person who develop new driver always have to use mempool and consider
+> what is minimum of mempool.
+> I think this is a problem of mempool, now.
+> 
+> How about this?
+> According to system memory, kernel have just one mempool for I/O which
+> is one shared by several block driver.
+> 
+> And we make new API block driver can use.
+> Of course, as usual It can use dynamic memoy. Only it can use mempool if
+> system don't have much dynamic memory.
+> 
+> In this case, we can control read/write path. read I/O can't help
+> memory reclaiming.
+> So I think read I/O don't use mempool, I am not sure. :)
 
-Well spotted. One last minute-change gone wrong.
+Sure some generic blocklevel infrastructure might work, _but_ you cannot
+take away the responsibility of determining the amount of memory needed,
+nor does any of this have any merit if you do not limit yourself to that
+amount.
 
-Thanks,
+Current PF_MEMALLOC usage in the VM is utterly broken in that we can
+have a basically unlimited amount of tasks hit direct reclaim and all of
+them will then consume PF_MEMALLOC, which mean we can easily run out of
+memory.
 
-	Arnd <><
+( unless I missed the direct reclaim throttle patches going in, which
+isn't at all impossible )
+
+
+
