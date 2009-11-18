@@ -1,265 +1,414 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZKRBIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZKRBM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZKRBIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZKRBIv
+	id S1756755AbZKRBM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZKRBM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:08:51 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:45717 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756630AbZKRBIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:08:50 -0500
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Johan Hovold <jhovold@gmail.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       linux-usb@vger.kernel.org, Alan Cox <alan@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-References: <20090924154023.GA27480@localhost>
-	<20091003140902.38628d8a@lxorguk.ukuu.org.uk>
-	<m13a4df19g.fsf@fess.ebiederm.org>
-	<200911171941.34781.oliver@neukum.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Nov 2009 17:08:43 -0800
-In-Reply-To: <200911171941.34781.oliver@neukum.org> (Oliver Neukum's message of "Tue\, 17 Nov 2009 19\:41\:34 +0100")
-Message-ID: <m1lji4od0k.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Nov 2009 20:12:57 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:50097 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752910AbZKRBMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 20:12:55 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] intermittent suspend problem again
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911132059.46377.rjw@sisk.pl>
+	<874ooxho2b.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
+Date: Wed, 18 Nov 2009 02:12:17 +0100
+In-Reply-To: <200911141952.50030.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sat, 14 Nov 2009 19:52:49 +0100")
+Message-ID: <876398tz4e.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="=-=-="
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 --=-=-=
 
-Oliver Neukum <oliver@neukum.org> writes:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Am Dienstag, 17. November 2009 19:35:07 schrieb Eric W. Biederman:
->> Boiled down.  ftdi_chars_in_buffer is essentially
->>  priv->tx_outstanding_bytes. tx_outstanding_bytes is incremented when an
->>  urb request is sent and tx_outstanding_bytes is decremented when an urb
->>  request completes.
->> 
->> It turns out I have a moderately noisy usb line, and so I occasionally
->> get messages like:
->> 
->> ehci_hcd 0000:00:0a.1: detected XactErr len 0/7 retry 31
->> 
->> Which as best as I can tell result in the urb getting abandoned and
->> neither completed nor canceled (because we have hit the maximum
->> retry count and they still don't succeed).
+> On Saturday 14 November 2009, Ferenc Wagner wrote:
 >
-> The URB should be finished with an error code in urb->status.
-> ftdi_write_bulk_callback() does decrement the counter even in
-> the error case.
+>> Are other pm_test values meaningful, or possibly harmful?
 >
->> Which appears to result in tx_outstanding_bytes getting stuck at
->> some positive number.
+> They are supposed to work as for suspend.
 >
-> Do you see this message
+>> I think I tried freezer, which resulted in a seemingly perfect
+>> suspend, but the machine didn't try to resume afterwards, but booted
+>> normally instead...
 >
->  	if (status) {
-> 		dbg("nonzero write bulk status received: %d", status);
-> 		return;
-> 	}
->
-> if you enable debugging output?
+> So this sounds like there's a bug (will check).
 
-Ok.  After a bunch of minor tweaks to the debug messages I finally have a smoking gun trace.
+I rechecked this: the freezer "test" goes on to suspend the machine;
+generally it's even possible to resume from the image, but this still
+should be a bug.  Can you reproduce it?
 
-The highlights:
+Meanwhile I managed to freeze the machine in the "Snapshotting system"
+phase (that is, in the SNAPSHOT_CREATE_IMAGE ioctl) again.  SysRq
+reacted, but didn't produce any output besides the name of the invoked
+function or the help text.  It couldn't power off the machine, but it
+was able to reboot it.
 
-*  ftdi_write port 15, 7 bytes
+Since I've instrumented s2disk and the hibernation path, no freeze
+happened during hibernating the machine.  However, it instead froze once
+rebooting, when I wanted to replace the kernel.  It was the usual stuff:
+everything smooth until the last step, then the final syscall with the
+magic constants, then silence... It's starting to look like this bug has
+nothing to do with hibernation after all, it's just the shutdown method
+I use most often, so it surfaced with that.
 
-*  detected XactErr len 0/7 retry 1
+I tried various things after starting with init=/bin/bash, but I wasn't
+able to cancel the suspend then, so I introduced the "always cancel"
+parameter (please find my current patch queue attached).  With that, I'm
+able to freeze the machine in 2-5 tries: after a couple of perfect runs,
+s2disk -P"always cancel=y" returns normally to the starting screen, but
+I'm left with a totally unresponsive machine.  If I didn't botch my
+patches, this may be a trace to follow: still not 100% reproducible, but
+almost.
 
-*  ftdi_write_bulk_callback - port 15
+Btw. no matter I tried setting suspend loglevel to 1 or 2, usual
+unqualified printks didn't make it to the console s2disk uses (not even
+ones from before suspend_console() in hibernation_platform_enter, or
+even simple ioctl traces for /dev/snapshot).  Would it be possible to
+work around this by skipping prepare_console or similar?
 
-*  nonzero write bulk status received: -71 countback: 0
-
-*  ftdi_chars_in_buffer - port 15 buffered: 7
-
-We write 7 bytes, we get an error and a completion with status
--EPROTO, but no bytes have actually been transferred so actual_length
-less the headers is 0.  Since we don't subtract off any bytes when we
-get the completion we figure 7 bytes are actually in flight when they
-are not.
-
-Eric
-
-
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 15 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 15
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 14 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 14
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 13 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 13
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 12 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 12
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write port 15, 7 bytes
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: data_offset set to 0
-Nov 17 16:44:35 localhost kernel: ftdi_sio ttyUSB15: ftdi_write - length = 7, data = 31 34 33 30 34 0d 0a 
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write write returning: 7
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 31 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 31
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 30 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 30
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 29 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 29
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 28 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 28
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 23 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 23
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 22 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 22
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 21 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 21
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 20 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 20
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 19 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 19
-Nov 17 16:44:35 localhost kernel: ehci_hcd 0000:00:0a.1: 9.2 detected XactErr len 0/7 retry 1
-Nov 17 16:44:35 localhost kernel: ehci_hcd 0000:00:0a.1: devpath 9.2 ep4out 3strikes
-Nov 17 16:44:35 localhost kernel: usb 1-9: clear tt buffer port 2, a12 ep4 t80078048
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 18 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 18
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 17 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 17
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_bulk_callback - port 15
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: nonzero write bulk status received: -71 countback: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 16 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 16
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 15 buffered: 7
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 15
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 14 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 14
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 13 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 13
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 12 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 12
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 31 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 31
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 30 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 30
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 29 buffered: 0
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_write_room - port 29
-Nov 17 16:44:35 localhost kernel: /home/ebiederm/projects/linux/linux-2.6.32-Arora/drivers/usb/serial/ftdi_sio.c: ftdi_chars_in_buffer - port 28 buffered: 0
-
-Debugging diff attached for anyone who cares.
+And a last thing: when I set resume device to /root/strace (yes, that
+binary), s2disk gave a rater strange report:
+s2disk: Invalid resume device. Reason: Success.
+-- 
+Regards,
+Feri.
 
 
 --=-=-=
-Content-Disposition: attachment; filename=usb-debug.diff2
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0001-Set-config-file-location-to-etc-uswsusp.conf-the-D.patch
 
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index 8e67d5c..616ec99 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -26,7 +26,7 @@
- #include <asm/uaccess.h>
- #include <asm/system.h>
+>From 9df438995d040c8d4e46f3d79d0aabcd5092ee6b Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 10 Nov 2009 01:15:59 +0100
+Subject: [PATCH] Set config file location to /etc/uswsusp.conf (the Debian default)
+
+---
+ config_parser.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/config_parser.h b/config_parser.h
+index b1adb7f..3a85793 100644
+--- a/config_parser.h
++++ b/config_parser.h
+@@ -27,4 +27,4 @@ int parse(char *my_name, char *file_name, struct config_par *parv);
+ void usage(char *my_name, struct option options[], const char *short_options);
+ void version(char *my_name, char *extra_version);
  
--#undef TTY_DEBUG_WAIT_UNTIL_SENT
-+#define TTY_DEBUG_WAIT_UNTIL_SENT
- 
- #undef	DEBUG
- 
-diff --git a/drivers/usb/host/ehci-q.c b/drivers/usb/host/ehci-q.c
-index 2494599..0766f1b 100644
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -392,7 +392,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh)
- 	"%s detected XactErr len %zu/%zu retry %d\n",
- 	qtd->urb->dev->devpath,
- 	qtd->length - QTD_LENGTH(token), qtd->length, qh->xacterrs);
--
-+#if 0
- 					/* reset the token in the qtd and the
- 					 * qh overlay (which still contains
- 					 * the qtd) so that we pick up from
-@@ -407,6 +407,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh)
- 					hw->hw_token = cpu_to_hc32(ehci,
- 							token);
- 					goto retry_xacterr;
-+#endif
+-#define CONFIG_FILE	"/etc/suspend.conf"
++#define CONFIG_FILE	"/etc/uswsusp.conf"
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline; filename=0002-Add-some-debugging-output.patch
+
+>From 26f25561e1608984faac83b7df1e9d4030be1c83 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 10 Nov 2009 01:16:20 +0100
+Subject: [PATCH] Add some debugging output
+
+---
+ config_parser.c |    2 ++
+ suspend.c       |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/config_parser.c b/config_parser.c
+index d017ccd..91cc4fc 100644
+--- a/config_parser.c
++++ b/config_parser.c
+@@ -66,6 +66,8 @@ int parse_line(char *str, struct config_par *parv)
+ 					if (sscanf(str, fmt, parv[i].ptr) <= 0)
+ 						error = -EINVAL;
  				}
- 				stopped = 1;
++				if (!error)
++					fprintf (stderr, "Parsed %s=%s\n", parv[i].name, str);
+ 				break;
+ 			}
+ 		}
+diff --git a/suspend.c b/suspend.c
+index 51cab6f..5248dba 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -2421,7 +2421,7 @@ int main(int argc, char *argv[])
  
-diff --git a/drivers/usb/serial/Makefile b/drivers/usb/serial/Makefile
-index 66619be..194a1b7 100644
---- a/drivers/usb/serial/Makefile
-+++ b/drivers/usb/serial/Makefile
-@@ -55,4 +55,3 @@ obj-$(CONFIG_USB_SERIAL_TI)			+= ti_usb_3410_5052.o
- obj-$(CONFIG_USB_SERIAL_VISOR)			+= visor.o
- obj-$(CONFIG_USB_SERIAL_WHITEHEAT)		+= whiteheat.o
- obj-$(CONFIG_USB_SERIAL_XIRCOM)			+= keyspan_pda.o
--
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 9c60d6d..f9065a4 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -1949,7 +1949,8 @@ static void ftdi_write_bulk_callback(struct urb *urb)
- 	spin_unlock_irqrestore(&priv->tx_lock, flags);
+ 	ret = 0;
+ 	if (stat(resume_dev_name, &stat_buf)) {
+-		suspend_error("Could not stat the resume device file.");
++		suspend_error("Could not stat the resume device file '%s'.", resume_dev_name);
+ 		ret = ENODEV;
+ 		goto Umount;
+ 	}
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0003-Add-debugging-around-syscalls-and-ioctls.patch
+
+>From f3472f84e44ccf41010aecc3971801c8825ae045 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Sat, 14 Nov 2009 01:25:05 +0100
+Subject: [PATCH] Add debugging around syscalls and ioctls
+
+---
+ suspend.c |   22 +++++++++++++++++++---
+ swsusp.h  |   29 ++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 6 deletions(-)
+
+diff --git a/suspend.c b/suspend.c
+index 5248dba..6a7dbb4 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -295,17 +295,26 @@ static int atomic_snapshot(int dev, int *in_suspend)
+ {
+ 	int error;
  
- 	if (status) {
--		dbg("nonzero write bulk status received: %d", status);
-+		dbg("nonzero write bulk status received: %d countback: %lu",
-+			status, countback);
- 		return;
++	fprintf (stderr, "SNAPSHOT_CREATE_IMAGE...\n");
+ 	error = ioctl(dev, SNAPSHOT_CREATE_IMAGE, in_suspend);
++	fprintf (stderr, "SNAPSHOT_CREATE_IMAGE: %d\n", error);
+ 	if (error && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_CREATE_IMAGE");
++		fprintf (stderr, "SNAPSHOT_ATOMIC_SNAPSHOT...\n");
+ 		error = ioctl(dev, SNAPSHOT_ATOMIC_SNAPSHOT, in_suspend);
++		fprintf (stderr, "SNAPSHOT_ATOMIC_SNAPSHOT: %d\n", error);
+ 	}
+ 	return error;
+ }
+ 
+ static inline int free_snapshot(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_FREE, 0);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_FREE...\n");
++	error = ioctl(dev, SNAPSHOT_FREE, 0);
++	fprintf (stderr, "SNAPSHOT_FREE: %d\n", error);
++	return error;
+ }
+ 
+ static int set_image_size(int dev, unsigned int size)
+@@ -329,10 +338,14 @@ static int platform_enter(int dev)
+ {
+ 	int error;
+ 
++	fprintf (stderr, "SNAPSHOT_POWER_OFF...\n");
+ 	error = ioctl(dev, SNAPSHOT_POWER_OFF, 0);
++	fprintf (stderr, "SNAPSHOT_POWER_OFF: %d\n", error);
+ 	if (error  && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_POWER_OFF");
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_ENTER)...\n");
+ 		error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_ENTER);
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_ENTER): %d\n", error);
+ 	}
+ 	return error;
+ }
+@@ -1258,7 +1271,7 @@ static int flush_buffer(struct swap_writer *handle)
+  */
+ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ {
+-	unsigned int m, writeout_rate;
++	unsigned int m, writeout_rate, expected_nr_pages = nr_pages;
+ 	ssize_t ret;
+ 	struct termios newtrm, savedtrm;
+ 	int abort_possible, key, error = 0;
+@@ -1350,7 +1363,7 @@ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ 		if (!error)
+ 			error = save_extents(handle, 1);
+ 		if (!error)
+-			printf(" done (%u pages)\n", nr_pages);
++			printf(" done (%u pages of expected %u)\n", nr_pages, expected_nr_pages);
  	}
  
-@@ -1988,11 +1989,10 @@ static int ftdi_chars_in_buffer(struct tty_struct *tty)
- 	int buffered;
- 	unsigned long flags;
+  Exit:
+@@ -1670,12 +1683,15 @@ static void suspend_shutdown(int snapshot_fd)
+ 	splash.set_caption("Done.");
  
--	dbg("%s - port %d", __func__, port->number);
--
- 	spin_lock_irqsave(&priv->tx_lock, flags);
- 	buffered = (int)priv->tx_outstanding_bytes;
- 	spin_unlock_irqrestore(&priv->tx_lock, flags);
-+	dbg("%s - port %d buffered: %d", __func__, port->number, buffered);
- 	if (buffered < 0) {
- 		dev_err(&port->dev, "%s outstanding tx bytes is negative!\n",
- 			__func__);
-@@ -2010,7 +2010,9 @@ static int ftdi_process_packet(struct tty_struct *tty,
- 	char flag;
- 	char *ch;
- 
-+#if 0
- 	dbg("%s - port %d", __func__, port->number);
-+#endif
- 
- 	if (len < 2) {
- 		dbg("malformed packet");
-@@ -2096,7 +2098,9 @@ static void ftdi_read_bulk_callback(struct urb *urb)
- 	struct usb_serial_port *port = urb->context;
- 	unsigned long flags;
- 
-+#if 0
- 	dbg("%s - port %d", __func__, port->number);
-+#endif
- 
- 	if (urb->status) {
- 		dbg("%s - nonzero read bulk status received: %d",
-@@ -2104,8 +2108,10 @@ static void ftdi_read_bulk_callback(struct urb *urb)
- 		return;
+ 	if (shutdown_method == SHUTDOWN_METHOD_REBOOT) {
++		fprintf (stderr, "Shutdown method was REBOOT, so rebooting...\n");
+ 		reboot();
+ 	} else if (shutdown_method == SHUTDOWN_METHOD_PLATFORM) {
++		fprintf (stderr, "Shutdown method was PLATFORM, so entering...\n");
+ 		if (platform_enter(snapshot_fd))
+ 			suspend_error("Could not enter the hibernation state, "
+ 					"calling power_off.");
  	}
++	fprintf (stderr, "Shutdown method was SHUTDOWN or something went wrong, so powering off...\n");
+ 	power_off();
+ 	/* Signature is on disk, it is very dangerous to continue now.
+ 	 * We'd do resume with stale caches on next boot. */
+diff --git a/swsusp.h b/swsusp.h
+index e6abc83..fe47702 100644
+--- a/swsusp.h
++++ b/swsusp.h
+@@ -90,41 +90,64 @@ static inline void report_unsupported_ioctl(char *name)
  
-+#if 0
- 	usb_serial_debug_data(debug, &port->dev, __func__,
- 				urb->actual_length, urb->transfer_buffer);
-+#endif
- 	ftdi_process_read(port);
+ static inline int freeze(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_FREEZE, 0);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_FREEZE...\n");
++	error = ioctl(dev, SNAPSHOT_FREEZE, 0);
++	fprintf (stderr, "SNAPSHOT_FREEZE: %d\n", error);
++	return error;
+ }
  
- 	spin_lock_irqsave(&port->lock, flags);
-diff --git a/include/linux/usb.h b/include/linux/usb.h
+ static inline int unfreeze(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_UNFREEZE, 0);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_UNFREEZE...\n");
++	error = ioctl(dev, SNAPSHOT_UNFREEZE, 0);
++	fprintf (stderr, "SNAPSHOT_UNFREEZE: %d\n", error);
++	return error;
+ }
+ 
+ static inline int platform_prepare(int dev)
+ {
+ 	int error;
+ 
++	fprintf (stderr, "SNAPSHOT_PLATFORM_SUPPORT(1)...\n");
+ 	error = ioctl(dev, SNAPSHOT_PLATFORM_SUPPORT, 1);
++	fprintf (stderr, "SNAPSHOT_PLATFORM_SUPPORT(1): %d\n", error);
+ 	if (error && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_PLATFORM_SUPPORT");
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_PREPARE)...\n");
+ 		error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_PREPARE);
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_PREPARE): %d\n", error);
+ 	}
+ 	return error;
+ }
+ 
+ static inline int platform_finish(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_PMOPS, PMOPS_FINISH);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_FINISH)...\n");
++	error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_FINISH);
++	fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_FINISH): %d\n", error);
++	return error;
+ }
+ 
+ static inline void reboot(void)
+ {
++	fprintf (stderr, "reboot syscall...\n");
+ 	syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+ 		LINUX_REBOOT_CMD_RESTART, 0);
++	fprintf (stderr, "reboot syscall failed!\n");
+ }
+ 
+ static inline void power_off(void)
+ {
++	fprintf (stderr, "power off syscall...\n");
+ 	syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+ 		LINUX_REBOOT_CMD_POWER_OFF, 0);
++	fprintf (stderr, "power off syscall failed!\n");
+ }
+ 
+ #ifndef SYS_sync_file_range
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0004-Add-the-always-cancel-parameter.patch
+
+>From 9b04b5ab4d4e963aef630fa96f84e1c433c49476 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 17 Nov 2009 23:37:02 +0100
+Subject: [PATCH] Add the 'always cancel' parameter
+
+---
+ resume.c  |    5 +++++
+ suspend.c |   12 ++++++++++++
+ 2 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/resume.c b/resume.c
+index 50ea2c8..4b70fe4 100644
+--- a/resume.c
++++ b/resume.c
+@@ -148,6 +148,11 @@ static struct config_par parameters[] = {
+ 		.fmt = "%c",
+ 		.ptr = NULL,
+ 	},
++	{
++		.name = "always cancel",
++		.fmt = "%c",
++		.ptr = NULL,
++	},
+ #ifdef CONFIG_THREADS
+ 	{
+ 		.name = "threads",
+diff --git a/suspend.c b/suspend.c
+index 6a7dbb4..2dc1311 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -96,6 +96,7 @@ static enum {
+ } shutdown_method = SHUTDOWN_METHOD_PLATFORM;
+ static int resume_pause;
+ static char verify_image;
++static char always_cancel;
+ #ifdef CONFIG_THREADS
+ static char use_threads;
+ #else
+@@ -204,6 +205,11 @@ static struct config_par parameters[] = {
+ 		.fmt = "%c",
+ 		.ptr = &verify_image,
+ 	},
++	{
++		.name = "always cancel",
++		.fmt = "%c",
++		.ptr = &always_cancel,
++	},
+ #ifdef CONFIG_THREADS
+ 	{
+ 		.name = "threads",
+@@ -1373,6 +1379,9 @@ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ 	if (abort_possible)
+ 		splash.restore_abort(&savedtrm);
+ 
++	if (always_cancel)
++		error = -EINTR;
++
+ 	return error;
+ }
+ 
+@@ -2339,6 +2348,9 @@ int main(int argc, char *argv[])
+ 	if (verify_image != 'y' && verify_image != 'Y')
+ 		verify_image = 0;
+ 
++	if (always_cancel != 'y' && always_cancel != 'Y')
++		always_cancel = 0;
++
+ #ifdef CONFIG_THREADS
+ 	if (use_threads != 'y' && use_threads != 'Y')
+ 		use_threads = 0;
+-- 
+1.5.6.5
+
 
 --=-=-=--
