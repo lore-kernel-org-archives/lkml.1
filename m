@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZKRNvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZKRNyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZKRNvs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 08:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757105AbZKRNvr
+	id S1757114AbZKRNyL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 08:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbZKRNyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 08:51:47 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:61014 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757022AbZKRNvm (ORCPT
+	Wed, 18 Nov 2009 08:54:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47821 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757026AbZKRNyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 08:51:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dcpp6d67DjpDp+IG4w/ivd8gcn8G2xcb6kncqhuZwxujhJ795OCe0INy3dikaprA0z
-         oPeSbKJ4FlcCLw/l59ltnddEkJvXCp07mlALZysv6mSWGy9XrlOJ2XHpzp4xAqWFj4uE
-         AZvO1EtqrH9Gvjv9DMJtkdxRLMHewOVgqkCH0=
-Date: Wed, 18 Nov 2009 13:51:36 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091118135136.GA9224@ff.dom.local>
-References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com> <20091112113836.GA7963@ff.dom.local> <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com> <4AFC5C58.9030207@gmail.com> <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com> <20091113211640.GA2540@ami.dom.local> <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
+	Wed, 18 Nov 2009 08:54:09 -0500
+Date: Wed, 18 Nov 2009 08:54:14 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+Message-ID: <20091118135414.GA16218@infradead.org>
+References: <ipicVA1QUFF.A.zWB.1mdALB@chimera> <OWmO9uyC1hM.A.yiC._ndALB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <OWmO9uyC1hM.A.yiC._ndALB@chimera>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 04:59:03AM -0500, Caleb Cushing wrote:
-> > Might be the same bugzilla report, I guess. We need to establish if
-> > these pings reach 192.168.1.1, so a short test and tcpdump without any
-> > special options just to get a few lost cases as seen on both sides.
-> > (And ifconfigs before and after the test.)
-> >
-> > Btw, could you check with lsmod if usbserial module is loaded before
-> > this test? I'd like to verify this git bisection result. (If the
-> > module is loaded or you have CONFIG_USB_SERIAL=y instead of m, try to
-> > recompile the kernel with this option turned off, for this test.)
+On Tue, Nov 17, 2009 at 12:01:19AM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.30 and 2.6.31.
 > 
-> sorry for taking so long to get back. busy problematic times.
-No problem, don't hurry.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
 
-> 
-> the dumps and ifconfigs are a bit less 'clean' because the router
-> serves several other computers (none of which have this issue
-> (windows)) here's the ifconfig -a from the router.
+FYI I see exactly the same symptoms - tons of probe timeouts, usually
+very shortly after the association.  But I see this with an Intel 5100
+AGN so it's either mac80211-related or coincidence.  I now went back to
+2.6.31 which is perfectly fine for about half an hour.  I'll try to
+bisect it down a bit, but many .32-rc releases hang on very early in
+ACPI code on this box which might make it a pain or impossible.
 
-Actually, I'm a little bit surprised. Maybe I missed something from
-your previous messages, but I expected something more similar to the
-first wireshark dump, which suggested to me there was only this mtr
-traffic. Now there is a lot more (plus we know it's not all).
-
-So, there is a basic question: can this mtr loss be seen while no
-other traffic is present? After looking into these current dumps I
-doubt. There are e.g. 3 pings unanswered between 09:21:50 and
-09:21:52 (21:31:34 to 21:31:38 router time), but a lot of tcp
-packets to and from 192.168.1.3, so looks like simply dropped and
-we can guess the reason.
-
-> 
-> usbserial is not loaded. actually from reading the patch submission I
-> suspected the official cause might be off... but I'm not kernel
-> programmer all I know is where I could see the loss during tests.and I
-> haven't been able to reproduce over dozens of reboots from this
-> 2.6.31.1-test-00091-gfa31221 kernel.
-
-Since this patch from the bisection is really limited to this one
-module I doubt we should follow this direction. IMHO it shows the
-test wasn't reproducible enough. Probably the amount and/or kind of
-other traffic really matter. If I'm wrong and missed something again
-let me know. Btw, could you try if changing with ifconfig the
-txqueuelen of desktop's eth0 from 100 to 1000 changes anything
-in this mtr test?
-
-Jarek P.
-
-> this is the ifconfig -a from my desktop while experiencing the issue
-> 
-> eth0      Link encap:Ethernet  HWaddr 00:21:9B:06:4C:C9
->           inet addr:192.168.1.3  Bcast:192.168.1.255  Mask:255.255.255.0
->           inet6 addr: fe80::221:9bff:fe06:4cc9/64 Scope:Link
->           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
->           RX packets:3465 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:4951 errors:0 dropped:0 overruns:0 carrier:0
->           collisions:0 txqueuelen:100
->           RX bytes:1467320 (1.3 Mb)  TX bytes:631808 (617.0 Kb)
->           Memory:fdfc0000-fdfe0000
