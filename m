@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZKRKTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZKRKU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZKRKTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZKRKTs
+	id S1756939AbZKRKU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 05:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbZKRKU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:19:48 -0500
-Received: from www.tglx.de ([62.245.132.106]:41895 "EHLO www.tglx.de"
+	Wed, 18 Nov 2009 05:20:26 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45897 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZKRKTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:19:47 -0500
-Date: Wed, 18 Nov 2009 11:19:14 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Nick Piggin <npiggin@suse.de>
-cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: -rt dbench scalabiltiy issue
-In-Reply-To: <20091118042516.GC21813@wotan.suse.de>
-Message-ID: <alpine.LFD.2.00.0911181110430.24119@localhost.localdomain>
-References: <1255723519.5135.121.camel@localhost.localdomain> <20091017223902.GA29439@wotan.suse.de> <1258507696.2077.61.camel@localhost> <20091118042516.GC21813@wotan.suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753727AbZKRKUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 05:20:25 -0500
+Message-ID: <4B03CA6E.8080102@suse.cz>
+Date: Wed, 18 Nov 2009 11:20:30 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kconfig: Add missing prototype
+References: <b9df5fa10911180212h5d74e640g859e7cebe952689@mail.gmail.com>
+In-Reply-To: <b9df5fa10911180212h5d74e640g859e7cebe952689@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick,
+Dne 18.11.2009 11:12, Rakib Mullick napsal(a):
+>   Patch named 'kbuild-generate-modulesbuiltin.patch' introduce a new
+> function 'fprintf2', without previous prototype declared. This patch adds
+> this missing prototype.
 
-On Wed, 18 Nov 2009, Nick Piggin wrote:
-> > So yes, on -rt, the overhead from lock contention is way way worse then
-> > any extra atomic ops. :)
+Hi Rakib,
+
+thanks for the fix, but I already posted a new, simplified version that
+doesn't use the fprintf2() thing at all:
+http://patchwork.kernel.org/patch/50131/
+
+Michal
+
+
+>  When building defconfig on i386 - we were hit by the following warning:
 > 
-> How about overhead for an uncontended lock? Ie. is the problem caused
-> because lock *contention* issues are magnified on -rt, or is it
-> because uncontended lock overheads are higher? Detailed callgraph
-> profiles and lockstat of +/-atomic case would be very interesting.
+>   HOSTCC  scripts/kconfig/zconf.tab.o
+> In file included from scripts/kconfig/zconf.tab.c:2451:
+> scripts/kconfig/confdata.c:676: warning: no previous prototype for 'fprintf2'
+> 
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> ---
+> 
+> --- linus/scripts/kconfig/lkc.h	2009-11-18 16:37:46.000000000 +0600
+> +++ rakib/scripts/kconfig/lkc.h	2009-11-18 17:03:19.000000000 +0600
+> @@ -79,6 +79,7 @@ char *conf_get_default_confname(void);
+>  void sym_set_change_count(int count);
+>  void sym_add_change_count(int count);
+>  void conf_set_all_new_symbols(enum conf_def_mode mode);
+> +int fprintf2(FILE *f1, FILE *f2, const char *fmt, ...);
+> 
+>  /* kconfig_load.c */
+>  void kconfig_load(void);
 
-In the uncontended case we have the overhead of calling might_sleep()
-before we acquire the lock with cmpxchg(). The uncontended unlock is a
-cmpxchg() as well.
-
-I don't think that this is significant overhead and we see real lock
-contention issues magnified by at least an order of magnitude.
-
-Thanks,
-
-	tglx
