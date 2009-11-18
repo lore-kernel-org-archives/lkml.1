@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZKRJZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbZKRJ3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZKRJZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbZKRJZT
+	id S1756966AbZKRJ3B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:29:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZKRJ26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:25:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42292 "EHLO mx1.suse.de"
+	Wed, 18 Nov 2009 04:28:58 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42303 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756817AbZKRJZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:25:14 -0500
+	id S1756816AbZKRJZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 04:25:15 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
        Thomas Gleixner <tglx@linutronix.de>,
        Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       matthew@wil.cx, Jan Blunck <jblunck@suse.de>
-Subject: [PATCH 13/20] BKL: Remove BKL from HFS+
-Date: Wed, 18 Nov 2009 10:24:46 +0100
-Message-Id: <1258536293-7762-14-git-send-email-jblunck@suse.de>
+       matthew@wil.cx, Jan Blunck <jblunck@suse.de>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: [PATCH 14/20] BKL: Remove BKL from JFS
+Date: Wed, 18 Nov 2009 10:24:47 +0100
+Message-Id: <1258536293-7762-15-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258536293-7762-1-git-send-email-jblunck@suse.de>
 References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
@@ -26,72 +27,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The BKL is only used in put_super and fill_super that are both protected by
-the superblocks s_umount rw_semaphore. Therefore it is safe to remove the
-BKL entirely.
+The BKL is only used in put_super, fill_super and remount_fs that are all
+three protected by the superblocks s_umount rw_semaphore. Therefore it is
+safe to remove the BKL entirely.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/hfsplus/super.c |   13 +------------
- 1 files changed, 1 insertions(+), 12 deletions(-)
+ fs/jfs/super.c |   36 +++++++-----------------------------
+ 1 files changed, 7 insertions(+), 29 deletions(-)
 
-diff --git a/fs/hfsplus/super.c b/fs/hfsplus/super.c
-index 824f57a..8a77d43 100644
---- a/fs/hfsplus/super.c
-+++ b/fs/hfsplus/super.c
-@@ -12,7 +12,6 @@
- #include <linux/pagemap.h>
- #include <linux/fs.h>
- #include <linux/slab.h>
+diff --git a/fs/jfs/super.c b/fs/jfs/super.c
+index a8e6046..5ccbb32 100644
+--- a/fs/jfs/super.c
++++ b/fs/jfs/super.c
+@@ -32,7 +32,6 @@
+ #include <linux/crc32.h>
+ #include <asm/uaccess.h>
+ #include <linux/seq_file.h>
 -#include <linux/smp_lock.h>
- #include <linux/vfs.h>
- #include <linux/nls.h>
  
-@@ -210,8 +209,6 @@ static void hfsplus_put_super(struct super_block *sb)
- 	if (!sb->s_fs_info)
- 		return;
+ #include "jfs_incore.h"
+ #include "jfs_filsys.h"
+@@ -173,8 +172,6 @@ static void jfs_put_super(struct super_block *sb)
+ 
+ 	jfs_info("In jfs_put_super");
  
 -	lock_kernel();
 -
- 	if (sb->s_dirt)
- 		hfsplus_write_super(sb);
- 	if (!(sb->s_flags & MS_RDONLY) && HFSPLUS_SB(sb).s_vhdr) {
-@@ -232,8 +229,6 @@ static void hfsplus_put_super(struct super_block *sb)
- 	unload_nls(HFSPLUS_SB(sb).nls);
- 	kfree(sb->s_fs_info);
- 	sb->s_fs_info = NULL;
+ 	rc = jfs_umount(sb);
+ 	if (rc)
+ 		jfs_err("jfs_umount failed with return code %d", rc);
+@@ -185,8 +182,6 @@ static void jfs_put_super(struct super_block *sb)
+ 	iput(sbi->direct_inode);
+ 
+ 	kfree(sbi);
 -
 -	unlock_kernel();
  }
  
- static int hfsplus_statfs(struct dentry *dentry, struct kstatfs *buf)
-@@ -312,13 +307,9 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
- 	struct nls_table *nls = NULL;
- 	int err = -EINVAL;
+ enum {
+@@ -366,19 +361,16 @@ static int jfs_remount(struct super_block *sb, int *flags, char *data)
+ 	if (!parse_options(data, sb, &newLVSize, &flag)) {
+ 		return -EINVAL;
+ 	}
+-	lock_kernel();
++
+ 	if (newLVSize) {
+ 		if (sb->s_flags & MS_RDONLY) {
+ 			printk(KERN_ERR
+ 		  "JFS: resize requires volume to be mounted read-write\n");
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		rc = jfs_extendfs(sb, newLVSize, 0);
+-		if (rc) {
+-			unlock_kernel();
++		if (rc)
+ 			return rc;
+-		}
+ 	}
+ 
+ 	if ((sb->s_flags & MS_RDONLY) && !(*flags & MS_RDONLY)) {
+@@ -390,30 +382,25 @@ static int jfs_remount(struct super_block *sb, int *flags, char *data)
+ 
+ 		JFS_SBI(sb)->flag = flag;
+ 		ret = jfs_mount_rw(sb, 1);
+-		unlock_kernel();
+ 		return ret;
+ 	}
+ 	if ((!(sb->s_flags & MS_RDONLY)) && (*flags & MS_RDONLY)) {
+ 		rc = jfs_umount_rw(sb);
+ 		JFS_SBI(sb)->flag = flag;
+-		unlock_kernel();
+ 		return rc;
+ 	}
+ 	if ((JFS_SBI(sb)->flag & JFS_NOINTEGRITY) != (flag & JFS_NOINTEGRITY))
+ 		if (!(sb->s_flags & MS_RDONLY)) {
+ 			rc = jfs_umount_rw(sb);
+-			if (rc) {
+-				unlock_kernel();
++			if (rc)
+ 				return rc;
+-			}
++
+ 			JFS_SBI(sb)->flag = flag;
+ 			ret = jfs_mount_rw(sb, 1);
+-			unlock_kernel();
+ 			return ret;
+ 		}
+ 	JFS_SBI(sb)->flag = flag;
+ 
+-	unlock_kernel();
+ 	return 0;
+ }
+ 
+@@ -425,20 +412,15 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	s64 newLVSize = 0;
+ 	int flag, ret = -EINVAL;
  
 -	lock_kernel();
 -
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	jfs_info("In jfs_read_super: s_flags=0x%lx", sb->s_flags);
+ 
+-	if (!new_valid_dev(sb->s_bdev->bd_dev)) {
+-		unlock_kernel();
++	if (!new_valid_dev(sb->s_bdev->bd_dev))
+ 		return -EOVERFLOW;
+-	}
+ 
+ 	sbi = kzalloc(sizeof (struct jfs_sb_info), GFP_KERNEL);
 -	if (!sbi) {
 -		unlock_kernel();
 +	if (!sbi)
  		return -ENOMEM;
 -	}
- 
++
  	sb->s_fs_info = sbi;
- 	INIT_HLIST_HEAD(&sbi->rsrc_inodes);
-@@ -463,13 +454,11 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
- out:
- 	unload_nls(sbi->nls);
- 	sbi->nls = nls;
+ 	sbi->sb = sb;
+ 	sbi->uid = sbi->gid = sbi->umask = -1;
+@@ -448,7 +430,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
+ 
+ 	if (!parse_options((char *) data, sb, &newLVSize, &flag)) {
+ 		kfree(sbi);
+-		unlock_kernel();
+ 		return -EINVAL;
+ 	}
+ 	sbi->flag = flag;
+@@ -460,7 +441,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	if (newLVSize) {
+ 		printk(KERN_ERR "resize option for remount only\n");
+ 		kfree(sbi);
+-		unlock_kernel();
+ 		return -EINVAL;
+ 	}
+ 
+@@ -536,7 +516,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	sb->s_maxbytes = min(((u64) PAGE_CACHE_SIZE << 32) - 1, sb->s_maxbytes);
+ #endif
+ 	sb->s_time_gran = 1;
 -	unlock_kernel();
  	return 0;
  
- cleanup:
- 	hfsplus_put_super(sb);
- 	unload_nls(nls);
+ out_no_root:
+@@ -558,7 +537,6 @@ out_kfree:
+ 	if (sbi->nls_tab)
+ 		unload_nls(sbi->nls_tab);
+ 	kfree(sbi);
 -	unlock_kernel();
- 	return err;
+ 	return ret;
  }
  
 -- 
