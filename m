@@ -1,52 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZKRXTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbZKRXX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbZKRXTH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 18:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZKRXTG
+	id S1757799AbZKRXX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 18:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbZKRXX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 18:19:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45786 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbZKRXTE (ORCPT
+	Wed, 18 Nov 2009 18:23:56 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:39631 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbZKRXXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 18:19:04 -0500
-Message-ID: <4B0480C4.6080003@zytor.com>
-Date: Wed, 18 Nov 2009 15:18:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 18 Nov 2009 18:23:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=phsZXoDSbYeC67tVApq5HIP6p0NWgTNBwrfFV93EdJ0o2gauZZwILNJiXKGuvP2Tuu
+         heJsGVuGOMXP3P/R9nFoag46zE1+x0nhmm4vLnqrAeDx6iqdd9cdKeDMojKM6nmXld5W
+         ugJJcX35CAfzoLkBpykEHhemur2rsGiaWoiDE=
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, rth@redhat.com,
-       mhiramat@redhat.com
-Subject: Re: [RFC PATCH 0/6] jump label v3
-References: <cover.1258580048.git.jbaron@redhat.com>	<4B047A81.3060104@zytor.com> <20091118230758.0C49A9D5@magilla.sf.frob.com>
-In-Reply-To: <20091118230758.0C49A9D5@magilla.sf.frob.com>
+In-Reply-To: <20091113.203248.84989794.davem@davemloft.net>
+References: <d45a3acc0911111613v38fa9df4jed21876ce6309097@mail.gmail.com>
+	 <20091113.203248.84989794.davem@davemloft.net>
+Date: Thu, 19 Nov 2009 10:24:01 +1100
+Message-ID: <d45a3acc0911181524t58a87d07s42930bda765a97d7@mail.gmail.com>
+Subject: Re: [PATCH] X25: Enable setting of cause and diagnostic fields
+From: andrew hendry <andrew.hendry@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-x25@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18/2009 03:07 PM, Roland McGrath wrote:
->> 67 66 8D 74 00 (lea si,[si+0]) should work as a 32-bit atomic NOP.  It's
->> not necessarily the fastest, though (I have no data on that.)
->> Similarly, 66 66 66 66 90 should also work.
-> 
-> We should get all the knowledge like that stored in places like the
-> Kconfig.cpu comments near X86_P6_NOP and/or asm/nops.h macros and comments.
-> 
-> Let's have an ASM_ATOMIC_NOP5 macro in asm/nops.h?  I've lost track of the
-> variants, and I'll leave that to you all who are close to the chip people.
-> 
-> I can't tell if it's the case that there will be kernel configurations
-> where there is one known-safe choice but a different choice that's optimal
-> if CPU model checks pass.  If so, we could compile in the safe choice and
-> then mass-change to the optimal choice at boot time.  (i.e. like the
-> alternatives support, but we don't really need to use that too since we
-> already have another dedicated table of all the PC addresses to touch.)
+Thanks, will make sure to check 32/64 in the future.
 
-Yes, I believe we do something like that already.
-	
-	-hpa
+Adds SIOCX25SCAUSEDIAG, allowing X.25 programs to set the cause and
+diagnostic fields.
+Normally used to indicate status upon closing connections.
+
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+
+diff -uprN -X a/Documentation/dontdiff a/include/linux/x25.h
+b/include/linux/x25.h
+--- a/include/linux/x25.h	2009-11-16 13:44:41.138892908 +1100
++++ b/include/linux/x25.h	2009-11-11 16:05:06.625958557 +1100
+@@ -25,6 +25,7 @@
+ #define SIOCX25SENDCALLACCPT    (SIOCPROTOPRIVATE + 9)
+ #define SIOCX25GDTEFACILITIES (SIOCPROTOPRIVATE + 10)
+ #define SIOCX25SDTEFACILITIES (SIOCPROTOPRIVATE + 11)
++#define SIOCX25SCAUSEDIAG	(SIOCPROTOPRIVATE + 12)
+
+ /*
+  *	Values for {get,set}sockopt.
+diff -uprN -X a/Documentation/dontdiff a/net/x25/af_x25.c b/net/x25/af_x25.c
+--- a/net/x25/af_x25.c	2009-11-16 13:44:41.745816123 +1100
++++ b/net/x25/af_x25.c	2009-11-16 13:49:51.277655328 +1100
+@@ -1430,6 +1430,17 @@ static int x25_ioctl(struct socket *sock
+ 			break;
+ 		}
+
++		case SIOCX25SCAUSEDIAG: {
++			struct x25_causediag causediag;
++			rc = -EFAULT;
++			if (copy_from_user(&causediag, argp, sizeof(causediag)))
++				break;
++			x25->causediag = causediag;
++			rc = 0;
++			break;
++
++		}
++
+ 		case SIOCX25SCUDMATCHLEN: {
+ 			struct x25_subaddr sub_addr;
+ 			rc = -EINVAL;
+@@ -1587,6 +1598,7 @@ static int compat_x25_ioctl(struct socke
+ 	case SIOCX25GCALLUSERDATA:
+ 	case SIOCX25SCALLUSERDATA:
+ 	case SIOCX25GCAUSEDIAG:
++	case SIOCX25SCAUSEDIAG:
+ 	case SIOCX25SCUDMATCHLEN:
+ 	case SIOCX25CALLACCPTAPPRV:
+ 	case SIOCX25SENDCALLACCPT:
+diff -uprN -X a/Documentation/dontdiff a/net/x25/x25_subr.c b/net/x25/x25_subr.c
+--- a/net/x25/x25_subr.c	2009-11-16 13:44:42.337741236 +1100
++++ b/net/x25/x25_subr.c	2009-11-11 16:28:30.316150252 +1100
+@@ -225,6 +225,12 @@ void x25_write_internal(struct sock *sk,
+ 			break;
+
+ 		case X25_CLEAR_REQUEST:
++			dptr    = skb_put(skb, 3);
++			*dptr++ = frametype;
++			*dptr++ = x25->causediag.cause;
++			*dptr++ = x25->causediag.diagnostic;
++			break;
++
+ 		case X25_RESET_REQUEST:
+ 			dptr    = skb_put(skb, 3);
+ 			*dptr++ = frametype;
+
+
+On Sat, Nov 14, 2009 at 3:32 PM, David Miller <davem@davemloft.net> wrote:
+> From: andrew hendry <andrew.hendry@gmail.com>
+> Date: Thu, 12 Nov 2009 11:13:27 +1100
+>
+>> Adds SIOCX25SCAUSEDIAG, allowing X.25 programs to set the cause and
+>> diagnostic fields.
+>> Normally used to indicate status upon closing connections.
+>>
+>> Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+>
+> This change is incomplete.
+>
+> You need to add handling to compat_x25_ioctl().
+>
