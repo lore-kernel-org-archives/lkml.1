@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZKRDLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZKRDUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbZKRDLB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 22:11:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZKRDLA
+	id S1756565AbZKRDUT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 22:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbZKRDUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 22:11:00 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:42440 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753151AbZKRDK7 (ORCPT
+	Tue, 17 Nov 2009 22:20:18 -0500
+Received: from g6t0187.atlanta.hp.com ([15.193.32.64]:1742 "EHLO
+	g6t0187.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756223AbZKRDUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 22:10:59 -0500
-To: "Greg Kroah-Hartman" <gregkh@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Johan Hovold <jhovold@gmail.com>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       linux-usb@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-References: <20090924154023.GA27480@localhost>
-	<20091003140902.38628d8a@lxorguk.ukuu.org.uk>
-	<m13a4df19g.fsf@fess.ebiederm.org>
-	<200911171941.34781.oliver@neukum.org>
-	<m1lji4od0k.fsf@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Nov 2009 19:10:48 -0800
-In-Reply-To: <m1lji4od0k.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Tue\, 17 Nov 2009 17\:08\:43 -0800")
-Message-ID: <m1fx8co7d3.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Nov 2009 22:20:17 -0500
+Date: Tue, 17 Nov 2009 20:20:22 -0700
+From: Alex Chiang <achiang@hp.com>
+To: jens.axboe@oracle.com
+Cc: Don Brace <brace@beardog.cce.hp.com>,
+       "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] cciss: change Cmd_sg_list.sg_chain_dma type to dma_addr_t
+Message-ID: <20091118032022.GA6648@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [PATCH] ftdi_sio:  Keep going when write errors are encountered.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A recent commit broke the ia64 build:
 
-The use of urb->actual_length to update tx_outstanding_bytes
-implicitly assumes that the number of bytes actually written is the
-same as the number of bytes we tried to write.  On error that
-assumption is violated so just use transfer_buffer_length the number
-of bytes we intended to write to the device.
+	Author: Don Brace <brace@beardog.cce.hp.com>
+	Date:   Thu Nov 12 12:50:01 2009 -0600
 
-If an error occurs we need to fall through and call
-usb_serial_port_softint to wake up processes waiting in
-tty_wait_until_sent.
+	cciss: Add enhanced scatter-gather support.
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+because of this hunk:
+
+	--- a/drivers/block/cciss.h
+	+++ b/drivers/block/cciss.h
+	+struct Cmd_sg_list {
+	+       SGDescriptor_struct     *sgchain;
+	+       dma64_addr_t            sg_chain_dma;
+	+       int                     chain_block_size;
+	+};
+
+The issue is that dma64_addr_t isn't #define'd on ia64.
+
+The way that we're using Cmd_sg_list.sg_chain_dma is to hold an
+address returned from pci_map_single().
+
+	+               temp64.val = pci_map_single(h->pdev,
+	+                                 h->cmd_sg_list[c->cmdindex]->sgchain,
+	+                                 len, dir);
+	+
+	+               h->cmd_sg_list[c->cmdindex]->sg_chain_dma = temp64.val;
+
+pci_map_single() returns a dma_addr_t too.
+
+This code will still work even on a 32-bit x86 build, where
+dma_addr_t is defined to be a u32 because it will simply be
+promoted to the __u64 that temp64.val is defined as.
+
+Thus, declaring Cmd_sg_list.sg_chain_dma as dma_addr_t is safe.
+
+Cc: Don Brace <brace@beardog.cce.hp.com>
+Cc: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
- drivers/usb/serial/ftdi_sio.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+This changelog is probably an analysis overkill, but I was
+concerned about 32 vs 64 bit DMA addresses getting passed to the
+hardware. After doing a bunch more reading, I'm satisfied that a)
+we're dealing with CPU-side addresses and b) proper type
+promotion occurs anyway.
 
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 9c60d6d..ebcc6d0 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -1937,7 +1937,7 @@ static void ftdi_write_bulk_callback(struct urb *urb)
- 		return;
- 	}
- 	/* account for transferred data */
--	countback = urb->actual_length;
-+	countback = urb->transfer_buffer_length;
- 	data_offset = priv->write_offset;
- 	if (data_offset > 0) {
- 		/* Subtract the control bytes */
-@@ -1950,7 +1950,6 @@ static void ftdi_write_bulk_callback(struct urb *urb)
- 
- 	if (status) {
- 		dbg("nonzero write bulk status received: %d", status);
--		return;
- 	}
- 
- 	usb_serial_port_softint(port);
--- 
-1.6.2.5
+If anyone wants to double-check my work, I won't be offended. ;)
 
+I build tested this on ia64, x86_64, and i386. No gcc nor sparse
+warnings. However, I didn't do any run-time testing on i386.
+---
+diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
+index e5c63e5..1d95db2 100644
+--- a/drivers/block/cciss.h
++++ b/drivers/block/cciss.h
+@@ -57,7 +57,7 @@ typedef struct _drive_info_struct
+ 
+ struct Cmd_sg_list {
+ 	SGDescriptor_struct	*sgchain;
+-	dma64_addr_t		sg_chain_dma;
++	dma_addr_t		sg_chain_dma;
+ 	int			chain_block_size;
+ };
+ 
