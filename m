@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932191AbZKRSKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbZKRSNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932191AbZKRSKJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932174AbZKRSKI
+	id S1758171AbZKRSNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbZKRSNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:10:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40186 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932170AbZKRSKH (ORCPT
+	Wed, 18 Nov 2009 13:13:12 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43547 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757883AbZKRSNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:10:07 -0500
-Date: Wed, 18 Nov 2009 10:09:05 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Miller <davem@davemloft.net>
-cc: jslaby@novell.com, jirislaby@gmail.com, mingo@elte.hu,
-       nhorman@tuxdriver.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, jmorris@namei.org, heiko.carstens@de.ibm.com,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH 06/16] SPARC: use ACCESS_ONCE for rlimits
-In-Reply-To: <20091118.095526.43570583.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.01.0911181000020.4644@localhost.localdomain>
-References: <4B040A03.2020508@gmail.com> <1258555922-2064-6-git-send-email-jslaby@novell.com> <20091118.095526.43570583.davem@davemloft.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Nov 2009 13:13:11 -0500
+Date: Wed, 18 Nov 2009 18:14:33 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jamie Lokier <jamie@shareable.org>, Jan Blunck <jblunck@suse.de>,
+       linux-fsdevel@vger.kernel.org,
+       "Linux-Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       =?ISO-8859-14?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
+Message-ID: <20091118181433.50b1b707@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911181833.37531.arnd@arndb.de>
+References: <1258560457-15129-1-git-send-email-jblunck@suse.de>
+	<20091118171524.4d2f8cec@lxorguk.ukuu.org.uk>
+	<20091118172730.GD28723@shareable.org>
+	<200911181833.37531.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Complete list of offenders I can find
 
+Stuff that just doesn't look like it can work and ought to be marked
+BROKEN as it must have been non-working for ages.
 
-On Wed, 18 Nov 2009, David Miller wrote:
-> 
-> But I wonder have we really seen the compiler create this
-> kind of situation?  Or is this patch series based upon the
-> fact that it "could happen"?
+drivers/scsi/osst
+drives/s390/char/s390tape
+arch/frv/kernel/sysctl.c
+arch/cris/arch-v10/drivers/eeprom.c
 
-We have seen things like that in practice - where the compiler re-loads a 
-value twice, rather than use a copy like the source code did.
+Stuff that looks trivial to salvage and works if you don't pread/write I
+imagine
 
-That said, it's rare, to the point of being _almost_ unheard of. It's much 
-more common that gcc generates bad code by doing the reverse (trying to 
-keep things in registers and spilling, instead of just re-generating the 
-value). There are very very few cases where ACCESS_ONCE() actually matters 
-for correctness.
+drivers/sbus/char/flash.c
 
-Because in practice, the value is either modified some way (and spilling 
-it is cheaper than re-computing the modification), or there's just some 
-operation that might act as a memory barrier and alias the original memory 
-location so gcc wouldn't dare re-load anyway.
+Bits in staging
 
-However, one of the nice things about ACCESS_ONCE() is that it's also a 
-big flag for "this value is loaded without locking, on purpose".
+rt2860
+vt6656
 
-So even if it doesn't then actually change code generation significantly 
-(most common end result especially on x86 that has most ALU instructions 
-taking memory operations: gcc generates slightly worse code due to getting 
-nervous about 'volatile' and not combining instructions), it's a big 
-honking piece of programmer documentation: look out!
-
-It's basically a heads-up for lockless programming like RCU. As such, it 
-can be something scary, but when it's done right, it's a good thing. And I 
-think that for rlimits, we do have a good reason to say "sure, somebody 
-else may change the limit values concurrently, but we don't really care: 
-we just want _one_ value, whether it's the old or the new one".
-
-That said, the patch you Ack'ed is in the series of patches that I hated, 
-and Nak'ed for other reasons (namely "-EEXPRESSIONTOOCOMPLICATEDTOLIVE").
-
-			Linus
+plus some obvious mega abusers that will need cleaning up anyway in that
+area.
