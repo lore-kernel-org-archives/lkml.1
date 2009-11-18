@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZKROhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZKROVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbZKROhH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:37:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbZKROhG
+	id S1757180AbZKROVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbZKROVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:37:06 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35753 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757486AbZKROhD (ORCPT
+	Wed, 18 Nov 2009 09:21:32 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:40946 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757059AbZKROVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:37:03 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 10/11] sdio_uart: Fix the locking on "func" for new code
-To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:20:38 +0000
-Message-ID: <20091118142033.3582.90944.stgit@localhost.localdomain>
-In-Reply-To: <20091118141802.3582.47363.stgit@localhost.localdomain>
-References: <20091118141802.3582.47363.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Wed, 18 Nov 2009 09:21:31 -0500
+Date: Wed, 18 Nov 2009 15:20:56 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Wu Zhangjin <wuzhangjin@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+       alsa-devel@alsa-project.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, Wu Zhangjin <wuzj@lemote.com>
+Subject: Re: [PATCH] MIPS: Fixups of ALSA memory maps
+Message-ID: <20091118142056.GB6615@linux-mips.org>
+References: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com> <s5hd43iiebt.wl%tiwai@suse.de> <20091116174324.GA17748@linux-mips.org> <s5hhbst4hzt.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hhbst4hzt.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new dtr_rts function didn't take the port->func lock as it should
-so add use of the lock there.
+On Tue, Nov 17, 2009 at 10:29:10AM +0100, Takashi Iwai wrote:
 
+> > > Actually, this has been a looong-standing problem.
+> > > I have a series of patches to fix these issues, but it's more
+> > > intensively involved with dma_*() functions.
+> > > 
+> > > The patches can be found in test/dma-fix branch of sound GIT tree.
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git test/dma-fix
+> > > 
+> > > This basically adds dma_mmap_coherent() function to feasible
+> > > architectures, which is already implemented for ARM, so far.
+> > 
+> > Cool - but needs a little further tweaking to work right.  That's a
+> > solution which will use uncached accesses on all MIPS systems.
+> > 
+> > IP27/IP35-family machines will explode when you try that.  Eventually the
+> > cache coherency logic will notice that cache, directory caches and memory
+> > have become inconsistent and bombard the CPU with a bunch of nasty
+> > exceptions.
+> 
+> OK, that's really bad.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+Hardware designers do such things to you.  Often even for a reason.
 
- drivers/mmc/card/sdio_uart.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+> > For cache-coherent machines otoh it's a big waste of performance.
+> > 
+> > int dma_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
+> >                       void *cpu_addr, dma_addr_t handle, size_t size)
+> > {
+> >         struct page *pg;
+> > 
+> > 	if (!plat_device_is_coherent(dev))
+> > 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+> >         cpu_addr = (void *)dma_addr_to_virt(handle);
+> >         pg = virt_to_page(cpu_addr);
+> > 
+> >         return remap_pfn_range(vma, vma->vm_start,
+> >                                page_to_pfn(pg) + vma->vm_pgoff,
+> >                                size, vma->vm_page_prot);
+> > }
+> > EXPORT_SYMBOL(dma_mmap_coherent);
+> > 
+> > Thomas - you're the IP28 specialist.  Would the plat_device_is_coherent()
+> > above have to become a cpu_is_noncoherent_r10000() call?  Any further
+> > nasties?
+> 
+> Thanks for checking!
 
+You're welcome!
 
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index f14338b..6d8f019 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -567,10 +567,14 @@ static void uart_dtr_rts(struct tty_port *tport, int onoff)
- {
- 	struct sdio_uart_port *port =
- 			container_of(tport, struct sdio_uart_port, port);
-+	int ret = sdio_uart_claim_func(port);
-+	if (ret)
-+		return;
- 	if (onoff == 0)
- 		sdio_uart_clear_mctrl(port, TIOCM_DTR | TIOCM_RTS);
- 	else
- 		sdio_uart_set_mctrl(port, TIOCM_DTR | TIOCM_RTS);
-+	sdio_uart_release_func(port);
- }
- 
- /**
+So basically I'd not mind putting this into the Linux/MIPS tree; we still
+can iron out the kinks from there on and probably much better than by
+having arch stuff in the ALSA tree.
 
+I recall this new API having been posted for discussion to linux-arch.
+What was the outcome?  I'd only like to add a new API if the other arch
+maintainers see it fit their needs also.
+
+  Ralf
