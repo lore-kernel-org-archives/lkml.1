@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbZKRSvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbZKRSwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466AbZKRSvh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbZKRSvf
+	id S932500AbZKRSwJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453AbZKRSwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:51:35 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:63985 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932367AbZKRSvc (ORCPT
+	Wed, 18 Nov 2009 13:52:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58177
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932450AbZKRSwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:51:32 -0500
-Message-ID: <4B04425D.5080604@ru.mvista.com>
-Date: Wed, 18 Nov 2009 21:52:13 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hpt366: remove dead old timing tables
-References: <200911181932.07651.bzolnier@gmail.com>
-In-Reply-To: <200911181932.07651.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 18 Nov 2009 13:52:03 -0500
+Date: Wed, 18 Nov 2009 10:52:19 -0800 (PST)
+Message-Id: <20091118.105219.75552832.davem@davemloft.net>
+To: julia@diku.dk
+Cc: yi.zhu@intel.com, reinette.chatre@intel.com, ilw@linux.intel.com,
+       linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, arnd@arndb.de, joe@perches.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 14/16] drivers/net/wireless/iwlwifi: remove exceptional
+ & on function name
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0911181924510.20943@ask.diku.dk>
+References: <Pine.LNX.4.64.0911181924510.20943@ask.diku.dk>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+From: Julia Lawall <julia@diku.dk>
+Date: Wed, 18 Nov 2009 19:25:25 +0100 (CET)
 
-Bartlomiej Zolnierkiewicz wrote:
+> In this file, function names are otherwise used as pointers without &.
+ ...
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-> It has been enough time since introduction of the new timing tables
-> (commit 809b53c from Dec 12 2007) and the old timing tables are still
-> available in pata_hpt37x.c (or git history) if somebody needs them.
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-WBR, Sergei
+Applied.
