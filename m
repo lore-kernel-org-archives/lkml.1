@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbZKRRae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbZKRR02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbZKRRae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:30:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757989AbZKRRad
+	id S1757998AbZKRR02 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbZKRR01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:30:33 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:63396 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757924AbZKRRac (ORCPT
+	Wed, 18 Nov 2009 12:26:27 -0500
+Received: from mga11.intel.com ([192.55.52.93]:12405 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757816AbZKRR01 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:30:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mVTlQ/i4FtwcVOx59/DJktoKZHqVv352SDtyH0m2zH4B0m7XL2O1O9nbk9QgEx6KJt
-         n2wzn5A50YkBE7TIhj5mSmR9EwT7sMgsKa5z88n2O/Z3+oaKV3AEduMiQpQguNoUHvvn
-         Tr7Wb0WJT5QzRsWgmuk1twe6Grs+KWb1M8Lhs=
-Date: Wed, 18 Nov 2009 09:30:33 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       avictor.za@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] input: atmel_tsadcc: touchscreen rework setting
-	capabilities
-Message-ID: <20091118173033.GA4385@core.coreip.homeip.net>
-References: <693b9933de6fe9eb7e4401ca56a8f9ab6a966666.1258553002.git.nicolas.ferre@atmel.com>
+	Wed, 18 Nov 2009 12:26:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,766,1249282800"; 
+   d="scan'208";a="515165844"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Xiaotian Feng <dfeng@redhat.com>, "x86@kernel.org" <x86@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Wed, 18 Nov 2009 09:30:58 -0800
+Subject: RE: [PATCH] x86/pat: no need to check overlaps with more than one
+ entry in chk_conflict
+Thread-Topic: [PATCH] x86/pat: no need to check overlaps with more than one
+ entry in chk_conflict
+Thread-Index: AcpoAYzFyqyl8wxfRzS1zs+PLRoMRwAcvGNA
+Message-ID: <7E82351C108FA840AB1866AC776AEC46767A389F@orsmsx505.amr.corp.intel.com>
+References: <1258512455-1891-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <1258512455-1891-1-git-send-email-dfeng@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <693b9933de6fe9eb7e4401ca56a8f9ab6a966666.1258553002.git.nicolas.ferre@atmel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas,
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Xiaotian Feng
+>Sent: Tuesday, November 17, 2009 6:48 PM
+>To: x86@kernel.org
+>Cc: linux-kernel@vger.kernel.org; Xiaotian Feng; Ingo Molnar; 
+>Siddha, Suresh B; Pallipadi, Venkatesh
+>Subject: [PATCH] x86/pat: no need to check overlaps with more 
+>than one entry in chk_conflict
+>
+>memtype list is built via reserve_memtype, for the overlapped 
+>areas, they're
+>all the same type, otherwise reserve_memtype will fail to 
+>insert it into the
+>list. So there's no need to check overlaps with more than one 
+>entry in the
+>chk_conflict code.
 
-On Wed, Nov 18, 2009 at 03:12:12PM +0100, Nicolas Ferre wrote:
-> Tiny patch for setting capabilities using input API function.
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+NAK.
 
-All looks good. Since the series span platform and input subtrees how do
-you want to merge it?
+The reason we have to check for more than one entry is for the cases
+like this.
 
--- 
-Dmitry
+New entry:                   s-------------------e
+Existing entries:         s----e     s-----e   s----e
+(s=start, e=end)
+
+Thanks,
+Venki
