@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZKRBEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZKRBEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZKRBEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZKRBEh
+	id S1756549AbZKRBEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZKRBEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:04:37 -0500
-Received: from kroah.org ([198.145.64.141]:38463 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756573AbZKRBEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:04:35 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, stable <stable@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/2] tty: cp210x: Fix carrier handling
-Date: Tue, 17 Nov 2009 17:01:30 -0800
-Message-Id: <1258506090-16802-2-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.5.1
-In-Reply-To: <20091118010047.GA16719@kroah.com>
-References: <20091118010047.GA16719@kroah.com>
+	Tue, 17 Nov 2009 20:04:08 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47175 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756345AbZKRBEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 20:04:05 -0500
+Date: Wed, 18 Nov 2009 01:05:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Jean Delvare <khali@linux-fr.org>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
+Message-ID: <20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
+In-Reply-To: <c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
+	<20091107210147.3e754278@hyperion.delvare>
+	<4AF7148C.9090706@thebigcorporation.com>
+	<20091112211255.09cd884a@hyperion.delvare>
+	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
+	<20091116155606.GC29479@sirena.org.uk>
+	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+> I think the yield()s in the device driver code means "I need a small
+> delay before the hardware is ready" which might translate to some
+> arbitrary "let me msleep()" or "do not select this task in the next
+> scheduler run, EVEN IF this task is highest priority".
 
-Original discussion:
-http://thread.gmane.org/gmane.linux.usb.general/23217/focus=23248
-or
-http://marc.info/?l=linux-usb&m=125553790714133&w=2
+Yield() in a driver is almost always a bug. The reason for that is that
+doing
 
-9a68e39d4a701fb3be03cae9b462408664ebd205 broke carrier handling so that a
-cp210x setup which needed the carrier lines set up (non CLOCAL) which did
-not make a call which set the termios bits left the lines down even if
-CLOCAL was not asserted.
+	do {
+		inb();
+	} while(!something);
 
-Fix this not by reverting but by adding the proper dtr_rts and
-carrier_raised methods. This both sets the modem lines properly and also
-implements the correct blocking semantics for the port as required by
-POSIX.
+which is what yield can end up as being if there is nothing else on that
+CPU is extremely bad for bus performance on most systems. It's almost
+always better to be using msleep() or even mdelay + a check to see if a
+reschedule is needed/schedule().
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Reported-by: Karl Hiramoto <karl@hiramoto.org>
-Tested-by:  Karl Hiramoto <karl@hiramoto.org>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/usb/serial/cp210x.c |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+> I assume this is rather dirty and has too much overhead on the timer interfaces.
 
-diff --git a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
-index 698252a..bd254ec 100644
---- a/drivers/usb/serial/cp210x.c
-+++ b/drivers/usb/serial/cp210x.c
-@@ -50,6 +50,8 @@ static int cp210x_tiocmset_port(struct usb_serial_port *port, struct file *,
- static void cp210x_break_ctl(struct tty_struct *, int);
- static int cp210x_startup(struct usb_serial *);
- static void cp210x_disconnect(struct usb_serial *);
-+static void cp210x_dtr_rts(struct usb_serial_port *p, int on);
-+static int cp210x_carrier_raised(struct usb_serial_port *p);
- 
- static int debug;
- 
-@@ -143,6 +145,8 @@ static struct usb_serial_driver cp210x_device = {
- 	.tiocmset		= cp210x_tiocmset,
- 	.attach			= cp210x_startup,
- 	.disconnect		= cp210x_disconnect,
-+	.dtr_rts		= cp210x_dtr_rts,
-+	.carrier_raised		= cp210x_carrier_raised
- };
- 
- /* Config request types */
-@@ -746,6 +750,14 @@ static int cp210x_tiocmset_port(struct usb_serial_port *port, struct file *file,
- 	return cp210x_set_config(port, CP210X_SET_MHS, &control, 2);
- }
- 
-+static void cp210x_dtr_rts(struct usb_serial_port *p, int on)
-+{
-+	if (on)
-+		cp210x_tiocmset_port(p, NULL,  TIOCM_DTR|TIOCM_RTS, 0);
-+	else
-+		cp210x_tiocmset_port(p, NULL,  0, TIOCM_DTR|TIOCM_RTS);
-+}
-+
- static int cp210x_tiocmget (struct tty_struct *tty, struct file *file)
- {
- 	struct usb_serial_port *port = tty->driver_data;
-@@ -768,6 +780,15 @@ static int cp210x_tiocmget (struct tty_struct *tty, struct file *file)
- 	return result;
- }
- 
-+static int cp210x_carrier_raised(struct usb_serial_port *p)
-+{
-+	unsigned int control;
-+	cp210x_get_config(p, CP210X_GET_MDMSTS, &control, 1);
-+	if (control & CONTROL_DCD)
-+		return 1;
-+	return 0;
-+}
-+
- static void cp210x_break_ctl (struct tty_struct *tty, int break_state)
- {
- 	struct usb_serial_port *port = tty->driver_data;
--- 
-1.6.4.2
+Our timers are very efficient and some day we will need to make jiffies a
+function and stop the timer ticking for best performance. At that point
+timers are probably the most efficient way to do much of this.
 
+Be that as it may, yield() in a driver is almost always the wrong thing
+to do.
