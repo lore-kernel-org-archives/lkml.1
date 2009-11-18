@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbZKRXVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbZKRXSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbZKRXVJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 18:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbZKRXVJ
+	id S1757158AbZKRXSJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 18:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZKRXSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 18:21:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:12171 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752293AbZKRXVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 18:21:08 -0500
-Date: Thu, 19 Nov 2009 00:15:32 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
-	external to a process (v7)
-Message-ID: <20091118231532.GA13039@redhat.com>
-References: <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com> <4AF84E2F.3010305@gmail.com> <20091109173654.GA8809@redhat.com> <4B040A03.2020508@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B040A03.2020508@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 18 Nov 2009 18:18:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53034 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753685AbZKRXSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 18:18:07 -0500
+Date: Wed, 18 Nov 2009 15:18:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH]  [for mmotm-1113] mm: Simplify try_to_unmap_one()
+Message-Id: <20091118151803.35f55ca3.akpm@linux-foundation.org>
+In-Reply-To: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
+References: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18, Jiri Slaby wrote:
->
-> On the last point: I added explicit ACCESS_ONCE all over there. If you
-> don't like I will trash it.
+On Tue, 17 Nov 2009 17:39:27 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Just curious, why?
+> +out_mlock:
+> +	pte_unmap_unlock(pte, ptl);
+> +
+> +	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+> +		if (vma->vm_flags & VM_LOCKED) {
+> +			mlock_vma_page(page);
+> +			ret = SWAP_MLOCK;
+>  		}
+> +		up_read(&vma->vm_mm->mmap_sem);
 
-I mean, do you have any example of the "bad" behaviour which is
-fixed by ACCESS_ONCE() ?
+It's somewhat unobvious why we're using a trylock here.  Ranking versus
+lock_page(), perhaps?
 
-> The only remaining weird user is in
-> kernel/acct.c:
->         /*
->          * Accounting records are not subject to resource limits.
->          */
->         flim = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
->         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = RLIM_INFINITY;
->         file->f_op->write(file, (char *)&ac,
->                                sizeof(acct_t), &file->f_pos);
->         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
->
-> It means that threads of the process with PACCT caps have unlimited file
-> size for a short while. If there is setrlimit in between, it gets wiped
-> out as well.
+In general I think a trylock should have an associated comment which explains
 
-This is called when the whole thread-group exits, there are no
-live threads except current.
+a) why it is being used at this site and
 
-We don't care if the new rlimit is lost afaics, but if RLIMIT_FSIZE
-is changed in between ->write() can fail. Not sure what can we do,
-perhaps just ignore this problem ;)
+b) what happens when the trylock fails - why this isn't a
+   bug, how the kernel recovers from the inconsistency, what its
+   overall effect is, etc.
 
-At least, given that do_acct_process() does override_creds(), an
-ordinary user can't fool the accounting.
-
-Oleg.
-
+<wonders why we need to take mmap_sem here at all>
