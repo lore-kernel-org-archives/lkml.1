@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZKRV3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZKRVb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbZKRV3i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbZKRV3h
+	id S1757511AbZKRVb5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbZKRVb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:29:37 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:60784 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757376AbZKRV3h (ORCPT
+	Wed, 18 Nov 2009 16:31:57 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:34820 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756149AbZKRVb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:29:37 -0500
+	Wed, 18 Nov 2009 16:31:56 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Buesch <mb@bu3sch.de>, Andreas Schwab <schwab@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] strcmp: fix overflow and possibly signedness error
+Date: Wed, 18 Nov 2009 22:31:52 +0100
+Message-Id: <1258579912-24520-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
+References: <alpine.LFD.2.01.0911170922190.9384@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com>
-References: <1258468659-5446-1-git-send-email-mjg@redhat.com> 
-	<1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> 
-	<ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> 
-	<20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> 
-	<20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> 
-	<20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 18 Nov 2009 22:29:23 +0100
-Message-ID: <ac3eb2510911181329v26c334a3oab9c554ec64ad0d5@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
-	changes
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 22:06, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Wed, Nov 18, 2009 at 21:07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->> On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
->>
->>> Sure, but what's wrong with reading that file every 50 seconds? Almost
->>> all boxes poll for media changes of optical drives and usb card
->>> readers anyway, so it's not that we are not doing stuff like this
->>> already.
->>
->> We poll for media because there's no event-based way of avoiding it - in
->> this case there is.
->
-> That's true, but I think there is a significant difference between
-> polling every one or two seconds for media changes, and usually one or
-> two minutes for a disk idle. It's not that we poll in a rather hight
-> frequency, in an arbitrary interval, and check if some condition is
-> met.
->
-> I still don't think that we should add new event interfaces which are
-> single-subscriber only, and use global values for a specific user.
-> What if there will be another independent user for this, which might
-> want a different timeout? They fight over the trigger value to set in
-> sysfs?
->
-> From my perspective, the once-at-timeout wakeup is more acceptable
-> than an in-kernel policy setting for a single-subscriber event
-> interface.
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-I guess, the "idle_since" file could be made poll()able, and throw an
-event when the idle time is re-set to 0, so the value checking needs
-only to happen as long we wait for the disk to become idle. As long as
-it's busy anyway, the rare wakeups should not matter much. :)
+	signed char __res = *cs - *ct;
 
-Kay
+is wrong for two reasons.  The subtraction can overflow because __res
+doesn't use a type big enough.  Moreover the compared bytes should be
+interpreted as unsigned char as specified by POSIX.
+
+The same problem is fixed in strncmp.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Michael Buesch <mb@bu3sch.de>
+Cc: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+---
+Hello Linus,
+
+I resend with a (hopefully) nice commit log as this didn't appear in
+your tree up to now.
+
+Best regards
+Uwe
+
+ lib/string.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/lib/string.c b/lib/string.c
+index b19b87a..e96421a 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -246,13 +246,17 @@ EXPORT_SYMBOL(strlcat);
+ #undef strcmp
+ int strcmp(const char *cs, const char *ct)
+ {
+-	signed char __res;
++	unsigned char c1, c2;
+ 
+ 	while (1) {
+-		if ((__res = *cs - *ct++) != 0 || !*cs++)
++		c1 = *cs++;
++		c2 = *ct++;
++		if (c1 != c2)
++			return c1 < c2 ? -1 : 1;
++		if (!c1)
+ 			break;
+ 	}
+-	return __res;
++	return 0;
+ }
+ EXPORT_SYMBOL(strcmp);
+ #endif
+@@ -266,14 +270,18 @@ EXPORT_SYMBOL(strcmp);
+  */
+ int strncmp(const char *cs, const char *ct, size_t count)
+ {
+-	signed char __res = 0;
++	unsigned char c1, c2;
+ 
+ 	while (count) {
+-		if ((__res = *cs - *ct++) != 0 || !*cs++)
++		c1 = *cs++;
++		c2 = *ct++;
++		if (c1 != c2)
++			return c1 < c2 ? -1 : 1;
++		if (!c1)
+ 			break;
+ 		count--;
+ 	}
+-	return __res;
++	return 0;
+ }
+ EXPORT_SYMBOL(strncmp);
+ #endif
+-- 
+1.6.5.2
+
