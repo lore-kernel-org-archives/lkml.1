@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZKRRxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZKRRxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbZKRRxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbZKRRxA
+	id S1758159AbZKRRxI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbZKRRxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:53:00 -0500
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:12324
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757991AbZKRRw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:52:59 -0500
-X-SpamScore: -16
-X-BigFish: VPS-16(zz1432R98dNzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B043467.8000708@am.sony.com>
-Date: Wed, 18 Nov 2009 09:52:39 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Matt Mackall <mpm@selenic.com>, David VomLehn <dvomlehn@cisco.com>,
-       "dedekind1@gmail.com" <dedekind1@gmail.com>,
-       Marco Stornelli <marco.stornelli@gmail.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "dwm2@infradead.org" <dwm2@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-References: <1258463404.27437.103.camel@localhost>	<m1pr7hf93s.fsf@fess.ebiederm.org>	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>	<m1iqd8ptg9.fsf@fess.ebiederm.org> <1258505777.3081.4.camel@calx> <m1vdh7byva.fsf@fess.ebiederm.org>
-In-Reply-To: <m1vdh7byva.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Nov 2009 17:52:40.0667 (UTC) FILETIME=[EC336AB0:01CA6877]
-X-Reverse-DNS: mail7.fw-bc.sony.com
+	Wed, 18 Nov 2009 12:53:06 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:41555 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758146AbZKRRxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 12:53:03 -0500
+Date: Wed, 18 Nov 2009 18:53:07 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
+Message-ID: <20091118175307.GQ21750@bolzano.suse.de>
+References: <1258560457-15129-1-git-send-email-jblunck@suse.de> <20091118171524.4d2f8cec@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118171524.4d2f8cec@lxorguk.ukuu.org.uk>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Matt Mackall <mpm@selenic.com> writes:
-> 
->> As much as I like kexec, it loses on memory footprint by about 100x.
->> It's not appropriate for all use cases, especially things like
->> consumer-grade wireless access points and phones.
-> 
-> In general I agree.  The cost of a second kernel and initrd can be
-> prohibitive in the smallest systems, and if you do a crash capture
-> with using a standalone app that is reinventing the wheel.
-> 
-> That said.  I can happily run kdump with only 16M-20M reserved.
-> So on many systems the cost is affordable.
+On Wed, Nov 18, Alan Cox wrote:
 
-Understood.  On some of my systems, the memory budget for the
-entire system is 10M.  On most systems I work with, it is a
-struggle to reserve even 64K for this feature.
-  -- Tim
+> > Using the BKL in llseek() does not protect the inode's i_size from
+> > modification since the i_size is protected by a seqlock nowadays. Since
+> > default_llseek() is already using the i_size_read() wrapper it is not the
+> > BKL which is serializing the access here.
+> > The access to file->f_pos is not protected by the BKL either since its
+> > access in vfs_write()/vfs_read() is not protected by any lock. If the BKL
+> > is not protecting anything here it can clearly get removed.
+> 
+> No. Your logic is flawed
+> 
+> The BKL is protected something here - it protects the change of offset
+> with respect to other BKL users within drivers. The question is what if
+> anything in any other driver code depends upon the BKL and uses it to
+> protect f_pos. Probably very little if anything but a grep for f_pos
+> through the drivers might not be a bad idea before assuming this. Very
+> few touch f_pos except in their own llseek method.
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+As I said, f_pos is changed without holding BKL in the VFS already. Therefore
+even if the driver tries to protect f_pos by holding the BKL it is racing
+against concurrent read()/write() anyway on f_pos.
 
+Regards,
+	Jan
+
+-- 
+Jan Blunck <jblunck@suse.de>
