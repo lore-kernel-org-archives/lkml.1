@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZKRKU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbZKRK0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbZKRKU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbZKRKU0
+	id S1756915AbZKRK0J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 05:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbZKRK0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:20:26 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45897 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753727AbZKRKUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:20:25 -0500
-Message-ID: <4B03CA6E.8080102@suse.cz>
-Date: Wed, 18 Nov 2009 11:20:30 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] kconfig: Add missing prototype
-References: <b9df5fa10911180212h5d74e640g859e7cebe952689@mail.gmail.com>
-In-Reply-To: <b9df5fa10911180212h5d74e640g859e7cebe952689@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 18 Nov 2009 05:26:09 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54407 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756503AbZKRK0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 05:26:08 -0500
+Subject: Re: [PATCH 1/2] lockdep: Include recursive read-locks dependencies
+ in the tree
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+In-Reply-To: <1258506398-5151-2-git-send-email-fweisbec@gmail.com>
+References: <1258506398-5151-1-git-send-email-fweisbec@gmail.com>
+	 <1258506398-5151-2-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Nov 2009 11:26:05 +0100
+Message-ID: <1258539965.3918.194.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne 18.11.2009 11:12, Rakib Mullick napsal(a):
->   Patch named 'kbuild-generate-modulesbuiltin.patch' introduce a new
-> function 'fprintf2', without previous prototype declared. This patch adds
-> this missing prototype.
-
-Hi Rakib,
-
-thanks for the fix, but I already posted a new, simplified version that
-doesn't use the fprintf2() thing at all:
-http://patchwork.kernel.org/patch/50131/
-
-Michal
-
-
->  When building defconfig on i386 - we were hit by the following warning:
+On Wed, 2009-11-18 at 02:06 +0100, Frederic Weisbecker wrote:
+> Currently, recursive read locks are checked in two ways:
 > 
->   HOSTCC  scripts/kconfig/zconf.tab.o
-> In file included from scripts/kconfig/zconf.tab.c:2451:
-> scripts/kconfig/confdata.c:676: warning: no previous prototype for 'fprintf2'
+> - walk through the locks held by the current task and check possible
+>   deadlock.
 > 
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-> ---
+> - if the recursive read lock is not already present in the lock held
+>   by the current task, check its dependencies against the tree.
 > 
-> --- linus/scripts/kconfig/lkc.h	2009-11-18 16:37:46.000000000 +0600
-> +++ rakib/scripts/kconfig/lkc.h	2009-11-18 17:03:19.000000000 +0600
-> @@ -79,6 +79,7 @@ char *conf_get_default_confname(void);
->  void sym_set_change_count(int count);
->  void sym_add_change_count(int count);
->  void conf_set_all_new_symbols(enum conf_def_mode mode);
-> +int fprintf2(FILE *f1, FILE *f2, const char *fmt, ...);
+> But this recursive read lock will never be added to the tree of
+> dependencies. It means that the following sequence:
 > 
->  /* kconfig_load.c */
->  void kconfig_load(void);
+> A = rwlock (Ar: taken as read recursive, Aw: taken as write)
+> B = normal lock
+> 
+>  Ar -> B
+>  B  -> Aw
+> 
+> won't ever be detected as a lock inversion.
+> This patch fixes it by inserting the recursive read locks into the
+> tree of dependencies and enhancing the circular checks (check the
+> class and the read attribute collision).
+
+There were some very funny corner cases with IRQ state vs recursive
+locks, I don't seen any of that mentioned here.
+
+Bot ego and I poked at it at various times, but neither of us managed to
+actually finish it due to getting distracted with other bits I guess.
+
+http://programming.kicks-ass.net/kernel-patches/cpu-hotplug/
+
+http://lkml.org/lkml/2009/5/11/203
+
+
 
