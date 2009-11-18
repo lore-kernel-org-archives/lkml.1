@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbZKRLNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZKRLL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751492AbZKRLNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 06:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZKRLNy
+	id S1751460AbZKRLL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 06:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZKRLL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 06:13:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36109 "EHLO hera.kernel.org"
+	Wed, 18 Nov 2009 06:11:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50145 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbZKRLNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 06:13:53 -0500
-Date: Wed, 18 Nov 2009 11:13:24 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
-In-Reply-To: <4AF24381.5060307@cn.fujitsu.com>
-References: <4AF24381.5060307@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Prevent build warning: 'ftrace_graph_buf' defined but not used
-Message-ID: <tip-f6060f46819f313d34a8c8151390cda509c23389@git.kernel.org>
-Git-Commit-ID: f6060f46819f313d34a8c8151390cda509c23389
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1751356AbZKRLL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 06:11:26 -0500
+Subject: Re: [PATCH 06/12] writeback: remove unused nonblocking and
+ congestion checks (gfs2)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091118100941.GA18726@localhost>
+References: <20091118082648.140755818@intel.com>
+	 <20091118082846.170413359@intel.com>
+	 <1258538386.2904.7.camel@localhost.localdomain>
+	 <20091118100941.GA18726@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Wed, 18 Nov 2009 11:13:41 +0000
+Message-Id: <1258542821.2904.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f6060f46819f313d34a8c8151390cda509c23389
-Gitweb:     http://git.kernel.org/tip/f6060f46819f313d34a8c8151390cda509c23389
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Thu, 5 Nov 2009 11:16:17 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Tue, 17 Nov 2009 11:05:49 -0500
+Hi,
 
-tracing: Prevent build warning: 'ftrace_graph_buf' defined but not used
+On Wed, 2009-11-18 at 18:09 +0800, Wu Fengguang wrote:
+> Hi Steven,
+> 
+> On Wed, Nov 18, 2009 at 05:59:46PM +0800, Steven Whitehouse wrote:
+> > Hi,
+> > 
+> > That looks ok to me, modulo the warnings below. The only "non-obvious"
+> > thing in this area which the GFS2 writepage[s] code relies upon is the
+> > assumption that if we have a ->writepages() then ->writepage() will
+> > never be called from a context which requires the fs to actually do a
+> > write (i.e. the fs can refuse this if required). That is also only the
+> > case for journaled data files - normal writes don't have that
+> > requirement.
+> 
+> Thank you for the tips. I don't think pageout() or migration
+> writeout() has that hard expectation for ->writepage() :)
+> 
+> >  CC [M]  fs/gfs2/aops.o
+> > fs/gfs2/aops.c: In function ‘gfs2_write_jdata_pagevec’:
+> > fs/gfs2/aops.c:272: warning: unused variable ‘bdi’
+> > fs/gfs2/aops.c: In function ‘gfs2_write_cache_jdata’:
+> > fs/gfs2/aops.c:336: warning: unused variable ‘bdi’
+> 
+> Ah sorry!
+> 
+> > Once the warnings are fixed:
+> > 
+> > Acked-by: Steven Whitehouse <swhiteho@redhat.com>
+> > 
+> > Do you want me to add this patch into my tree, or were you planning to
+> > submit via a different tree?
+> 
+> Thanks, can you pull the updated patch directly to your tree?
+> 
+Yes, its in my -nmw tree now. Thanks,
 
-Prevent build warning when CONFIG_FUNCTION_GRAPH_TRACER is not set.
+Steve.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4AF24381.5060307@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/ftrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1ed514f..7f9b51e 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2274,7 +2274,6 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
- #define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
- static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
- static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
--static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
- 
- static int __init set_ftrace_notrace(char *str)
- {
-@@ -2291,6 +2290,7 @@ static int __init set_ftrace_filter(char *str)
- __setup("ftrace_filter=", set_ftrace_filter);
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
- static int __init set_graph_function(char *str)
- {
- 	strlcpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
