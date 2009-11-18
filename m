@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbZKROnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZKRO1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbZKROnK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZKROnJ
+	id S1757284AbZKRO1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZKRO1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:43:09 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36896 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757392AbZKROnI (ORCPT
+	Wed, 18 Nov 2009 09:27:37 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:33512 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757187AbZKRO1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:43:08 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 5/5] tty: split the lock up a bit further
-To: linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:26:45 +0000
-Message-ID: <20091118142634.3806.11729.stgit@localhost.localdomain>
-In-Reply-To: <20091118142313.3806.47368.stgit@localhost.localdomain>
-References: <20091118142313.3806.47368.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Wed, 18 Nov 2009 09:27:14 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Use of usb_find_interface in open is racy
+Date: Wed, 18 Nov 2009 15:27:18 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Russ Dill <russ.dill@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+References: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com> <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911181527.18791.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tty count sanity check may need the BKL, that isn't clear. However it
-is clear that the count use of the lock is internal and independant of the
-bigger use of the lock.
+Am Mittwoch, 18. November 2009 11:41:25 schrieb Jiri Kosina:
+> > User space receives the hotplug event for the class device, makes the
+> > device node and notifies another program that opens the device node.
+> > The program opens the device node which calls into usb_open and then
+> > skel_open. skel_open calls usb_find_interface. usb_find_interfaces
+> > searches the klist_devices of skel_driver, finds no device associated
+> > with the minor number and returns NULL. skel_open returns -ENODEV.
+> > 
+> > Control returns to really_probe and really_probe calls driver_bound
+> > which adds the device to the list of devices associated with
+> > skel_driver (klist_devices).
+> > 
+> > I'm not sure what the right way to solve this is. A call to
+> > wait_for_device_probe() in the skel_open call before calling
+> > usb_find_interface fixes the problem, but it is a rather large hammer.
+> 
 
-Furthermore the file list locking is also separately locked already
+Device core code is hard to follow, but I tried.
+How about simply covering all of usb_register_dev() with minor_rwsem?
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/char/tty_io.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index aee68f5..4c2f793 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -516,6 +516,8 @@ static void do_tty_hangup(struct work_struct *work)
- 	/* inuse_filps is protected by the single kernel lock */
- 	lock_kernel();
- 	check_tty_count(tty, "do_tty_hangup");
-+	unlock_kernel();
-+
- 	file_list_lock();
- 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
- 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
-@@ -529,6 +531,7 @@ static void do_tty_hangup(struct work_struct *work)
- 	}
- 	file_list_unlock();
- 
-+	lock_kernel();
- 	tty_ldisc_hangup(tty);
- 
- 	read_lock(&tasklist_lock);
-
+	Regards
+		Oliver
