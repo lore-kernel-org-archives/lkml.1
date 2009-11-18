@@ -1,53 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbZKRUCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbZKRUCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbZKRUCO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 15:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758379AbZKRUCN
+	id S1758462AbZKRUCZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 15:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbZKRUCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 15:02:13 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:37689 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758089AbZKRUCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 15:02:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        b=CqVHtvsCQn5Iv5cgLcguAwQI49lt95JbJLot/jjDeQURdZg0fAk7jqcq8WQLPWg7OI
-         obwkIYk8H+Dm2BYSQEPbOVRVRq5XwbIM0BTSVblNH368esVZ0OHYS4WbqGT507ZcNFI5
-         eBOT/t21U7MW8zzcjuN1CrD0Uiv2bzS9rdI/Y=
+	Wed, 18 Nov 2009 15:02:23 -0500
+Received: from proxima.lp0.eu ([81.2.80.65]:42993 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932228AbZKRUCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 15:02:21 -0500
+Message-ID: <4B0452D1.2050805@simon.arlott.org.uk>
+Date: Wed, 18 Nov 2009 20:02:25 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
 MIME-Version: 1.0
-Date: Wed, 18 Nov 2009 21:02:17 +0100
-X-Google-Sender-Auth: e861f92a2c5994a5
-Message-ID: <10f740e80911181202l6cca6b41m827f2c51f639d1f0@mail.gmail.com>
-Subject: TIF_NOTIFY_RESUME on m68k?
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-m68k <linux-m68k@vger.kernel.org>
-Cc: uClinux development list <uclinux-dev@uclinux.org>,
-       linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       accessrunner-general@lists.sourceforge.net
+Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
+ UHCI
+References: <Pine.LNX.4.44L0.0911181045060.3036-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0911181045060.3036-100000@iolanthe.rowland.org>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Has anyone already looked into TIF_NOTIFY_RESUME support for m68k?
+On 18/11/09 15:51, Alan Stern wrote:
+> On Wed, 18 Nov 2009, Simon Arlott wrote:
+> 
+>> Can anyone explain this speed difference I'm seeing with usb_bulk_msg()?
+>> 
+>> Increasing the size of the data doesn't improve the speed at all. This
+>> makes firmware loading take significantly longer with OHCI.
+>> 
+>> I've tested this with two UHCI controllers, two OHCI controllers, and
+>> two different versions of the device. Even on the same system with the
+>> same device the speed difference occurs between OHCI and UHCI.
+>> 
+>> I've added a debug line to drivers/usb/atm/cxacru.c in cxacru_fw(),
+>> which uploads the firmware in PAGE_SIZE chunks:
+>> +                       printk(KERN_INFO "cxacru: sending fw %#x size %#x to %#x", fw, offb, offd);
+>>                         ret = usb_bulk_msg(usb_dev, usb_sndbulkpipe(usb_dev, CXACRU_EP_CMD),
+>> 
+>> 
+>> With OHCI and PAGE_SIZE chunks (4KB):
+>> [2567188.504299] cxacru: sending fw 0x3 size 0x1000 to 0xe00
+>> [2567188.760293] cxacru: sending fw 0x3 size 0x1000 to 0x1c00
+>> [2567189.016258] cxacru: sending fw 0x3 size 0x1000 to 0x2a00
+>> [2567189.272235] cxacru: sending fw 0x3 size 0x1000 to 0x3800
+>> [2567189.528210] cxacru: sending fw 0x3 size 0x1000 to 0x4600
+>> [2567189.784488] cxacru: sending fw 0x3 size 0x1000 to 0x5400
+>> ...
+>> [2567233.044134] cxacru: sending fw 0x3 size 0x2c0 to 0x98668
+> 
+> ...
+> 
+>> With OHCI and PAGE_SIZE*8 chunks (32KB):
+>> [ 4731.826738] cxacru: sending fw 0x3 size 0x8000 to 0x7000
+>> [ 4733.874628] cxacru: sending fw 0x3 size 0x8000 to 0xe000
+>> [ 4735.922353] cxacru: sending fw 0x3 size 0x8000 to 0x15000
+>> [ 4737.970153] cxacru: sending fw 0x3 size 0x8000 to 0x1c000
+>> [ 4740.017937] cxacru: sending fw 0x3 size 0x8000 to 0x23000
+>> [ 4742.065814] cxacru: sending fw 0x3 size 0x8000 to 0x2a000
+>> ...
+>> [ 4774.830569] cxacru: sending fw 0x3 size 0x62c0 to #98668
+> 
+> Each OHCI transfer requires about 256 ms per 4-KB page.  There's no 
+> obvious reason for this to take so long.  I'd guess it was caused by a 
+> hardware problem except that you say the same thing happened with two 
+> different controllers.  Were they both on the same computer?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=d0420c83f39f79afb82010c2d2cafd150eef651b
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ee18d64c1f632043a02e6f5ba5e045bb26a5465f
+Yes. I have a UHCI controller on a PCI card, and used that with on-board
+OHCI. Same computer (SMP), same kernel, same device...
 
-These commits broke CONFIG_KEYS=y on m68k, so technically the missing
-support is a regression compared to 2.6.31.
+Different computer (UP), on-board UHCI = 7ms per 4KB
+A third computer (SMP), on-board OHCI = 256ms per 4KB
 
-Thanks!
+The device otherwise works ok (it's an ADSL modem) with no issues relating
+to latency or throughput.
 
-Gr{oetje,eeting}s,
+> You may have to do a bisection search to find the answer.
 
-						Geert
+With what? I can't really bisect "the UHCI code" and "the OHCI code"...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I have no good kernel to work with unless I start trying really old kernels,
+but there's no reason why those should work either. I'm hoping someone
+recognises the significance of the transfer speed.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+The OHCI code appears to split the data up into 4096 chunks, but even the
+odd sized transfer of 25280 bytes at the end runs at the same speed:
+
+[ 4774.830569] cxacru: sending fw 0x3 size 0x62c0 to #98668
+[ 4776.410375] cxacru: sending fw 0x3 size 0x100 to #e0
+
+6.410375-4.830569
+1.579806
+1579806/25280*4096
+255968.56708860759493668864
+
+-- 
+Simon Arlott
