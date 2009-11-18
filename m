@@ -1,106 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZKREVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZKREZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbZKREVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 23:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbZKREVa
+	id S1756673AbZKREZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 23:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZKREZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 23:21:30 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:1201 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756631AbZKREVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 23:21:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:user-agent:x-system-of-record;
-	b=Yulq9v0ts/YWYWnwrHoUvbfByS+SE3HpvmEvDTqvtNcbVnEqwmveo+4MjusWshvOZ
-	qQ6AkVIhAMaC4a3wnxoQQ==
-Date: Tue, 17 Nov 2009 20:21:28 -0800
-From: Michel Lespinasse <walken@google.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
-Message-ID: <20091118042128.GC23808@google.com>
-References: <20091117074655.GA14023@google.com> <1258447807.7816.20.camel@laptop> <alpine.LFD.2.01.0911170708110.9384@localhost.localdomain>
-MIME-Version: 1.0
+	Tue, 17 Nov 2009 23:25:12 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60244 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755527AbZKREZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 23:25:11 -0500
+Date: Wed, 18 Nov 2009 05:25:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: -rt dbench scalabiltiy issue
+Message-ID: <20091118042516.GC21813@wotan.suse.de>
+References: <1255723519.5135.121.camel@localhost.localdomain> <20091017223902.GA29439@wotan.suse.de> <1258507696.2077.61.camel@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0911170708110.9384@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-System-Of-Record: true
+In-Reply-To: <1258507696.2077.61.camel@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 07:24:09AM -0800, Linus Torvalds wrote:
-> The FUTEX_SET_WAIT concept seems well-defined, although it sounds more 
-> like a FUTEX_CMPXCHG_WAIT to me than a "SET" operation. I'm not entirely 
-> sure that we really want to do the CMPXCHG in the kernel rather than in 
-> user space, since lock stealing generally isn't a problem, but I don't 
-> think it's _wrong_ to add this concept.
+Hi John,
+
+Great stuff, thanks for persisting with this. I've been a little bit busy
+with a bit of distro work recently, but I hope to get back to some mainly
+projects soon.
+
+On Tue, Nov 17, 2009 at 05:28:16PM -0800, john stultz wrote:
+> Hey Nick,
+> 	Just an update here, I moved up to your 09102009 patch, and spent
+> awhile playing with it.
 > 
-> In fact, CMPXCHG is generally seen to be the "fundamental" base for 
-> implementing locking, so in that sense it makes perfect sense to have it 
-> as a FUTEX model.
-
-My first version called the operation that way, but it did *NOT* block if
-val2 (now renamed setval) was already set in the futex. Turned out it helps
-my use case if I do block in that situation, so I changed the operation
-accordingly and renamed it into FUTEX_SET_WAIT (with a CAS model in mind,
-though it's still also similar to cmpxchg in that it just returns if
-the uval is not 'val' or 'setval').
-
-> That said, I personally think the adaptive wait model is (a) more likely 
-> to fix many performance issues and (b) a bit more high-level concept, so I 
-> like Peter's patch too, but I don't see that the patches would really be 
-> mutually exclusive.
+> Just as you theorized, moving d_count back to an atomic_t does seem to
+> greatly improve the performance on -rt. 
 > 
-> Of course, it's possible that Michel's performance problem is fixed by the 
-> adaptive approach too, in which case the FUTEX_SET_WAIT (or _CMPXCHG_WAIT) 
-> patch is just fundamentally less interesting. But some people do need 
-> fairness - even when it's bad for performance - so...
+> Again, very very rough numbers for an 8-way system:
 > 
-> One thing that does strike me is that _if_ we want to do both interfaces, 
-> then I would assume that we quite likely also want to have an adaptive 
-> version of the FUTEX_SET|CMPXCHG_WAIT thing. Which perhaps implies that 
-> the "ADAPTIVE" part should be a bitflag in the command value?
+> 				ext3		ramfs 
+> 2.6.32-rc3:			~1800 MB/sec	~1600 MB/sec
+> 2.6.32-rc3-nick			~1800 MB/sec	~2200 MB/sec
+> 2.6.31.2-rt13:			 ~300 MB/sec	  ~66 MB/sec
+> 2.6.31.2-rt13-nick:		  ~80 MB/sec	 ~126 MB/sec
+> 2.6.31.6-rt19-nick+atomic:	 ~400 MB/sec	~2200 MB/sec
 
-I like the adaptive approach as well, though I'm not sure yet if it'd work
-for us. I can try it but it'll take a bit of time.
+OK, that's very interesting. 09102009 patch contains the lock free path
+walk that I was hoping will improve some of your issues. I guess it did
+improve them a little bit but it is interesting that the atomic_t
+conversion still gave such a huge speedup.
 
+It would be interesting to know what d_count updates are causing the
+most d_lock contention (without your +atomic patch).
 
-One difficulty with adaptive spinning is that we want to avoid deadlocks.
-If two threads end up spinning in-kernel waiting for each other, we better
-have preemption enabled... or detect and deal with the situation somehow.
+One concern I have with +atomic is the extra atomic op required in
+some cases. I still haven't gone over single thread performance with
+a fine tooth comb, but even without +atomic, we have some areas that
+need to be improved.
 
-
-Also one aspect I dislike is that this would impose a given format on the
-futex for storing the TID. I would prefer if there were several bits available
-in the futex for userspace to do whatever they want. 8 bits would likely
-be enough, which leaves 24 for the TID - enough for us, but I have no idea
-if that's good enough for upstream inclusion. It that's not possible,
-one possible compromise could be:
-
-- userspace passes a TID (which it extracted from the futex value; but kernel
-  does not necessarily know how)
-- kernel spins until that TID goes to sleep, or the futex value is not equal
-  to val or setval anymore
-- if val != setval and the futex value is val, set it to setval
-- if the futex valus is setval, block, otherwise -EWOULDBLOCK.
-
-If the lock got stolen from a different thread, userspace can decide to
-retry with or without adaptive spinning.
-
-That would be the most generic interface I can think of, though it's
-starting to be a LOT of parameters - actually, too many to pass through
-the _syscall6 interface.
+Nice numbers, btw. I never thought -rt would be able to completely
+match mainline on dbench for that size of system (in vfs performance,
+ie. the ramfs case).
 
 
-I also like Darren's suggestion to do a FUTEX_SET_WAIT_REQUEUE_PI,
-but it's hitting the same 'too many parameters' limitation as well :/
+> >From the perf report, all of the dcache related overhead has fallen
+> away, and it all seems to be journal related contention at this point
+> that's keeping the ext3 numbers down.
+> 
+> So yes, on -rt, the overhead from lock contention is way way worse then
+> any extra atomic ops. :)
 
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
+How about overhead for an uncontended lock? Ie. is the problem caused
+because lock *contention* issues are magnified on -rt, or is it
+because uncontended lock overheads are higher? Detailed callgraph
+profiles and lockstat of +/-atomic case would be very interesting.
+ 
+Ideally we just eliminate the cause of the d_count update, but I
+concede that at some point and in some workloads, atomic d_count
+is going to scale better.
+
+I'd imagine in dbench case, contention comes on directory dentries
+from like adding child dentries, which causes lockless path walk
+to fail and retry the full locked walk from the root. One important
+optimisation I have left to do is to just continue with locked
+walk at the point where lockless fails, rather than the full path.
+This should naturally help scalability as well as single threaded
+performance.
+
+
+> I'm not totally convinced I did the conversion back to atomic_t's
+> properly, so I'm doing some stress testing, but I'll hopefully have
+> something to send out for review soon. 
+> 
+> As for your concern about dbench being a poor benchmark here, I'll try
+> to get some numbers on iozone or another suggested workload and get
+> those out to you shortly.
+
+Well I was mostly concerned that we needn't spend *lots* of time
+trying to make dbench work. Bad performing dbench didn't necessarily
+say too much, but good performing dbench is a good indication
+(because it hits the vfs harder and in different ways than a lot
+of other benchmarks).
+
+Now, I don't think there is dispute that these patches vastly
+improve scalability. So what I am personally most interested in
+at this stage are any and all single thread performance benchmarks.
+But please, the more numbers the merrier, so anything helps.
+
+Thanks,
+Nick
+
