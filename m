@@ -1,110 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbZKRQfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZKRQkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757795AbZKRQfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 11:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbZKRQe7
+	id S1757817AbZKRQkJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 11:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbZKRQkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 11:34:59 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:37437 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757713AbZKRQe6 (ORCPT
+	Wed, 18 Nov 2009 11:40:08 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:43265 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757751AbZKRQkH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 11:34:58 -0500
-X-Trace: 292194961/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjUBAKuwA0tPRTgw/2dsb2JhbAAI1k2CPIF/BA
-X-IronPort-AV: E=Sophos;i="4.44,766,1249254000"; 
-   d="scan'208";a="292194961"
-Date: Wed, 18 Nov 2009 16:34:51 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]  [for mmotm-1113] mm: Simplify try_to_unmap_one()
-In-Reply-To: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0911181633120.29205@sister.anvils>
-References: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
+	Wed, 18 Nov 2009 11:40:07 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091111001914.GA30470@us.ibm.com>
+References: <20091110140739.GA15534@us.ibm.com>
+	 <200911101028.10797.sgrubb@redhat.com>
+	 <20091110155349.GA18185@us.ibm.com>
+	 <200911101251.21703.sgrubb@redhat.com>
+	 <20091111001914.GA30470@us.ibm.com>
+Date: Wed, 18 Nov 2009 08:40:13 -0800
+X-Google-Sender-Auth: d131d50a19851645
+Message-ID: <551280e50911180840v5c3f2945t253c709ba2d033b2@mail.gmail.com>
+Subject: Re: drop SECURITY_FILE_CAPABILITIES?
+From: "Andrew G. Morgan" <morgan@kernel.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Steve Grubb <sgrubb@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Kees Cook <kees.cook@canonical.com>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       George Wilson <gcwilson@us.ibm.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009, KOSAKI Motohiro wrote:
+On Tue, Nov 10, 2009 at 4:19 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> Quoting Steve Grubb (sgrubb@redhat.com):
+>> On Tuesday 10 November 2009 10:53:49 am Serge E. Hallyn wrote:
+>> > > > Does anyone know of cases where CONFIG_SECURITY_FILE_CAPABILITIES=n
+>> > > > is still perceived as useful?
 
-> SWAP_MLOCK mean "We marked the page as PG_MLOCK, please move it to
-> unevictable-lru". So, following code is easy confusable.
-> 
->         if (vma->vm_flags & VM_LOCKED) {
->                 ret = SWAP_MLOCK;
->                 goto out_unmap;
->         }
-> 
-> Plus, if the VMA doesn't have VM_LOCKED, We don't need to check
-> the needed of calling mlock_vma_page().
-> 
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+[+1 for removing the option.]
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>> > > As a library writer, I wished that the kernel behavior was either
+>> > > consistent,  or there is an API that I can use to find out what model we
+>> > > are operating under. The biggest issue is that for a distribution we know
+>> > > the assumptions the distribution should be running under. But end users
+>> > > are free to build their own kernel that has it disabled. This has already
+>> > > lead to dbus not working at all.
+>> > >
+>> > > I also take issue with probing the capability version number returning
+>> > > EINVAL  when its the only way to find out what the preferred version is.
+>> >
+>> > In 2007/2008, KaiGai had floated patches to export capability info
+>> > over securityfs.  If it was something library writers and distros
+>> > wanted, we could resurrect those patches - and tack on some info
+>> > about cap-related kernel config.
+>>
+>> Unfortunately, I would have to support the kernels from 2.6.26->2.6.32 which
+>> presumably don't have this facility. So, I'm kind of stuck. I think in a
+>> previous discussion you mentioned that I could call getcap or
+>> prctl(PR_CAPBSET_READ) and check for CAP_SETPCAP. I think I have to go that
+>> direction for backwards compatibility.
+>
+> Yes, I'm afraid so - unless /proc/config.gz happened to be available.
+> I suppose looking through /proc/1/status might be more reliable
+> actually, in case you were running in an already-partially-restricted
+> process tree.
+>
+>> But back to detecting the capability version number...if I pass 0 as the
+>> version in the header, why can't the kernel just say oh you want the preferred
+>> version number, stuff it in the header, and return the syscall with success and
+>> not EINVAL?
+>
+> This is something I believe Andrew has advocated in the past, but I
+> forget why.  Andrew?
 
-> ---
->  mm/rmap.c |   26 +++++++++++++-------------
->  1 files changed, 13 insertions(+), 13 deletions(-)
-> 
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index 82e31fb..70dec01 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -779,10 +779,9 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
->  	 * skipped over this mm) then we should reactivate it.
->  	 */
->  	if (!(flags & TTU_IGNORE_MLOCK)) {
-> -		if (vma->vm_flags & VM_LOCKED) {
-> -			ret = SWAP_MLOCK;
-> -			goto out_unmap;
-> -		}
-> +		if (vma->vm_flags & VM_LOCKED)
-> +			goto out_mlock;
-> +
->  		if (TTU_ACTION(flags) == TTU_MUNLOCK)
->  			goto out_unmap;
->  	}
-> @@ -855,18 +854,19 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
->  
->  out_unmap:
->  	pte_unmap_unlock(pte, ptl);
-> +out:
-> +	return ret;
->  
-> -	if (ret == SWAP_MLOCK) {
-> -		ret = SWAP_AGAIN;
-> -		if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
-> -			if (vma->vm_flags & VM_LOCKED) {
-> -				mlock_vma_page(page);
-> -				ret = SWAP_MLOCK;
-> -			}
-> -			up_read(&vma->vm_mm->mmap_sem);
-> +out_mlock:
-> +	pte_unmap_unlock(pte, ptl);
-> +
-> +	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
-> +		if (vma->vm_flags & VM_LOCKED) {
-> +			mlock_vma_page(page);
-> +			ret = SWAP_MLOCK;
->  		}
-> +		up_read(&vma->vm_mm->mmap_sem);
->  	}
-> -out:
->  	return ret;
->  }
->  
-> -- 
-> 1.6.2.5
+This is so a library can understand that it doesn't understand the
+current ABI. For example, consider the case of some kernel of the
+future with a different ABI meeting an old library.
+
+The intention is for it to fail safe and not blunder on doing
+"security" related operations with an imperfect idea of the current
+kernel interface.
+
+This is how libcap figures out it can work with the hosting kernel:
+
+http://git.kernel.org/?p=libs/libcap/libcap.git;a=blob;f=libcap/cap_alloc.c;h=5fa5e9305c146529e297285befa03e7c5521e9ba;hb=HEAD
+
+Does that help explain?
+
+>> Another irritation...if I want to clear the bounding set, I have to make a for
+>> loop and call prctl 34 times (once for each bit). I'd rather see a v4
+>> capability that takes the bounding set as part of the same syscall. Maybe all
+>> 3 of these could be fixed in the same OS release so that changing to v4 also
+>> signifies the other behavior changes.
+
+Please don't do this. The semantics of the bounding set are very
+different from capabilities, and much more of an overkill hack to cope
+with a naive capability inheritance world view and not really anything
+to do with "the" privilege model that capabilities represent.
+
+> I worry a bit about people confusing the bounding set as something
+> more  flexible than it is, and/or getting lazy and using the bounding
+> set instead of fI|pI .vs. fP, but am not solidly against this.
+
+Completely agree with the sentiment here.
+
+> Anyway, maybe we should get on thsi sooner rather than later...
+
+Or, not at all... :-)
+
+> Are there any other deficiencies people see  in the current
+> API?
+
+I think it is worth, humbly, asking folk to read over our paper again
+
+  http://ols.fedoraproject.org/OLS/Reprints-2008/hallyn-reprint.pdf
+
+and trying to grok what the model is before proposing changing it.
+
+Thanks
+
+Andrew
