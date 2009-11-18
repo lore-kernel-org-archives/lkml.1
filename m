@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZKROwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZKROwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbZKROwH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZKROwF
+	id S1757569AbZKROwB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbZKROv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:52:05 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:51174 "EHLO
+	Wed, 18 Nov 2009 09:51:59 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:51175 "EHLO
 	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754310AbZKROv6 (ORCPT
+	with ESMTP id S1753962AbZKROv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Nov 2009 09:51:58 -0500
 From: Jiri Slaby <jslaby@novell.com>
@@ -17,11 +17,10 @@ Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
        marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
        hpa@zytor.com, torvalds@linux-foundation.org,
        Jiri Slaby <jslaby@novell.com>, James Morris <jmorris@namei.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 01/16] core: posix-cpu-timers, cleanup rlimits usage
-Date: Wed, 18 Nov 2009 15:51:47 +0100
-Message-Id: <1258555922-2064-1-git-send-email-jslaby@novell.com>
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH 02/16] core: do security check under task_lock
+Date: Wed, 18 Nov 2009 15:51:48 +0100
+Message-Id: <1258555922-2064-2-git-send-email-jslaby@novell.com>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <4B040A03.2020508@gmail.com>
 References: <4B040A03.2020508@gmail.com>
@@ -29,118 +28,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fetch rlimit (both hard and soft) values only once and work on them.
-It removes many accesses through sig structure and makes the code
-cleaner.
-
-Mostly a preparation for writable resource limits support.
+Do security_task_setrlimit under task_lock. Other tasks may
+change limits under our hands while we are checking limits
+inside the function. From now on, they can't.
 
 Signed-off-by: Jiri Slaby <jslaby@novell.com>
 Cc: James Morris <jmorris@namei.org>
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
 ---
- kernel/posix-cpu-timers.c |   32 +++++++++++++++++---------------
- 1 files changed, 17 insertions(+), 15 deletions(-)
+ kernel/sys.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 102c345..a7dcce1 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -983,6 +983,7 @@ static void check_thread_timers(struct task_struct *tsk,
- 	int maxfire;
- 	struct list_head *timers = tsk->cpu_timers;
- 	struct signal_struct *const sig = tsk->signal;
-+	unsigned long soft;
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 605ab9c..0f86199 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1243,7 +1243,7 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+ 		struct rlimit *new_rlim)
+ {
+ 	struct rlimit *old_rlim;
+-	int retval;
++	int retval = 0;
  
- 	maxfire = 20;
- 	tsk->cputime_expires.prof_exp = cputime_zero;
-@@ -1031,9 +1032,9 @@ static void check_thread_timers(struct task_struct *tsk,
- 	/*
- 	 * Check for the special case thread timers.
- 	 */
--	if (sig->rlim[RLIMIT_RTTIME].rlim_cur != RLIM_INFINITY) {
-+	soft = sig->rlim[RLIMIT_RTTIME].rlim_cur;
-+	if (soft != RLIM_INFINITY) {
- 		unsigned long hard = sig->rlim[RLIMIT_RTTIME].rlim_max;
--		unsigned long *soft = &sig->rlim[RLIMIT_RTTIME].rlim_cur;
- 
- 		if (hard != RLIM_INFINITY &&
- 		    tsk->rt.timeout > DIV_ROUND_UP(hard, USEC_PER_SEC/HZ)) {
-@@ -1044,14 +1045,13 @@ static void check_thread_timers(struct task_struct *tsk,
- 			__group_send_sig_info(SIGKILL, SEND_SIG_PRIV, tsk);
- 			return;
+ 	if (new_rlim->rlim_cur > new_rlim->rlim_max)
+ 		return -EINVAL;
+@@ -1260,10 +1260,6 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
  		}
--		if (tsk->rt.timeout > DIV_ROUND_UP(*soft, USEC_PER_SEC/HZ)) {
-+		if (tsk->rt.timeout > DIV_ROUND_UP(soft, USEC_PER_SEC/HZ)) {
- 			/*
- 			 * At the soft limit, send a SIGXCPU every second.
- 			 */
--			if (sig->rlim[RLIMIT_RTTIME].rlim_cur
--			    < sig->rlim[RLIMIT_RTTIME].rlim_max) {
--				sig->rlim[RLIMIT_RTTIME].rlim_cur +=
--								USEC_PER_SEC;
-+			if (soft < hard) {
-+				soft += USEC_PER_SEC;
-+				sig->rlim[RLIMIT_RTTIME].rlim_cur = soft;
- 			}
- 			printk(KERN_INFO
- 				"RT Watchdog Timeout: %s[%d]\n",
-@@ -1122,13 +1122,14 @@ static void check_process_timers(struct task_struct *tsk,
- 	unsigned long long sum_sched_runtime, sched_expires;
- 	struct list_head *timers = sig->cpu_timers;
- 	struct task_cputime cputime;
-+	unsigned long cpu_cur_lim = sig->rlim[RLIMIT_CPU].rlim_cur;
+ 	}
  
- 	/*
- 	 * Don't sample the current process CPU clocks if there are no timers.
- 	 */
- 	if (list_empty(&timers[CPUCLOCK_PROF]) &&
- 	    cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) &&
--	    sig->rlim[RLIMIT_CPU].rlim_cur == RLIM_INFINITY &&
-+	    cpu_cur_lim == RLIM_INFINITY &&
- 	    list_empty(&timers[CPUCLOCK_VIRT]) &&
- 	    cputime_eq(sig->it[CPUCLOCK_VIRT].expires, cputime_zero) &&
- 	    list_empty(&timers[CPUCLOCK_SCHED])) {
-@@ -1195,10 +1196,11 @@ static void check_process_timers(struct task_struct *tsk,
- 	check_cpu_itimer(tsk, &sig->it[CPUCLOCK_VIRT], &virt_expires, utime,
- 			 SIGVTALRM);
+-	retval = security_task_setrlimit(tsk, resource, new_rlim);
+-	if (retval)
+-		goto out;
+-
+ 	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
+ 		/*
+ 		 * The caller is asking for an immediate RLIMIT_CPU
+@@ -1276,11 +1272,13 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
  
--	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
-+	if (cpu_cur_lim != RLIM_INFINITY) {
- 		unsigned long psecs = cputime_to_secs(ptime);
-+		unsigned long hard = sig->rlim[RLIMIT_CPU].rlim_max;
- 		cputime_t x;
--		if (psecs >= sig->rlim[RLIMIT_CPU].rlim_max) {
-+		if (psecs >= hard) {
- 			/*
- 			 * At the hard limit, we just die.
- 			 * No need to calculate anything else now.
-@@ -1206,17 +1208,17 @@ static void check_process_timers(struct task_struct *tsk,
- 			__group_send_sig_info(SIGKILL, SEND_SIG_PRIV, tsk);
- 			return;
- 		}
--		if (psecs >= sig->rlim[RLIMIT_CPU].rlim_cur) {
-+		if (psecs >= cpu_cur_lim) {
- 			/*
- 			 * At the soft limit, send a SIGXCPU every second.
- 			 */
- 			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
--			if (sig->rlim[RLIMIT_CPU].rlim_cur
--			    < sig->rlim[RLIMIT_CPU].rlim_max) {
--				sig->rlim[RLIMIT_CPU].rlim_cur++;
-+			if (cpu_cur_lim < hard) {
-+				cpu_cur_lim++;
-+				sig->rlim[RLIMIT_CPU].rlim_cur = cpu_cur_lim;
- 			}
- 		}
--		x = secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
-+		x = secs_to_cputime(cpu_cur_lim);
- 		if (cputime_eq(prof_expires, cputime_zero) ||
- 		    cputime_lt(x, prof_expires)) {
- 			prof_expires = x;
+ 	old_rlim = tsk->signal->rlim + resource;
+ 	task_lock(tsk->group_leader);
+-	if ((new_rlim->rlim_max <= old_rlim->rlim_max) ||
+-				capable(CAP_SYS_RESOURCE))
+-		*old_rlim = *new_rlim;
+-	else
++	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
++				!capable(CAP_SYS_RESOURCE))
+ 		retval = -EPERM;
++	if (!retval)
++		retval = security_task_setrlimit(tsk, resource, new_rlim);
++	if (!retval)
++		*old_rlim = *new_rlim;
+ 	task_unlock(tsk->group_leader);
+ 
+ 	if (retval || resource != RLIMIT_CPU)
 -- 
 1.6.4.2
 
