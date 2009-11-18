@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZKRJ1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbZKRJ1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbZKRJ1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbZKRJ1c
+	id S1756941AbZKRJ1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbZKRJ1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:27:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39418 "EHLO mx2.suse.de"
+	Wed, 18 Nov 2009 04:27:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42310 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756845AbZKRJZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756848AbZKRJZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Nov 2009 04:25:17 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org
@@ -16,10 +16,10 @@ Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
        matthew@wil.cx, Jan Blunck <jblunck@suse.de>,
-       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 15/20] BKL: Remove BKL from NILFS2
-Date: Wed, 18 Nov 2009 10:24:48 +0100
-Message-Id: <1258536293-7762-16-git-send-email-jblunck@suse.de>
+       Anton Altaparmakov <aia21@cantab.net>
+Subject: [PATCH 16/20] BKL: Remove BKL from NTFS
+Date: Wed, 18 Nov 2009 10:24:49 +0100
+Message-Id: <1258536293-7762-17-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258536293-7762-1-git-send-email-jblunck@suse.de>
 References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
@@ -33,115 +33,163 @@ safe to remove the BKL entirely.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/nilfs2/ioctl.c |    1 -
- fs/nilfs2/super.c |   19 +------------------
- 2 files changed, 1 insertions(+), 19 deletions(-)
+ fs/ntfs/super.c |   29 ++---------------------------
+ 1 files changed, 2 insertions(+), 27 deletions(-)
 
-diff --git a/fs/nilfs2/ioctl.c b/fs/nilfs2/ioctl.c
-index f6af760..30f7b41 100644
---- a/fs/nilfs2/ioctl.c
-+++ b/fs/nilfs2/ioctl.c
-@@ -22,7 +22,6 @@
- 
- #include <linux/fs.h>
- #include <linux/wait.h>
--#include <linux/smp_lock.h>	/* lock_kernel(), unlock_kernel() */
- #include <linux/capability.h>	/* capable() */
- #include <linux/uaccess.h>	/* copy_from_user(), copy_to_user() */
- #include <linux/vmalloc.h>
-diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-index 3448ec3..0086dc2 100644
---- a/fs/nilfs2/super.c
-+++ b/fs/nilfs2/super.c
-@@ -45,7 +45,6 @@
- #include <linux/parser.h>
- #include <linux/random.h>
- #include <linux/crc32.h>
--#include <linux/smp_lock.h>
+diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+index ab09c02..4aa55d7 100644
+--- a/fs/ntfs/super.c
++++ b/fs/ntfs/super.c
+@@ -30,7 +30,6 @@
+ #include <linux/buffer_head.h>
  #include <linux/vfs.h>
- #include <linux/writeback.h>
- #include <linux/kobject.h>
-@@ -310,8 +309,6 @@ static void nilfs_put_super(struct super_block *sb)
- 	struct nilfs_sb_info *sbi = NILFS_SB(sb);
- 	struct the_nilfs *nilfs = sbi->s_nilfs;
+ #include <linux/moduleparam.h>
+-#include <linux/smp_lock.h>
+ 
+ #include "sysctl.h"
+ #include "logfile.h"
+@@ -443,7 +442,6 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
+ 
+ 	ntfs_debug("Entering with remount options string: %s", opt);
  
 -	lock_kernel();
--
- 	nilfs_detach_segment_constructor(sbi);
+ #ifndef NTFS_RW
+ 	/* For read-only compiled driver, enforce read-only flag. */
+ 	*flags |= MS_RDONLY;
+@@ -467,18 +465,15 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
+ 		if (NVolErrors(vol)) {
+ 			ntfs_error(sb, "Volume has errors and is read-only%s",
+ 					es);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (vol->vol_flags & VOLUME_IS_DIRTY) {
+ 			ntfs_error(sb, "Volume is dirty and read-only%s", es);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (vol->vol_flags & VOLUME_MODIFIED_BY_CHKDSK) {
+ 			ntfs_error(sb, "Volume has been modified by chkdsk "
+ 					"and is read-only%s", es);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (vol->vol_flags & VOLUME_MUST_MOUNT_RO_MASK) {
+@@ -486,13 +481,11 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
+ 					"(0x%x) and is read-only%s",
+ 					(unsigned)le16_to_cpu(vol->vol_flags),
+ 					es);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (ntfs_set_volume_flags(vol, VOLUME_IS_DIRTY)) {
+ 			ntfs_error(sb, "Failed to set dirty bit in volume "
+ 					"information flags%s", es);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ #if 0
+@@ -512,21 +505,18 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
+ 			ntfs_error(sb, "Failed to empty journal $LogFile%s",
+ 					es);
+ 			NVolSetErrors(vol);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (!ntfs_mark_quotas_out_of_date(vol)) {
+ 			ntfs_error(sb, "Failed to mark quotas out of date%s",
+ 					es);
+ 			NVolSetErrors(vol);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 		if (!ntfs_stamp_usnjrnl(vol)) {
+ 			ntfs_error(sb, "Failed to stamp transation log "
+ 					"($UsnJrnl)%s", es);
+ 			NVolSetErrors(vol);
+-			unlock_kernel();
+ 			return -EROFS;
+ 		}
+ 	} else if (!(sb->s_flags & MS_RDONLY) && (*flags & MS_RDONLY)) {
+@@ -542,11 +532,9 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
  
- 	if (!(sb->s_flags & MS_RDONLY)) {
-@@ -330,8 +327,6 @@ static void nilfs_put_super(struct super_block *sb)
- 	sbi->s_super = NULL;
- 	sb->s_fs_info = NULL;
- 	nilfs_put_sbinfo(sbi);
--
--	unlock_kernel();
- }
+ 	// TODO: Deal with *flags.
  
- static int nilfs_sync_fs(struct super_block *sb, int wait)
-@@ -893,8 +888,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
- 	struct nilfs_mount_options old_opts;
- 	int err;
- 
--	lock_kernel();
--
- 	down_write(&nilfs->ns_super_sem);
- 	old_sb_flags = sb->s_flags;
- 	old_opts.mount_opt = sbi->s_mount_opt;
-@@ -974,7 +967,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
- 	}
-  out:
- 	up_write(&nilfs->ns_super_sem);
--	unlock_kernel();
- 	return 0;
- 
-  restore_opts:
-@@ -982,7 +974,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
- 	sbi->s_mount_opt = old_opts.mount_opt;
- 	sbi->s_snapshot_cno = old_opts.snapshot_cno;
- 	up_write(&nilfs->ns_super_sem);
--	unlock_kernel();
- 	return err;
- }
- 
-@@ -1059,13 +1050,9 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	struct the_nilfs *nilfs;
- 	int err, need_to_close = 1;
- 
--	lock_kernel();
--
- 	sd.bdev = open_bdev_exclusive(dev_name, flags, fs_type);
--	if (IS_ERR(sd.bdev)) {
+-	if (!parse_options(vol, opt)) {
 -		unlock_kernel();
-+	if (IS_ERR(sd.bdev))
- 		return PTR_ERR(sd.bdev);
++	if (!parse_options(vol, opt))
+ 		return -EINVAL;
 -	}
- 
- 	/*
- 	 * To get mount instance using sget() vfs-routine, NILFS needs
-@@ -1146,7 +1133,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	if (need_to_close)
- 		close_bdev_exclusive(sd.bdev, flags);
- 	simple_set_mnt(mnt, s);
 -	unlock_kernel();
++
+ 	ntfs_debug("Done.");
  	return 0;
+ }
+@@ -2259,8 +2247,6 @@ static void ntfs_put_super(struct super_block *sb)
  
-  failed_unlock:
-@@ -1154,8 +1140,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	put_nilfs(nilfs);
-  failed:
- 	close_bdev_exclusive(sd.bdev, flags);
+ 	ntfs_debug("Entering.");
+ 
+-	lock_kernel();
+-
+ #ifdef NTFS_RW
+ 	/*
+ 	 * Commit all inodes while they are still open in case some of them
+@@ -2431,8 +2417,6 @@ static void ntfs_put_super(struct super_block *sb)
+ 
+ 	sb->s_fs_info = NULL;
+ 	kfree(vol);
 -
 -	unlock_kernel();
- 	return err;
+ }
  
-  cancel_new:
-@@ -1169,7 +1153,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	 * We must finish all post-cleaning before this call;
- 	 * put_nilfs() needs the block device.
- 	 */
+ /**
+@@ -2723,8 +2707,6 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
+ 	struct inode *tmp_ino;
+ 	int blocksize, result;
+ 
+-	lock_kernel();
+-
+ 	/*
+ 	 * We do a pretty difficult piece of bootstrap by reading the
+ 	 * MFT (and other metadata) from disk into memory. We'll only
+@@ -2748,7 +2730,6 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
+ 			ntfs_error(sb, "Allocation of NTFS volume structure "
+ 					"failed. Aborting mount...");
+ 		lockdep_on();
+-		unlock_kernel();
+ 		return -ENOMEM;
+ 	}
+ 	/* Initialize ntfs_volume structure. */
+@@ -2766,8 +2747,6 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
+ 	init_rwsem(&vol->mftbmp_lock);
+ 	init_rwsem(&vol->lcnbmp_lock);
+ 
 -	unlock_kernel();
- 	return err;
+-
+ 	/* By default, enable sparse support. */
+ 	NVolSetSparseEnabled(vol);
+ 
+@@ -2934,9 +2913,7 @@ static int ntfs_fill_super(struct super_block *sb, void *opt, const int silent)
+ 		}
+ 		mutex_unlock(&ntfs_lock);
+ 		sb->s_export_op = &ntfs_export_ops;
+-		lock_kernel();
+ 		lockdep_on();
+-		unlock_kernel();
+ 		return 0;
+ 	}
+ 	ntfs_error(sb, "Failed to allocate root directory.");
+@@ -3052,12 +3029,10 @@ iput_tmp_ino_err_out_now:
+ 	}
+ 	/* Errors at this stage are irrelevant. */
+ err_out_now:
+-	lock_kernel();
+ 	sb->s_fs_info = NULL;
+ 	kfree(vol);
+ 	ntfs_debug("Failed, returning -EINVAL.");
+ 	lockdep_on();
+-	unlock_kernel();
+ 	return -EINVAL;
  }
  
 -- 
