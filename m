@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZKRObu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbZKROcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbZKRObu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbZKRObt
+	id S1757294AbZKROcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:32:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757232AbZKROcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:31:49 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40595 "EHLO
+	Wed, 18 Nov 2009 09:32:03 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40599 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757166AbZKRObr (ORCPT
+	with ESMTP id S1757177AbZKROcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:31:47 -0500
+	Wed, 18 Nov 2009 09:32:01 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 04/12] mxser: Use the new locking rules to fix setserial
-	properly
+Subject: [PATCH 05/12] isicom: fix deadlock on shutdown
 To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:15:23 +0000
-Message-ID: <20091118141516.3346.1769.stgit@localhost.localdomain>
+Date: Wed, 18 Nov 2009 14:15:37 +0000
+Message-ID: <20091118141528.3346.41333.stgit@localhost.localdomain>
 In-Reply-To: <20091118141354.3346.16910.stgit@localhost.localdomain>
 References: <20091118141354.3346.16910.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -26,385 +25,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Propogate the init/shutdown mutex through the setserial logic. Use the proper
-locks for the various bits still using the BKL. Kill the BKL in this driver.
+Alexander Strakh <strakh@ispras.ru> reported
+
+	KERNEL_VERSION: 2.6.31
+	DESCRIBE:
+Driver drivers/char/isicom.c might sleep in atomic  context, because it
+calls 
+tty_port_xmit_buf under spin_lock.
+
+./drivers/char/isicom.c:
+1307 static void isicom_hangup(struct tty_struct *tty)
+1308 {
+...
+1315         spin_lock_irqsave(&port->card->card_lock, flags);
+1316         isicom_shutdown_port(port);
+...
+
+Path to might_sleep macro from isicom_hangup:
+1. isicom_hangup calls spin_lock_irqsave (drivers/char/isicom.c:1315) and
+then 
+calls isicom_shutdown_port.
+2. isiscom_shutdown_port calls tty_port_free_xmit_buf at 
+drivers/char/isicom.c:906
+3. tty_port_free_xmit_buf calls mutex_lock at drivers/char/tty_port:48
+
+Found by Linux Driver Verification Project.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/mxser.c |  145 +++++++++++++++++++++++++++-----------------------
- 1 files changed, 78 insertions(+), 67 deletions(-)
+ drivers/char/isicom.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 9dac516..4c803c7 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -23,7 +23,6 @@
- #include <linux/errno.h>
- #include <linux/signal.h>
- #include <linux/sched.h>
--#include <linux/smp_lock.h>
- #include <linux/timer.h>
- #include <linux/interrupt.h>
- #include <linux/tty.h>
-@@ -1229,6 +1228,7 @@ static int mxser_set_serial_info(struct tty_struct *tty,
- 		struct serial_struct __user *new_info)
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 1e91c30..300d5bd 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -887,7 +887,6 @@ static void isicom_shutdown_port(struct isi_port *port)
  {
- 	struct mxser_port *info = tty->driver_data;
-+	struct tty_port *port = &info->port;
- 	struct serial_struct new_serial;
- 	speed_t baud;
- 	unsigned long sl_flags;
-@@ -1244,7 +1244,7 @@ static int mxser_set_serial_info(struct tty_struct *tty,
- 			new_serial.port != info->ioaddr)
- 		return -EINVAL;
+ 	struct isi_board *card = port->card;
  
--	flags = info->port.flags & ASYNC_SPD_MASK;
-+	flags = port->flags & ASYNC_SPD_MASK;
- 
- 	if (!capable(CAP_SYS_ADMIN)) {
- 		if ((new_serial.baud_base != info->baud_base) ||
-@@ -1258,16 +1258,17 @@ static int mxser_set_serial_info(struct tty_struct *tty,
- 		 * OK, past this point, all the error checking has been done.
- 		 * At this point, we start making changes.....
- 		 */
--		info->port.flags = ((info->port.flags & ~ASYNC_FLAGS) |
-+		port->flags = ((port->flags & ~ASYNC_FLAGS) |
- 				(new_serial.flags & ASYNC_FLAGS));
--		info->port.close_delay = new_serial.close_delay * HZ / 100;
--		info->port.closing_wait = new_serial.closing_wait * HZ / 100;
--		tty->low_latency = (info->port.flags & ASYNC_LOW_LATENCY)
--								? 1 : 0;
--		if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST &&
-+		port->close_delay = new_serial.close_delay * HZ / 100;
-+		port->closing_wait = new_serial.closing_wait * HZ / 100;
-+		tty->low_latency = (port->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
-+		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST &&
- 				(new_serial.baud_base != info->baud_base ||
- 				new_serial.custom_divisor !=
- 				info->custom_divisor)) {
-+			if (new_serial.custom_divisor == 0)
-+				return -EINVAL;
- 			baud = new_serial.baud_base / new_serial.custom_divisor;
- 			tty_encode_baud_rate(tty, baud, baud);
- 		}
-@@ -1277,18 +1278,16 @@ static int mxser_set_serial_info(struct tty_struct *tty,
- 
- 	process_txrx_fifo(info);
- 
--	if (info->port.flags & ASYNC_INITIALIZED) {
--		if (flags != (info->port.flags & ASYNC_SPD_MASK)) {
-+	if (test_bit(ASYNCB_INITIALIZED, &port->flags)) {
-+		if (flags != (port->flags & ASYNC_SPD_MASK)) {
- 			spin_lock_irqsave(&info->slock, sl_flags);
- 			mxser_change_speed(tty, NULL);
- 			spin_unlock_irqrestore(&info->slock, sl_flags);
- 		}
- 	} else {
--		mutex_lock(&info->port.mutex);
--		retval = mxser_activate(&info->port, tty);
-+		retval = mxser_activate(port, tty);
- 		if (retval == 0)
--			set_bit(ASYNCB_INITIALIZED, &info->port.flags);
--		mutex_unlock(&info->port.mutex);
-+			set_bit(ASYNCB_INITIALIZED, &port->flags);
- 	}
- 	return retval;
+-	tty_port_free_xmit_buf(&port->port);
+ 	if (--card->count < 0) {
+ 		pr_dbg("isicom_shutdown_port: bad board(0x%lx) count %d.\n",
+ 			card->base, card->count);
+@@ -927,6 +926,7 @@ static void isicom_shutdown(struct tty_port *port)
+ 	outw(card->port_status, card->base + 0x02);
+ 	isicom_shutdown_port(ip);
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
++	tty_port_free_xmit_buf(port);
  }
-@@ -1478,7 +1477,8 @@ static int __init mxser_read_register(int port, unsigned short *regs)
  
- static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- {
--	struct mxser_port *port;
-+	struct mxser_port *ip;
-+	struct tty_port *port;
- 	struct tty_struct *tty;
- 	int result, status;
- 	unsigned int i, j;
-@@ -1494,38 +1494,39 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 
- 	case MOXA_CHKPORTENABLE:
- 		result = 0;
--		lock_kernel();
- 		for (i = 0; i < MXSER_BOARDS; i++)
- 			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++)
- 				if (mxser_boards[i].ports[j].ioaddr)
- 					result |= (1 << i);
--		unlock_kernel();
- 		return put_user(result, (unsigned long __user *)argp);
- 	case MOXA_GETDATACOUNT:
--		lock_kernel();
-+		/* The receive side is locked by port->slock but it isn't
-+		   clear that an exact snapshot is worth copying here */
- 		if (copy_to_user(argp, &mxvar_log, sizeof(mxvar_log)))
- 			ret = -EFAULT;
--		unlock_kernel();
- 		return ret;
- 	case MOXA_GETMSTATUS: {
- 		struct mxser_mstatus ms, __user *msu = argp;
--		lock_kernel();
- 		for (i = 0; i < MXSER_BOARDS; i++)
- 			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++) {
--				port = &mxser_boards[i].ports[j];
-+				ip = &mxser_boards[i].ports[j];
-+				port = &ip->port;
- 				memset(&ms, 0, sizeof(ms));
- 
--				if (!port->ioaddr)
-+				mutex_lock(&port->mutex);
-+				if (!ip->ioaddr)
- 					goto copy;
- 				
--				tty = tty_port_tty_get(&port->port);
-+				tty = tty_port_tty_get(port);
- 
- 				if (!tty || !tty->termios)
--					ms.cflag = port->normal_termios.c_cflag;
-+					ms.cflag = ip->normal_termios.c_cflag;
- 				else
- 					ms.cflag = tty->termios->c_cflag;
- 				tty_kref_put(tty);
--				status = inb(port->ioaddr + UART_MSR);
-+				spin_lock_irq(&ip->slock);
-+				status = inb(ip->ioaddr + UART_MSR);
-+				spin_unlock_irq(&ip->slock);
- 				if (status & UART_MSR_DCD)
- 					ms.dcd = 1;
- 				if (status & UART_MSR_DSR)
-@@ -1533,13 +1534,11 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 				if (status & UART_MSR_CTS)
- 					ms.cts = 1;
- 			copy:
--				if (copy_to_user(msu, &ms, sizeof(ms))) {
--					unlock_kernel();
-+				mutex_unlock(&port->mutex);
-+				if (copy_to_user(msu, &ms, sizeof(ms)))
- 					return -EFAULT;
--				}
- 				msu++;
- 			}
--		unlock_kernel();
- 		return 0;
- 	}
- 	case MOXA_ASPP_MON_EXT: {
-@@ -1551,41 +1550,48 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 		if (!me)
- 			return -ENOMEM;
- 
--		lock_kernel();
- 		for (i = 0, p = 0; i < MXSER_BOARDS; i++) {
- 			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++, p++) {
- 				if (p >= ARRAY_SIZE(me->rx_cnt)) {
- 					i = MXSER_BOARDS;
- 					break;
- 				}
--				port = &mxser_boards[i].ports[j];
--				if (!port->ioaddr)
-+				ip = &mxser_boards[i].ports[j];
-+				port = &ip->port;
-+
-+				mutex_lock(&port->mutex);
-+				if (!ip->ioaddr) {
-+					mutex_unlock(&port->mutex);
- 					continue;
-+				}
- 
--				status = mxser_get_msr(port->ioaddr, 0, p);
-+				spin_lock_irq(&ip->slock);
-+				status = mxser_get_msr(ip->ioaddr, 0, p);
- 
- 				if (status & UART_MSR_TERI)
--					port->icount.rng++;
-+					ip->icount.rng++;
- 				if (status & UART_MSR_DDSR)
--					port->icount.dsr++;
-+					ip->icount.dsr++;
- 				if (status & UART_MSR_DDCD)
--					port->icount.dcd++;
-+					ip->icount.dcd++;
- 				if (status & UART_MSR_DCTS)
--					port->icount.cts++;
-+					ip->icount.cts++;
- 
--				port->mon_data.modem_status = status;
--				me->rx_cnt[p] = port->mon_data.rxcnt;
--				me->tx_cnt[p] = port->mon_data.txcnt;
--				me->up_rxcnt[p] = port->mon_data.up_rxcnt;
--				me->up_txcnt[p] = port->mon_data.up_txcnt;
-+				ip->mon_data.modem_status = status;
-+				me->rx_cnt[p] = ip->mon_data.rxcnt;
-+				me->tx_cnt[p] = ip->mon_data.txcnt;
-+				me->up_rxcnt[p] = ip->mon_data.up_rxcnt;
-+				me->up_txcnt[p] = ip->mon_data.up_txcnt;
- 				me->modem_status[p] =
--					port->mon_data.modem_status;
--				tty = tty_port_tty_get(&port->port);
-+					ip->mon_data.modem_status;
-+				spin_unlock_irq(&ip->slock);
-+
-+				tty = tty_port_tty_get(&ip->port);
- 
- 				if (!tty || !tty->termios) {
--					cflag = port->normal_termios.c_cflag;
--					iflag = port->normal_termios.c_iflag;
--					me->baudrate[p] = tty_termios_baud_rate(&port->normal_termios);
-+					cflag = ip->normal_termios.c_cflag;
-+					iflag = ip->normal_termios.c_iflag;
-+					me->baudrate[p] = tty_termios_baud_rate(&ip->normal_termios);
- 				} else {
- 					cflag = tty->termios->c_cflag;
- 					iflag = tty->termios->c_iflag;
-@@ -1604,16 +1610,15 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 				if (iflag & (IXON | IXOFF))
- 					me->flowctrl[p] |= 0x0C;
- 
--				if (port->type == PORT_16550A)
-+				if (ip->type == PORT_16550A)
- 					me->fifo[p] = 1;
- 
--				opmode = inb(port->opmode_ioaddr) >>
--						((p % 4) * 2);
-+				opmode = inb(ip->opmode_ioaddr)>>((p % 4) * 2);
- 				opmode &= OP_MODE_MASK;
- 				me->iftype[p] = opmode;
-+				mutex_unlock(&port->mutex);
- 			}
- 		}
--		unlock_kernel();
- 		if (copy_to_user(argp, me, sizeof(*me)))
- 			ret = -EFAULT;
- 		kfree(me);
-@@ -1650,6 +1655,7 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 		unsigned int cmd, unsigned long arg)
- {
- 	struct mxser_port *info = tty->driver_data;
-+	struct tty_port *port = &info->port;
- 	struct async_icount cnow;
- 	unsigned long flags;
- 	void __user *argp = (void __user *)arg;
-@@ -1674,20 +1680,20 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 					opmode != RS422_MODE &&
- 					opmode != RS485_4WIRE_MODE)
- 				return -EFAULT;
--			lock_kernel();
- 			mask = ModeMask[p];
- 			shiftbit = p * 2;
-+			spin_lock_irq(&info->slock);
- 			val = inb(info->opmode_ioaddr);
- 			val &= mask;
- 			val |= (opmode << shiftbit);
- 			outb(val, info->opmode_ioaddr);
--			unlock_kernel();
-+			spin_unlock_irq(&info->slock);
- 		} else {
--			lock_kernel();
- 			shiftbit = p * 2;
-+			spin_lock_irq(&info->slock);
- 			opmode = inb(info->opmode_ioaddr) >> shiftbit;
-+			spin_unlock_irq(&info->slock);
- 			opmode &= OP_MODE_MASK;
--			unlock_kernel();
- 			if (put_user(opmode, (int __user *)argp))
- 				return -EFAULT;
- 		}
-@@ -1700,14 +1706,14 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 
- 	switch (cmd) {
- 	case TIOCGSERIAL:
--		lock_kernel();
-+		mutex_lock(&port->mutex);
- 		retval = mxser_get_serial_info(tty, argp);
--		unlock_kernel();
-+		mutex_unlock(&port->mutex);
- 		return retval;
- 	case TIOCSSERIAL:
--		lock_kernel();
-+		mutex_lock(&port->mutex);
- 		retval = mxser_set_serial_info(tty, argp);
--		unlock_kernel();
-+		mutex_unlock(&port->mutex);
- 		return retval;
- 	case TIOCSERGETLSR:	/* Get line status register */
- 		return  mxser_get_lsr_info(info, argp);
-@@ -1753,31 +1759,33 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 	case MOXA_HighSpeedOn:
- 		return put_user(info->baud_base != 115200 ? 1 : 0, (int __user *)argp);
- 	case MOXA_SDS_RSTICOUNTER:
--		lock_kernel();
-+		spin_lock_irq(&info->slock);
- 		info->mon_data.rxcnt = 0;
- 		info->mon_data.txcnt = 0;
--		unlock_kernel();
-+		spin_unlock_irq(&info->slock);
- 		return 0;
- 
- 	case MOXA_ASPP_OQUEUE:{
- 		int len, lsr;
- 
--		lock_kernel();
- 		len = mxser_chars_in_buffer(tty);
-+		spin_lock(&info->slock);
- 		lsr = inb(info->ioaddr + UART_LSR) & UART_LSR_THRE;
-+		spin_unlock_irq(&info->slock);
- 		len += (lsr ? 0 : 1);
--		unlock_kernel();
- 
- 		return put_user(len, (int __user *)argp);
- 	}
- 	case MOXA_ASPP_MON: {
- 		int mcr, status;
- 
--		lock_kernel();
-+		spin_lock(&info->slock);
- 		status = mxser_get_msr(info->ioaddr, 1, tty->index);
- 		mxser_check_modem_status(tty, info, status);
- 
- 		mcr = inb(info->ioaddr + UART_MCR);
-+		spin_unlock(&info->slock);
-+		
- 		if (mcr & MOXA_MUST_MCR_XON_FLAG)
- 			info->mon_data.hold_reason &= ~NPPI_NOTIFY_XOFFHOLD;
- 		else
-@@ -1792,7 +1800,7 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 			info->mon_data.hold_reason |= NPPI_NOTIFY_CTSHOLD;
- 		else
- 			info->mon_data.hold_reason &= ~NPPI_NOTIFY_CTSHOLD;
--		unlock_kernel();
-+
- 		if (copy_to_user(argp, &info->mon_data,
- 				sizeof(struct mxser_mon)))
- 			return -EFAULT;
-@@ -1951,6 +1959,7 @@ static void mxser_wait_until_sent(struct tty_struct *tty, int timeout)
- {
- 	struct mxser_port *info = tty->driver_data;
- 	unsigned long orig_jiffies, char_time;
-+	unsigned long flags;
- 	int lsr;
- 
- 	if (info->type == PORT_UNKNOWN)
-@@ -1990,19 +1999,21 @@ static void mxser_wait_until_sent(struct tty_struct *tty, int timeout)
- 		timeout, char_time);
- 	printk("jiff=%lu...", jiffies);
- #endif
--	lock_kernel();
-+	spin_lock_irqsave(&info->slock, flags);
- 	while (!((lsr = inb(info->ioaddr + UART_LSR)) & UART_LSR_TEMT)) {
- #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
- 		printk("lsr = %d (jiff=%lu)...", lsr, jiffies);
- #endif
-+		spin_unlock_irqrestore(&info->slock, flags);
- 		schedule_timeout_interruptible(char_time);
- 		if (signal_pending(current))
- 			break;
- 		if (timeout && time_after(jiffies, orig_jiffies + timeout))
- 			break;
-+		spin_lock_irqsave(&info->slock, flags);
- 	}
-+	spin_unlock_irqrestore(&info->slock, flags);
- 	set_current_state(TASK_RUNNING);
--	unlock_kernel();
- 
- #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
- 	printk("lsr = %d (jiff=%lu)...done\n", lsr, jiffies);
+ static void isicom_close(struct tty_struct *tty, struct file *filp)
 
