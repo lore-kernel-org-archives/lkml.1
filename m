@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZKRS4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbZKRTAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932543AbZKRS4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbZKRS4R
+	id S932556AbZKRTAe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbZKRTAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:56:17 -0500
-Received: from mga03.intel.com ([143.182.124.21]:42582 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758268AbZKRS4Q convert rfc822-to-8bit (ORCPT
+	Wed, 18 Nov 2009 14:00:34 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35601 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758311AbZKRTAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:56:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,766,1249282800"; 
-   d="scan'208";a="213047684"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Jiri Slaby <jslaby@novell.com>,
-       "jirislaby@gmail.com" <jirislaby@gmail.com>
-CC: "mingo@elte.hu" <mingo@elte.hu>,
-       "nhorman@tuxdriver.com" <nhorman@tuxdriver.com>,
-       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "marcin.slusarz@gmail.com" <marcin.slusarz@gmail.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       James Morris <jmorris@namei.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Wed, 18 Nov 2009 10:56:19 -0800
-Subject: RE: [PATCH 03/16] IA64: use ACCESS_ONCE for rlimits
-Thread-Topic: [PATCH 03/16] IA64: use ACCESS_ONCE for rlimits
-Thread-Index: AcpoX748BhaLfwa1R2m2jZryl28ORQAIDTug
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E38E71DD@orsmsx505.amr.corp.intel.com>
-References: <4B040A03.2020508@gmail.com>
- <1258555922-2064-3-git-send-email-jslaby@novell.com>
-In-Reply-To: <1258555922-2064-3-git-send-email-jslaby@novell.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Nov 2009 14:00:32 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 18 Nov 2009 20:00:18 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 0/6] DVB: firedtv: simplifications and a portability fix
+To: linux-media@vger.kernel.org
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Message-ID: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Make sure compiler won't do weird things with limits. E.g. fetching
-> them twice may return 2 different values after writable limits are
-> implemented.
+The following three patches are applicable after "firedtv: port to new
+firewire core" from 2009-11-08:
 
--	if (size > task->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
-+	if (size > ACCESS_ONCE(task->signal->rlim[RLIMIT_MEMLOCK].rlim_cur))
+[PATCH 1/6] firedtv: shrink buffer pointer table
+[PATCH 2/6] firedtv: packet requeuing is likely to succeed
+[PATCH 3/6] firedtv: remove an unnecessary function argument
 
-I don't see how this helps.  If someone else is changing limits while
-we are looking at them, then there is a race.  We either get the old
-or the new value.  Using ACCESS_ONCE (which on ia64 forces a "volatile"
-access, which will make the compiler generate "ld.acq" rather than a
-plain "ld") won't make any difference to this race.
+The rest of this patch set additionally requires the latest firedtv as
+of 2.6.32-rc7:
 
-Please explain what issue you see with the current code.
+[PATCH 4/6] firedtv: do not DMA-map stack addresses
+[PATCH 5/6] firedtv: remove check for interrupting signal
+[PATCH 6/6] firedtv: reduce memset()s
 
--Tony
+ drivers/media/dvb/firewire/firedtv-1394.c |   13
+ drivers/media/dvb/firewire/firedtv-avc.c  |  520 +++++++++++-----------
+ drivers/media/dvb/firewire/firedtv-dvb.c  |    1
+ drivers/media/dvb/firewire/firedtv-fw.c   |   39 -
+ drivers/media/dvb/firewire/firedtv.h      |    8
+ 5 files changed, 306 insertions(+), 275 deletions(-)
+-- 
+Stefan Richter
+-=====-==--= =-== =--=-
+http://arcgraph.de/sr/
 
