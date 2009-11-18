@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbZKRRuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZKRRvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758119AbZKRRuF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbZKRRuF
+	id S1758135AbZKRRvc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZKRRvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:50:05 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:49800 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757939AbZKRRuE (ORCPT
+	Wed, 18 Nov 2009 12:51:31 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:58288 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757984AbZKRRva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:50:04 -0500
-Date: Wed, 18 Nov 2009 17:50:03 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
-Message-ID: <20091118175003.GF28723@shareable.org>
-References: <1258560457-15129-1-git-send-email-jblunck@suse.de> <20091118171524.4d2f8cec@lxorguk.ukuu.org.uk> <20091118172730.GD28723@shareable.org> <200911181835.55007.oliver@neukum.org>
+	Wed, 18 Nov 2009 12:51:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VH1ruFDFZ1diNkcZMgms1NaYkoESDzvB7FI8OQufmlENbLzRXOlamOQ+heWTG18std
+         cqGtcvcMfD99SFOxSVgDYDEQBO9STnzUxjJFs5n/jQsC3ITgDuTkmTOqAmJx6CO4uZuu
+         3W+2bNt4nCexJhtZDLSHd64fm08XSDckiR+v4=
+Date: Wed, 18 Nov 2009 09:51:31 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+Cc: "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
+       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
+Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
+Message-ID: <20091118175131.GC4458@core.coreip.homeip.net>
+References: <4B03DE53.6010007@nokia.com> <4B03DE9B.40800@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911181835.55007.oliver@neukum.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B03DE9B.40800@nokia.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> Am Mittwoch, 18. November 2009 18:27:30 schrieb Jamie Lokier:
-> > > No. Your logic is flawed
-> > > 
-> > > The BKL is protected something here - it protects the change of offset
-> > > with respect to other BKL users within drivers. The question is what if
-> > > anything in any other driver code depends upon the BKL and uses it to
-> > > protect f_pos. Probably very little if anything but a grep for f_pos
-> > > through the drivers might not be a bad idea before assuming this. Very
-> > > few touch f_pos except in their own llseek method.
-> > 
-> > Of course, drivers shouldn't be using f_pos outside their llseek
-> > method, as they should all behave the same with pread/pwrite as with
-> > llseek+read/write.
-> 
-> Might not a driver update f_pos after read/write?
+On Wed, Nov 18, 2009 at 01:46:35PM +0200, Juha Keski-Saari wrote:
+> This patch adds all the remaining TWL4030 regulators into the implementation,
+> also adding VINT* regulators in this way since they can be derived out from
+> the TWL
+>
+> Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+> ---
+>  drivers/mfd/twl4030-core.c            |   30 ++++++++++++++++++++++++++----
+>  drivers/regulator/twl4030-regulator.c |   27 +++++++++++++++++----------
+>  include/linux/i2c/twl4030.h           |    8 ++++++--
+>  3 files changed, 49 insertions(+), 16 deletions(-)
+>
+> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+> index a1c47ee..0748b43 100644
+> --- a/drivers/mfd/twl4030-core.c
+> +++ b/drivers/mfd/twl4030-core.c
+> @@ -602,13 +602,15 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>  	}
+>
+>  	if (twl_has_regulator()) {
+> -		/*
+> -		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
+> +		child = add_regulator(TWL4030_REG_VDD1, pdata->vdd1);
+>  		if (IS_ERR(child))
+>  			return PTR_ERR(child);
+> -		*/
+>
+> -		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
+> +		child = add_regulator(TWL4030_REG_VDD2, pdata->vdd2);
+> +		if (IS_ERR(child))
+> +			return PTR_ERR(child);
+> +
+> +		child = add_regulator(TWL4030_REG_VIO, pdata->vio);
+>  		if (IS_ERR(child))
+>  			return PTR_ERR(child);
 
-It could indirectly, through *ppos.  
+Not specifically targeted at this patch - this driver error handling is
+severely lacking and leaves bund of devices behind when one of them
+fails to be added.
 
-There should be no direct accesses to f_pos outseek llseek.  If there
-are still, those might indicate driver bugs.  (I'm not 100% sure about
-this - hence asking).
-
-Drivers used to update f_pos indirectly through *ppos, and for this,
-Alan's observation about BKL protecting the value from changing does apply.
-
-But nowadays, even that doesn't happen.  sys_read() and sys_write()
-make a copy of f_pos using file_pos_read(), so drivers cannot see the
-value change during the call - except for their own change.
-
-I find myself wondering why the VFS isn't responsible for the position
-update instead of the driver...  Would it be a valid cleanup to move
-it from the driver to VFS?
-
--- Jamie
+-- 
+Dmitry
