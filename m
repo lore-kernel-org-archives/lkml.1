@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbZKRQvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZKRQwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbZKRQvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 11:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757846AbZKRQvq
+	id S1757909AbZKRQwB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 11:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbZKRQwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 11:51:46 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:43548 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757749AbZKRQvp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 11:51:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=mwL2FJXMiLkdPg4S8RF+h97y9h03ohNVzbxlwqTs0j0cVsAdQaaDBrm4SvM2knWm+T
-         YtsVnQCAD4BSR3HXqYUiUGyAKkGOVWp5H/fIz888yBvkm32Z0LNVHXMiCAZp5t7JjanB
-         xkAZRyC3X01wuAy9ee8hqj4/S+C0Q1rmEsDM0=
-MIME-Version: 1.0
-In-Reply-To: <200911181527.18791.oliver@neukum.org>
-References: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com>
-	 <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
-	 <200911181527.18791.oliver@neukum.org>
-Date: Wed, 18 Nov 2009 09:51:49 -0700
-Message-ID: <f9d2a5e10911180851g5d21eeb6g3d9eeccff2c2d371@mail.gmail.com>
-Subject: Re: Use of usb_find_interface in open is racy
-From: Russ Dill <russ.dill@gmail.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 18 Nov 2009 11:52:00 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:59822 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757631AbZKRQv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 11:51:59 -0500
+Date: Wed, 18 Nov 2009 17:52:02 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
+Message-ID: <20091118175202.490989d8@hyperion.delvare>
+In-Reply-To: <c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
+References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
+	<20091107210147.3e754278@hyperion.delvare>
+	<4AF7148C.9090706@thebigcorporation.com>
+	<20091112211255.09cd884a@hyperion.delvare>
+	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
+	<20091116155606.GC29479@sirena.org.uk>
+	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+	<20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
+	<c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 7:27 AM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Mittwoch, 18. November 2009 11:41:25 schrieb Jiri Kosina:
->> > User space receives the hotplug event for the class device, makes the
->> > device node and notifies another program that opens the device node.
->> > The program opens the device node which calls into usb_open and then
->> > skel_open. skel_open calls usb_find_interface. usb_find_interfaces
->> > searches the klist_devices of skel_driver, finds no device associated
->> > with the minor number and returns NULL. skel_open returns -ENODEV.
->> >
->> > Control returns to really_probe and really_probe calls driver_bound
->> > which adds the device to the list of devices associated with
->> > skel_driver (klist_devices).
->> >
->> > I'm not sure what the right way to solve this is. A call to
->> > wait_for_device_probe() in the skel_open call before calling
->> > usb_find_interface fixes the problem, but it is a rather large hammer.
->>
+On Wed, 18 Nov 2009 17:28:53 +0100, Leon Woestenberg wrote:
+> On Wed, Nov 18, 2009 at 2:05 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Our timers are very efficient and some day we will need to make jiffies a
+> > function and stop the timer ticking for best performance. At that point
+> > timers are probably the most efficient way to do much of this.
 >
-> Device core code is hard to follow, but I tried.
-> How about simply covering all of usb_register_dev() with minor_rwsem?
->
+> The problem with I2C bitbanged is the stringent timing, we need a way
+> to have fine-grained sleeping
+> mixed with real-time tasks in order to make this work.
 
-The race is open from the point that usb_register_dev calls
-device_create (at the end of usb_register_dev) till the point that
-skel_probe returns up to the point of really_probe, really_probe calls
-driver_bound, and driver_bound adds the device to the driver's
-klist_devices.
+FWIW, the problem that was initially reported has nothing to do with
+this. i2c-algo-bit used mdelay() during transactions, not yield().
+yield() is used only in once place, _between_ transactions attempts.
+There are no strict timing constraints there.
 
-call stack:
-
-device_create
-usb_register_dev
-skel_probe
-usb_probe_device (via drv->probe())
-really_probe
-
-really_probe:
-
-dev->driver = drv;
-if (driver_sysfs_add(dev)) {
-[...]
-}
-
-if (dev->bus->probe) {
-[...]
-} else if (drv->probe) {
+-- 
+Jean Delvare
