@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZKRIdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbZKRIaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbZKRIdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 03:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZKRIdQ
+	id S1753372AbZKRIaR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 03:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZKRIaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 03:33:16 -0500
-Received: from mga14.intel.com ([143.182.124.37]:15558 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbZKRIb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 03:31:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,764,1249282800"; 
-   d="scan'208";a="212830445"
-Message-Id: <20091118082846.921451469@intel.com>
-User-Agent: quilt/0.48-1
-Date: Wed, 18 Nov 2009 16:27:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: <linux-fsdevel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 12/12] bdi: use bdi_stat_sum() for more accurate debugfs stats
-References: <20091118082648.140755818@intel.com>
-Content-Disposition: inline; filename=bdi-debug-dump-sum.patch
+	Wed, 18 Nov 2009 03:30:16 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:53619 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752387AbZKRIaP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 03:30:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
+         :mime-version:content-type;
+        b=q/u9SkTpXHQP1bp+izmpcELMq7vqn+C69bXDGIvjL4PoKLpMsPsmZP4Vhqa5OeJWQ7
+         bO7A3dp6tIdmnimbikLcGOEYtd+4nkP/OOVhWZcUbjE8ufX2GYpZ2iWFt4hlZiAWcrF+
+         K2ank/QfMnhPMttaNblAhmmU1u3RqoTuFbiII=
+Date: Wed, 18 Nov 2009 10:30:14 +0200 (SAST)
+From: Dan Carpenter <error27@gmail.com>
+X-X-Sender: dcarpenter@bicker
+To: balajirrao@openmoko.org
+cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: [patch] rtc: use after free in pcf50633_rtc_probe()
+Message-ID: <alpine.DEB.2.00.0911161312140.12810@bicker>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/backing-dev.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+"rtc" is freed and then dereferenced on the next line.  This patch fixes 
+that.
 
---- linux.orig/mm/backing-dev.c	2009-11-18 16:25:28.000000000 +0800
-+++ linux/mm/backing-dev.c	2009-11-18 16:26:10.000000000 +0800
-@@ -104,8 +104,8 @@ static int bdi_debug_stats_show(struct s
- 		   "wb_mask:          %8lx\n"
- 		   "wb_list:          %8u\n"
- 		   "wb_cnt:           %8u\n",
--		   (unsigned long) K(bdi_stat(bdi, BDI_WRITEBACK)),
--		   (unsigned long) K(bdi_stat(bdi, BDI_RECLAIMABLE)),
-+		   (unsigned long) K(bdi_stat_sum(bdi, BDI_WRITEBACK)),
-+		   (unsigned long) K(bdi_stat_sum(bdi, BDI_RECLAIMABLE)),
- 		   K(bdi_thresh), K(dirty_thresh),
- 		   K(background_thresh), nr_wb, nr_dirty, nr_io, nr_more_io,
- 		   !list_empty(&bdi->bdi_list), bdi->state, bdi->wb_mask,
+This is a resend.  I have been offline for the last few months so I may 
+have missed a reply or something.  Not sure what the status was.
 
+regards,
+dan carpenter
 
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+
+--- orig/drivers/rtc/rtc-pcf50633.c	2009-07-17 16:21:52.000000000 +0300
++++ new/drivers/rtc/rtc-pcf50633.c	2009-07-17 16:22:56.000000000 +0300
+@@ -291,8 +291,9 @@
+ 				&pcf50633_rtc_ops, THIS_MODULE);
+ 
+ 	if (IS_ERR(rtc->rtc_dev)) {
++		int ret =  PTR_ERR(rtc->rtc_dev);
+ 		kfree(rtc);
+-		return PTR_ERR(rtc->rtc_dev);
++		return ret;
+ 	}
+ 
+ 	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_ALARM,
