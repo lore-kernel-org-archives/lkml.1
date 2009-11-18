@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZKRRvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZKRRxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbZKRRvc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZKRRvb
+	id S1758143AbZKRRxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbZKRRxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:51:31 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:58288 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757984AbZKRRva (ORCPT
+	Wed, 18 Nov 2009 12:53:00 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:12324
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757991AbZKRRw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:51:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VH1ruFDFZ1diNkcZMgms1NaYkoESDzvB7FI8OQufmlENbLzRXOlamOQ+heWTG18std
-         cqGtcvcMfD99SFOxSVgDYDEQBO9STnzUxjJFs5n/jQsC3ITgDuTkmTOqAmJx6CO4uZuu
-         3W+2bNt4nCexJhtZDLSHd64fm08XSDckiR+v4=
-Date: Wed, 18 Nov 2009 09:51:31 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-Cc: "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
-       "De-Schrijver Peter (Nokia-D/Helsinki)" 
-	<Peter.De-Schrijver@nokia.com>,
-       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
-Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
-Message-ID: <20091118175131.GC4458@core.coreip.homeip.net>
-References: <4B03DE53.6010007@nokia.com> <4B03DE9B.40800@nokia.com>
+	Wed, 18 Nov 2009 12:52:59 -0500
+X-SpamScore: -16
+X-BigFish: VPS-16(zz1432R98dNzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B043467.8000708@am.sony.com>
+Date: Wed, 18 Nov 2009 09:52:39 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B03DE9B.40800@nokia.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Matt Mackall <mpm@selenic.com>, David VomLehn <dvomlehn@cisco.com>,
+       "dedekind1@gmail.com" <dedekind1@gmail.com>,
+       Marco Stornelli <marco.stornelli@gmail.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "dwm2@infradead.org" <dwm2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+References: <1258463404.27437.103.camel@localhost>	<m1pr7hf93s.fsf@fess.ebiederm.org>	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>	<m1iqd8ptg9.fsf@fess.ebiederm.org> <1258505777.3081.4.camel@calx> <m1vdh7byva.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vdh7byva.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Nov 2009 17:52:40.0667 (UTC) FILETIME=[EC336AB0:01CA6877]
+X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 01:46:35PM +0200, Juha Keski-Saari wrote:
-> This patch adds all the remaining TWL4030 regulators into the implementation,
-> also adding VINT* regulators in this way since they can be derived out from
-> the TWL
->
-> Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-> ---
->  drivers/mfd/twl4030-core.c            |   30 ++++++++++++++++++++++++++----
->  drivers/regulator/twl4030-regulator.c |   27 +++++++++++++++++----------
->  include/linux/i2c/twl4030.h           |    8 ++++++--
->  3 files changed, 49 insertions(+), 16 deletions(-)
->
-> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-> index a1c47ee..0748b43 100644
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -602,13 +602,15 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->  	}
->
->  	if (twl_has_regulator()) {
-> -		/*
-> -		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
-> +		child = add_regulator(TWL4030_REG_VDD1, pdata->vdd1);
->  		if (IS_ERR(child))
->  			return PTR_ERR(child);
-> -		*/
->
-> -		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
-> +		child = add_regulator(TWL4030_REG_VDD2, pdata->vdd2);
-> +		if (IS_ERR(child))
-> +			return PTR_ERR(child);
-> +
-> +		child = add_regulator(TWL4030_REG_VIO, pdata->vio);
->  		if (IS_ERR(child))
->  			return PTR_ERR(child);
+Eric W. Biederman wrote:
+> Matt Mackall <mpm@selenic.com> writes:
+> 
+>> As much as I like kexec, it loses on memory footprint by about 100x.
+>> It's not appropriate for all use cases, especially things like
+>> consumer-grade wireless access points and phones.
+> 
+> In general I agree.  The cost of a second kernel and initrd can be
+> prohibitive in the smallest systems, and if you do a crash capture
+> with using a standalone app that is reinventing the wheel.
+> 
+> That said.  I can happily run kdump with only 16M-20M reserved.
+> So on many systems the cost is affordable.
 
-Not specifically targeted at this patch - this driver error handling is
-severely lacking and leaves bund of devices behind when one of them
-fails to be added.
+Understood.  On some of my systems, the memory budget for the
+entire system is 10M.  On most systems I work with, it is a
+struggle to reserve even 64K for this feature.
+  -- Tim
 
--- 
-Dmitry
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
