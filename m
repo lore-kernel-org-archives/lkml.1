@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZKRBEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbZKRBGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbZKRBEM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:04:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZKRBEI
+	id S1756768AbZKRBGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:06:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbZKRBGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:04:08 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47175 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756345AbZKRBEF (ORCPT
+	Tue, 17 Nov 2009 20:06:32 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:46238 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756217AbZKRBGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:04:05 -0500
-Date: Wed, 18 Nov 2009 01:05:20 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jean Delvare <khali@linux-fr.org>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+	Tue, 17 Nov 2009 20:06:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=U7G0t+sVKxpnCtRxNsmeW6P3R1AWdOLwqA/zy6rNFbakcE9If/ldAe7u7vuAomqT6A
+         r6w7szHJKTuR9zqIbXm5+dy0kIhEIPhnsvWFLH8ClSbOztBbkJZXhSybaOi33poiTeka
+         d+c+IcCOXclYvNInisD82NVlJ4BUbuU1akczg=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
-Message-ID: <20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
-In-Reply-To: <c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
-References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
-	<20091107210147.3e754278@hyperion.delvare>
-	<4AF7148C.9090706@thebigcorporation.com>
-	<20091112211255.09cd884a@hyperion.delvare>
-	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
-	<20091116155606.GC29479@sirena.org.uk>
-	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH 0/2] lockdep: Improvements for rwlocks dependency inversion detection
+Date: Wed, 18 Nov 2009 02:06:36 +0100
+Message-Id: <1258506398-5151-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think the yield()s in the device driver code means "I need a small
-> delay before the hardware is ready" which might translate to some
-> arbitrary "let me msleep()" or "do not select this task in the next
-> scheduler run, EVEN IF this task is highest priority".
+Hi,
 
-Yield() in a driver is almost always a bug. The reason for that is that
-doing
+This is two patches to improve rwlocks dependency inversion
+detection. If you ack these I can also add test suites for the
+particular treated usecases.
 
-	do {
-		inb();
-	} while(!something);
+Thanks,
+	Frederic.
 
-which is what yield can end up as being if there is nothing else on that
-CPU is extremely bad for bus performance on most systems. It's almost
-always better to be using msleep() or even mdelay + a check to see if a
-reschedule is needed/schedule().
+Frederic Weisbecker (2):
+  lockdep: Include recursive read-locks dependencies in the tree
+  lockdep: Don't only check recursive read locks once
 
-> I assume this is rather dirty and has too much overhead on the timer interfaces.
+ include/linux/lockdep.h |    1 +
+ kernel/lockdep.c        |   88 ++++++++++++++++++++++++++--------------------
+ 2 files changed, 51 insertions(+), 38 deletions(-)
 
-Our timers are very efficient and some day we will need to make jiffies a
-function and stop the timer ticking for best performance. At that point
-timers are probably the most efficient way to do much of this.
-
-Be that as it may, yield() in a driver is almost always the wrong thing
-to do.
