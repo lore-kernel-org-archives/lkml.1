@@ -1,59 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZKRJWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbZKRJYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZKRJWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbZKRJWN
+	id S1756672AbZKRJYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZKRJYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:22:13 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:36990 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754986AbZKRJWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:22:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=DdmngZ/ctlTtDNMgY+PxMOxecD1oCR1l7NyA4GcXk77Fu2Y5na37bXwRugqAzA1yjp
-         I7C6FeogW4diyzkRjF6zZ6Boq3Id/5pi/Ap1Hy/yL486wTxNpURd+Se3rbh+GAX4pQt5
-         6rXF/FoEkWBKIbVIDm7wfUO0kDR67iQwnWOKM=
-MIME-Version: 1.0
-In-Reply-To: <b741c2440911180054u1e610829g3646ec65701818ab@mail.gmail.com>
-References: <b741c2440911172154g62d7f3bcu7bafc65ad2eb4b21@mail.gmail.com>
-	 <2375c9f90911172317x781e22a9y56ecb8e682e8e061@mail.gmail.com>
-	 <b741c2440911172341g2251707fj999482473ab97830@mail.gmail.com>
-	 <2375c9f90911180035v45b3f732gfe898092583a667a@mail.gmail.com>
-	 <b741c2440911180054u1e610829g3646ec65701818ab@mail.gmail.com>
-Date: Wed, 18 Nov 2009 17:22:17 +0800
-Message-ID: <2375c9f90911180122p19030ea2gc395030178eb706d@mail.gmail.com>
-Subject: Re: [PATCH] vfs: does call expand_files when needed
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Liu Aleaxander <aleaxander@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 18 Nov 2009 04:24:54 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42186 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753421AbZKRJYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 04:24:52 -0500
+From: Jan Blunck <jblunck@suse.de>
+To: linux-fsdevel@vger.kernel.org
+Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       matthew@wil.cx, Jan Blunck <jblunck@suse.de>
+Subject: [PATCH 00/20] BKL pushdown from do_new_mount() to the filesystems (v3)
+Date: Wed, 18 Nov 2009 10:24:33 +0100
+Message-Id: <1258536293-7762-1-git-send-email-jblunck@suse.de>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 4:54 PM, Liu Aleaxander <aleaxander@gmail.com> wrote:
+During the realtime preemption mini-summit we discussed the entire removal of
+the big kernel lock. I've started working on this for some filesystems. My plan
+is to push the BKL down to the implementations first and remove it from there
+later.
 
-<snip>
+This series is pushing the BKL from do_new_mount() down to the filesystems.
+If the filesystem wasn't using the BKL at all before, it gets removed instead.
+If removing is trivial (e.g. because it is obviously already protected by an
+existing lock) it gets removed by a follow up patch in the series.
 
->
->>it's trivial, not so much an improvement, IMO.
-> So, shouldn't we do the optimize when there is a way to do that?
->
-> While, I don't think so. And BTW, it's not just a problem of
-> optimization, but also make it be more sense: JUST call expand when
-> need. I don't know why you are rejecting about this, especially it did
-> optimized one call path(as you said), and it doesn't make the code
-> uglier than before but making it be more sense, and, in fact, a kind
-> of more readable.
+Later on in the series the big kernel lock is removed from EXT2. Instead, a new
+lock that protects the modification of some of the superblocks fields is
+introduced.
 
+Version 2 of the series addressed the feedback from Matthew Wilcox and I tried
+to be more verbose about why I think it is safe to remove the BKL. In most
+cases there is no shared resource accessed anyway or the superblock s_umount
+rwsemaphore is used so it is trivially safe to remove the big kernel lock.
 
-I am not rejecting it, I said this is trivial, so accepting it or droping
-it both are OK for me.
+Version 3 of the series addressed the feedback from Christoph Hellwig and Arnd
+Bergmann to not push down the BKL to filesystems that don't use it anyway. I've
+changed the ext2 s_lock usage in ext2_sync_super() to address Jan Kara's
+comments.
 
-I don't think the orignal code is ugly, '< fdt->max_fds' is not checked
-for expand_files(), but for find_next_zero_bit().
+If all affected maintainers acknowledge their parts of the patches it should
+get merged through one of the bkl branches in the tip tree.
+
+Jan Blunck (20):
+  JFS: Free sbi memory in error path
+  AFFS: Free sbi memory in error path
+  BKL: Explicitly add BKL around get_sb/fill_super
+  BKL: Remove outdated comment and include
+  BKL: Remove BKL from Amiga FFS
+  BKL: Remove BKL from BFS
+  BKL: Remove BKL from CifsFS
+  BKL: Remove BKL from ext3 fill_super()
+  BKL: Remove BKL from ext3_put_super() and ext3_remount()
+  BKL: Remove BKL from ext4 filesystem
+  BKL: Remove BKL from exofs
+  BKL: Remove BKL from HFS
+  BKL: Remove BKL from HFS+
+  BKL: Remove BKL from JFS
+  BKL: Remove BKL from NILFS2
+  BKL: Remove BKL from NTFS
+  BKL: Remove BKL from cgroup
+  BKL: Remove BKL from do_new_mount()
+  ext2: Add ext2_sb_info s_lock spinlock
+  BKL: Remove BKL from ext2 filesystem
+
+ drivers/isdn/capi/capifs.c |   10 ++++++-
+ drivers/usb/core/inode.c   |    5 +++
+ drivers/usb/gadget/inode.c |   12 +++++++-
+ fs/adfs/super.c            |    8 +++++-
+ fs/affs/super.c            |   17 ++++--------
+ fs/afs/super.c             |    5 +++
+ fs/bfs/inode.c             |    8 +----
+ fs/cifs/cifsfs.c           |    9 ++----
+ fs/coda/inode.c            |    8 +++++-
+ fs/ecryptfs/main.c         |    4 +++
+ fs/exofs/super.c           |    1 -
+ fs/ext2/inode.c            |    5 +--
+ fs/ext2/super.c            |   60 ++++++++++++++++++++++++++++++--------------
+ fs/ext3/super.c            |   12 ---------
+ fs/ext4/super.c            |   11 --------
+ fs/fat/namei_msdos.c       |    7 ++++-
+ fs/fat/namei_vfat.c        |    7 ++++-
+ fs/freevxfs/vxfs_super.c   |    7 ++++-
+ fs/hfs/super.c             |    6 +---
+ fs/hfsplus/super.c         |    5 ---
+ fs/hpfs/super.c            |    8 +++++-
+ fs/isofs/inode.c           |    8 +++++-
+ fs/jffs2/super.c           |   11 ++++++-
+ fs/jfs/super.c             |   23 ++++------------
+ fs/namespace.c             |    2 -
+ fs/ncpfs/inode.c           |    8 +++++-
+ fs/nfs/super.c             |   24 +++++++++++++++++
+ fs/nilfs2/ioctl.c          |    1 -
+ fs/nilfs2/super.c          |   10 -------
+ fs/ntfs/super.c            |   24 +----------------
+ fs/ocfs2/dlm/dlmfs.c       |    9 ++++++-
+ fs/ocfs2/super.c           |    5 +++
+ fs/qnx4/inode.c            |    8 +++++-
+ fs/reiserfs/super.c        |    4 +++
+ fs/smbfs/inode.c           |    5 +++
+ fs/squashfs/super.c        |    6 ++++
+ fs/super.c                 |    3 --
+ fs/udf/super.c             |    8 +++++-
+ fs/ufs/super.c             |    5 +++
+ include/linux/ext2_fs_sb.h |    6 ++++
+ kernel/cgroup.c            |    4 ---
+ 41 files changed, 234 insertions(+), 155 deletions(-)
+
