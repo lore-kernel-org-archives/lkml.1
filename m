@@ -1,90 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZKRXfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbZKRXiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbZKRXfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 18:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZKRXfI
+	id S1757902AbZKRXiN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 18:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbZKRXiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 18:35:08 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:48793 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756563AbZKRXfG (ORCPT
+	Wed, 18 Nov 2009 18:38:12 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:48271 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757394AbZKRXiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 18:35:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xDbf9bLT+h44hfrwIJG3GGwnXwUTvdIth5kEgGgEVlJrs4SkK3QASJYN/nBXFML9SM
-         kjNY//J6pyP5aeF5TJowL/CbmMbpFOUkcqkVui9NuKuqHtBGzVwe8fetZZaQI5T673/i
-         OkdONj0NKw7oOz9vjUm8L4bGk4ec0CXzxnVJ0=
-MIME-Version: 1.0
-In-Reply-To: <20091118225626.GA2974@redhat.com>
-References: <1258404660.3533.150.camel@cail>
-	 <20091116221827.GL13235@redhat.com> <1258461527.2862.2.camel@cail>
-	 <20091118153227.GA5796@redhat.com>
-	 <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com>
-	 <20091118225626.GA2974@redhat.com>
-Date: Thu, 19 Nov 2009 00:35:12 +0100
-Message-ID: <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com>
-Subject: Re: [RFC] Block IO Controller V2 - some results
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Content-Type: text/plain; charset=UTF-8
+	Wed, 18 Nov 2009 18:38:11 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAK8TBEtGGN1W/2dsb2JhbACBTdgRhDsEgW8
+Date: Wed, 18 Nov 2009 18:38:15 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, rostedt@goodmis.org, andi@firstfloor.org,
+       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH] notifier atomic call chain notrace
+Message-ID: <20091118233815.GA28962@Krystal>
+References: <cover.1258580048.git.jbaron@redhat.com> <14acd28665b633909f7e9873861075fd657e9a52.1258580048.git.jbaron@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <14acd28665b633909f7e9873861075fd657e9a52.1258580048.git.jbaron@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 18:33:07 up 92 days, 10:22,  4 users,  load average: 0.26, 0.22,
+	0.18
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-On Wed, Nov 18, 2009 at 11:56 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> Moving all the queues to root group is one way to solve the issue. Though
-> problem still remains if there are 7-8 sequential workload groups operating
-> with low_latency=0. In that case after every dispatch round of sync-noidle
-> workload in root group, next round might be much more than 300ms, hence
-> bumping up the max latencies of sync-noidle workload.
+* Jason Baron (jbaron@redhat.com) wrote:
+> Note that this is conditional on gcc >= 4.5. Also there is a !lockdep
+> condition. This is b/c the die_notifier takes an rcu_read_lock() on the
+> int3 trap, which then causes another one etc. Since, we aren't going to be
+> installing removing the handler, the rcu_read_lock() could be avoided for this
+> case with some code restructuring.
+> 
+[snip]
 
-I think that this is the desired behaviour: low_latency=0 means that
-latency is less important than throughput, so I wouldn't worry about
-it.
+Would the following patch help ? I use it in the LTTng tree to alleviate
+this problem.
 
->
-> I think one of the core problem seems to be that I always put the group at
-> the end of service tree. Instead I should let the group delete from
-> service tree if it does not have sufficient IO, and when it comes back
-> again, try to put it in the beginning of tree according to weight so
-> that not all is lost and it gets to dispatch IO sooner.
 
-It is similar to how the queues are put in service tree in cfq without groups.
-If a queue had some remaining slice, it is prioritized w.r.t. ones
-that consumed their slice completely, by giving it a lower key.
+notifier atomic call chain notrace
 
-> This way, the groups which have been using long slices (either because
-> they are running sync-idle workload or because they have sufficient IO
-> to keep the disk busy), will be towards later end of service tree and the
-> groups which are new or which have lost their share because they have
-> dispatched a small IO and got deleted, will be put at the front of tree.
->
-> This way sync-noidle queues in a group will not loose out because of
-> sync-idle IO happening in other groups.
+In LTTng, being able to use the atomic notifier from cpu idle entry to
+ensure the tracer flush the last events in the current subbuffer
+requires the rcu read-side to be marked "notrace", otherwise it can end
+up calling back into lockdep and the tracer.
 
-It is ok if you have group idling, but if you disable it (and end of
-tree idle), it will be similar to how CFQ was before my patch set (and
-experiments showed that the approach was inferior to grouping no-idle
-together), without the service differentiation benefit introduced by
-your idling.
-So I still prefer the binary choice: either you want fairness (by
-idling) or performance (by putting all no-idle queues together).
+Also apply to the the die notifier.
 
->
-> I have written couple of small patches and still testing it out to see
-> whether it is working fine in various configurations.
->
-> Will post patches after some testing.
->
-> Thanks
-> Vivek
->
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: Jason Baron <jbaron@redhat.com>
+CC: mingo@elte.hu
+---
+ kernel/notifier.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks
-Corrado
+Index: linux-2.6-lttng/kernel/notifier.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/notifier.c	2009-11-12 17:58:56.000000000 -0500
++++ linux-2.6-lttng/kernel/notifier.c	2009-11-12 18:03:28.000000000 -0500
+@@ -148,7 +148,7 @@ int atomic_notifier_chain_unregister(str
+ 	spin_lock_irqsave(&nh->lock, flags);
+ 	ret = notifier_chain_unregister(&nh->head, n);
+ 	spin_unlock_irqrestore(&nh->lock, flags);
+-	synchronize_rcu();
++	synchronize_sched();
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
+@@ -178,9 +178,9 @@ int __kprobes __atomic_notifier_call_cha
+ {
+ 	int ret;
+ 
+-	rcu_read_lock();
++	rcu_read_lock_sched_notrace();
+ 	ret = notifier_call_chain(&nh->head, val, v, nr_to_call, nr_calls);
+-	rcu_read_unlock();
++	rcu_read_unlock_sched_notrace();
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
