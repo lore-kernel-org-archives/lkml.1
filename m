@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZKRSOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZKRSQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbZKRSOt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbZKRSOs
+	id S1758210AbZKRSQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZKRSQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:14:48 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43559 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758030AbZKRSOr (ORCPT
+	Wed, 18 Nov 2009 13:16:36 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:38857 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758184AbZKRSQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:14:47 -0500
-Date: Wed, 18 Nov 2009 18:16:06 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Oliver Neukum <oliver@neukum.org>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       =?ISO-8859-14?B?RnLpZOlyaWM=?= Weisbecker <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
-Message-ID: <20091118181606.1c8caab1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091118175003.GF28723@shareable.org>
-References: <1258560457-15129-1-git-send-email-jblunck@suse.de>
-	<20091118171524.4d2f8cec@lxorguk.ukuu.org.uk>
-	<20091118172730.GD28723@shareable.org>
-	<200911181835.55007.oliver@neukum.org>
-	<20091118175003.GF28723@shareable.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 13:16:35 -0500
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Matt Mackall <mpm@selenic.com>, David VomLehn <dvomlehn@cisco.com>,
+       "dedekind1\@gmail.com" <dedekind1@gmail.com>,
+       Marco Stornelli <marco.stornelli@gmail.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       "linux-embedded\@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "akpm\@linux-foundation.org" <akpm@linux-foundation.org>,
+       "dwm2\@infradead.org" <dwm2@infradead.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "paul.gortmaker\@windriver.com" <paul.gortmaker@windriver.com>
+References: <1258463404.27437.103.camel@localhost>
+	<m1pr7hf93s.fsf@fess.ebiederm.org>
+	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>
+	<m1iqd8ptg9.fsf@fess.ebiederm.org> <1258505777.3081.4.camel@calx>
+	<m1vdh7byva.fsf@fess.ebiederm.org> <4B043467.8000708@am.sony.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 18 Nov 2009 10:16:28 -0800
+In-Reply-To: <4B043467.8000708@am.sony.com> (Tim Bird's message of "Wed\, 18 Nov 2009 09\:52\:39 -0800")
+Message-ID: <m1iqd77l6r.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> But nowadays, even that doesn't happen.  sys_read() and sys_write()
-> make a copy of f_pos using file_pos_read(), so drivers cannot see the
-> value change during the call - except for their own change.
-> 
-> I find myself wondering why the VFS isn't responsible for the position
-> update instead of the driver...  Would it be a valid cleanup to move
-> it from the driver to VFS?
+Tim Bird <tim.bird@am.sony.com> writes:
 
-And how would you adjust it. Not all devices have a bytes read == offset
-relationship. The VFS doesn't know enough.
+> Eric W. Biederman wrote:
+>> Matt Mackall <mpm@selenic.com> writes:
+>> 
+>>> As much as I like kexec, it loses on memory footprint by about 100x.
+>>> It's not appropriate for all use cases, especially things like
+>>> consumer-grade wireless access points and phones.
+>> 
+>> In general I agree.  The cost of a second kernel and initrd can be
+>> prohibitive in the smallest systems, and if you do a crash capture
+>> with using a standalone app that is reinventing the wheel.
+>> 
+>> That said.  I can happily run kdump with only 16M-20M reserved.
+>> So on many systems the cost is affordable.
+>
+> Understood.  On some of my systems, the memory budget for the
+> entire system is 10M.  On most systems I work with, it is a
+> struggle to reserve even 64K for this feature.
+
+crash_kexec is really a glorified jump.  It is possible to do a lot in
+64K with a standalone application.  If reliable capture of kernel
+crashes is desirable to an embedded NAND device I expect a semi-general
+purpose dedicated application for capturing at least dmesg from the
+crashed kernel and write it to a file on a NAND filesystem could be
+worth someones time.
+
+On general purpose hardware we use a kernel and an initrd simply to
+reduce the development work of supporting everything and the kitchen
+sink.  My impression is that embedded systems can afford a little more
+setup time, and a custom compilation, and that the hardware you would like
+to store things too is much more common.
+
+Eric
+
