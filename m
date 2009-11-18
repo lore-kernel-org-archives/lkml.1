@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbZKRUZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758472AbZKRUcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357AbZKRUZN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 15:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932273AbZKRUZM
+	id S1758472AbZKRUcp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 15:32:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbZKRUco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 15:25:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41275 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932278AbZKRUZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 15:25:11 -0500
-Date: Wed, 18 Nov 2009 20:24:46 GMT
-From: tip-bot for Feng Tang <feng.tang@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, heiko.carstens@de.ibm.com,
-       tglx@linutronix.de, feng.tang@intel.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, heiko.carstens@de.ibm.com,
-       tglx@linutronix.de, feng.tang@intel.com
-In-Reply-To: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] hrtimer: Fix /proc/timer_list regression
-Message-ID: <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
-Git-Commit-ID: 887a29f59b93cf54e21814869a4ab6e80b6fa623
-X-Mailer: tip-git-log-daemon
+	Wed, 18 Nov 2009 15:32:44 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:24052 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756122AbZKRUco (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 15:32:44 -0500
+Subject: [PATCH] cciss: fix scatter gather cleanup problems
+To: axboe@kernel.dk
+From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
+Cc: mikem@beardog.cce.hp.com, linux-kernel@vger.kernel.org,
+       brace@beardog.cce.hp.com
+Date: Wed, 18 Nov 2009 14:34:18 -0600
+Message-ID: <20091118203418.8353.83196.stgit@beardog.cce.hp.com>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  887a29f59b93cf54e21814869a4ab6e80b6fa623
-Gitweb:     http://git.kernel.org/tip/887a29f59b93cf54e21814869a4ab6e80b6fa623
-Author:     Feng Tang <feng.tang@intel.com>
-AuthorDate: Thu, 3 Sep 2009 16:32:53 +0800
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 18 Nov 2009 21:20:37 +0100
+From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-hrtimer: Fix /proc/timer_list regression
+cciss: fix scatter gather cleanup problems
+On driver unload, only free up the extra scatter gather data
+if they were allocated in the first place (the controller
+supports it) and don't forget to free up the sg_cmd_list
+array of pointers.
 
-commit 507e1231 (timer stats: Optimize by adding quick check to avoid
-function calls) introduced a regression in /proc/timer_list.
-
-/proc/timer_list shows now
- #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
-instead of
- #0: <c27d46b0>, tick_sched_timer, S:01, hrtimer_start, swapper/0
-
-Revert the hrtimer quick check for now. The optimization needs more
-thought, but this is neither 2.6.32-rc7 nor stable material.
-
-[ tglx: Removed unrelated changes from the original patch and massaged
-  	the changelog ]
-
-Signed-off-by: Feng Tang <feng.tang@intel.com>
-LKML-Reference: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: stable@kernel.org
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Don Brace <brace@beardog.cce.hp.com>
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- include/linux/hrtimer.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/block/cciss.c |   25 ++++++++++++++++++-------
+ 1 files changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index ff037f0..0a656d6 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -457,8 +457,6 @@ extern void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer,
- 
- static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
- {
--	if (likely(!timer_stats_active))
--		return;
- 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
- }
- 
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index eab81c6..873e594 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -4326,10 +4326,15 @@ clean4:
+ 	for (k = 0; k < hba[i]->nr_cmds; k++)
+ 		kfree(hba[i]->scatter_list[k]);
+ 	kfree(hba[i]->scatter_list);
+-	for (j = 0; j < hba[i]->nr_cmds; j++) {
+-		if (hba[i]->cmd_sg_list[j])
+-			kfree(hba[i]->cmd_sg_list[j]->sgchain);
+-		kfree(hba[i]->cmd_sg_list[j]);
++	/* Only free up extra s/g lists if controller supports them */
++	if (hba[i]->chainsize > 0) {
++		for (j = 0; j < hba[i]->nr_cmds; j++) {
++			if (hba[i]->cmd_sg_list[j]) {
++				kfree(hba[i]->cmd_sg_list[j]->sgchain);
++				kfree(hba[i]->cmd_sg_list[j]);
++			}
++		}
++		kfree(hba[i]->cmd_sg_list);
+ 	}
+ 	if (hba[i]->cmd_pool)
+ 		pci_free_consistent(hba[i]->pdev,
+@@ -4448,9 +4453,15 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
+ 	for (j = 0; j < hba[i]->nr_cmds; j++)
+ 		kfree(hba[i]->scatter_list[j]);
+ 	kfree(hba[i]->scatter_list);
+-	for (j = 0; j < hba[i]->nr_cmds; j++) {
+-		kfree(hba[i]->cmd_sg_list[j]->sgchain);
+-		kfree(hba[i]->cmd_sg_list[j]);
++	/* Only free up extra s/g lists if controller supports them */
++	if (hba[i]->chainsize > 0) {
++		for (j = 0; j < hba[i]->nr_cmds; j++) {
++			if (hba[i]->cmd_sg_list[j]) {
++				kfree(hba[i]->cmd_sg_list[j]->sgchain);
++				kfree(hba[i]->cmd_sg_list[j]);
++			}
++		}
++		kfree(hba[i]->cmd_sg_list);
+ 	}
+ 	/*
+ 	 * Deliberately omit pci_disable_device(): it does something nasty to
+
