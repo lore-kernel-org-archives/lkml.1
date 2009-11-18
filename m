@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbZKRLhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbZKRLpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbZKRLhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 06:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZKRLhM
+	id S1752202AbZKRLpU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 06:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZKRLpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 06:37:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39100 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669AbZKRLhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 06:37:11 -0500
-Date: Wed, 18 Nov 2009 11:36:48 GMT
-From: tip-bot for H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, yong.zhang0@gmail.com,
-       hartleys@visionengravers.com, tglx@linutronix.de,
-       hsweeten@visionengravers.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       hartleys@visionengravers.com, yong.zhang0@gmail.com,
-       hsweeten@visionengravers.com
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] clockevents: Add missing include to pacify sparse
-Message-ID: <tip-8e1a928a2ed7e8d5cad97c8e985294b4caedd168@git.kernel.org>
-Git-Commit-ID: 8e1a928a2ed7e8d5cad97c8e985294b4caedd168
-X-Mailer: tip-git-log-daemon
+	Wed, 18 Nov 2009 06:45:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:11535 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZKRLpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 06:45:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VgWWC2tGJHa9CxP1i3EzugkLnB27HGH2+OF2EnfmxcoxFKde3bgSTgawRZyMluJ3sE
+         0KI2iKqtEi9OD11MTkt8NvzUuYm5BC0USOf0oUsuSYu1N7sPzOJ/B5zbnOIt9s7dhs6a
+         AWa0E4hpNIlU3j1mBDuJlGxjfHVxy9iiMPjkE=
+Message-ID: <4B03DE53.2030607@gmail.com>
+Date: Wed, 18 Nov 2009 12:45:23 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Jiri Kosina <jkosina@suse.cz>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Coverity checking periodicity?
+References: <4B02601C.8000306@gmail.com> <alpine.LRH.2.00.0911181133360.31913@twin.jikos.cz> <4B03CE0C.3050604@gmail.com>
+In-Reply-To: <4B03CE0C.3050604@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8e1a928a2ed7e8d5cad97c8e985294b4caedd168
-Gitweb:     http://git.kernel.org/tip/8e1a928a2ed7e8d5cad97c8e985294b4caedd168
-Author:     H Hartley Sweeten <hartleys@visionengravers.com>
-AuthorDate: Fri, 16 Oct 2009 18:19:01 -0400
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 18 Nov 2009 12:31:48 +0100
+On 11/18/2009 11:35 AM, Jiri Slaby wrote:
+> On 11/18/2009 11:34 AM, Jiri Kosina wrote:
+>> On Tue, 17 Nov 2009, Jiri Slaby wrote:
+>>
+>>> please, doesn't anybody have an idea on how often is Coverity run on the 
+>>> kernel? Doesn't anybody know about any materials regarding this?
+>>
+>> I'd suggest contacting linux@coverity.com.
+> 
+> I tried info@ already (no reply so far). Will try that too. Thanks.
 
-clockevents: Add missing include to pacify sparse
+JFYI
+550 No such user (linux@coverity.com) (state 14).
 
-Include "tick-internal.h" in order to pick up the extern function
-prototype for clockevents_shutdown(). This quiets the following sparse
-build noise:
-
-  warning: symbol 'clockevents_shutdown' was not declared. Should it be static?
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-LKML-Reference: <BD79186B4FD85F4B8E60E381CAEE190901E24550@mi8nycmail19.Mi8.com>
-Reviewed-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: johnstul@us.ibm.com
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/time/clockevents.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 05e8aee..20a8920 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -20,6 +20,8 @@
- #include <linux/sysdev.h>
- #include <linux/tick.h>
- 
-+#include "tick-internal.h"
-+
- /* The registered clock event devices */
- static LIST_HEAD(clockevent_devices);
- static LIST_HEAD(clockevents_released);
+:(
