@@ -1,214 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbZKRA0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZKRA2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbZKRA0s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 19:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZKRA0s
+	id S1756644AbZKRA2b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 19:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZKRA2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 19:26:48 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:54858 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZKRA0r convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 19:28:30 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:59452 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756578AbZKRA23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 19:26:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uk02MQGf+SBTgu0E9NnyB8PxTCCgmbwqfMd0lFjD93ZU0FJWorjhyHmUtZ1YOkv53q
-         57nHYy3m4q6shjKnrk+/4R8vqmVnv5Ps6qqhIxoXsQqKRNAIvh8QxDSzBO8vFkV+nJX6
-         dbBinLiz+v3yIVmgWkBf4k+xsTr8QZROKadRI=
+	Tue, 17 Nov 2009 19:28:29 -0500
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: dedekind1@gmail.com, Marco Stornelli <marco.stornelli@gmail.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
+       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+References: <1258463404.27437.103.camel@localhost>
+	<m1pr7hf93s.fsf@fess.ebiederm.org>
+	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 17 Nov 2009 16:28:22 -0800
+In-Reply-To: <20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net> (David VomLehn's message of "Tue\, 17 Nov 2009 18\:56\:27 -0500")
+Message-ID: <m1iqd8ptg9.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <200910301113.43174.arnd@arndb.de>
-References: <20091027.222814.137568780.davem@davemloft.net>
-	 <20091028.005342.60092591.davem@davemloft.net>
-	 <21d7e9970910291813u19cdd361u2facb864db58a712@mail.gmail.com>
-	 <200910301113.43174.arnd@arndb.de>
-Date: Wed, 18 Nov 2009 10:26:51 +1000
-Message-ID: <21d7e9970911171626m216d35ddu4c4c3189edfd37cc@mail.gmail.com>
-Subject: Re: is avoiding compat ioctls possible?
-From: Dave Airlie <airlied@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Miller <davem@davemloft.net>, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 30, 2009 at 8:13 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Friday 30 October 2009, Dave Airlie wrote:
->> Btw when I mentioned ioctls I meant more than radeon, all the KMS
->> ioctls in the common drm_crtc.c file suffer from this problem as well.
->>
->> Hence why I still believe either my drm specific inline or something
->> more generic (granted I can see why a generic solution would be ugly).
->>
->> You patch below does suffer from a lot of #ifdefs and cut-n-paste
->> that is a lot better suited to doing in an inline or macro. We can then
->> comment that inline saying if anyone else does this we will be most
->> unhappy.
+David VomLehn <dvomlehn@cisco.com> writes:
+
+> On Tue, Nov 17, 2009 at 10:45:43AM -0500, Eric W. Biederman wrote:
+> ...
+>> Why not use the kdump hook?  If you handle a kernel panic that way
+>> you get enhanced reliability and full user space support.  All in a hook
+>> that is already present and already works.
 >
-> I think it would be better to do a conversion of the pointers in
-> a separate compat handler, but then call the regular function, which
-> in case of drm already take a kernel pointer. That would be much simpler
-> than the compat_alloc_user_space tricks in the current code and
-> also cleaner than trying to handle both cases in one function using
-> is_compat_task().
+> I'm a big fan of avoiding reinvention of the wheel--if I can use something
+> already present, I will. However, I'm not clear about how much of the problem
+> I'm addressing will be solved by using a kdump hook. If I understand
+> correctly, you'd still need a pseudo-file somewhere to actually get the data
+> from user space to kernel space. *Then* you could use a kdump hook to
+> transfer the data to flash or some memory area that will be retained across
+> boots. Is this the approach to which you were referring? If so, I have a
+> couple more questions:
 >
-> See the (not even compile-tested) example below as an illustration
-> of what I think you should do. If you convert all functions in
-> drm_ioc32.c to this scheme, you can replace drm_compat_ioctl and
-> drm_compat_ioctls[] with drm_generic_compat_ioctl.
->
+> 1. In what ways would this be better than, say, a panic_notifier?
 
-I just got back out from F12 push to look at lkml again ;-)
+A couple of ways. 
 
-My main problem which no-one seem to address with all these compat ioctls
-is they suck for maintainance, adding the compat_ptr "hacks" into the actual
-ioctls is much easier to maintain in that I can see in the code where we've done
-these and if code flow has to change I can deal with it all in one place.
+- You are doing the work in a known good kernel instead of the kernel
+  that just paniced for some unknown reason.
+- All of the control logic is in user space (not the kernel) so you can
+  potentially do something as simple as "date >> logfile" to get the
+  date.
 
-Doing all these out-of-line hidden over here in a separate file just
-seems crazy,
-and I'm  having trouble wondering why ppl consider it a better idea at all.
+> 2. Where would you suggest tying in? (Particularly since not all architectures
+>    currently support kdump)
 
-It adds probably 1000 more LOC versus one inline with a decent name used
-inline to replace current casting in the driver.
+No changes are needed kernel side.  You just need an appropriate kernel and
+initrd for your purpose.
 
-If the ioctl flow or interface "changes" someone has to remember about all
-of these (granted this is unlikely since we pretty much set them in stone).
+All of the interesting architectures support kexec, and if an
+architecture doesn't it isn't hard to add.  The architecture specific
+part is very simple.  A pain to debug initially but very simple.
 
-Dave.
+Eric
 
->        Arnd <><
->
-> diff --git a/drivers/gpu/drm/drm_ioc32.c b/drivers/gpu/drm/drm_ioc32.c
-> index 282d9fd..334345b 100644
-> --- a/drivers/gpu/drm/drm_ioc32.c
-> +++ b/drivers/gpu/drm/drm_ioc32.c
-> @@ -1040,6 +1040,122 @@ static int compat_drm_wait_vblank(struct file *file, unsigned int cmd,
->        return 0;
->  }
->
-> +static int compat_drm_mode_getblob_ioctl(struct drm_device *dev,
-> +                       struct drm_mode_get_blob __user *out_resp_user,
-> +                       struct drm_file *file_priv)
-> +{
-> +       struct drm_mode_get_blob out_resp;
-> +       int ret;
-> +
-> +       ret = copy_from_user(&out_resp, out_resp_user, sizeof(out_resp))
-> +       if (ret)
-> +               return -EFAULT;
-> +
-> +       out_resp.data = (unsigned long)compat_ptr(out_resp.data);
-> +
-> +       ret = drm_mode_getblob_ioctl(dev, &out_resp, file_priv);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret = copy_to_user(out_resp_user, &out_resp, sizeof(out_resp))
-> +       if (ret)
-> +               return -EFAULT;
-> +       return 0;
-> +}
-> +
-> +static int compat_drm_mode_gamma_set_ioctl(struct drm_device *dev,
-> +                       struct drm_mode_crtc_lut __user *crtc_lut_user,
-> +                       struct drm_file *file_priv)
-> +{
-> +       struct drm_mode_crtc_lut crtc_lut;
-> +
-> +       ret = copy_from_user(&crtc_lut, crtc_lut_user, sizeof(crtc_lut))
-> +       if (ret)
-> +               return -EFAULT;
-> +
-> +       crtc_lut.red   = (unsigned long)compat_ptr(crtc_lut.red);
-> +       crtc_lut.green = (unsigned long)compat_ptr(crtc_lut.green);
-> +       crtc_lut.blue  = (unsigned long)compat_ptr(crtc_lut.blue);
-> +
-> +       ret = drm_mode_gamma_set_ioctl(dev, &crtc_lut, file_priv);
-> +
-> +       return ret;
-> +}
-> +
-> +static int compat_drm_mode_gamma_get_ioctl(struct drm_device *dev,
-> +                       struct drm_mode_crtc_lut __user *crtc_lut_user,
-> +                       struct drm_file *file_priv)
-> +{
-> +       struct drm_mode_crtc_lut crtc_lut;
-> +
-> +       ret = copy_from_user(&crtc_lut, crtc_lut_user, sizeof(crtc_lut))
-> +       if (ret)
-> +               return -EFAULT;
-> +
-> +       crtc_lut.red   = (unsigned long)compat_ptr(crtc_lut.red);
-> +       crtc_lut.green = (unsigned long)compat_ptr(crtc_lut.green);
-> +       crtc_lut.blue  = (unsigned long)compat_ptr(crtc_lut.blue);
-> +
-> +       ret = drm_mode_gamma_get_ioctl(dev, &crtc_lut, file_priv);
-> +
-> +       return ret;
-> +}
-> +
-> +static int drm_generic_compat_ioctl(struct file *filp, unsigned int cmd,
-> +                              unsigned long arg)
-> +{
-> +       struct drm_file *file_priv = filp->private_data;
-> +       struct drm_device *dev = file_priv->minor->dev;
-> +       unsigned int nr = DRM_IOCTL_NR(cmd);
-> +       int ret;
-> +
-> +       atomic_inc(&dev->ioctl_count);
-> +       atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
-> +       ++file_priv->ioctl_count;
-> +
-> +       if ((nr >= DRM_CORE_IOCTL_COUNT) &&
-> +           ((nr < DRM_COMMAND_BASE) || (nr >= DRM_COMMAND_END)))
-> +               goto err_i1;
-> +       if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END) &&
-> +           (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
-> +               ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
-> +       else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE)) {
-> +               ioctl = &drm_ioctls[nr];
-> +               cmd = ioctl->cmd;
-> +       } else
-> +               goto err_i1;
-> +
-> +       if (((ioctl->flags & DRM_ROOT_ONLY) && !capable(CAP_SYS_ADMIN)) ||
-> +                  ((ioctl->flags & DRM_AUTH) && !file_priv->authenticated) ||
-> +                  ((ioctl->flags & DRM_MASTER) && !file_priv->is_master) ||
-> +                  (!(ioctl->flags & DRM_CONTROL_ALLOW) && (file_priv->minor->type == DRM_MINOR_CONTROL))) {
-> +               ret = -EACCES;
-> +               goto err_il;
-> +       }
-> +
-> +       switch (cmd) {
-> +       case DRM_IOCTL_MODE_GETPROPBLOB:
-> +               ret = compat_drm_mode_getblob_ioctl(dev,
-> +                                       compat_ptr(arg), file_priv);
-> +               break;
-> +
-> +       case DRM_IOCTL_MODE_GETGAMMA:
-> +               ret = compat_drm_mode_gamma_set_ioctl(dev,
-> +                                       compat_ptr(arg), file_priv);
-> +               break;
-> +
-> +       case DRM_IOCTL_MODE_GETGAMMA:
-> +               ret = compat_drm_mode_gamma_get_ioctl(dev,
-> +                                       compat_ptr(arg), file_priv);
-> +               break;
-> +       }
-> +
-> +      err_i1:
-> +       atomic_dec(&dev->ioctl_count);
-> +
-> +       return ret;
-> +}
-> +
-
-
->  /**
->
