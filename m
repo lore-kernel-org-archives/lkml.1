@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbZKRM30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbZKRMbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658AbZKRM30 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 07:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZKRM3Z
+	id S1755681AbZKRMbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 07:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZKRMbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 07:29:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19682 "EHLO mx1.redhat.com"
+	Wed, 18 Nov 2009 07:31:19 -0500
+Received: from mail.parknet.jp ([210.171.162.6]:45189 "EHLO mail.officemail.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbZKRM3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 07:29:24 -0500
-Date: Wed, 18 Nov 2009 07:29:16 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, ebiederm@xmission.com, adobriyan@gmail.com,
-       viro@ZenIV.linux.org.uk, jamie@shareable.org
-Subject: Re: [PATCH 0/2] vfs: ensure that dentries are revalidated on open
- (try #2)
-Message-ID: <20091118072916.720471b0@tlielax.poochiereds.net>
-In-Reply-To: <20091118041906.GB1395@ucw.cz>
-References: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
-	<20091118041906.GB1395@ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751498AbZKRMbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 07:31:18 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       matthew@wil.cx, Andi Kleen <andi@firstfloor.org>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 19/20] ext2: Add ext2_sb_info s_lock spinlock
+References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
+	<1258536293-7762-20-git-send-email-jblunck@suse.de>
+Date: Wed, 18 Nov 2009 21:31:16 +0900
+In-Reply-To: <1258536293-7762-20-git-send-email-jblunck@suse.de> (Jan Blunck's
+	message of "Wed, 18 Nov 2009 10:24:52 +0100")
+Message-ID: <87pr7g3tgr.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009 05:19:06 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+Jan Blunck <jblunck@suse.de> writes:
 
-> Hi!
-> 
-> > This is the second attempt to fix this problem. The first one attempted
-> > to fix this in procfs, but Eric Biederman pointed out that file bind
-> > mounts have a similar problem. This set attempts to fix the issue at a
-> > higher level, in the generic VFS layer.
-> > 
-> > In certain situations, when it knows that they are valid, the path
-> > walking code will skip revalidating dentries that it finds in the cache.
-> > This causes problems with filesystems such as NFSv4 and CIFS that depend
-> > on the d_revalidate routine to do opens during lookup.
-> 
-> ...and it allows bypassing directory permissions. Could we fix both
-> here?
-> 									Pavel
+> +static void ext2_sync_super(struct super_block *sb,
+> +			    struct ext2_super_block *es)
+>  {
+> +	spin_lock(&EXT2_SB(sb)->s_lock);
+>  	es->s_free_blocks_count = cpu_to_le32(ext2_count_free_blocks(sb));
+>  	es->s_free_inodes_count = cpu_to_le32(ext2_count_free_inodes(sb));
+>  	es->s_wtime = cpu_to_le32(get_seconds());
+> +	/* unlock before we do IO */
+> +	spin_unlock(&EXT2_SB(sb)->s_lock);
+>  	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
+>  	sync_dirty_buffer(EXT2_SB(sb)->s_sbh);
+>  	sb->s_dirt = 0;
 
-Does it? Here's what I just did to check that:
+[...]
 
-# cp /bin/sleep /root/sleep
+>  static int ext2_sync_fs(struct super_block *sb, int wait)
+>  {
+> -	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
+> +	struct ext2_sb_info *sbi = EXT2_SB(sb);
+> +	struct ext2_super_block *es = sbi->s_es;
+>  
+>  	lock_kernel();
+> +	spin_lock(&sbi->s_lock);
+>  	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
+>  		ext2_debug("setting valid to 0\n");
+>  		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
+> @@ -1137,9 +1159,11 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
+>  		es->s_free_inodes_count =
+>  			cpu_to_le32(ext2_count_free_inodes(sb));
+>  		es->s_mtime = cpu_to_le32(get_seconds());
+> +		spin_unlock(&EXT2_SB(sb)->s_lock);
+>  		ext2_sync_super(sb, es);
+>  	} else {
+>  		ext2_commit_super(sb, es);
+> +		spin_unlock(&sbi->s_lock);
+>  	}
+>  	sb->s_dirt = 0;
 
-# ls -l /root /root/sleep
-dr-xr-x---. 19 root root  4096 2009-11-18 07:20 /root
--rwxr-xr-x.  1 root root 29152 2009-11-18 07:20 /root/sleep
+[...]
 
-# /root/sleep 600
+> @@ -1237,6 +1264,7 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
+>  		if (!ext2_setup_super (sb, es, 0))
+>  			sb->s_flags &= ~MS_RDONLY;
+>  	}
+> +	spin_unlock(&EXT2_SB(sb)->s_lock);
+>  	ext2_sync_super(sb, es);
+>  	unlock_kernel();
+>  	return 0;
 
-...then as unprivileged user:
+ext2_setup_super() will call ext2_sync_fs(), so ->s_lock seems to be
+recursive in here.
 
-$ ps -ef | grep sleep 
-(find pid of sleep program that root is running)
-
-$ /proc/5258/exe 600
-bash: /proc/5258/exe: Permission denied
-
-...it looks like directory permissions are respected here. Did I
-misunderstand what you're concerned about?
-
+Thanks.
 -- 
-Jeff Layton <jlayton@redhat.com>
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
