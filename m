@@ -1,82 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbZKRVIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbZKRVHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932529AbZKRVIJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbZKRVII
+	id S932384AbZKRVHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbZKRVHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:08:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60340 "EHLO mx1.redhat.com"
+	Wed, 18 Nov 2009 16:07:53 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:50319 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932452AbZKRVIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:08:07 -0500
-From: Josh Stone <jistone@redhat.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Josh Stone <jistone@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] tracing: Remove the stale include/trace/power.h
-Date: Wed, 18 Nov 2009 13:06:55 -0800
-Message-Id: <1258578415-14752-1-git-send-email-jistone@redhat.com>
+	id S1757944AbZKRVHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 16:07:52 -0500
+Date: Wed, 18 Nov 2009 22:07:56 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Joe Perches <joe@perches.com>
+Cc: Jay Cliburn <jcliburn@gmail.com>, Chris Snook <chris.snook@gmail.com>,
+       atl1-devel@lists.sourceforge.net, Jie Yang <jie.yang@atheros.com>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       arnd@arndb.de
+Subject: Re: [PATCH 1/16] drivers/net/atl1c: remove exceptional & on function
+ name
+In-Reply-To: <1258569615.24178.13.camel@Joe-Laptop.home>
+Message-ID: <Pine.LNX.4.64.0911182202350.28287@ask.diku.dk>
+References: <Pine.LNX.4.64.0911181920010.20943@ask.diku.dk>
+ <1258569615.24178.13.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 6161352 moved the power tracing to include/trace/events/, but
-left the old header behind.  No one is using the old header, and its
-declarations are now incorrect, so it should be removed.
+On Wed, 18 Nov 2009, Joe Perches wrote:
 
-Signed-off-by: Josh Stone <jistone@redhat.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- include/trace/power.h |   32 --------------------------------
- 1 files changed, 0 insertions(+), 32 deletions(-)
- delete mode 100644 include/trace/power.h
+> On Wed, 2009-11-18 at 19:20 +0100, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > In this file, function names are otherwise used as pointers without &.
+> > 
+> > A simplified version of the semantic patch that makes this change is as
+> > follows: (http://coccinelle.lip6.fr/)
+> 
+> Hi Julia, thanks for doing this.
+> 
+> Can you please post the complete version of the semantic patch?
 
-diff --git a/include/trace/power.h b/include/trace/power.h
-deleted file mode 100644
-index ef20466..0000000
---- a/include/trace/power.h
-+++ /dev/null
-@@ -1,32 +0,0 @@
--#ifndef _TRACE_POWER_H
--#define _TRACE_POWER_H
--
--#include <linux/ktime.h>
--#include <linux/tracepoint.h>
--
--enum {
--	POWER_NONE = 0,
--	POWER_CSTATE = 1,
--	POWER_PSTATE = 2,
--};
--
--struct power_trace {
--	ktime_t			stamp;
--	ktime_t			end;
--	int			type;
--	int			state;
--};
--
--DECLARE_TRACE(power_start,
--	TP_PROTO(struct power_trace *it, unsigned int type, unsigned int state),
--	      TP_ARGS(it, type, state));
--
--DECLARE_TRACE(power_mark,
--	TP_PROTO(struct power_trace *it, unsigned int type, unsigned int state),
--	      TP_ARGS(it, type, state));
--
--DECLARE_TRACE(power_end,
--	TP_PROTO(struct power_trace *it),
--	      TP_ARGS(it));
--
--#endif /* _TRACE_POWER_H */
--- 
-1.6.5.2
+There are basically three parts to the following semantic patch.  The 
+first part counts the number of references to functions that do and do not 
+have & in front of them.  For simplicity, a function is considered to be 
+something that is explicitly defined in the current file.  It would be 
+possible to also consider functions for which there is only a prototype.
 
+The second part, consisting of the python code in the middle considers the 
+counts and decides which transformation to make, if any.  In the end, to 
+limit the number of files to consider, I just consider files for which 
+there is only one occurrence of one case and more than 9 occurrences of 
+the other.  The two small python rules after that one throw away all of 
+the matches of function names that do not correspond to the case that is 
+desired.
+
+The last few rules do the transformation.  Both transformations are put in 
+one rule, which is safe because all matches for the transformation that is 
+not wanted have been discarded.
+
+julia
+
+@script:python@
+@@
+
+with_and = 0
+without_and = 0
+
+@r@
+identifier f;
+@@
+
+f(...) { ... }
+
+@addr1@
+identifier r.f;
+position pa;
+@@
+
+ &f@pa
+
+@script:python@
+p << addr1.pa;
+@@
+
+with_and = with_and + 1
+
+@r1@
+identifier r.f;
+position p;
+declarer name  EXPORT_SYMBOL;
+@@
+
+(
+EXPORT_SYMBOL(f@p);
+|
+module_init(f@p);
+|
+module_exit(f@p);
+|
+f@p(...)
+)
+
+@noaddr1@
+identifier r.f;
+position pn != r1.p;
+@@
+
+(
+  &f
+|
+ f@pn
+)
+
+@script:python@
+p << noaddr1.pn;
+@@
+
+without_and = without_and + 1
+
+@script:python@
+@@
+
+choose_without_and = False
+#if (with_and * 25 < without_and):
+#  choose_without_and = True
+if (with_and == 1 and without_and > 9):
+  choose_without_and = True
+
+choose_with_and = False
+#if (without_and * 25 < with_and):
+#  choose_with_and = True
+if (without_and == 1 and with_and > 9):
+  choose_with_and = True
+
+@script:python@
+p << addr1.pa;
+f << r.f;
+@@
+
+if (choose_with_and or not choose_without_and):
+  cocci.include_match(False)
+
+@script:python@
+p << noaddr1.pn;
+f << r.f;
+@@
+
+if (choose_without_and or not choose_with_and):
+  cocci.include_match(False)
+
+@@
+identifier f;
+position addr1.pa;
+position noaddr1.pn;
+@@
+
+(
+- &f@pa
++ f
+|
+- f@pn
++ &f
+)
