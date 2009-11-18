@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbZKRTBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932568AbZKRTB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbZKRTBJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 14:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZKRTBI
+	id S932568AbZKRTB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932489AbZKRTBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 14:01:08 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35610 "EHLO
+	Wed, 18 Nov 2009 14:01:25 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35613 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbZKRTBH (ORCPT
+	with ESMTP id S932552AbZKRTBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 14:01:07 -0500
+	Wed, 18 Nov 2009 14:01:24 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 18 Nov 2009 20:00:55 +0100 (CET)
+Date: Wed, 18 Nov 2009 20:01:14 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/6] firedtv: shrink buffer pointer table
+Subject: [PATCH 2/6] firedtv: packet requeuing is likely to succeed
 To: linux-media@vger.kernel.org
 cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 In-Reply-To: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
-Message-ID: <tkrat.6b9442a2f97654ef@s5r6.in-berlin.de>
+Message-ID: <tkrat.f550f773f3d1da7d@s5r6.in-berlin.de>
 References: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
@@ -26,82 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cache only addresses of whole pages, not of each buffer chunk.  Besides,
-page addresses can be obtained by page_address() instead of kmap() since
-they were allocated in lowmem.
+Packet DMA buffers are queued either initially all at once (then, a
+queueing failure will cause firedtv to release the DMA context as a
+whole) or subsequently one by one as they recycled after use (then a
+failure is extremely unlikely).  Therefore we can be a little less
+cautious when counting at which packet buffer to set the interrupt flag.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/media/dvb/firewire/firedtv-fw.c |   19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
+ drivers/media/dvb/firewire/firedtv-fw.c |   13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
 Index: linux-2.6.32-rc7/drivers/media/dvb/firewire/firedtv-fw.c
 ===================================================================
 --- linux-2.6.32-rc7.orig/drivers/media/dvb/firewire/firedtv-fw.c
 +++ linux-2.6.32-rc7/drivers/media/dvb/firewire/firedtv-fw.c
-@@ -6,9 +6,9 @@
- #include <linux/errno.h>
- #include <linux/firewire.h>
- #include <linux/firewire-constants.h>
--#include <linux/highmem.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
-+#include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/types.h>
-@@ -73,7 +73,7 @@ struct firedtv_receive_context {
- 	struct fw_iso_buffer buffer;
- 	int interrupt_packet;
- 	int current_packet;
--	char *packets[N_PACKETS];
-+	char *pages[N_PAGES];
- };
- 
+@@ -79,19 +79,14 @@ struct firedtv_receive_context {
  static int queue_iso(struct firedtv_receive_context *ctx, int index)
-@@ -100,7 +100,7 @@ static void handle_iso(struct fw_iso_con
- 	struct firedtv *fdtv = data;
- 	struct firedtv_receive_context *ctx = fdtv->backend_data;
- 	__be32 *h, *h_end;
--	int i = ctx->current_packet, length, err;
-+	int length, err, i = ctx->current_packet;
- 	char *p, *p_end;
- 
- 	for (h = header, h_end = h + header_length / 4; h < h_end; h++) {
-@@ -110,7 +110,8 @@ static void handle_iso(struct fw_iso_con
- 			length = MAX_PACKET_SIZE;
- 		}
- 
--		p = ctx->packets[i];
-+		p = ctx->pages[i / PACKETS_PER_PAGE]
-+				+ (i % PACKETS_PER_PAGE) * MAX_PACKET_SIZE;
- 		p_end = p + length;
- 
- 		for (p += CIP_HEADER_SIZE + MPEG2_TS_HEADER_SIZE; p < p_end;
-@@ -130,8 +131,7 @@ static int start_iso(struct firedtv *fdt
  {
- 	struct firedtv_receive_context *ctx;
- 	struct fw_device *device = device_of(fdtv);
--	char *p;
--	int i, j, k, err;
-+	int i, err;
+ 	struct fw_iso_packet p;
+-	int err;
  
- 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
- 	if (!ctx)
-@@ -153,11 +153,8 @@ static int start_iso(struct firedtv *fdt
- 	ctx->interrupt_packet = 1;
+ 	p.payload_length = MAX_PACKET_SIZE;
+-	p.interrupt = !(ctx->interrupt_packet & (IRQ_INTERVAL - 1));
++	p.interrupt = !(++ctx->interrupt_packet & (IRQ_INTERVAL - 1));
+ 	p.skip = 0;
+ 	p.header_length = ISO_HEADER_SIZE;
+ 
+-	err = fw_iso_context_queue(ctx->context, &p, &ctx->buffer,
+-				   index * MAX_PACKET_SIZE);
+-	if (!err)
+-		ctx->interrupt_packet++;
+-
+-	return err;
++	return fw_iso_context_queue(ctx->context, &p, &ctx->buffer,
++				    index * MAX_PACKET_SIZE);
+ }
+ 
+ static void handle_iso(struct fw_iso_context *context, u32 cycle,
+@@ -150,7 +145,7 @@ static int start_iso(struct firedtv *fdt
+ 	if (err)
+ 		goto fail_context_destroy;
+ 
+-	ctx->interrupt_packet = 1;
++	ctx->interrupt_packet = 0;
  	ctx->current_packet = 0;
  
--	for (i = 0, k = 0; k < N_PAGES; k++) {
--		p = kmap(ctx->buffer.pages[k]);
--		for (j = 0; j < PACKETS_PER_PAGE && i < N_PACKETS; j++, i++)
--			ctx->packets[i] = p + j * MAX_PACKET_SIZE;
--	}
-+	for (i = 0; i < N_PAGES; i++)
-+		ctx->pages[i] = page_address(ctx->buffer.pages[i]);
- 
- 	for (i = 0; i < N_PACKETS; i++) {
- 		err = queue_iso(ctx, i);
+ 	for (i = 0; i < N_PAGES; i++)
 
 -- 
 Stefan Richter
