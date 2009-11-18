@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZKRWeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZKRWiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbZKRWeE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 17:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZKRWeE
+	id S1753491AbZKRWiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 17:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZKRWiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 17:34:04 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58751 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbZKRWeD (ORCPT
+	Wed, 18 Nov 2009 17:38:13 -0500
+Received: from mail.bluehost.com ([74.220.195.75]:43541 "HELO
+	mail.bluehost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752049AbZKRWiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 17:34:03 -0500
-Date: Wed, 18 Nov 2009 20:33:41 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 3/4] perf symbols: Record the build_ids of kernel
-	modules too
-Message-ID: <20091118223341.GC14014@ghostprotocols.net>
-References: <1258582853-8579-1-git-send-email-acme@infradead.org> <1258582853-8579-2-git-send-email-acme@infradead.org> <1258582853-8579-3-git-send-email-acme@infradead.org> <20091118222910.8F6F51983@magilla.sf.frob.com>
+	Wed, 18 Nov 2009 17:38:12 -0500
+Message-ID: <4B04775A.4040100@bluehost.com>
+Date: Wed, 18 Nov 2009 15:38:18 -0700
+From: Spencer Candland <spencer@bluehost.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118222910.8F6F51983@magilla.sf.frob.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
+References: <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com> <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
+In-Reply-To: <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Nov 18, 2009 at 02:29:10PM -0800, Roland McGrath escreveu:
-> > +		snprintf(name, sizeof(name),
-> > +			 "/sys/module/%s/notes/.note.gnu.build-id", line);
+Stanislaw Gruszka wrote:
+> Could you please test this patch, if it solve all utime decrease
+> problems for you:
 > 
-> The arch linker script for .ko's is free to fold notes into a single
-> section with a different name or suchlike, and maybe future ones will.  So
-> it's not pedantically kosher to assume the name of the section rather than
-> just looking at all the /sys/module/%s/notes/* files present until you find
-> NT_GNU_BUILD_ID.  (In practice there is probably only ever one file there
-> to look at, but you never know.)
+> http://patchwork.kernel.org/patch/59795/
 
-Ahah! That seems to explain why the kernel one is "notes" while the
-modules's are ".note.gnu.build-id"! I'll cook a super-dupa-careful
-cooker follow on patch to get that right, thanks again!
+Yes, this seems to solve the problem.
 
-- Arnaldo
+- Spencer
