@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZKRVpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbZKRVoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZKRVpM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZKRVpL
+	id S932439AbZKRVoG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:44:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932370AbZKRVoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:45:11 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:43377 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbZKRVpK (ORCPT
+	Wed, 18 Nov 2009 16:44:05 -0500
+Received: from mx03.syneticon.net ([78.111.66.105]:53574 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932351AbZKRVoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:45:10 -0500
-Date: Wed, 18 Nov 2009 21:45:06 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091118214506.GA17019@srcf.ucam.org>
-References: <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> <ac3eb2510911181329v26c334a3oab9c554ec64ad0d5@mail.gmail.com> <20091118213526.GB16630@srcf.ucam.org> <ac3eb2510911181339q616c56f7rd31b93caed0286c5@mail.gmail.com>
+	Wed, 18 Nov 2009 16:44:04 -0500
+Message-ID: <4B046AEA.80109@wpkg.org>
+Date: Wed, 18 Nov 2009 22:45:14 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510911181339q616c56f7rd31b93caed0286c5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: preining@logic.at, riel@redhat.com, dan.merillat@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 10:39:26PM +0100, Kay Sievers wrote:
-> On Wed, Nov 18, 2009 at 22:35, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > On Wed, Nov 18, 2009 at 10:29:23PM +0100, Kay Sievers wrote:
-> >
-> >> I guess, the "idle_since" file could be made poll()able, and throw an
-> >> event when the idle time is re-set to 0, so the value checking needs
-> >> only to happen as long we wait for the disk to become idle. As long as
-> >> it's busy anyway, the rare wakeups should not matter much. :)
-> >
-> > That'd be a userspace wakeup every time something gets submitted to the
-> > block device, which sounds far from ideal...
-> 
-> No, you would only poll() when you reached the timeout and the disk
-> entered the idle state. This can not happen more frequently than the
-> timeout itself.
+Norbert Preining wrote:
 
-I don't understand. idle_since would be reset on every access to the 
-block device. The alternative is to generate an event when the disk goes 
-idle, but that goes back to requiring a timer in the kernel...
+> So what normally trashed my system to a quasi halt I tried after a swapoff -a,
+> *two* svn up of really big repositories (some Gb), plus starting 
+> VirtualBox Windows XP with 1Gb virtual RAM on a 2Gb machine.
+> 
+> And see hoho, no problem at all. Everything remains responsive and happy.
+> The memory was never above 60% in use, but 40% in cache, and all 
+> without any problems.
+> 
+> So that seems to be a real bug.
+> 
+> I am running currently 2.6.32-rc7, but experienced that already in the
+> 31-rc version. Hard to pinpoint exactely where it happens.
+
+Similar here (with 2.6.31.6 kernel).
+
+I have a pretty powerful desktop machine with 8 GB RAM, fast disks with 
+RAID-1 etc.
+
+It runs 5 (mostly idle) KVM machines, Firefox, Thunderbird, KDE4, image 
+editing program, multiseat X session. Around 6 GB of RAM used when 
+caches/buffers are excluded.
+
+Every 10 minutes or so, machine is really unresponsive, load jumps to 10 
+or 20. Mouse pointer jumps, it's impossible to change between windows etc.
+
+Do a "swapoff -a", and everything is snappy and responsive as it should, 
+there are no more lags.
+
+I noticed that with swap disabled, "Dirty" (in /proc/meminfo) is way 
+below 100 MB (usually, 50 MB or so).
+With swap enabled, it "Dirty" is usually around 300-500-700 MB, and from 
+time to time, the system basically thrashes the disks, and everything is 
+unresponsive.
+Similar to uncompressing a big tar archive - lots of IO, system 
+unresponsive.
+
+BTW, did you try:
+
+echo 0 > /proc/sys/vm/swappiness
+swapoff -a
+swapon -a
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Tomasz Chmielewski
+http://wpkg.org
+
