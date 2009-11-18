@@ -1,98 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZKRJ4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZKRJ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbZKRJ4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbZKRJ4f
+	id S1756857AbZKRJ7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbZKRJ67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:56:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56531 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756296AbZKRJ4d (ORCPT
+	Wed, 18 Nov 2009 04:58:59 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:51840 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755738AbZKRJ66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:56:33 -0500
-Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
-From: Peter Zijlstra <peterz@infradead.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
-In-Reply-To: <28c262360911171601u618ca555o1dd51ea19168575e@mail.gmail.com>
-References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com>
-	 <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk>
-	 <20091117200618.3DFF.A69D9226@jp.fujitsu.com> <4B029C40.2020803@gmail.com>
-	 <1258490826.3918.29.camel@laptop>
-	 <28c262360911171601u618ca555o1dd51ea19168575e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 10:56:21 +0100
-Message-ID: <1258538181.3918.138.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 04:58:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=UNSK0dNnybGfwSdOsrr+lK651ka16bywX4H0IrTrL/Csh1QYSVyjkwb0nPjuzEmEVj
+         UwV9Cu++YoENOvPJ2tiMQYh0MCZKnJlG8wDW1FhzK0/hmxqJsPEnn4ztOu72as2VBolN
+         btoKijLjn/e465LIdzZZ1ObOIhp3RJqMdFmZw=
+MIME-Version: 1.0
+In-Reply-To: <20091113211640.GA2540@ami.dom.local>
+References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>
+	 <20091112113836.GA7963@ff.dom.local>
+	 <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com>
+	 <4AFC5C58.9030207@gmail.com>
+	 <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
+	 <20091113211640.GA2540@ami.dom.local>
+Date: Wed, 18 Nov 2009 04:59:03 -0500
+Message-ID: <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
+Subject: Re: large packet loss take2 2.6.31.x
+From: Caleb Cushing <xenoterracide@gmail.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-18 at 09:01 +0900, Minchan Kim wrote:
-> Hi, Peter.
-> 
-> First of all, Thanks for the commenting.
-> 
-> On Wed, Nov 18, 2009 at 5:47 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, 2009-11-17 at 21:51 +0900, Minchan Kim wrote:
-> >> I think it's because mempool reserves memory.
-> >> (# of I/O issue\0 is hard to be expected.
-> >> How do we determine mempool size of each block driver?
-> >> For example,  maybe, server use few I/O for nand.
-> >> but embedded system uses a lot of I/O.
-> >
-> > No, you scale the mempool to the minimum amount required to make
-> > progress -- this includes limiting the 'concurrency' when handing out
-> > mempool objects.
-> >
-> > If you run into such tight corners often enough to notice it, there's
-> > something else wrong.
-> >
-> > I fully agree with ripping out PF_MEMALLOC from pretty much everything,
-> > including the VM, getting rid of the various abuse outside of the VM
-> > seems like a very good start.
-> >
-> 
-> I am not against removing PF_MEMALLOC.
-> Totally, I agree to prevent abusing of PF_MEMALLOC.
-> 
-> What I have a concern is per-block mempool.
-> Although it's minimum amount of mempool, it can be increased
-> by adding new block driver. I am not sure how many we will have block driver.
-> 
-> And, person who develop new driver always have to use mempool and consider
-> what is minimum of mempool.
-> I think this is a problem of mempool, now.
-> 
-> How about this?
-> According to system memory, kernel have just one mempool for I/O which
-> is one shared by several block driver.
-> 
-> And we make new API block driver can use.
-> Of course, as usual It can use dynamic memoy. Only it can use mempool if
-> system don't have much dynamic memory.
-> 
-> In this case, we can control read/write path. read I/O can't help
-> memory reclaiming.
-> So I think read I/O don't use mempool, I am not sure. :)
+> Might be the same bugzilla report, I guess. We need to establish if
+> these pings reach 192.168.1.1, so a short test and tcpdump without any
+> special options just to get a few lost cases as seen on both sides.
+> (And ifconfigs before and after the test.)
+>
+> Btw, could you check with lsmod if usbserial module is loaded before
+> this test? I'd like to verify this git bisection result. (If the
+> module is loaded or you have CONFIG_USB_SERIAL=y instead of m, try to
+> recompile the kernel with this option turned off, for this test.)
 
-Sure some generic blocklevel infrastructure might work, _but_ you cannot
-take away the responsibility of determining the amount of memory needed,
-nor does any of this have any merit if you do not limit yourself to that
-amount.
+sorry for taking so long to get back. busy problematic times.
 
-Current PF_MEMALLOC usage in the VM is utterly broken in that we can
-have a basically unlimited amount of tasks hit direct reclaim and all of
-them will then consume PF_MEMALLOC, which mean we can easily run out of
-memory.
+the dumps and ifconfigs are a bit less 'clean' because the router
+serves several other computers (none of which have this issue
+(windows)) here's the ifconfig -a from the router.
 
-( unless I missed the direct reclaim throttle patches going in, which
-isn't at all impossible )
+usbserial is not loaded. actually from reading the patch submission I
+suspected the official cause might be off... but I'm not kernel
+programmer all I know is where I could see the loss during tests.and I
+haven't been able to reproduce over dozens of reboots from this
+2.6.31.1-test-00091-gfa31221 kernel.
+
+I totally forgot to do it during the dump's so I hope these are still useful
+
+I haven't rebooted this in a few weeks (the router)
+
+br-lan    Link encap:Ethernet  HWaddr 00:1D:7E:F8:21:66
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:60613991 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:67849334 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:2172912561 (2.0 GiB)  TX bytes:3999263405 (3.7 GiB)
+
+eth0      Link encap:Ethernet  HWaddr 00:1D:7E:F8:21:66
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:144116625 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:122639966 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:1986512923 (1.8 GiB)  TX bytes:1548485891 (1.4 GiB)
+          Interrupt:4
+
+eth0.0    Link encap:Ethernet  HWaddr 00:1D:7E:F8:21:66
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:57318567 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:62317675 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:3466538358 (3.2 GiB)  TX bytes:2132301174 (1.9 GiB)
+
+eth0.1    Link encap:Ethernet  HWaddr 00:1D:7E:F8:21:66
+          inet addr:68.42.198.183  Bcast:255.255.255.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:86777655 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:60312064 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:205005516 (195.5 MiB)  TX bytes:3162930981 (2.9 GiB)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:168 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:168 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:19706 (19.2 KiB)  TX bytes:19706 (19.2 KiB)
+
+wl0       Link encap:Ethernet  HWaddr 00:1D:7E:F8:21:68
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:5114480 errors:0 dropped:0 overruns:0 frame:720205
+          TX packets:7576790 errors:1902 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:762579947 (727.2 MiB)  TX bytes:3981402458 (3.7 GiB)
+          Interrupt:2 Base address:0x5000
+
+this is the ifconfig -a from my desktop while experiencing the issue
+
+eth0      Link encap:Ethernet  HWaddr 00:21:9B:06:4C:C9
+          inet addr:192.168.1.3  Bcast:192.168.1.255  Mask:255.255.255.0
+          inet6 addr: fe80::221:9bff:fe06:4cc9/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:3465 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4951 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:1467320 (1.3 Mb)  TX bytes:631808 (617.0 Kb)
+          Memory:fdfc0000-fdfe0000
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:624 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:624 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:64397 (62.8 Kb)  TX bytes:64397 (62.8 Kb)
 
 
+-- 
+Caleb Cushing
 
+http://xenoterracide.blogspot.com
