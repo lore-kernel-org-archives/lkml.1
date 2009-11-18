@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbZKRUj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbZKRUld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932496AbZKRUj7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 15:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbZKRUj6
+	id S932536AbZKRUld (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 15:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932527AbZKRUld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 15:39:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22021 "EHLO mx1.redhat.com"
+	Wed, 18 Nov 2009 15:41:33 -0500
+Received: from www.tglx.de ([62.245.132.106]:35081 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932391AbZKRUj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 15:39:58 -0500
-Date: Wed, 18 Nov 2009 15:40:44 -0500
-From: Aristeu Rozanski <aris@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] ftrace: build ftrace.o when CONFIG_FTRACE_SYSCALLS is set
-	for s390
-Message-ID: <20091118204044.GR3441@redhat.com>
+	id S932465AbZKRUlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 15:41:32 -0500
+Date: Wed, 18 Nov 2009 21:41:21 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Scott Wood <scottwood@freescale.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
+In-Reply-To: <20091118175523.GA12857@b07421-ec1.am.freescale.net>
+Message-ID: <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.566205413@linutronix.de> <20091118175523.GA12857@b07421-ec1.am.freescale.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to build a s390x kernel with CONFIG_FTRACE_SYSCALLS will fail
-because ftrace.o is not built/linked.
+On Wed, 18 Nov 2009, Scott Wood wrote:
+> On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
+> > Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> > +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+> > @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
+> >  }
+> >  
+> >  static struct irq_chip pq2ads_pci_ic = {
+> > -	.typename = "PQ2 ADS PCI",
+> > +	.name = "PQ2 ADS PCI",
+> >  	.name = "PQ2 ADS PCI",
+> >  	.end = pq2ads_pci_unmask_irq,
+> >  	.mask = pq2ads_pci_mask_irq,
+> 
+> Duplicate ".name"...
 
-Signed-off-by: Aristeu Rozanski <aris@redhat.com>
-
----
- arch/s390/kernel/Makefile |    1 +
- 1 file changed, 1 insertion(+)
-
---- linus-2.6.orig/arch/s390/kernel/Makefile	2009-10-30 17:49:10.000000000 -0400
-+++ linus-2.6/arch/s390/kernel/Makefile	2009-11-18 15:39:52.000000000 -0500
-@@ -44,6 +44,7 @@ obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_FUNCTION_TRACER)	+= $(if $(CONFIG_64BIT),mcount64.o,mcount.o)
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER) += ftrace.o
-+obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
- 
- # Kexec part
- S390_KEXEC_OBJS := machine_kexec.o crash.o
-
+Darn.
