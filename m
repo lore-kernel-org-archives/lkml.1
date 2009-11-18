@@ -1,44 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZKRLpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZKRLrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZKRLpv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 06:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZKRLpv
+	id S1753640AbZKRLrF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 06:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbZKRLrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 06:45:51 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:35187 "EHLO
+	Wed, 18 Nov 2009 06:47:04 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:35314 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbZKRLpu (ORCPT
+	with ESMTP id S1751665AbZKRLrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 06:45:50 -0500
-Message-ID: <4B03DE53.6010007@nokia.com>
-Date: Wed, 18 Nov 2009 13:45:23 +0200
+	Wed, 18 Nov 2009 06:47:02 -0500
+Message-ID: <4B03DE9B.40800@nokia.com>
+Date: Wed, 18 Nov 2009 13:46:35 +0200
 From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: sameo@linux.intel.com, dbrownell@users.sourceforge.net, tony@atomide.com,
-       broonie@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org,
-       lrg@slimlogic.co.uk, adrian.hunter@nokia.com,
-       amit.kucheria@verdurent.com, dtor@mail.ru
-CC: Valentin Eduardo Bezerra <eduardo.valentin@nokia.com>,
+To: "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+CC: "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
        "De-Schrijver Peter (Nokia-D/Helsinki)" 
 	<Peter.De-Schrijver@nokia.com>,
        "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
-Subject: [PATCH 0/1] Add all TWL4030 regulators to Regulator framework
+Subject: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
+References: <4B03DE53.6010007@nokia.com>
+In-Reply-To: <4B03DE53.6010007@nokia.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Nov 2009 11:45:26.0468 (UTC) FILETIME=[9ECB7840:01CA6844]
+X-OriginalArrivalTime: 18 Nov 2009 11:46:37.0875 (UTC) FILETIME=[C95B5030:01CA6844]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds all the remaining TWL4030 regulators into the implementation.
-These changes are based on top of Linus' tree master branch, since it is ahead of the mfd-2.6.
+This patch adds all the remaining TWL4030 regulators into the implementation,
+also adding VINT* regulators in this way since they can be derived out from
+the TWL
 
-Juha Keski-Saari (1):
-   Add all TWL regulators to Regulator framework
-
+Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+---
   drivers/mfd/twl4030-core.c            |   30 ++++++++++++++++++++++++++----
   drivers/regulator/twl4030-regulator.c |   27 +++++++++++++++++----------
   include/linux/i2c/twl4030.h           |    8 ++++++--
   3 files changed, 49 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+index a1c47ee..0748b43 100644
+--- a/drivers/mfd/twl4030-core.c
++++ b/drivers/mfd/twl4030-core.c
+@@ -602,13 +602,15 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+  	}
+
+  	if (twl_has_regulator()) {
+-		/*
+-		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
++		child = add_regulator(TWL4030_REG_VDD1, pdata->vdd1);
+  		if (IS_ERR(child))
+  			return PTR_ERR(child);
+-		*/
+
+-		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
++		child = add_regulator(TWL4030_REG_VDD2, pdata->vdd2);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
++
++		child = add_regulator(TWL4030_REG_VIO, pdata->vio);
+  		if (IS_ERR(child))
+  			return PTR_ERR(child);
+
+@@ -616,12 +618,32 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+  		if (IS_ERR(child))
+  			return PTR_ERR(child);
+
++		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
++
++		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
++
+  		child = add_regulator((features & TWL4030_VAUX2)
+  					? TWL4030_REG_VAUX2_4030
+  					: TWL4030_REG_VAUX2,
+  				pdata->vaux2);
+  		if (IS_ERR(child))
+  			return PTR_ERR(child);
++
++		child = add_regulator(TWL4030_REG_VINTANA1, pdata->vintana1);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
++
++		child = add_regulator(TWL4030_REG_VINTANA2, pdata->vintana2);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
++
++		child = add_regulator(TWL4030_REG_VINTDIG, pdata->vintdig);
++		if (IS_ERR(child))
++			return PTR_ERR(child);
+  	}
+
+  	/* maybe add LDOs that are omitted on cost-reduced parts */
+diff --git a/drivers/regulator/twl4030-regulator.c b/drivers/regulator/twl4030-regulator.c
+index e2032fb..949c414 100644
+--- a/drivers/regulator/twl4030-regulator.c
++++ b/drivers/regulator/twl4030-regulator.c
+@@ -260,7 +260,18 @@ static const u16 VSIM_VSEL_table[] = {
+  static const u16 VDAC_VSEL_table[] = {
+  	1200, 1300, 1800, 1800,
+  };
+-
++static const u16 VDD1_VSEL_table[] = {
++	800, 1450,
++};
++static const u16 VDD2_VSEL_table[] = {
++	800, 1450, 1500,
++};
++static const u16 VIO_VSEL_table[] = {
++	1800, 1850,
++};
++static const u16 VINTANA2_VSEL_table[] = {
++	2500, 2750,
++};
+
+  static int twl4030ldo_list_voltage(struct regulator_dev *rdev, unsigned index)
+  {
+@@ -397,20 +408,16 @@ static struct twlreg_info twl4030_regs[] = {
+  	TWL_ADJUSTABLE_LDO(VAUX4, 0x23, 4),
+  	TWL_ADJUSTABLE_LDO(VMMC1, 0x27, 5),
+  	TWL_ADJUSTABLE_LDO(VMMC2, 0x2b, 6),
+-	/*
+  	TWL_ADJUSTABLE_LDO(VPLL1, 0x2f, 7),
+-	*/
+  	TWL_ADJUSTABLE_LDO(VPLL2, 0x33, 8),
+  	TWL_ADJUSTABLE_LDO(VSIM, 0x37, 9),
+  	TWL_ADJUSTABLE_LDO(VDAC, 0x3b, 10),
+-	/*
+-	TWL_ADJUSTABLE_LDO(VINTANA1, 0x3f, 11),
++	TWL_FIXED_LDO(VINTANA1, 0x3f, 1500, 11),
+  	TWL_ADJUSTABLE_LDO(VINTANA2, 0x43, 12),
+-	TWL_ADJUSTABLE_LDO(VINTDIG, 0x47, 13),
+-	TWL_SMPS(VIO, 0x4b, 14),
+-	TWL_SMPS(VDD1, 0x55, 15),
+-	TWL_SMPS(VDD2, 0x63, 16),
+-	 */
++	TWL_FIXED_LDO(VINTDIG, 0x47, 1500, 13),
++	TWL_ADJUSTABLE_LDO(VIO, 0x4b, 14),
++	TWL_ADJUSTABLE_LDO(VDD1, 0x55, 15),
++	TWL_ADJUSTABLE_LDO(VDD2, 0x63, 16),
+  	TWL_FIXED_LDO(VUSB1V5, 0x71, 1500, 17),
+  	TWL_FIXED_LDO(VUSB1V8, 0x74, 1800, 18),
+  	TWL_FIXED_LDO(VUSB3V1, 0x77, 3100, 19),
+diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
+index 508824e..d26f96d 100644
+--- a/include/linux/i2c/twl4030.h
++++ b/include/linux/i2c/twl4030.h
+@@ -421,8 +421,12 @@ struct twl4030_platform_data {
+  	struct regulator_init_data		*vaux2;
+  	struct regulator_init_data		*vaux3;
+  	struct regulator_init_data		*vaux4;
+-
+-	/* REVISIT more to come ... _nothing_ should be hard-wired */
++	struct regulator_init_data		*vio;
++	struct regulator_init_data		*vdd1;
++	struct regulator_init_data		*vdd2;
++	struct regulator_init_data		*vintana1;
++	struct regulator_init_data		*vintana2;
++	struct regulator_init_data		*vintdig;
+  };
+
+  /*----------------------------------------------------------------------*/
+-- 
+1.6.3.3
