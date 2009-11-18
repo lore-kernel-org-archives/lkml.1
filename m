@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbZKRRTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbZKRRWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbZKRRTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbZKRRTP
+	id S932101AbZKRRWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:22:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757836AbZKRRWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:19:15 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:36546 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757629AbZKRRTO (ORCPT
+	Wed, 18 Nov 2009 12:22:42 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59645 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757667AbZKRRWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:19:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=rqYsP085f7FeWoeNvAsJ7f73d+nsX70nYGo/Kr5IkQL1sDVt3Hz4aTUD2BhSKMjAU0
-         34yDNOY7JsRVF/gJf9/0quN8C1E5p+DjVRVWlM6Ynkc0StmkR6vysLpRXmO2iTTRzitN
-         fS5+1ngAhA3vhb4yt6HzTWGl5zsDDrZ9ezAu0=
-Message-ID: <4B042C94.9070403@gmail.com>
-Date: Wed, 18 Nov 2009 18:19:16 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
+	Wed, 18 Nov 2009 12:22:41 -0500
+Date: Wed, 18 Nov 2009 18:22:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: -rc6: something (probably active usb bluetooth) blocks suspend
+Message-ID: <20091118172211.GC25150@elf.ucw.cz>
+References: <20091116112254.GB12315@elf.ucw.cz>
+ <200911161248.29924.oliver@neukum.org>
+ <20091114111021.GA1378@ucw.cz>
+ <200911161447.51651.oliver@neukum.org>
 MIME-Version: 1.0
-To: David Maxwell <dmaxwell@coverity.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Coverity checking periodicity?
-References: <20091118153935.GA6796@mail>
-In-Reply-To: <20091118153935.GA6796@mail>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911161447.51651.oliver@neukum.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/18/2009 04:39 PM, David Maxwell wrote:
-> You mentioned the stats on the Scan site not being updated. That's true.
-> I haven't had time to do maintenance on the relevant scripts in quite a while,
-> so the site doesn't reflect the ongoing builds and defect count changes. :-(
+Hi!
 
-David, thank you for the reply. I'm just curious, are the results
-publicly available or are they visible only to few chosen people?
+> > > Why is the device autoresumed here? Are you using autosuspend?
+> > > This is odd, as the freezer should block the send path and remote
+> > > wakeups should be deferred.
+> > 
+> > I believe I have it enabled in kconfig but not during runtime.
+> 
+> Please check.
 
-thanks,
+CONFIG_USB_SUSPEND=y
+
+I'm not aware of  boot scripts enabling anything.
+
+> > (Another problem is that I need to turn the kill switch on/off to get
+> > my bt usb after resume. That used not be the case long time ago.)
+> 
+> That is possibly another problem.
+
+Yes, I guess so. With those many USB experts around, I thought I'd
+mention it :-).
+									Pavel
 -- 
-js
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
