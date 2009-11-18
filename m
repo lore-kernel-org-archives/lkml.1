@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZKRF3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZKRFer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZKRF3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 00:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZKRF3c
+	id S1754270AbZKRFer (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 00:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZKRFeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 00:29:32 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:44381 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbZKRF3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 00:29:32 -0500
-Message-ID: <4B03863E.1070602@us.ibm.com>
-Date: Tue, 17 Nov 2009 21:29:34 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Michel Lespinasse <walken@google.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
-References: <20091117074655.GA14023@google.com> <20091117081817.GA7963@elte.hu> <1258448121.7816.29.camel@laptop> <4B02CC46.4020506@us.ibm.com> <20091118033741.GB23808@google.com>
-In-Reply-To: <20091118033741.GB23808@google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Nov 2009 00:34:46 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:60068 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752242AbZKRFep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 00:34:45 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: As4EAHIUA0tGGN1W/2dsb2JhbACBTtQahDsEgW8
+Date: Wed, 18 Nov 2009 00:34:48 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@listsi.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: [RELEASE] LTTng 0.174
+Message-ID: <20091118053448.GB4152@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 00:33:35 up 91 days, 16:23,  4 users,  load average: 0.08, 0.08,
+	0.09
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse wrote:
-> On Tue, Nov 17, 2009 at 08:16:06AM -0800, Darren Hart wrote:
->>> Darren has recently been putting a lot of effort in making a futex test
->>> suite:
->>>
->>> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
->>>
->>> Its not yet complete, but hopefully it will soon be :-)
->> Michael, would you be willing to include a version of this test in the  
->> above test suite? If so, then in keeping with the rest of the test suite, 
->> I would recommend splitting into two tests, one of each opcode being 
->> tested, and  add argument to define thread count. The run.sh script would 
->> then run each thread count as a separate test run.
-> 
-> I had a quick look at the tree (using the http interface). I sure would not
-> mind adding the tests, and the futextest.h file would make them look
-> quite cleaner than my previous version. Just to be sure, would you put them
-> under performance/ or stress/ ? This would be the first test to be added
-> in these directories in any case, right ? (just asking in case I missed
-> something obvious).
+LTTng 0.174 adds missing del_timer to switch_timer (optional feature),
+and fixes buggy mips32 trace clock.
 
-Michel, excellent!
-
-I think performance sounds like the right place to me. Performance is 
-where I plan to put measurement tests where you report some score. 
-Stress tests are considered to have passed if the run to completion 
-without locking up or crashing the kernel :-)
-
-We should take a look at the perf tool to see what requirements it may 
-impose on tests we want to share between perf and futextest.
+Mathieu
 
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
