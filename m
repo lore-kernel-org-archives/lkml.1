@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbZKRQ6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZKRRBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbZKRQ6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 11:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZKRQ6Y
+	id S1757922AbZKRRBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbZKRRBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 11:58:24 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:43780 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755835AbZKRQ6X convert rfc822-to-8bit (ORCPT
+	Wed, 18 Nov 2009 12:01:38 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:49998 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757703AbZKRRBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 11:58:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UE3pemOMzVZkNhyrF3NohqhhymQUwQW/cmd43J4C4Rdh84Lv9EfIicY3nFiZBz3j8s
-         NkII1fYqmVXE2eniJT0KXnu+Zaiq1j12OO2+iFzftqNM1YGogqgwOQ8IvOYUSOcsVPWi
-         c/BycWfDJtix0vWLI7TyglchLCSU33TnvLvyk=
+	Wed, 18 Nov 2009 12:01:37 -0500
+To: David VomLehn <dvomlehn@cisco.com>
+Cc: dedekind1@gmail.com, Marco Stornelli <marco.stornelli@gmail.com>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
+       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       paul.gortmaker@windriver.com
+Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
+References: <1258463404.27437.103.camel@localhost>
+	<m1pr7hf93s.fsf@fess.ebiederm.org>
+	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>
+	<m1iqd8ptg9.fsf@fess.ebiederm.org>
+	<20091118005337.GA19374@dvomlehn-lnx2.corp.sa.net>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 18 Nov 2009 09:01:36 -0800
+In-Reply-To: <20091118005337.GA19374@dvomlehn-lnx2.corp.sa.net> (David VomLehn's message of "Tue\, 17 Nov 2009 19\:53\:37 -0500")
+Message-ID: <m1bpizahsf.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0911181034150.3036-100000@iolanthe.rowland.org>
-References: <200911181527.18791.oliver@neukum.org>
-	 <Pine.LNX.4.44L0.0911181034150.3036-100000@iolanthe.rowland.org>
-Date: Wed, 18 Nov 2009 09:58:29 -0700
-Message-ID: <f9d2a5e10911180858j7cf6f244m91cfa0725997182d@mail.gmail.com>
-Subject: Re: Use of usb_find_interface in open is racy
-From: Russ Dill <russ.dill@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 8:35 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Wed, 18 Nov 2009, Oliver Neukum wrote:
->
->> Am Mittwoch, 18. November 2009 11:41:25 schrieb Jiri Kosina:
->> > > User space receives the hotplug event for the class device, makes the
->> > > device node and notifies another program that opens the device node.
->> > > The program opens the device node which calls into usb_open and then
->> > > skel_open. skel_open calls usb_find_interface. usb_find_interfaces
->> > > searches the klist_devices of skel_driver, finds no device associated
->> > > with the minor number and returns NULL. skel_open returns -ENODEV.
->> > >
->> > > Control returns to really_probe and really_probe calls driver_bound
->> > > which adds the device to the list of devices associated with
->> > > skel_driver (klist_devices).
->> > >
->> > > I'm not sure what the right way to solve this is. A call to
->> > > wait_for_device_probe() in the skel_open call before calling
->> > > usb_find_interface fixes the problem, but it is a rather large hammer.
->> >
->>
->> Device core code is hard to follow, but I tried.
->> How about simply covering all of usb_register_dev() with minor_rwsem?
->
-> That won't help.  The window is between the end of usb_register_dev()
-> and the end of skel_probe(), during which time the mutex isn't held.
->
+David VomLehn <dvomlehn@cisco.com> writes:
 
-Like I said above, the window goes all the way till the device gets
-added to the klist_devices on the driver.
+>> > 2. Where would you suggest tying in? (Particularly since not all architectures
+>> >    currently support kdump)
+>> 
+>> No changes are needed kernel side.  You just need an appropriate kernel and
+>> initrd for your purpose.
+>
+> I think I must still be missing something. I have dynamic data that I want
+> to preserve as I reboot from a failed kernel to a fresh new kernel. By
+> the time the fresh kernel starts init, the dynamic data (IP addresses, MAC
+> addresses) has been re-written with new values. This is why I'm trying to
+> preserve, but I may be running without disk or flash. This patch doesn't
+> preserve the data, but it gets it into the kernel so that it can be
+> preserved. At present, I'm preserving the data in a panic_notifier function,
+> but I am not wedded to that. At present, the data will be copied to a
+> section of memory retained across boots, but I know others will want to
+> write to flash.
+
+For memory retained across reboots, my inclination is to have a trivial
+little tty/console driver that writes into that retained memory.  You can
+open the tty and write your user space data, and then at kernel panic time
+the kernel will write it's data.
+
+When people start writing to flash anything short of the most trivial
+writes is non-trivial code that requires sleeps etc, etc.  Not
+something that is particularly reliable after a kernel failure.  My
+inclination in that case is to use crash_kexec and a small crash
+kernel/initrd or if size is a real issue a standalone binary (ideally
+Aboot like so different embedded platforms can share).
+
+I'm sensitive about getting anything extra in the path before we call
+crash_kexec as that is likely to lead to destabilization of that path.
+
+Eric
