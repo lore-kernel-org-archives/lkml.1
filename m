@@ -1,138 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZKRJBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZKRJDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbZKRJBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZKRJBV
+	id S1756531AbZKRJDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZKRJDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:01:21 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:37993 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbZKRJBU convert rfc822-to-8bit (ORCPT
+	Wed, 18 Nov 2009 04:03:47 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:54490 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbZKRJDn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:01:20 -0500
+	Wed, 18 Nov 2009 04:03:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=dzi1bod/1g3eh+OX8BvYB//+2SzpS1L91WwryFbwdcoB1siZSS6iIz+XWzh1xrdtvP
-         xELtUnVvKcsf9Kh1f/KZd6blVq+qWdGI1P68OyKg9A1o/Gvx/wXhHQc1elkx0ldl2LYW
-         1Z440rI9RkaWympnJDQ0ZuUmFZ1wRU2SLaZT0=
+        b=H0RP40HHqiDoRjzyzeuuRha+TML5+n9oYUYcfUOhqRI02gAlYtzRKXNF9g4mzqZG2m
+         bIun04165WWczV1Ck0oZc8OU8tSX3euIHt2S7/0Yyt7qpm/jHZzP5NxOoyhU9SNwvuJv
+         FEihUnFfngc0K5QNT6wlcphtLN7myZFiggq0U=
 MIME-Version: 1.0
-In-Reply-To: <20091118005337.GA19374@dvomlehn-lnx2.corp.sa.net>
-References: <1258463404.27437.103.camel@localhost>
-	 <m1pr7hf93s.fsf@fess.ebiederm.org>
-	 <20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>
-	 <m1iqd8ptg9.fsf@fess.ebiederm.org>
-	 <20091118005337.GA19374@dvomlehn-lnx2.corp.sa.net>
-Date: Wed, 18 Nov 2009 17:01:26 +0800
-Message-ID: <2375c9f90911180101i32113c7ev85f4bbeba965fab5@mail.gmail.com>
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, dedekind1@gmail.com,
-       Marco Stornelli <marco.stornelli@gmail.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-embedded@vger.kernel.org, akpm@linux-foundation.org,
-       dwm2@infradead.org, linux-kernel@vger.kernel.org, mpm@selenic.com,
-       paul.gortmaker@windriver.com
+In-Reply-To: <4B038BB7.2050902@qualcomm.com>
+References: <d45a3acc0911171730kc3a03d5iacec6d9ef4b1874c@mail.gmail.com>
+	 <4B035081.8040900@qualcomm.com>
+	 <d45a3acc0911171814i310bbd16t8ff3fba2410e9375@mail.gmail.com>
+	 <4B038BB7.2050902@qualcomm.com>
+Date: Wed, 18 Nov 2009 20:03:49 +1100
+Message-ID: <d45a3acc0911180103q69499cc6yf610117ea44186d7@mail.gmail.com>
+Subject: Re: [PATCH] Documentation, clarify tuntap IPX example.
+From: andrew hendry <andrew.hendry@gmail.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 8:53 AM, David VomLehn <dvomlehn@cisco.com> wrote:
-> On Tue, Nov 17, 2009 at 04:28:22PM -0800, Eric W. Biederman wrote:
->> David VomLehn <dvomlehn@cisco.com> writes:
+Hi Max,
+
+Thanks. TUNSETLINK looks like exactly what I need.
+I'll have to have a closer look at kernel x.25 next, i don't think it
+likes the tunx25 going away with routes still too it.
+
+deb32:~# cat /proc/net/x25/route
+Address          Digits  Device
+000000000000000  0       @���
+                              �@�
+
+[  662.425648] BUG: unable to handle kernel NULL pointer dereference at 00000017
+[  662.426291] IP: [<c10b5908>] dup_fd+0x21f/0x2fa
+[  662.427849] *pde = 00000000
+[  662.428028] Oops: 0002 [#1] SMP
+[  662.428028] last sysfs file: /sys/class/net/lo/operstate
+[  662.428028] Modules linked in: x25 tun ipv6 loop ac button
+parport_pc parport snd_pcm snd_timer serio_raw psmouse snd soundcore
+snd_page_alloc pcspkr i2c_piix4 i2c_core evdev ext3 jbd mbcache
+ide_cd_mod cdrom ide_gd_mod ata_generic ata_piix libata scsi_mod
+ide_pci_generic piix floppy pcnet32 mii ide_core thermal fan
+thermal_sys [last unloaded: tun]
+[  662.428028]
+[  662.428028] Pid: 12252, comm: net.agent Not tainted (2.6.31.6 #1) VirtualBox
+[  662.428028] EIP: 0060:[<c10b5908>] EFLAGS: 00010286 CPU: 0
+[  662.428028] EIP is at dup_fd+0x21f/0x2fa
+[  662.428028] EAX: 00000017 EBX: ce5262a0 ECX: 00000220 EDX: ffffffff
+[  662.428028] ESI: 00000088 EDI: ce41e400 EBP: 00000100 ESP: c2849eec
+[  662.428028]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0069
+[  662.428028] Process net.agent (pid: 12252, ti=c2848000
+task=ce9d51c0 task.ti=c2848000)
+[  662.428028] Stack:
+[  662.428028]  00000202 00000020 00000008 cf466cc0 cf466cc4 cf4667c0
+ce41e400 00000078
+[  662.428028] <0> ce5262c0 cf466d00 cf4667c8 ce02bc00 ce18db60
+00000000 00000000 ce9d51c0
+[  662.428028] <0> c102d03b 080a8120 cf649668 c2849fb4 bfe05a6c
+01200011 ce18dca4 fffffff4
+[  662.428028] Call Trace:
+[  662.428028]  [<c102d03b>] ? copy_process+0x469/0xf96
+[  662.428028]  [<c102dc7d>] ? do_fork+0x115/0x282
+[  662.428028]  [<c10a4965>] ? vfs_llseek+0x30/0x34
+[  662.428028]  [<c1001d8e>] ? sys_clone+0x21/0x27
+[  662.428028]  [<c10030c9>] ? syscall_call+0x7/0xb
+[  662.428028] Code: 4c 24 08 8b 70 08 f3 a5 8b 4c 24 04 83 e1 03 74
+02 f3 a4 31 c9 31 f6 89 6c 24 1c eb 29 8b 7c 24 18 8b 14 0f 85 d2 74
+09 8d 42 18 <3e> ff 42 18 eb 06 8b 43 0c 0f b3 30 8b 44 24 2c 46 89 14
+08 83
+[  662.428028] EIP: [<c10b5908>] dup_fd+0x21f/0x2fa SS:ESP 0069:c2849eec
+[  662.428028] CR2: 0000000000000017
+[  662.452941] ---[ end trace aab1610cb3ca8b89 ]---
+
+Message from syslogd@deb32 at Nov 19 06:58:56 ...
+ kernel:[  904.324109] unregister_netdevice: waiting for xotdtun to
+become free. Usage count = -3
+
+
+Andrew
+
+On Wed, Nov 18, 2009 at 4:52 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+> andrew hendry wrote:
+>> Hi Max,
 >>
->> > On Tue, Nov 17, 2009 at 10:45:43AM -0500, Eric W. Biederman wrote:
->> > ...
->> >> Why not use the kdump hook?  If you handle a kernel panic that way
->> >> you get enhanced reliability and full user space support.  All in a hook
->> >> that is already present and already works.
-> ...
->> > 1. In what ways would this be better than, say, a panic_notifier?
+>> I started looking through the documentation because im looking to use
+>> tun for X.25 over TCP. The IPX example sounded similar but i couldn't
+>> get it to work as I was expecting. Looking for a hint in the right
+>> direction.
+> Ah, X25 is different.
+>
+>> There is an old non-mainline patch called x25tap (clone of obsolete
+>> ethertap). I'm hoping to replace x25tap with tun.
 >>
->> A couple of ways.
+>> The old x25tap creates a device like:
+>> x25tap0   Link encap:generic X.25  HWaddr
+>>           UP BROADCAST RUNNING NOARP MULTICAST  MTU:1024  Metric:1
+>>           RX packets:3040785 errors:0 dropped:0 overruns:0 frame:0
+>>           TX packets:2895530 errors:0 dropped:0 overruns:0 carrier:0
+>>           collisions:0 txqueuelen:10
+>>           RX bytes:138787339 (132.3 Mb)  TX bytes:91395983 (87.1 Mb)
+>> When the x25tap is loaded it has dev->type = ARPHRD_X25, after which
+>> x.25 routing and AF_X25 sockets can be created.  Along with an XoT
+>> userspace program which handles some basic headers and TCP port 1998
+>> it works well.
 >>
->> - You are doing the work in a known good kernel instead of the kernel
->>   that just paniced for some unknown reason.
->> - All of the control logic is in user space (not the kernel) so you can
->>   potentially do something as simple as "date >> logfile" to get the
->>   date.
->
-> I think I see better what you're suggesting--passing the info to a kdump
-> kernel and having it do whatever it wants. I don't think I want to do this,
-> but I haven't used any of the kexec() stuff, so I may be missing the point.
-> Some more context:
->
-> My application is an embedded one, and one of the big things I need to do
-> after a failure is to bring up a fully functional kernel ASAP. Once I have
-> that kernel, I process all of the crash data in user space concurrently with
-> running my main application. Because I'm embedded, I'm very limited in how
-> much crash data I can save over a reboot, how much I can store, and how
-> much I can send to a central collection point. This is good, since it doesn't
-> take up a lot of resources, but core dumps are out of the question.
-
-
-I think the problem of kdump is that it uses much memory to hold
-the core, i.e. /proc/vmcore, and no way to free it unless using another
-reboot. This is why Fedora only does some data-collection in the second
-reboot after crash, and then reboots.
-
-I got an idea many days ago, that is providing a way to "delete" /proc/vmcore
-in the second reboot, so that we can have enough memory to continue without
-another reboot. I am not sure if Eric likes this? Eric?
-
->
-> As I understand kdump, I would also need to have a second kernel in memory
-> to do the kdump work. It wouldn't need to be as big is the kernel that
-> failed, but it would still require a significant amount of memory. On an
-> embedded system, the idle memory may be a luxury we can't afford.
-
-
-You can use only one kernel, as long as it is relocatable.
-
->
-> I think this makes a kdump-based solution difficult, but if it can meet
-> my requirements, I'd much rather use it (I've been following kdump since
-> it's inception quite a few years ago, but it hasn't seemed a good match
-> for embedded Linux). Does this still sound like a good match?
-
-What do you think about my idea above? If we had that, would kdump
-meet your requirements?
-
-
->
->> > 2. Where would you suggest tying in? (Particularly since not all architectures
->> >    currently support kdump)
+>> If using tun, how does something get registered to handle protocol AF_X25?
 >>
->> No changes are needed kernel side.  You just need an appropriate kernel and
->> initrd for your purpose.
 >
-> I think I must still be missing something. I have dynamic data that I want
-> to preserve as I reboot from a failed kernel to a fresh new kernel. By
-> the time the fresh kernel starts init, the dynamic data (IP addresses, MAC
-> addresses) has been re-written with new values. This is why I'm trying to
-> preserve, but I may be running without disk or flash. This patch doesn't
-> preserve the data, but it gets it into the kernel so that it can be
-> preserved. At present, I'm preserving the data in a panic_notifier function,
-> but I am not wedded to that. At present, the data will be copied to a
-> section of memory retained across boots, but I know others will want to
-> write to flash.
+> I've never tried this personally so ... :). But I just glanced over net/ax25
+> and drivers/wan/ax25 and it looks TUNSETLINK might work for you.
+> In other words you want to allocate TUN device (not TAP) and then call
+> TUNSETLINK with ARPHRD_X25. Seems like you'll get exactly what you need.
 >
-
-
-I believe you can get everything from /proc/vmcore, if you use kexec,
-after crash, with some tools like 'crash'.
-
->> All of the interesting architectures support kexec, and if an
->> architecture doesn't it isn't hard to add.  The architecture specific
->> part is very simple.  A pain to debug initially but very simple.
+> Max
 >
-> I use MIPS processors, and it looks like it is supported. So long as it's
-> stable, I'm happy to use it.
-
-MIPS seems to have some kexec() support, but after looking at
-arch/mips/kernel/machine_kexec.c, maybe the support is still
-broken? But anyway, you are welcome to work on it. :)
+>
+>> Regards,
+>> Andrew.
+>>
+>> On Wed, Nov 18, 2009 at 12:40 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+>>> On 11/17/2009 05:30 PM, andrew hendry wrote:
+>>>> Can the TUNSETIFF ioctl change a tap's protocol to IPX as the
+>>>> documentation suggests?
+>>>> I think tun.c would need IFF_IPX_TAP added for it to work as described?
+>>>> Otherwise tap can only be ptp or ethernet, and there is no way to
+>>>> route or use AF_IPX.
+>>> TAP is an Ethernet device. No special handling is required for IPX or for
+>>> that matter any other protocol. Example seems fine too.
+>>>
+>>> Max
+>>>
+>>>> Signed-off-by: Andrew Hendry<andrew.hendry@gmail.com>
+>>>>
+>>>> --- a/Documentation/networking/tuntap.txt       2009-11-11
+>>>> 14:03:22.676167648 +1100
+>>>> +++ b/Documentation/networking/tuntap.txt       2009-11-18
+>>>> 11:34:18.106647029 +1100
+>>>> @@ -127,12 +127,14 @@ Ethernet device, which instead of receiv
+>>>>  media, receives them from user space program and instead of sending
+>>>>  packets via physical media sends them to the user space program.
+>>>>
+>>>> -Let's say that you configured IPX on the tap0, then whenever
+>>>> -the kernel sends an IPX packet to tap0, it is passed to the application
+>>>> -(VTun for example). The application encrypts, compresses and sends it to
+>>>> -the other side over TCP or UDP. The application on the other side
+>>>> decompresses
+>>>> -and decrypts the data received and writes the packet to the TAP device,
+>>>> -the kernel handles the packet like it came from real physical device.
+>>>> +Let's say for the purpose of example, IPX support was added to tuntap.
+>>>> +Then whenever the kernel routes an IPX packet to tap0, it is passed to
+>>>> the
+>>>> +application reading the file descriptor from /dev/net/tun (VTun for
+>>>> example).
+>>>> +The application encrypts, compresses and sends it to the other side over
+>>>> TCP
+>>>> +or UDP. The application on the other side decompresses and decrypts the
+>>>> data
+>>>> +received and writes the packet to the TAP device, the remote kernel
+>>>> handles
+>>>> +the packet like it came from real physical device. The IPX applications
+>>>> are
+>>>> +able to communicate as if there was a real IPX network.
+>>>>
+>>>>  4. What is the difference between TUN driver and TAP driver?
+>>>>  TUN works with IP frames. TAP works with Ethernet frames.
+>>>
+>
+>
