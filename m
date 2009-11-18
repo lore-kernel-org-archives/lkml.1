@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbZKRSVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932232AbZKRSVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932214AbZKRSVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbZKRSVT
+	id S932232AbZKRSVp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbZKRSVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:21:19 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:59247 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932198AbZKRSVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:21:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=pn+g7PKVKu+oiMc50REbhoZCSX/BIhiohl8ruVn0P2ad3Jo1BC90G8HRr///avTrcV
-         kBdvu7m3/G6CZTcpN8v+Z4hsSjtDQLUnZxt1KzOdCfheqbadAetM6MZMaiX0RDcK5maO
-         3Tr/YZLvv0aERS+7ryL4UreVvKIb2kcwKEScE=
+	Wed, 18 Nov 2009 13:21:43 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:45439 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932183AbZKRSVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:21:41 -0500
+Date: Wed, 18 Nov 2009 19:21:45 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Francois Romieu <romieu@fr.zoreil.com>,
+       Sorbica Shieh <sorbica@icplus.com.tw>,
+       Jesse Huang <jesse@icplus.com.tw>, netdev@vger.kernel.org,
+       arnd@arndb.de, joe@perches.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/16] drivers/net/ipg.c: remove exceptional & on function
+ name
+Message-ID: <Pine.LNX.4.64.0911181921050.20943@ask.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <20091118135136.GA9224@ff.dom.local>
-References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>
-	 <20091112113836.GA7963@ff.dom.local>
-	 <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com>
-	 <4AFC5C58.9030207@gmail.com>
-	 <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
-	 <20091113211640.GA2540@ami.dom.local>
-	 <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
-	 <20091118135136.GA9224@ff.dom.local>
-Date: Wed, 18 Nov 2009 13:21:19 -0500
-Message-ID: <81bfc67a0911181021n1b969565y4a39b181360b5e92@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Actually, I'm a little bit surprised. Maybe I missed something from
-> your previous messages, but I expected something more similar to the
-> first wireshark dump, which suggested to me there was only this mtr
-> traffic. Now there is a lot more (plus we know it's not all).
+From: Julia Lawall <julia@diku.dk>
 
-probably just me lazy at 5 am? did I do the dump on the router right
-so it wasn't showing traffic that's just idling from other computers
-(windows likes to make a lot of noise). I could do it by ip...
+In this file, function names are otherwise used as pointers without &.
 
-> So, there is a basic question: can this mtr loss be seen while no
-> other traffic is present? After looking into these current dumps I
-> doubt. There are e.g. 3 pings unanswered between 09:21:50 and
-> 09:21:52 (21:31:34 to 21:31:38 router time), but a lot of tcp
-> packets to and from 192.168.1.3, so looks like simply dropped and
-> we can guess the reason.
+A simplified version of the semantic patch that makes this change is as
+follows: (http://coccinelle.lip6.fr/)
 
-yes. this was at a fairly low traffic time of day. 5am only 2 people
-were up, and I was using the other computer during. I've had everyone
-actively doing one or more of downloading/uploading/video/voip/gaming
-stuff on this network with no noticeable packet loss. if really,
-really needed I can probably restrict this network to 2 machines for
-the duration of the test.
+// <smpl>
+@r@
+identifier f;
+@@
 
-> Since this patch from the bisection is really limited to this one
-> module I doubt we should follow this direction. IMHO it shows the
-> test wasn't reproducible enough. Probably the amount and/or kind of
-> other traffic really matter. If I'm wrong and missed something again
-> let me know. Btw, could you try if changing with ifconfig the
-> txqueuelen of desktop's eth0 from 100 to 1000 changes anything
-> in this mtr test?
+f(...) { ... }
 
-yeah testing it under my known working config first. I'll get back w/ you later.
--- 
-Caleb Cushing
+@@
+identifier r.f;
+@@
 
-http://xenoterracide.blogspot.com
+- &f
++ f
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/net/ipg.c                   |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ipg.c b/drivers/net/ipg.c
+index 63056e7..ba8d246 100644
+--- a/drivers/net/ipg.c
++++ b/drivers/net/ipg.c
+@@ -1751,7 +1751,7 @@ static int ipg_nic_open(struct net_device *dev)
+ 	/* Register the interrupt line to be used by the IPG within
+ 	 * the Linux system.
+ 	 */
+-	rc = request_irq(pdev->irq, &ipg_interrupt_handler, IRQF_SHARED,
++	rc = request_irq(pdev->irq, ipg_interrupt_handler, IRQF_SHARED,
+ 			 dev->name, dev);
+ 	if (rc < 0) {
+ 		printk(KERN_INFO "%s: Error when requesting interrupt.\n",
