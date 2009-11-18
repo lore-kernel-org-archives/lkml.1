@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZKRVGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbZKRVIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbZKRVGo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbZKRVGo
+	id S932529AbZKRVIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbZKRVII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:06:44 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:38809 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757923AbZKRVGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:06:43 -0500
-MIME-Version: 1.0
-In-Reply-To: <20091118200712.GA14026@srcf.ucam.org>
-References: <1258468659-5446-1-git-send-email-mjg@redhat.com> 
-	<ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> 
-	<1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> 
-	<ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> 
-	<20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> 
-	<20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> 
-	<20091118200712.GA14026@srcf.ucam.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 18 Nov 2009 22:06:33 +0100
-Message-ID: <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
-	changes
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 18 Nov 2009 16:08:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60340 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932452AbZKRVIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 16:08:07 -0500
+From: Josh Stone <jistone@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Josh Stone <jistone@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] tracing: Remove the stale include/trace/power.h
+Date: Wed, 18 Nov 2009 13:06:55 -0800
+Message-Id: <1258578415-14752-1-git-send-email-jistone@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 21:07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
->
->> Sure, but what's wrong with reading that file every 50 seconds? Almost
->> all boxes poll for media changes of optical drives and usb card
->> readers anyway, so it's not that we are not doing stuff like this
->> already.
->
-> We poll for media because there's no event-based way of avoiding it - in
-> this case there is.
+Commit 6161352 moved the power tracing to include/trace/events/, but
+left the old header behind.  No one is using the old header, and its
+declarations are now incorrect, so it should be removed.
 
-That's true, but I think there is a significant difference between
-polling every one or two seconds for media changes, and usually one or
-two minutes for a disk idle. It's not that we poll in a rather hight
-frequency, in an arbitrary interval, and check if some condition is
-met.
+Signed-off-by: Josh Stone <jistone@redhat.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ include/trace/power.h |   32 --------------------------------
+ 1 files changed, 0 insertions(+), 32 deletions(-)
+ delete mode 100644 include/trace/power.h
 
-I still don't think that we should add new event interfaces which are
-single-subscriber only, and use global values for a specific user.
-What if there will be another independent user for this, which might
-want a different timeout? They fight over the trigger value to set in
-sysfs?
+diff --git a/include/trace/power.h b/include/trace/power.h
+deleted file mode 100644
+index ef20466..0000000
+--- a/include/trace/power.h
++++ /dev/null
+@@ -1,32 +0,0 @@
+-#ifndef _TRACE_POWER_H
+-#define _TRACE_POWER_H
+-
+-#include <linux/ktime.h>
+-#include <linux/tracepoint.h>
+-
+-enum {
+-	POWER_NONE = 0,
+-	POWER_CSTATE = 1,
+-	POWER_PSTATE = 2,
+-};
+-
+-struct power_trace {
+-	ktime_t			stamp;
+-	ktime_t			end;
+-	int			type;
+-	int			state;
+-};
+-
+-DECLARE_TRACE(power_start,
+-	TP_PROTO(struct power_trace *it, unsigned int type, unsigned int state),
+-	      TP_ARGS(it, type, state));
+-
+-DECLARE_TRACE(power_mark,
+-	TP_PROTO(struct power_trace *it, unsigned int type, unsigned int state),
+-	      TP_ARGS(it, type, state));
+-
+-DECLARE_TRACE(power_end,
+-	TP_PROTO(struct power_trace *it),
+-	      TP_ARGS(it));
+-
+-#endif /* _TRACE_POWER_H */
+-- 
+1.6.5.2
 
->From my perspective, the once-at-timeout wakeup is more acceptable
-than an in-kernel policy setting for a single-subscriber event
-interface.
-
-Thanks,
-Kay
