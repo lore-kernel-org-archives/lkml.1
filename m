@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZKRQwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbZKRQ4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbZKRQwB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 11:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbZKRQwA
+	id S932083AbZKRQ4m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 11:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbZKRQ4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 11:52:00 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:59822 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757631AbZKRQv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 11:51:59 -0500
-Date: Wed, 18 Nov 2009 17:52:02 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
-Message-ID: <20091118175202.490989d8@hyperion.delvare>
-In-Reply-To: <c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
-References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
-	<20091107210147.3e754278@hyperion.delvare>
-	<4AF7148C.9090706@thebigcorporation.com>
-	<20091112211255.09cd884a@hyperion.delvare>
-	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
-	<20091116155606.GC29479@sirena.org.uk>
-	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
-	<20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
-	<c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 11:56:41 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:53958 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757903AbZKRQ4j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 11:56:39 -0500
+Date: Wed, 18 Nov 2009 16:56:30 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, qemu-devel@nongnu.org,
+       Avi Kivity <avi@redhat.com>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Adam Litke <agl@us.ibm.com>
+Subject: Re: [Qemu-devel] Re: virtio: Add memory statistics reporting to the balloon driver (V2)
+Message-ID: <20091118165630.GB28723@shareable.org>
+References: <1258488996.2820.35.camel@aglitke> <1258490189.2820.37.camel@aglitke> <200911181200.39971.rusty@rustcorp.com.au> <4B040C82.6070901@codemonkey.ws>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B040C82.6070901@codemonkey.ws>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009 17:28:53 +0100, Leon Woestenberg wrote:
-> On Wed, Nov 18, 2009 at 2:05 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Our timers are very efficient and some day we will need to make jiffies a
-> > function and stop the timer ticking for best performance. At that point
-> > timers are probably the most efficient way to do much of this.
->
-> The problem with I2C bitbanged is the stringent timing, we need a way
-> to have fine-grained sleeping
-> mixed with real-time tasks in order to make this work.
+Anthony Liguori wrote:
+> Rusty Russell wrote:
+> >The little-endian conversion of the balloon driver is a historical mistake
+> >(no other driver does this).  Let's not extend it to the stats.
+> 
+> I think the mistake is that the other drivers don't do that.
+> 
+> We cheat in qemu and assume that the guest is always in a fixed 
+> endianness but this is not always the case for all architectures.
 
-FWIW, the problem that was initially reported has nothing to do with
-this. i2c-algo-bit used mdelay() during transactions, not yield().
-yield() is used only in once place, _between_ transactions attempts.
-There are no strict timing constraints there.
+If guests can have different endianness (reasonable on some CPUs where
+it's switchable - some even have more than 2 options), then I guess
+the *host* on those systems have different endianness too.
 
--- 
-Jean Delvare
+Is the host's endianness signalled to the guest anywhere, so that
+guest drivers can do cpu_to_qemuhost32(), when someone eventually
+finds that necessary?
+
+-- Jamie
