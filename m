@@ -1,214 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbZKRWVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZKRWZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbZKRWVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 17:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbZKRWVz
+	id S1752623AbZKRWZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 17:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZKRWZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 17:21:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50899 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754835AbZKRWVy (ORCPT
+	Wed, 18 Nov 2009 17:25:33 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37592 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752049AbZKRWZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 17:21:54 -0500
-Date: Wed, 18 Nov 2009 14:21:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: linux-spi <spi-devel-general@lists.sourceforge.net>,
-       David Brownell-sourceforge <dbrownell@users.sourceforge.net>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ARM: Add spi controller driver support for NUC900
-Message-Id: <20091118142109.ff2c5ef6.akpm@linux-foundation.org>
-In-Reply-To: <4B024748.9080001@gmail.com>
-References: <4B024748.9080001@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 17:25:32 -0500
+Date: Wed, 18 Nov 2009 17:25:38 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
+ UHCI
+In-Reply-To: <4B046E4C.7040205@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0911181711500.2745-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009 14:48:40 +0800
-Wan ZongShun <mcuos.com@gmail.com> wrote:
+On Wed, 18 Nov 2009, Simon Arlott wrote:
 
-> Dear David,
+> > What happens with other sorts of devices, such as a USB flash drive?
+>  
+> On my desktop, I don't usually use the OHCI controller directly, but
+> through hubs on EHCI. I do have an USB Audio device which works ok
+> using OHCI.
 > 
-> Add winbond/nuvoton NUC900 spi controller driver support, 
-> on my evaluation board,there is a winbond w25x16 spi flash,
-> so I test my spi controller driver with m25p80.c.
+> The firmware load fails over EHCI (via a hub) despite running even faster:
+> [89633.219403] cxacru: sending fw 0x3 size 0x8000 to #7000
+> [89633.220147] cxacru: sending fw 0x3 size 0x8000 to #e000
+> [89633.220530] cxacru: sending fw 0x3 size 0x8000 to #15000
+> [89633.220774] cxacru: sending fw 0x3 size 0x8000 to #1c000
+> [89633.220898] cxacru: sending fw 0x3 size 0x8000 to #23000
+> [89633.221286] cxacru: sending fw 0x3 size 0x8000 to #2a000
 > 
->
-> ...
->
-> +static inline struct w90p910_spi *to_hw(struct spi_device *sdev)
-> +{
-> +	return spi_master_get_devdata(sdev->master);
-> +}
-> +
-> +static void w90p910_slave_seclect(struct spi_device *spi, unsigned int ssr)
+> 338µs per 32KB... which is 775mbit/s+ and doesn't make sense
 
-I think you meant "select" here?
+It sure doesn't.  EHCI can't send bulk data faster than 52 KB/ms, which
+is 615 us per 32 KB.  I wonder if the time values above are correct.
 
-> +{
-> +	struct w90p910_spi *hw = to_hw(spi);
-> +	unsigned int val;
-> +	unsigned int cs = spi->mode & SPI_CS_HIGH ? 1 : 0;
-> +	unsigned int cpol = spi->mode & SPI_CPOL ? 1 : 0;
-> +
-> +	val = __raw_readl(hw->regs + USI_SSR);
-> +
-> +	if (!cs)
-> +		val &= ~SELECTLEV;
-> +	else
-> +		val |= SELECTLEV;
-> +
-> +	if (!ssr)
-> +		val &= ~SELECTSLAVE;
-> +	else
-> +		val |= SELECTSLAVE;
-> +
-> +	__raw_writel(val, hw->regs + USI_SSR);
-> +
-> +	val = __raw_readl(hw->regs + USI_CNT);
-> +
-> +	if (!cpol)
-> +		val &= ~SELECTPOL;
-> +	else
-> +		val |= SELECTPOL;
-> +
-> +	__raw_writel(val, hw->regs + USI_CNT);
-> +}
+> I can write a 10MB file to an USB flash drive over OHCI, and umount+sync
+> takes around 13 seconds.
 
-That's a read-modify-write operation.  What locking prevents two
-threads of control from altering the USI_SSR and USI_CNT registers at
-the same time, resulting in an indeterminate setting?
+Yes, that's about right.  It leads me to wonder if something funny is
+going on with the device, or least with the firmware-loading part of
+it.  Odd that it works differently with UHCI and OHCI, though.  There
+shouldn't be any differences visible to the device.  You don't have
+anything else attached to the same bus, do you?
 
-> +static void w90p910_spi_chipsel(struct spi_device *spi, int value)
-> +{
-> +	switch (value) {
-> +	case BITBANG_CS_INACTIVE:
-> +		w90p910_slave_seclect(spi, 0);
-> +		break;
-> +
-> +	case BITBANG_CS_ACTIVE:
-> +		w90p910_slave_seclect(spi, 1);
-> +		break;
-> +	}
-> +}
-> +
-> +static void w90p910_spi_setup_txnum(struct w90p910_spi *hw,
-> +							unsigned int txnum)
-> +{
-> +	unsigned int val;
-> +
-> +	val = __raw_readl(hw->regs + USI_CNT);
-> +
-> +	if (!txnum)
-> +		val &= ~TXNUM;
-> +	else
-> +		val |= txnum << 0x08;
-> +
-> +	__raw_writel(val, hw->regs + USI_CNT);
-> +
-> +}
-> +
-> +static void w90p910_spi_setup_txbitlen(struct w90p910_spi *hw,
-> +							unsigned int txbitlen)
-> +{
-> +	unsigned int val;
-> +
-> +	val = __raw_readl(hw->regs + USI_CNT);
-> +
-> +	val |= (txbitlen << 0x03);
-> +
-> +	__raw_writel(val, hw->regs + USI_CNT);
-> +}
-> +
-> +static void w90p910_spi_gobusy(struct w90p910_spi *hw)
-> +{
-> +	unsigned int val;
-> +
-> +	val = __raw_readl(hw->regs + USI_CNT);
-> +
-> +	val |= GOBUSY;
-> +
-> +	__raw_writel(val, hw->regs + USI_CNT);
-> +}
-
-ditto, ditto, ditto.
-
-> +static int w90p910_spi_setupxfer(struct spi_device *spi,
-> +				 struct spi_transfer *t)
-> +{
-> +	return 0;
-> +}
-> +
-> +static int w90p910_spi_setup(struct spi_device *spi)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline unsigned int hw_txbyte(struct w90p910_spi *hw, int count)
-> +{
-> +	return hw->tx ? hw->tx[count] : 0;
-> +}
-> +
-> +static int w90p910_spi_txrx(struct spi_device *spi, struct spi_transfer *t)
-> +{
-> +	struct w90p910_spi *hw = to_hw(spi);
-> +
-> +	hw->tx = t->tx_buf;
-> +	hw->rx = t->rx_buf;
-> +	hw->len = t->len;
-> +	hw->count = 0;
-> +
-> +	init_completion(&hw->done);
-> +
-> +	__raw_writel(hw_txbyte(hw, 0x0), hw->regs + USI_TX0);
-> +
-> +	w90p910_spi_gobusy(hw);
-> +
-> +	wait_for_completion(&hw->done);
-> +
-> +	return hw->count;
-> +}
-
-The init_completion() should be unneeded?  The structure was
-initialised at setup time and will be left in a reusable state after a
-complete()/wait_for_completion().  Reinitialising the structure all the
-time like this adds risk that it will be scribbled on while in use.
-
->
-> ...
->
-> +static int __devexit w90p910_spi_remove(struct platform_device *dev)
-> +{
-> +	struct w90p910_spi *hw = platform_get_drvdata(dev);
-> +
-> +	platform_set_drvdata(dev, NULL);
-> +
-> +	spi_unregister_master(hw->master);
-> +
-> +	clk_disable(hw->clk);
-> +	clk_put(hw->clk);
-
-As far as I can tell, a hardware interrupt could still be pending, or
-be under service while the above code is executing?
-
-If so, I expect bad things will happen?
-
-> +	free_irq(hw->irq, hw);
-> +	iounmap(hw->regs);
-> +
-> +	release_resource(hw->ioarea);
-> +	kfree(hw->ioarea);
-> +
-> +	spi_master_put(hw->master);
-> +	return 0;
-> +}
-> +
->
-> ...
->
+Alan Stern
 
