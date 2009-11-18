@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZKRKSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZKRKTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbZKRKSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZKRKSs
+	id S1756883AbZKRKTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 05:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZKRKTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:18:48 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:36612 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbZKRKSr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:18:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Gh7Oi3/TemMkGV8fgPzL07X4Mtf7Oxb1b3Z2vmF0L3xJ8Mb967jgAQMwbDNwTV0/Fg
-         RmY8yJz0p7rbAT3T/C7gt3j55TViFTskBvU5HqIwWz1W9unuDbLJKr+zCHdecDt0eOGF
-         4JUKnUXtcY9jI2nJ1iYXhv1PH9eoqnwDbf5Do=
+	Wed, 18 Nov 2009 05:19:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:41895 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752292AbZKRKTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 05:19:47 -0500
+Date: Wed, 18 Nov 2009 11:19:14 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Nick Piggin <npiggin@suse.de>
+cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: -rt dbench scalabiltiy issue
+In-Reply-To: <20091118042516.GC21813@wotan.suse.de>
+Message-ID: <alpine.LFD.2.00.0911181110430.24119@localhost.localdomain>
+References: <1255723519.5135.121.camel@localhost.localdomain> <20091017223902.GA29439@wotan.suse.de> <1258507696.2077.61.camel@localhost> <20091118042516.GC21813@wotan.suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20091112134554.GA30272@elte.hu>
-References: <4AFB2C0B.50605@gmail.com>
-	 <20091111134730.a0da9e38.akpm@linux-foundation.org>
-	 <25d66d860911120531u6a9cd40dmf3056fd99bd97f4e@mail.gmail.com>
-	 <20091112134554.GA30272@elte.hu>
-Date: Wed, 18 Nov 2009 05:18:53 -0500
-X-Google-Sender-Auth: a16636e07d0c23bb
-Message-ID: <c0c067900911180218h466bec13m5f8ec8713617b11a@mail.gmail.com>
-Subject: Re: [PATCH] ftrace: return error instead of 12 bytes read
-From: Dan Merillat <dan.merillat@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roel Kluin <roel.kluin@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       rostedt@goodmis.org, Mike Miller <mike.miller@hp.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
-       iss_storagedev@hp.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 8:45 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Nick,
 
-> Even in filesystems, ~80% of the cases use proper negative values:
->
->  $ git grep 'return -E' fs/ | wc -l
->  4540
->  $ git grep 'return E' fs/ | wc -l
->  895
+On Wed, 18 Nov 2009, Nick Piggin wrote:
+> > So yes, on -rt, the overhead from lock contention is way way worse then
+> > any extra atomic ops. :)
+> 
+> How about overhead for an uncontended lock? Ie. is the problem caused
+> because lock *contention* issues are magnified on -rt, or is it
+> because uncontended lock overheads are higher? Detailed callgraph
+> profiles and lockstat of +/-atomic case would be very interesting.
 
-Except....
-fs/9p/fid.c:                            return ERR_PTR(-EPERM);
+In the uncontended case we have the overhead of calling might_sleep()
+before we acquire the lock with cmpxchg(). The uncontended unlock is a
+cmpxchg() as well.
 
-try this:
+I don't think that this is significant overhead and we see real lock
+contention issues magnified by at least an order of magnitude.
 
-$ git grep "return E[A-Z]*;" | grep -v EOF | grep -v ERROR | wc -l
-138
-$ git grep "return -E[A-Z]*;"| wc -l
-57285
+Thanks,
 
-2 of those are in Documentation/ and 2 are comments from a quick
-glance.   134 uses of positive error returns, _74_ of which are in
-fs/xfs, 24 in bluetooth, and the rest scattered randomly around the
-kernel.
-
-134 positive error returns  vs 57881 negative?  The style is so
-strongly ingrained in the kernel (And I'd bet an audit of those
-remaning 134 would find at least one bug) that it'd be a good janitor
-task to go through and switch them.
-
-
-This is one example - a function that returns either ENXIO or 0, and
-the lone caller explicitly tests and flips the sign.
-
-(Not signing off on this!!!!  but CCing the relevant people for this driver)
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 6399e50..79867d6 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -428,7 +428,7 @@ cciss_proc_write(struct file *file, const char __user *buf,
-
-                rc = cciss_engage_scsi(h->ctlr);
-                if (rc != 0)
--                       err = -rc;
-+                       err = rc;
-                else
-                        err = length;
-        } else
-diff --git a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
-index 3315268..4af3085 100644
---- a/drivers/block/cciss_scsi.c
-+++ b/drivers/block/cciss_scsi.c
-@@ -1547,7 +1547,7 @@ cciss_engage_scsi(int ctlr)
-        if (sa->registered) {
-                printk("cciss%d: SCSI subsystem already engaged.\n", ctlr);
-                spin_unlock_irqrestore(CCISS_LOCK(ctlr), flags);
--               return ENXIO;
-+               return -ENXIO;
-        }
-        sa->registered = 1;
-        spin_unlock_irqrestore(CCISS_LOCK(ctlr), flags);
+	tglx
