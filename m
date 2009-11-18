@@ -1,127 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbZKRCKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZKRCNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbZKRCKQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 21:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZKRCKP
+	id S1755323AbZKRCNu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 21:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZKRCNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 21:10:15 -0500
-Received: from mail-qy0-f174.google.com ([209.85.221.174]:56785 "EHLO
-	mail-qy0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZKRCKO convert rfc822-to-8bit (ORCPT
+	Tue, 17 Nov 2009 21:13:50 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:21575 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbZKRCNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 21:10:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=x+YMdN+cEqCi4MdShv5OpgaTeUyhsHjPGV1oSt1G2PY7LBLEOzuQTxDmRGFSF2kzYE
-         qEUoAQNHu8ngQ4D5r0Jej4/0sOyFLUgYKKCayKjL2/sLDNT1YNwgGUQyvFSSoA7qA8le
-         6NUxml701OctUo2NoUQF7c5G7MT0mfZ1qyNCY=
+	Tue, 17 Nov 2009 21:13:49 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=gYe9uobumppQANdTkOMQSwMpcJJHK9u2ykWgCGCcXqA6RpNvyjpzPJec334HdeIbw
+	VgP8rf/yatGovZaA6+mJg==
+Date: Tue, 17 Nov 2009 18:13:48 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
+ v4.2
+In-Reply-To: <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
+References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com> <20091110163419.361E.A69D9226@jp.fujitsu.com> <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com> <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
+ <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com> <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com> <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com> <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com> <20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com> <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <2375c9f90909160202p59fe30a2neb20b7000cf270cb@mail.gmail.com>
-References: <7d8fb81e0909160101m4244b24bq1cc0f650bcc9dca1@mail.gmail.com>
-	 <2375c9f90909160202p59fe30a2neb20b7000cf270cb@mail.gmail.com>
-Date: Tue, 17 Nov 2009 18:10:19 -0800
-Message-ID: <7d8fb81e0911171810i6f5f127as4cef44dbc728b252@mail.gmail.com>
-Subject: Re: BUG: kernel oops in 2.6.23.14 - unable to handle kernel paging 
-	request
-From: Vinubalaji Gopal <vinubalaji@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Americo,
+On Wed, 18 Nov 2009, KAMEZAWA Hiroyuki wrote:
 
-Sorry for the late reply - i deployed a new 2.6.23 kernel without any
-patches and was waiting for the crash to happen since this crash
-doesn't happen everywhere and only at one or two customer places at
-random times. It was running well for a while and suddenly the crash
-did happen.
-See my other answers inline:
+> > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> > index ab04537..4c5c58b 100644
+> > --- a/mm/oom_kill.c
+> > +++ b/mm/oom_kill.c
+> > @@ -27,6 +27,7 @@
+> >  #include <linux/notifier.h>
+> >  #include <linux/memcontrol.h>
+> >  #include <linux/security.h>
+> > +#include <linux/mempolicy.h>
+> >  
+> >  int sysctl_panic_on_oom;
+> >  int sysctl_oom_kill_allocating_task;
+> > @@ -35,18 +36,30 @@ static DEFINE_SPINLOCK(zone_scan_lock);
+> >  /* #define DEBUG */
+> >  
+> >  /*
+> > - * Is all threads of the target process nodes overlap ours?
+> > + * Do the nodes allowed by any of tsk's threads overlap ours?
+> >   */
+> > -static int has_intersects_mems_allowed(struct task_struct *tsk)
+> > +static int has_intersects_mems_allowed(struct task_struct *tsk,
+> > +						nodemask_t *nodemask)
+> >  {
+> > -	struct task_struct *t;
+> > +	struct task_struct *start = tsk;
+> > +	NODEMASK_ALLOC(nodemask_t, mpol_nodemask, GFP_KERNEL);
+> >  
+> > -	t = tsk;
+> > +	if (!nodemask)
+> > +		mpol_nodemask = NULL;
+> >  	do {
+> > -		if (cpuset_mems_allowed_intersects(current, t))
+> > +		if (mpol_nodemask) {
+> > +			mpol_get(tsk->mempolicy);
+> > +			if (init_nodemask_of_task_mempolicy(tsk, mpol_nodemask) &&
+> > +				nodes_intersects(*nodemask, *mpol_nodemask)) {
+> > +				mpol_put(tsk->mempolicy);
+> > +				return 1;
+> > +			}
+> > +			mpol_put(tsk->mempolicy);
+> > +		}
+> 
+> Hmm this mpol_get()/mpol_put() are necessary under tasklist_lock held ?
 
-On Wed, Sep 16, 2009 at 1:02 AM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
-> On Wed, Sep 16, 2009 at 4:01 PM, Vinubalaji Gopal <vinubalaji@gmail.com> wrote:
->> Hi all,
->>
->> I got the following kernel oops message on kernel version 2.6.23. Have
->> been searching the list archives, bug database and googling different
->> terms related to this oops message, but can't find anything. Any idea
->> on what could be causing this - a hardware failure or a bug in the
->> kernel? This is happening very rarely and is hard to reproduce :(.
->> This kernel is a patched kernel with ipsets and bootsplash.
->
->
-> Does the original kernel have the same problem? If yes, could
-> you please try 2.6.31?
->
+They are, we don't hold tasklist_lock while dropping the reference count 
+in do_exit().
 
-Yes the original kernel without any patches does have the problem. I
-couldn't try the latest kernel yet, but can do if i know that would
-really solve the problem.
+> And...I wonder
+> 
+> 	if (!init_nodemask_of_task_mempolicy(tsk, mpol_nodemask))
+> 		return 1; /* this task uses default policy */
+> 
+> 
+> > +		if (cpuset_mems_allowed_intersects(current, tsk))
+> >  			return 1;
+> > -		t = next_thread(t);
+> > -	} while (t != tsk);
+> > +		tsk = next_thread(tsk);
+> > +	} while (tsk != start);
+> >  
+> 
+> Sigh...we has to scan all threads, again.
+> Could you have an idea to improve this ?
+> 
+> For example, 
+> 	mm->mask_of_nodes_which_a_page_was_allocated_on
+> or
+>         mm->mask_of_nodes_made_by_some_magical_technique
+> some ?
+> (maybe per-node rss is over kill.)
+> 
 
->>
->> Thanks in advance.
->>
->> BUG: unable to handle kernel paging request at virtual address 000c0000
->>  printing eip:
->> c01723b0
->> *pde = 00000000
->> Oops: 0000 [#347]
->> SMP
->> Modules linked in:
->> CPU:    0
->> EIP:    0060:[<c01723b0>]       Tainted: G      B D VLI
->> EIFLAGS: 000010206   (2.6.23)
->> EIP is at __kill_fasync+0x10/0x60
->> eax: 000c0000   ebx: 000c0000   ecx: 00020001   edx: 0000001d
->> esi: 0000001d   edi: 00020001   ebp: 0000000c   esp: d36ebdd4
->> ds: 007b   es: 007b   fs: 00d8   gs: 033   ss: 0068
->> Process bounce (pid: 29145, ti=d36ea000 task=c2f37aa0 task.ti=d36ea000)
->> Stack: 00000000 d5e0c740 000c0000 ccc7792c c0674045 000c0000 d5e11580 c067730f
->>       00000000 ccc77900 d3a58600 c072b22a d36ebe1c 00000000 d5e11580 d5e113c0
->>       d36ebe78 d36ebe98 00000000 000071d9 00000194 00000194 00000000 00000000
->> Call Trace:
->>  [<c0674045>] sock_value_async+0x55/0x80
->>  [<c067730f>] sock_def_readable+0x5f/0x80
->>  [<c072b22a>] unix_stream_sendmsg+0x1ea/0x320
->>  [<c0673b3d>] do_sock_write+0x9d/0xb0
->>  [<c-673ba4>] sock_aio_write+0x54/0x70
->>  [<c01477d5>] find_lock_page+0x25/0x90
->>  [<c0166660>] do_sync_write+0xc0/0x100
->>  [<c0133700>] autoremove_wake_function+0x0/0x50
->>  [<c0114d29>] do_page_fault+0x1b/0x630
->>  [<c01667d9>] vfs_write+0x139/0x150
->>  [<c01668b7>] sys_write+047/080
->>  [<c0102b3e>] syscall_call+0x7/0xb
->>  =======================
->> Code: 04 a1 04 fe a5 c0 89 fa e0 be 12 ff ff eb bf b6 00 00 00 00 8d
->> bf 00 00 00 00 57 89 cf 56 09 d6 53 03 ec 04 05 c0 74 24 <81> 3b 01 46
->> 00 00 75 31 0b 43 0c 83 c0 28 83 fe 17 74 1d 8b 53
->> EIP: [<c01723b0>] __kill_fasync+0x10/0x60 SS:ESP 0068:d36ebdd4
->
+The same criticism could be said for the CONSTRAINT_CPUSET.  We don't 
+actually know in either case, mempolicy or cpusets, if memory was ever 
+allocated on a particular node in tsk->mempolicy->v.nodes or 
+tsk->mems_allowed, respectively.  We assume, however, that if a node is 
+included in a mempolicy nodemask or cpuset mems that it is an allowed 
+node to allocate from for all attached tasks (and those tasks aren't 
+solely allocating on a subset) so that killing tasks based on their 
+potential for allocating on oom nodes is actually helpful.
 
+> 
+> >  	return 0;
+> >  }
+> > @@ -55,6 +68,8 @@ static int has_intersects_mems_allowed(struct task_struct *tsk)
+> >   * badness - calculate a numeric value for how bad this task has been
+> >   * @p: task struct of which task we should calculate
+> >   * @uptime: current uptime in seconds
+> > + * @constraint: type of oom constraint
+> > + * @nodemask: nodemask passed to page allocator
+> >   *
+> >   * The formula used is relatively simple and documented inline in the
+> >   * function. The main rationale is that we want to select a good task
+> > @@ -70,7 +85,8 @@ static int has_intersects_mems_allowed(struct task_struct *tsk)
+> >   *    of least surprise ... (be careful when you change it)
+> >   */
+> >  
+> > -unsigned long badness(struct task_struct *p, unsigned long uptime)
+> > +unsigned long badness(struct task_struct *p, unsigned long uptime,
+> > +			enum oom_constraint constraint, nodemask_t *nodemask)
+> >  {
+> >  	unsigned long points, cpu_time, run_time;
+> >  	struct mm_struct *mm;
+> > @@ -171,7 +187,9 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+> >  	 * because p may have allocated or otherwise mapped memory on
+> >  	 * this node before. However it will be less likely.
+> >  	 */
+> > -	if (!has_intersects_mems_allowed(p))
+> > +	if (!has_intersects_mems_allowed(p,
+> > +			constraint == CONSTRAINT_MEMORY_POLICY ? nodemask :
+> > +								 NULL))
+> >  		points /= 8;
+> >  
+> >  	/*
+> > @@ -244,7 +262,8 @@ static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+> >   * (not docbooked, we don't want this one cluttering up the manual)
+> >   */
+> >  static struct task_struct *select_bad_process(unsigned long *ppoints,
+> > -						struct mem_cgroup *mem)
+> > +			struct mem_cgroup *mem, enum oom_constraint constraint,
+> > +			nodemask_t *nodemask)
+> >  {
+> >  	struct task_struct *p;
+> >  	struct task_struct *chosen = NULL;
+> > @@ -300,7 +319,7 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+> >  		if (p->signal->oom_adj == OOM_DISABLE)
+> >  			continue;
+> >  
+> > -		points = badness(p, uptime.tv_sec);
+> > +		points = badness(p, uptime.tv_sec, constraint, nodemask);
+> >  		if (points > *ppoints || !chosen) {
+> >  			chosen = p;
+> >  			*ppoints = points;
+> > @@ -472,7 +491,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+> >  
+> >  	read_lock(&tasklist_lock);
+> >  retry:
+> > -	p = select_bad_process(&points, mem);
+> > +	p = select_bad_process(&points, mem, NULL);
+> >  	if (PTR_ERR(p) == -1UL)
+> >  		goto out;
+> >  
+> > @@ -554,7 +573,8 @@ void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_mask)
+> >  /*
+> >   * Must be called with tasklist_lock held for read.
+> >   */
+> > -static void __out_of_memory(gfp_t gfp_mask, int order)
+> > +static void __out_of_memory(gfp_t gfp_mask, int order,
+> > +			enum oom_constraint constraint, nodemask_t *nodemask)
+> >  {
+> >  	struct task_struct *p;
+> >  	unsigned long points;
+> > @@ -568,7 +588,7 @@ retry:
+> >  	 * Rambo mode: Shoot down a process and hope it solves whatever
+> >  	 * issues we may have.
+> >  	 */
+> > -	p = select_bad_process(&points, NULL);
+> > +	p = select_bad_process(&points, NULL, constraint, nodemask);
+> >  
+> >  	if (PTR_ERR(p) == -1UL)
+> >  		return;
+> > @@ -609,7 +629,8 @@ void pagefault_out_of_memory(void)
+> >  		panic("out of memory from page fault. panic_on_oom is selected.\n");
+> >  
+> >  	read_lock(&tasklist_lock);
+> > -	__out_of_memory(0, 0); /* unknown gfp_mask and order */
+> > +	/* unknown gfp_mask and order */
+> > +	__out_of_memory(0, 0, CONSTRAINT_NONE, NULL);
+> >  	read_unlock(&tasklist_lock);
+> >  
+> >  	/*
+> > @@ -656,11 +677,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+> >  	read_lock(&tasklist_lock);
+> >  
+> >  	switch (constraint) {
+> > -	case CONSTRAINT_MEMORY_POLICY:
+> > -		oom_kill_process(current, gfp_mask, order, 0, NULL,
+> > -				"No available memory (MPOL_BIND)");
+> > -		break;
+> > -
+> >  	case CONSTRAINT_NONE:
+> >  		if (sysctl_panic_on_oom) {
+> >  			dump_header(gfp_mask, order, NULL);
+> > @@ -668,7 +684,8 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+> >  		}
+> >  		/* Fall-through */
+> >  	case CONSTRAINT_CPUSET:
+> > -		__out_of_memory(gfp_mask, order);
+> > +	case CONSTRAINT_MEMORY_POLICY:
+> > +		__out_of_memory(gfp_mask, order, constraint, nodemask);
+> >  		break;
+> >  	}
+> maybe good. But hmm...does this work well with per-vma mempolicy ?
+> 
+> I wonder
+>   mm->mask_of_nodes_made_by_some_magical_technique
+> will be necessary for completeness.
+> 
 
-
-> It says you are writing to a Unix datagram socket, seems this happens
-> in softirq context? Mind to try script/markup_oops.pl?
->
-I couldn't run this script. Is it obsolete now?
-
-
-> If you have a debug kernel, what does `addr2line -e vmlinux 0xc01723b0`
-> say?
-
-I don't have the vmlinux. Can i build a kernel with the same config
-and have a debug kernel and run the above command or is it too late
-and i should be running a new kernel with vmlinux so that i could run
-the above command (I use debian to build the kernel and building
-vmlinux is a special configuration in debian)?
-
--- 
-Vinu
-
-In a world without fences who needs Gates?
+I think that would probably be rejected because of its implications on the 
+allocation fastpath.  The change here isn't causing the oom killing to be 
+any less ideal; current may never have allocated any memory on its 
+mempolicy nodes prior to the oom and so killing it may be entirely 
+useless.  It's better to use our heuristics for determining the ideal task 
+to kill in that case and restricting our subset of eligible tasks by the 
+same criteria that we use for cpusets.
