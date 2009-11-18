@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbZKROgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbZKROiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757469AbZKROgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbZKROgk
+	id S1757497AbZKROiE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:38:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbZKROiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:36:40 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:57525 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757455AbZKROgi (ORCPT
+	Wed, 18 Nov 2009 09:38:02 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:49405 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757216AbZKROh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:36:38 -0500
-Date: Wed, 18 Nov 2009 16:36:09 +0200
-From: Eduardo Valentin <eduardo.valentin@nokia.com>
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
-	<ext-juha.1.keski-saari@nokia.com>,
-       "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-       "dtor@mail.ru" <dtor@mail.ru>,
-       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
-       "De-Schrijver Peter (Nokia-D/Helsinki)" 
-	<Peter.De-Schrijver@nokia.com>,
-       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
-Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
-Message-ID: <20091118143609.GD2832@esdhcp037198.research.nokia.com>
-Reply-To: eduardo.valentin@nokia.com
-References: <4B03DE53.6010007@nokia.com>
- <4B03DE9B.40800@nokia.com>
- <20091118133938.GE6592@rakim.wolfsonmicro.main>
+	Wed, 18 Nov 2009 09:37:58 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick McHardy <kaber@trash.net>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@linux-foundation.com,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+Subject: Re: [PATCH 1/3] macvlan: Reflect macvlan packets meant for other macvlan devices
+References: <1258497551-25959-1-git-send-email-arnd@arndb.de>
+	<1258497551-25959-2-git-send-email-arnd@arndb.de>
+	<4B03949D.4000908@gmail.com> <200911181047.07974.arnd@arndb.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 18 Nov 2009 06:37:50 -0800
+In-Reply-To: <200911181047.07974.arnd@arndb.de> (Arnd Bergmann's message of "Wed\, 18 Nov 2009 10\:47\:07 +0100")
+Message-ID: <m1pr7fdhkx.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118133938.GE6592@rakim.wolfsonmicro.main>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Nov 2009 14:36:18.0595 (UTC) FILETIME=[7D89E730:01CA685C]
-X-Nokia-AV: Clean
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 02:39:39PM +0100, Mark Brown wrote:
-> On Wed, Nov 18, 2009 at 01:46:35PM +0200, Juha Keski-Saari wrote:
-> > This patch adds all the remaining TWL4030 regulators into the implementation,
-> > also adding VINT* regulators in this way since they can be derived out from
-> > the TWL
-> > 
-> > Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-> 
-> This is fine from an API point of view but I worry that if any of the
-> boards are using regulator_has_full_constraints() then this will break
-> them by causing them to be powered off at the end of init.  Have you
-> checked the in-tree twl4030 users for this?
+Arnd Bergmann <arnd@arndb.de> writes:
 
-Looks like no one is using the regulator_has_full_constraints(). At least the twl4030 users.
+> On Wednesday 18 November 2009, Eric Dumazet wrote:
+>> > -     skb->dev = dev;
+>> > -     skb->pkt_type = PACKET_HOST;
+>> > +     skb->protocol = eth_type_trans(skb, dev);
+>> > +     eth = eth_hdr(skb);
+>> >  
+>> > -     netif_rx(skb);
+>> > -     return NULL;
+>> > +     skb_dst_drop(skb);
+>> 
+>> Why do you drop dst here ?
+>> 
+>> It seems strange, since this driver specifically masks out IFF_XMIT_DST_RELEASE
+>> in its macvlan_setup() :
+>> 
+>> dev->priv_flags &= ~IFF_XMIT_DST_RELEASE;
+>> 
+>> If we really want to drop dst, it could be done by caller, if IFF_XMIT_DST_RELEASE
+>> was not masked in macvlan_setup().
+>> 
+>
+> That must be my fault, it is the only change I did to Eric B's patch when
+> forward-porting to 2.6.32. The original patch did
+>
+> 	skb->protocol = eth_type_trans(skb, dev);
+> 	eth = eth_hdr(skb);
+> 	dst_release(skb->dst);
+> 	skb->dst = NULL;
+> 	skb->mark = 0;
+>
+> and I tried to convert that in the same way that other drivers did, but I
+> have to admit that I did not understand the mechanics of IFF_XMIT_DST_RELEASE.
 
-But maybe these VINT* should be set as always_on in twl4030-regulator driver?
+Please copy and ideally share code with the veth driver for recycling a skb.
+There are bunch of little things you have to do to get it right.  As I recally
+I was missing a few details in my original patch.
 
--- 
-Eduardo Valentin
+Eric
