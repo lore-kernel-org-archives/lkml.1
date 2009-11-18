@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbZKRTMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbZKRTRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932573AbZKRTMj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 14:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932462AbZKRTMh
+	id S932615AbZKRTRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932602AbZKRTRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 14:12:37 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:64642 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932406AbZKRTMh (ORCPT
+	Wed, 18 Nov 2009 14:17:20 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:57788 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932601AbZKRTRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 14:12:37 -0500
-Date: Wed, 18 Nov 2009 11:12:12 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Edward Shishkin <edward.shishkin@gmail.com>
-cc: reiserfs-devel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: reiser4 for 2.6.33?
-In-Reply-To: <4B03FB99.6070705@gmail.com>
-Message-ID: <alpine.DEB.2.01.0911181054250.27639@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0911171420480.27639@bogon.housecafe.de> <4B03FB99.6070705@gmail.com>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Wed, 18 Nov 2009 14:17:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=dFUzi4MhTu5+oWCq+vI+nDn1LjyJnRB8RKLukJN6mGLnaifn9SYn2FLQkBxaGJZkPh
+         NDk16LGw8jO4EgkhA8sDJR3ujOurPZYSHVd6IXZJ35DsqXeVYeAa4BkDsk/UwKVRnEhG
+         yUZcbtgJwzRPVcKHNDJYDx7tP5rcwCKnqJOho=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Wed, 18 Nov 2009 20:16:36 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091118184125.623e063d@lxorguk.ukuu.org.uk> <4B04413D.30302@ru.mvista.com>
+In-Reply-To: <4B04413D.30302@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+XYuv3SkR/Mgqf7i9t6EP08Q/SxfQYAl/M2Fn
- 6rinjZCmWXI7/cLf7nF7SY5qprsOjjigZ+xSXqhAzqamvy/gq7
- StjcgIjMMJuyd+buxRJlA==
+Message-Id: <200911182016.36720.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009 at 14:50, Edward Shishkin wrote:
-> (a) plugin design document;
-> (b) full description of what is going on in respond to memory
->    pressure notifications;
+On Wednesday 18 November 2009 19:47:25 Sergei Shtylyov wrote:
+> Hello.
 > 
-> The (a) is not yet ready and I don't have a time to explain
-> personally to everyone why the plugin stuff is not crappy.
+> Alan Cox wrote:
+> 
+>   >>Having separate drivers wasn't the best decisions from the maintainability
+> >>point-of-view.   It added needless complexity (different chips share the same
+> 
+> > It was most definitely a good decision, having maintained both sets of
+> 
+>     Separating HPT36x was grounded enough decision but I can't say the same 
+> of the separation of HPT3xxN.
 
-Is this still a must-have? I.e. are there still strong objections against 
-the plugin design? And even if so, most of this happens in fs/reiser4 
-anyway I suppose, so the "evil" plugins are well contained :)
+When it comes to HPT36x I would agree if we would be developing completely
+from scratch but due to historical reasons we share UDMA blacklists between
+HPT36x and HPT37x.  It is not worth it in terms of potential regressions to
+try to untangle them nowadays.
 
-As for (b), can't this be documented at a later point as well? 
+> > drivers at different times. It also makes it possible to do things the
+> > way highpoint does
+> 
+>     Oh, don't remind me of that stupid code mostly not worth copying from...
+> 
+> >>PCI IDs which make detection across multiple drivers extremely painful) and
+> >>confusion (i.e. would you have guessed that HPT302 is supported by pata_hpt37x
+> >>while HPT302N by pata_hpt3x2n?).
+> 
+>     How about HPT371N? ;-)
 
-What about the technical issues, mentioned in the latest TODO list[0] 
-earlier this year? Are there any real show-stoppers left?
-Andrew (Cc'ed) had this in -mm for a longer time now, maybe he can
-comment (once again) what's left to do from his POV?
+Not a problem, this one is unsupported according to help entries. ;)
 
-Thanks,
-Christian.
-
-[0] http://marc.info/?l=reiserfs-devel&m=124069989217533&w=2
 -- 
-BOFH excuse #323:
-
-Your processor has processed too many instructions.  Turn it off immediately, do not type any commands!!
+Bartlomiej Zolnierkiewicz
