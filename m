@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbZKRSUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZKRSVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbZKRSUn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbZKRSUm
+	id S1758233AbZKRSVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbZKRSVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:20:42 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:45412 "EHLO mgw2.diku.dk"
+	Wed, 18 Nov 2009 13:21:03 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:56220 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758218AbZKRSUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:20:40 -0500
-Date: Wed, 18 Nov 2009 19:20:44 +0100 (CET)
+	id S1758195AbZKRSVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:21:00 -0500
+Date: Wed, 18 Nov 2009 19:21:04 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Urs Thuermann <urs.thuermann@volkswagen.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
-       arnd@arndb.de, joe@perches.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/16] drivers/net/can: remove exceptional & on function name
-Message-ID: <Pine.LNX.4.64.0911181920250.20943@ask.diku.dk>
+To: netdev@vger.kernel.org, arnd@arndb.de, joe@perches.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/16] drivers/net: remove exceptional & on function name
+Message-ID: <Pine.LNX.4.64.0911181920450.20943@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,19 +46,80 @@ identifier r.f;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/can/sja1000/sja1000.c   |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/ethoc.c             |    2 +-
+ drivers/net/pcmcia/fmvj18x_cs.c |    2 +-
+ drivers/net/pcmcia/nmclan_cs.c  |    2 +-
+ drivers/net/tokenring/3c359.c   |    3 +--
+ drivers/net/tokenring/olympic.c |    4 ++--
+ 5 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/can/sja1000/sja1000.c b/drivers/net/can/sja1000/sja1000.c
-index 782a47f..b4ba88a 100644
---- a/drivers/net/can/sja1000/sja1000.c
-+++ b/drivers/net/can/sja1000/sja1000.c
-@@ -516,7 +516,7 @@ static int sja1000_open(struct net_device *dev)
+diff --git a/drivers/net/ethoc.c b/drivers/net/ethoc.c
+index 50f1923..bd1db92 100644
+--- a/drivers/net/ethoc.c
++++ b/drivers/net/ethoc.c
+@@ -641,7 +641,7 @@ static int ethoc_mdio_probe(struct net_device *dev)
+ 		return -ENXIO;
+ 	}
  
- 	/* register interrupt handler, if not done by the device driver */
- 	if (!(priv->flags & SJA1000_CUSTOM_IRQ_HANDLER)) {
--		err = request_irq(dev->irq, &sja1000_interrupt, priv->irq_flags,
-+		err = request_irq(dev->irq, sja1000_interrupt, priv->irq_flags,
- 				  dev->name, (void *)dev);
- 		if (err) {
- 			close_candev(dev);
+-	phy = phy_connect(dev, dev_name(&phy->dev), &ethoc_mdio_poll, 0,
++	phy = phy_connect(dev, dev_name(&phy->dev), ethoc_mdio_poll, 0,
+ 			PHY_INTERFACE_MODE_GMII);
+ 	if (IS_ERR(phy)) {
+ 		dev_err(&dev->dev, "could not attach to PHY\n");
+diff --git a/drivers/net/pcmcia/fmvj18x_cs.c b/drivers/net/pcmcia/fmvj18x_cs.c
+index fdec5c3..d3a81ad 100644
+--- a/drivers/net/pcmcia/fmvj18x_cs.c
++++ b/drivers/net/pcmcia/fmvj18x_cs.c
+@@ -257,7 +257,7 @@ static int fmvj18x_probe(struct pcmcia_device *link)
+     /* Interrupt setup */
+     link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING|IRQ_HANDLE_PRESENT;
+     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+-    link->irq.Handler = &fjn_interrupt;
++    link->irq.Handler = fjn_interrupt;
+     link->irq.Instance = dev;
+ 
+     /* General socket configuration */
+diff --git a/drivers/net/pcmcia/nmclan_cs.c b/drivers/net/pcmcia/nmclan_cs.c
+index a536348..8fda8a4 100644
+--- a/drivers/net/pcmcia/nmclan_cs.c
++++ b/drivers/net/pcmcia/nmclan_cs.c
+@@ -465,7 +465,7 @@ static int nmclan_probe(struct pcmcia_device *link)
+     link->io.IOAddrLines = 5;
+     link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+     link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+-    link->irq.Handler = &mace_interrupt;
++    link->irq.Handler = mace_interrupt;
+     link->irq.Instance = dev;
+     link->conf.Attributes = CONF_ENABLE_IRQ;
+     link->conf.IntType = INT_MEMORY_AND_IO;
+diff --git a/drivers/net/tokenring/3c359.c b/drivers/net/tokenring/3c359.c
+index 7241589..cf552d1 100644
+--- a/drivers/net/tokenring/3c359.c
++++ b/drivers/net/tokenring/3c359.c
+@@ -610,9 +610,8 @@ static int xl_open(struct net_device *dev)
+ 
+ 	u16 switchsettings, switchsettings_eeprom  ;
+  
+-	if(request_irq(dev->irq, &xl_interrupt, IRQF_SHARED , "3c359", dev)) {
++	if (request_irq(dev->irq, xl_interrupt, IRQF_SHARED , "3c359", dev))
+ 		return -EAGAIN;
+-	}
+ 
+ 	/* 
+ 	 * Read the information from the EEPROM that we need.
+diff --git a/drivers/net/tokenring/olympic.c b/drivers/net/tokenring/olympic.c
+index d9ec7f0..df32025 100644
+--- a/drivers/net/tokenring/olympic.c
++++ b/drivers/net/tokenring/olympic.c
+@@ -445,9 +445,9 @@ static int olympic_open(struct net_device *dev)
+ 
+ 	olympic_init(dev);
+ 
+-	if(request_irq(dev->irq, &olympic_interrupt, IRQF_SHARED , "olympic", dev)) {
++	if (request_irq(dev->irq, olympic_interrupt, IRQF_SHARED , "olympic",
++			dev))
+ 		return -EAGAIN;
+-	}
+ 
+ #if OLYMPIC_DEBUG
+ 	printk("BMCTL: %x\n",readl(olympic_mmio+BMCTL_SUM));
