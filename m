@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZKRBaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZKRBak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbZKRBaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZKRBai
+	id S1756807AbZKRBak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZKRBai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 17 Nov 2009 20:30:38 -0500
-Received: from ozlabs.org ([203.10.76.45]:56450 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756568AbZKRBaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:30:35 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: virtio: Add memory statistics reporting to the balloon driver (V2)
-Date: Wed, 18 Nov 2009 12:00:39 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: qemu-devel@nongnu.org, Anthony Liguori <aliguori@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1258488996.2820.35.camel@aglitke> <1258490189.2820.37.camel@aglitke>
-In-Reply-To: <1258490189.2820.37.camel@aglitke>
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:37793 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756586AbZKRBag (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 20:30:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=bBxj92Tnl7+jBAHc1uaOTNHIA6gELpwJ0V64SCRDcTdRglMIbPLiy7MAyCmNlyizhV
+         UfeQUT2Z3KVNhqMg/48tVTVi/WAe1K8UcBADEVrv/StAz+Hg/4tvDNAyxOi0oCl4kEk8
+         ek5RRFwDiB1V9ptBPuzBFQLSf+gflugykAn6Y=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911181200.39971.rusty@rustcorp.com.au>
+Date: Wed, 18 Nov 2009 12:30:42 +1100
+Message-ID: <d45a3acc0911171730kc3a03d5iacec6d9ef4b1874c@mail.gmail.com>
+Subject: [PATCH] Documentation, clarify tuntap IPX example.
+From: andrew hendry <andrew.hendry@gmail.com>
+To: maxk@qualcomm.com, netdev@vger.kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009 07:06:29 am Adam Litke wrote:
-> virtio: Add memory statistics reporting to the balloon driver (V2)
-> 
-> Changes since V1:
->  - Use a virtqueue instead of the device config space
+Can the TUNSETIFF ioctl change a tap's protocol to IPX as the
+documentation suggests?
+I think tun.c would need IFF_IPX_TAP added for it to work as described?
+Otherwise tap can only be ptp or ethernet, and there is no way to
+route or use AF_IPX.
 
-Hi Adam,
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
-    If Anthony's happy, I'm happy with this approach.
+--- a/Documentation/networking/tuntap.txt       2009-11-11
+14:03:22.676167648 +1100
++++ b/Documentation/networking/tuntap.txt       2009-11-18
+11:34:18.106647029 +1100
+@@ -127,12 +127,14 @@ Ethernet device, which instead of receiv
+ media, receives them from user space program and instead of sending
+ packets via physical media sends them to the user space program.
 
-Couple of minor points:
+-Let's say that you configured IPX on the tap0, then whenever
+-the kernel sends an IPX packet to tap0, it is passed to the application
+-(VTun for example). The application encrypts, compresses and sends it to
+-the other side over TCP or UDP. The application on the other side decompresses
+-and decrypts the data received and writes the packet to the TAP device,
+-the kernel handles the packet like it came from real physical device.
++Let's say for the purpose of example, IPX support was added to tuntap.
++Then whenever the kernel routes an IPX packet to tap0, it is passed to the
++application reading the file descriptor from /dev/net/tun (VTun for example).
++The application encrypts, compresses and sends it to the other side over TCP
++or UDP. The application on the other side decompresses and decrypts the data
++received and writes the packet to the TAP device, the remote kernel handles
++the packet like it came from real physical device. The IPX applications are
++able to communicate as if there was a real IPX network.
 
-> +static inline void update_stat(struct virtio_balloon *vb, int idx,
-> +				unsigned int tag, unsigned long val)
-> +{
-> +	BUG_ON(idx >= VIRTIO_BALLOON_S_NR);
-> +	vb->stats[idx].tag = tag;
-> +	vb->stats[idx].val = cpu_to_le32(val);
-> +}
-
-The little-endian conversion of the balloon driver is a historical mistake
-(no other driver does this).  Let's not extend it to the stats.
-
-Here you've done one and not the other, which is even worse.  (Sparse would
-have found this, I assume).
-
-> +struct virtio_balloon_stat
-> +{
-> +	__le16 tag;
-> +	__le32 val;
-> +};
-
-Is 32 bits sufficient?  A big machine might get over 4bn faults, and certainly
-4 TB of memory isn't that far away.
-
-Thanks,
-Rusty.
+ 4. What is the difference between TUN driver and TAP driver?
+ TUN works with IP frames. TAP works with Ethernet frames.
