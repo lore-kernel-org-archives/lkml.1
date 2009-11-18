@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbZKROmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbZKROnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932120AbZKROmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbZKROmx
+	id S932100AbZKROnK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:43:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbZKROnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:42:53 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36893 "EHLO
+	Wed, 18 Nov 2009 09:43:09 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36896 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932106AbZKROmw (ORCPT
+	with ESMTP id S1757392AbZKROnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:42:52 -0500
+	Wed, 18 Nov 2009 09:43:08 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 4/5] tty: Move the leader test in disassociate
+Subject: [PATCH 5/5] tty: split the lock up a bit further
 To: linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:26:29 +0000
-Message-ID: <20091118142621.3806.50993.stgit@localhost.localdomain>
+Date: Wed, 18 Nov 2009 14:26:45 +0000
+Message-ID: <20091118142634.3806.11729.stgit@localhost.localdomain>
 In-Reply-To: <20091118142313.3806.47368.stgit@localhost.localdomain>
 References: <20091118142313.3806.47368.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,52 +25,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are two call points, both want to check that tty->signal->leader is
-set. Move the test into disassociate_ctty() as that will make locking
-changes easier in a bit
+The tty count sanity check may need the BKL, that isn't clear. However it
+is clear that the count use of the lock is internal and independant of the
+bigger use of the lock.
+
+Furthermore the file list locking is also separately locked already
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/tty_io.c |    5 +++--
- kernel/exit.c         |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/char/tty_io.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 
 diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index f4a0404..aee68f5 100644
+index aee68f5..4c2f793 100644
 --- a/drivers/char/tty_io.c
 +++ b/drivers/char/tty_io.c
-@@ -707,6 +707,8 @@ void disassociate_ctty(int on_exit)
- 	struct tty_struct *tty;
- 	struct pid *tty_pgrp = NULL;
- 
-+	if (!current->signal->leader)
-+		return;
- 
- 	tty = get_current_tty();
- 	if (tty) {
-@@ -772,8 +774,7 @@ void no_tty(void)
- {
- 	struct task_struct *tsk = current;
+@@ -516,6 +516,8 @@ static void do_tty_hangup(struct work_struct *work)
+ 	/* inuse_filps is protected by the single kernel lock */
  	lock_kernel();
--	if (tsk->signal->leader)
--		disassociate_ctty(0);
-+	disassociate_ctty(0);
- 	unlock_kernel();
- 	proc_clear_tty(tsk);
- }
-diff --git a/kernel/exit.c b/kernel/exit.c
-index f7864ac..dbca05b 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -970,7 +970,7 @@ NORET_TYPE void do_exit(long code)
- 	exit_thread();
- 	cgroup_exit(tsk, 1);
+ 	check_tty_count(tty, "do_tty_hangup");
++	unlock_kernel();
++
+ 	file_list_lock();
+ 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
+ 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+@@ -529,6 +531,7 @@ static void do_tty_hangup(struct work_struct *work)
+ 	}
+ 	file_list_unlock();
  
--	if (group_dead && tsk->signal->leader)
-+	if (group_dead)
- 		disassociate_ctty(1);
++	lock_kernel();
+ 	tty_ldisc_hangup(tty);
  
- 	module_put(task_thread_info(tsk)->exec_domain->module);
+ 	read_lock(&tasklist_lock);
 
