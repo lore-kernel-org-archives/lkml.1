@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbZKRSZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932407AbZKRS0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932376AbZKRSZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932335AbZKRSZ0
+	id S932407AbZKRS0h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932329AbZKRS0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:25:26 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:56445 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932262AbZKRSZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:25:23 -0500
-Date: Wed, 18 Nov 2009 19:25:25 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Zhu Yi <yi.zhu@intel.com>, Reinette Chatre <reinette.chatre@intel.com>,
-       Intel Linux Wireless <ilw@linux.intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org, arnd@arndb.de,
-       joe@perches.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 14/16] drivers/net/wireless/iwlwifi: remove exceptional & on
- function name
-Message-ID: <Pine.LNX.4.64.0911181924510.20943@ask.diku.dk>
+	Wed, 18 Nov 2009 13:26:35 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55718 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932318AbZKRS0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:26:34 -0500
+Date: Wed, 18 Nov 2009 19:25:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>, San Mehat <san@google.com>,
+       Daniel Walker <dwalker@fifo99.com>, Iliyan Malchev <malchev@google.com>
+Subject: Re: Status of Dream series
+Message-ID: <20091118182529.GL25150@elf.ucw.cz>
+References: <20091111104748.GA26975@elf.ucw.cz>
+ <20091116163946.GC3568@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091116163946.GC3568@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon 2009-11-16 16:39:46, Russell King - ARM Linux wrote:
+> On Wed, Nov 11, 2009 at 11:47:48AM +0100, Pavel Machek wrote:
+> > 
+> > Russell, what is the status of the "Dream" series? 
+> > 
+> >  [PATCH 1/3] msm: make debugging UART (for DEBUG_LL) configurable
+> >  [PATCH 2/3] msm: add minimal board file for HTC Dream device
+> >  [PATCH 3/3] msm: Add memory map for HTC Dream
+> 
+> See my reply today on patch 2/3; that is my only comment.
 
-In this file, function names are otherwise used as pointers without &.
+Good, so it is ok to add reviewed-by: tags on the fixed versions?
 
-A simplified version of the semantic patch that makes this change is as
-follows: (http://coccinelle.lip6.fr/)
+> > Daniel Walker offered to maintain arch-msm tree, would that help? 
+> 
+> I thought from Daniel's private email to me on the 2/11 that this was
+> his intention; I didn't see a question in it requiring an answer.
 
-// <smpl>
-@r@
-identifier f;
-@@
-
-f(...) { ... }
-
-@@
-identifier r.f;
-@@
-
-- &f
-+ f
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/net/wireless/iwlwifi/iwl-3945-rs.c     |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945-rs.c b/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-index dc81e19..d4b4988 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-@@ -355,7 +355,7 @@ static void rs_rate_init(void *priv_r, struct ieee80211_supported_band *sband,
- 
- 	init_timer(&rs_sta->rate_scale_flush);
- 	rs_sta->rate_scale_flush.data = (unsigned long)rs_sta;
--	rs_sta->rate_scale_flush.function = &iwl3945_bg_rate_scale_flush;
-+	rs_sta->rate_scale_flush.function = iwl3945_bg_rate_scale_flush;
- 
- 	for (i = 0; i < IWL_RATE_COUNT_3945; i++)
- 		iwl3945_clear_window(&rs_sta->win[i]);
+So... Daniel is now the new arch-msm maintainer? Good.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
