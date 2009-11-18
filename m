@@ -1,125 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZKRKJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZKRKMC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbZKRKJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZKRKJj
+	id S1756757AbZKRKMC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 05:12:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZKRKMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:09:39 -0500
-Received: from mga03.intel.com ([143.182.124.21]:17866 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753473AbZKRKJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:09:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,764,1249282800"; 
-   d="scan'208";a="212858708"
-Date: Wed, 18 Nov 2009 18:09:41 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/12] writeback: remove unused nonblocking and
-	congestion checks (gfs2)
-Message-ID: <20091118100941.GA18726@localhost>
-References: <20091118082648.140755818@intel.com> <20091118082846.170413359@intel.com> <1258538386.2904.7.camel@localhost.localdomain>
+	Wed, 18 Nov 2009 05:12:01 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:46179 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbZKRKMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 05:12:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=iXla65zWe0ZngV3/t2v8w64nWuVVUnIROI5djRS8MonnEWzB9WzG3CfkViyTB0sgfx
+         dbVptqYaNvdI98To3ZI70HyjYW9Z3Jbyh6lLhL6Pj92WAk3okDt68Htt5zWZdP6z7Xi5
+         yRklbRWIzZhZW9X86CDJ4YC8VH793VQ0clnto=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1258538386.2904.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 18 Nov 2009 16:12:06 +0600
+Message-ID: <b9df5fa10911180212h5d74e640g859e7cebe952689@mail.gmail.com>
+Subject: [PATCH] kconfig: Add missing prototype
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+  Patch named 'kbuild-generate-modulesbuiltin.patch' introduce a new
+function 'fprintf2', without previous prototype declared. This patch adds
+this missing prototype.
 
-On Wed, Nov 18, 2009 at 05:59:46PM +0800, Steven Whitehouse wrote:
-> Hi,
-> 
-> That looks ok to me, modulo the warnings below. The only "non-obvious"
-> thing in this area which the GFS2 writepage[s] code relies upon is the
-> assumption that if we have a ->writepages() then ->writepage() will
-> never be called from a context which requires the fs to actually do a
-> write (i.e. the fs can refuse this if required). That is also only the
-> case for journaled data files - normal writes don't have that
-> requirement.
+ When building defconfig on i386 - we were hit by the following warning:
 
-Thank you for the tips. I don't think pageout() or migration
-writeout() has that hard expectation for ->writepage() :)
+  HOSTCC  scripts/kconfig/zconf.tab.o
+In file included from scripts/kconfig/zconf.tab.c:2451:
+scripts/kconfig/confdata.c:676: warning: no previous prototype for 'fprintf2'
 
->  CC [M]  fs/gfs2/aops.o
-> fs/gfs2/aops.c: In function ‘gfs2_write_jdata_pagevec’:
-> fs/gfs2/aops.c:272: warning: unused variable ‘bdi’
-> fs/gfs2/aops.c: In function ‘gfs2_write_cache_jdata’:
-> fs/gfs2/aops.c:336: warning: unused variable ‘bdi’
-
-Ah sorry!
-
-> Once the warnings are fixed:
-> 
-> Acked-by: Steven Whitehouse <swhiteho@redhat.com>
-> 
-> Do you want me to add this patch into my tree, or were you planning to
-> submit via a different tree?
-
-Thanks, can you pull the updated patch directly to your tree?
-
-Thanks,
-Fengguang
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 ---
-writeback: remove unused nonblocking and congestion checks (gfs2)
 
-No one is calling wb_writeback and write_cache_pages with
-wbc.nonblocking=1 any more. And lumpy pageout will want to do
-nonblocking writeback without the congestion wait.
+--- linus/scripts/kconfig/lkc.h	2009-11-18 16:37:46.000000000 +0600
++++ rakib/scripts/kconfig/lkc.h	2009-11-18 17:03:19.000000000 +0600
+@@ -79,6 +79,7 @@ char *conf_get_default_confname(void);
+ void sym_set_change_count(int count);
+ void sym_add_change_count(int count);
+ void conf_set_all_new_symbols(enum conf_def_mode mode);
++int fprintf2(FILE *f1, FILE *f2, const char *fmt, ...);
 
-Acked-by: Steven Whitehouse <swhiteho@redhat.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/gfs2/aops.c |   12 ------------
- 1 file changed, 12 deletions(-)
-
---- linux.orig/fs/gfs2/aops.c	2009-11-18 16:39:32.000000000 +0800
-+++ linux/fs/gfs2/aops.c	2009-11-18 18:01:14.000000000 +0800
-@@ -269,7 +269,6 @@ static int gfs2_write_jdata_pagevec(stru
- 	pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
- 	unsigned offset = i_size & (PAGE_CACHE_SIZE-1);
- 	unsigned nrblocks = nr_pages * (PAGE_CACHE_SIZE/inode->i_sb->s_blocksize);
--	struct backing_dev_info *bdi = mapping->backing_dev_info;
- 	int i;
- 	int ret;
- 
-@@ -313,11 +312,6 @@ static int gfs2_write_jdata_pagevec(stru
- 
- 		if (ret || (--(wbc->nr_to_write) <= 0))
- 			ret = 1;
--		if (wbc->nonblocking && bdi_write_congested(bdi)) {
--			wbc->encountered_congestion = 1;
--			ret = 1;
--		}
--
- 	}
- 	gfs2_trans_end(sdp);
- 	return ret;
-@@ -338,7 +332,6 @@ static int gfs2_write_jdata_pagevec(stru
- static int gfs2_write_cache_jdata(struct address_space *mapping,
- 				  struct writeback_control *wbc)
- {
--	struct backing_dev_info *bdi = mapping->backing_dev_info;
- 	int ret = 0;
- 	int done = 0;
- 	struct pagevec pvec;
-@@ -348,11 +341,6 @@ static int gfs2_write_cache_jdata(struct
- 	int scanned = 0;
- 	int range_whole = 0;
- 
--	if (wbc->nonblocking && bdi_write_congested(bdi)) {
--		wbc->encountered_congestion = 1;
--		return 0;
--	}
--
- 	pagevec_init(&pvec, 0);
- 	if (wbc->range_cyclic) {
- 		index = mapping->writeback_index; /* Start from prev offset */
+ /* kconfig_load.c */
+ void kconfig_load(void);
