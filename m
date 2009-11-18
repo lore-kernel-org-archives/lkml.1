@@ -1,51 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbZKRTST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbZKRTaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932629AbZKRTST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 14:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932609AbZKRTSS
+	id S1758142AbZKRTaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932109AbZKRTaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 14:18:18 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:62914 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932611AbZKRTSR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 14:18:17 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
-Date: Wed, 18 Nov 2009 20:17:26 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Jamie Lokier <jamie@shareable.org>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org,
-       "Linux-Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-References: <1258560457-15129-1-git-send-email-jblunck@suse.de> <200911181833.37531.arnd@arndb.de> <20091118181433.50b1b707@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091118181433.50b1b707@lxorguk.ukuu.org.uk>
+	Wed, 18 Nov 2009 14:30:30 -0500
+Received: from www.tglx.de ([62.245.132.106]:54856 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758089AbZKRTa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 14:30:29 -0500
+Date: Wed, 18 Nov 2009 20:30:00 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: akpm@linux-foundation.org
+cc: Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
+       feng.tang@intel.com, Peter Zijlstra <peterz@infradead.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch for 2.6.32? 1/3] hrtimers: remove the "timer_stats_active"
+ check when setting the start info
+In-Reply-To: <200911172214.nAHMEBh2023787@imap1.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
+References: <200911172214.nAHMEBh2023787@imap1.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911182017.26266.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/2JI1xCnBuNvaTvrN+SfLo2n8gigIC1zbtfPl
- fS9hNskc0smJm0R45qxmxqVJpBtX9jjR1CGojGnGavBB06p8Dc
- W+qBfJBRVbnJgxImEq4KA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 November 2009, Alan Cox wrote:
-> Stuff that looks trivial to salvage and works if you don't pread/write I
-> imagine
+On Tue, 17 Nov 2009, akpm@linux-foundation.org wrote:
+
+Back to LKML with some more cc's.
+
+> From: Feng Tang <feng.tang@intel.com>
 > 
-> drivers/sbus/char/flash.c
+> Recent hrtimer code will set the start info to a hrtimer only when that
+> flag is set, then the start info of all hrtimers will always be
+> uninitialised before a "echo 1 > /proc/timer_stats", thus the
+> /proc/timer_lists will have something like:
+> 
+> active timers:
+>  #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
+>  # expires at 91062000000-91062000000 nsecs [in 156071 to 156071 nsecs]
+>  #1: <efb81b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
+>  # expires at 91062300331-91062350331 nsecs [in 456402 to 506402 nsecs]
+>  #2: <efac9b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
+>  # expires at 91068699811-91068749811 nsecs [in 6855882 to 6905882 nsecs]
+>  #3: <efacdb6c>, hrtimer_wakeup, S:01, <(null)>, /-1
+>  # expires at 91068755511-91068805511 nsecs [in 6911582 to 6961582 nsecs]
+>  #4: <efa95b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
+>  # expires at 91068806066-91068856066 nsecs [in 6962137 to 7012137 nsecs]
+>  .....
+> 
+> This patch fixes it.
 
-It also breaks if you do consecutive read() operations without an lseek
-between them, because read() does not update *pos. It should work if you
-read the whole thing with a single read() operation though, like
-the other drivers you mentioned.
+This patch does more than that and it does not mention it in the
+change log. The change log is also missing the context which
+introduced this regression.
 
-	Arnd <><
+Just to get the context straight:
+
+commit 507e1231 (timer stats: Optimize by adding quick check to avoid
+function calls) commit 507e1231 added the timer_stats_active check in
+timer_stats_hrtimer_set_start_info() to reduce the overhead when timer
+stats are inactive.
+
+As an unintentional side effect it introduced the above regression in
+/proc/timer_list.
+
+>  static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+>  {
+> -	if (likely(!timer_stats_active))
+> -		return;
+
+This is fine. It reverts the hrtimer part of commit 507e1231 and fixes
+the /proc/timer_list regression for the price of the same overhead
+which we had before that commit.
+
+That's the immediate fix which needs to go to Linus and stable.
+
+>  	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
+>  }
+>  
+> diff -puN kernel/hrtimer.c~hrtimers-remove-the-timer_stats_active-check-when-setting-the-start-info kernel/hrtimer.c
+> --- a/kernel/hrtimer.c~hrtimers-remove-the-timer_stats_active-check-when-setting-the-start-info
+> +++ a/kernel/hrtimer.c
+> @@ -750,7 +750,7 @@ static inline void hrtimer_init_timer_hr
+>  #ifdef CONFIG_TIMER_STATS
+>  void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
+>  {
+> -	if (timer->start_site)
+> +	if (timer->start_site == addr && timer->start_pid == current->pid)
+
+This part is unrelated to the above regression and is wrong for the
+following reasons:
+
+  1) it runs the memcpy when the start_site changes even when the pid
+     is the same, which is extremly bad for tick->sched_timer as this
+     timer is re(armed) frequently from different places when NOHZ=y.
+
+  2) it runs the memcpy when the pid changes which is even worse for
+     tick->sched_timer as this timer is re(armed) frequently from
+     hrtimer_interrupt which hits random pids and would therefor
+     report completely wrong pid/comm info.
+
+This needs more thought and is definitely neither -rc7 nor stable
+material.
+
+Thanks,
+
+	tglx
