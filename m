@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZKRVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbZKRVLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140AbZKRVLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbZKRVLn
+	id S932506AbZKRVLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbZKRVLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:11:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60896 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756933AbZKRVLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:11:42 -0500
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-From: Eric Paris <eparis@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, graff.yang@gmail.com,
-       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <20091117141314.0238a49b.akpm@linux-foundation.org>
-References: <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com>
-	 <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com>
-	 <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
-	 <18475.1255529305@redhat.com> <6207.1255706090@redhat.com>
-	 <23382.1255707790@redhat.com>
-	 <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com>
-	 <20091117141314.0238a49b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 16:10:14 -0500
-Message-Id: <1258578614.3534.2.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 16:11:17 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:42148 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756910AbZKRVLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 16:11:16 -0500
+Date: Wed, 18 Nov 2009 16:11:22 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Valdis.Kletnieks@vt.edu,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091118211122.GI15157@caffeine.csclub.uwaterloo.ca>
+References: <20091113192412.GY15157@caffeine.csclub.uwaterloo.ca> <20091113212148.5cb829d4@lxorguk.ukuu.org.uk> <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca> <20091117115929.4ba23c49@lxorguk.ukuu.org.uk> <7332.1258476527@turing-police.cc.vt.edu> <20091117172515.GI15159@caffeine.csclub.uwaterloo.ca> <4B02DE4E.4070504@zytor.com> <20091117183357.GH15157@caffeine.csclub.uwaterloo.ca> <20091118202109.GJ15159@caffeine.csclub.uwaterloo.ca> <4B046038.4040608@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B046038.4040608@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 14:13 -0800, Andrew Morton wrote:
-> On Fri, 16 Oct 2009 11:55:29 -0400
-> Eric Paris <eparis@redhat.com> wrote:
-> 
-> > On Fri, 2009-10-16 at 16:43 +0100, David Howells wrote:
-> > > Eric Paris <eparis@redhat.com> wrote:
-> > > 
-> > > > That would still call cap_file_mmap() and wouldn't solve your problem.
-> > > 
-> > > Hmmm...  I guess I don't see the problem occur because I always run the
-> > > programs as root.
+On Wed, Nov 18, 2009 at 12:59:36PM -0800, H. Peter Anvin wrote:
+> On 11/18/2009 12:21 PM, Lennart Sorensen wrote:
 > > 
-> > most likely yes, your processes are going to have CAP_SYS_RAWIO and will
-> > happily sail through the cap_file_mmap().
-> > 
-> > > I would guess that cap_file_mmap() and selinux_file_mmap() are, perhaps, too
-> > > strict.  The hint shouldn't be rejected unless MAP_FIXED is also set, surely,
-> > > but should rather be revised upwards.
-> > 
-> > On the mmu side we don't check until the kernel has turned the hint into
-> > a real address.  Which is apparently different then where the hook was
-> > originally placed in the nommu side.
-> > 
-> > > Certainly, addr==NULL and !MAP_FIXED is a reasonable case to permit, even in
-> > > tightly secured MMU and SELinux mode...  After all, the manual page says:
-> > > 
-> > > 	If addr is NULL, then the kernel chooses the address at which to create
-> > > 	the mapping; this is the most portable method of creating  a  new  map-
-> > > 	ping.
-> > 
-> > I agree, I think the choices are
-> > 
-> > A) agree that we just shouldn't check the address on nommu
-> >    A1) change kconfig to not allow the setting of these
-> > 	(easy to do for the LSM check, but not easy as it stands today
-> > 	 for the cap_file_mmap() check)
-> >    A2) change the addr_only to be a flags which indicate not to check
-> > 	(my original suggestion)
-> >    A3) push the config_nommu down into the security code
-> > 	(your patch)
-> > B) actually check the address, which requires moving the hook to a
-> > location where it has been resolved.
-> > 	(graff yang's patch)
-> > 
-> > I'll leave it up to you to determine which you like the best since you
-> > know the implications of nommu.
+> > OK, I added a bit of debuging print statements to msr.c and I find that
+> > calling rdmsr 0x1810 returns error 0xfffffff2 (-14 that is).
 > > 
 > 
-> So what's the status of this issue now?  Should I merge the below into
-> 2.6.32?
-> 
-> Thanks.
+> What this means is the RDMSR instruction traps -- the CPU doesn't
+> recognize this as a valid MSR.
 
-David??
-  I think A2 is the right fix.  Apparmour is pushing to get in soon and
-I know their implementation didn't check for CONFIG_MMU.  It's just too
-easy for an LSM writer to get this wrong.  This patch is better than
-what we have today, but I'll try to get something by the end of the week
-which I think makes us all happy.
+Strange how it says that for every value I have tried so far.  Makes me
+wonder if there is a register somewhere that disables MSR support.
+I did find a lockout value but I can't read that one either (which says
+it is always readable).
 
--Eric
-
+-- 
+Len Sorensen
