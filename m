@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZKRKle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZKRKlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZKRKle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZKRKld
+	id S1756204AbZKRKlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 05:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZKRKlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:41:33 -0500
-Received: from de01.mail.all-tld.net ([195.140.232.8]:56419 "EHLO
-	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZKRKlc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:41:32 -0500
-Date: Wed, 18 Nov 2009 11:41:21 +0100
-From: Anders Larsen <al@alarsen.net>
-Subject: Re: [PATCH 03/20] BKL: Explicitly add BKL around get_sb/fill_super
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
-	<1258536293-7762-4-git-send-email-jblunck@suse.de>
-In-Reply-To: <1258536293-7762-4-git-send-email-jblunck@suse.de> (from
-	jblunck@suse.de on Wed Nov 18 10:24:36 2009)
-X-Mailer: Balsa 2.3.14
-Message-Id: <1258540881l.14682l.0l@i-dmzi_al.realan.de>
+	Wed, 18 Nov 2009 05:41:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:51052 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753159AbZKRKlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 05:41:20 -0500
+Date: Wed, 18 Nov 2009 11:41:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Russ Dill <russ.dill@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: Use of usb_find_interface in open is racy
+In-Reply-To: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
+References: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
-X-ALL-TLD-GmbH-VirusScanner: Found to be clean
-X-ALL-TLD-GmbH-SpamCheck: 
-X-MailScanner-From: al@alarsen.net
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-11-18 10:24:36, Jan Blunck wrote:
-> This patch is a preparation necessary to remove the BKL from do_new_mount().
-> It explicitly adds calls to lock_kernel()/unlock_kernel() around
-> get_sb/fill_super operations for filesystems that still uses the BKL.
-> 
-> I've read through all the code formerly covered by the BKL inside
-> do_kern_mount() and have satisfied myself that it doesn't need the BKL
-> any more.
-> 
-> do_kern_mount() is already called without the BKL when mounting the rootfs
-> and in nfsctl. do_kern_mount() calls vfs_kern_mount(), which is called
-> from various places without BKL: simple_pin_fs(), nfs_do_clone_mount()
-> through nfs_follow_mountpoint(), afs_mntpt_do_automount() through
-> afs_mntpt_follow_link(). Both later functions are actually the filesystems
-> follow_link inode operation. vfs_kern_mount() is calling the specified
-> get_sb function and lets the filesystem do its job by calling the given
-> fill_super function.
-> 
-> Therefore I think it is safe to push down the BKL from the VFS to the
-> low-level filesystems get_sb/fill_super operation.
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> Cc: Matthew Wilcox <matthew@wil.cx>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
 
-Wrt fs/qnx4:
-Acked-by: Anders Larsen <al@alarsen.net>
+[ linux-usb should be CCed here at least ]
+
+On Tue, 17 Nov 2009, Russ Dill wrote:
+
+> Many usb drivers that create character devices use "struct
+> usb_class_driver", a set of fops, and a usb_find_interface in their
+> open call. A prime example is drivers/usb/usb-skeleton.c. A race
+> occurs when userspace receives a hotplug event for the addition for
+> the interface and then opens the associated device file before the
+> device is added to the driver's klist_devices.
+> 
+> The usb core senses a new usb device (usb_new_device) and calls
+> device_add. This eventually gets down to really_probe and the
+> usb-skeleton probe function, skel_probe. skel_probe calls
+> usb_register_dev() which registers the associated character device for
+> skel_class. The hotplug events for the class device get emitted.
+> 
+> User space receives the hotplug event for the class device, makes the
+> device node and notifies another program that opens the device node.
+> The program opens the device node which calls into usb_open and then
+> skel_open. skel_open calls usb_find_interface. usb_find_interfaces
+> searches the klist_devices of skel_driver, finds no device associated
+> with the minor number and returns NULL. skel_open returns -ENODEV.
+> 
+> Control returns to really_probe and really_probe calls driver_bound
+> which adds the device to the list of devices associated with
+> skel_driver (klist_devices).
+> 
+> I'm not sure what the right way to solve this is. A call to
+> wait_for_device_probe() in the skel_open call before calling
+> usb_find_interface fixes the problem, but it is a rather large hammer.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
