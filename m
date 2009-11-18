@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbZKRQ4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZKRQ4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932083AbZKRQ4m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 11:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbZKRQ4l
+	id S1757899AbZKRQ4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 11:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbZKRQ4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 11:56:41 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:53958 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757903AbZKRQ4j (ORCPT
+	Wed, 18 Nov 2009 11:56:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60734 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757731AbZKRQ4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 11:56:39 -0500
-Date: Wed, 18 Nov 2009 16:56:30 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, qemu-devel@nongnu.org,
-       Avi Kivity <avi@redhat.com>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Adam Litke <agl@us.ibm.com>
-Subject: Re: [Qemu-devel] Re: virtio: Add memory statistics reporting to the balloon driver (V2)
-Message-ID: <20091118165630.GB28723@shareable.org>
-References: <1258488996.2820.35.camel@aglitke> <1258490189.2820.37.camel@aglitke> <200911181200.39971.rusty@rustcorp.com.au> <4B040C82.6070901@codemonkey.ws>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B040C82.6070901@codemonkey.ws>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 18 Nov 2009 11:56:37 -0500
+Subject: RE: [PATCH] ia64 support for tools/perf/
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E3876A5B@orsmsx505.amr.corp.intel.com>
+References: <4b02d7f43514327a@agluck-desktop.sc.intel.com>
+	 <20091117172139.GB5967@elte.hu>
+	 <57C9024A16AD2D4C97DC78E552063EA3E3876A5B@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Nov 2009 17:56:36 +0100
+Message-ID: <1258563396.3918.698.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Rusty Russell wrote:
-> >The little-endian conversion of the balloon driver is a historical mistake
-> >(no other driver does this).  Let's not extend it to the stats.
+On Tue, 2009-11-17 at 09:25 -0800, Luck, Tony wrote:
+> > Btw., are you planning HAVE_PERF_EVENTS support for IA64? (It's nice 
+> > stuff, i can only recommend it! ;-)
 > 
-> I think the mistake is that the other drivers don't do that.
-> 
-> We cheat in qemu and assume that the guest is always in a fixed 
-> endianness but this is not always the case for all architectures.
+> My first goal is getting the s/w events hooked up and working.  I'm still
+> wondering about how to get the h/w counters to co-exist with perfmon (which
+> has been part of ia64 API for many years).
 
-If guests can have different endianness (reasonable on some CPUs where
-it's switchable - some even have more than 2 options), then I guess
-the *host* on those systems have different endianness too.
+A first approach could be to make them mutually exclusive at runtime.
+When there's a perf_event user, perfmon users get FAIL and vs.
 
-Is the host's endianness signalled to the guest anywhere, so that
-guest drivers can do cpu_to_qemuhost32(), when someone eventually
-finds that necessary?
+This is basically the state for x86 perf_event vs oprofile atm.
 
--- Jamie
