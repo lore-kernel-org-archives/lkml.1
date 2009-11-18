@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZKROfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbZKROgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZKROfl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZKROfj
+	id S1757469AbZKROgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbZKROgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:35:39 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53516 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757366AbZKROf3 (ORCPT
+	Wed, 18 Nov 2009 09:36:40 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:57525 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757455AbZKROgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:35:29 -0500
-Subject: Re: [PATCH] perf_events: fix default watermark calculation
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       perfmon2-devel@lists.sf.net, Stephane Eranian <eranian@gmail.com>
-In-Reply-To: <1256302576-6169-1-git-send-email-eranian@gmail.com>
-References: <>  <1256302576-6169-1-git-send-email-eranian@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 15:35:25 +0100
-Message-ID: <1258554925.3918.504.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 09:36:38 -0500
+Date: Wed, 18 Nov 2009 16:36:09 +0200
+From: Eduardo Valentin <eduardo.valentin@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
+	<ext-juha.1.keski-saari@nokia.com>,
+       "sameo@linux.intel.com" <sameo@linux.intel.com>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
+       "dtor@mail.ru" <dtor@mail.ru>,
+       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
+Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
+Message-ID: <20091118143609.GD2832@esdhcp037198.research.nokia.com>
+Reply-To: eduardo.valentin@nokia.com
+References: <4B03DE53.6010007@nokia.com>
+ <4B03DE9B.40800@nokia.com>
+ <20091118133938.GE6592@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118133938.GE6592@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 18 Nov 2009 14:36:18.0595 (UTC) FILETIME=[7D89E730:01CA685C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-23 at 14:56 +0200, Stephane Eranian wrote:
-> 	This patch fixes the default watermark value for
-> 	the sampling buffer. With the existing calculation
-> 	(watermark = max(PAGE_SIZE, max_size / 2)), no
-> 	notification was ever received when the buffer was
-> 	exactly 1 page. This was because you would never
-> 	cross the threshold (there is no partial samples).
-
-Right, silly thinko, thanks for catching this.
-
-> 	In certain configuration, there was no possibilty
-> 	detecting the problem because there was not enough
-> 	space left to store the LOST record.In fact, there
-> 	may be a more generic problem here. The kernel should
-> 	ensure that there is alaways enough space to store
-> 	one LOST record.
-
-It tries to prepend LOST records for each new event (when there is data
-lost), so as soon as it manages to write a new event, it will include a
-LOST record when appropriate.
-
-> 	This patch sets the default watermark to half the
-> 	buffer size. With such limit, we are guaranteed to
-> 	get a notification even with a single page buffer
-> 	assuming no sample is bigger than a page.
-> 	
-> 	Signed-off-by: Stephane Eranian <eranian@gmail.com>
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> ---
->  kernel/perf_event.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Nov 18, 2009 at 02:39:39PM +0100, Mark Brown wrote:
+> On Wed, Nov 18, 2009 at 01:46:35PM +0200, Juha Keski-Saari wrote:
+> > This patch adds all the remaining TWL4030 regulators into the implementation,
+> > also adding VINT* regulators in this way since they can be derived out from
+> > the TWL
+> > 
+> > Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
 > 
-> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-> index a69d4ed..e8ec4b7 100644
-> --- a/kernel/perf_event.c
-> +++ b/kernel/perf_event.c
-> @@ -2315,7 +2315,7 @@ perf_mmap_data_init(struct perf_event *event, struct perf_mmap_data *data)
->  	}
->  
->  	if (!data->watermark)
-> -		data->watermark = max_t(long, PAGE_SIZE, max_size / 2);
-> +		data->watermark = max_size / 2;
->  
-> 
->  	rcu_assign_pointer(event->data, data);
+> This is fine from an API point of view but I worry that if any of the
+> boards are using regulator_has_full_constraints() then this will break
+> them by causing them to be powered off at the end of init.  Have you
+> checked the in-tree twl4030 users for this?
 
+Looks like no one is using the regulator_has_full_constraints(). At least the twl4030 users.
 
+But maybe these VINT* should be set as always_on in twl4030-regulator driver?
+
+-- 
+Eduardo Valentin
