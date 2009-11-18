@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZKRJ0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZKRJZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZKRJ0o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:26:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbZKRJ0n
+	id S1756905AbZKRJZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbZKRJZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:26:43 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39443 "EHLO mx2.suse.de"
+	Wed, 18 Nov 2009 04:25:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39450 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756859AbZKRJZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:25:20 -0500
+	id S1756865AbZKRJZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 04:25:21 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
        Thomas Gleixner <tglx@linutronix.de>,
        Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       matthew@wil.cx, Jan Blunck <jblunck@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH 19/20] ext2: Add ext2_sb_info s_lock spinlock
-Date: Wed, 18 Nov 2009 10:24:52 +0100
-Message-Id: <1258536293-7762-20-git-send-email-jblunck@suse.de>
+       matthew@wil.cx, Jan Blunck <jblunck@suse.de>, Jan Kara <jack@suse.cz>
+Subject: [PATCH 20/20] BKL: Remove BKL from ext2 filesystem
+Date: Wed, 18 Nov 2009 10:24:53 +0100
+Message-Id: <1258536293-7762-21-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258536293-7762-1-git-send-email-jblunck@suse.de>
 References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
@@ -27,230 +26,162 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a spinlock that protects against concurrent modifications of
-s_mount_state, s_blocks_last, s_overhead_last and the content of the
-superblock's buffer pointed to by sbi->s_es. This is a preparation patch
-for removing the BKL from ext2 in the next patch.
+The BKL is still used in ext2_put_super(), ext2_fill_super(), ext2_sync_fs()
+ext2_remount() and ext2_write_inode(). From these calls ext2_put_super(),
+ext2_fill_super() and ext2_remount() are protected against each other by
+the struct super_block s_umount rw semaphore. The call in ext2_write_inode()
+could only protect the modification of the ext2_sb_info through
+ext2_update_dynamic_rev() against concurrent ext2_sync_fs() or ext2_remount().
+ext2_fill_super() and ext2_put_super() can be left out because you need a
+valid filesystem reference in all three cases, which you do not have when
+you are one of these functions.
+
+If the BKL is only protecting the modification of the ext2_sb_info it can
+safely be removed since this is protected by the struct ext2_sb_info s_lock.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>
 Cc: Jan Kara <jack@suse.cz>
 ---
- fs/ext2/inode.c            |    2 ++
- fs/ext2/super.c            |   42 +++++++++++++++++++++++++++++++++++++-----
- include/linux/ext2_fs_sb.h |    6 ++++++
- 3 files changed, 45 insertions(+), 5 deletions(-)
+ fs/ext2/inode.c |    3 ---
+ fs/ext2/super.c |   16 ----------------
+ 2 files changed, 0 insertions(+), 19 deletions(-)
 
 diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index ade6340..65a0d4b 100644
+index 65a0d4b..5afb161 100644
 --- a/fs/ext2/inode.c
 +++ b/fs/ext2/inode.c
-@@ -1401,9 +1401,11 @@ int ext2_write_inode(struct inode *inode, int do_sync)
+@@ -22,7 +22,6 @@
+  *  Assorted race fixes, rewrite of ext2_get_block() by Al Viro, 2000
+  */
+ 
+-#include <linux/smp_lock.h>
+ #include <linux/time.h>
+ #include <linux/highuid.h>
+ #include <linux/pagemap.h>
+@@ -1400,13 +1399,11 @@ int ext2_write_inode(struct inode *inode, int do_sync)
+ 			       /* If this is the first large file
  				* created, add a flag to the superblock.
  				*/
- 				lock_kernel();
-+				spin_lock(&EXT2_SB(sb)->s_lock);
+-				lock_kernel();
+ 				spin_lock(&EXT2_SB(sb)->s_lock);
  				ext2_update_dynamic_rev(sb);
  				EXT2_SET_RO_COMPAT_FEATURE(sb,
  					EXT2_FEATURE_RO_COMPAT_LARGE_FILE);
-+				spin_unlock(&EXT2_SB(sb)->s_lock);
- 				unlock_kernel();
+ 				spin_unlock(&EXT2_SB(sb)->s_lock);
+-				unlock_kernel();
  				ext2_write_super(sb);
  			}
+ 		}
 diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 5af1775..0ca42fe 100644
+index 0ca42fe..a764002 100644
 --- a/fs/ext2/super.c
 +++ b/fs/ext2/super.c
-@@ -52,8 +52,10 @@ void ext2_error (struct super_block * sb, const char * function,
- 	struct ext2_super_block *es = sbi->s_es;
+@@ -26,7 +26,6 @@
+ #include <linux/random.h>
+ #include <linux/buffer_head.h>
+ #include <linux/exportfs.h>
+-#include <linux/smp_lock.h>
+ #include <linux/vfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/mount.h>
+@@ -120,8 +119,6 @@ static void ext2_put_super (struct super_block * sb)
+ 	int i;
+ 	struct ext2_sb_info *sbi = EXT2_SB(sb);
  
- 	if (!(sb->s_flags & MS_RDONLY)) {
-+		spin_lock(&sbi->s_lock);
- 		sbi->s_mount_state |= EXT2_ERROR_FS;
- 		es->s_state |= cpu_to_le16(EXT2_ERROR_FS);
-+		spin_unlock(&EXT2_SB(sb)->s_lock);
- 		ext2_sync_super(sb, es);
- 	}
- 
-@@ -84,6 +86,9 @@ void ext2_warning (struct super_block * sb, const char * function,
- 	va_end(args);
- }
- 
-+/*
-+ * This must be called with sbi->s_lock held.
-+ */
- void ext2_update_dynamic_rev(struct super_block *sb)
- {
- 	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
-@@ -117,14 +122,16 @@ static void ext2_put_super (struct super_block * sb)
- 
- 	lock_kernel();
- 
--	if (sb->s_dirt)
--		ext2_write_super(sb);
-+	if (sb->s_dirt && !(sb->s_flags & MS_RDONLY))
-+		ext2_sync_fs(sb, 1);
- 
- 	ext2_xattr_put_super(sb);
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		struct ext2_super_block *es = sbi->s_es;
- 
-+		spin_lock(&sbi->s_lock);
- 		es->s_state = cpu_to_le16(sbi->s_mount_state);
-+		spin_unlock(&EXT2_SB(sb)->s_lock);
- 		ext2_sync_super(sb, es);
- 	}
- 	db_count = sbi->s_gdb_count;
-@@ -207,6 +214,7 @@ static int ext2_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	struct ext2_super_block *es = sbi->s_es;
- 	unsigned long def_mount_opts;
- 
-+	spin_lock(&sbi->s_lock);
- 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
- 
- 	if (sbi->s_sb_block != 1)
-@@ -279,6 +287,7 @@ static int ext2_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	if (!test_opt(sb, RESERVATION))
- 		seq_puts(seq, ",noreservation");
- 
-+	spin_unlock(&sbi->s_lock);
- 	return 0;
- }
- 
-@@ -762,6 +771,12 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 	sbi->s_sb_block = sb_block;
- 
- 	/*
-+	 * mutex for protection of modifications of the superblock while being
-+	 * write out by ext2_write_super() or ext2_sync_fs().
-+	 */
-+	spin_lock_init(&sbi->s_lock);
-+
-+	/*
- 	 * See what the current blocksize for the device is, and
- 	 * use that as the blocksize.  Otherwise (or if the blocksize
- 	 * is smaller than the default) use the default.
-@@ -1103,11 +1118,15 @@ static void ext2_commit_super (struct super_block * sb,
- 	sb->s_dirt = 0;
- }
- 
--static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
-+static void ext2_sync_super(struct super_block *sb,
-+			    struct ext2_super_block *es)
- {
-+	spin_lock(&EXT2_SB(sb)->s_lock);
- 	es->s_free_blocks_count = cpu_to_le32(ext2_count_free_blocks(sb));
- 	es->s_free_inodes_count = cpu_to_le32(ext2_count_free_inodes(sb));
- 	es->s_wtime = cpu_to_le32(get_seconds());
-+	/* unlock before we do IO */
-+	spin_unlock(&EXT2_SB(sb)->s_lock);
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
- 	sync_dirty_buffer(EXT2_SB(sb)->s_sbh);
- 	sb->s_dirt = 0;
-@@ -1122,13 +1141,16 @@ static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
-  * flags to 0.  We need to set this flag to 0 since the fs
-  * may have been checked while mounted and e2fsck may have
-  * set s_state to EXT2_VALID_FS after some corrections.
-+ *
-+ * This must be called with sbi->s_lock held.
-  */
+-	lock_kernel();
 -
- static int ext2_sync_fs(struct super_block *sb, int wait)
- {
--	struct ext2_super_block *es = EXT2_SB(sb)->s_es;
-+	struct ext2_sb_info *sbi = EXT2_SB(sb);
-+	struct ext2_super_block *es = sbi->s_es;
+ 	if (sb->s_dirt && !(sb->s_flags & MS_RDONLY))
+ 		ext2_sync_fs(sb, 1);
  
- 	lock_kernel();
-+	spin_lock(&sbi->s_lock);
- 	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
- 		ext2_debug("setting valid to 0\n");
- 		es->s_state &= cpu_to_le16(~EXT2_VALID_FS);
-@@ -1137,9 +1159,11 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
- 		es->s_free_inodes_count =
- 			cpu_to_le32(ext2_count_free_inodes(sb));
- 		es->s_mtime = cpu_to_le32(get_seconds());
-+		spin_unlock(&EXT2_SB(sb)->s_lock);
- 		ext2_sync_super(sb, es);
- 	} else {
- 		ext2_commit_super(sb, es);
-+		spin_unlock(&sbi->s_lock);
- 	}
- 	sb->s_dirt = 0;
- 	unlock_kernel();
-@@ -1166,6 +1190,7 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
+@@ -147,8 +144,6 @@ static void ext2_put_super (struct super_block * sb)
+ 	sb->s_fs_info = NULL;
+ 	kfree(sbi->s_blockgroup_lock);
+ 	kfree(sbi);
+-
+-	unlock_kernel();
+ }
+ 
+ static struct kmem_cache * ext2_inode_cachep;
+@@ -754,8 +749,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
+ 	__le32 features;
  	int err;
  
- 	lock_kernel();
-+	spin_lock(&sbi->s_lock);
+-	lock_kernel();
+-
+ 	err = -ENOMEM;
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1081,7 +1074,6 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
+ 		ext2_warning(sb, __func__,
+ 			"mounting ext3 filesystem as ext2");
+ 	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
+-	unlock_kernel();
+ 	return 0;
+ 
+ cantfind_ext2:
+@@ -1106,7 +1098,6 @@ failed_sbi:
+ 	kfree(sbi->s_blockgroup_lock);
+ 	kfree(sbi);
+ failed_unlock:
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
+@@ -1149,7 +1140,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
+ 	struct ext2_sb_info *sbi = EXT2_SB(sb);
+ 	struct ext2_super_block *es = sbi->s_es;
+ 
+-	lock_kernel();
+ 	spin_lock(&sbi->s_lock);
+ 	if (es->s_state & cpu_to_le16(EXT2_VALID_FS)) {
+ 		ext2_debug("setting valid to 0\n");
+@@ -1166,7 +1156,6 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
+ 		spin_unlock(&sbi->s_lock);
+ 	}
+ 	sb->s_dirt = 0;
+-	unlock_kernel();
+ 
+ 	return 0;
+ }
+@@ -1189,7 +1178,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
+ 	unsigned long old_sb_flags;
+ 	int err;
+ 
+-	lock_kernel();
+ 	spin_lock(&sbi->s_lock);
  
  	/* Store the old options */
- 	old_sb_flags = sb->s_flags;
-@@ -1203,12 +1228,14 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
- 		sbi->s_mount_opt |= old_mount_opt & EXT2_MOUNT_XIP;
+@@ -1229,14 +1217,12 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
  	}
  	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY)) {
-+		spin_unlock(&sbi->s_lock);
- 		unlock_kernel();
+ 		spin_unlock(&sbi->s_lock);
+-		unlock_kernel();
  		return 0;
  	}
  	if (*flags & MS_RDONLY) {
  		if (le16_to_cpu(es->s_state) & EXT2_VALID_FS ||
  		    !(sbi->s_mount_state & EXT2_VALID_FS)) {
-+			spin_unlock(&sbi->s_lock);
- 			unlock_kernel();
+ 			spin_unlock(&sbi->s_lock);
+-			unlock_kernel();
  			return 0;
  		}
-@@ -1237,6 +1264,7 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
- 		if (!ext2_setup_super (sb, es, 0))
- 			sb->s_flags &= ~MS_RDONLY;
+ 		/*
+@@ -1266,7 +1252,6 @@ static int ext2_remount (struct super_block * sb, int * flags, char * data)
  	}
-+	spin_unlock(&EXT2_SB(sb)->s_lock);
+ 	spin_unlock(&EXT2_SB(sb)->s_lock);
  	ext2_sync_super(sb, es);
- 	unlock_kernel();
+-	unlock_kernel();
  	return 0;
-@@ -1245,6 +1273,7 @@ restore_opts:
- 	sbi->s_resuid = old_opts.s_resuid;
+ restore_opts:
+ 	sbi->s_mount_opt = old_opts.s_mount_opt;
+@@ -1274,7 +1259,6 @@ restore_opts:
  	sbi->s_resgid = old_opts.s_resgid;
  	sb->s_flags = old_sb_flags;
-+	spin_unlock(&sbi->s_lock);
- 	unlock_kernel();
+ 	spin_unlock(&sbi->s_lock);
+-	unlock_kernel();
  	return err;
  }
-@@ -1256,6 +1285,8 @@ static int ext2_statfs (struct dentry * dentry, struct kstatfs * buf)
- 	struct ext2_super_block *es = sbi->s_es;
- 	u64 fsid;
  
-+	spin_lock(&sbi->s_lock);
-+
- 	if (test_opt (sb, MINIX_DF))
- 		sbi->s_overhead_last = 0;
- 	else if (sbi->s_blocks_last != le32_to_cpu(es->s_blocks_count)) {
-@@ -1310,6 +1341,7 @@ static int ext2_statfs (struct dentry * dentry, struct kstatfs * buf)
- 	       le64_to_cpup((void *)es->s_uuid + sizeof(u64));
- 	buf->f_fsid.val[0] = fsid & 0xFFFFFFFFUL;
- 	buf->f_fsid.val[1] = (fsid >> 32) & 0xFFFFFFFFUL;
-+	spin_unlock(&sbi->s_lock);
- 	return 0;
- }
- 
-diff --git a/include/linux/ext2_fs_sb.h b/include/linux/ext2_fs_sb.h
-index 1cdb663..dbc5934 100644
---- a/include/linux/ext2_fs_sb.h
-+++ b/include/linux/ext2_fs_sb.h
-@@ -106,6 +106,12 @@ struct ext2_sb_info {
- 	spinlock_t s_rsv_window_lock;
- 	struct rb_root s_rsv_window_root;
- 	struct ext2_reserve_window_node s_rsv_window_head;
-+	/*
-+	 * protects against concurrent modifications of s_mount_state,
-+	 * s_blocks_last, s_overhead_last and the content of superblock's
-+	 * buffer pointed to by sbi->s_es.
-+	 */
-+	spinlock_t s_lock;
- };
- 
- static inline spinlock_t *
 -- 
 1.6.4.2
 
