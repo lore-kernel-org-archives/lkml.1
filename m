@@ -1,92 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZKROvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZKROwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbZKROvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbZKROvq
+	id S1757587AbZKROwH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:52:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZKROwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:51:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:17853 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757327AbZKROvp (ORCPT
+	Wed, 18 Nov 2009 09:52:05 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:51174 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310AbZKROv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:51:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Al0n8WfAa1kuDezLR7mbSe3mb8/zvjXNISAc1UzELdZPJqpi4YlqPtNAxfBpsfzJJ3
-         poU6j9rDYWONyxBVJr38uFw9WfGz3fzTaAhnf6EJcHmCML9mLrPe1BX3/QgzIxXzBq30
-         5Aa5JSmlyrkKLfh9YUMUnaU6U47IgTgC2Ey1I=
-Message-ID: <4B040A03.2020508@gmail.com>
+	Wed, 18 Nov 2009 09:51:58 -0500
+From: Jiri Slaby <jslaby@novell.com>
+To: jirislaby@gmail.com
+Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, torvalds@linux-foundation.org,
+       Jiri Slaby <jslaby@novell.com>, James Morris <jmorris@namei.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 01/16] core: posix-cpu-timers, cleanup rlimits usage
 Date: Wed, 18 Nov 2009 15:51:47 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits external
- to a process (v7)
-References: <20091102185137.GA28803@elte.hu> <20091103002355.GB19891@localhost.localdomain> <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com> <4AF84E2F.3010305@gmail.com> <20091109173654.GA8809@redhat.com>
-In-Reply-To: <20091109173654.GA8809@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-Id: <1258555922-2064-1-git-send-email-jslaby@novell.com>
+X-Mailer: git-send-email 1.6.4.2
+In-Reply-To: <4B040A03.2020508@gmail.com>
+References: <4B040A03.2020508@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/09/2009 06:36 PM, Oleg Nesterov wrote:
-> We can call find_task_by_vpid() under rcu and do get_task_struct().
-> Or, given that we need tasklist anyway we can do find_task_by_vpid()
-> under tasklist and do not get() at all.
+Fetch rlimit (both hard and soft) values only once and work on them.
+It removes many accesses through sig structure and makes the code
+cleaner.
 
-Thanks. I'll post patches as a reply to this email. They are on the top
-of the previous series which were already in -next. They're here (on the
-same thread level):
-http://lkml.org/lkml/2009/9/3/296
+Mostly a preparation for writable resource limits support.
 
-All patches available as:
-git://decibel.fi.muni.cz/~xslaby/linux writable_limits-testing
-or on web:
-http://decibel.fi.muni.cz/cgi-bin/gitweb.cgi?p=linux.git;a=shortlog;h=refs/heads/writable_limits-testing
+Signed-off-by: Jiri Slaby <jslaby@novell.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+---
+ kernel/posix-cpu-timers.c |   32 +++++++++++++++++---------------
+ 1 files changed, 17 insertions(+), 15 deletions(-)
 
-If somebody would like to pick them up, I have also a -next based
-version (fanotify+recvmsg syscalls collision).
-
-What I did with the Neil's patches:
-- changed syscall bodies according to comments and
-- added entries to syscall_table_32.S
-- implemented compat syscalls
-- cleaned up rlim usage in posix cpu timers. Note that cpu and
-  rttime are not guaranteed (concurrent setrlimit set might
-  be overwritten by the stores there).
-- reviewed rlim usages all over the tree
-
-On the last point: I added explicit ACCESS_ONCE all over there. If you
-don't like I will trash it. The only remaining weird user is in
-kernel/acct.c:
-        /*
-         * Accounting records are not subject to resource limits.
-         */
-        flim = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-        current->signal->rlim[RLIMIT_FSIZE].rlim_cur = RLIM_INFINITY;
-        file->f_op->write(file, (char *)&ac,
-                               sizeof(acct_t), &file->f_pos);
-        current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
-
-It means that threads of the process with PACCT caps have unlimited file
-size for a short while. If there is setrlimit in between, it gets wiped
-out as well. I don't know what to do with that.
-
-Please review.
-
-thanks,
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 102c345..a7dcce1 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -983,6 +983,7 @@ static void check_thread_timers(struct task_struct *tsk,
+ 	int maxfire;
+ 	struct list_head *timers = tsk->cpu_timers;
+ 	struct signal_struct *const sig = tsk->signal;
++	unsigned long soft;
+ 
+ 	maxfire = 20;
+ 	tsk->cputime_expires.prof_exp = cputime_zero;
+@@ -1031,9 +1032,9 @@ static void check_thread_timers(struct task_struct *tsk,
+ 	/*
+ 	 * Check for the special case thread timers.
+ 	 */
+-	if (sig->rlim[RLIMIT_RTTIME].rlim_cur != RLIM_INFINITY) {
++	soft = sig->rlim[RLIMIT_RTTIME].rlim_cur;
++	if (soft != RLIM_INFINITY) {
+ 		unsigned long hard = sig->rlim[RLIMIT_RTTIME].rlim_max;
+-		unsigned long *soft = &sig->rlim[RLIMIT_RTTIME].rlim_cur;
+ 
+ 		if (hard != RLIM_INFINITY &&
+ 		    tsk->rt.timeout > DIV_ROUND_UP(hard, USEC_PER_SEC/HZ)) {
+@@ -1044,14 +1045,13 @@ static void check_thread_timers(struct task_struct *tsk,
+ 			__group_send_sig_info(SIGKILL, SEND_SIG_PRIV, tsk);
+ 			return;
+ 		}
+-		if (tsk->rt.timeout > DIV_ROUND_UP(*soft, USEC_PER_SEC/HZ)) {
++		if (tsk->rt.timeout > DIV_ROUND_UP(soft, USEC_PER_SEC/HZ)) {
+ 			/*
+ 			 * At the soft limit, send a SIGXCPU every second.
+ 			 */
+-			if (sig->rlim[RLIMIT_RTTIME].rlim_cur
+-			    < sig->rlim[RLIMIT_RTTIME].rlim_max) {
+-				sig->rlim[RLIMIT_RTTIME].rlim_cur +=
+-								USEC_PER_SEC;
++			if (soft < hard) {
++				soft += USEC_PER_SEC;
++				sig->rlim[RLIMIT_RTTIME].rlim_cur = soft;
+ 			}
+ 			printk(KERN_INFO
+ 				"RT Watchdog Timeout: %s[%d]\n",
+@@ -1122,13 +1122,14 @@ static void check_process_timers(struct task_struct *tsk,
+ 	unsigned long long sum_sched_runtime, sched_expires;
+ 	struct list_head *timers = sig->cpu_timers;
+ 	struct task_cputime cputime;
++	unsigned long cpu_cur_lim = sig->rlim[RLIMIT_CPU].rlim_cur;
+ 
+ 	/*
+ 	 * Don't sample the current process CPU clocks if there are no timers.
+ 	 */
+ 	if (list_empty(&timers[CPUCLOCK_PROF]) &&
+ 	    cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) &&
+-	    sig->rlim[RLIMIT_CPU].rlim_cur == RLIM_INFINITY &&
++	    cpu_cur_lim == RLIM_INFINITY &&
+ 	    list_empty(&timers[CPUCLOCK_VIRT]) &&
+ 	    cputime_eq(sig->it[CPUCLOCK_VIRT].expires, cputime_zero) &&
+ 	    list_empty(&timers[CPUCLOCK_SCHED])) {
+@@ -1195,10 +1196,11 @@ static void check_process_timers(struct task_struct *tsk,
+ 	check_cpu_itimer(tsk, &sig->it[CPUCLOCK_VIRT], &virt_expires, utime,
+ 			 SIGVTALRM);
+ 
+-	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
++	if (cpu_cur_lim != RLIM_INFINITY) {
+ 		unsigned long psecs = cputime_to_secs(ptime);
++		unsigned long hard = sig->rlim[RLIMIT_CPU].rlim_max;
+ 		cputime_t x;
+-		if (psecs >= sig->rlim[RLIMIT_CPU].rlim_max) {
++		if (psecs >= hard) {
+ 			/*
+ 			 * At the hard limit, we just die.
+ 			 * No need to calculate anything else now.
+@@ -1206,17 +1208,17 @@ static void check_process_timers(struct task_struct *tsk,
+ 			__group_send_sig_info(SIGKILL, SEND_SIG_PRIV, tsk);
+ 			return;
+ 		}
+-		if (psecs >= sig->rlim[RLIMIT_CPU].rlim_cur) {
++		if (psecs >= cpu_cur_lim) {
+ 			/*
+ 			 * At the soft limit, send a SIGXCPU every second.
+ 			 */
+ 			__group_send_sig_info(SIGXCPU, SEND_SIG_PRIV, tsk);
+-			if (sig->rlim[RLIMIT_CPU].rlim_cur
+-			    < sig->rlim[RLIMIT_CPU].rlim_max) {
+-				sig->rlim[RLIMIT_CPU].rlim_cur++;
++			if (cpu_cur_lim < hard) {
++				cpu_cur_lim++;
++				sig->rlim[RLIMIT_CPU].rlim_cur = cpu_cur_lim;
+ 			}
+ 		}
+-		x = secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
++		x = secs_to_cputime(cpu_cur_lim);
+ 		if (cputime_eq(prof_expires, cputime_zero) ||
+ 		    cputime_lt(x, prof_expires)) {
+ 			prof_expires = x;
 -- 
-js
-Faculty of Informatics, Masaryk University
-Suse Labs, Novell
+1.6.4.2
+
