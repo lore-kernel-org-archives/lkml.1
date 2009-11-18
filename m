@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZKRRu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbZKRRuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbZKRRu6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbZKRRu6
+	id S1758119AbZKRRuF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbZKRRuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:50:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35416 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757939AbZKRRu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:50:57 -0500
-From: Steve Grubb <sgrubb@redhat.com>
-Organization: Red Hat
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Subject: Re: drop SECURITY_FILE_CAPABILITIES?
-Date: Wed, 18 Nov 2009 12:49:29 -0500
-User-Agent: KMail/1.12.2 (Linux/2.6.30.9-96.fc11.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Kees Cook <kees.cook@canonical.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       George Wilson <gcwilson@us.ibm.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>
-References: <20091110140739.GA15534@us.ibm.com> <20091111001914.GA30470@us.ibm.com> <551280e50911180840v5c3f2945t253c709ba2d033b2@mail.gmail.com>
-In-Reply-To: <551280e50911180840v5c3f2945t253c709ba2d033b2@mail.gmail.com>
+	Wed, 18 Nov 2009 12:50:05 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:49800 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757939AbZKRRuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 12:50:04 -0500
+Date: Wed, 18 Nov 2009 17:50:03 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jan Blunck <jblunck@suse.de>,
+       linux-fsdevel@vger.kernel.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
+Message-ID: <20091118175003.GF28723@shareable.org>
+References: <1258560457-15129-1-git-send-email-jblunck@suse.de> <20091118171524.4d2f8cec@lxorguk.ukuu.org.uk> <20091118172730.GD28723@shareable.org> <200911181835.55007.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911181249.29140.sgrubb@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911181835.55007.oliver@neukum.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 November 2009 11:40:13 am Andrew G. Morgan wrote:
-> >> But back to detecting the capability version number...if I pass 0 as the
-> >> version in the header, why can't the kernel just say oh you want the
-> >> preferred version number, stuff it in the header, and return the syscall
-> >> with success and not EINVAL?
+Oliver Neukum wrote:
+> Am Mittwoch, 18. November 2009 18:27:30 schrieb Jamie Lokier:
+> > > No. Your logic is flawed
+> > > 
+> > > The BKL is protected something here - it protects the change of offset
+> > > with respect to other BKL users within drivers. The question is what if
+> > > anything in any other driver code depends upon the BKL and uses it to
+> > > protect f_pos. Probably very little if anything but a grep for f_pos
+> > > through the drivers might not be a bad idea before assuming this. Very
+> > > few touch f_pos except in their own llseek method.
+> > 
+> > Of course, drivers shouldn't be using f_pos outside their llseek
+> > method, as they should all behave the same with pread/pwrite as with
+> > llseek+read/write.
 > 
-> This is so a library can understand that it doesn't understand the
-> current ABI.
+> Might not a driver update f_pos after read/write?
 
-If user space is passing a NULL for the cap_user_data_t argument, user space 
-has a pretty good idea that its not expecting actual capabilities to be filled 
-in. My basic point is that there is no way to "correctly" use the capabilities 
-API to determine what the preferred version is.
+It could indirectly, through *ppos.  
 
+There should be no direct accesses to f_pos outseek llseek.  If there
+are still, those might indicate driver bugs.  (I'm not 100% sure about
+this - hence asking).
 
-> For example, consider the case of some kernel of the
-> future with a different ABI meeting an old library.
+Drivers used to update f_pos indirectly through *ppos, and for this,
+Alan's observation about BKL protecting the value from changing does apply.
 
-Right. Either user space checks version numbers to verify it knows what its 
-doing and errors out, or it blindly tries to set capabilities and gets an 
-error. Either way, if user space is *really* using the API to do work, it 
-won't be passing NULL as the user data argument.
+But nowadays, even that doesn't happen.  sys_read() and sys_write()
+make a copy of f_pos using file_pos_read(), so drivers cannot see the
+value change during the call - except for their own change.
 
-Maybe if version is set to 0 and NULL is being passed for arg 2 to getcap, 
-that would be the secret handshake that lets the kernel know all I want is the 
-preferred version number and nothing else since there is no data structure to 
-fill in.
+I find myself wondering why the VFS isn't responsible for the position
+update instead of the driver...  Would it be a valid cleanup to move
+it from the driver to VFS?
 
-
-> The intention is for it to fail safe and not blunder on doing
-> "security" related operations with an imperfect idea of the current
-> kernel interface.
-> 
-> This is how libcap figures out it can work with the hosting kernel:
-
-capget(0x20080522, 0, NULL)             = -1 EFAULT (Bad address)
-
-Still an error.
-
--Steve
+-- Jamie
