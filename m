@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZKRSQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbZKRST6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZKRSQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZKRSQg
+	id S1758224AbZKRST6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbZKRST5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:16:36 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:38857 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758184AbZKRSQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:16:35 -0500
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Matt Mackall <mpm@selenic.com>, David VomLehn <dvomlehn@cisco.com>,
-       "dedekind1\@gmail.com" <dedekind1@gmail.com>,
-       Marco Stornelli <marco.stornelli@gmail.com>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       "linux-embedded\@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "akpm\@linux-foundation.org" <akpm@linux-foundation.org>,
-       "dwm2\@infradead.org" <dwm2@infradead.org>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "paul.gortmaker\@windriver.com" <paul.gortmaker@windriver.com>
-References: <1258463404.27437.103.camel@localhost>
-	<m1pr7hf93s.fsf@fess.ebiederm.org>
-	<20091117235627.GA13469@dvomlehn-lnx2.corp.sa.net>
-	<m1iqd8ptg9.fsf@fess.ebiederm.org> <1258505777.3081.4.camel@calx>
-	<m1vdh7byva.fsf@fess.ebiederm.org> <4B043467.8000708@am.sony.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 18 Nov 2009 10:16:28 -0800
-In-Reply-To: <4B043467.8000708@am.sony.com> (Tim Bird's message of "Wed\, 18 Nov 2009 09\:52\:39 -0800")
-Message-ID: <m1iqd77l6r.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 18 Nov 2009 13:19:57 -0500
+Received: from kroah.org ([198.145.64.141]:56607 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758195AbZKRST4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:19:56 -0500
+Date: Wed, 18 Nov 2009 10:16:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Russ Dill <russ.dill@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Jiri Kosina <jkosina@suse.cz>, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] Close usb_find_interface race
+Message-ID: <20091118181637.GA2330@kroah.com>
+References: <20091118153947.GA32440@kroah.com>
+ <1258567334-14846-1-git-send-email-Russ.Dill@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH, RFC] panic-note: Annotation from user space for panics
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <1258567334-14846-1-git-send-email-Russ.Dill@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird <tim.bird@am.sony.com> writes:
+On Wed, Nov 18, 2009 at 11:02:13AM -0700, Russ Dill wrote:
+> USB drivers that create character devices call usb_register_dev in their
+> probe function. This associates the usb_interface device with that minor
+> number and creates the character device and announces it to the world.
+> However, the driver's probe function is called before the new
+> usb_interface is added to the driver's klist_devices.
+> 
+> This is a problem because userspace will respond to the character device
+> creation announcement by opening the character device. The driver's open
+> function will the call usb_find_interface to find the usb_interface
+> associated with that minor number. usb_find_interface will walk the
+> driver's list of devices and find the usb_interface with the matching
+> minor number.
+> 
+> Because the announcement happens before the usb_interface is added to the
+> driver's klist_devices, a race condition exists. A straightforward fix
+> is to walk the list of devices on usb_bus_type instead since the device
+> is added to that list before the announcement occurs.
+> 
+> bus_find_device calls get_device to bump the reference count on the found
+> device. It is arguable that the reference count should be dropped by the
+> caller of usb_find_interface instead of usb_find_interface, however,
+> the current users of usb_find_interface do not expect this.
+> 
+> Signed-off-by: Russ Dill <Russ.Dill@gmail.com>
+> ---
+>  drivers/usb/core/usb.c |   30 +++++++++++-------------------
+>  1 files changed, 11 insertions(+), 19 deletions(-)
 
-> Eric W. Biederman wrote:
->> Matt Mackall <mpm@selenic.com> writes:
->> 
->>> As much as I like kexec, it loses on memory footprint by about 100x.
->>> It's not appropriate for all use cases, especially things like
->>> consumer-grade wireless access points and phones.
->> 
->> In general I agree.  The cost of a second kernel and initrd can be
->> prohibitive in the smallest systems, and if you do a crash capture
->> with using a standalone app that is reinventing the wheel.
->> 
->> That said.  I can happily run kdump with only 16M-20M reserved.
->> So on many systems the cost is affordable.
->
-> Understood.  On some of my systems, the memory budget for the
-> entire system is 10M.  On most systems I work with, it is a
-> struggle to reserve even 64K for this feature.
+Looks good, thanks for finding and fixing this.  I'll queue it up.
 
-crash_kexec is really a glorified jump.  It is possible to do a lot in
-64K with a standalone application.  If reliable capture of kernel
-crashes is desirable to an embedded NAND device I expect a semi-general
-purpose dedicated application for capturing at least dmesg from the
-crashed kernel and write it to a file on a NAND filesystem could be
-worth someones time.
-
-On general purpose hardware we use a kernel and an initrd simply to
-reduce the development work of supporting everything and the kitchen
-sink.  My impression is that embedded systems can afford a little more
-setup time, and a custom compilation, and that the hardware you would like
-to store things too is much more common.
-
-Eric
-
+greg k-h
