@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbZKRSyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZKRS4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbZKRSyJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZKRSyI
+	id S932543AbZKRS4T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbZKRS4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:54:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3321 "EHLO mx1.redhat.com"
+	Wed, 18 Nov 2009 13:56:17 -0500
+Received: from mga03.intel.com ([143.182.124.21]:42582 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758268AbZKRSyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:54:07 -0500
-Date: Wed, 18 Nov 2009 13:54:07 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] vfs: ensure that dentries are revalidated on open
- (try #2)
-Message-ID: <20091118135407.45b3715d@tlielax.poochiereds.net>
-In-Reply-To: <20091118173817.GE25150@elf.ucw.cz>
-References: <1257870456-31188-1-git-send-email-jlayton@redhat.com>
-	<20091118041906.GB1395@ucw.cz>
-	<20091118072916.720471b0@tlielax.poochiereds.net>
-	<20091118173817.GE25150@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758268AbZKRS4Q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:56:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,766,1249282800"; 
+   d="scan'208";a="213047684"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Jiri Slaby <jslaby@novell.com>,
+       "jirislaby@gmail.com" <jirislaby@gmail.com>
+CC: "mingo@elte.hu" <mingo@elte.hu>,
+       "nhorman@tuxdriver.com" <nhorman@tuxdriver.com>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "marcin.slusarz@gmail.com" <marcin.slusarz@gmail.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Date: Wed, 18 Nov 2009 10:56:19 -0800
+Subject: RE: [PATCH 03/16] IA64: use ACCESS_ONCE for rlimits
+Thread-Topic: [PATCH 03/16] IA64: use ACCESS_ONCE for rlimits
+Thread-Index: AcpoX748BhaLfwa1R2m2jZryl28ORQAIDTug
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E38E71DD@orsmsx505.amr.corp.intel.com>
+References: <4B040A03.2020508@gmail.com>
+ <1258555922-2064-3-git-send-email-jslaby@novell.com>
+In-Reply-To: <1258555922-2064-3-git-send-email-jslaby@novell.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009 18:38:17 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+> Make sure compiler won't do weird things with limits. E.g. fetching
+> them twice may return 2 different values after writable limits are
+> implemented.
 
-> Hi!
-> 
-> > > > This is the second attempt to fix this problem. The first one attempted
-> > > > to fix this in procfs, but Eric Biederman pointed out that file bind
-> > > > mounts have a similar problem. This set attempts to fix the issue at a
-> > > > higher level, in the generic VFS layer.
-> > > > 
-> > > > In certain situations, when it knows that they are valid, the path
-> > > > walking code will skip revalidating dentries that it finds in the cache.
-> > > > This causes problems with filesystems such as NFSv4 and CIFS that depend
-> > > > on the d_revalidate routine to do opens during lookup.
-> > > 
-> > > ...and it allows bypassing directory permissions. Could we fix both
-> > > here?
-> > 
-> > Does it? Here's what I just did to check that:
-> 
-> Yes it does, see http://seclists.org/bugtraq/2009/Oct/179
-> 
-> 
-> > # cp /bin/sleep /root/sleep
-> > 
-> > # ls -l /root /root/sleep
-> > dr-xr-x---. 19 root root  4096 2009-11-18 07:20 /root
-> > -rwxr-xr-x.  1 root root 29152 2009-11-18 07:20 /root/sleep
-> > 
-> > # /root/sleep 600
-> > 
-> > ...then as unprivileged user:
-> > 
-> > $ ps -ef | grep sleep 
-> > (find pid of sleep program that root is running)
-> > 
-> > $ /proc/5258/exe 600
-> > bash: /proc/5258/exe: Permission denied
-> > 
-> > ...it looks like directory permissions are respected here. Did I
-> > misunderstand what you're concerned about?
-> 
-> /proc does not allow you to use /proc/XX/fd of unrelated users; it is
-> another mechanism disallowing access. (Plus, I did my experiments with
-> /proc/XX/fd, not /exe).
-> 									Pavel
+-	if (size > task->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
++	if (size > ACCESS_ONCE(task->signal->rlim[RLIMIT_MEMLOCK].rlim_cur))
 
-Thanks for the info. Took me a while to get through it but I read most
-of the thread. I agree that it sounds like a very similar problem.
+I don't see how this helps.  If someone else is changing limits while
+we are looking at them, then there is a race.  We either get the old
+or the new value.  Using ACCESS_ONCE (which on ia64 forces a "volatile"
+access, which will make the compiler generate "ld.acq" rather than a
+plain "ld") won't make any difference to this race.
 
-I'm beginning to wonder whether the right answer is to just make
-these /proc symlinks behave more like normal symlinks. Get rid of
-LAST_BIND and have follow_link turn the dentry into a path via d_path().
+Please explain what issue you see with the current code.
 
-It's less efficient, but it means less special-casing in the path
-walking code. I don't see /proc symlinks as being so performance
-critical that we can't do it that way instead.
+-Tony
 
-That still leaves the issue with bind mounted files not causing a
-d_revalidate, but we can deal with that separately once the other issue
-is resolved...
-
-Thoughts?
--- 
-Jeff Layton <jlayton@redhat.com>
