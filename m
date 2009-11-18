@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZKRJa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZKRJbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbZKRJa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbZKRJa1
+	id S1757065AbZKRJbm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757044AbZKRJbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:30:27 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:50665 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756997AbZKRJaX convert rfc822-to-8bit (ORCPT
+	Wed, 18 Nov 2009 04:31:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54307 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756866AbZKRJbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:30:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RWuHJ5ieqOZBPiMGwTjFsKRsOnHT7pCizCM+OHhzpHnlhREeZcpnLY3kNdhb5ZR7l7
-         sc6RyvcMbEiwzpNK0f3k+o5SGybgYVgfdiN6CAMbPYqkFueRAGjCfQOiyrhHQv2ofxc3
-         yNSg9KPFMv6Y5+xFWRUdoR+P7QKY0WYjavsXU=
-MIME-Version: 1.0
-In-Reply-To: <20091116202214.GD360@elte.hu>
-References: <1258311859-6189-1-git-send-email-HIGHGuY@gmail.com>
-	 <20091116083521.GC20672@elte.hu>
-	 <c76f371a0911161113v60eef516qee0a1a9cf99d2ae@mail.gmail.com>
-	 <20091116202214.GD360@elte.hu>
-Date: Wed, 18 Nov 2009 10:30:29 +0100
-Message-ID: <c76f371a0911180130uf125f7ev2eb4b6de1549fa04@mail.gmail.com>
-Subject: Re: [RFC] observe and act upon workload parallelism: 
-	PERF_TYPE_PARALLELISM (Was: [RFC][PATCH] sched_wait_block: wait for blocked 
-	threads)
-From: Stijn Devriendt <highguy@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrea Arcangeli <andrea@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Nov 2009 04:31:35 -0500
+Subject: Re: [PATCH 3/7 v6] perf/core: Add a callback to perf events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <20091118001815.GA8187@nowhere>
+References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com>
+	 <1257694141-5670-4-git-send-email-fweisbec@gmail.com>
+	 <1258457333.7816.186.camel@laptop>  <20091118001815.GA8187@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Nov 2009 10:31:09 +0100
+Message-ID: <1258536669.3918.99.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This would be a perfect and suitable use of poll() concepts i think -
-> and well-optimized one as well. It could even be plugged into epoll().
->
->        Ingo
+On Wed, 2009-11-18 at 01:18 +0100, Frederic Weisbecker wrote:
+> On Tue, Nov 17, 2009 at 12:28:53PM +0100, Peter Zijlstra wrote:
+> > On Sun, 2009-11-08 at 16:28 +0100, Frederic Weisbecker wrote:
+> > > A simple callback in a perf event can be used for multiple purposes.
+> > > For example it is useful for triggered based events like hardware
+> > > breakpoints that need a callback to dispatch a triggered breakpoint
+> > > event.
+> > > 
+> > > v2: Simplify a bit the callback attribution as suggested by Paul
+> > >     Mackerras
+> > 
+> > Yuck! So we add an opaque callback without semantics nor usage.
+> 
+> 
+> Yeah, this is intended for events that need to be able to trigger
+> events to different channels. In the case of hw-breakpoints, it's
+> either perf buffer, ptrace, etc...
+> 
+> Should I add some comments about it?
 
-Sorry for not replying earlier, but I was knocked out on the couch
-(and still am). I'll have a more thorough look later on when my head
-stops spinning 'round and 'round.
+At the very least.. describe its semantics and preferably rename the
+thing.
 
-I must say that even without applying this perf_event to userspace
-scheduling, it's probably a nice event to have anyway in order
-to measure concurrency in existing applications. That it would
-be suitable to actually control parallellism is probably just a nice
-extra. But let's look at things again when the clouds have left
-the brain ;)
+Currently I've no clue what it does and why, your description above
+about multiple channels does not at all help me understand how this
+function pointer is used to make that happen.
 
-Stijn
