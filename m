@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbZKRBjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZKRBkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbZKRBjL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZKRBjK
+	id S1756684AbZKRBkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbZKRBkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:39:10 -0500
-Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:33206
-	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752730AbZKRBjK (ORCPT
+	Tue, 17 Nov 2009 20:40:16 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:17929 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755950AbZKRBkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:39:10 -0500
-In-Reply-To: <1258468075.2971.6.camel@iscandar.digidescorp.com>
-To: steve@digidescorp.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
-       Lennox Wu <lennox.wu@gmail.com>, linux-kernel@vger.kernel.org
+	Tue, 17 Nov 2009 20:40:15 -0500
+X-IronPort-AV: E=McAfee;i="5300,2777,5805"; a="27846689"
+Message-ID: <4B035081.8040900@qualcomm.com>
+Date: Tue, 17 Nov 2009 17:40:17 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Subject: Re: [PATCH] microblaze: Fix pfn_valid() for noMMU
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF94FA6DBC.7FC9A140-ON48257672.00081DD4-48257672.000909A3@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Wed, 18 Nov 2009 09:37:50 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/11/18 ?? 09:37:52,
-	Serialize complete at 2009/11/18 ?? 09:37:52
-Content-Type: text/plain; charset="GB2312"
+To: andrew hendry <andrew.hendry@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Documentation, clarify tuntap IPX example.
+References: <d45a3acc0911171730kc3a03d5iacec6d9ef4b1874c@mail.gmail.com>
+In-Reply-To: <d45a3acc0911171730kc3a03d5iacec6d9ef4b1874c@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nAI1dU16022184
 
-"Steven J. Magnani" <steve@digidescorp.com> Ğ´ÓÚ 2009-11-17 22:27:54:
+On 11/17/2009 05:30 PM, andrew hendry wrote:
+> Can the TUNSETIFF ioctl change a tap's protocol to IPX as the
+> documentation suggests?
+> I think tun.c would need IFF_IPX_TAP added for it to work as described?
+> Otherwise tap can only be ptp or ethernet, and there is no way to
+> route or use AF_IPX.
 
-> On Mon, 2009-11-16 at 14:14 -0800, Andrew Morton wrote:
-> > On Fri, 13 Nov 2009 16:08:29 -0600
-> > steve@digidescorp.com wrote:
-> > 
-> > > Configuring DEBUG_SLAB causes a noMMU kernel to die during 
-initialization
-> > > with an invalid virtual address panic in kfree_debugcheck().
-> > > The panic is due to an improper definition of pfn_valid().
-> > > 
-> > > ...
-> > Is arch/score/include/asm/page.h buggy also?
-> > 
-> 
-> I don't believe so, but only because MEMORY_START is defined as zero for
-> that arch, making min_low_pfn zero.
-> 
+TAP is an Ethernet device. No special handling is required for IPX or 
+for that matter any other protocol. Example seems fine too.
 
-Yes, it's right because MEMORY_START is defined as 0,
-make min_low_pfn to zero and max_mapnr equal max_low_pfn.
+Max
 
-We will fix it to make code more clear.
+> Signed-off-by: Andrew Hendry<andrew.hendry@gmail.com>
+>
+> --- a/Documentation/networking/tuntap.txt       2009-11-11
+> 14:03:22.676167648 +1100
+> +++ b/Documentation/networking/tuntap.txt       2009-11-18
+> 11:34:18.106647029 +1100
+> @@ -127,12 +127,14 @@ Ethernet device, which instead of receiv
+>   media, receives them from user space program and instead of sending
+>   packets via physical media sends them to the user space program.
+>
+> -Let's say that you configured IPX on the tap0, then whenever
+> -the kernel sends an IPX packet to tap0, it is passed to the application
+> -(VTun for example). The application encrypts, compresses and sends it to
+> -the other side over TCP or UDP. The application on the other side decompresses
+> -and decrypts the data received and writes the packet to the TAP device,
+> -the kernel handles the packet like it came from real physical device.
+> +Let's say for the purpose of example, IPX support was added to tuntap.
+> +Then whenever the kernel routes an IPX packet to tap0, it is passed to the
+> +application reading the file descriptor from /dev/net/tun (VTun for example).
+> +The application encrypts, compresses and sends it to the other side over TCP
+> +or UDP. The application on the other side decompresses and decrypts the data
+> +received and writes the packet to the TAP device, the remote kernel handles
+> +the packet like it came from real physical device. The IPX applications are
+> +able to communicate as if there was a real IPX network.
+>
+>   4. What is the difference between TUN driver and TAP driver?
+>   TUN works with IP frames. TAP works with Ethernet frames.
 
-liqin
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
