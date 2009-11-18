@@ -1,166 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbZKRVHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbZKRVLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbZKRVHy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbZKRVHx
+	id S1757140AbZKRVLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbZKRVLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:07:53 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:50319 "EHLO mgw2.diku.dk"
+	Wed, 18 Nov 2009 16:11:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60896 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944AbZKRVHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:07:52 -0500
-Date: Wed, 18 Nov 2009 22:07:56 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Joe Perches <joe@perches.com>
-Cc: Jay Cliburn <jcliburn@gmail.com>, Chris Snook <chris.snook@gmail.com>,
-       atl1-devel@lists.sourceforge.net, Jie Yang <jie.yang@atheros.com>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arnd@arndb.de
-Subject: Re: [PATCH 1/16] drivers/net/atl1c: remove exceptional & on function
- name
-In-Reply-To: <1258569615.24178.13.camel@Joe-Laptop.home>
-Message-ID: <Pine.LNX.4.64.0911182202350.28287@ask.diku.dk>
-References: <Pine.LNX.4.64.0911181920010.20943@ask.diku.dk>
- <1258569615.24178.13.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756933AbZKRVLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 16:11:42 -0500
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+From: Eric Paris <eparis@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, graff.yang@gmail.com,
+       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <20091117141314.0238a49b.akpm@linux-foundation.org>
+References: <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com>
+	 <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com>
+	 <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
+	 <18475.1255529305@redhat.com> <6207.1255706090@redhat.com>
+	 <23382.1255707790@redhat.com>
+	 <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com>
+	 <20091117141314.0238a49b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Nov 2009 16:10:14 -0500
+Message-Id: <1258578614.3534.2.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009, Joe Perches wrote:
-
-> On Wed, 2009-11-18 at 19:20 +0100, Julia Lawall wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > In this file, function names are otherwise used as pointers without &.
-> > 
-> > A simplified version of the semantic patch that makes this change is as
-> > follows: (http://coccinelle.lip6.fr/)
+On Tue, 2009-11-17 at 14:13 -0800, Andrew Morton wrote:
+> On Fri, 16 Oct 2009 11:55:29 -0400
+> Eric Paris <eparis@redhat.com> wrote:
 > 
-> Hi Julia, thanks for doing this.
+> > On Fri, 2009-10-16 at 16:43 +0100, David Howells wrote:
+> > > Eric Paris <eparis@redhat.com> wrote:
+> > > 
+> > > > That would still call cap_file_mmap() and wouldn't solve your problem.
+> > > 
+> > > Hmmm...  I guess I don't see the problem occur because I always run the
+> > > programs as root.
+> > 
+> > most likely yes, your processes are going to have CAP_SYS_RAWIO and will
+> > happily sail through the cap_file_mmap().
+> > 
+> > > I would guess that cap_file_mmap() and selinux_file_mmap() are, perhaps, too
+> > > strict.  The hint shouldn't be rejected unless MAP_FIXED is also set, surely,
+> > > but should rather be revised upwards.
+> > 
+> > On the mmu side we don't check until the kernel has turned the hint into
+> > a real address.  Which is apparently different then where the hook was
+> > originally placed in the nommu side.
+> > 
+> > > Certainly, addr==NULL and !MAP_FIXED is a reasonable case to permit, even in
+> > > tightly secured MMU and SELinux mode...  After all, the manual page says:
+> > > 
+> > > 	If addr is NULL, then the kernel chooses the address at which to create
+> > > 	the mapping; this is the most portable method of creating  a  new  map-
+> > > 	ping.
+> > 
+> > I agree, I think the choices are
+> > 
+> > A) agree that we just shouldn't check the address on nommu
+> >    A1) change kconfig to not allow the setting of these
+> > 	(easy to do for the LSM check, but not easy as it stands today
+> > 	 for the cap_file_mmap() check)
+> >    A2) change the addr_only to be a flags which indicate not to check
+> > 	(my original suggestion)
+> >    A3) push the config_nommu down into the security code
+> > 	(your patch)
+> > B) actually check the address, which requires moving the hook to a
+> > location where it has been resolved.
+> > 	(graff yang's patch)
+> > 
+> > I'll leave it up to you to determine which you like the best since you
+> > know the implications of nommu.
+> > 
 > 
-> Can you please post the complete version of the semantic patch?
+> So what's the status of this issue now?  Should I merge the below into
+> 2.6.32?
+> 
+> Thanks.
 
-There are basically three parts to the following semantic patch.  The 
-first part counts the number of references to functions that do and do not 
-have & in front of them.  For simplicity, a function is considered to be 
-something that is explicitly defined in the current file.  It would be 
-possible to also consider functions for which there is only a prototype.
+David??
+  I think A2 is the right fix.  Apparmour is pushing to get in soon and
+I know their implementation didn't check for CONFIG_MMU.  It's just too
+easy for an LSM writer to get this wrong.  This patch is better than
+what we have today, but I'll try to get something by the end of the week
+which I think makes us all happy.
 
-The second part, consisting of the python code in the middle considers the 
-counts and decides which transformation to make, if any.  In the end, to 
-limit the number of files to consider, I just consider files for which 
-there is only one occurrence of one case and more than 9 occurrences of 
-the other.  The two small python rules after that one throw away all of 
-the matches of function names that do not correspond to the case that is 
-desired.
+-Eric
 
-The last few rules do the transformation.  Both transformations are put in 
-one rule, which is safe because all matches for the transformation that is 
-not wanted have been discarded.
-
-julia
-
-@script:python@
-@@
-
-with_and = 0
-without_and = 0
-
-@r@
-identifier f;
-@@
-
-f(...) { ... }
-
-@addr1@
-identifier r.f;
-position pa;
-@@
-
- &f@pa
-
-@script:python@
-p << addr1.pa;
-@@
-
-with_and = with_and + 1
-
-@r1@
-identifier r.f;
-position p;
-declarer name  EXPORT_SYMBOL;
-@@
-
-(
-EXPORT_SYMBOL(f@p);
-|
-module_init(f@p);
-|
-module_exit(f@p);
-|
-f@p(...)
-)
-
-@noaddr1@
-identifier r.f;
-position pn != r1.p;
-@@
-
-(
-  &f
-|
- f@pn
-)
-
-@script:python@
-p << noaddr1.pn;
-@@
-
-without_and = without_and + 1
-
-@script:python@
-@@
-
-choose_without_and = False
-#if (with_and * 25 < without_and):
-#  choose_without_and = True
-if (with_and == 1 and without_and > 9):
-  choose_without_and = True
-
-choose_with_and = False
-#if (without_and * 25 < with_and):
-#  choose_with_and = True
-if (without_and == 1 and with_and > 9):
-  choose_with_and = True
-
-@script:python@
-p << addr1.pa;
-f << r.f;
-@@
-
-if (choose_with_and or not choose_without_and):
-  cocci.include_match(False)
-
-@script:python@
-p << noaddr1.pn;
-f << r.f;
-@@
-
-if (choose_without_and or not choose_with_and):
-  cocci.include_match(False)
-
-@@
-identifier f;
-position addr1.pa;
-position noaddr1.pn;
-@@
-
-(
-- &f@pa
-+ f
-|
-- f@pn
-+ &f
-)
