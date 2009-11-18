@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbZKRJ3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZKRJ1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756966AbZKRJ3B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZKRJ26
+	id S1756930AbZKRJ1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbZKRJ1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:28:58 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42303 "EHLO mx1.suse.de"
+	Wed, 18 Nov 2009 04:27:32 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39418 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756816AbZKRJZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:25:15 -0500
+	id S1756845AbZKRJZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 04:25:17 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org
 Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
@@ -16,10 +16,10 @@ Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
        matthew@wil.cx, Jan Blunck <jblunck@suse.de>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: [PATCH 14/20] BKL: Remove BKL from JFS
-Date: Wed, 18 Nov 2009 10:24:47 +0100
-Message-Id: <1258536293-7762-15-git-send-email-jblunck@suse.de>
+       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 15/20] BKL: Remove BKL from NILFS2
+Date: Wed, 18 Nov 2009 10:24:48 +0100
+Message-Id: <1258536293-7762-16-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258536293-7762-1-git-send-email-jblunck@suse.de>
 References: <1258536293-7762-1-git-send-email-jblunck@suse.de>
@@ -33,148 +33,115 @@ safe to remove the BKL entirely.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/jfs/super.c |   36 +++++++-----------------------------
- 1 files changed, 7 insertions(+), 29 deletions(-)
+ fs/nilfs2/ioctl.c |    1 -
+ fs/nilfs2/super.c |   19 +------------------
+ 2 files changed, 1 insertions(+), 19 deletions(-)
 
-diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-index a8e6046..5ccbb32 100644
---- a/fs/jfs/super.c
-+++ b/fs/jfs/super.c
-@@ -32,7 +32,6 @@
+diff --git a/fs/nilfs2/ioctl.c b/fs/nilfs2/ioctl.c
+index f6af760..30f7b41 100644
+--- a/fs/nilfs2/ioctl.c
++++ b/fs/nilfs2/ioctl.c
+@@ -22,7 +22,6 @@
+ 
+ #include <linux/fs.h>
+ #include <linux/wait.h>
+-#include <linux/smp_lock.h>	/* lock_kernel(), unlock_kernel() */
+ #include <linux/capability.h>	/* capable() */
+ #include <linux/uaccess.h>	/* copy_from_user(), copy_to_user() */
+ #include <linux/vmalloc.h>
+diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
+index 3448ec3..0086dc2 100644
+--- a/fs/nilfs2/super.c
++++ b/fs/nilfs2/super.c
+@@ -45,7 +45,6 @@
+ #include <linux/parser.h>
+ #include <linux/random.h>
  #include <linux/crc32.h>
- #include <asm/uaccess.h>
- #include <linux/seq_file.h>
 -#include <linux/smp_lock.h>
- 
- #include "jfs_incore.h"
- #include "jfs_filsys.h"
-@@ -173,8 +172,6 @@ static void jfs_put_super(struct super_block *sb)
- 
- 	jfs_info("In jfs_put_super");
+ #include <linux/vfs.h>
+ #include <linux/writeback.h>
+ #include <linux/kobject.h>
+@@ -310,8 +309,6 @@ static void nilfs_put_super(struct super_block *sb)
+ 	struct nilfs_sb_info *sbi = NILFS_SB(sb);
+ 	struct the_nilfs *nilfs = sbi->s_nilfs;
  
 -	lock_kernel();
 -
- 	rc = jfs_umount(sb);
- 	if (rc)
- 		jfs_err("jfs_umount failed with return code %d", rc);
-@@ -185,8 +182,6 @@ static void jfs_put_super(struct super_block *sb)
- 	iput(sbi->direct_inode);
+ 	nilfs_detach_segment_constructor(sbi);
  
- 	kfree(sbi);
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+@@ -330,8 +327,6 @@ static void nilfs_put_super(struct super_block *sb)
+ 	sbi->s_super = NULL;
+ 	sb->s_fs_info = NULL;
+ 	nilfs_put_sbinfo(sbi);
 -
 -	unlock_kernel();
  }
  
- enum {
-@@ -366,19 +361,16 @@ static int jfs_remount(struct super_block *sb, int *flags, char *data)
- 	if (!parse_options(data, sb, &newLVSize, &flag)) {
- 		return -EINVAL;
- 	}
--	lock_kernel();
-+
- 	if (newLVSize) {
- 		if (sb->s_flags & MS_RDONLY) {
- 			printk(KERN_ERR
- 		  "JFS: resize requires volume to be mounted read-write\n");
--			unlock_kernel();
- 			return -EROFS;
- 		}
- 		rc = jfs_extendfs(sb, newLVSize, 0);
--		if (rc) {
--			unlock_kernel();
-+		if (rc)
- 			return rc;
--		}
- 	}
- 
- 	if ((sb->s_flags & MS_RDONLY) && !(*flags & MS_RDONLY)) {
-@@ -390,30 +382,25 @@ static int jfs_remount(struct super_block *sb, int *flags, char *data)
- 
- 		JFS_SBI(sb)->flag = flag;
- 		ret = jfs_mount_rw(sb, 1);
--		unlock_kernel();
- 		return ret;
- 	}
- 	if ((!(sb->s_flags & MS_RDONLY)) && (*flags & MS_RDONLY)) {
- 		rc = jfs_umount_rw(sb);
- 		JFS_SBI(sb)->flag = flag;
--		unlock_kernel();
- 		return rc;
- 	}
- 	if ((JFS_SBI(sb)->flag & JFS_NOINTEGRITY) != (flag & JFS_NOINTEGRITY))
- 		if (!(sb->s_flags & MS_RDONLY)) {
- 			rc = jfs_umount_rw(sb);
--			if (rc) {
--				unlock_kernel();
-+			if (rc)
- 				return rc;
--			}
-+
- 			JFS_SBI(sb)->flag = flag;
- 			ret = jfs_mount_rw(sb, 1);
--			unlock_kernel();
- 			return ret;
- 		}
- 	JFS_SBI(sb)->flag = flag;
- 
--	unlock_kernel();
- 	return 0;
- }
- 
-@@ -425,20 +412,15 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	s64 newLVSize = 0;
- 	int flag, ret = -EINVAL;
+ static int nilfs_sync_fs(struct super_block *sb, int wait)
+@@ -893,8 +888,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
+ 	struct nilfs_mount_options old_opts;
+ 	int err;
  
 -	lock_kernel();
 -
- 	jfs_info("In jfs_read_super: s_flags=0x%lx", sb->s_flags);
- 
--	if (!new_valid_dev(sb->s_bdev->bd_dev)) {
--		unlock_kernel();
-+	if (!new_valid_dev(sb->s_bdev->bd_dev))
- 		return -EOVERFLOW;
--	}
- 
- 	sbi = kzalloc(sizeof (struct jfs_sb_info), GFP_KERNEL);
--	if (!sbi) {
--		unlock_kernel();
-+	if (!sbi)
- 		return -ENOMEM;
--	}
-+
- 	sb->s_fs_info = sbi;
- 	sbi->sb = sb;
- 	sbi->uid = sbi->gid = sbi->umask = -1;
-@@ -448,7 +430,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	if (!parse_options((char *) data, sb, &newLVSize, &flag)) {
- 		kfree(sbi);
--		unlock_kernel();
- 		return -EINVAL;
+ 	down_write(&nilfs->ns_super_sem);
+ 	old_sb_flags = sb->s_flags;
+ 	old_opts.mount_opt = sbi->s_mount_opt;
+@@ -974,7 +967,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
  	}
- 	sbi->flag = flag;
-@@ -460,7 +441,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (newLVSize) {
- 		printk(KERN_ERR "resize option for remount only\n");
- 		kfree(sbi);
--		unlock_kernel();
- 		return -EINVAL;
- 	}
- 
-@@ -536,7 +516,6 @@ static int jfs_fill_super(struct super_block *sb, void *data, int silent)
- 	sb->s_maxbytes = min(((u64) PAGE_CACHE_SIZE << 32) - 1, sb->s_maxbytes);
- #endif
- 	sb->s_time_gran = 1;
+  out:
+ 	up_write(&nilfs->ns_super_sem);
 -	unlock_kernel();
  	return 0;
  
- out_no_root:
-@@ -558,7 +537,6 @@ out_kfree:
- 	if (sbi->nls_tab)
- 		unload_nls(sbi->nls_tab);
- 	kfree(sbi);
+  restore_opts:
+@@ -982,7 +974,6 @@ static int nilfs_remount(struct super_block *sb, int *flags, char *data)
+ 	sbi->s_mount_opt = old_opts.mount_opt;
+ 	sbi->s_snapshot_cno = old_opts.snapshot_cno;
+ 	up_write(&nilfs->ns_super_sem);
 -	unlock_kernel();
- 	return ret;
+ 	return err;
+ }
+ 
+@@ -1059,13 +1050,9 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
+ 	struct the_nilfs *nilfs;
+ 	int err, need_to_close = 1;
+ 
+-	lock_kernel();
+-
+ 	sd.bdev = open_bdev_exclusive(dev_name, flags, fs_type);
+-	if (IS_ERR(sd.bdev)) {
+-		unlock_kernel();
++	if (IS_ERR(sd.bdev))
+ 		return PTR_ERR(sd.bdev);
+-	}
+ 
+ 	/*
+ 	 * To get mount instance using sget() vfs-routine, NILFS needs
+@@ -1146,7 +1133,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
+ 	if (need_to_close)
+ 		close_bdev_exclusive(sd.bdev, flags);
+ 	simple_set_mnt(mnt, s);
+-	unlock_kernel();
+ 	return 0;
+ 
+  failed_unlock:
+@@ -1154,8 +1140,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
+ 	put_nilfs(nilfs);
+  failed:
+ 	close_bdev_exclusive(sd.bdev, flags);
+-
+-	unlock_kernel();
+ 	return err;
+ 
+  cancel_new:
+@@ -1169,7 +1153,6 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
+ 	 * We must finish all post-cleaning before this call;
+ 	 * put_nilfs() needs the block device.
+ 	 */
+-	unlock_kernel();
+ 	return err;
  }
  
 -- 
