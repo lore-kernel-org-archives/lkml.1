@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZKRObZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZKRObh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbZKRObZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbZKRObY
+	id S1757304AbZKRObh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbZKRObg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:31:24 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40587 "EHLO
+	Wed, 18 Nov 2009 09:31:36 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40591 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757160AbZKRObW (ORCPT
+	with ESMTP id S1757197AbZKRObf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:31:22 -0500
+	Wed, 18 Nov 2009 09:31:35 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 02/12] isicom: sort out the board init logic
+Subject: [PATCH 03/12] mxser: use the tty_port_open method
 To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:14:57 +0000
-Message-ID: <20091118141450.3346.10533.stgit@localhost.localdomain>
+Date: Wed, 18 Nov 2009 14:15:11 +0000
+Message-ID: <20091118141502.3346.3386.stgit@localhost.localdomain>
 In-Reply-To: <20091118141354.3346.16910.stgit@localhost.localdomain>
 References: <20091118141354.3346.16910.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,103 +25,252 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Split this into two flags - INIT meaning the board is set up and ACTIVE
-meaning the board has ports open. Remove the broken HUPCL casing and push
-the counts somewhere sensible.
+At first this looks a fairly trivial conversion but we can't quite push
+everything into the right format yet. The open side is easy but care is needed
+over the setserial methods. Fix up the locking now that we've adopted the
+port->mutex locking rule for the initialization.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/isicom.c  |   41 +++++++++++------------------------------
- include/linux/isicom.h |    1 +
- 2 files changed, 12 insertions(+), 30 deletions(-)
+ drivers/char/mxser.c |  111 ++++++++++++++++----------------------------------
+ 1 files changed, 35 insertions(+), 76 deletions(-)
 
 
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index e7be3ec..1e91c30 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -793,21 +793,19 @@ static inline void isicom_setup_board(struct isi_board *bp)
- {
- 	int channel;
- 	struct isi_port *port;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&bp->card_lock, flags);
--	if (bp->status & BOARD_ACTIVE) {
--		spin_unlock_irqrestore(&bp->card_lock, flags);
--		return;
--	}
--	port = bp->ports;
--	bp->status |= BOARD_ACTIVE;
--	for (channel = 0; channel < bp->port_count; channel++, port++)
--		drop_dtr_rts(port);
- 	bp->count++;
--	spin_unlock_irqrestore(&bp->card_lock, flags);
-+	if (!(bp->status & BOARD_INIT)) {
-+		port = bp->ports;
-+		for (channel = 0; channel < bp->port_count; channel++, port++)
-+			drop_dtr_rts(port);
-+	}
-+	bp->status |= BOARD_ACTIVE | BOARD_INIT;
- }
- 
-+/* Activate and thus setup board are protected from races against shutdown
-+   by the tty_port mutex */
-+
- static int isicom_activate(struct tty_port *tport, struct tty_struct *tty)
- {
- 	struct isi_port *port = container_of(tport, struct isi_port, port);
-@@ -884,19 +882,10 @@ static int isicom_open(struct tty_struct *tty, struct file *filp)
- 
- /* close et all */
- 
--static inline void isicom_shutdown_board(struct isi_board *bp)
--{
--	if (bp->status & BOARD_ACTIVE)
--		bp->status &= ~BOARD_ACTIVE;
--}
--
- /* card->lock HAS to be held */
- static void isicom_shutdown_port(struct isi_port *port)
- {
- 	struct isi_board *card = port->card;
--	struct tty_struct *tty;
--
--	tty = tty_port_tty_get(&port->port);
- 
- 	tty_port_free_xmit_buf(&port->port);
- 	if (--card->count < 0) {
-@@ -904,17 +893,9 @@ static void isicom_shutdown_port(struct isi_port *port)
- 			card->base, card->count);
- 		card->count = 0;
+diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
+index 5e28d39..9dac516 100644
+--- a/drivers/char/mxser.c
++++ b/drivers/char/mxser.c
+@@ -856,9 +856,9 @@ static void mxser_check_modem_status(struct tty_struct *tty,
  	}
--
- 	/* last port was closed, shutdown that board too */
--	if (tty && C_HUPCL(tty)) {
--		/* FIXME: this logic is bogus - it's the old logic that was
--		   bogus before but it still wants fixing */
--		if (!card->count) {
--			if (card->status & BOARD_ACTIVE)
--				card->status &= ~BOARD_ACTIVE;
--		}
--	}
--	tty_kref_put(tty);
-+	if (!card->count)
-+		card->status &= BOARD_ACTIVE;
  }
  
- static void isicom_flush_buffer(struct tty_struct *tty)
-diff --git a/include/linux/isicom.h b/include/linux/isicom.h
-index bbd4219..b92e056 100644
---- a/include/linux/isicom.h
-+++ b/include/linux/isicom.h
-@@ -67,6 +67,7 @@
+-static int mxser_startup(struct tty_struct *tty)
++static int mxser_activate(struct tty_port *port, struct tty_struct *tty)
+ {
+-	struct mxser_port *info = tty->driver_data;
++	struct mxser_port *info = container_of(port, struct mxser_port, port);
+ 	unsigned long page;
+ 	unsigned long flags;
  
- #define		FIRMWARE_LOADED		0x0001
- #define		BOARD_ACTIVE		0x0002
-+#define		BOARD_INIT		0x0004
+@@ -868,22 +868,13 @@ static int mxser_startup(struct tty_struct *tty)
  
-  	/* isi_port status bitmap  */
+ 	spin_lock_irqsave(&info->slock, flags);
  
+-	if (info->port.flags & ASYNC_INITIALIZED) {
+-		free_page(page);
+-		spin_unlock_irqrestore(&info->slock, flags);
+-		return 0;
+-	}
+-
+ 	if (!info->ioaddr || !info->type) {
+ 		set_bit(TTY_IO_ERROR, &tty->flags);
+ 		free_page(page);
+ 		spin_unlock_irqrestore(&info->slock, flags);
+ 		return 0;
+ 	}
+-	if (info->port.xmit_buf)
+-		free_page(page);
+-	else
+-		info->port.xmit_buf = (unsigned char *) page;
++	info->port.xmit_buf = (unsigned char *) page;
+ 
+ 	/*
+ 	 * Clear the FIFO buffers and disable them
+@@ -951,24 +942,19 @@ static int mxser_startup(struct tty_struct *tty)
+ 	 * and set the speed of the serial port
+ 	 */
+ 	mxser_change_speed(tty, NULL);
+-	info->port.flags |= ASYNC_INITIALIZED;
+ 	spin_unlock_irqrestore(&info->slock, flags);
+ 
+ 	return 0;
+ }
+ 
+ /*
+- * This routine will shutdown a serial port; interrupts maybe disabled, and
+- * DTR is dropped if the hangup on close termio flag is on.
++ * This routine will shutdown a serial port
+  */
+-static void mxser_shutdown(struct tty_struct *tty)
++static void mxser_shutdown_port(struct tty_port *port)
+ {
+-	struct mxser_port *info = tty->driver_data;
++	struct mxser_port *info = container_of(port, struct mxser_port, port);
+ 	unsigned long flags;
+ 
+-	if (!(info->port.flags & ASYNC_INITIALIZED))
+-		return;
+-
+ 	spin_lock_irqsave(&info->slock, flags);
+ 
+ 	/*
+@@ -978,7 +964,7 @@ static void mxser_shutdown(struct tty_struct *tty)
+ 	wake_up_interruptible(&info->port.delta_msr_wait);
+ 
+ 	/*
+-	 * Free the IRQ, if necessary
++	 * Free the xmit buffer, if necessary
+ 	 */
+ 	if (info->port.xmit_buf) {
+ 		free_page((unsigned long) info->port.xmit_buf);
+@@ -988,10 +974,6 @@ static void mxser_shutdown(struct tty_struct *tty)
+ 	info->IER = 0;
+ 	outb(0x00, info->ioaddr + UART_IER);
+ 
+-	if (tty->termios->c_cflag & HUPCL)
+-		info->MCR &= ~(UART_MCR_DTR | UART_MCR_RTS);
+-	outb(info->MCR, info->ioaddr + UART_MCR);
+-
+ 	/* clear Rx/Tx FIFO's */
+ 	if (info->board->chip_flag)
+ 		outb(UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT |
+@@ -1004,9 +986,6 @@ static void mxser_shutdown(struct tty_struct *tty)
+ 	/* read data port to reset things */
+ 	(void) inb(info->ioaddr + UART_RX);
+ 
+-	set_bit(TTY_IO_ERROR, &tty->flags);
+-
+-	info->port.flags &= ~ASYNC_INITIALIZED;
+ 
+ 	if (info->board->chip_flag)
+ 		SET_MOXA_MUST_NO_SOFTWARE_FLOW_CONTROL(info->ioaddr);
+@@ -1023,8 +1002,7 @@ static void mxser_shutdown(struct tty_struct *tty)
+ static int mxser_open(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct mxser_port *info;
+-	unsigned long flags;
+-	int retval, line;
++	int line;
+ 
+ 	line = tty->index;
+ 	if (line == MXSER_PORTS)
+@@ -1035,23 +1013,7 @@ static int mxser_open(struct tty_struct *tty, struct file *filp)
+ 	if (!info->ioaddr)
+ 		return -ENODEV;
+ 
+-	tty->driver_data = info;
+-	tty_port_tty_set(&info->port, tty);
+-	/*
+-	 * Start up serial port
+-	 */
+-	spin_lock_irqsave(&info->port.lock, flags);
+-	info->port.count++;
+-	spin_unlock_irqrestore(&info->port.lock, flags);
+-	retval = mxser_startup(tty);
+-	if (retval)
+-		return retval;
+-
+-	retval = tty_port_block_til_ready(&info->port, tty, filp);
+-	if (retval)
+-		return retval;
+-
+-	return 0;
++	return tty_port_open(&info->port, tty, filp);
+ }
+ 
+ static void mxser_flush_buffer(struct tty_struct *tty)
+@@ -1075,19 +1037,11 @@ static void mxser_flush_buffer(struct tty_struct *tty)
+ }
+ 
+ 
+-static void mxser_close_port(struct tty_struct *tty, struct tty_port *port)
++static void mxser_close_port(struct tty_port *port)
+ {
+ 	struct mxser_port *info = container_of(port, struct mxser_port, port);
+ 	unsigned long timeout;
+ 	/*
+-	 * Save the termios structure, since this port may have
+-	 * separate termios for callout and dialin.
+-	 *
+-	 * FIXME: Can this go ?
+-	 */
+-	if (port->flags & ASYNC_NORMAL_ACTIVE)
+-		info->normal_termios = *tty->termios;
+-	/*
+ 	 * At this point we stop accepting input.  To do this, we
+ 	 * disable the receive line status interrupts, and tell the
+ 	 * interrupt driver to stop checking the data ready bit in the
+@@ -1097,22 +1051,18 @@ static void mxser_close_port(struct tty_struct *tty, struct tty_port *port)
+ 	if (info->board->chip_flag)
+ 		info->IER &= ~MOXA_MUST_RECV_ISR;
+ 
+-	if (port->flags & ASYNC_INITIALIZED) {
+-		outb(info->IER, info->ioaddr + UART_IER);
+-		/*
+-		 * Before we drop DTR, make sure the UART transmitter
+-		 * has completely drained; this is especially
+-		 * important if there is a transmit FIFO!
+-		 */
+-		timeout = jiffies + HZ;
+-		while (!(inb(info->ioaddr + UART_LSR) & UART_LSR_TEMT)) {
+-			schedule_timeout_interruptible(5);
+-			if (time_after(jiffies, timeout))
+-				break;
+-		}
++	outb(info->IER, info->ioaddr + UART_IER);
++	/*
++	 * Before we drop DTR, make sure the UART transmitter
++	 * has completely drained; this is especially
++	 * important if there is a transmit FIFO!
++	 */
++	timeout = jiffies + HZ;
++	while (!(inb(info->ioaddr + UART_LSR) & UART_LSR_TEMT)) {
++		schedule_timeout_interruptible(5);
++		if (time_after(jiffies, timeout))
++			break;
+ 	}
+-	mxser_shutdown(tty);
+-
+ }
+ 
+ /*
+@@ -1130,8 +1080,12 @@ static void mxser_close(struct tty_struct *tty, struct file *filp)
+ 		return;
+ 	if (tty_port_close_start(port, tty, filp) == 0)
+ 		return;
+-	mxser_close_port(tty, port);
++	mutex_lock(&port->mutex);
++	mxser_close_port(port);
+ 	mxser_flush_buffer(tty);
++	mxser_shutdown_port(port);
++	clear_bit(ASYNCB_INITIALIZED, &port->flags);
++	mutex_unlock(&port->mutex);
+ 	/* Right now the tty_port set is done outside of the close_end helper
+ 	   as we don't yet have everyone using refcounts */	
+ 	tty_port_close_end(port, tty);
+@@ -1329,9 +1283,13 @@ static int mxser_set_serial_info(struct tty_struct *tty,
+ 			mxser_change_speed(tty, NULL);
+ 			spin_unlock_irqrestore(&info->slock, sl_flags);
+ 		}
+-	} else
+-		retval = mxser_startup(tty);
+-
++	} else {
++		mutex_lock(&info->port.mutex);
++		retval = mxser_activate(&info->port, tty);
++		if (retval == 0)
++			set_bit(ASYNCB_INITIALIZED, &info->port.flags);
++		mutex_unlock(&info->port.mutex);
++	}
+ 	return retval;
+ }
+ 
+@@ -2059,7 +2017,6 @@ static void mxser_hangup(struct tty_struct *tty)
+ 	struct mxser_port *info = tty->driver_data;
+ 
+ 	mxser_flush_buffer(tty);
+-	mxser_shutdown(tty);
+ 	tty_port_hangup(&info->port);
+ }
+ 
+@@ -2363,6 +2320,8 @@ static const struct tty_operations mxser_ops = {
+ struct tty_port_operations mxser_port_ops = {
+ 	.carrier_raised = mxser_carrier_raised,
+ 	.dtr_rts = mxser_dtr_rts,
++	.activate = mxser_activate,
++	.shutdown = mxser_shutdown_port,
+ };
+ 
+ /*
 
