@@ -1,134 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZKRCfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZKRCi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbZKRCfX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 21:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZKRCfX
+	id S1755539AbZKRCi0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 21:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZKRCiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 21:35:23 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47352 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbZKRCfW (ORCPT
+	Tue, 17 Nov 2009 21:38:25 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:16902 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbZKRCiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 21:35:22 -0500
-Date: Tue, 17 Nov 2009 18:35:43 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: gregkh@suse.de
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, root@localdomain.pl,
-       sukadev@linux.vnet.ibm.com,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] devpts_get_tty() should validate inode
-Message-ID: <20091118023541.GA14430@us.ibm.com>
+	Tue, 17 Nov 2009 21:38:25 -0500
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH 2.6.32] cxgb3: fix premature page unmap
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Tue, 17 Nov 2009 18:38:28 -0800
+Message-ID: <20091118023828.16411.57681.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Divy Le Ray <divy@chelsio.com>
 
-devpts_get_tty() assumes that the inode passed in is associated with a valid
-pty.  But if the only reference to the pty is via a bind-mount, the inode
-passed to devpts_get_tty() while valid, would refer to a pty that no longer
-exists.
+unmap Rx page only when guaranteed that this page won't be
+used anymore to allocate rx page chunks.
 
-With a lot of debug effort, Grzegorz Nosek developed a small program (see
-below) to reproduce a crash on recent kernels. This crash is a regression
-introduced by the commit:
-
-	commit 527b3e4773628b30d03323a2cb5fb0d84441990f
-	Author: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-	Date:   Mon Oct 13 10:43:08 2008 +0100
-
-To fix, ensure that the dentry associated with the inode has not yet been
-deleted/unhashed by devpts_pty_kill().
-
-See also:
-https://lists.linux-foundation.org/pipermail/containers/2009-July/019273.html 
-
-tty-bug.c:
-
-#define _GNU_SOURCE
-#include <fcntl.h>
-#include <sched.h>
-#include <stdlib.h>
-#include <sys/mount.h>
-#include <sys/signal.h>
-#include <unistd.h>
-#include <stdio.h>
-
-#include <linux/fs.h>
-
-void dummy(int sig)
-{
-}
-
-static int child(void *unused)
-{
-	int fd;
-
-	signal(SIGINT, dummy); signal(SIGHUP, dummy);
-	pause(); /* cheesy synchronisation to wait for /dev/pts/0 to appear */
-
-	mount("/dev/pts/0", "/dev/console", NULL, MS_BIND, NULL);
-	sleep(2);
-
-	fd = open("/dev/console", O_RDWR);
-	dup(0); dup(0);
-	write(1, "Hello world!\n", sizeof("Hello world!\n")-1);
-	return 0;
-}
-
-int main(void)
-{
-	pid_t pid;
-	char *stack;
-
-	stack = malloc(16384);
-	pid = clone(child, stack+16384, CLONE_NEWNS|SIGCHLD, NULL);
-
-	open("/dev/ptmx", O_RDWR|O_NOCTTY|O_NONBLOCK);
-
-	unlockpt(fd); grantpt(fd);
-
-	sleep(2);
-	kill(pid, SIGHUP);
-	sleep(1);
-	return 0; /* exit before child opens /dev/console */
-}
-
-Reported-by: Grzegorz Nosek <root@localdomain.pl>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
-Index: linux-2.6/fs/devpts/inode.c
-===================================================================
---- linux-2.6.orig/fs/devpts/inode.c	2009-10-20 21:11:03.000000000 -0700
-+++ linux-2.6/fs/devpts/inode.c	2009-11-17 16:07:16.000000000 -0800
-@@ -517,11 +517,23 @@
+
+ drivers/net/cxgb3/sge.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index f866128..6366061 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -879,7 +879,7 @@ recycle:
+ 	pci_dma_sync_single_for_cpu(adap->pdev, dma_addr, len,
+ 				    PCI_DMA_FROMDEVICE);
+ 	(*sd->pg_chunk.p_cnt)--;
+-	if (!*sd->pg_chunk.p_cnt)
++	if (!*sd->pg_chunk.p_cnt && sd->pg_chunk.page != fl->pg_chunk.page)
+ 		pci_unmap_page(adap->pdev,
+ 			       sd->pg_chunk.mapping,
+ 			       fl->alloc_size,
+@@ -2088,7 +2088,7 @@ static void lro_add_page(struct adapter *adap, struct sge_qset *qs,
+ 				    PCI_DMA_FROMDEVICE);
  
- struct tty_struct *devpts_get_tty(struct inode *pts_inode, int number)
- {
-+	struct dentry *dentry;
-+	struct tty_struct *tty;
-+
- 	BUG_ON(pts_inode->i_rdev == MKDEV(TTYAUX_MAJOR, PTMX_MINOR));
- 
-+	/* Ensure dentry has not been deleted by devpts_pty_kill() */
-+	dentry = d_find_alias(pts_inode);
-+	if (!dentry)
-+		return NULL;
-+
-+	tty = NULL;
- 	if (pts_inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)
--		return (struct tty_struct *)pts_inode->i_private;
--	return NULL;
-+		tty = (struct tty_struct *)pts_inode->i_private;
-+
-+	dput(dentry);
-+
-+	return tty;
- }
- 
- void devpts_pty_kill(struct tty_struct *tty)
+ 	(*sd->pg_chunk.p_cnt)--;
+-	if (!*sd->pg_chunk.p_cnt)
++	if (!*sd->pg_chunk.p_cnt && sd->pg_chunk.page != fl->pg_chunk.page)
+ 		pci_unmap_page(adap->pdev,
+ 			       sd->pg_chunk.mapping,
+ 			       fl->alloc_size,
+
