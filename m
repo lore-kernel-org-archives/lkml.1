@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZKRKzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZKRLJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbZKRKzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbZKRKzA
+	id S1751395AbZKRLJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 06:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZKRLJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:55:00 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33335 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbZKRKy7 (ORCPT
+	Wed, 18 Nov 2009 06:09:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49192 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbZKRLJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:54:59 -0500
-Subject: Re: [PATCH 2/7] mmc: Don't use PF_MEMALLOC
+	Wed, 18 Nov 2009 06:09:46 -0500
+Subject: Re: [Bug #14383] hackbench regression with kernel 2.6.32-rc1
 From: Peter Zijlstra <peterz@infradead.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org
-In-Reply-To: <28c262360911180231o7fcd2128hc9c40f4fffa3f7d6@mail.gmail.com>
-References: <20091117161711.3DDA.A69D9226@jp.fujitsu.com>
-	 <20091117102903.7cb45ff3@lxorguk.ukuu.org.uk>
-	 <20091117200618.3DFF.A69D9226@jp.fujitsu.com> <4B029C40.2020803@gmail.com>
-	 <1258490826.3918.29.camel@laptop>
-	 <28c262360911171601u618ca555o1dd51ea19168575e@mail.gmail.com>
-	 <1258538181.3918.138.camel@laptop>
-	 <28c262360911180231o7fcd2128hc9c40f4fffa3f7d6@mail.gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <xXQGFmujPl.A.65H.2TdALB@chimera>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.65H.2TdALB@chimera>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 18 Nov 2009 11:54:56 +0100
-Message-ID: <1258541696.3918.237.camel@laptop>
+Date: Wed, 18 Nov 2009 12:09:41 +0100
+Message-ID: <1258542581.3918.255.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -35,44 +30,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-18 at 19:31 +0900, Minchan Kim wrote:
-> >
-> > Sure some generic blocklevel infrastructure might work, _but_ you cannot
-> > take away the responsibility of determining the amount of memory needed,
-> > nor does any of this have any merit if you do not limit yourself to that
-> > amount.
-> 
-> Yes. Some one have to take a responsibility.
-> 
-> The intention was we could take away the responsibility from block driver.
-> Instead of driver, VM would take the responsibility.
-> 
-> You mean althgouth VM could take the responsiblity, it is hard to
-> expect amout of pages needed by block drivers? 
+On Mon, 2009-11-16 at 23:37 +0100, Rafael J. Wysocki wrote:
 
-Correct, its near impossible for the VM to accurately guess the amount
-of memory needed for a driver, or limit the usage of the driver.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14383
+> Subject		: hackbench regression with kernel 2.6.32-rc1
+> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Date		: 2009-10-09 9:19 (39 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=29cd8bae396583a2ee9a3340db8c5102acf9f6fd
+> References	: http://marc.info/?l=linux-kernel&m=125508007510274&w=4
+> Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-The driver could be very simple in that it'll just start a DMA on the
-page and get an interrupt when done, not consuming much (if any) memory
-beyond the generic BIO structure, but it could also be some iSCSI
-monstrosity which involves the full network stack and userspace.
 
-That is why I generally prefer the user of PF_MEMALLOC to take
-responsibility, because it knows its own consumption and can limit its
-own consumption.
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14384
+> Subject         : tbench regression with 2.6.32-rc1
+> Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Date            : 2009-10-09 9:51 (39 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=59abf02644c45f1591e1374ee7bb45dc757fcb88
+> References      : http://marc.info/?l=linux-kernel&m=125508216713138&w=4
+> Handled-By      : Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Now, I don't think (but I could be wring here) that you need to bother
-with PF_MEMALLOC unless you're swapping. File based pages should always
-be able to free some memory due to the dirty-limit, whcih basically
-guarantees that there are some clean file pages for every dirty file
-page.
 
-My swap-over-nfs series used to have a block-layer hook to expose the
-swap-over-block behaviour:
 
-http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v12.99/blk_queue_swapdev.patch
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14621
+> Subject         : specjbb2005 and aim7 regression with 2.6.32-rc kernels
+> Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Date            : 2009-11-06 7:38 (11 days old)
+> References      : http://marc.info/?l=linux-kernel&m=125749310413174&w=4
 
-That gives block devices the power to refuse being swapped over, which
-could be an alternative to using PF_MEMALLOC.
+
+Yanmin, could you please update me on the status of these regressions?
+
+Mike seems to have done a lot to address issues while I was out, and
+while I (hopefully) did read all resulting email, I must admit to
+loosing track of where we stand.
+
+
 
