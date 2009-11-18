@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZKRJnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZKRJst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZKRJnP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 04:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZKRJnO
+	id S1756517AbZKRJst (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 04:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZKRJss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 04:43:14 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51380 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbZKRJnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 04:43:14 -0500
-Message-ID: <4B03C1A7.4070305@cn.fujitsu.com>
-Date: Wed, 18 Nov 2009 17:43:03 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 18 Nov 2009 04:48:48 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:58544 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZKRJsr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 04:48:47 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH 1/3] macvlan: Reflect macvlan packets meant for other macvlan devices
+Date: Wed, 18 Nov 2009 10:47:07 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick McHardy <kaber@trash.net>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@linux-foundation.com,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+References: <1258497551-25959-1-git-send-email-arnd@arndb.de> <1258497551-25959-2-git-send-email-arnd@arndb.de> <4B03949D.4000908@gmail.com>
+In-Reply-To: <4B03949D.4000908@gmail.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH 2/2] lockdep: Don't only check recursive read locks once
- in a sequence
-References: <1258506398-5151-1-git-send-email-fweisbec@gmail.com> <1258506398-5151-3-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1258506398-5151-3-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911181047.07974.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/AfBLpyXxjvkgIt+iF40aa+GfynF6UkIk2kLR
+ YNlmiHCMVyiT0qfNSq07zN3oLcYua6M7h7KrrGHqV6PWLGqekc
+ haNYe1VLpz3YOwie8G8kA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> Say we have the following locks:
-> A (rwlock, Aw: writelock, Ar: recursive read lock)
-> B (normal lock)
+On Wednesday 18 November 2009, Eric Dumazet wrote:
+> > -     skb->dev = dev;
+> > -     skb->pkt_type = PACKET_HOST;
+> > +     skb->protocol = eth_type_trans(skb, dev);
+> > +     eth = eth_hdr(skb);
+> >  
+> > -     netif_rx(skb);
+> > -     return NULL;
+> > +     skb_dst_drop(skb);
 > 
-> and the following sequences:
-> Ar -> B -> Ar
-> Aw -> B
+> Why do you drop dst here ?
 > 
-> This won't be detected as a lock inversion
-
-"""
-read-preference <==> read-recursive ability  (rwlock)
-otherwise ==> read-recursive disability      (rwsem)
-"""
-
-If "B -> Ar" is always after "Ar", it's NOT a really
-lock inversion because rwlock is read-preference, we
-can ignore all "Ar" which are after "B".
-
-If sometimes "B -> Ar" is not after "Ar",
-then we have these sequences:
-B -> Ar
-Aw -> B
-
-Lockdep can detects it now(without this patch applied).
-
-Maybe I have misunderstood your patch.
-
-> because in the sequence
-> of locks held by the current task, if we have a same class acquired
-> as read-recursive several times, only the first one will be checked
-> in the tree (although all of them are checked for deadlocks in the
-> current held sequence).
+> It seems strange, since this driver specifically masks out IFF_XMIT_DST_RELEASE
+> in its macvlan_setup() :
 > 
-> Fix it by always adding recursive read locks in the dependency tree.
+> dev->priv_flags &= ~IFF_XMIT_DST_RELEASE;
 > 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ming Lei <tom.leiming@gmail.com>
-> ---
->  kernel/lockdep.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> If we really want to drop dst, it could be done by caller, if IFF_XMIT_DST_RELEASE
+> was not masked in macvlan_setup().
 > 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index a6f7440..13d1d54 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -1949,9 +1949,9 @@ static int validate_chain(struct task_struct *curr, struct lockdep_map *lock,
->  			hlock->read = 2;
->  		/*
->  		 * Add dependency only if this lock is not the head
-> -		 * of the chain, and if it's not a secondary read-lock:
-> +		 * of the chain.
->  		 */
-> -		if (!chain_head && ret != 2)
-> +		if (!chain_head)
->  			if (!check_prevs_add(curr, hlock))
->  				return 0;
->  		graph_unlock();
 
+That must be my fault, it is the only change I did to Eric B's patch when
+forward-porting to 2.6.32. The original patch did
+
+	skb->protocol = eth_type_trans(skb, dev);
+	eth = eth_hdr(skb);
+	dst_release(skb->dst);
+	skb->dst = NULL;
+	skb->mark = 0;
+
+and I tried to convert that in the same way that other drivers did, but I
+have to admit that I did not understand the mechanics of IFF_XMIT_DST_RELEASE.
+
+	Arnd <><
