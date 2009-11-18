@@ -1,131 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327AbZKRB2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZKRBaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756327AbZKRB2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 20:28:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZKRB2O
+	id S1756710AbZKRBaj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 20:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZKRBai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:28:14 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:46774 "EHLO e7.ny.us.ibm.com"
+	Tue, 17 Nov 2009 20:30:38 -0500
+Received: from ozlabs.org ([203.10.76.45]:56450 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbZKRB2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:28:13 -0500
-Subject: Re: -rt dbench scalabiltiy issue
-From: john stultz <johnstul@us.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091017223902.GA29439@wotan.suse.de>
-References: <1255723519.5135.121.camel@localhost.localdomain>
-	 <20091017223902.GA29439@wotan.suse.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 17 Nov 2009 17:28:16 -0800
-Message-ID: <1258507696.2077.61.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1756568AbZKRBaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 20:30:35 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adam Litke <agl@us.ibm.com>
+Subject: Re: virtio: Add memory statistics reporting to the balloon driver (V2)
+Date: Wed, 18 Nov 2009 12:00:39 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: qemu-devel@nongnu.org, Anthony Liguori <aliguori@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, virtualization@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1258488996.2820.35.camel@aglitke> <1258490189.2820.37.camel@aglitke>
+In-Reply-To: <1258490189.2820.37.camel@aglitke>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911181200.39971.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-18 at 00:39 +0200, Nick Piggin wrote:
-> On Fri, Oct 16, 2009 at 01:05:19PM -0700, john stultz wrote:
-> > 2.6.31.2-rt13-nick on ramfs:
-> >     46.51%         dbench  [kernel]                  [k] _atomic_spin_lock_irqsave
-> >                 |          
-> >                 |--86.95%-- rt_spin_lock_slowlock
-> >                 |          rt_spin_lock
-> >                 |          |          
-> >                 |          |--50.08%-- dput
-> >                 |          |          |          
-> >                 |          |          |--56.92%-- __link_path_walk
-> >                 |          |          |          
-> >                 |          |           --43.08%-- path_put
-> >                 |          |          
-> >                 |          |--49.12%-- path_get
-> >                 |          |          |          
-> >                 |          |          |--63.22%-- path_walk
-> >                 |          |          |          
-> >                 |          |          |--36.73%-- path_init
-> >                 |          
-> >                 |--12.59%-- rt_spin_lock_slowunlock
-> >                 |          rt_spin_unlock
-> >                 |          |          
-> >                 |          |--49.86%-- path_get
-> >                 |          |          |          
-> >                 |          |          |--58.15%-- path_init
-> >                 |          |          |          |          
-> > ...
-> > 
-> > 
-> > So the net of this is: Nick's patches helped some but not that much in
-> > ramfs filesystems, and hurt ext3 performance w/ -rt.
-> > 
-> > Maybe I just mis-applied the patches? I'll admit I'm unfamiliar with the
-> > dcache code, and converting the patches to the -rt tree was not always
-> > straight forward.
+On Wed, 18 Nov 2009 07:06:29 am Adam Litke wrote:
+> virtio: Add memory statistics reporting to the balloon driver (V2)
 > 
-> The above are dentry->d_lock, and they are rom path walking. It has
-> become more pronounced because I use d_lock to protect d_count rather
-> than an atomic_t (which saves on atomic ops).
-> 
-> But the patchset you have converted it missing the store-free path wailk
-> patches which will get rid of most of this. The next thing you hit is
-> glibc reading /proc/mounts to implement statvfs :( If you turn that call
-> into statfs you'll get a little further (but we need to improve statfs
-> support for glibc so it doesn't need those hacks).
-> 
-> And then you run into something else, I'd say d_lock again for creating
-> and unlinking things, but I didn't get a chance to profile it yet.
-> 
-> > Ingo, Nick, Thomas: Any thoughts or comments here? Am I reading perf's
-> > results incorrectly? Any idea why with Nick's patch the contention in
-> > dput() hurts ext3 so much worse then in the ramfs case?
-> 
-> ext3 may be doing more dentry refcounting which is hitting the spin
-> lock. I _could_ be persuaded to turn it back to an atomic_t, however
-> I will want to wait until other things like the path walking is more
-> mature which should take a lot of pressure off it.
-> 
-> Also... dbench throughput in exchange for adding an extra atomic at
-> dput-time is... not a good idea. We would need some more important
-> workloads I think (even a real samba serving netbench would be
-> preferable).
+> Changes since V1:
+>  - Use a virtqueue instead of the device config space
 
+Hi Adam,
 
-Hey Nick,
-	Just an update here, I moved up to your 09102009 patch, and spent
-awhile playing with it.
+    If Anthony's happy, I'm happy with this approach.
 
-Just as you theorized, moving d_count back to an atomic_t does seem to
-greatly improve the performance on -rt. 
+Couple of minor points:
 
-Again, very very rough numbers for an 8-way system:
+> +static inline void update_stat(struct virtio_balloon *vb, int idx,
+> +				unsigned int tag, unsigned long val)
+> +{
+> +	BUG_ON(idx >= VIRTIO_BALLOON_S_NR);
+> +	vb->stats[idx].tag = tag;
+> +	vb->stats[idx].val = cpu_to_le32(val);
+> +}
 
-				ext3		ramfs 
-2.6.32-rc3:			~1800 MB/sec	~1600 MB/sec
-2.6.32-rc3-nick			~1800 MB/sec	~2200 MB/sec
-2.6.31.2-rt13:			 ~300 MB/sec	  ~66 MB/sec
-2.6.31.2-rt13-nick:		  ~80 MB/sec	 ~126 MB/sec
-2.6.31.6-rt19-nick+atomic:	 ~400 MB/sec	~2200 MB/sec
+The little-endian conversion of the balloon driver is a historical mistake
+(no other driver does this).  Let's not extend it to the stats.
 
->From the perf report, all of the dcache related overhead has fallen
-away, and it all seems to be journal related contention at this point
-that's keeping the ext3 numbers down.
+Here you've done one and not the other, which is even worse.  (Sparse would
+have found this, I assume).
 
-So yes, on -rt, the overhead from lock contention is way way worse then
-any extra atomic ops. :)
+> +struct virtio_balloon_stat
+> +{
+> +	__le16 tag;
+> +	__le32 val;
+> +};
 
-I'm not totally convinced I did the conversion back to atomic_t's
-properly, so I'm doing some stress testing, but I'll hopefully have
-something to send out for review soon. 
+Is 32 bits sufficient?  A big machine might get over 4bn faults, and certainly
+4 TB of memory isn't that far away.
 
-As for your concern about dbench being a poor benchmark here, I'll try
-to get some numbers on iozone or another suggested workload and get
-those out to you shortly.
-
-thanks
--john
-
+Thanks,
+Rusty.
