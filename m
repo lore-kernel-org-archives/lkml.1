@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZKREp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZKRFEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbZKREp1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 23:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZKREp0
+	id S1751490AbZKRFEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 00:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZKRFEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 23:45:26 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:34574 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755055AbZKREp0 (ORCPT
+	Wed, 18 Nov 2009 00:04:50 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:33811 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZKRFEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 23:45:26 -0500
-Message-ID: <4B037B3A.7010700@zytor.com>
-Date: Tue, 17 Nov 2009 20:42:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 18 Nov 2009 00:04:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=auG3Sg6H4pWgfPMvOXlIRtBlPFUjFA3kP9SlRRda5XefUOt7yE4zHe3QIuqxnpXGeV
+         rM0EW3hTHzr3Qpp5CMJeRlmGiRTIitfcYrYAoURMuaxxFGx47YmtsPQnc/9MmZBOl8Nt
+         nYmh93sZlRLMihD0WNWxPc5Xv+Kmv8n6kkhvc=
+Message-ID: <4B03806F.7010803@gmail.com>
+Date: Wed, 18 Nov 2009 00:04:47 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Masami Hiramatsu <mhiramat@redhat.com>, linux-next@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Randy Dunlap <rdunlap@xenotime.net>, Jim Keniston <jkenisto@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -next 0/3] x86 insn decoder test updates (Re: linux-next:
- Tree for October 29 (x86 posttest))
-References: <20091116230611.5250.86656.stgit@harusame> <20091117061352.GE30852@elte.hu>
-In-Reply-To: <20091117061352.GE30852@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+To: David Miller <davem@davemloft.net>
+CC: huananhu@huawei.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
+References: <faf197be196ee.196eefaf197be@huawei.com>	<20091117.012248.86306050.davem@davemloft.net>	<4B0278D9.6030806@gmail.com> <20091117.034959.159359822.davem@davemloft.net>
+In-Reply-To: <20091117.034959.159359822.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/16/2009 10:13 PM, Ingo Molnar wrote:
+David Miller wrote:
+> From: William Allen Simpson <william.allen.simpson@gmail.com>
+> Date: Tue, 17 Nov 2009 05:20:09 -0500
 > 
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>> What David may have meant, had he followed
+>> Documentation/ManagementStyle or had any project management skills
+>> what-so-ever, is that you need to follow
+>> Documentation/SubmittingPatches more carefully.
 > 
->> Here are the patches which update x86 instruction decoder build-time 
->> test. As Stephen reported on linux-next, sometimes objdump decodes bad 
->> instructions as normal. This will cause a false positive result on x86 
->> insn decoder test. This patches update the test as below;
->>
->>  - Show more information with V=1
->>  - Show in which symbol the difference places.
->>  - Just warning instead of build failure.
+> Are personal attacks on me really necessary?
 > 
-> yes, -tip testing was showing such build bugs too:
-> 
->  Error: ffffffff8104aae3:	c5 83 3d 49 80 ee    	lds    0xffffffffee80493d(%rbx),%eax
->  Error: objdump says 6 bytes, but insn_get_length() says 3 (attr:0)
-> 
-> it happens with older tools, such as binutils-2.17. Modern binutils 
-> (2.19) is fine.
-> 
-> We dont want to remove the build error: it helped us fix a number of 
-> real bugs in the decoder - instead please try to create a make based 
-> workaround based on binutils, to not run the test with binutils older 
-> than 2.19 or so.
-> 
+Actually, ironic sarcasm (juxtaposition) is a form of humor, fairly
+popular on such venues as "The Daily Show". :-)
 
-One idea might be to instead of binutils to use NASM.  The entire NASM
-disassembler is small enough (about 10,000 lines including build tools
-and instruction database) that we could fit it in the tree in a pinch.
 
-	-hpa
+> Do you want me to look closely at your patches with a high priority
+> when you submit them for inclusion?
+> 
+Great, you're planning to start a new practice?  So far, I've only been
+blessed with:
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+* 1st contact (Oct 2):
+
+      "Otherwise asking for a is absolutely pointless as we have no
+      context in which to judge the code you're showing us."
+
+   The context (and entire previous patch) was pointed at by a link
+   in the message, and an internet-draft, but that would have required
+   effort (clicking and browsing).
+
+   Not exactly what I'd call "look closely at your patches"....
+
+* 2nd contact (Oct 5), replying to my post of Oct 3:
+
+      "struct tcp_sock is already WAY TOO BIG on 64-bit systems, adding
+      20 more bytes to it for some odd-ball feature is not something I'm
+      willing to do, sorry."
+
+   Always delighted to know our work is an "odd-ball feature"....
+
+* 3rd contact, sending private email to you as maintainer, suggested by
+   Andi Kleen's "On submitting kernel patches" for resolving conflicts,
+   and getting flamed for sending private email to you!
+
+* Recently, flamed for re-sending a query (after waiting 30 days):
+
+      "Complaining that your work isn't getting looked at in a timely
+      manner will always have the exact opposite effect that you want,
+      it makes people have a smaller desire to look at your stuff."
+
+   Yeah, 30 days just isn't long enough....  Fortunately, Eric Dumazet
+   and Paul E. McKenney were really helpful (and others privately), and
+   I thank them again!
+
+* 2 days ago, flamed again for re-sending a patch (after waiting 5 days),
+   although you'd never Ack'd or otherwise responded.
+
+
+> You may be right, but that doesn't matter if you're interested in
+> working together with me in the future.  There are diplomatic ways to
+> do everything, and this wasn't one of those ways.
+> 
+Working *together* would be handy!  But that implies cooperation and
+respect -- *not* biting the newbies nor dropping the F-bomb.
 
