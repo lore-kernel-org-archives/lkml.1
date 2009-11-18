@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZKRKlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZKRSnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbZKRKlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 05:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZKRKlV
+	id S1755849AbZKRSnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZKRSnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 05:41:21 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51052 "EHLO mx1.suse.de"
+	Wed, 18 Nov 2009 13:43:18 -0500
+Received: from fifo99.com ([67.223.236.141]:47689 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753159AbZKRKlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 05:41:20 -0500
-Date: Wed, 18 Nov 2009 11:41:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Russ Dill <russ.dill@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: Use of usb_find_interface in open is racy
-In-Reply-To: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
-References: <f9d2a5e10911171306r416eaf2k45c3256370e82eda@mail.gmail.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1755669AbZKRSnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:43:17 -0500
+Subject: Re: Status of Dream series
+From: Daniel Walker <dwalker@fifo99.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>, San Mehat <san@google.com>,
+       Iliyan Malchev <malchev@google.com>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20091118181824.GK25150@elf.ucw.cz>
+References: <20091111104748.GA26975@elf.ucw.cz>
+	 <1258135899.6411.7.camel@c-dwalke-linux.qualcomm.com>
+	 <20091118170238.GE20887@elf.ucw.cz> <1258537122.8014.2.camel@ubuntu>
+	 <20091118181824.GK25150@elf.ucw.cz>
+Content-Type: text/plain
+Date: Wed, 18 Nov 2009 10:42:35 +0000
+Message-Id: <1258540955.8014.4.camel@ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-[ linux-usb should be CCed here at least ]
-
-On Tue, 17 Nov 2009, Russ Dill wrote:
-
-> Many usb drivers that create character devices use "struct
-> usb_class_driver", a set of fops, and a usb_find_interface in their
-> open call. A prime example is drivers/usb/usb-skeleton.c. A race
-> occurs when userspace receives a hotplug event for the addition for
-> the interface and then opens the associated device file before the
-> device is added to the driver's klist_devices.
+On Wed, 2009-11-18 at 19:18 +0100, Pavel Machek wrote:
+> Hi!
 > 
-> The usb core senses a new usb device (usb_new_device) and calls
-> device_add. This eventually gets down to really_probe and the
-> usb-skeleton probe function, skel_probe. skel_probe calls
-> usb_register_dev() which registers the associated character device for
-> skel_class. The hotplug events for the class device get emitted.
+> > > > > Russell, what is the status of the "Dream" series? 
+> > > > > 
+> > > > >  [PATCH 1/3] msm: make debugging UART (for DEBUG_LL) configurable
+> > > > >  [PATCH 2/3] msm: add minimal board file for HTC Dream device
+> > > > >  [PATCH 3/3] msm: Add memory map for HTC Dream
+> > > > > 
+> > > > > Daniel Walker offered to maintain arch-msm tree, would that help? 
+> > > > 
+> > > > Yeah, I can do it for now, but I can't accept patches for it via this
+> > > > email address.. I'm in the processes of setting up the right address for
+> > > > it .. Might take till next week tho.
+> > > 
+> > > Ok, can I just add your acked-by, and send them to akpm/rmk? These
+> > > three are simple enough...
+> > 
+> > Didn't Russell have some pending comments? Anyway, I have them already
+> > in my korg git tree. So I can move them forward from there , but it's
+> > temporary ..
 > 
-> User space receives the hotplug event for the class device, makes the
-> device node and notifies another program that opens the device node.
-> The program opens the device node which calls into usb_open and then
-> skel_open. skel_open calls usb_find_interface. usb_find_interfaces
-> searches the klist_devices of skel_driver, finds no device associated
-> with the minor number and returns NULL. skel_open returns -ENODEV.
-> 
-> Control returns to really_probe and really_probe calls driver_bound
-> which adds the device to the list of devices associated with
-> skel_driver (klist_devices).
-> 
-> I'm not sure what the right way to solve this is. A call to
-> wait_for_device_probe() in the skel_open call before calling
-> usb_find_interface fixes the problem, but it is a rather large hammer.
+> Here's fixed #2. I guess we can add rmk's reviewed-by (and yours?) and
+> send them forward?
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+I'll add my sign off, put them into my git tree (which is included in
+linux-next) , the eventually push them to Linus when the merge window
+opens ..
+
+Daniel
 
