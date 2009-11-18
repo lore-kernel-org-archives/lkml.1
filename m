@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZKRV1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZKRV2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbZKRV1z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 16:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZKRV1y
+	id S1757487AbZKRV2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 16:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZKRV2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 16:27:54 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:33192 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754938AbZKRV1x (ORCPT
+	Wed, 18 Nov 2009 16:28:43 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:38635 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757354AbZKRV2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 16:27:53 -0500
-Date: Thu, 19 Nov 2009 08:27:55 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/12] writeback: remove unused nonblocking and
-	congestion checks (xfs)
-Message-ID: <20091118212755.GM9467@discord.disaster>
-References: <20091118082648.140755818@intel.com> <20091118082846.279046849@intel.com>
+	Wed, 18 Nov 2009 16:28:43 -0500
+Date: Wed, 18 Nov 2009 16:28:48 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
+ UHCI
+In-Reply-To: <4B0452D1.2050805@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0911181614010.2745-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118082846.279046849@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 04:26:55PM +0800, Wu Fengguang wrote:
-> No one is calling wb_writeback and write_cache_pages with
-> wbc.nonblocking=1 any more. And lumpy pageout will want to do
-> nonblocking writeback without the congestion wait.
+On Wed, 18 Nov 2009, Simon Arlott wrote:
 
-....
+> > You may have to do a bisection search to find the answer.
+> 
+> With what? I can't really bisect "the UHCI code" and "the OHCI code"...
+> 
+> I have no good kernel to work with unless I start trying really old kernels,
+> but there's no reason why those should work either. I'm hoping someone
+> recognises the significance of the transfer speed.
 
-> --- linux.orig/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:22:35.000000000 +0800
-> +++ linux/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:52:21.000000000 +0800
-> @@ -908,12 +908,8 @@ xfs_convert_page(
->  
->  			bdi = inode->i_mapping->backing_dev_info;
->  			wbc->nr_to_write--;
-> -			if (bdi_write_congested(bdi)) {
-> -				wbc->encountered_congestion = 1;
+If you don't have a good kernel to start from then there's nothing to
+search for.  I was assuming that a relatively recent kernel change
+might have caused the slow-down, but if it has been this way for a long
+time then a different approach is needed.
 
-bdi is unused now, so can be removed as well. Otherwise looks fine.
+There's no particular significance to 256 ms that I know of, although
+if the hardware is malfunctioning it could easily pick such a rate.  
+The page size is significant because that's how the driver and the
+hardware divide up transfers; each Transfer Descriptor refers to at 
+most 4096 bytes of data.
 
-Cheers,
+> The OHCI code appears to split the data up into 4096 chunks, but even the
+> odd sized transfer of 25280 bytes at the end runs at the same speed:
+> 
+> [ 4774.830569] cxacru: sending fw 0x3 size 0x62c0 to #98668
+> [ 4776.410375] cxacru: sending fw 0x3 size 0x100 to #e0
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Yep.  My intuition says "hardware problem", but there's no hard 
+evidence one way or another.
+
+What happens with other sorts of devices, such as a USB flash drive?
+
+Alan Stern
+
