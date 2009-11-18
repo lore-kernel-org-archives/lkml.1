@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZKRHY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbZKRH00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752110AbZKRHY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 02:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZKRHY6
+	id S1752190AbZKRH00 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 02:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZKRH0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 02:24:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60976
+	Wed, 18 Nov 2009 02:26:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60984
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751859AbZKRHY6 (ORCPT
+	by vger.kernel.org with ESMTP id S1751859AbZKRH0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 02:24:58 -0500
-Date: Tue, 17 Nov 2009 23:25:14 -0800 (PST)
-Message-Id: <20091117.232514.243180414.davem@davemloft.net>
-To: rakesh@chelsio.com
-Cc: michaelc@cs.wisc.edu, open-iscsi@googlegroups.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@suse.de, kxie@chelsio.com
-Subject: Re: [RFC-PATCH] libiscsi dhcp handler
+	Wed, 18 Nov 2009 02:26:25 -0500
+Date: Tue, 17 Nov 2009 23:26:42 -0800 (PST)
+Message-Id: <20091117.232642.201632251.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, sparclinux@vger.kernel.org
+Subject: Re: [patch 04/13] sparc: Fixup last users of irq_chip->typename 
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B03697F.9090200@chelsio.com>
-References: <20091116.051835.125328285.davem@davemloft.net>
-	<4B01577E.2020003@chelsio.com>
-	<4B03697F.9090200@chelsio.com>
+In-Reply-To: <20091117224916.491090342@linutronix.de>
+References: <20091117224852.846805939@linutronix.de>
+	<20091117224916.491090342@linutronix.de>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,10 +27,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rakesh Ranjan <rakesh@chelsio.com>
-Date: Wed, 18 Nov 2009 08:56:55 +0530
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 17 Nov 2009 22:50:40 -0000
 
-> ping ...
+> The typename member of struct irq_chip was kept for migration purposes
+> and is obsolete since more than 2 years. Fix up the leftovers.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-I'm too busy, if you're waiting for me.  It could take weeks for me to
-get to this, sorry.
+Acked-by: David S. Miller <davem@davemloft.net>
