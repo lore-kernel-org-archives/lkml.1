@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbZKRRBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbZKRRFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbZKRRBt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbZKRRBs
+	id S1757949AbZKRRFK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbZKRRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:01:48 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:58556 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757935AbZKRRBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:01:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=tMhA9I19lCgdE1s3i9IMMNgybbGaYgfrxkATvb2fbPXaZoq4qrXnxFzjk4M1akD8bs
-         XFdKz+Ju7RPQV8kY4rNKFI6y0bfD65huiWxZqQHO/RTcIf5sHDJnQlo34kiCO7Pv0B0Y
-         RY2Vl25ZHxqH54PZ+hVfZr0d4L+PENaX6rRXI=
+	Wed, 18 Nov 2009 12:05:09 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:38388 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757749AbZKRRFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 12:05:08 -0500
+Date: Wed, 18 Nov 2009 17:05:10 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
+	without CONFIG_XICS set
+Message-ID: <20091118170510.GA1119@csn.ul.ie>
+References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie> <1258524332.2140.663.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <20091118153947.GA32440@kroah.com>
-References: <alpine.LRH.2.00.0911181141030.31913@twin.jikos.cz>
-	 <Pine.LNX.4.44L0.0911181029110.3036-100000@iolanthe.rowland.org>
-	 <20091118153947.GA32440@kroah.com>
-Date: Wed, 18 Nov 2009 10:01:52 -0700
-Message-ID: <f9d2a5e10911180901o7f2c5ab7jfc8154e29c895ebc@mail.gmail.com>
-Subject: Re: Use of usb_find_interface in open is racy
-From: Russ Dill <russ.dill@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1258524332.2140.663.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 8:39 AM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Nov 18, 2009 at 10:31:47AM -0500, Alan Stern wrote:
->> On Wed, 18 Nov 2009, Jiri Kosina wrote:
->>
->> > On Tue, 17 Nov 2009, Russ Dill wrote:
->> >
->> > > Many usb drivers that create character devices use "struct
->> > > usb_class_driver", a set of fops, and a usb_find_interface in their
->> > > open call. A prime example is drivers/usb/usb-skeleton.c. A race
->> > > occurs when userspace receives a hotplug event for the addition for
->> > > the interface and then opens the associated device file before the
->> > > device is added to the driver's klist_devices.
->> > >
->> > > The usb core senses a new usb device (usb_new_device) and calls
->> > > device_add. This eventually gets down to really_probe and the
->> > > usb-skeleton probe function, skel_probe. skel_probe calls
->> > > usb_register_dev() which registers the associated character device for
->> > > skel_class. The hotplug events for the class device get emitted.
->> > >
->> > > User space receives the hotplug event for the class device, makes the
->> > > device node and notifies another program that opens the device node.
->> > > The program opens the device node which calls into usb_open and then
->> > > skel_open. skel_open calls usb_find_interface. usb_find_interfaces
->> > > searches the klist_devices of skel_driver, finds no device associated
->> > > with the minor number and returns NULL. skel_open returns -ENODEV.
->> > >
->> > > Control returns to really_probe and really_probe calls driver_bound
->> > > which adds the device to the list of devices associated with
->> > > skel_driver (klist_devices).
->> > >
->> > > I'm not sure what the right way to solve this is. A call to
->> > > wait_for_device_probe() in the skel_open call before calling
->> > > usb_find_interface fixes the problem, but it is a rather large hammer.
->>
->> I think the proper answer is for usb_find_interface() to use
->> bus_for_each_dev() instead of driver_for_each_device().
->
-> Yeah, I think so, sorry about that I think this is my fault :(
->
-> I'm travelling all today, could someone make up a patch for this before
-> Thursday if it's an issue?
->
-> Russ, have you ever hit this problem, or did you just find it by looking
-> at the code?
->
+On Wed, Nov 18, 2009 at 05:05:32PM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-11-17 at 12:07 +0000, Mel Gorman wrote:
+> > KConfig doesn't require CONFIG_XICS to be set with CONFIG_PSERIES but if
+> > it's not set, there are numerous small build errors. This is a small series
+> > of patches to allow CONFIG_XICS to be unset in the config.
+> > 
+> > XICS appears to be some sort of interrupt controller but I'm not sure how
+> > common it is on systems that require CONFIG_PSERIES. If CONFIG_PSERIES
+> > universally requires CONFIG_XICS, the better path might be to force it to
+> > be set.
+> > 
+> > Testing was building with make oldconfig a configuration from 2.6.31 on
+> > a PPC970.
+> 
+> CONFIG_XICS should be made invisible and selected by PSERIES.
+> 
 
-Yes, I'm utilizing devtmpfs to create device nodes and I have an app
-that handles hotplug events directly (no udev). Even with that small
-amount of overhead, the race does not occur every time, but it still
-occurs most of the time.
+Like so?
 
-My initial fix was to add the device to the driver's device list
-sooner, but the change to usb_find_interface seems less intrusive and
-less likely to cause problems with other code that calls
-driver_for_each_device, driver_find_device, or uses
-BUS_NOTIFY_BOUND_DRIVER.
+==== CUT HERE ====
 
-I'll work up a patch with the change to usb_find_interface, do some
-testing, and email it.
+powerpc: Add Kconfig dependency on PCI_MSI for XICS and select for PSERIES
+
+It's possible to set CONFIG_XICS without CONFIG_PCI_MSI. When that
+happens, the kernel fails to build with
+
+arch/powerpc/platforms/built-in.o: In function `.xics_startup':
+xics.c:(.text+0x12f60): undefined reference to `.unmask_msi_irq'
+make: *** [.tmp_vmlinux1] Error 1
+
+Furthermore, as noted by Benjamin Herrenschmidt, "CONFIG_XICS should be
+made invisible and selected by PSERIES."
+
+This patch adds the dependency in KConfig for XICS on PCI_MSI. When
+PSERIES support is being configured, both options are silently selected.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ arch/powerpc/platforms/Kconfig         |    4 ++--
+ arch/powerpc/platforms/pseries/Kconfig |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 04a8061..a82c470 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -52,9 +52,9 @@ config PPC_UDBG_BEAT
+ 	default n
+ 
+ config XICS
+-	depends on PPC_PSERIES
++	depends on PCI_MSI
+ 	bool
+-	default y
++	default n
+ 
+ config IPIC
+ 	bool
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index f0e6f28..81c2289 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -5,6 +5,8 @@ config PPC_PSERIES
+ 	select PPC_I8259
+ 	select PPC_RTAS
+ 	select RTAS_ERROR_LOGGING
++	select PCI_MSI
++	select XICS
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
+ 	select PPC_PCI_CHOICE if EMBEDDED
