@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbZKRPsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZKRPvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbZKRPsF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 10:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZKRPsE
+	id S1757419AbZKRPvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 10:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZKRPvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 10:48:04 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:41510 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757220AbZKRPsD (ORCPT
+	Wed, 18 Nov 2009 10:51:11 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:53177 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754503AbZKRPvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 10:48:03 -0500
-Date: Wed, 18 Nov 2009 16:48:08 +0100
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
-Message-ID: <20091118154808.GE13902@gamma.logic.tuwien.ac.at>
-References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at>
+	Wed, 18 Nov 2009 10:51:10 -0500
+Date: Wed, 18 Nov 2009 10:51:15 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>,
+       <accessrunner-general@lists.sourceforge.net>
+Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
+ UHCI
+In-Reply-To: <f9dbd9c6516a5f8e45d3883636b97bd5a9c2c1e5@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+Message-ID: <Pine.LNX.4.44L0.0911181045060.3036-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c0c067900911172356n2717ce9dn8a4231345903fde6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Norbert Preining <preining@logic.at>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 18 Nov 2009, Simon Arlott wrote:
 
-(please Cc)
-
-Thanks Dan for your email, it was very enlightening!!!
-
-I have seen that post I am replying to:
-
-On Mon, 18 Nov 2009, Dan Merillat wrote:
-> 1.7gb of disk cache, 750 meg of free RAM, and it swaps out 300meg in a
-> matter of seconds when given access to a swapfile, then thrashes the
-> disk like crazy because that RAM was actively in use. From an
-> interactivity standpoint the machine is unusable - 1-2 second pauses
-> on mouse movement, 10-15 seconds for the window manager to change
-> window focus, keypresses take 1-2 seconds to show up, etc.  When I
-> issue a swapoff it takes 10-15  minutes for it to slowly pull it all
-> back in - once it's done I run fine.
-
-
-And back in the beginning of October I reported something very similar:
-
-
-On Mo, 05 Okt 2009, preining wrote:
-> I am experiencing IO stalls of real serious dimensions. I mean up to 20secs
-> waiting for some operations.
+> Can anyone explain this speed difference I'm seeing with usb_bulk_msg()?
 > 
-> That normally happeny when I do a svn up on a big subversion repository,
-> but even on other locations.
+> Increasing the size of the data doesn't improve the speed at all. This
+> makes firmware loading take significantly longer with OHCI.
 > 
-> Yesterday a simple sync took 30sec although I was not doing anything else.
+> I've tested this with two UHCI controllers, two OHCI controllers, and
+> two different versions of the device. Even on the same system with the
+> same device the speed difference occurs between OHCI and UHCI.
+> 
+> I've added a debug line to drivers/usb/atm/cxacru.c in cxacru_fw(),
+> which uploads the firmware in PAGE_SIZE chunks:
+> +                       printk(KERN_INFO "cxacru: sending fw %#x size %#x to %#x", fw, offb, offd);
+>                         ret = usb_bulk_msg(usb_dev, usb_sndbulkpipe(usb_dev, CXACRU_EP_CMD),
+> 
+> 
+> With OHCI and PAGE_SIZE chunks (4KB):
+> [2567188.504299] cxacru: sending fw 0x3 size 0x1000 to 0xe00
+> [2567188.760293] cxacru: sending fw 0x3 size 0x1000 to 0x1c00
+> [2567189.016258] cxacru: sending fw 0x3 size 0x1000 to 0x2a00
+> [2567189.272235] cxacru: sending fw 0x3 size 0x1000 to 0x3800
+> [2567189.528210] cxacru: sending fw 0x3 size 0x1000 to 0x4600
+> [2567189.784488] cxacru: sending fw 0x3 size 0x1000 to 0x5400
+> ...
+> [2567233.044134] cxacru: sending fw 0x3 size 0x2c0 to 0x98668
 
+...
 
-So what normally trashed my system to a quasi halt I tried after a swapoff -a,
-*two* svn up of really big repositories (some Gb), plus starting 
-VirtualBox Windows XP with 1Gb virtual RAM on a 2Gb machine.
+> With OHCI and PAGE_SIZE*8 chunks (32KB):
+> [ 4731.826738] cxacru: sending fw 0x3 size 0x8000 to 0x7000
+> [ 4733.874628] cxacru: sending fw 0x3 size 0x8000 to 0xe000
+> [ 4735.922353] cxacru: sending fw 0x3 size 0x8000 to 0x15000
+> [ 4737.970153] cxacru: sending fw 0x3 size 0x8000 to 0x1c000
+> [ 4740.017937] cxacru: sending fw 0x3 size 0x8000 to 0x23000
+> [ 4742.065814] cxacru: sending fw 0x3 size 0x8000 to 0x2a000
+> ...
+> [ 4774.830569] cxacru: sending fw 0x3 size 0x62c0 to #98668
 
-And see hoho, no problem at all. Everything remains responsive and happy.
-The memory was never above 60% in use, but 40% in cache, and all 
-without any problems.
+Each OHCI transfer requires about 256 ms per 4-KB page.  There's no 
+obvious reason for this to take so long.  I'd guess it was caused by a 
+hardware problem except that you say the same thing happened with two 
+different controllers.  Were they both on the same computer?
 
-So that seems to be a real bug.
+You may have to do a bisection search to find the answer.
 
-I am running currently 2.6.32-rc7, but experienced that already in the
-31-rc version. Hard to pinpoint exactely where it happens.
+Alan Stern
 
-If I can run some patches *please* let me know.
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining                                        Associate Professor
-JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
-Vienna University of Technology                               preining@logic.at
-Debian Developer (Debian TeX Task Force)                    preining@debian.org
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-GLENWHILLY (n. Scots)
-A small tartan pouch worn beneath the kilt during the thistle-harvest.
-			--- Douglas Adams, The Meaning of Liff
