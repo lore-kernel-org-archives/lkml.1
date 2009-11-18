@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbZKRXSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZKRXTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757158AbZKRXSJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 18:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZKRXSI
+	id S1757602AbZKRXTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 18:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbZKRXTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 18:18:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53034 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753685AbZKRXSH (ORCPT
+	Wed, 18 Nov 2009 18:19:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45786 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbZKRXTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 18:18:07 -0500
-Date: Wed, 18 Nov 2009 15:18:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH]  [for mmotm-1113] mm: Simplify try_to_unmap_one()
-Message-Id: <20091118151803.35f55ca3.akpm@linux-foundation.org>
-In-Reply-To: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
-References: <20091117173759.3DF6.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Nov 2009 18:19:04 -0500
+Message-ID: <4B0480C4.6080003@zytor.com>
+Date: Wed, 18 Nov 2009 15:18:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, andi@firstfloor.org, rth@redhat.com,
+       mhiramat@redhat.com
+Subject: Re: [RFC PATCH 0/6] jump label v3
+References: <cover.1258580048.git.jbaron@redhat.com>	<4B047A81.3060104@zytor.com> <20091118230758.0C49A9D5@magilla.sf.frob.com>
+In-Reply-To: <20091118230758.0C49A9D5@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Nov 2009 17:39:27 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On 11/18/2009 03:07 PM, Roland McGrath wrote:
+>> 67 66 8D 74 00 (lea si,[si+0]) should work as a 32-bit atomic NOP.  It's
+>> not necessarily the fastest, though (I have no data on that.)
+>> Similarly, 66 66 66 66 90 should also work.
+> 
+> We should get all the knowledge like that stored in places like the
+> Kconfig.cpu comments near X86_P6_NOP and/or asm/nops.h macros and comments.
+> 
+> Let's have an ASM_ATOMIC_NOP5 macro in asm/nops.h?  I've lost track of the
+> variants, and I'll leave that to you all who are close to the chip people.
+> 
+> I can't tell if it's the case that there will be kernel configurations
+> where there is one known-safe choice but a different choice that's optimal
+> if CPU model checks pass.  If so, we could compile in the safe choice and
+> then mass-change to the optimal choice at boot time.  (i.e. like the
+> alternatives support, but we don't really need to use that too since we
+> already have another dedicated table of all the PC addresses to touch.)
 
-> +out_mlock:
-> +	pte_unmap_unlock(pte, ptl);
-> +
-> +	if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
-> +		if (vma->vm_flags & VM_LOCKED) {
-> +			mlock_vma_page(page);
-> +			ret = SWAP_MLOCK;
->  		}
-> +		up_read(&vma->vm_mm->mmap_sem);
-
-It's somewhat unobvious why we're using a trylock here.  Ranking versus
-lock_page(), perhaps?
-
-In general I think a trylock should have an associated comment which explains
-
-a) why it is being used at this site and
-
-b) what happens when the trylock fails - why this isn't a
-   bug, how the kernel recovers from the inconsistency, what its
-   overall effect is, etc.
-
-<wonders why we need to take mmap_sem here at all>
+Yes, I believe we do something like that already.
+	
+	-hpa
