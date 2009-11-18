@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZKROi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZKRO4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbZKROi4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbZKROiz
+	id S1754563AbZKRO4U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZKRO4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:38:55 -0500
-Received: from ns.penguin.cz ([84.21.108.25]:36851 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757282AbZKROiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:38:54 -0500
-Subject: Re: 2.6.32-rc7: compile regression on spitz
-From: Stanislav Brabec <utx@penguin.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20091118090100.GA1399@ucw.cz>
-References: <20091118090100.GA1399@ucw.cz>
-Content-Type: text/plain; charset="ISO-8859-2"
-Date: Wed, 18 Nov 2009 15:38:53 +0100
-Message-Id: <1258555133.3454.2.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 09:56:19 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50777 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752725AbZKRO4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 09:56:18 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] selinux: Fix warnings
+To: jmorris@namei.org, linux-kernel@vger.kernel.org
+Date: Wed, 18 Nov 2009 14:39:51 +0000
+Message-ID: <20091118143951.4691.33970.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> If CONFIG_AKITA is not set, spitz fails to compile. It worked ok in
-> rc5. Fix is one more ifdef...
+scripts/selinux/genheaders/genheaders.c:20: warning: no previous prototype  
+for ‘usage’
+scripts/selinux/genheaders/genheaders.c:26: warning: no previous prototype
+for ‘stoupperx’
 
-That was my mistake in 5e0fa3f.
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Stanislav Brabec <utx@penguin.cz>
+ scripts/selinux/genheaders/genheaders.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Stanislav Brabec
-http://www.penguin.cz/~utx
+
+diff --git a/scripts/selinux/genheaders/genheaders.c b/scripts/selinux/genheaders/genheaders.c
+index 3b16145..771b86f 100644
+--- a/scripts/selinux/genheaders/genheaders.c
++++ b/scripts/selinux/genheaders/genheaders.c
+@@ -17,13 +17,13 @@ struct security_class_mapping {
+ 
+ const char *progname;
+ 
+-void usage(void)
++static void usage(void)
+ {
+ 	printf("usage: %s flask.h av_permissions.h\n", progname);
+ 	exit(1);
+ }
+ 
+-char *stoupperx(const char *s)
++static char *stoupperx(const char *s)
+ {
+ 	char *s2 = strdup(s);
+ 	char *p;
 
