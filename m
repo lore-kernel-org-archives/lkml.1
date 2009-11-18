@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZKRRzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZKRRzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbZKRRzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbZKRRzV
+	id S932139AbZKRRzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZKRRzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:55:21 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:45335 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932134AbZKRRzU (ORCPT
+	Wed, 18 Nov 2009 12:55:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51863
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757939AbZKRRzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:55:20 -0500
-Date: Wed, 18 Nov 2009 11:55:23 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
-Message-ID: <20091118175523.GA12857@b07421-ec1.am.freescale.net>
-References: <20091117224852.846805939@linutronix.de> <20091117224916.566205413@linutronix.de>
+	Wed, 18 Nov 2009 12:55:10 -0500
+Date: Wed, 18 Nov 2009 09:55:26 -0800 (PST)
+Message-Id: <20091118.095526.43570583.davem@davemloft.net>
+To: jslaby@novell.com
+Cc: jirislaby@gmail.com, mingo@elte.hu, nhorman@tuxdriver.com,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, torvalds@linux-foundation.org,
+       jmorris@namei.org, heiko.carstens@de.ibm.com,
+       sparclinux@vger.kernel.org
+Subject: Re: [PATCH 06/16] SPARC: use ACCESS_ONCE for rlimits
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1258555922-2064-6-git-send-email-jslaby@novell.com>
+References: <4B040A03.2020508@gmail.com>
+	<1258555922-2064-6-git-send-email-jslaby@novell.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091117224916.566205413@linutronix.de>
-User-Agent: Mutt/1.4.1i
-X-Brightmail-Tracker: AAAAAQAAAWE=
-X-Brightmail-Tracker: AAAAAQAAAWE=
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
-> Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-> @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
->  }
->  
->  static struct irq_chip pq2ads_pci_ic = {
-> -	.typename = "PQ2 ADS PCI",
-> +	.name = "PQ2 ADS PCI",
->  	.name = "PQ2 ADS PCI",
->  	.end = pq2ads_pci_unmask_irq,
->  	.mask = pq2ads_pci_mask_irq,
+From: Jiri Slaby <jslaby@novell.com>
+Date: Wed, 18 Nov 2009 15:51:52 +0100
 
-Duplicate ".name"...
+> Make sure compiler won't do weird things with limits. E.g. fetching
+> them twice may return 2 different values after writable limits are
+> implemented.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@novell.com>
 
--Scott
+Acked-by: David S. Miller <davem@davemloft.net>
+
+But I wonder have we really seen the compiler create this
+kind of situation?  Or is this patch series based upon the
+fact that it "could happen"?
