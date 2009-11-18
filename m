@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbZKRNvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZKRNvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757093AbZKRNvl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 08:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbZKRNvk
+	id S1757118AbZKRNvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 08:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757105AbZKRNvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 08:51:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40951 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756736AbZKRNvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 08:51:39 -0500
-Message-ID: <4B03FB99.6070705@gmail.com>
-Date: Wed, 18 Nov 2009 14:50:17 +0100
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Wed, 18 Nov 2009 08:51:47 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:61014 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757022AbZKRNvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 08:51:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dcpp6d67DjpDp+IG4w/ivd8gcn8G2xcb6kncqhuZwxujhJ795OCe0INy3dikaprA0z
+         oPeSbKJ4FlcCLw/l59ltnddEkJvXCp07mlALZysv6mSWGy9XrlOJ2XHpzp4xAqWFj4uE
+         AZvO1EtqrH9Gvjv9DMJtkdxRLMHewOVgqkCH0=
+Date: Wed, 18 Nov 2009 13:51:36 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Caleb Cushing <xenoterracide@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: large packet loss take2 2.6.31.x
+Message-ID: <20091118135136.GA9224@ff.dom.local>
+References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com> <20091112113836.GA7963@ff.dom.local> <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com> <4AFC5C58.9030207@gmail.com> <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com> <20091113211640.GA2540@ami.dom.local> <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
 MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: reiserfs-devel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: reiser4 for 2.6.33?
-References: <alpine.DEB.2.01.0911171420480.27639@bogon.housecafe.de>
-In-Reply-To: <alpine.DEB.2.01.0911171420480.27639@bogon.housecafe.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I told already for reiser4 inclusion we need the following:
+On Wed, Nov 18, 2009 at 04:59:03AM -0500, Caleb Cushing wrote:
+> > Might be the same bugzilla report, I guess. We need to establish if
+> > these pings reach 192.168.1.1, so a short test and tcpdump without any
+> > special options just to get a few lost cases as seen on both sides.
+> > (And ifconfigs before and after the test.)
+> >
+> > Btw, could you check with lsmod if usbserial module is loaded before
+> > this test? I'd like to verify this git bisection result. (If the
+> > module is loaded or you have CONFIG_USB_SERIAL=y instead of m, try to
+> > recompile the kernel with this option turned off, for this test.)
+> 
+> sorry for taking so long to get back. busy problematic times.
+No problem, don't hurry.
 
-(a) plugin design document;
-(b) full description of what is going on in respond to memory
-    pressure notifications;
+> 
+> the dumps and ifconfigs are a bit less 'clean' because the router
+> serves several other computers (none of which have this issue
+> (windows)) here's the ifconfig -a from the router.
 
-The (a) is not yet ready and I don't have a time to explain
-personally to everyone why the plugin stuff is not crappy. It will
-be posted in a magazine with proper background, because all
-Namesys projects traditionally have academic sources. So wait...
+Actually, I'm a little bit surprised. Maybe I missed something from
+your previous messages, but I expected something more similar to the
+first wireshark dump, which suggested to me there was only this mtr
+traffic. Now there is a lot more (plus we know it's not all).
 
-Actually there is no hurry. Taking into account common situation
-with file systems, I am not afraid that reiser4 will get obsolete.
+So, there is a basic question: can this mtr loss be seen while no
+other traffic is present? After looking into these current dumps I
+doubt. There are e.g. 3 pings unanswered between 09:21:50 and
+09:21:52 (21:31:34 to 21:31:38 router time), but a lot of tcp
+packets to and from 192.168.1.3, so looks like simply dropped and
+we can guess the reason.
 
-Thanks,
-Edward.
+> 
+> usbserial is not loaded. actually from reading the patch submission I
+> suspected the official cause might be off... but I'm not kernel
+> programmer all I know is where I could see the loss during tests.and I
+> haven't been able to reproduce over dozens of reboots from this
+> 2.6.31.1-test-00091-gfa31221 kernel.
 
-Christian Kujau wrote:
-> It's autumn[0] already and even with 2.6.32 not quite ready yet, let me 
-> be the one asking the inevitable question:
->  What are the plans for reiser4 being included in 2.6.33? The 
-> diffstat for the 2.6.31 patch looks rather promising, at least to me:
->
-> $ diffstat reiser4-for-2.6.31.patch | grep -v fs/reiser4
->  Documentation/Changes                         |   12 
->  Documentation/filesystems/reiser4.txt         |   75 
->  fs/Kconfig                                    |    1 
->  fs/Makefile                                   |    1 
->  fs/fs-writeback.c                             |    5 
->  include/linux/fs.h                            |    3 
->  include/linux/mm.h                            |    1 
->  mm/filemap.c                                  |    3 
->  mm/page-writeback.c                           |   26 
->  170 files changed, 77581 insertions(+), 1 deletion(-)
->
-> Or maybe it can find a place in -staging if there are still strong 
-> objections against a general inclusion?
->
-> Thanks,
-> Christian.
->
-> [0] http://marc.info/?l=reiserfs-devel&m=124904274311847&w=2
->   
+Since this patch from the bisection is really limited to this one
+module I doubt we should follow this direction. IMHO it shows the
+test wasn't reproducible enough. Probably the amount and/or kind of
+other traffic really matter. If I'm wrong and missed something again
+let me know. Btw, could you try if changing with ifconfig the
+txqueuelen of desktop's eth0 from 100 to 1000 changes anything
+in this mtr test?
 
+Jarek P.
+
+> this is the ifconfig -a from my desktop while experiencing the issue
+> 
+> eth0      Link encap:Ethernet  HWaddr 00:21:9B:06:4C:C9
+>           inet addr:192.168.1.3  Bcast:192.168.1.255  Mask:255.255.255.0
+>           inet6 addr: fe80::221:9bff:fe06:4cc9/64 Scope:Link
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:3465 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:4951 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:1467320 (1.3 Mb)  TX bytes:631808 (617.0 Kb)
+>           Memory:fdfc0000-fdfe0000
