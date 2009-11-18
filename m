@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZKRD4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZKRD4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbZKRD4G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 22:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZKRD4F
+	id S1756422AbZKRD4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 22:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbZKRD4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 22:56:05 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34197 "EHLO mx1.suse.de"
+	Tue, 17 Nov 2009 22:56:08 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34203 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbZKRD4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 22:56:04 -0500
-Date: Tue, 17 Nov 2009 19:44:01 -0800
+	id S1754073AbZKRD4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Nov 2009 22:56:07 -0500
+Date: Tue, 17 Nov 2009 19:44:50 -0800
 From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Johan Hovold <jhovold@gmail.com>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       linux-usb@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: [PATCH] ftdi_sio:  Keep going when write errors are
- encountered.
-Message-ID: <20091118034401.GA17349@suse.de>
-References: <20090924154023.GA27480@localhost>
- <20091003140902.38628d8a@lxorguk.ukuu.org.uk>
- <m13a4df19g.fsf@fess.ebiederm.org>
- <200911171941.34781.oliver@neukum.org>
- <m1lji4od0k.fsf@fess.ebiederm.org>
- <m1fx8co7d3.fsf_-_@fess.ebiederm.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, root@localdomain.pl,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] devpts_get_tty() should validate inode
+Message-ID: <20091118034450.GB17349@suse.de>
+References: <20091118023541.GA14430@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1fx8co7d3.fsf_-_@fess.ebiederm.org>
+In-Reply-To: <20091118023541.GA14430@us.ibm.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 07:10:48PM -0800, Eric W. Biederman wrote:
+On Tue, Nov 17, 2009 at 06:35:43PM -0800, Sukadev Bhattiprolu wrote:
 > 
-> The use of urb->actual_length to update tx_outstanding_bytes
-> implicitly assumes that the number of bytes actually written is the
-> same as the number of bytes we tried to write.  On error that
-> assumption is violated so just use transfer_buffer_length the number
-> of bytes we intended to write to the device.
+> devpts_get_tty() assumes that the inode passed in is associated with a valid
+> pty.  But if the only reference to the pty is via a bind-mount, the inode
+> passed to devpts_get_tty() while valid, would refer to a pty that no longer
+> exists.
 > 
-> If an error occurs we need to fall through and call
-> usb_serial_port_softint to wake up processes waiting in
-> tty_wait_until_sent.
+> With a lot of debug effort, Grzegorz Nosek developed a small program (see
+> below) to reproduce a crash on recent kernels. This crash is a regression
+> introduced by the commit:
 > 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> 	commit 527b3e4773628b30d03323a2cb5fb0d84441990f
+> 	Author: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+> 	Date:   Mon Oct 13 10:43:08 2008 +0100
+> 
+> To fix, ensure that the dentry associated with the inode has not yet been
+> deleted/unhashed by devpts_pty_kill().
+> 
+> See also:
+> https://lists.linux-foundation.org/pipermail/containers/2009-July/019273.html 
 
-Nice job, thanks for debugging this.  I'll go queue it up.
+Good debugging, I'll queue this up.
 
 greg k-h
