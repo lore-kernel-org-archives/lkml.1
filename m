@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZKRRzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbZKRRzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbZKRRzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZKRRzL
+	id S932167AbZKRRzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbZKRRzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:55:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51863
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757939AbZKRRzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:55:10 -0500
-Date: Wed, 18 Nov 2009 09:55:26 -0800 (PST)
-Message-Id: <20091118.095526.43570583.davem@davemloft.net>
-To: jslaby@novell.com
-Cc: jirislaby@gmail.com, mingo@elte.hu, nhorman@tuxdriver.com,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, torvalds@linux-foundation.org,
-       jmorris@namei.org, heiko.carstens@de.ibm.com,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH 06/16] SPARC: use ACCESS_ONCE for rlimits
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1258555922-2064-6-git-send-email-jslaby@novell.com>
-References: <4B040A03.2020508@gmail.com>
-	<1258555922-2064-6-git-send-email-jslaby@novell.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 18 Nov 2009 12:55:36 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43551 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932142AbZKRRzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 12:55:35 -0500
+Date: Wed, 18 Nov 2009 18:55:40 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Jamie Lokier <jamie@shareable.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-fsdevel@vger.kernel.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jkacur@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/2] BKL: Remove BKL from default_llseek()
+Message-ID: <20091118175540.GR21750@bolzano.suse.de>
+References: <1258560457-15129-1-git-send-email-jblunck@suse.de> <20091118171524.4d2f8cec@lxorguk.ukuu.org.uk> <20091118172730.GD28723@shareable.org> <200911181835.55007.oliver@neukum.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911181835.55007.oliver@neukum.org>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jslaby@novell.com>
-Date: Wed, 18 Nov 2009 15:51:52 +0100
+On Wed, Nov 18, Oliver Neukum wrote:
 
-> Make sure compiler won't do weird things with limits. E.g. fetching
-> them twice may return 2 different values after writable limits are
-> implemented.
+> Am Mittwoch, 18. November 2009 18:27:30 schrieb Jamie Lokier:
+> > > No. Your logic is flawed
+> > > 
+> > > The BKL is protected something here - it protects the change of offset
+> > > with respect to other BKL users within drivers. The question is what if
+> > > anything in any other driver code depends upon the BKL and uses it to
+> > > protect f_pos. Probably very little if anything but a grep for f_pos
+> > > through the drivers might not be a bad idea before assuming this. Very
+> > > few touch f_pos except in their own llseek method.
+> > 
+> > Of course, drivers shouldn't be using f_pos outside their llseek
+> > method, as they should all behave the same with pread/pwrite as with
+> > llseek+read/write.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@novell.com>
+> Might not a driver update f_pos after read/write?
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Actually the VFS is doing that for you in read/write syscall. So anything you
+change in your driver gets corrected (or overwritten anyway).
 
-But I wonder have we really seen the compiler create this
-kind of situation?  Or is this patch series based upon the
-fact that it "could happen"?
+Regards,
+	Jan
+
+-- 
+Jan Blunck <jblunck@suse.de>
