@@ -1,249 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZKRCNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZKRCO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbZKRCNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Nov 2009 21:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZKRCNu
+	id S1756574AbZKRCO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Nov 2009 21:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZKRCO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 21:13:50 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:21575 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbZKRCNt (ORCPT
+	Tue, 17 Nov 2009 21:14:27 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:61302 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbZKRCO0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 21:13:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=gYe9uobumppQANdTkOMQSwMpcJJHK9u2ykWgCGCcXqA6RpNvyjpzPJec334HdeIbw
-	VgP8rf/yatGovZaA6+mJg==
-Date: Tue, 17 Nov 2009 18:13:48 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH] oom-kill: fix NUMA consraint check with nodemask
- v4.2
-In-Reply-To: <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0911171725050.13760@chino.kir.corp.google.com>
-References: <20091110162121.361B.A69D9226@jp.fujitsu.com> <20091110162445.c6db7521.kamezawa.hiroyu@jp.fujitsu.com> <20091110163419.361E.A69D9226@jp.fujitsu.com> <20091110164055.a1b44a4b.kamezawa.hiroyu@jp.fujitsu.com> <20091110170338.9f3bb417.nishimura@mxp.nes.nec.co.jp>
- <20091110171704.3800f081.kamezawa.hiroyu@jp.fujitsu.com> <20091111112404.0026e601.kamezawa.hiroyu@jp.fujitsu.com> <20091111134514.4edd3011.kamezawa.hiroyu@jp.fujitsu.com> <20091111142811.eb16f062.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0911102155580.2924@chino.kir.corp.google.com> <20091111152004.3d585cee.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0911102224440.6652@chino.kir.corp.google.com> <20091111153414.3c263842.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0911171609370.12532@chino.kir.corp.google.com> <20091118095824.076c211f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 17 Nov 2009 21:14:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XxO0Z1NJf87GqzEdaQUN3QovvpwvzbSgtuaG/sR68xlNwNnm1skfJnQFHHQt8ZRJXX
+         DMfkSEg6z2Tq5/htAWqnwoWn3FyXn1x6er7by9gZraovluoDSTmmrFj/IAzIXhKZXUJZ
+         ren++2XJeeSUXAX50HDlMfx8CxlA1d958LMhI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <4B035081.8040900@qualcomm.com>
+References: <d45a3acc0911171730kc3a03d5iacec6d9ef4b1874c@mail.gmail.com>
+	 <4B035081.8040900@qualcomm.com>
+Date: Wed, 18 Nov 2009 13:14:32 +1100
+Message-ID: <d45a3acc0911171814i310bbd16t8ff3fba2410e9375@mail.gmail.com>
+Subject: Re: [PATCH] Documentation, clarify tuntap IPX example.
+From: andrew hendry <andrew.hendry@gmail.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Nov 2009, KAMEZAWA Hiroyuki wrote:
+Hi Max,
 
-> > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > index ab04537..4c5c58b 100644
-> > --- a/mm/oom_kill.c
-> > +++ b/mm/oom_kill.c
-> > @@ -27,6 +27,7 @@
-> >  #include <linux/notifier.h>
-> >  #include <linux/memcontrol.h>
-> >  #include <linux/security.h>
-> > +#include <linux/mempolicy.h>
-> >  
-> >  int sysctl_panic_on_oom;
-> >  int sysctl_oom_kill_allocating_task;
-> > @@ -35,18 +36,30 @@ static DEFINE_SPINLOCK(zone_scan_lock);
-> >  /* #define DEBUG */
-> >  
-> >  /*
-> > - * Is all threads of the target process nodes overlap ours?
-> > + * Do the nodes allowed by any of tsk's threads overlap ours?
-> >   */
-> > -static int has_intersects_mems_allowed(struct task_struct *tsk)
-> > +static int has_intersects_mems_allowed(struct task_struct *tsk,
-> > +						nodemask_t *nodemask)
-> >  {
-> > -	struct task_struct *t;
-> > +	struct task_struct *start = tsk;
-> > +	NODEMASK_ALLOC(nodemask_t, mpol_nodemask, GFP_KERNEL);
-> >  
-> > -	t = tsk;
-> > +	if (!nodemask)
-> > +		mpol_nodemask = NULL;
-> >  	do {
-> > -		if (cpuset_mems_allowed_intersects(current, t))
-> > +		if (mpol_nodemask) {
-> > +			mpol_get(tsk->mempolicy);
-> > +			if (init_nodemask_of_task_mempolicy(tsk, mpol_nodemask) &&
-> > +				nodes_intersects(*nodemask, *mpol_nodemask)) {
-> > +				mpol_put(tsk->mempolicy);
-> > +				return 1;
-> > +			}
-> > +			mpol_put(tsk->mempolicy);
-> > +		}
-> 
-> Hmm this mpol_get()/mpol_put() are necessary under tasklist_lock held ?
+I started looking through the documentation because im looking to use
+tun for X.25 over TCP. The IPX example sounded similar but i couldn't
+get it to work as I was expecting. Looking for a hint in the right
+direction.
+There is an old non-mainline patch called x25tap (clone of obsolete
+ethertap). I'm hoping to replace x25tap with tun.
 
-They are, we don't hold tasklist_lock while dropping the reference count 
-in do_exit().
+The old x25tap creates a device like:
+x25tap0   Link encap:generic X.25  HWaddr
+          UP BROADCAST RUNNING NOARP MULTICAST  MTU:1024  Metric:1
+          RX packets:3040785 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2895530 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:10
+          RX bytes:138787339 (132.3 Mb)  TX bytes:91395983 (87.1 Mb)
+When the x25tap is loaded it has dev->type = ARPHRD_X25, after which
+x.25 routing and AF_X25 sockets can be created.  Along with an XoT
+userspace program which handles some basic headers and TCP port 1998
+it works well.
 
-> And...I wonder
-> 
-> 	if (!init_nodemask_of_task_mempolicy(tsk, mpol_nodemask))
-> 		return 1; /* this task uses default policy */
-> 
-> 
-> > +		if (cpuset_mems_allowed_intersects(current, tsk))
-> >  			return 1;
-> > -		t = next_thread(t);
-> > -	} while (t != tsk);
-> > +		tsk = next_thread(tsk);
-> > +	} while (tsk != start);
-> >  
-> 
-> Sigh...we has to scan all threads, again.
-> Could you have an idea to improve this ?
-> 
-> For example, 
-> 	mm->mask_of_nodes_which_a_page_was_allocated_on
-> or
->         mm->mask_of_nodes_made_by_some_magical_technique
-> some ?
-> (maybe per-node rss is over kill.)
-> 
+If using tun, how does something get registered to handle protocol AF_X25?
 
-The same criticism could be said for the CONSTRAINT_CPUSET.  We don't 
-actually know in either case, mempolicy or cpusets, if memory was ever 
-allocated on a particular node in tsk->mempolicy->v.nodes or 
-tsk->mems_allowed, respectively.  We assume, however, that if a node is 
-included in a mempolicy nodemask or cpuset mems that it is an allowed 
-node to allocate from for all attached tasks (and those tasks aren't 
-solely allocating on a subset) so that killing tasks based on their 
-potential for allocating on oom nodes is actually helpful.
+Regards,
+Andrew.
 
-> 
-> >  	return 0;
-> >  }
-> > @@ -55,6 +68,8 @@ static int has_intersects_mems_allowed(struct task_struct *tsk)
-> >   * badness - calculate a numeric value for how bad this task has been
-> >   * @p: task struct of which task we should calculate
-> >   * @uptime: current uptime in seconds
-> > + * @constraint: type of oom constraint
-> > + * @nodemask: nodemask passed to page allocator
-> >   *
-> >   * The formula used is relatively simple and documented inline in the
-> >   * function. The main rationale is that we want to select a good task
-> > @@ -70,7 +85,8 @@ static int has_intersects_mems_allowed(struct task_struct *tsk)
-> >   *    of least surprise ... (be careful when you change it)
-> >   */
-> >  
-> > -unsigned long badness(struct task_struct *p, unsigned long uptime)
-> > +unsigned long badness(struct task_struct *p, unsigned long uptime,
-> > +			enum oom_constraint constraint, nodemask_t *nodemask)
-> >  {
-> >  	unsigned long points, cpu_time, run_time;
-> >  	struct mm_struct *mm;
-> > @@ -171,7 +187,9 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
-> >  	 * because p may have allocated or otherwise mapped memory on
-> >  	 * this node before. However it will be less likely.
-> >  	 */
-> > -	if (!has_intersects_mems_allowed(p))
-> > +	if (!has_intersects_mems_allowed(p,
-> > +			constraint == CONSTRAINT_MEMORY_POLICY ? nodemask :
-> > +								 NULL))
-> >  		points /= 8;
-> >  
-> >  	/*
-> > @@ -244,7 +262,8 @@ static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-> >   * (not docbooked, we don't want this one cluttering up the manual)
-> >   */
-> >  static struct task_struct *select_bad_process(unsigned long *ppoints,
-> > -						struct mem_cgroup *mem)
-> > +			struct mem_cgroup *mem, enum oom_constraint constraint,
-> > +			nodemask_t *nodemask)
-> >  {
-> >  	struct task_struct *p;
-> >  	struct task_struct *chosen = NULL;
-> > @@ -300,7 +319,7 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
-> >  		if (p->signal->oom_adj == OOM_DISABLE)
-> >  			continue;
-> >  
-> > -		points = badness(p, uptime.tv_sec);
-> > +		points = badness(p, uptime.tv_sec, constraint, nodemask);
-> >  		if (points > *ppoints || !chosen) {
-> >  			chosen = p;
-> >  			*ppoints = points;
-> > @@ -472,7 +491,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
-> >  
-> >  	read_lock(&tasklist_lock);
-> >  retry:
-> > -	p = select_bad_process(&points, mem);
-> > +	p = select_bad_process(&points, mem, NULL);
-> >  	if (PTR_ERR(p) == -1UL)
-> >  		goto out;
-> >  
-> > @@ -554,7 +573,8 @@ void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_mask)
-> >  /*
-> >   * Must be called with tasklist_lock held for read.
-> >   */
-> > -static void __out_of_memory(gfp_t gfp_mask, int order)
-> > +static void __out_of_memory(gfp_t gfp_mask, int order,
-> > +			enum oom_constraint constraint, nodemask_t *nodemask)
-> >  {
-> >  	struct task_struct *p;
-> >  	unsigned long points;
-> > @@ -568,7 +588,7 @@ retry:
-> >  	 * Rambo mode: Shoot down a process and hope it solves whatever
-> >  	 * issues we may have.
-> >  	 */
-> > -	p = select_bad_process(&points, NULL);
-> > +	p = select_bad_process(&points, NULL, constraint, nodemask);
-> >  
-> >  	if (PTR_ERR(p) == -1UL)
-> >  		return;
-> > @@ -609,7 +629,8 @@ void pagefault_out_of_memory(void)
-> >  		panic("out of memory from page fault. panic_on_oom is selected.\n");
-> >  
-> >  	read_lock(&tasklist_lock);
-> > -	__out_of_memory(0, 0); /* unknown gfp_mask and order */
-> > +	/* unknown gfp_mask and order */
-> > +	__out_of_memory(0, 0, CONSTRAINT_NONE, NULL);
-> >  	read_unlock(&tasklist_lock);
-> >  
-> >  	/*
-> > @@ -656,11 +677,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-> >  	read_lock(&tasklist_lock);
-> >  
-> >  	switch (constraint) {
-> > -	case CONSTRAINT_MEMORY_POLICY:
-> > -		oom_kill_process(current, gfp_mask, order, 0, NULL,
-> > -				"No available memory (MPOL_BIND)");
-> > -		break;
-> > -
-> >  	case CONSTRAINT_NONE:
-> >  		if (sysctl_panic_on_oom) {
-> >  			dump_header(gfp_mask, order, NULL);
-> > @@ -668,7 +684,8 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-> >  		}
-> >  		/* Fall-through */
-> >  	case CONSTRAINT_CPUSET:
-> > -		__out_of_memory(gfp_mask, order);
-> > +	case CONSTRAINT_MEMORY_POLICY:
-> > +		__out_of_memory(gfp_mask, order, constraint, nodemask);
-> >  		break;
-> >  	}
-> maybe good. But hmm...does this work well with per-vma mempolicy ?
-> 
-> I wonder
->   mm->mask_of_nodes_made_by_some_magical_technique
-> will be necessary for completeness.
-> 
-
-I think that would probably be rejected because of its implications on the 
-allocation fastpath.  The change here isn't causing the oom killing to be 
-any less ideal; current may never have allocated any memory on its 
-mempolicy nodes prior to the oom and so killing it may be entirely 
-useless.  It's better to use our heuristics for determining the ideal task 
-to kill in that case and restricting our subset of eligible tasks by the 
-same criteria that we use for cpusets.
+On Wed, Nov 18, 2009 at 12:40 PM, Max Krasnyansky <maxk@qualcomm.com> wrote:
+> On 11/17/2009 05:30 PM, andrew hendry wrote:
+>>
+>> Can the TUNSETIFF ioctl change a tap's protocol to IPX as the
+>> documentation suggests?
+>> I think tun.c would need IFF_IPX_TAP added for it to work as described?
+>> Otherwise tap can only be ptp or ethernet, and there is no way to
+>> route or use AF_IPX.
+>
+> TAP is an Ethernet device. No special handling is required for IPX or for
+> that matter any other protocol. Example seems fine too.
+>
+> Max
+>
+>> Signed-off-by: Andrew Hendry<andrew.hendry@gmail.com>
+>>
+>> --- a/Documentation/networking/tuntap.txt       2009-11-11
+>> 14:03:22.676167648 +1100
+>> +++ b/Documentation/networking/tuntap.txt       2009-11-18
+>> 11:34:18.106647029 +1100
+>> @@ -127,12 +127,14 @@ Ethernet device, which instead of receiv
+>>  media, receives them from user space program and instead of sending
+>>  packets via physical media sends them to the user space program.
+>>
+>> -Let's say that you configured IPX on the tap0, then whenever
+>> -the kernel sends an IPX packet to tap0, it is passed to the application
+>> -(VTun for example). The application encrypts, compresses and sends it to
+>> -the other side over TCP or UDP. The application on the other side
+>> decompresses
+>> -and decrypts the data received and writes the packet to the TAP device,
+>> -the kernel handles the packet like it came from real physical device.
+>> +Let's say for the purpose of example, IPX support was added to tuntap.
+>> +Then whenever the kernel routes an IPX packet to tap0, it is passed to
+>> the
+>> +application reading the file descriptor from /dev/net/tun (VTun for
+>> example).
+>> +The application encrypts, compresses and sends it to the other side over
+>> TCP
+>> +or UDP. The application on the other side decompresses and decrypts the
+>> data
+>> +received and writes the packet to the TAP device, the remote kernel
+>> handles
+>> +the packet like it came from real physical device. The IPX applications
+>> are
+>> +able to communicate as if there was a real IPX network.
+>>
+>>  4. What is the difference between TUN driver and TAP driver?
+>>  TUN works with IP frames. TAP works with Ethernet frames.
+>
+>
