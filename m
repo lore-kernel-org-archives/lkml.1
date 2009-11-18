@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbZKRI4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZKRNXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755001AbZKRI4o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 03:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZKRI4o
+	id S1756989AbZKRNXv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 08:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZKRNXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 03:56:44 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43287 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753817AbZKRI4n (ORCPT
+	Wed, 18 Nov 2009 08:23:50 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43528 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbZKRNXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 03:56:43 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH 7/7] xfs: Don't use PF_MEMALLOC
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-In-Reply-To: <20091117221108.GK9467@discord.disaster>
-References: <20091117162235.3DEB.A69D9226@jp.fujitsu.com> <20091117221108.GK9467@discord.disaster>
-Message-Id: <20091118153302.3E20.A69D9226@jp.fujitsu.com>
+	Wed, 18 Nov 2009 08:23:50 -0500
+Date: Wed, 18 Nov 2009 10:01:00 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.32-rc7: compile regression on spitz
+Message-ID: <20091118090100.GA1399@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 18 Nov 2009 17:56:46 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Nov 17, 2009 at 04:23:43PM +0900, KOSAKI Motohiro wrote:
-> > 
-> > Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
-> > memory, anyone must not prevent it. Otherwise the system cause
-> > mysterious hang-up and/or OOM Killer invokation.
-> 
-> The xfsbufd is a woken run by a registered memory shaker. i.e. it
-> runs when the system needs to reclaim memory. It forceѕ the
-> delayed write metadata buffers (of which there can be a lot) to disk
-> so that they can be reclaimed on IO completion. This IO submission
-> may require ѕome memory to be allocated to be able to free that
-> memory.
-> 
-> Hence, AFAICT the use of PF_MEMALLOC is valid here.
 
-Thanks a lot. 
-I have one additional question, may I ask you?
+If CONFIG_AKITA is not set, spitz fails to compile. It worked ok in
+rc5. Fix is one more ifdef...
 
-How can we calculate maximum memory usage in xfsbufd?
-I'm afraid that VM and XFS works properly but adding two makes memory exhaust.
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-And, I conclude XFS doesn't need sharing reservation memory with VM,
-it only need non failed allocation. right? IOW I'm prefer perter's
-suggestion.
+--- a/arch/arm/mach-pxa/spitz.c	2009-11-17 17:10:21.000000000 +0100
++++ b/arch/arm/mach-pxa/spitz.c	2009-11-18 05:55:21.000000000 +0100
+@@ -802,10 +802,12 @@
+ {
+ 	spitz_ficp_platform_data.gpio_pwdown = SPITZ_GPIO_IR_ON;
+ 
++#ifdef CONFIG_MACH_BORZOI
+ 	if (machine_is_borzoi()) {
+ 		sharpsl_nand_platform_data.badblock_pattern = &sharpsl_akita_bbt;
+ 		sharpsl_nand_platform_data.ecc_layout = &akita_oobinfo;
+ 	}
++#endif
+ 
+ 	platform_scoop_config = &spitz_pcmcia_config;
+ 
 
 
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
