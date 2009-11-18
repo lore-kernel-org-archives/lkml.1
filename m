@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZKRIeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZKRIcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZKRIeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 03:34:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbZKRIeM
+	id S1755901AbZKRIcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 03:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZKRIcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 03:34:12 -0500
-Received: from mga03.intel.com ([143.182.124.21]:48883 "EHLO mga03.intel.com"
+	Wed, 18 Nov 2009 03:32:53 -0500
+Received: from mga14.intel.com ([143.182.124.37]:15558 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753427AbZKRIby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 03:31:54 -0500
+	id S1754553AbZKRIb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 03:31:57 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,764,1249282800"; 
-   d="scan'208";a="212830425"
-Message-Id: <20091118082846.279046849@intel.com>
+   d="scan'208";a="212830450"
+Message-Id: <20091118082846.404788666@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 18 Nov 2009 16:26:55 +0800
+Date: Wed, 18 Nov 2009 16:26:56 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 To: Jens Axboe <jens.axboe@oracle.com>
-cc: <linux-fsdevel@vger.kernel.org>, Dave Chinner <david@fromorbit.com>,
-       Christoph Hellwig <hch@infradead.org>,
+cc: <linux-fsdevel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
        Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 07/12] writeback: remove unused nonblocking and congestion checks (xfs)
+Subject: [PATCH 08/12] ext4: remove encountered_congestion trace
 References: <20091118082648.140755818@intel.com>
-Content-Disposition: inline; filename=writeback-remove-congested-checks-linux_fs_xfs_linux-2.6_xfs_aops.patch
+Content-Disposition: inline; filename=writeback-remove-congested-checks-ext4-trace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No one is calling wb_writeback and write_cache_pages with
-wbc.nonblocking=1 any more. And lumpy pageout will want to do
-nonblocking writeback without the congestion wait.
+It is no longer set and scheduled to be removed.
 
-CC: Dave Chinner <david@fromorbit.com> 
-CC: Christoph Hellwig <hch@infradead.org>
+CC: Theodore Ts'o <tytso@mit.edu>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/xfs/linux-2.6/xfs_aops.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ include/trace/events/ext4.h |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
---- linux.orig/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:22:35.000000000 +0800
-+++ linux/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:52:21.000000000 +0800
-@@ -908,12 +908,8 @@ xfs_convert_page(
+--- linux.orig/include/trace/events/ext4.h	2009-11-06 09:22:35.000000000 +0800
++++ linux/include/trace/events/ext4.h	2009-11-06 09:52:21.000000000 +0800
+@@ -310,7 +310,6 @@ TRACE_EVENT(ext4_da_writepages_result,
+ 		__field(	int,	ret			)
+ 		__field(	int,	pages_written		)
+ 		__field(	long,	pages_skipped		)
+-		__field(	char,	encountered_congestion	)
+ 		__field(	char,	more_io			)	
+ 		__field(	char,	no_nrwrite_index_update )
+ 		__field(       pgoff_t,	writeback_index		)
+@@ -322,17 +321,16 @@ TRACE_EVENT(ext4_da_writepages_result,
+ 		__entry->ret		= ret;
+ 		__entry->pages_written	= pages_written;
+ 		__entry->pages_skipped	= wbc->pages_skipped;
+-		__entry->encountered_congestion	= wbc->encountered_congestion;
+ 		__entry->more_io	= wbc->more_io;
+ 		__entry->no_nrwrite_index_update = wbc->no_nrwrite_index_update;
+ 		__entry->writeback_index = inode->i_mapping->writeback_index;
+ 	),
  
- 			bdi = inode->i_mapping->backing_dev_info;
- 			wbc->nr_to_write--;
--			if (bdi_write_congested(bdi)) {
--				wbc->encountered_congestion = 1;
-+			if (wbc->nr_to_write <= 0)
- 				done = 1;
--			} else if (wbc->nr_to_write <= 0) {
--				done = 1;
--			}
- 		}
- 		xfs_start_page_writeback(page, !page_dirty, count);
- 	}
+-	TP_printk("dev %s ino %lu ret %d pages_written %d pages_skipped %ld congestion %d more_io %d no_nrwrite_index_update %d writeback_index %lu",
++	TP_printk("dev %s ino %lu ret %d pages_written %d pages_skipped %ld more_io %d no_nrwrite_index_update %d writeback_index %lu",
+ 		  jbd2_dev_to_name(__entry->dev),
+ 		  (unsigned long) __entry->ino, __entry->ret,
+ 		  __entry->pages_written, __entry->pages_skipped,
+-		  __entry->encountered_congestion, __entry->more_io,
++		  __entry->more_io,
+ 		  __entry->no_nrwrite_index_update,
+ 		  (unsigned long) __entry->writeback_index)
+ );
 
 
