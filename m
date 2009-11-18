@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbZKRTxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbZKRT53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbZKRTxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 14:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758469AbZKRTxt
+	id S1758505AbZKRT53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 14:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbZKRT52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 14:53:49 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:46663 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758466AbZKRTxs (ORCPT
+	Wed, 18 Nov 2009 14:57:28 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:34271 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758281AbZKRT51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 14:53:48 -0500
-Date: Wed, 18 Nov 2009 19:53:42 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091118195342.GA13627@srcf.ucam.org>
-References: <1258468659-5446-1-git-send-email-mjg@redhat.com> <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> <1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com>
+	Wed, 18 Nov 2009 14:57:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=LYCu/Zjus2rWIMWyXq+tYfiAUhyyhrb/PybTqWPLZE2n+lIOA8o2EqnnOIug6M6JOo
+         SQmsOUyiWTR3m9/XMTHnqK2YLmgDEJMXW6OXGgr0XflD+Z8txU/f74Ob9g4nPkupQCCD
+         8xhLZmyh7YvCseZfd33hHDfQZSttxs6h504Jk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Wed, 18 Nov 2009 20:56:16 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091118184125.623e063d@lxorguk.ukuu.org.uk> <200911182007.07405.bzolnier@gmail.com>
+In-Reply-To: <200911182007.07405.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911182056.16517.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 08:47:37PM +0100, Kay Sievers wrote:
-> On Wed, Nov 18, 2009 at 20:40, Matthew Garrett <mjg@redhat.com> wrote:
-> > On Wed, Nov 18, 2009 at 08:30:07PM +0100, Kay Sievers wrote:
-> >
-> >> Wouldn't it be good enough, if we add a file "idle_since" which
-> >> contains the time of the actual disk idle time, and userspace can
-> >> schedule a re-examination of that value at the actual end of the idle
-> >> time it is looking for?
-> >
-> > That would require either polling or waking up a userspace application
-> > on every disk access. Doing it in-kernel involves only a single timer
-> > wakeup for every active/idle transition.
+On Wednesday 18 November 2009 20:07:07 Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 18 November 2009 19:41:25 Alan Cox wrote:
+> > > Maybe they are 'stable' but when it comes to features they are behind hpt366
+> > > (i.e. they lack PCI PM), which is also much cleaner than your drivers, easier
+> > > to understand and much smaller..
+> > 
+> > 37x and 3xn lack PCI PM.  Added to the TODO list.
+> > 
+> > The smaller size is a bit questionable given its mostly comments, and
+> > three drivers versus one.
 > 
-> How would it? If you look for, like a 60 seconds timeout, and the file
-> contains 20, you schedule a wakeup in 40 seconds. If the file after
-> the 40 seconds contains 60, you reached your idle timeout exactly at
-> that moment, if it's less, then you re-calculate and start from the
-> beginning.
+> I wonder what you find 'questionable' in the numbers given..
 
-How is that not polling? You'll repeatedly read a file looking for a 
-value that may never appear - imagine the case where you're waiting for 
-60 seconds of idleness, but the disk always becomes active again after 
-50.
+BTW we can immediately reclaim 300 LOC by simply merging drivers back..
+
+> > themselves don't keep common. Even more importantly we get to break *one*
+> > type of device at a time.
+> 
+> I prefer to not break anything, but hey my way of doing things is not
+> very much welcomed here..
+> 
+> I also like to think that by sharing code we get better testing coverage
+> and are in reality able to fix problems much faster because of this..
+
+Wait, you seem to be right!
+
+Only pata_hpt37x has broken cable detection while pata_hpt3x2n is okay. ;)
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Bartlomiej Zolnierkiewicz
