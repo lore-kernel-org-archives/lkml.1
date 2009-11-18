@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZKRFEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbZKRFQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751490AbZKRFEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 00:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZKRFEu
+	id S1752499AbZKRFQJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 00:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZKRFQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 00:04:50 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:33811 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbZKRFEt (ORCPT
+	Wed, 18 Nov 2009 00:16:09 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:57676 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbZKRFQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 00:04:49 -0500
+	Wed, 18 Nov 2009 00:16:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=auG3Sg6H4pWgfPMvOXlIRtBlPFUjFA3kP9SlRRda5XefUOt7yE4zHe3QIuqxnpXGeV
-         rM0EW3hTHzr3Qpp5CMJeRlmGiRTIitfcYrYAoURMuaxxFGx47YmtsPQnc/9MmZBOl8Nt
-         nYmh93sZlRLMihD0WNWxPc5Xv+Kmv8n6kkhvc=
-Message-ID: <4B03806F.7010803@gmail.com>
-Date: Wed, 18 Nov 2009 00:04:47 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZZBAwvZD4GtSwrvv1B/sGeXZmVWjNg3Ymr0wvL/EtRprgc46+Ffxxd6yK3vTcMAQ43
+         gXC4oTHwRx+rm0PN1Z5cdMbDrDy1lsCbXUCGSZ6iIfdy1ejmTYTmlDbHFMNLpagwCd7c
+         p1vFfiaW1YwWmyyvo9uUPPa+V5LBkC28qGop4=
+Date: Tue, 17 Nov 2009 21:16:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: atkbd - add forced release kays quirk for
+	Samsung N130
+Message-ID: <20091118051605.GA31480@core.coreip.homeip.net>
+References: <20091116171814.GA26183@sig21.net> <20091116195443.GE24026@core.coreip.homeip.net> <20091116213425.GA2128@sig21.net>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: huananhu@huawei.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
-References: <faf197be196ee.196eefaf197be@huawei.com>	<20091117.012248.86306050.davem@davemloft.net>	<4B0278D9.6030806@gmail.com> <20091117.034959.159359822.davem@davemloft.net>
-In-Reply-To: <20091117.034959.159359822.davem@davemloft.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091116213425.GA2128@sig21.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: William Allen Simpson <william.allen.simpson@gmail.com>
-> Date: Tue, 17 Nov 2009 05:20:09 -0500
+On Mon, Nov 16, 2009 at 10:34:25PM +0100, Johannes Stezenbach wrote:
+> Hi Dmitry,
 > 
->> What David may have meant, had he followed
->> Documentation/ManagementStyle or had any project management skills
->> what-so-ever, is that you need to follow
->> Documentation/SubmittingPatches more carefully.
+> On Mon, Nov 16, 2009 at 11:54:43AM -0800, Dmitry Torokhov wrote:
+> > On Mon, Nov 16, 2009 at 06:18:14PM +0100, Johannes Stezenbach wrote:
+> > > Samsung N130 has the same function key quirks as the NC10.
+> > > 
+> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
+> > > ---
+> > > It would be nice if this could go into 2.6.32.  It might also be
+> > > suitable for stable.
+> > 
+> > 2.6.32 will allow manipulating force release quirk from userspace
+> > (sysfs) so I stopped accepting in-kernel quirks like this one.
 > 
-> Are personal attacks on me really necessary?
-> 
-Actually, ironic sarcasm (juxtaposition) is a form of humor, fairly
-popular on such venues as "The Daily Show". :-)
+> OK, makes sense.  Will this be put in udev along with
+> the keymap setup for the function keys? 
 
+I think that is the best place to put it, yes.
 
-> Do you want me to look closely at your patches with a high priority
-> when you submit them for inclusion?
-> 
-Great, you're planning to start a new practice?  So far, I've only been
-blessed with:
+> If yes, is
+> there already an example how to do it correctly so 
+> I can submit a patch to add the N130 support there?
 
-* 1st contact (Oct 2):
+No, but you can be the first and pave the road ;)
 
-      "Otherwise asking for a is absolutely pointless as we have no
-      context in which to judge the code you're showing us."
-
-   The context (and entire previous patch) was pointed at by a link
-   in the message, and an internet-draft, but that would have required
-   effort (clicking and browsing).
-
-   Not exactly what I'd call "look closely at your patches"....
-
-* 2nd contact (Oct 5), replying to my post of Oct 3:
-
-      "struct tcp_sock is already WAY TOO BIG on 64-bit systems, adding
-      20 more bytes to it for some odd-ball feature is not something I'm
-      willing to do, sorry."
-
-   Always delighted to know our work is an "odd-ball feature"....
-
-* 3rd contact, sending private email to you as maintainer, suggested by
-   Andi Kleen's "On submitting kernel patches" for resolving conflicts,
-   and getting flamed for sending private email to you!
-
-* Recently, flamed for re-sending a query (after waiting 30 days):
-
-      "Complaining that your work isn't getting looked at in a timely
-      manner will always have the exact opposite effect that you want,
-      it makes people have a smaller desire to look at your stuff."
-
-   Yeah, 30 days just isn't long enough....  Fortunately, Eric Dumazet
-   and Paul E. McKenney were really helpful (and others privately), and
-   I thank them again!
-
-* 2 days ago, flamed again for re-sending a patch (after waiting 5 days),
-   although you'd never Ack'd or otherwise responded.
-
-
-> You may be right, but that doesn't matter if you're interested in
-> working together with me in the future.  There are diplomatic ways to
-> do everything, and this wasn't one of those ways.
-> 
-Working *together* would be handy!  But that implies cooperation and
-respect -- *not* biting the newbies nor dropping the F-bomb.
-
+-- 
+Dmitry
