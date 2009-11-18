@@ -1,255 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbZKRWVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbZKRWVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757812AbZKRWVJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 17:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbZKRWVG
+	id S1757776AbZKRWVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 17:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbZKRWVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 17:21:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41080 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757522AbZKRWVE (ORCPT
+	Wed, 18 Nov 2009 17:21:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50899 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754835AbZKRWVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 17:21:04 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/4] perf symbols: Capture the running kernel buildid too
-Date: Wed, 18 Nov 2009 20:20:53 -0200
-Message-Id: <1258582853-8579-4-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258582853-8579-3-git-send-email-acme@infradead.org>
-References: <1258582853-8579-1-git-send-email-acme@infradead.org>
- <1258582853-8579-2-git-send-email-acme@infradead.org>
- <1258582853-8579-3-git-send-email-acme@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 18 Nov 2009 17:21:54 -0500
+Date: Wed, 18 Nov 2009 14:21:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-spi <spi-devel-general@lists.sourceforge.net>,
+       David Brownell-sourceforge <dbrownell@users.sourceforge.net>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ARM: Add spi controller driver support for NUC900
+Message-Id: <20091118142109.ff2c5ef6.akpm@linux-foundation.org>
+In-Reply-To: <4B024748.9080001@gmail.com>
+References: <4B024748.9080001@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Tue, 17 Nov 2009 14:48:40 +0800
+Wan ZongShun <mcuos.com@gmail.com> wrote:
 
-[root@doppio linux-2.6-tip]# perf record -a -f sleep 3s ; perf
-buildid-list | grep vmlinux
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.171 MB perf.data (~7489 samples) ]
-18e7cc53db62a7d35e9d6f6c9ddc23017d38ee9a vmlinux
-[root@doppio linux-2.6-tip]#
+> Dear David,
+> 
+> Add winbond/nuvoton NUC900 spi controller driver support, 
+> on my evaluation board,there is a winbond w25x16 spi flash,
+> so I test my spi controller driver with m25p80.c.
+> 
+>
+> ...
+>
+> +static inline struct w90p910_spi *to_hw(struct spi_device *sdev)
+> +{
+> +	return spi_master_get_devdata(sdev->master);
+> +}
+> +
+> +static void w90p910_slave_seclect(struct spi_device *spi, unsigned int ssr)
 
-Several refactorings were needed so that we can have simmetry between
-dsos__load_modules and dsos__load_kernel, i.e. those functions will
-respectively create and add to the dsos list the loaded modules and
-kernel, with its buildids, but not load its symbols. That is something
-the subcomands that need will have to call dso__load_kernel_sym(), just
-like we do with modules with dsos__load_module_sym()/dso__load_module_sym().
+I think you meant "select" here?
 
-Nexts csets will actually use this info to stop producing bogus results
-using mismatched vmlinux and .ko files.
+> +{
+> +	struct w90p910_spi *hw = to_hw(spi);
+> +	unsigned int val;
+> +	unsigned int cs = spi->mode & SPI_CS_HIGH ? 1 : 0;
+> +	unsigned int cpol = spi->mode & SPI_CPOL ? 1 : 0;
+> +
+> +	val = __raw_readl(hw->regs + USI_SSR);
+> +
+> +	if (!cs)
+> +		val &= ~SELECTLEV;
+> +	else
+> +		val |= SELECTLEV;
+> +
+> +	if (!ssr)
+> +		val &= ~SELECTSLAVE;
+> +	else
+> +		val |= SELECTSLAVE;
+> +
+> +	__raw_writel(val, hw->regs + USI_SSR);
+> +
+> +	val = __raw_readl(hw->regs + USI_CNT);
+> +
+> +	if (!cpol)
+> +		val &= ~SELECTPOL;
+> +	else
+> +		val |= SELECTPOL;
+> +
+> +	__raw_writel(val, hw->regs + USI_CNT);
+> +}
 
-Yeah, we need to close some races here and there, but aside from evil
-corner cases (that you should know and avoid, of course), this is good
-enough till we do the right thing :-)
+That's a read-modify-write operation.  What locking prevents two
+threads of control from altering the USI_SSR and USI_CNT registers at
+the same time, resulting in an indeterminate setting?
 
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-top.c |    7 ++++-
- tools/perf/util/header.c |    1 +
- tools/perf/util/symbol.c |   65 ++++++++++++++++++++++++++-------------------
- tools/perf/util/symbol.h |    3 +-
- 4 files changed, 46 insertions(+), 30 deletions(-)
+> +static void w90p910_spi_chipsel(struct spi_device *spi, int value)
+> +{
+> +	switch (value) {
+> +	case BITBANG_CS_INACTIVE:
+> +		w90p910_slave_seclect(spi, 0);
+> +		break;
+> +
+> +	case BITBANG_CS_ACTIVE:
+> +		w90p910_slave_seclect(spi, 1);
+> +		break;
+> +	}
+> +}
+> +
+> +static void w90p910_spi_setup_txnum(struct w90p910_spi *hw,
+> +							unsigned int txnum)
+> +{
+> +	unsigned int val;
+> +
+> +	val = __raw_readl(hw->regs + USI_CNT);
+> +
+> +	if (!txnum)
+> +		val &= ~TXNUM;
+> +	else
+> +		val |= txnum << 0x08;
+> +
+> +	__raw_writel(val, hw->regs + USI_CNT);
+> +
+> +}
+> +
+> +static void w90p910_spi_setup_txbitlen(struct w90p910_spi *hw,
+> +							unsigned int txbitlen)
+> +{
+> +	unsigned int val;
+> +
+> +	val = __raw_readl(hw->regs + USI_CNT);
+> +
+> +	val |= (txbitlen << 0x03);
+> +
+> +	__raw_writel(val, hw->regs + USI_CNT);
+> +}
+> +
+> +static void w90p910_spi_gobusy(struct w90p910_spi *hw)
+> +{
+> +	unsigned int val;
+> +
+> +	val = __raw_readl(hw->regs + USI_CNT);
+> +
+> +	val |= GOBUSY;
+> +
+> +	__raw_writel(val, hw->regs + USI_CNT);
+> +}
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 07b92c3..6d770ac 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -948,7 +948,12 @@ static int symbol_filter(struct map *map, struct symbol *sym)
- 
- static int parse_symbols(void)
- {
--	if (dsos__load_kernel(vmlinux_name, symbol_filter, 1) <= 0)
-+	struct dso *kernel = dsos__load_kernel();
-+
-+	if (kernel == NULL)
-+		return -1;
-+
-+	if (dso__load_kernel_sym(kernel, symbol_filter, 1) <= 0)
- 		return -1;
- 
- 	if (dump_symtab)
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index d3d656f..425a29b 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -241,6 +241,7 @@ perf_header__adds_write(struct perf_header *self, int fd)
- 
- 		buildid_sec = &feat_sec[idx++];
- 
-+		dsos__load_kernel();
- 		/*
- 		 * Read the list of loaded modules with its build_ids
- 		 */
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 7b4cede..4d75e74 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -1352,17 +1352,11 @@ static int dso__load_vmlinux(struct dso *self, struct map *map,
- 	return err;
- }
- 
--int dsos__load_kernel(const char *vmlinux, symbol_filter_t filter,
--		      int use_modules)
-+int dso__load_kernel_sym(struct dso *self, symbol_filter_t filter, int use_modules)
- {
- 	int err = -1;
--	struct dso *dso = dso__new(vmlinux);
- 
--	if (dso == NULL)
--		return -1;
--
--	dso->short_name = "[kernel]";
--	kernel_map = map__new2(0, dso);
-+	kernel_map = map__new2(0, self);
- 	if (kernel_map == NULL)
- 		goto out_delete_dso;
- 
-@@ -1374,39 +1368,36 @@ int dsos__load_kernel(const char *vmlinux, symbol_filter_t filter,
- 		use_modules = 0;
- 	}
- 
--	if (vmlinux) {
--		err = dso__load_vmlinux(dso, kernel_map, vmlinux, filter);
--		if (err > 0 && use_modules) {
--			int syms = dsos__load_modules_sym(filter);
-+	err = dso__load_vmlinux(self, kernel_map, self->name, filter);
-+	if (err > 0 && use_modules) {
-+		int syms = dsos__load_modules_sym(filter);
- 
--			if (syms < 0)
--				pr_warning("Failed to read module symbols!"
--					   " Continuing...\n");
--			else
--				err += syms;
--		}
-+		if (syms < 0)
-+			pr_warning("Failed to read module symbols!"
-+				   " Continuing...\n");
-+		else
-+			err += syms;
- 	}
- 
- 	if (err <= 0)
- 		err = kernel_maps__load_kallsyms(filter, use_modules);
- 
- 	if (err > 0) {
--		struct rb_node *node = rb_first(&dso->syms);
-+		struct rb_node *node = rb_first(&self->syms);
- 		struct symbol *sym = rb_entry(node, struct symbol, rb_node);
- 
- 		kernel_map->start = sym->start;
--		node = rb_last(&dso->syms);
-+		node = rb_last(&self->syms);
- 		sym = rb_entry(node, struct symbol, rb_node);
- 		kernel_map->end = sym->end;
- 
--		dso->origin = DSO__ORIG_KERNEL;
-+		self->origin = DSO__ORIG_KERNEL;
- 		kernel_maps__insert(kernel_map);
- 		/*
- 		 * Now that we have all sorted out, just set the ->end of all
- 		 * maps:
- 		 */
- 		kernel_maps__fixup_end();
--		dsos__add(dso);
- 
- 		if (verbose)
- 			kernel_maps__fprintf(stderr);
-@@ -1415,7 +1406,7 @@ int dsos__load_kernel(const char *vmlinux, symbol_filter_t filter,
- 	return err;
- 
- out_delete_dso:
--	dso__delete(dso);
-+	dso__delete(self);
- 	return -1;
- }
- 
-@@ -1475,18 +1466,36 @@ size_t dsos__fprintf_buildid(FILE *fp)
- 	return ret;
- }
- 
--int load_kernel(symbol_filter_t filter)
-+struct dso *dsos__load_kernel(void)
- {
--	if (dsos__load_kernel(vmlinux_name, filter, modules) <= 0)
--		return -1;
-+	struct dso *kernel = dso__new(vmlinux_name);
- 
-+	if (kernel == NULL)
-+		return NULL;
-+
-+	kernel->short_name = "[kernel]";
- 	vdso = dso__new("[vdso]");
- 	if (!vdso)
--		return -1;
-+		return NULL;
-+
-+	if (sysfs__read_build_id("/sys/kernel/notes", kernel->build_id,
-+				 sizeof(kernel->build_id)) == 0)
-+		kernel->has_build_id = true;
- 
-+	dsos__add(kernel);
- 	dsos__add(vdso);
- 
--	return 0;
-+	return kernel;
-+}
-+
-+int load_kernel(symbol_filter_t filter)
-+{
-+	struct dso *kernel = dsos__load_kernel();
-+
-+	if (kernel == NULL)
-+		return -1;
-+
-+	return dso__load_kernel_sym(kernel, filter, modules);
- }
- 
- void symbol__init(unsigned int priv_size)
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index da7ec1a..f0593a6 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -77,10 +77,10 @@ void dso__delete(struct dso *self);
- 
- struct symbol *dso__find_symbol(struct dso *self, u64 ip);
- 
--int dsos__load_kernel(const char *vmlinux, symbol_filter_t filter, int modules);
- int dsos__load_modules(void);
- struct dso *dsos__findnew(const char *name);
- int dso__load(struct dso *self, struct map *map, symbol_filter_t filter);
-+int dso__load_kernel_sym(struct dso *self, symbol_filter_t filter, int modules);
- void dsos__fprintf(FILE *fp);
- size_t dsos__fprintf_buildid(FILE *fp);
- 
-@@ -94,6 +94,7 @@ int sysfs__read_build_id(const char *filename, void *bf, size_t size);
- bool dsos__read_build_ids(void);
- int build_id__sprintf(u8 *self, int len, char *bf);
- 
-+struct dso *dsos__load_kernel(void);
- int load_kernel(symbol_filter_t filter);
- 
- void symbol__init(unsigned int priv_size);
--- 
-1.6.2.5
+ditto, ditto, ditto.
+
+> +static int w90p910_spi_setupxfer(struct spi_device *spi,
+> +				 struct spi_transfer *t)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int w90p910_spi_setup(struct spi_device *spi)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline unsigned int hw_txbyte(struct w90p910_spi *hw, int count)
+> +{
+> +	return hw->tx ? hw->tx[count] : 0;
+> +}
+> +
+> +static int w90p910_spi_txrx(struct spi_device *spi, struct spi_transfer *t)
+> +{
+> +	struct w90p910_spi *hw = to_hw(spi);
+> +
+> +	hw->tx = t->tx_buf;
+> +	hw->rx = t->rx_buf;
+> +	hw->len = t->len;
+> +	hw->count = 0;
+> +
+> +	init_completion(&hw->done);
+> +
+> +	__raw_writel(hw_txbyte(hw, 0x0), hw->regs + USI_TX0);
+> +
+> +	w90p910_spi_gobusy(hw);
+> +
+> +	wait_for_completion(&hw->done);
+> +
+> +	return hw->count;
+> +}
+
+The init_completion() should be unneeded?  The structure was
+initialised at setup time and will be left in a reusable state after a
+complete()/wait_for_completion().  Reinitialising the structure all the
+time like this adds risk that it will be scribbled on while in use.
+
+>
+> ...
+>
+> +static int __devexit w90p910_spi_remove(struct platform_device *dev)
+> +{
+> +	struct w90p910_spi *hw = platform_get_drvdata(dev);
+> +
+> +	platform_set_drvdata(dev, NULL);
+> +
+> +	spi_unregister_master(hw->master);
+> +
+> +	clk_disable(hw->clk);
+> +	clk_put(hw->clk);
+
+As far as I can tell, a hardware interrupt could still be pending, or
+be under service while the above code is executing?
+
+If so, I expect bad things will happen?
+
+> +	free_irq(hw->irq, hw);
+> +	iounmap(hw->regs);
+> +
+> +	release_resource(hw->ioarea);
+> +	kfree(hw->ioarea);
+> +
+> +	spi_master_put(hw->master);
+> +	return 0;
+> +}
+> +
+>
+> ...
+>
 
