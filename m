@@ -1,126 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZKRRo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbZKRRqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbZKRRo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 12:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbZKRRo5
+	id S1758115AbZKRRqE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbZKRRqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 12:44:57 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:48732 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758070AbZKRRo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 12:44:56 -0500
-Message-ID: <4B043298.1010208@sgi.com>
-Date: Wed, 18 Nov 2009 09:44:56 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 18 Nov 2009 12:46:03 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52144 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758071AbZKRRqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 12:46:02 -0500
+Date: Wed, 18 Nov 2009 18:46:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hx4700: fix hx4700 touchscreen pressure values
+Message-ID: <20091118174602.GH25150@elf.ucw.cz>
+References: <E1NAYJo-00016g-PW@pih-relay04.plus.net>
+ <20091118172849.GD25150@elf.ucw.cz>
+ <20091118173934.GA4458@core.coreip.homeip.net>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Rientjes <rientjes@google.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] x86: Limit the number of processor bootup messages
-References: <20091117191752.164451000@alcatraz.americas.sgi.com>	 <20091117191757.651569000@alcatraz.americas.sgi.com>	 <86802c440911171210x4780c08cg3b3260afd5d2bc5d@mail.gmail.com>	 <4B030799.9020402@zytor.com>	 <86802c440911171311s1313abf5h4059422b1214ec75@mail.gmail.com> <86802c440911171838q6e96670bnbf4db822484b7204@mail.gmail.com>
-In-Reply-To: <86802c440911171838q6e96670bnbf4db822484b7204@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118173934.GA4458@core.coreip.homeip.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this a bug report?  Can you supply the system configuration, config
-file and the kernel release/patched status?
+On Wed 2009-11-18 09:39:34, Dmitry Torokhov wrote:
+> On Wed, Nov 18, 2009 at 06:28:49PM +0100, Pavel Machek wrote:
+> > On Wed 2009-11-18 00:22:41, Paul Parsons wrote:
+> > > > Does pressure actually work as expected -- that is not inverted?
+> > > > Because I need this patch on spitz...  but it may break your
+> > > > machine...
+> > > 
+> > > You are right, the pressure values were being inverted on my hx4700.
+> > > Pressing hard generates somewhat lower Rt values than pressing lightly.
+> > > 
+> > > Since typical hx4700 Rt values are close to (pressure_max/2) anyway,
+> > > the inverted and non-inverted values were not very different.
+> > > For example:
+> > > 
+> > > Rt      ts->pressure_max-Rt
+> > > 599     425
+> > > 562     462
+> > > 588     436
+> > > 570     454
+> > > 
+> > > So by all means submit your ads7846.c patch; it will not break hx4700.
+> > 
+> > Dmitry, those pressure values are reverted on more than one machine,
+> > and we do not have anyone reporting it works ok for them. Can we
+> > perhaps just.... fix it?
+> 
+> OK, so we have 4 instances where pressure is inverted and nobody wants
+> to come out with a non-inverted example... I'll queue for .33 then - .32
+> it too close to the release.
 
-I've tested the patches on a few different (Intel) architectures
-and haven't encountered any panics yet.
-
-Thanks,
-Mike
-
-Yinghai Lu wrote:
-> On Tue, Nov 17, 2009 at 1:11 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> On Tue, Nov 17, 2009 at 12:29 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->>> On 11/17/2009 12:10 PM, Yinghai Lu wrote:
->>>>> The following lines have been removed:
->>>>>
->>>>>        CPU: Physical Processor ID:
->>>>>        CPU: Processor Core ID:
->>>>>        CPU %d/0x%x -> Node %d
->>>> please don't.
->>>>
->>> Why not?
->>>
->>> Or, more formally: please state the rationale for keeping them.
->>>
->> at least one distribution: SLES 11 mess it up when BSP is from socket
->> 1 instead of socket0
->>
->> and above message does show kernel think BSP still from socket0, and
->> other cores in that package are from socket1.
-> 
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 0
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 256K
-> CPU: L3 cache: 24576K
-> BUG: unable to handle kernel paging request at ffffffffc07129b0
-> IP: [<ffffffff8049494b>] init_intel+0xea/0x14b
-> PGD 203067 PUD 204067 PMD 0
-> Oops: 0000 [1] SMP
-> last sysfs file:
-> CPU 0
-> Modules linked in:
-> Supported: Yes
-> Pid: 0, comm: swapper Not tainted 2.6.27.19-5-default #1
-> RIP: 0010:[<ffffffff8049494b>]  [<ffffffff8049494b>] init_intel+0xea/0x14b
-> RSP: 0018:ffffffff80965f48  EFLAGS: 00010202
-> RAX: 0000000020000000 RBX: 0000000000000044 RCX: 00000000000001a0
-> RDX: ffffffff808cbd14 RSI: 0000000000000046 RDI: 0000000020000000
-> RBP: 0000000020000000 R08: 0000000000000000 R09: 0000000000000000
-> R10: 000000000000000a R11: ffffffff802223f1 R12: 0000000000000000
-> R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-> FS:  0000000000000000(0000) GS:ffffffff80a40080(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: ffffffffc07129b0 CR3: 0000000000201000 CR4: 00000000000006a0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 0, threadinfo ffffffff80964000, task ffffffff806da380)
-> Stack:  0000000100000003 0000000100000000 ffffffff808cbd00 ffffe20000000000
->  0000007800000000 ffffffff804943ef 0000000000000000 ffffffff80974fda
->  0000000000000000 ffffffff8096de10 0000000000000000 ffffffff809a1510
-> Call Trace:
->  [<ffffffff804943ef>] identify_cpu+0x3c/0xa3
->  [<ffffffff80974fda>] check_bugs+0x9/0x2e
->  [<ffffffff8096de10>] start_kernel+0x313/0x324
->  [<ffffffff8096d38f>] x86_64_start_kernel+0xde/0xe4
-> 
-> 
-> Code: 0f a2 a8 1f 74 07 c1 e8 1a ff c0 eb 05 b8 01 00 00 00 66 89 85 d8 00 00 00
->  65 44 8b 24 25 24 00 00 00 e8 c3 66 d8 ff 89 c5 48 98 <0f> bf 9c 00 b0 29 71 80
->  83 fb ff 74 0d 0f a3 1d 91 a1 4c 00 19
-> RIP  [<ffffffff8049494b>] init_intel+0xea/0x14b
->  RSP <ffffffff80965f48>
-> CR2: ffffffffc07129b0
-> ---[ end trace 4eaa2a86a8e2da22 ]---
-> 
-> 
-> 2.6.32 kernel corresponding part:
-> 
-> [    0.128855] CPU: Physical Processor ID: 1
-> [    0.129856] CPU: Processor Core ID: 0
-> [    0.130845] CPU: L1 I cache: 32K, L1 D cache: 32K
-> [    0.151454] CPU: L2 cache: 256K
-> [    0.152463] CPU: L3 cache: 24576K
-> [    0.153471] CPU 0/0x20 -> Node 0
-> [    0.168552] CPU 0 microcode level: 0xffff0008
-> [    0.169901] mce: CPU supports 22 MCE banks
+Yes, .33 makes sense. Thanks!
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
