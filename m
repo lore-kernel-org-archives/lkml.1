@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbZKRSXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZKRSYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbZKRSXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 13:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932261AbZKRSXu
+	id S932324AbZKRSYM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 13:24:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbZKRSYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 13:23:50 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:45547 "EHLO mgw1.diku.dk"
+	Wed, 18 Nov 2009 13:24:11 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:56402 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932225AbZKRSXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 13:23:48 -0500
-Date: Wed, 18 Nov 2009 19:23:53 +0100 (CET)
+	id S932248AbZKRSYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 13:24:09 -0500
+Date: Wed, 18 Nov 2009 19:24:13 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Roger Luethi <rl@hellgate.ch>, netdev@vger.kernel.org, arnd@arndb.de,
-       joe@perches.com, linux-kernel@vger.kernel.org,
+To: Francois Romieu <romieu@fr.zoreil.com>, netdev@vger.kernel.org,
+       arnd@arndb.de, joe@perches.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/16] drivers/net/via-rhine.c: remove exceptional & on
+Subject: [PATCH 11/16] drivers/net/via-velocity.c: remove exceptional & on
  function name
-Message-ID: <Pine.LNX.4.64.0911181923340.20943@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0911181923540.20943@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,19 +48,19 @@ identifier r.f;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/via-rhine.c             |    2 +-
+ drivers/net/via-velocity.c          |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/via-rhine.c b/drivers/net/via-rhine.c
-index 4535e89..ec94ddf 100644
---- a/drivers/net/via-rhine.c
-+++ b/drivers/net/via-rhine.c
-@@ -1150,7 +1150,7 @@ static int rhine_open(struct net_device *dev)
- 	void __iomem *ioaddr = rp->base;
- 	int rc;
+diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
+index 158f411..1e6b395 100644
+--- a/drivers/net/via-velocity.c
++++ b/drivers/net/via-velocity.c
+@@ -2176,7 +2176,7 @@ static int velocity_open(struct net_device *dev)
  
--	rc = request_irq(rp->pdev->irq, &rhine_interrupt, IRQF_SHARED, dev->name,
-+	rc = request_irq(rp->pdev->irq, rhine_interrupt, IRQF_SHARED, dev->name,
- 			dev);
- 	if (rc)
- 		return rc;
+ 	velocity_init_registers(vptr, VELOCITY_INIT_COLD);
+ 
+-	ret = request_irq(vptr->pdev->irq, &velocity_intr, IRQF_SHARED,
++	ret = request_irq(vptr->pdev->irq, velocity_intr, IRQF_SHARED,
+ 			  dev->name, dev);
+ 	if (ret < 0) {
+ 		/* Power down the chip */
