@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbZKRO1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZKRO1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbZKRO1P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 09:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbZKRO1N
+	id S1757276AbZKRO1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 09:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbZKRO1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 09:27:13 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46415 "EHLO
+	Wed, 18 Nov 2009 09:27:21 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46419 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757187AbZKRO1L (ORCPT
+	with ESMTP id S1757211AbZKRO1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 09:27:11 -0500
+	Wed, 18 Nov 2009 09:27:18 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 6/7] stallion: Convert to the tty_port_open/close methods
+Subject: [PATCH 7/7] istallion: tty port open/close methods
 To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Wed, 18 Nov 2009 14:10:46 +0000
-Message-ID: <20091118141044.2798.39460.stgit@localhost.localdomain>
+Date: Wed, 18 Nov 2009 14:10:53 +0000
+Message-ID: <20091118141052.2798.84055.stgit@localhost.localdomain>
 In-Reply-To: <20091118140935.2798.32517.stgit@localhost.localdomain>
 References: <20091118140935.2798.32517.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,184 +25,257 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver is already structured this way so just slice and dice
+Slice/dice/repeat as with the stallion driver this is just code shuffling
+and removal
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/stallion.c |  118 ++++++++++++++---------------------------------
- 1 files changed, 36 insertions(+), 82 deletions(-)
+ drivers/char/istallion.c |  177 ++++++++++++++++------------------------------
+ 1 files changed, 60 insertions(+), 117 deletions(-)
 
 
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index b4ba5ed..d04a398 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -702,6 +702,24 @@ static struct stlbrd *stl_allocbrd(void)
+diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
+index babfd44..4cd6c52 100644
+--- a/drivers/char/istallion.c
++++ b/drivers/char/istallion.c
+@@ -213,7 +213,6 @@ static int		stli_shared;
+  *	with the slave. Most of them need to be updated atomically, so always
+  *	use the bit setting operations (unless protected by cli/sti).
+  */
+-#define	ST_INITIALIZING	1
+ #define	ST_OPENING	2
+ #define	ST_CLOSING	3
+ #define	ST_CMDING	4
+@@ -783,13 +782,32 @@ static int stli_parsebrd(struct stlconf *confp, char **argp)
  
  /*****************************************************************************/
  
-+static int stl_activate(struct tty_port *port, struct tty_struct *tty)
++/*
++ *	On the first open of the device setup the port hardware, and
++ *	initialize the per port data structure. Since initializing the port
++ *	requires several commands to the board we will need to wait for any
++ *	other open that is already initializing the port.
++ *
++ *	Locking: protected by the port mutex.
++ */
++
++static int stli_activate(struct tty_port *port, struct tty_struct *tty)
 +{
-+	struct stlport *portp = container_of(port, struct stlport, port);
-+	if (!portp->tx.buf) {
-+		portp->tx.buf = kmalloc(STL_TXBUFSIZE, GFP_KERNEL);
-+		if (!portp->tx.buf)
-+			return -ENOMEM;
-+		portp->tx.head = portp->tx.buf;
-+		portp->tx.tail = portp->tx.buf;
-+	}
-+	stl_setport(portp, tty->termios);
-+	portp->sigs = stl_getsignals(portp);
-+	stl_setsignals(portp, 1, 1);
-+	stl_enablerxtx(portp, 1, 1);
-+	stl_startrxtx(portp, 1, 0);
-+	return 0;
++	struct stliport *portp = container_of(port, struct stliport, port);
++	struct stlibrd *brdp = stli_brds[portp->brdnr];
++	int rc;
++
++	if ((rc = stli_initopen(tty, brdp, portp)) >= 0)
++		clear_bit(TTY_IO_ERROR, &tty->flags);
++	wake_up_interruptible(&portp->raw_wait);
++	return rc;
 +}
 +
- static int stl_open(struct tty_struct *tty, struct file *filp)
+ static int stli_open(struct tty_struct *tty, struct file *filp)
  {
- 	struct stlport	*portp;
-@@ -737,32 +755,8 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
- 	if (portp == NULL)
+ 	struct stlibrd *brdp;
+ 	struct stliport *portp;
+-	struct tty_port *port;
+ 	unsigned int minordev, brdnr, portnr;
+-	int rc;
+ 
+ 	minordev = tty->index;
+ 	brdnr = MINOR2BRD(minordev);
+@@ -809,95 +827,56 @@ static int stli_open(struct tty_struct *tty, struct file *filp)
  		return -ENODEV;
- 	port = &portp->port;
+ 	if (portp->devnr < 1)
+ 		return -ENODEV;
+-	port = &portp->port;
 -
 -/*
 - *	On the first open of the device setup the port hardware, and
-- *	initialize the per port data structure.
+- *	initialize the per port data structure. Since initializing the port
+- *	requires several commands to the board we will need to wait for any
+- *	other open that is already initializing the port.
+- *
+- *	Review - locking
 - */
 -	tty_port_tty_set(port, tty);
 -	tty->driver_data = portp;
 -	port->count++;
 -
--	if ((port->flags & ASYNC_INITIALIZED) == 0) {
--		if (!portp->tx.buf) {
--			portp->tx.buf = kmalloc(STL_TXBUFSIZE, GFP_KERNEL);
--			if (!portp->tx.buf)
--				return -ENOMEM;
--			portp->tx.head = portp->tx.buf;
--			portp->tx.tail = portp->tx.buf;
+-	wait_event_interruptible(portp->raw_wait,
+-			!test_bit(ST_INITIALIZING, &portp->state));
+-	if (signal_pending(current))
+-		return -ERESTARTSYS;
+-
+-	if ((portp->port.flags & ASYNC_INITIALIZED) == 0) {
+-		set_bit(ST_INITIALIZING, &portp->state);
+-		if ((rc = stli_initopen(tty, brdp, portp)) >= 0) {
+-			/* Locking */
+-			port->flags |= ASYNC_INITIALIZED;
+-			clear_bit(TTY_IO_ERROR, &tty->flags);
 -		}
--		stl_setport(portp, tty->termios);
--		portp->sigs = stl_getsignals(portp);
--		stl_setsignals(portp, 1, 1);
--		stl_enablerxtx(portp, 1, 1);
--		stl_startrxtx(portp, 1, 0);
--		clear_bit(TTY_IO_ERROR, &tty->flags);
--		port->flags |= ASYNC_INITIALIZED;
+-		clear_bit(ST_INITIALIZING, &portp->state);
+-		wake_up_interruptible(&portp->raw_wait);
+-		if (rc < 0)
+-			return rc;
 -	}
--	return tty_port_block_til_ready(port, tty, filp);
+-	return tty_port_block_til_ready(&portp->port, tty, filp);
 +	return tty_port_open(&portp->port, tty, filp);
-+	
  }
  
- /*****************************************************************************/
-@@ -826,38 +820,12 @@ static void stl_waituntilsent(struct tty_struct *tty, int timeout)
- 
++
  /*****************************************************************************/
  
--static void stl_close(struct tty_struct *tty, struct file *filp)
-+static void stl_shutdown(struct tty_port *port)
+-static void stli_close(struct tty_struct *tty, struct file *filp)
++static void stli_shutdown(struct tty_port *port)
  {
--	struct stlport	*portp;
+ 	struct stlibrd *brdp;
+-	struct stliport *portp;
 -	struct tty_port *port;
--	unsigned long	flags;
--
--	pr_debug("stl_close(tty=%p,filp=%p)\n", tty, filp);
--
++	unsigned long ftype;
+ 	unsigned long flags;
++	struct stliport *portp = container_of(port, struct stliport, port);
+ 
 -	portp = tty->driver_data;
--	BUG_ON(portp == NULL);
--
+-	if (portp == NULL)
++	if (portp->brdnr >= stli_nrbrds)
+ 		return;
 -	port = &portp->port;
 -
 -	if (tty_port_close_start(port, tty, filp) == 0)
--		return;
++	brdp = stli_brds[portp->brdnr];
++	if (brdp == NULL)
+ 		return;
+ 
 -/*
-- *	May want to wait for any data to drain before closing. The BUSY
-- *	flag keeps track of whether we are still sending or not - it is
-- *	very accurate for the cd1400, not quite so for the sc26198.
-- *	(The sc26198 has no "end-of-data" interrupt only empty FIFO)
+- *	May want to wait for data to drain before closing. The BUSY flag
+- *	keeps track of whether we are still transmitting or not. It is
+- *	updated by messages from the slave - indicating when all chars
+- *	really have drained.
 - */
--	stl_waituntilsent(tty, (HZ / 2));
+- 	spin_lock_irqsave(&stli_lock, flags);
+-	if (tty == stli_txcooktty)
+-		stli_flushchars(tty);
+-	spin_unlock_irqrestore(&stli_lock, flags);
 -
--	spin_lock_irqsave(&port->lock, flags);
--	portp->port.flags &= ~ASYNC_INITIALIZED;
--	spin_unlock_irqrestore(&port->lock, flags);
--
-+	struct stlport *portp = container_of(port, struct stlport, port);
- 	stl_disableintrs(portp);
--	if (tty->termios->c_cflag & HUPCL)
--		stl_setsignals(portp, 0, 0);
- 	stl_enablerxtx(portp, 0, 0);
--	stl_flushbuffer(tty);
-+	stl_flush(portp);
- 	portp->istate = 0;
- 	if (portp->tx.buf != NULL) {
- 		kfree(portp->tx.buf);
-@@ -865,9 +833,16 @@ static void stl_close(struct tty_struct *tty, struct file *filp)
- 		portp->tx.head = NULL;
- 		portp->tx.tail = NULL;
- 	}
-+}
+-	/* We end up doing this twice for the moment. This needs looking at
+-	   eventually. Note we still use portp->closing_wait as a result */
+-	if (portp->closing_wait != ASYNC_CLOSING_WAIT_NONE)
+-		tty_wait_until_sent(tty, portp->closing_wait);
++	/*
++	 *	May want to wait for data to drain before closing. The BUSY
++	 *	flag keeps track of whether we are still transmitting or not.
++	 *	It is updated by messages from the slave - indicating when all
++	 *	chars really have drained.
++	 */
+ 
+-	/* FIXME: port locking here needs attending to */
+-	port->flags &= ~ASYNC_INITIALIZED;
++	if (!test_bit(ST_CLOSING, &portp->state))
++		stli_rawclose(brdp, portp, 0, 0);
+ 
+-	brdp = stli_brds[portp->brdnr];
+-	stli_rawclose(brdp, portp, 0, 0);
+-	if (tty->termios->c_cflag & HUPCL) {
+-		stli_mkasysigs(&portp->asig, 0, 0);
+-		if (test_bit(ST_CMDING, &portp->state))
+-			set_bit(ST_DOSIGS, &portp->state);
+-		else
+-			stli_sendcmd(brdp, portp, A_SETSIGNALS, &portp->asig,
+-				sizeof(asysigs_t), 0);
+-	}
++ 	spin_lock_irqsave(&stli_lock, flags);
+ 	clear_bit(ST_TXBUSY, &portp->state);
+ 	clear_bit(ST_RXSTOP, &portp->state);
+-	set_bit(TTY_IO_ERROR, &tty->flags);
+-	tty_ldisc_flush(tty);
+-	set_bit(ST_DOFLUSHRX, &portp->state);
+-	stli_flushbuffer(tty);
++	spin_unlock_irqrestore(&stli_lock, flags);
  
 -	tty_port_close_end(port, tty);
 -	tty_port_tty_set(port, NULL);
-+static void stl_close(struct tty_struct *tty, struct file *filp)
-+{
-+	struct stlport*portp;
-+	pr_debug("stl_close(tty=%p,filp=%p)\n", tty, filp);
++	ftype = FLUSHTX | FLUSHRX;
++	stli_cmdwait(brdp, portp, A_FLUSH, &ftype, sizeof(u32), 0);
++}
 +
-+	portp = tty->driver_data;
-+	BUG_ON(portp == NULL);
++static void stli_close(struct tty_struct *tty, struct file *filp)
++{
++	struct stliport *portp = tty->driver_data;
++	unsigned long flags;
++	if (portp == NULL)
++		return;
++ 	spin_lock_irqsave(&stli_lock, flags);
++	/*	Flush any internal buffering out first */
++	if (tty == stli_txcooktty)
++		stli_flushchars(tty);
++	spin_unlock_irqrestore(&stli_lock, flags);
 +	tty_port_close(&portp->port, tty, filp);
  }
  
  /*****************************************************************************/
-@@ -1314,35 +1289,12 @@ static void stl_stop(struct tty_struct *tty)
+@@ -1724,6 +1703,7 @@ static void stli_start(struct tty_struct *tty)
  
- static void stl_hangup(struct tty_struct *tty)
+ /*****************************************************************************/
+ 
++
+ /*
+  *	Hangup this port. This is pretty much like closing the port, only
+  *	a little more brutal. No waiting for data to drain. Shutdown the
+@@ -1733,47 +1713,8 @@ static void stli_start(struct tty_struct *tty)
+ 
+ static void stli_hangup(struct tty_struct *tty)
  {
--	struct stlport	*portp;
+-	struct stliport *portp;
+-	struct stlibrd *brdp;
 -	struct tty_port *port;
 -	unsigned long flags;
 -
-+	struct stlport	*portp = tty->driver_data;
- 	pr_debug("stl_hangup(tty=%p)\n", tty);
- 
 -	portp = tty->driver_data;
- 	if (portp == NULL)
- 		return;
+-	if (portp == NULL)
+-		return;
+-	if (portp->brdnr >= stli_nrbrds)
+-		return;
+-	brdp = stli_brds[portp->brdnr];
+-	if (brdp == NULL)
+-		return;
 -	port = &portp->port;
 -
 -	spin_lock_irqsave(&port->lock, flags);
 -	port->flags &= ~ASYNC_INITIALIZED;
 -	spin_unlock_irqrestore(&port->lock, flags);
 -
--	stl_disableintrs(portp);
--	if (tty->termios->c_cflag & HUPCL)
--		stl_setsignals(portp, 0, 0);
--	stl_enablerxtx(portp, 0, 0);
--	stl_flushbuffer(tty);
--	portp->istate = 0;
--	set_bit(TTY_IO_ERROR, &tty->flags);
--	if (portp->tx.buf != NULL) {
--		kfree(portp->tx.buf);
--		portp->tx.buf = NULL;
--		portp->tx.head = NULL;
--		portp->tx.tail = NULL;
+-	if (!test_bit(ST_CLOSING, &portp->state))
+-		stli_rawclose(brdp, portp, 0, 0);
+-
+-	spin_lock_irqsave(&stli_lock, flags);
+-	if (tty->termios->c_cflag & HUPCL) {
+-		stli_mkasysigs(&portp->asig, 0, 0);
+-		if (test_bit(ST_CMDING, &portp->state)) {
+-			set_bit(ST_DOSIGS, &portp->state);
+-			set_bit(ST_DOFLUSHTX, &portp->state);
+-			set_bit(ST_DOFLUSHRX, &portp->state);
+-		} else {
+-			stli_sendcmd(brdp, portp, A_SETSIGNALSF,
+-				&portp->asig, sizeof(asysigs_t), 0);
+-		}
 -	}
+-
+-	clear_bit(ST_TXBUSY, &portp->state);
+-	clear_bit(ST_RXSTOP, &portp->state);
+-	set_bit(TTY_IO_ERROR, &tty->flags);
+-	spin_unlock_irqrestore(&stli_lock, flags);
+-
 -	tty_port_hangup(port);
++	struct stliport *portp = tty->driver_data;
 +	tty_port_hangup(&portp->port);
  }
  
  /*****************************************************************************/
-@@ -2550,6 +2502,8 @@ static const struct tty_operations stl_ops = {
- static const struct tty_port_operations stl_port_ops = {
- 	.carrier_raised = stl_carrier_raised,
- 	.dtr_rts = stl_dtr_rts,
-+	.activate = stl_activate,
-+	.shutdown = stl_shutdown,
+@@ -4420,6 +4361,8 @@ static const struct tty_operations stli_ops = {
+ static const struct tty_port_operations stli_port_ops = {
+ 	.carrier_raised = stli_carrier_raised,
+ 	.dtr_rts = stli_dtr_rts,
++	.activate = stli_activate,
++	.shutdown = stli_shutdown,
  };
  
  /*****************************************************************************/
