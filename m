@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbZKSQFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZKRQE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbZKSQFK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 11:05:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZKSQFJ
+	id S1757548AbZKRQE3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 11:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbZKRQE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 11:05:09 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:53130 "EHLO
+	Wed, 18 Nov 2009 11:04:28 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:43411 "EHLO
 	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532AbZKSQFI (ORCPT
+	with ESMTP id S1757378AbZKRQE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 11:05:08 -0500
+	Wed, 18 Nov 2009 11:04:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=M86LUZtLt1QyELcTeLuaOn/YMbWGrnLL2RzJR4hdi80S5MS7gengL0ob5akCp0HJwk
-         HNt/OZCKTwgcmVLuFPeeCWJxnGnwFKtDJ36qNRwVwOxKpHii5m58a8egqtHNo5vnqn5d
-         Nj4SvzmV0OHA17pLNoeb+auepC20HHZ0CQmGs=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH] parser: remove unnecessary strlen()
-Date: Wed, 18 Nov 2009 14:02:59 -0200
-Message-Id: <922f652ded6488f697f4b92e47064b41685a41d8.1258559170.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.6.5.3.148.g785c5
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=d/vnsKfAG+zhLvx0e8FcWYD/YsYDYKFdox/Thy+5CH7s3LAaMeAXCE+96LLDx63q9K
+         v7+1NhuWxDY3PZXXsre1SSe+9yUtwvZbi2q7iyzIbLzZ8hSpB/wQe8yuyHWGCa+jh3dG
+         7TuEigyc6kVXJFegS7LDiy3iYs2q/BcPkUgdg=
+Date: Thu, 19 Nov 2009 00:04:59 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Alan Cox <alan@linux.intel.com>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] selinux: Fix warnings
+Message-ID: <20091118160459.GA3287@hack>
+References: <20091118143951.4691.33970.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091118143951.4691.33970.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No functional change. Cache strlen() result to avoid recalculating it up
-to 3 times on the worst case.
+On Wed, Nov 18, 2009 at 02:39:51PM +0000, Alan Cox wrote:
+>scripts/selinux/genheaders/genheaders.c:20: warning: no previous prototype  
+>for ‘usage’
+>scripts/selinux/genheaders/genheaders.c:26: warning: no previous prototype
+>for ‘stoupperx’
+>
+>Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-Reduces code size a little by 32 bytes:
-   text    data     bss     dec     hex filename
-   1385       0       0    1385     569 lib/parser.o-BEFORE
-   1353       0       0    1353     549 lib/parser.o-AFTER
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- lib/parser.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+>---
+>
+> scripts/selinux/genheaders/genheaders.c |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>
+>
+>diff --git a/scripts/selinux/genheaders/genheaders.c b/scripts/selinux/genheaders/genheaders.c
+>index 3b16145..771b86f 100644
+>--- a/scripts/selinux/genheaders/genheaders.c
+>+++ b/scripts/selinux/genheaders/genheaders.c
+>@@ -17,13 +17,13 @@ struct security_class_mapping {
+> 
+> const char *progname;
+> 
+>-void usage(void)
+>+static void usage(void)
+> {
+> 	printf("usage: %s flask.h av_permissions.h\n", progname);
+> 	exit(1);
+> }
+> 
+>-char *stoupperx(const char *s)
+>+static char *stoupperx(const char *s)
+> {
+> 	char *s2 = strdup(s);
+> 	char *p;
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-diff --git a/lib/parser.c b/lib/parser.c
-index b00d020..fb34977 100644
---- a/lib/parser.c
-+++ b/lib/parser.c
-@@ -56,13 +56,16 @@ static int match_one(char *s, const char *p, substring_t args[])
- 
- 		args[argc].from = s;
- 		switch (*p++) {
--		case 's':
--			if (strlen(s) == 0)
-+		case 's': {
-+			size_t str_len = strlen(s);
-+
-+			if (str_len == 0)
- 				return 0;
--			else if (len == -1 || len > strlen(s))
--				len = strlen(s);
-+			if (len == -1 || len > str_len)
-+				len = str_len;
- 			args[argc].to = s + len;
- 			break;
-+		}
- 		case 'd':
- 			simple_strtol(s, &args[argc].to, 0);
- 			goto num;
 -- 
-1.6.5.3.148.g785c5
-
+Live like a child, think like the god.
+ 
