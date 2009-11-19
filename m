@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZKSIkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbZKTIRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbZKSIkp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 03:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZKSIko
+	id S1754585AbZKTIRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 03:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZKTIRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 03:40:44 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:34123 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbZKSIko convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 03:40:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bo0AiQaIcvt/MnFO9kYpf535kFOeL4a0MqL4pPUav78szbe3AtX9h34LvhVTrns2xh
-         dDowuDnp8MA8l9Al9s3tilSKUnRKWcmHfbx6ShWAjgy+YmfSrKKe+R8EOEP3zlfYV26O
-         /FhV2UvwpKDFsxsK6M3iEVUep7pCW31Vjr9SQ=
+	Fri, 20 Nov 2009 03:17:33 -0500
+Received: from ns.tdt.de ([195.243.126.82]:58582 "EHLO ns.tdt.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753422AbZKTIRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 03:17:33 -0500
+X-Greylist: delayed 84807 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 03:17:32 EST
+Message-ID: <1C487791B6A047B7A26F2B3C54BE0A70@mschille2>
+From: "Martin Schiller" <mschiller@tdt.de>
+To: <netdev@vger.kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] hso: memory leak in hso_serial_common_free()
+Date: Thu, 19 Nov 2009 09:43:57 +0100
 MIME-Version: 1.0
-In-Reply-To: <20091118234928.8d86a9f9.akpm@linux-foundation.org>
-References: <4B024748.9080001@gmail.com>
-	 <20091118142109.ff2c5ef6.akpm@linux-foundation.org>
-	 <e68bb3470911182223r28e9bac0lf185c1443168ff52@mail.gmail.com>
-	 <20091118234928.8d86a9f9.akpm@linux-foundation.org>
-Date: Thu, 19 Nov 2009 16:40:50 +0800
-Message-ID: <e68bb3470911190040v2c14bbcfi46177cd58649e1c@mail.gmail.com>
-Subject: Re: [PATCH] ARM: Add spi controller driver support for NUC900
-From: Wan ZongShun <mcuos.com@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-spi <spi-devel-general@lists.sourceforge.net>,
-       David Brownell-sourceforge <dbrownell@users.sourceforge.net>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5843
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/19 Andrew Morton <akpm@linux-foundation.org>:
-> On Thu, 19 Nov 2009 14:23:49 +0800 Wan ZongShun <mcuos.com@gmail.com> wrote:
->
->> >> +static int __devexit w90p910_spi_remove(struct platform_device *dev)
->> >> +{
->> >> + __ __ struct w90p910_spi *hw = platform_get_drvdata(dev);
->> >> +
->> >> + __ __ platform_set_drvdata(dev, NULL);
->> >> +
->> >> + __ __ spi_unregister_master(hw->master);
->> >> +
->> >> + __ __ clk_disable(hw->clk);
->> >> + __ __ clk_put(hw->clk);
->> >
->> > As far as I can tell, a hardware interrupt could still be pending, or
->> > be under service while the above code is executing?
->> >
->> > If so, I expect bad things will happen?
->>
->> Do you mean that I should put this 'free_irq()' in the front of
->> w90p910_spi_remove___
->>
->> such as:
->> "
->> free_irq(hw->irq, hw);
->>
->> platform_set_drvdata(dev, NULL);
->>
->> spi_unregister_master(hw->master);
->>
->> clk_disable(hw->clk);
->> clk_put(hw->clk);
->
-> I don't know, because I don't know what operation the hardware needs to
-> stop it from generating interrupts.  Perhaps that's clk_disable()?
 
-The interrupt will be not occur as long as I run clk_disable().
+This patch fixes a memory leak in the hso_serial_common_free() function.
+The tx_buffer of a serial device was never freed here.
 
-> Once you've stopped the source of interrupts then the code should wait
-> for the IRQ handler to complete if it's running on another CPU.  Yes,
-> free_irq() does that.
+Signed-off-by: Martin Schiller <mschiller@tdt.de>
+---
 
-So, regarding my system of single CPU, maybe I need put this
-'clk_disable()' in the front of function of w90p910_spi_remove().
-
-right?
-
-> It's only after the clk_disable() and the free_irq() that you can
-> guarantee that no interrupt handler will run and attempt to access the
-> device and its associated data structures.
->
->
+--- linux-2.6.32-rc7-git3/drivers/net/usb/hso.c.orig 2009-11-19 08:54:08.000000000 +0100
++++ linux-2.6.32-rc7-git3/drivers/net/usb/hso.c 2009-11-19 09:04:29.000000000 +0100
+@@ -2296,6 +2296,7 @@ static void hso_serial_common_free(struc
+  /* unlink and free TX URB */
+  usb_free_urb(serial->tx_urb);
+  kfree(serial->tx_data);
++ kfree(serial->tx_buffer);
+ }
+ 
+ static int hso_serial_common_create(struct hso_serial *serial, int num_urbs,
 
 
-
--- 
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
