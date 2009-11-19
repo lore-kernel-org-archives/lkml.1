@@ -1,49 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZKSOaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZKSOba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZKSOaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756362AbZKSOaN
+	id S1756085AbZKSOba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZKSOb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:30:13 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:35972 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756326AbZKSOaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:30:12 -0500
-Date: Thu, 19 Nov 2009 14:30:08 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091119143008.GA719@srcf.ucam.org>
-References: <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> <20091118213355.GA16630@srcf.ucam.org> <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> <20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com> <20091119141634.GA311@srcf.ucam.org> <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com>
+	Thu, 19 Nov 2009 09:31:29 -0500
+Received: from www.tglx.de ([62.245.132.106]:44988 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752931AbZKSOb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:31:29 -0500
+Date: Thu, 19 Nov 2009 15:30:58 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: BUG: function graph tracer function frame assumptions
+In-Reply-To: <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 03:25:59PM +0100, Kay Sievers wrote:
-> On Thu, Nov 19, 2009 at 15:16, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > It could, but it seems a bit of a hack. It'd still also require the
-> > timer to be in the kernel, so we might as well expose that to userspace.
+B1;2005;0cOn Thu, 19 Nov 2009, Thomas Gleixner wrote:
+> On Thu, 19 Nov 2009, Ingo Molnar wrote:
+> > i've bisected back to it:
+> > 
+> > | 887a29f59b93cf54e21814869a4ab6e80b6fa623 is the first bad commit
+> > | commit 887a29f59b93cf54e21814869a4ab6e80b6fa623
+> > | Author: Feng Tang <feng.tang@intel.com>
+> > | Date:   Thu Sep 3 16:32:53 2009 +0800
+> > |
+> > |    hrtimer: Fix /proc/timer_list regression
+> > 
+> > Config attached.
+> > 
+> > I've removed it from timers/urgent for now.
 > 
-> Sure, but a userspace configurable policy for an in-kernel disk-idle
-> powermanagent sounds fine, compared to a single-subscriber
-> userspace-only disk-idle event interface. :)
+> Come on, this is a patently wrong conclusion.
+> 
+> We call timer_stats_update_stats() which returns on top of the
+> function due to:
+> 
+> 	if (likely(!timer_stats_active))
+> 		return;
+> 
+> timer_stats_active is 0 during boot and you can only activate it by
+> writing to /proc/timer_stats which you certainly did not at this
+> point.
+> 
+> Can you please explain how a call to a function which returns right
+> away can cause that problem ? 
+> 
+> That patch unearthed some other bug and your revert is just papering
+> over that fact.
 
-Well, we still need to expose this for the access pattern modifying. I 
-really don't see the issue with the single subscriber being devkit-disks 
-- none of the operations involved are atomic, so we're inherently racy 
-here.
+Looked deeper into that and found the root cause.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The function graph tracer expects that the first code sequence in a
+function is:
+
+function_start:
+	 push	%ebp
+	 mov	%esp, %ebp
+	 ....
+	 call   mcount
+
+and on the return side:
+
+       	 pop	%ebp
+	 ret
+
+which is the case for most functions except, but not for all
+
+timer_stats_update_stats() and a few others have:
+
+function_start:
+	push   %edi
+	lea    0x8(%esp),%edi
+	and    $0xfffffff0,%esp
+	pushl  -0x4(%edi)
+	push   %ebp
+	mov    %esp,%ebp
+	...
+	call   mcount
+
+and the return does:
+
+	pop    %ebp
+	lea    -0x8(%edi),%esp
+	pop    %edi
+	ret
+
+mcount calls prepare_ftrace_return() with the following calling sequence:
+
+        pushl	%eax
+        pushl	%ecx
+        pushl	%edx
+        movl	0xc(%esp), %edx
+        lea	0x4(%ebp), %eax
+
+Here is where the shit hits the fan.
+
+For the usual function frames this is correct:
+
+ebp points to the stack location where ebp was pushed and ebp + 4
+points to the return address.
+
+For the timer_stats_update_stats case points to the stack location
+where ebp was pushed _BUT_ ebp + 4 is pointing to a stack entry
+_BELOW_ the return address.
+
+        movl	(%ebp), %ecx
+        subl	$MCOUNT_INSN_SIZE, %edx
+        call	prepare_ftrace_return
+        popl	%edx
+        popl	%ecx
+        popl	%eax
+        ret
+
+prepare_ftrace_return does:
+
+void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
+			   unsigned long frame_pointer)
+{
+	unsigned long old;
+	int faulted;
+	unsigned long return_hooker = (unsigned long)
+				&return_to_handler;
+
+	asm volatile(
+		"1: " _ASM_MOV " (%[parent]), %[old]\n"
+		"2: " _ASM_MOV " %[return_hooker], (%[parent])\n"
+		"   movl $0, %[faulted]\n"
+		"3:\n"
+
+So here we modify the "return" address on the stack where parent is
+supposed to point to. That works for the standard function frames, but
+not for the ones which look like timer_stats_update_stats().
+
+In the timer_stats_update_stats() case we do not call the
+return_to_handler when the function returns, because we did not modify
+the return address. So the next return in the calling function will
+trip over the sanity checking and panic.
+
+I'm not yet sure whether this is a compiler problem (using gcc 4.4.1)
+or just the stupid assumption that function frames always start with
+
+	push	%ebp
+	mov	%esp, %ebp
+
+Thanks,
+
+	tglx
