@@ -1,194 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbZKSQ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZKSQ7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753020AbZKSQ4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 11:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZKSQz7
+	id S1753117AbZKSQ7L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 11:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZKSQ7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 11:55:59 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:57399 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZKSQz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 11:55:58 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: [PATCH v3] [RFC] NEXIO (or iNexio) support for usbtouchscreen
-Date: Thu, 19 Nov 2009 17:56:04 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux-kernel@vger.kernel.org
-References: <200911161515.00907.linux@rainbow-software.org> <200911181625.46983.oliver@neukum.org> <200911191340.23769.linux@rainbow-software.org>
-In-Reply-To: <200911191340.23769.linux@rainbow-software.org>
+	Thu, 19 Nov 2009 11:59:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61901 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752262AbZKSQ7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 11:59:09 -0500
+Date: Thu, 19 Nov 2009 11:57:29 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Block IO Controller V2 - some results
+Message-ID: <20091119165729.GE2923@redhat.com>
+References: <1258404660.3533.150.camel@cail> <1258490289.18095.13.camel@cail>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911191756.04615.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258490289.18095.13.camel@cail>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> +struct nexio_priv {
-> +	struct urb *ack;
-> +	char ack_buf[2];
-> +};
-
-No. Every buffer needs to have an exclusive cache line for DMA
-to work on the incoherent archotectures. Therefore you must allocate
-each buffer with its own kmalloc.
-
-> +struct nexio_touch_packet {
-> +	u8	flags;		/* 0xe1 = touch, 0xe1 = release */
-> +	__be16	data_len;	/* total bytes of touch data */
-> +	__be16	x_len;		/* bytes for X axis */
-> +	__be16	y_len;		/* bytes for Y axis */
-> +	u8	data[];
-> +} __attribute__ ((packed));
-> +
-> +static unsigned char nexio_ack_pkt[2] = { 0xaa, 0x02 };
-> +static unsigned char nexio_init_pkt[4] = { 0x82, 0x04, 0x0a, 0x0f };
-> +
-> +static int nexio_init(struct usbtouch_usb *usbtouch)
-> +{
-> +	struct usb_device *dev = usbtouch->udev;
-> +	struct nexio_priv *priv;
-> +	int ret = -ENOMEM;
-> +	int actual_len, i;
-> +	unsigned char *buf;
-> +	char *firmware_ver = NULL, *device_name = NULL;
-> +
-> +	buf = kmalloc(NEXIO_BUFSIZE, GFP_KERNEL);
-> +	if (!buf)
-> +		goto err_out;
-> +	/* two empty reads */
-> +	for (i = 0; i < 2; i++) {
-> +		ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP),
-> +				   buf, NEXIO_BUFSIZE, &actual_len,
-> +				   NEXIO_TIMEOUT);
-> +		if (ret < 0)
-> +			goto err_out;
-> +	}
-> +	/* send init command */
-> +	memcpy(buf, nexio_init_pkt, sizeof(nexio_init_pkt));
-> +	ret = usb_bulk_msg(dev, usb_sndbulkpipe(dev, NEXIO_OUTPUT_EP),
-> +			   buf, sizeof(nexio_init_pkt), &actual_len,
-> +			   NEXIO_TIMEOUT);
-> +	if (ret < 0)
-> +		goto err_out;
-> +	/* read replies */
-> +	for (i = 0; i < 3; i++) {
-> +		memset(buf, 0, NEXIO_BUFSIZE);
-> +		ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP),
-> +				   buf, NEXIO_BUFSIZE, &actual_len,
-> +				   NEXIO_TIMEOUT);
-> +		if (ret < 0 || actual_len < 1 || buf[1] != actual_len)
-> +			continue;
-> +		switch (buf[0]) {
-> +			case 0x83:	/* firmware version */
-> +				firmware_ver = kstrdup(&buf[2], GFP_KERNEL);
-> +				break;
-> +			case 0x84:	/* device name */
-> +				device_name = kstrdup(&buf[2], GFP_KERNEL);
-> +				break;
-> +		}
-> +	}
-> +	printk(KERN_INFO "Nexio device: %s, firmware version: %s\n",
-> +	       device_name, firmware_ver);
-
-How do you know device_name and firmware_ver are not NULL?
-
-> +	kfree(firmware_ver);
-> +	kfree(device_name);
-> +
-> +	/* prepare ACK URB */
-> +	usbtouch->priv = kmalloc(sizeof(struct nexio_priv), GFP_KERNEL);
-> +	if (!usbtouch->priv) {
-> +		ret = -ENOMEM;
-> +		goto err_out;
-> +	}
-> +	priv = usbtouch->priv;
-> +	memcpy(priv->ack_buf, nexio_ack_pkt, sizeof(nexio_ack_pkt));
-> +	priv->ack = usb_alloc_urb(0, GFP_KERNEL);
-> +	if (!priv->ack) {
-
-When would usbtouch->priv be freed in the error case?
-
-> +		dbg("%s - usb_alloc_urb failed: usbtouch->ack", __func__);
-> +		ret = -ENOMEM;
-> +		goto err_out;
-> +	}
-> +	usb_fill_bulk_urb(priv->ack, usbtouch->udev,
-> +			  usb_sndbulkpipe(usbtouch->udev, NEXIO_OUTPUT_EP),
-> +			  priv->ack_buf, sizeof(priv->ack_buf), NULL,
-> +			  usbtouch);
-> +	/* submit first IRQ URB */
-> +	ret = usb_submit_urb(usbtouch->irq, GFP_KERNEL);
-
-If this fails, when is priv->ack freed?
-
-> +err_out:
-> +	kfree(buf);
-> +	return ret;
-> +}
-> +
-> +static void nexio_exit(struct usbtouch_usb *usbtouch)
-> +{
-> +	struct nexio_priv *priv = usbtouch->priv;
-> +
-> +	usb_kill_urb(priv->ack);
-> +	usb_free_urb(priv->ack);
-> +	kfree(priv);
-> +}
-> +
+On Tue, Nov 17, 2009 at 03:38:09PM -0500, Alan D. Brunelle wrote:
+> Hi Vivek - 
 > 
+> I've updated the runs - the results are shown at the end, I culled out
+> the write-related runs (haven't converted to direct I/O yet for those).
 > 
-> @@ -862,7 +1073,8 @@ static void usbtouch_close(struct input_
->  {
->  	struct usbtouch_usb *usbtouch = input_get_drvdata(input);
+> Next steps: Going to refresh to V3 of the patches and add in 
 > 
-> -	usb_kill_urb(usbtouch->irq);
-> +	if (!usbtouch->type->no_urb_in_open)
-> +		usb_kill_urb(usbtouch->irq);
->  }
+> http://groups.google.com/group/linux.kernel/browse_thread/thread/3b62f0665f0912b6/34ec9456c7da1bb7?lnk=raot
 > 
+> and convert the write-side to doing direct I/O (that would include the
+> rdwr tests, btw). 
 > 
-> @@ -960,10 +1172,12 @@ static int usbtouch_probe(struct usb_int
->  		                     type->max_press, 0, 0);
+> ----------------------------------------------------------------------
 > 
->  	usb_fill_int_urb(usbtouch->irq, usbtouch->udev,
-> -			 usb_rcvintpipe(usbtouch->udev, endpoint->bEndpointAddress),
-> +			 usb_rcvintpipe(usbtouch->udev,
-> +					type->endpoint ? type->endpoint
-> +							: endpoint->bEndpointAddress),
->  			 usbtouch->data, type->rept_size,
-> -			 usbtouch_irq, usbtouch, endpoint->bInterval);
-> -
-> +			 usbtouch_irq, usbtouch,
-> +			 type->interval ? type->interval : endpoint->bInterval);
->  	usbtouch->irq->dev = usbtouch->udev;
->  	usbtouch->irq->transfer_dma = usbtouch->data_dma;
->  	usbtouch->irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
-> @@ -1006,6 +1220,8 @@ static void usbtouch_disconnect(struct u
+> I've relabeled things:
 > 
->  	dbg("%s - usbtouch is initialized, cleaning up", __func__);
->  	usb_set_intfdata(intf, NULL);
-> +	if (usbtouch->type->exit)
-> +		usbtouch->type->exit(usbtouch);
->  	usb_kill_urb(usbtouch->irq);
+> i0 = io control generated in the kernel, but not enabled
+> i1 = io control generated in the kernel, and is enabled
+> 
+> g0 = group_idle=0
+> g1 = group_idle=1 (default)
+> 
+> s8 = slide_idle=8 (default)
+> s0 = slice_idle=0
+> 
+> It looks like when the io control stuff is enabled we have random read
+> problems. 
+> 
+> When it is enabled and slice_idle is set to 0 we see sequential reads
+> drop noticeably:
 
-You've reversed the order. Order is important. If priv->irq
-can cause priv->ack to be submitted, it must be killed first.
-If priv->ack may submit priv->irq the reverse order is needed.
-I don't know which is correct, but only that order may be important.
+I think drop in sequential read throughput is affect of slice_idle=0 and
+not of io controller stuff.
 
->  	input_unregister_device(usbtouch->input);
+Thanks
+Vivek
 
-What tells you that open() isn't called at this point reversing
-usb_kill_urb() you've already done?
 
->  	usb_free_urb(usbtouch->irq);
+
 > 
-
-	Regards
-		Oliver
+> ---- ---- - --------- --------- --------- --------- --------- ---------
+> Mode RdWr N   base     i0,gX,sX i1,g1,s8  i1,g0,s8  i1,g1,s0  i1,g0,s0
+> ---- ---- - --------- --------- --------- --------- --------- ---------
+> rnd  rd   2      17.3      17.1       9.1       9.3       9.4       9.5
+> rnd  rd   4      27.1      27.1       8.2       8.0       8.0       8.0
+> rnd  rd   8      37.1      37.1       7.1       6.8       6.7       6.8
+> 
+> seq  rd   2     610.2     608.1     607.7     611.0     551.1     550.3
+> seq  rd   4     608.4     601.5     607.7     609.6     549.6     550.0
+> seq  rd   8     605.7     603.7     604.0     605.6     547.2     546.7
+> 
+> ===============================================================
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> base        rnd  rd   2   8.6   8.6
+> base        rnd  rd   4   6.8   6.8   6.8   6.7
+> base        rnd  rd   8   4.7   4.6   4.6   4.6   4.6   4.6   4.6   4.6
+> 
+> base        seq  rd   2 306.2 304.0
+> base        seq  rd   4 150.1 152.4 151.9 154.0
+> base        seq  rd   8  77.2  75.9  75.9  73.9  77.0  75.7  75.0  74.9
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> i0,gX,sX    rnd  rd   2   8.6   8.6
+> i0,gX,sX    rnd  rd   4   6.8   6.8   6.7   6.7
+> i0,gX,sX    rnd  rd   8   4.7   4.6   4.6   4.7   4.6   4.6   4.6   4.6
+> 
+> i0,gX,sX    seq  rd   2 303.1 305.0
+> i0,gX,sX    seq  rd   4 150.8 151.6 149.0 150.2
+> i0,gX,sX    seq  rd   8  77.0  76.3  74.5  74.0  77.9  75.5  74.0  74.6
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> i1,g1,s8    rnd  rd   2   2.8   6.3
+> i1,g1,s8    rnd  rd   4   0.7   1.5   2.5   3.5
+> i1,g1,s8    rnd  rd   8   0.2   0.4   0.5   0.7   0.9   1.2   1.4   1.7
+> 
+> i1,g1,s8    seq  rd   2 221.6 386.1
+> i1,g1,s8    seq  rd   4  70.6 128.1 181.7 227.3
+> i1,g1,s8    seq  rd   8  21.4  40.3  55.8  71.2  85.1  99.1 109.4 121.7
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> i1,g0,s8    rnd  rd   2   4.7   4.7
+> i1,g0,s8    rnd  rd   4   2.0   2.0   2.0   2.0
+> i1,g0,s8    rnd  rd   8   0.9   0.9   0.9   0.8   0.8   0.8   0.9   0.9
+> 
+> i1,g0,s8    seq  rd   2 305.9 305.0
+> i1,g0,s8    seq  rd   4 154.0 153.3 151.2 151.1
+> i1,g0,s8    seq  rd   8  76.1  76.1  74.5  74.9  75.4  75.8  76.1  76.6
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> i1,g1,s0    rnd  rd   2   4.7   4.7
+> i1,g1,s0    rnd  rd   4   2.0   2.0   2.0   2.0
+> i1,g1,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
+> 
+> i1,g1,s0    seq  rd   2 275.6 275.5
+> i1,g1,s0    seq  rd   4 136.0 137.5 137.4 138.7
+> i1,g1,s0    seq  rd   8  68.6  68.6  68.5  68.6  67.1  68.6  68.3  68.9
+> 
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+> i1,g0,s0    rnd  rd   2   4.7   4.7
+> i1,g0,s0    rnd  rd   4   2.0   2.0   2.0   2.0
+> i1,g0,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
+> 
+> i1,g0,s0    seq  rd   2 275.2 275.1
+> i1,g0,s0    seq  rd   4 136.7 137.2 137.5 138.7
+> i1,g0,s0    seq  rd   8  68.8  68.2  68.5  68.4  67.2  68.8  68.4  68.5
+> 
