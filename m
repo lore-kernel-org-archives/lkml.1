@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZKSNsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZKSNf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbZKSNsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZKSNsU
+	id S1754487AbZKSNf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZKSNfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:48:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44040 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751598AbZKSNsT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:48:19 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] vt: Fix use of "new" in a struct field
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Thu, 19 Nov 2009 13:30:36 +0000
-Message-ID: <20091119133012.1742.61779.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 08:35:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62729 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbZKSNfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:35:06 -0500
+From: Avi Kivity <avi@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org
+Subject: [PATCH 00/35] KVM updates for the 2.6.33 merge window (batch 2/2)
+Date: Thu, 19 Nov 2009 15:34:36 +0200
+Message-Id: <1258637711-11674-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As this struct is exposed to user space and the API was added for this
-release it's a bit of a pain for the C++ world and we still have time to
-fix it. Rename the fields before we end up with that pain in an actual
-release.
+Highlights:
+- improved kernel context switching speed
+- better interoperation with other users of virtualization extensions
+- improved irq scaling
+- nested svm improvements and tracing
+- improved cpufreq integration
+- spin loop detection on newer hardware
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Reported-by: Olivier Goffart
----
+Notes:
+- kvm/ppc64 support will be merged through the powerpc tree
+- depends on tip x86/entry branch (user return notifiers)
 
- drivers/char/vt_ioctl.c |    6 +++---
- include/linux/vt.h      |    4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
+Arnd Bergmann (1):
+  KVM: Enable 32bit dirty log pointers on 64bit host
 
+Avi Kivity (6):
+  KVM: VMX: Move MSR_KERNEL_GS_BASE out of the vmx autoload msr area
+  KVM: x86 shared msr infrastructure
+  KVM: VMX: Use shared msr infrastructure
+  KVM: VMX: Remove vmx->msr_offset_efer
+  KVM: Allow internal errors reported to userspace to carry extra data
+  KVM: VMX: Report unexpected simultaneous exceptions as internal
+    errors
 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index ed86d3b..6aa1028 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -103,8 +103,8 @@ void vt_event_post(unsigned int event, unsigned int old, unsigned int new)
- 		ve->event.event = event;
- 		/* kernel view is consoles 0..n-1, user space view is
- 		   console 1..n with 0 meaning current, so we must bias */
--		ve->event.old = old + 1;
--		ve->event.new = new + 1;
-+		ve->event.oldev = old + 1;
-+		ve->event.newev = new + 1;
- 		wake = 1;
- 		ve->done = 1;
- 	}
-@@ -186,7 +186,7 @@ int vt_waitactive(int n)
- 		vt_event_wait(&vw);
- 		if (vw.done == 0)
- 			return -EINTR;
--	} while (vw.event.new != n);
-+	} while (vw.event.newev != n);
- 	return 0;
- }
- 
-diff --git a/include/linux/vt.h b/include/linux/vt.h
-index 7afca0d..7ffa11f 100644
---- a/include/linux/vt.h
-+++ b/include/linux/vt.h
-@@ -70,8 +70,8 @@ struct vt_event {
- #define VT_EVENT_UNBLANK	0x0004	/* Screen unblank */
- #define VT_EVENT_RESIZE		0x0008	/* Resize display */
- #define VT_MAX_EVENT		0x000F
--	unsigned int old;		/* Old console */
--	unsigned int new;		/* New console (if changing) */
-+	unsigned int oldev;		/* Old console */
-+	unsigned int newev;		/* New console (if changing) */
- 	unsigned int pad[4];		/* Padding for expansion */
- };
- 
+Ed Swierk (1):
+  KVM: Xen PV-on-HVM guest support
+
+Eduardo Habkost (3):
+  KVM: VMX: Use macros instead of hex value on cr0 initialization
+  KVM: SVM: Reset cr0 properly on vcpu reset
+  KVM: SVM: init_vmcb(): remove redundant save->cr0 initialization
+
+Glauber Costa (1):
+  KVM: allow userspace to adjust kvmclock offset
+
+Gleb Natapov (1):
+  KVM: remove duplicated task_switch check
+
+Hollis Blanchard (1):
+  KVM: powerpc: Fix BUILD_BUG_ON condition
+
+Jan Kiszka (6):
+  KVM: x86: Drop unneeded CONFIG_HAS_IOMEM check
+  KVM: x86: Fix guest single-stepping while interruptible
+  KVM: SVM: Cleanup NMI singlestep
+  KVM: x86: Polish exception injection via KVM_SET_GUEST_DEBUG
+  KVM: Reorder IOCTLs in main kvm.h
+  KVM: x86: Add KVM_GET/SET_VCPU_EVENTS
+
+Joerg Roedel (4):
+  KVM: SVM: Add tracepoint for #vmexit because intr pending
+  KVM: SVM: Add tracepoint for invlpga instruction
+  KVM: SVM: Add tracepoint for skinit instruction
+  KVM: SVM: Remove nsvm_printk debugging code
+
+Marcelo Tosatti (7):
+  KVM: VMX: fix handle_pause declaration
+  KVM: fix irq_source_id size verification
+  KVM: VMX: move CR3/PDPTR update to vmx_set_cr3
+  KVM: MMU: update invlpg handler comment
+  KVM: x86: disallow multiple KVM_CREATE_IRQCHIP
+  KVM: x86: disallow KVM_{SET,GET}_LAPIC without allocated in-kernel
+    lapic
+  KVM: only clear irq_source_id if irqchip is present
+
+Mark Langsdorf (1):
+  KVM: SVM: Support Pause Filter in AMD processors
+
+Zachary Amsden (1):
+  KVM: x86: Harden against cpufreq
+
+Zhai, Edwin (2):
+  KVM: introduce kvm_vcpu_on_spin
+  KVM: VMX: Add support for Pause-Loop Exiting
+
+ Documentation/kvm/api.txt       |  109 +++++++++++
+ arch/powerpc/kvm/timing.h       |    2 +-
+ arch/x86/include/asm/kvm.h      |   29 +++
+ arch/x86/include/asm/kvm_host.h |   13 ++-
+ arch/x86/include/asm/svm.h      |    3 +-
+ arch/x86/include/asm/vmx.h      |    4 +
+ arch/x86/kvm/Kconfig            |    1 +
+ arch/x86/kvm/irq.h              |    6 +-
+ arch/x86/kvm/mmu.c              |    1 +
+ arch/x86/kvm/paging_tmpl.h      |    1 -
+ arch/x86/kvm/svm.c              |  107 ++++++-----
+ arch/x86/kvm/trace.h            |   63 +++++++
+ arch/x86/kvm/vmx.c              |  253 ++++++++++++++++----------
+ arch/x86/kvm/x86.c              |  379 ++++++++++++++++++++++++++++++++++-----
+ include/linux/kvm.h             |  264 +++++++++++++++------------
+ include/linux/kvm_host.h        |    1 +
+ virt/kvm/irq_comm.c             |   12 +-
+ virt/kvm/kvm_main.c             |   67 +++++++-
+ 18 files changed, 1002 insertions(+), 313 deletions(-)
 
