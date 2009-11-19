@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZKSTEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZKSTDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZKSTEG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZKSTEF
+	id S1754756AbZKSTDt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbZKSTDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:04:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:37066 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbZKSTEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:04:04 -0500
-Date: Thu, 19 Nov 2009 20:01:57 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>, rostedt@goodmis.org,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-In-Reply-To: <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0911191958470.24119@localhost.localdomain>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>   <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>   <20091119072040.GA23579@elte.hu>   <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>  
- <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>   <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>   <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>   <1258653562.22249.682.camel@gandalf.stny.rr.com>
- <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com> <4B058CCD.8050605@redhat.com> <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain> <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain>
- <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 19 Nov 2009 14:03:48 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:8012 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbZKSTDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 14:03:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=wFb1Oa2eWfC/fnQPV7JMEYmzdOFEY9BjXOlm0BhEsImVoQ+++dYqysaY/cNlj/dy5u
+         f3WvvM/iZJuKIq+BAaf0Wi4iWYUx9A9S1Gy8FOUUOIP0FJhRFJ2Ois5Ozxu6ZOGlXFUh
+         OYxn+bCuE1w0ArM+80W2UcUsTZHANY1nqyIpU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 20:03:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091119182132.5155f819@lxorguk.ukuu.org.uk> <4B0590A2.9050306@ru.mvista.com>
+In-Reply-To: <4B0590A2.9050306@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911192003.09675.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009, Linus Torvalds wrote:
-> > I bet other people than just the kernel use the mcount hook for subtler 
-> > things than just doing profiles. And even if they don't, the quoted code 
-> > generation is just crazy _crap_.
+On Thursday 19 November 2009 19:38:26 Sergei Shtylyov wrote:
+> Alan Cox wrote:
 > 
-> For the kernel, if the only case is that timer_stat.c thing that Thomas 
-> pointed at, I guess we can at least work around it with something like the 
-> appended. The kernel code is certainly ugly too, no question about that. 
+> >>Fixed where?  I posted the patch as soon as I noticed the problem.
 > 
-> It's just that we'd like to be able to depend on mcount code generation 
-> not being insane even in the presense of ugly code..
+> > Its not posted because unlike you I don't post patches as soon as I
+> > notice them. I test them first. Which is why for example I discovered the
+> > bug in the drivers/ide one. Did you check the vendor driver and then
+> > stick 40 and 80 wire cables on the system to check the bits on a 3x2N ?
 > 
-> The alternative would be to have some warning when this happens, so that 
-> we can at least see it. "mcount won't work reliably"
+> > No I didn't think so. You see if you had you'd have discovered something
+> > else. You'd have discovered another bug in the old IDE one. The driver
+> > code for these chips isn't reliable and doesn't work at all in some cases.
+> 
+> >>Told me about it?  
+> 
+> > Yes - or do you only write replies not read them ?
+> 
+> > NAK - the patch is inadequate.
+> 
+>     No, it was. And yours isn't quite.
+> 
+> > The procedure in the vendor driver does
+> > appear to work on the newer chips however.
+> 
+> > Probably worth double checking
+> > the HPT37x and seeing if it needs the same debounce delays.
+> 
+>     All vendor drivers I have do call StallExec(10) when detecting cable 
+> type, so need to add the delay to pata_hpt37x too.
 
-There are at least 20 other random functions which have the same
-problem. Have not looked at the details yet.
+Given this I take back my ACK to Alan's patch.
 
-Just compiled with -mincoming-stack-boundary=4 and the problem goes
-away as gcc now thinks that the incoming stack is already 16 byte
-aligned. But that might break code which actually uses SSE
+>     I'd suggest to address the delay by another, separate patch to both 
+> pata_hpt37x and pata_hpt3x2n drivers, and accept Bart's original patch for 
+> bit reversing...
 
-Thanks,
+Yes.
 
-	tglx
-
-
+-- 
+Bartlomiej Zolnierkiewicz
