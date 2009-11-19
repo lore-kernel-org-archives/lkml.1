@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbZKSTta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZKSTzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755136AbZKSTta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZKSTta
+	id S1755334AbZKSTzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZKSTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:49:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57228
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753063AbZKSTt3 (ORCPT
+	Thu, 19 Nov 2009 14:55:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58458 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755123AbZKSTzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:49:29 -0500
-Date: Thu, 19 Nov 2009 11:49:46 -0800 (PST)
-Message-Id: <20091119.114946.225164410.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk, cooloney@kernel.org,
-       tony.luck@intel.com, ralf@linux-mips.org, benh@kernel.crashing.org,
-       lethal@linux-sh.org, mingo@redhat.com, travis@sgi.com
-Subject: Re: [PATCH 2/6] cpumask: use tsk_cpumask() to access task_struct
- cpus_allowed.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200911191930.11038.rusty@rustcorp.com.au>
-References: <200911191930.11038.rusty@rustcorp.com.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 19 Nov 2009 14:55:42 -0500
+Message-ID: <4B05A16D.1050807@zytor.com>
+Date: Thu, 19 Nov 2009 11:50:05 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>	 <20091119072040.GA23579@elte.hu>	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>	 <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>	 <1258653562.22249.682.camel@gandalf.stny.rr.com>	 <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>	 <4B058CCD.8050605@redhat.com>	 <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain>	 <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain>	 <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>	 <4B05982B.6060200@caviumnetworks.com> <1258658886.22249.874.camel@gandalf.stny.rr.com>
+In-Reply-To: <1258658886.22249.874.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 19 Nov 2009 19:30:10 +1030
-
-> This allows us to play with cpus_allowed.
+On 11/19/2009 11:28 AM, Steven Rostedt wrote:
 > 
-> We also take the chance to use modern cpumask_* operators on the
-> lines changed.
+> Hehe, scratch register on i686 ;-)
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> i686 has no extra regs. It just has:
+> 
+> %eax, %ebx, %ecx, %edx - as the general purpose regs
+> %esp - stack
+> %ebp - frame pointer
+> %edi, %esi - counter regs
+> 
+> That's just 8 regs, and half of those are special.
+> 
 
-Acked-by: David S. Miller <davem@davemloft.net>
+For a modern ABI it is better described as:
+
+	%eax, %edx, %ecx	- argument/return/scratch registers
+	%ebx, %esi, %edi	- saved registers
+	%esp			- stack pointer
+	%ebp			- frame pointer (saved)
+
+> Perhaps we could create another profiler? Instead of calling mcount,
+> call a new function: __fentry__ or something. Have it activated with
+> another switch. This could make the performance of the function tracer
+> even better without all these exceptions.
+> 
+> 	<function>:
+> 		call __fentry__
+> 		[...]
+> 
+
+Calling the profiler immediately at the entry point is clearly the more
+sane option.  It means the ABI is well-defined, stable, and independent
+of what the actual function contents are.  It means that ABI isn't the
+normal C ABI (the __fentry__ function would have to preserve all
+registers), but that's fine...
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
