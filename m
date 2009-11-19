@@ -1,104 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbZKSD55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932538AbZKSENJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932517AbZKSD55 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 22:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932424AbZKSD55
+	id S932538AbZKSENJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 23:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932461AbZKSENI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 22:57:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46297 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932405AbZKSD54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 22:57:56 -0500
-Message-ID: <4B04C2AF.4040509@redhat.com>
-Date: Wed, 18 Nov 2009 22:59:43 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, rostedt@goodmis.org,
-       andi@firstfloor.org, roland@redhat.com, rth@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] notifier atomic call chain notrace
-References: <cover.1258580048.git.jbaron@redhat.com> <14acd28665b633909f7e9873861075fd657e9a52.1258580048.git.jbaron@redhat.com> <20091118233815.GA28962@Krystal>
-In-Reply-To: <20091118233815.GA28962@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Nov 2009 23:13:08 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:41035 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932459AbZKSENH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 23:13:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=wEr03XB5FJkc4GPdmE3WAsHQ7Y47UAcAEXom+YQibH4R3yzgIBH83pJqsabBzsxfXy
+         KTyGHZlCIkfyDkZvhGTOG1d1brDF0UsYBE+iisN/onyqK3w7BqwQmK5l9Nl3H8rb1zTk
+         XegbH1KRYkFT3noLP65PTDJkV1u8awBRfHmhc=
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, x86@kernel.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH] Optimize hweight32 for x86
+Date: Thu, 19 Nov 2009 13:12:12 +0900
+Message-Id: <1258603932-4590-1-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: git-send-email 1.6.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Jason Baron (jbaron@redhat.com) wrote:
->> Note that this is conditional on gcc >= 4.5. Also there is a !lockdep
->> condition. This is b/c the die_notifier takes an rcu_read_lock() on the
->> int3 trap, which then causes another one etc. Since, we aren't going to be
->> installing removing the handler, the rcu_read_lock() could be avoided for this
->> case with some code restructuring.
->>
-> [snip]
-> 
-> Would the following patch help ? I use it in the LTTng tree to alleviate
-> this problem.
+Optimize hweight32 by using the same technique in hweight64.
+The proof of this technique can be found in the commit log for
+f9b4192923fa6e38331e88214b1fe5fc21583fcc
 
-Reviewed-by: Masami Hiramatsu <mhiramat@redhat.com>
+The userspece benchmark on x86_32 showed 20% speedup with
+bitmap_weight() which uses hweight32 to count bits for each
+unsigned long on 32bit architectures.
 
-The code itself seems OK for me. :-)
+int main(void)
+{
+	#define SZ (1024 * 1024 * 512)
 
-I'd just like to hear the opinion from Ingo, since
-this change will change all atomic-notifier's locks to
-notrace.
+	static DECLARE_BITMAP(bitmap, SZ) = {
+	        [0 ... 100] = 1,
+	};
 
-> notifier atomic call chain notrace
-> 
-> In LTTng, being able to use the atomic notifier from cpu idle entry to
-> ensure the tracer flush the last events in the current subbuffer
-> requires the rcu read-side to be marked "notrace", otherwise it can end
-> up calling back into lockdep and the tracer.
-> 
-> Also apply to the the die notifier.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> CC: Jason Baron <jbaron@redhat.com>
-> CC: mingo@elte.hu
-> ---
->  kernel/notifier.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6-lttng/kernel/notifier.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/notifier.c	2009-11-12 17:58:56.000000000 -0500
-> +++ linux-2.6-lttng/kernel/notifier.c	2009-11-12 18:03:28.000000000 -0500
-> @@ -148,7 +148,7 @@ int atomic_notifier_chain_unregister(str
->  	spin_lock_irqsave(&nh->lock, flags);
->  	ret = notifier_chain_unregister(&nh->head, n);
->  	spin_unlock_irqrestore(&nh->lock, flags);
-> -	synchronize_rcu();
-> +	synchronize_sched();
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(atomic_notifier_chain_unregister);
-> @@ -178,9 +178,9 @@ int __kprobes __atomic_notifier_call_cha
->  {
->  	int ret;
->  
-> -	rcu_read_lock();
-> +	rcu_read_lock_sched_notrace();
->  	ret = notifier_call_chain(&nh->head, val, v, nr_to_call, nr_calls);
-> -	rcu_read_unlock();
-> +	rcu_read_unlock_sched_notrace();
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(__atomic_notifier_call_chain);
-> 
+	return bitmap_weight(bitmap, SZ);
+}
 
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+---
+ lib/hweight.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/lib/hweight.c b/lib/hweight.c
+index 389424e..63ee4eb 100644
+--- a/lib/hweight.c
++++ b/lib/hweight.c
+@@ -11,11 +11,18 @@
+ 
+ unsigned int hweight32(unsigned int w)
+ {
++#ifdef ARCH_HAS_FAST_MULTIPLIER
++	w -= (w >> 1) & 0x55555555;
++	w =  (w & 0x33333333) + ((w >> 2) & 0x33333333);
++	w =  (w + (w >> 4)) & 0x0f0f0f0f;
++	return (w * 0x01010101) >> 24;
++#else
+ 	unsigned int res = w - ((w >> 1) & 0x55555555);
+ 	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
+ 	res = (res + (res >> 4)) & 0x0F0F0F0F;
+ 	res = res + (res >> 8);
+ 	return (res + (res >> 16)) & 0x000000FF;
++#endif
+ }
+ EXPORT_SYMBOL(hweight32);
+ 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+1.6.5.1
 
