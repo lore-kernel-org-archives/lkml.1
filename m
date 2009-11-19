@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZKSRxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZKSRxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZKSRxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZKSRxK
+	id S1754898AbZKSRxy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZKSRxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:53:10 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:54807 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbZKSRxJ (ORCPT
+	Thu, 19 Nov 2009 12:53:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59070 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753833AbZKSRxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:53:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=LK88IFC5gu+eP0OS/vvQO1amYi7PWX98aS8dNs/sC6gaDPEqLwup2VnDHQ2c6QvYIJ
-         /2g+USX7fvKBJ0Hjlg0zyoHuca88rZ6z7GgZhua0SAZNQlDjsYEQUv/5LfcjksLcV6PT
-         8XHSrhQjhBBbf4R40ceYnRx2uTdLMu5NqnH6s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 18:52:23 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191838.11791.bzolnier@gmail.com> <20091119175051.6a91d160@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119175051.6a91d160@lxorguk.ukuu.org.uk>
+	Thu, 19 Nov 2009 12:53:53 -0500
+To: Nick Piggin <npiggin@suse.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <JBeulich@novell.com>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Ravikiran Thirumalai <kiran@scalex86.org>,
+       Shai Fultheim <shai@scalemp.com>
+Subject: Re: [PATCH] x86: eliminate redundant/contradicting cache line size config options
+From: Andi Kleen <andi@firstfloor.org>
+References: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
+	<20091116041407.GB5818@wotan.suse.de>
+	<4B011677020000780001FD9D@vpn.id2.novell.com>
+	<20091116105657.GE5818@wotan.suse.de> <20091119035640.GA18236@elte.hu>
+	<20091118205240.11d3d660@infradead.org>
+	<20091119081307.GA20534@wotan.suse.de>
+	<20091119075958.2cba15f8@infradead.org>
+	<20091119161807.GC5602@wotan.suse.de>
+Date: Thu, 19 Nov 2009 18:53:58 +0100
+In-Reply-To: <20091119161807.GC5602@wotan.suse.de> (Nick Piggin's message of "Thu, 19 Nov 2009 17:18:07 +0100")
+Message-ID: <87my2i4czt.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Message-Id: <200911191852.23061.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 18:50:51 Alan Cox wrote:
-> On Thu, 19 Nov 2009 18:38:11 +0100
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > On Thursday 19 November 2009 17:27:38 Alan Cox wrote:
-> > > > > > already have a buggy cable detection (since ->pre_reset ignores the mandatory
-> > > > > 
-> > > > > Wrong.
-> > > > 
-> > > > You cannot know it unless you know how chip operates internally.  That's it.
-> > > 
-> > > Read the code. How the chip operates is irrelevant.
-> > 
-> > lol, there is a genuine cable detection bug in pata_hpt3x2n on closer look...
-> 
-> Oh you found it now I told you which one was buggy - well done. Already
-> patched along with adding suspend/resume and fixing a performance funny.
+Nick Piggin <npiggin@suse.de> writes:
+>
+> AFAIKS, in any case that 128 byte alignment is used, cache footprint
+> should not increased on a 64B line system, over 64 byte alignment.
 
-LOL
+Yes.
 
-Fixed where?  I posted the patch as soon as I noticed the problem.
+It's probably some silly bug somewhere. I don't think we should
+completely abandon P4 systems (of which there are still plenty around)
+just for silly bugs, that can be probably properly fixed.
 
-Told me about it?  Now this is extra funny since the bug been there for like
-three years and still would be unfixed if it wasn't for this discussion.
-
-The best part is that the bug would never have happened in the first place
-if you weren't artificially splitting HPT37x and HPT3xxN support cause cable
-detection for all those chipsets (except HPT374 fn 1) is identical!! :)
+-Andi
 
 -- 
-Bartlomiej Zolnierkiewicz
+ak@linux.intel.com -- Speaking for myself only.
