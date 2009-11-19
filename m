@@ -1,90 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZKSU2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZKSUeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZKSU2o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 15:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZKSU2n
+	id S1755589AbZKSUeq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 15:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZKSUep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 15:28:43 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:21479 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754841AbZKSU2n (ORCPT
+	Thu, 19 Nov 2009 15:34:45 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:39672 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752989AbZKSUeo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 15:28:43 -0500
+	Thu, 19 Nov 2009 15:34:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HkTKr/qkWHcvstGqqtYvssBWHNLUoO+zJkArBlGgWhmLaegnJbMC6SZ4xM20sXxxLX
-         gFzVTWxAK8bOKdIJ/PplFexHUfbz4YRGkmSw0DJnxVdAjSuTpv1T49CiW/rRT/Cv+zeb
-         YanJfr81Dk19sQzUoCnmne7W8IVSj5szvu5KY=
-Date: Thu, 19 Nov 2009 21:28:48 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: David Daney <ddaney@caviumnetworks.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-Message-ID: <20091119202845.GH4967@nowhere>
-References: <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com> <4B058CCD.8050605@redhat.com> <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain> <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain> <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain> <4B05982B.6060200@caviumnetworks.com> <1258658886.22249.874.camel@gandalf.stny.rr.com> <20091119194625.GE4967@nowhere> <1258661141.22249.962.camel@gandalf.stny.rr.com> <1258661836.22249.995.camel@gandalf.stny.rr.com>
+        h=mime-version:from:date:message-id:subject:to:content-type
+         :content-transfer-encoding;
+        b=wrUnjBqsPGArBm6FwYx6zZGYl8mHzxI6PJLYwrHSxj233VVsIU4ujQJ3O4Tf3N3fsl
+         Nu4f0AYjZBPgcAuAmKj+Bf5Al98CreMF7Z///dQ7w71UbncHrnPzZzRz+LsefJU1N7tZ
+         mQvgUJF9/mtX/dY/nVu+5cvGnGULNskrbNulM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258661836.22249.995.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Chris Banker <cbanker@gmail.com>
+Date: Thu, 19 Nov 2009 12:34:29 -0800
+Message-ID: <65dfecfd0911191234s585182c3sf88aaebcbd1ccd56@mail.gmail.com>
+Subject: NULL pointer dereference with 2.6.31 on OMAP243
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 03:17:16PM -0500, Steven Rostedt wrote:
-> On Thu, 2009-11-19 at 15:05 -0500, Steven Rostedt wrote:
-> 
-> > Well, other archs use a register to store the return address. But it
-> > would also be easy to do (pseudo arch assembly):
-> > 
-> > 	<function>:
-> > 		mov lr, (%sp)
-> > 		add 8, %sp
-> > 		blr __fentry__
-> 
-> Should be bl __fentry__ for "branch and link".
-> 
-> > 		sub 8, %sp
-> > 		mov (%sp), lr
-> > 
-> > 
-> > That way the lr would have the current function, and the parent would
-> > still be at 8(%sp)
-> 
-> Actually, if we add a new profiler and can make our own specification, I
-> would say that the add and sub lines be the responsibility of
-> __fentry__. Then we would have:
-> 
-> 	<function>:
-> 		mov lr, (%sp)
-> 		bl __fentry__
-> 		mov (%sp), lr
-> 
-> If sp points to the current content, then replace (%sp) above with 
-> -8(%sp).  Then the implementation of a nop __fentry__ would simply be:
-> 
-> 	__fentry__:
-> 		blr
+I'm having trouble with the 2.6.31 kernel running on an OMAP2430
+board.  I was able to get the board to boot using 2.6.31rc1, but am
+having some issue with 2.6.31.
 
+With low-level debugging enabled, I get the output below.  It appears
+to be an issue with the new hwmod system, which didn't exist in
+2.6.31rc1.  It seems to die during the initialization of mpu_hwmod.
 
-Good point!
+Anyone have any suggestions as to how to fix this or what to try?
 
- 
-> For anything more elaborate, __fentry__ would be responsible for all
-> adjustments.
+Thanks,
+Chris
 
+------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Yep. The more we control it from __fentry__, the less we fall
-down into unexpected surprises.
+Starting kernel ...
 
+Uncompressing Linux.....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+done, booting the kernel.
+<5>Linux version 2.6.31-omap1 (cbanker@vcaeng05) (gcc version 4.3.3
+(GCC) ) #27 Wed Nov 18 17:23:18 PST 2009
+CPU: ARMv6-compatible processor [4107b366] revision 6 (ARMv6TEJ), cr=00c5387f
+CPU: VIPT aliasing data cache, VIPT aliasing instruction cache
+Machine: BFT Digital Modem
+Memory policy: ECC disabled, Data cache writeback
+<7>On node 0 totalpages: 32768
+<7>free_area_init_node: node 0, pgdat c0f10848, node_mem_map c0f35000
+<7>  Normal zone: 256 pages used for memmap
+<7>  Normal zone: 0 pages reserved
+<7>  Normal zone: 32512 pages, LIFO batch:7
+<6>OMAP2430<6>
+<6>SRAM: Mapped pa 0x40200000 to va 0xe3000000 size: 0x100000
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
+<5>Kernel command line: root=/dev/ram0 rw console=ttys2,115200n8
+PID hash table entries: 512 (order: 9, 2048 bytes)
+<6>Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+<6>Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+<6>Memory: 128MB = 128MB total
+<5>Memory: 114232KB available (3084K code, 327K data, 12124K init, 0K highmem)
+<6>NR_IRQS:384
+<6>Clocking rate (Crystal/DPLL/MPU): 19.2/660/330 MHz
+<1>Unable to handle kernel NULL pointer dereference at virtual address 00000004
+<1>pgd = c0004000
+<1>[00000004] *pgd=00000000
+Internal error: Oops: 5 [#1]
+<d>Modules linked in:
+CPU: 0    Not tainted  (2.6.31-omap1 #27)
+PC is at _enable+0x78/0x208
+LR is at release_console_sem+0x1a8/0x204
+pc : [<c0be9098>]    lr : [<c0bff998>]    psr: a00001d3
+sp : c0ee3f38  ip : c0ee3e80  fp : c0ee3f4c
+r10: 80022140  r9 : 4107b366  r8 : 80022174
+r7 : c0ee86b4  r6 : c0be95cc  r5 : c0ee6154  r4 : c0ee6154
+r3 : 00000000  r2 : 00000000  r1 : 000005b2  r0 : 0000001f
+Flags: NzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment kernel
+Control: 00c5387f  Table: 80004000  DAC: 00000017
+Process swapper (pid: 0, stack limit = 0xc0ee2260)
+Stack: (0xc0ee3f38 to 0xc0ee4000)
+3f20:                                                       c0ee6634 c0ee6154
+3f40: c0ee3f68 c0ee3f50 c0be9648 c0be902c 00000000 c0ee6154 c0be95cc c0ee3f88
+3f60: c0ee3f6c c0be8a6c c0be95d8 c0eece48 c0eece48 c0bdbe08 c0ee5b34 c0ee3f98
+3f80: c0ee3f8c c0be98f4 c0be8a44 c0ee3fb0 c0ee3f9c c000dfc4 c0be98a0 c0f11190
+3fa0: c0f11184 c0ee3fc0 c0ee3fb4 c000ef0c c000df50 c0ee3fd0 c0ee3fc4 c000b878
+3fc0: c000eee8 c0ee3ff4 c0ee3fd4 c0008a2c c000b84c c0008658 c0bdbe08 00c5387d
+3fe0: c0f11440 c0bdc20c 00000000 c0ee3ff8 80008034 c00088fc 00000000 00000000
+Backtrace:
+[<c0be9020>] (_enable+0x0/0x208) from [<c0be9648>] (_setup+0x7c/0xb0)
+ r4:c0ee6154
+[<c0be95cc>] (_setup+0x0/0xb0) from [<c0be8a6c>] (omap_hwmod_for_each+0x34/0x78)
+ r6:c0be95cc r5:c0ee6154 r4:00000000
+[<c0be8a38>] (omap_hwmod_for_each+0x0/0x78) from [<c0be98f4>]
+(omap_hwmod_late_init+0x60/0x8c)
+ r7:c0ee5b34 r6:c0bdbe08 r5:c0eece48 r4:c0eece48
+[<c0be9894>] (omap_hwmod_late_init+0x0/0x8c) from [<c000dfc4>]
+(omap2_init_common_hw+0x80/0xbc)
+[<c000df44>] (omap2_init_common_hw+0x0/0xbc) from [<c000ef0c>]
+(omap2430bft_init_irq+0x30/0x1c4)
+ r5:c0f11184 r4:c0f11190
+[<c000eedc>] (omap2430bft_init_irq+0x0/0x1c4) from [<c000b878>]
+(init_IRQ+0x38/0x44)
+[<c000b840>] (init_IRQ+0x0/0x44) from [<c0008a2c>] (start_kernel+0x13c/0x2ac)
+[<c00088f0>] (start_kernel+0x0/0x2ac) from [<80008034>] (0x80008034)
+ r6:c0bdc20c r5:c0f11440 r4:00c5387d
+Code: 0a000005 e5933020 e592205c e593305c (e5920004)
+<4>---[ end trace 1b75b31a2719ed1c ]---
+<0>Kernel panic - not syncing: Attempted to kill the idle task!
