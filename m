@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZKSS5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZKSTAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZKSS5I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 13:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbZKSS5H
+	id S1754597AbZKSTAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZKSTAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 13:57:07 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:59488 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbZKSS5G (ORCPT
+	Thu, 19 Nov 2009 14:00:44 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:61763 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753035AbZKSTAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 13:57:06 -0500
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, pavel@ucw.cz
-Subject: Re: [PATCH] procfs: make /proc style symlinks behave like "normal" symlinks
-References: <1258638251-20034-1-git-send-email-jlayton@redhat.com>
-	<m14ooq5tq3.fsf@fess.ebiederm.org>
-	<20091119132833.30bc93a4@barsoom.rdu.redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 19 Nov 2009 10:57:08 -0800
-In-Reply-To: <20091119132833.30bc93a4@barsoom.rdu.redhat.com> (Jeff Layton's message of "Thu\, 19 Nov 2009 13\:28\:33 -0500")
-Message-ID: <m1skca2vi3.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 19 Nov 2009 14:00:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=LVLnx8hRD4kSpKvGghrQk63z9y5gDXjbLzOkPvKnRwbde789pWsbhUIGTAGbZ2CTr1
+         LNGHHpla0DfQNt2EI+Wmnb6+NcaxFLZ6ILKxJbVci953mgUYaGU7Fr0fhruZMWHQgWbj
+         mk+4dWE+4laFzSlht1U5ne6z2CEyovNGcYcHY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 19:58:34 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191852.23061.bzolnier@gmail.com> <20091119182132.5155f819@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091119182132.5155f819@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Message-Id: <200911191958.34247.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton <jlayton@redhat.com> writes:
+On Thursday 19 November 2009 19:21:32 Alan Cox wrote:
+> > Fixed where?  I posted the patch as soon as I noticed the problem.
+> 
+> Its not posted because unlike you I don't post patches as soon as I
+> notice them. I test them first. Which is why for example I discovered the
+> bug in the drivers/ide one. Did you check the vendor driver and then
+> stick 40 and 80 wire cables on the system to check the bits on a 3x2N ?
+> No I didn't think so. You see if you had you'd have discovered something
 
-> On Thu, 19 Nov 2009 09:07:16 -0800
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> 
->> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
->> 
->> This is broken.  If the referenced file is in a different mount namespace
->> the path returned could point to a completely different path in your
->> own mount namespace.  Even in your own mount namespace this makes the
->> proc symlinks racy and not guaranteed to return the file of interest.
->> 
->> I don't see any hope of this approach ever working.
->> 
->> Eric
->> 
->
-> Then is proc_pid_readlink broken in the same way?
+I did check the vendor driver but I don't have 3x2N to test it so posting
+patch ASAP to make it possible for other people to verify it was the best
+course of action and completely justified.  Don't you agree?
 
-proc_pid_readlink has the same deficiencies.  The race is fundamental
-to all readlink operations, the difference is that for normal symlinks
-it is a don't care, and for proc it is incorrect behavior if you follow
-the symlink to the wrong file.   If you are dealing with a file in a
-different namespace or a socket what you get back doesn't actually
-work as a file in your local namespace but that is the best we can do
-with a pathname, and if you know the context of what is going on readlink
-is still useful.
+> else. You'd have discovered another bug in the old IDE one. The driver
 
-Adding all of the short comings to followlink that readlink has is a problem,
-especially as followlink does much better now.
+You mean 'another' like yours _three_ year old 'one'? :)
 
-At a practical level I think your changes are much easier to exploit than
-Pavels contrived example.
+> code for these chips isn't reliable and doesn't work at all in some cases.
+> 
+> > Told me about it?  
+> 
+> Yes - or do you only write replies not read them ?
 
-I really don't have any problems with your first patch to proc to add the
-missing revalidate.
+Well, yours have low SNR and I value my time..
 
-Eric
+> NAK - the patch is inadequate. The procedure in the vendor driver does
+
+Patch is completely adequate in what it tries to achieve (fixing three year
+old problem with testing the bit for the wrong port) and you could have made
+an incremental fix for 'a second issue' easily.
+
+However I'm not into NIH so your patch is also fine and a more complete one.
+
+>     pata_hpt3x2n: Fix cable detection
+>     
+>     The version inherited from drivers/ide doesn't work on the newer chipsets
+>     at least not reliably. The vendors own driver uses a different process and
+>     that one appears to produce plausible numbers.
+
+Well, maybe except how you decided to 'skip' in the patch description
+the part about how you have managed to introduce a regression three years
+ago into already unreliable cable detection taken from hpt366.. ;)
+
+-- 
+Bartlomiej Zolnierkiewicz
