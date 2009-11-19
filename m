@@ -1,38 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZKSU1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZKSU2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbZKSU1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 15:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZKSU1R
+	id S1756775AbZKSU2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 15:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZKSU2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 15:27:17 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51868
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752989AbZKSU1Q (ORCPT
+	Thu, 19 Nov 2009 15:28:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:21479 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754841AbZKSU2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 15:27:16 -0500
-Date: Thu, 19 Nov 2009 12:27:34 -0800 (PST)
-Message-Id: <20091119.122734.89781869.davem@davemloft.net>
-To: David.Choi@Micrel.Com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, greg@kroah.com
-Subject: Re: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network
- driver 
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <C43529A246480145B0A6D0234BDB0F0D021299@MELANITE.micrel.com>
-References: <C43529A246480145B0A6D0234BDB0F0D021299@MELANITE.micrel.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 15:28:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HkTKr/qkWHcvstGqqtYvssBWHNLUoO+zJkArBlGgWhmLaegnJbMC6SZ4xM20sXxxLX
+         gFzVTWxAK8bOKdIJ/PplFexHUfbz4YRGkmSw0DJnxVdAjSuTpv1T49CiW/rRT/Cv+zeb
+         YanJfr81Dk19sQzUoCnmne7W8IVSj5szvu5KY=
+Date: Thu, 19 Nov 2009 21:28:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+Message-ID: <20091119202845.GH4967@nowhere>
+References: <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com> <4B058CCD.8050605@redhat.com> <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain> <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain> <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain> <4B05982B.6060200@caviumnetworks.com> <1258658886.22249.874.camel@gandalf.stny.rr.com> <20091119194625.GE4967@nowhere> <1258661141.22249.962.camel@gandalf.stny.rr.com> <1258661836.22249.995.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258661836.22249.995.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Choi, David" <David.Choi@Micrel.Com>
-Date: Tue, 17 Nov 2009 15:02:36 -0800
+On Thu, Nov 19, 2009 at 03:17:16PM -0500, Steven Rostedt wrote:
+> On Thu, 2009-11-19 at 15:05 -0500, Steven Rostedt wrote:
+> 
+> > Well, other archs use a register to store the return address. But it
+> > would also be easy to do (pseudo arch assembly):
+> > 
+> > 	<function>:
+> > 		mov lr, (%sp)
+> > 		add 8, %sp
+> > 		blr __fentry__
+> 
+> Should be bl __fentry__ for "branch and link".
+> 
+> > 		sub 8, %sp
+> > 		mov (%sp), lr
+> > 
+> > 
+> > That way the lr would have the current function, and the parent would
+> > still be at 8(%sp)
+> 
+> Actually, if we add a new profiler and can make our own specification, I
+> would say that the add and sub lines be the responsibility of
+> __fentry__. Then we would have:
+> 
+> 	<function>:
+> 		mov lr, (%sp)
+> 		bl __fentry__
+> 		mov (%sp), lr
+> 
+> If sp points to the current content, then replace (%sp) above with 
+> -8(%sp).  Then the implementation of a nop __fentry__ would simply be:
+> 
+> 	__fentry__:
+> 		blr
 
-> This patch is for ks8851 16bit MLL Ethernet network device driver in order to fix bugs and to enhance functions.
- ...
-> Signed-off-by: David J. Choi <david.choi@micrel.com>
 
-Applied.
+Good point!
+
+ 
+> For anything more elaborate, __fentry__ would be responsible for all
+> adjustments.
+
+
+Yep. The more we control it from __fentry__, the less we fall
+down into unexpected surprises.
+
