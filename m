@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbZKSEvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387AbZKSFYC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586AbZKSEvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 23:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbZKSEvA
+	id S1751387AbZKSFYC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 00:24:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZKSFYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 23:51:00 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53695 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932541AbZKSEu7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 23:50:59 -0500
-Date: Wed, 18 Nov 2009 20:52:40 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, Jan Beulich <JBeulich@novell.com>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Ravikiran Thirumalai <kiran@scalex86.org>,
-       Shai Fultheim <shai@scalemp.com>
-Subject: Re: [PATCH] x86: eliminate redundant/contradicting cache line size
- config options
-Message-ID: <20091118205240.11d3d660@infradead.org>
-In-Reply-To: <20091119035640.GA18236@elte.hu>
-References: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
-	<20091116041407.GB5818@wotan.suse.de>
-	<4B011677020000780001FD9D@vpn.id2.novell.com>
-	<20091116105657.GE5818@wotan.suse.de>
-	<20091119035640.GA18236@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Thu, 19 Nov 2009 00:24:00 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43502 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbZKSFXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 00:23:55 -0500
+Date: Thu, 19 Nov 2009 16:23:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: linux-next: manual merge of the edac-amd tree with the rr tree
+Message-Id: <20091119162354.8800a885.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__19_Nov_2009_16_23_54_+1100_xoscuZ6UPGTj1kKT"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009 04:56:40 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+--Signature=_Thu__19_Nov_2009_16_23_54_+1100_xoscuZ6UPGTj1kKT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> * Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > The only other use for L1 cache size macro is to pack objects to 
-> > cachelines better (so they always use the fewest number of lines).
-> > But this case is more rare nowadays people don't really count
-> > cachelines anymore, but I think even then it makes sense for it to
-> > be the largest line size in the system because we don't know how
-> > big L1s are, and if you want opimal L1 packing, you likely also
-> > want optimal Ln packing.
-> 
-> We could do that - but then this default of X86_INTERNODE_CACHE_SHIFT:
-> 
-> +       default "7" if NUMA
-> 
-> will bite us and turns the 64 bytes L1_CACHE_BYTES into an effective
-> 128 bytes value.
-> 
-> So ... are you arguing for an increase of the default x86 linesize to 
-> 128 bytes?
+Hi Borislav,
 
-128 is basically always wrong.
-(unless you have a P4... but for default really we should not care
-about those anymore)
+Today's linux-next merge of the edac-amd tree got a conflict in
+drivers/edac/amd64_edac.c because commit
+4de1ce0c99ff838090d3b57cab8bc6eeb303dda5
+("cpumask:amd64_edac-cpumask_t-remove") from the rr tree and commit
+2fd9af91b92c10e58993f9eb70300fdff32698fb ("cpumask: use modern cpumask
+style in drivers/edac/amd64_edac.c") from the edac-amd tree are the same
+patch but there are further changes in the edac-amd tree.  So, Rusty, I
+guess you can drop that patch (unless something later in the rr tree
+depends on it).
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--Signature=_Thu__19_Nov_2009_16_23_54_+1100_xoscuZ6UPGTj1kKT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksE1moACgkQjjKRsyhoI8zPYgCgvmcEcFtihHfkah+1+NbK/8H0
+yeIAnRZsApgrQPVp3Q5GgWTgzk465eLe
+=tztr
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__19_Nov_2009_16_23_54_+1100_xoscuZ6UPGTj1kKT--
