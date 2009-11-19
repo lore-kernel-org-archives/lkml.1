@@ -1,147 +1,405 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbZKSQ7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZKSREJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbZKSQ7L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 11:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZKSQ7K
+	id S1753225AbZKSREJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZKSREI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 11:59:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61901 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 12:04:08 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:58480 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbZKSQ7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 11:59:09 -0500
-Date: Thu, 19 Nov 2009 11:57:29 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Block IO Controller V2 - some results
-Message-ID: <20091119165729.GE2923@redhat.com>
-References: <1258404660.3533.150.camel@cail> <1258490289.18095.13.camel@cail>
+	id S1751634AbZKSREG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:04:06 -0500
+Message-ID: <4B057A7C.80300@us.ibm.com>
+Date: Thu, 19 Nov 2009 09:03:56 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258490289.18095.13.camel@cail>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Michel Lespinasse <walken@google.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] futex: add FUTEX_SET_WAIT operation
+References: <20091117074655.GA14023@google.com> <20091117081817.GA7963@elte.hu> <1258448121.7816.29.camel@laptop> <4B02CC46.4020506@us.ibm.com> <20091118221331.GA1300@google.com>
+In-Reply-To: <20091118221331.GA1300@google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 03:38:09PM -0500, Alan D. Brunelle wrote:
-> Hi Vivek - 
+Michel Lespinasse wrote:
+> On Tue, Nov 17, 2009 at 08:16:06AM -0800, Darren Hart wrote:
+>>> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
+>> Michael, would you be willing to include a version of this test in the  
+>> above test suite? If so, then in keeping with the rest of the test suite, 
+>> I would recommend splitting into two tests, one of each opcode being 
+>> tested, and  add argument to define thread count. The run.sh script would 
+>> then run each thread count as a separate test run.
 > 
-> I've updated the runs - the results are shown at the end, I culled out
-> the write-related runs (haven't converted to direct I/O yet for those).
+> There you go. Hope this helps. Feel free to adapt as needed.
 > 
-> Next steps: Going to refresh to V3 of the patches and add in 
-> 
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/3b62f0665f0912b6/34ec9456c7da1bb7?lnk=raot
-> 
-> and convert the write-side to doing direct I/O (that would include the
-> rdwr tests, btw). 
-> 
-> ----------------------------------------------------------------------
-> 
-> I've relabeled things:
-> 
-> i0 = io control generated in the kernel, but not enabled
-> i1 = io control generated in the kernel, and is enabled
-> 
-> g0 = group_idle=0
-> g1 = group_idle=1 (default)
-> 
-> s8 = slide_idle=8 (default)
-> s0 = slice_idle=0
-> 
-> It looks like when the io control stuff is enabled we have random read
-> problems. 
-> 
-> When it is enabled and slice_idle is set to 0 we see sequential reads
-> drop noticeably:
+> Signed-off-by: Michel Lespinasse <walken@google.com>
 
-I think drop in sequential read throughput is affect of slice_idle=0 and
-not of io controller stuff.
+My core-duo laptop hung after 256 threads. I left it running all night 
+and woke to it still sitting at:
 
-Thanks
-Vivek
+256 threads: 11792 Kiter/s (14.18s user 0.28s system 8.48s wall 1.71 cores)
 
+Have experienced a hang with this test on any platform? I'll take a 
+closer look at the source today to see if there is anything in there 
+that requires a certain number of CPUs to function properly.
 
+--
+Darren
 
 > 
-> ---- ---- - --------- --------- --------- --------- --------- ---------
-> Mode RdWr N   base     i0,gX,sX i1,g1,s8  i1,g0,s8  i1,g1,s0  i1,g0,s0
-> ---- ---- - --------- --------- --------- --------- --------- ---------
-> rnd  rd   2      17.3      17.1       9.1       9.3       9.4       9.5
-> rnd  rd   4      27.1      27.1       8.2       8.0       8.0       8.0
-> rnd  rd   8      37.1      37.1       7.1       6.8       6.7       6.8
+> diff --git a/functional/futex_requeue_pi_mismatched_ops.c b/functional/futex_requeue_pi_mismatched_ops.c
+> index 50bd07b..529f5a8 100644
+> --- a/functional/futex_requeue_pi_mismatched_ops.c
+> +++ b/functional/futex_requeue_pi_mismatched_ops.c
+> @@ -113,7 +113,7 @@ int main(int argc, char *argv[])
+>  			 * requeue_pi target and aborted. Wake the child with
+>  			 * FUTEX_WAKE.
+>  			 */
+> -			ret = futex_wake(&f1, f1, 1, FUTEX_PRIVATE_FLAG);
+> +			ret = futex_wake(&f1, 1, FUTEX_PRIVATE_FLAG);
+>  			if (ret == 1)
+>  				ret = 0;
+>  			else if (ret < 0)
+> diff --git a/include/futextest.h b/include/futextest.h
+> index 2b64f79..853c3c4 100644
+> --- a/include/futextest.h
+> +++ b/include/futextest.h
+> @@ -78,6 +78,9 @@ int _verbose = VCRITICAL;
+>  #ifndef FUTEX_CMP_REQUEUE_PI
+>  #define FUTEX_CMP_REQUEUE_PI		12
+>  #endif
+> +#ifndef FUTEX_SET_WAIT
+> +#define FUTEX_SET_WAIT			13
+> +#endif
+>  #ifndef FUTEX_WAIT_REQUEUE_PI_PRIVATE
+>  #define FUTEX_WAIT_REQUEUE_PI_PRIVATE	(FUTEX_WAIT_REQUEUE_PI | \
+>  					 FUTEX_PRIVATE_FLAG)
+> @@ -86,6 +89,9 @@ int _verbose = VCRITICAL;
+>  #define FUTEX_CMP_REQUEUE_PI_PRIVATE	(FUTEX_CMP_REQUEUE_PI | \
+>  					 FUTEX_PRIVATE_FLAG)
+>  #endif
+> +#ifndef FUTEX_SET_WAIT_PRIVATE
+> +#define FUTEX_SET_WAIT_PRIVATE		(FUTEX_SET_WAIT | FUTEX_PRIVATE_FLAG)
+> +#endif
 > 
-> seq  rd   2     610.2     608.1     607.7     611.0     551.1     550.3
-> seq  rd   4     608.4     601.5     607.7     609.6     549.6     550.0
-> seq  rd   8     605.7     603.7     604.0     605.6     547.2     546.7
+>  /** 
+>   * futex() - SYS_futex syscall wrapper
+> @@ -106,7 +112,7 @@ int _verbose = VCRITICAL;
+>   * like-named arguments in the following wrappers except where noted below.
+>   */
+>  #define futex(uaddr, op, val, timeout, uaddr2, val3, opflags) \
+> -	syscall(SYS_futex, uaddr, op | opflags, val, timeout, uaddr2, val3);
+> +	syscall(SYS_futex, uaddr, op | opflags, val, timeout, uaddr2, val3)
 > 
-> ===============================================================
+>  /**
+>   * futex_wait() - block on uaddr with optional timeout
+> @@ -119,8 +125,8 @@ int _verbose = VCRITICAL;
+>   * futex_wake() - wake one or more tasks blocked on uaddr
+>   * @nr_wake:	wake up to this many tasks
+>   */
+> -#define futex_wake(uaddr, val, nr_wake, opflags) \
+> -	futex(uaddr, FUTEX_WAKE, val, NULL, NULL, nr_wake, opflags)
+> +#define futex_wake(uaddr, nr_wake, opflags) \
+> +	futex(uaddr, FUTEX_WAKE, nr_wake, NULL, NULL, 0, opflags)
 > 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> base        rnd  rd   2   8.6   8.6
-> base        rnd  rd   4   6.8   6.8   6.8   6.7
-> base        rnd  rd   8   4.7   4.6   4.6   4.6   4.6   4.6   4.6   4.6
+>  /**
+>   * futex_wait_bitset() - block on uaddr with bitset
+> @@ -133,8 +139,8 @@ int _verbose = VCRITICAL;
+>   * futex_wake_bitset() - wake one or more tasks blocked on uaddr with bitset
+>   * @bitset:	bitset to compare with that used in futex_wait_bitset
+>   */
+> -#define futex_wake_bitset(uaddr, val, nr_wake, bitset, opflags) \
+> -	futex(uaddr, FUTEX_WAKE_BITSET, val, NULL, NULL, bitset, opflags)
+> +#define futex_wake_bitset(uaddr, nr_wake, bitset, opflags) \
+> +	futex(uaddr, FUTEX_WAKE_BITSET, nr_wake, NULL, NULL, bitset, opflags)
 > 
-> base        seq  rd   2 306.2 304.0
-> base        seq  rd   4 150.1 152.4 151.9 154.0
-> base        seq  rd   8  77.2  75.9  75.9  73.9  77.0  75.7  75.0  74.9
+>  /**
+>   * futex_lock_pi() - block on uaddr as a PI mutex
+> @@ -198,6 +204,14 @@ int _verbose = VCRITICAL;
+>  	      opflags)
 > 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> i0,gX,sX    rnd  rd   2   8.6   8.6
-> i0,gX,sX    rnd  rd   4   6.8   6.8   6.7   6.7
-> i0,gX,sX    rnd  rd   8   4.7   4.6   4.6   4.7   4.6   4.6   4.6   4.6
+>  /**
+> + * futex_set_wait() - block on uaddr with bitset
+> + * @setval:	value to set futex to if blocking
+> + * @bitset:	bitset to be used with futex_wake_bitset
+> + */
+> +#define futex_set_wait(uaddr, val, setval, timeout, bitset, opflags) \
+> +	futex(uaddr, FUTEX_SET_WAIT, val, timeout, setval, bitset, opflags)
+> +
+> +/**
+>   * futex_cmpxchg() - Atomic compare and exchange
+>   * @uaddr:	The address of the futex to be modified
+>   * @oldval:	The expected value of the futex
+> diff --git a/performance/Makefile b/performance/Makefile
+> index 9589e49..c4999a8 100644
+> --- a/performance/Makefile
+> +++ b/performance/Makefile
+> @@ -3,7 +3,7 @@ CFLAGS := $(CFLAGS) -g -O2 -Wall -D_GNU_SOURCE $(INCLUDES)
+>  LDFLAGS := $(LDFLAGS) -lpthread -lrt
 > 
-> i0,gX,sX    seq  rd   2 303.1 305.0
-> i0,gX,sX    seq  rd   4 150.8 151.6 149.0 150.2
-> i0,gX,sX    seq  rd   8  77.0  76.3  74.5  74.0  77.9  75.5  74.0  74.6
+>  HEADERS := ../include/futextest.h
+> -TARGETS :=
+> +TARGETS := futex_wait_test futex_setwait_test
 > 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> i1,g1,s8    rnd  rd   2   2.8   6.3
-> i1,g1,s8    rnd  rd   4   0.7   1.5   2.5   3.5
-> i1,g1,s8    rnd  rd   8   0.2   0.4   0.5   0.7   0.9   1.2   1.4   1.7
+>  .PHONY: all clean
+>  all: $(TARGETS)
+> diff --git a/performance/futex_setwait_test.c b/performance/futex_setwait_test.c
+> new file mode 100644
+> index 0000000..0d09365
+> --- /dev/null
+> +++ b/performance/futex_setwait_test.c
+> @@ -0,0 +1,71 @@
+> +// Copyright 2009 Google Inc.
+> +// Author: walken@google.com (Michel Lespinasse)
+> +
+> +#include "futextest.h"
+> +#include "harness.h"
+> +
+> +#include <stdio.h>
+> +#include <errno.h>
+> +
+> +
+> +static inline void futex_setwait_lock(futex_t *futex)
+> +{
+> +	int status = *futex;
+> +	if (status == 0)
+> +		status = futex_cmpxchg(futex, 0, 1);
+> +	if (status != 0) {
+> +		int desired_status = 1;
+> +		do {
+> +			if (futex_set_wait(futex, 1, 2, NULL, ~0,
+> +					   FUTEX_PRIVATE_FLAG) == 0) {
+> +				/* We absorbed a wakeup; so make sure to
+> +				   unblock next thread */
+> +				desired_status = 2;
+> +			}
+> +			status = *futex;
+> +			if (status == 0)
+> +				status = futex_cmpxchg(futex, 0,
+> +						       desired_status);
+> +		} while (status != 0);
+> +	}
+> +}
+> +
+> +static inline void futex_cmpxchg_unlock(futex_t *futex)
+> +{
+> +	int status = *futex;
+> +	if (status == 1)
+> +		status = futex_cmpxchg(futex, 1, 0);
+> +	if (status == 2) {
+> +		futex_cmpxchg(futex, 2, 0);
+> +		futex_wake(futex, 1, FUTEX_PRIVATE_FLAG);
+> +	}
+> +}
+> +
+> +static void * futex_setwait_test(void * dummy)
+> +{
+> +	struct locktest_shared * shared = dummy;
+> +	int i = shared->loops;
+> +	barrier_sync(&shared->barrier_before);
+> +	while (i--) {
+> +		futex_setwait_lock(&shared->futex);
+> +		futex_cmpxchg_unlock(&shared->futex);
+> +	}
+> +	barrier_sync(&shared->barrier_after);
+> +	return NULL;
+> +}
+> +
+> +static int futex_setwait_supported(void)
+> +{
+> +	int futex = 0;
+> +	futex_set_wait(futex, 1, 2, NULL, ~0, FUTEX_PRIVATE_FLAG);
+> +	return errno == EWOULDBLOCK;
+> +}
+> +
+> +int main (void)
+> +{
+> +	if (futex_setwait_supported()) {
+> +		printf("\nFUTEX_SET_WAIT test\n");
+> +		locktest(futex_setwait_test, 100000000);
+> +	}
+> +	return 0;
+> +}
+> diff --git a/performance/futex_wait_test.c b/performance/futex_wait_test.c
+> new file mode 100644
+> index 0000000..88ce2f2
+> --- /dev/null
+> +++ b/performance/futex_wait_test.c
+> @@ -0,0 +1,56 @@
+> +// Copyright 2009 Google Inc.
+> +// Author: walken@google.com (Michel Lespinasse)
+> +
+> +#include "futextest.h"
+> +#include "harness.h"
+> +
+> +#include <stdio.h>
+> +
+> +
+> +static inline void futex_wait_lock(futex_t *futex)
+> +{
+> +	int status = *futex;
+> +	if (status == 0)
+> +		status = futex_cmpxchg(futex, 0, 1);
+> +	while (status != 0) {
+> +		if (status == 1)
+> +			status = futex_cmpxchg(futex, 1, 2);
+> +		if (status != 0) {
+> +			futex_wait(futex, 2, NULL, FUTEX_PRIVATE_FLAG);
+> +			status = *futex;
+> +		}
+> +		if (status == 0)
+> +			status = futex_cmpxchg(futex, 0, 2);
+> +	}
+> +}
+> +
+> +static inline void futex_cmpxchg_unlock(futex_t *futex)
+> +{
+> +	int status = *futex;
+> +	if (status == 1)
+> +		status = futex_cmpxchg(futex, 1, 0);
+> +	if (status == 2) {
+> +		futex_cmpxchg(futex, 2, 0);
+> +		futex_wake(futex, 1, FUTEX_PRIVATE_FLAG);
+> +	}
+> +}
+> +
+> +static void * futex_wait_test(void * dummy)
+> +{
+> +	struct locktest_shared * shared = dummy;
+> +	int i = shared->loops;
+> +	barrier_sync(&shared->barrier_before);
+> +	while (i--) {
+> +		futex_wait_lock(&shared->futex);
+> +		futex_cmpxchg_unlock(&shared->futex);
+> +	}
+> +	barrier_sync(&shared->barrier_after);
+> +	return NULL;
+> +}
+> +
+> +int main (void)
+> +{
+> +	printf("FUTEX_WAIT test\n");
+> +	locktest(futex_wait_test, 100000000);
+> +	return 0;
+> +}
+> diff --git a/performance/harness.h b/performance/harness.h
+> new file mode 100644
+> index 0000000..9d74d17
+> --- /dev/null
+> +++ b/performance/harness.h
+> @@ -0,0 +1,103 @@
+> +// Copyright 2009 Google Inc.
+> +// Author: walken@google.com (Michel Lespinasse)
+> +
+> +#include <limits.h>
+> +#include <sys/times.h>
+> +#include <stdio.h>
+> +#include <pthread.h>
+> +
+> +
+> +struct thread_barrier {
+> +	futex_t threads;
+> +	futex_t unblock;
+> +};
+> +
+> +struct locktest_shared {
+> +	struct thread_barrier barrier_before;
+> +	struct thread_barrier barrier_after;
+> +	int loops;
+> +	futex_t futex;
+> +};
+> +
+> +static inline void decrement(futex_t *ptr)
+> +{
+> +	__sync_fetch_and_add(ptr, -1);
+> +}
+> +
+> +/* Called by main thread to initialize barrier */
+> +static void barrier_init(struct thread_barrier *barrier, int threads)
+> +{
+> +	barrier->threads = threads;
+> +	barrier->unblock = 0;
+> +}
+> +
+> +/* Called by worker threads to synchronize with main thread */
+> +static void barrier_sync(struct thread_barrier *barrier)
+> +{
+> +	decrement(&barrier->threads);
+> +	if (barrier->threads == 0)
+> +		futex_wake(&barrier->threads, 1, FUTEX_PRIVATE_FLAG);
+> +	while (barrier->unblock == 0)
+> +		futex_wait(&barrier->unblock, 0, NULL, FUTEX_PRIVATE_FLAG);
+> +}
+> +
+> +/* Called by main thread to wait for all workers to reach sync point */
+> +static void barrier_wait(struct thread_barrier *barrier)
+> +{
+> +	int threads;
+> +	while ((threads = barrier->threads) > 0)
+> +		futex_wait(&barrier->threads, threads, NULL,
+> +			   FUTEX_PRIVATE_FLAG);
+> +}
+> +
+> +/* Called by main thread to unblock worker threads from their sync point */
+> +static void barrier_unblock(struct thread_barrier *barrier)
+> +{
+> +	barrier->unblock = 1;
+> +	futex_wake(&barrier->unblock, INT_MAX, FUTEX_PRIVATE_FLAG);
+> +}
+> +
+> +
+> +static void locktest(void * thread_function(void *), int iterations)
+> +{
+> +	int threads[] = { 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32,
+> +			  64, 128, 256, 512, 1024, 0 };
+> +	int t;
+> +	for (t = 0; threads[t]; t++) {
+> +		int num_threads = threads[t];
+> +		struct locktest_shared shared;
+> +		pthread_t thread[num_threads];
+> +		int i;
+> +		clock_t before, after;
+> +		struct tms tms_before, tms_after;
+> +		int wall, user, system;
+> +		double tick;
+> +
+> +		barrier_init(&shared.barrier_before, num_threads);
+> +		barrier_init(&shared.barrier_after, num_threads);
+> +		shared.loops = iterations / num_threads;
+> +		shared.futex = 0;
+> +
+> +		for (i = 0; i < num_threads; i++)
+> +			pthread_create(thread + i, NULL, thread_function,
+> +				       &shared);
+> +		barrier_wait(&shared.barrier_before);
+> +		before = times(&tms_before);
+> +		barrier_unblock(&shared.barrier_before);
+> +		barrier_wait(&shared.barrier_after);
+> +		after = times(&tms_after);
+> +		wall = after - before;
+> +		user = tms_after.tms_utime - tms_before.tms_utime;
+> +		system = tms_after.tms_stime - tms_before.tms_stime;
+> +		tick = 1.0 / sysconf(_SC_CLK_TCK);
+> +		printf("%d threads: %.0f Kiter/s "
+> +		       "(%.2fs user %.2fs system %.2fs wall %.2f cores)\n",
+> +		       num_threads,
+> +		       (num_threads * shared.loops) / (wall * tick * 1000),
+> +		       user * tick, system * tick, wall * tick,
+> +		       wall ? (user + system) * 1. / wall : 1.);
+> +		barrier_unblock(&shared.barrier_after);
+> +		for (i = 0; i < num_threads; i++)
+> +			pthread_join(thread[i], NULL);
+> +	}
+> +}
 > 
-> i1,g1,s8    seq  rd   2 221.6 386.1
-> i1,g1,s8    seq  rd   4  70.6 128.1 181.7 227.3
-> i1,g1,s8    seq  rd   8  21.4  40.3  55.8  71.2  85.1  99.1 109.4 121.7
 > 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> i1,g0,s8    rnd  rd   2   4.7   4.7
-> i1,g0,s8    rnd  rd   4   2.0   2.0   2.0   2.0
-> i1,g0,s8    rnd  rd   8   0.9   0.9   0.9   0.8   0.8   0.8   0.9   0.9
-> 
-> i1,g0,s8    seq  rd   2 305.9 305.0
-> i1,g0,s8    seq  rd   4 154.0 153.3 151.2 151.1
-> i1,g0,s8    seq  rd   8  76.1  76.1  74.5  74.9  75.4  75.8  76.1  76.6
-> 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> i1,g1,s0    rnd  rd   2   4.7   4.7
-> i1,g1,s0    rnd  rd   4   2.0   2.0   2.0   2.0
-> i1,g1,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
-> 
-> i1,g1,s0    seq  rd   2 275.6 275.5
-> i1,g1,s0    seq  rd   4 136.0 137.5 137.4 138.7
-> i1,g1,s0    seq  rd   8  68.6  68.6  68.5  68.6  67.1  68.6  68.3  68.9
-> 
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> i1,g0,s0    rnd  rd   2   4.7   4.7
-> i1,g0,s0    rnd  rd   4   2.0   2.0   2.0   2.0
-> i1,g0,s0    rnd  rd   8   0.8   0.8   0.8   0.8   0.8   0.8   0.8   0.9
-> 
-> i1,g0,s0    seq  rd   2 275.2 275.1
-> i1,g0,s0    seq  rd   4 136.7 137.2 137.5 138.7
-> i1,g0,s0    seq  rd   8  68.8  68.2  68.5  68.4  67.2  68.8  68.4  68.5
-> 
+
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
