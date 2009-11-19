@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZKSRc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZKSRhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbZKSRc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZKSRcR
+	id S1753917AbZKSRhL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZKSRhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:32:17 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:53347 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753297AbZKSRcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:32:08 -0500
-From: Robin Holt <holt@sgi.com>
-Message-Id: <20091119173212.542566000@alcatraz.americas.sgi.com>
-User-Agent: quilt/0.47-1
-Date: Thu, 19 Nov 2009 11:32:05 -0600
-To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de
-Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [patch 8/8] X86: UV - XPC receive message reuse triggers invalid BUG_ON().
-References: <20091119173157.337874000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=xpc_recv_msg_slots_wrap
+	Thu, 19 Nov 2009 12:37:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37403 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753274AbZKSRhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:37:09 -0500
+To: Richard Guenther <richard.guenther@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
+	<tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
+	<20091119072040.GA23579@elte.hu>
+	<alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+	<alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+	<alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+	<4B056820.1050104@zytor.com>
+	<84fc9c000911190749y294381a2q16f4547991525cee@mail.gmail.com>
+Date: Thu, 19 Nov 2009 18:37:11 +0100
+In-Reply-To: <84fc9c000911190749y294381a2q16f4547991525cee@mail.gmail.com> (Richard Guenther's message of "Thu, 19 Nov 2009 16:49:57 +0100")
+Message-ID: <87tywq4drs.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Richard Guenther <richard.guenther@gmail.com> writes:
+>
+> It's likely because you have long long vars on the stack which is
+> faster when they are aligned.
 
-This was a difficult bug to trip.  XPC was in the middle of sending an
-acknowledgement for a received message.
+It's not faster for 32bit.
 
-In xpc_received_payload_uv():
-..
-        ret = xpc_send_gru_msg(ch->sn.uv.cached_notify_gru_mq_desc, msg,
-                               sizeof(struct xpc_notify_mq_msghdr_uv));
-        if (ret != xpSuccess)
-                XPC_DEACTIVATE_PARTITION(&xpc_partitions[ch->partid], ret);
+-Andi
 
-        msg->hdr.msg_slot_number += ch->remote_nentries;
-
-at the point in xpc_send_gru_msg() where the hardware has dispatched the
-acknowledgement, the remote side is able to reuse the message structure
-and send a message with a different slot number.  This problem is made
-worse by interrupts.
-
-The adjustment of msg_slot_number and the BUG_ON in
-xpc_handle_notify_mq_msg_uv() which verifies the msg_slot_number is
-consistent are only used for debug purposes.  Since a fix for this that
-preserves the debug functionality would either have to infringe upon
-the payload or allocate another structure just for debug, I decided to
-remove it entirely.
-
-To: Ingo Molnar <mingo@elte.hu>
-To: tglx@linutronix.de
-Signed-off-by: Robin Holt <holt@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-
----
- drivers/misc/sgi-xp/xpc_uv.c |    3 ---
- 1 file changed, 3 deletions(-)
-Index: linux-x86/drivers/misc/sgi-xp/xpc_uv.c
-===================================================================
---- linux-x86.orig/drivers/misc/sgi-xp/xpc_uv.c	2009-11-18 22:16:45.000000000 -0600
-+++ linux-x86/drivers/misc/sgi-xp/xpc_uv.c	2009-11-18 22:16:45.000000000 -0600
-@@ -1428,7 +1428,6 @@ xpc_handle_notify_mq_msg_uv(struct xpc_p
- 	msg_slot = ch_uv->recv_msg_slots +
- 	    (msg->hdr.msg_slot_number % ch->remote_nentries) * ch->entry_size;
- 
--	BUG_ON(msg->hdr.msg_slot_number != msg_slot->hdr.msg_slot_number);
- 	BUG_ON(msg_slot->hdr.size != 0);
- 
- 	memcpy(msg_slot, msg, msg->hdr.size);
-@@ -1652,8 +1651,6 @@ xpc_received_payload_uv(struct xpc_chann
- 			       sizeof(struct xpc_notify_mq_msghdr_uv));
- 	if (ret != xpSuccess)
- 		XPC_DEACTIVATE_PARTITION(&xpc_partitions[ch->partid], ret);
--
--	msg->hdr.msg_slot_number += ch->remote_nentries;
- }
- 
- static struct xpc_arch_operations xpc_arch_ops_uv = {
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
