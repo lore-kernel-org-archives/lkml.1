@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZKSWIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZKSWRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbZKSWIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 17:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZKSWIi
+	id S1756793AbZKSWRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 17:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZKSWRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 17:08:38 -0500
-Received: from mga14.intel.com ([143.182.124.37]:31202 "EHLO mga14.intel.com"
+	Thu, 19 Nov 2009 17:17:52 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:52977 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756563AbZKSWIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 17:08:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
-   d="scan'208";a="213602514"
-Subject: Re: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
- hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
-References: <1258069232.14894.9.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain>
-	 <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan>
-	 <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>
-	 <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain>
-	 <1258137165.21141.20.camel@localhost.localdomain>
-	 <alpine.DEB.2.00.0911131340140.5316@p34.internal.lan>
-	 <1258161139.21141.29.camel@localhost.localdomain>
-	 <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
-	 <alpine.DEB.2.00.0911170643430.25285@p34.internal.lan>
-	 <20091117213711.GA19132@linux-os.sc.intel.com>
-	 <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
-Content-Type: text/plain
-Date: Thu, 19 Nov 2009 14:08:43 -0800
-Message-Id: <1258668523.21141.109.camel@localhost.localdomain>
+	id S1753010AbZKSWRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 17:17:51 -0500
+To: ebiederm@xmission.com
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       john.johansen@canonical.com
+Subject: Re: [PATCH 00/23] Removal of binary sysctl support
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <m1zl6j65by.fsf@fess.ebiederm.org>
+	<200911190704.CHI18293.VJOMHFtOLQSOFF@I-love.SAKURA.ne.jp>
+	<m1k4xn8nba.fsf@fess.ebiederm.org>
+	<200911192333.EHB57391.FSQOHOJtMFFLVO@I-love.SAKURA.ne.jp>
+	<m1ocmy4d7b.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ocmy4d7b.fsf@fess.ebiederm.org>
+Message-Id: <200911200717.CDF87535.JQMSFFtOFVOHOL@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Fri, 20 Nov 2009 07:17:53 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 14:53 -0800, Justin Piszcz wrote:
-> 
-> On Tue, 17 Nov 2009, Pallipadi, Venkatesh wrote:
-> 
-> > On Tue, Nov 17, 2009 at 03:45:31AM -0800, Justin Piszcz wrote:
-> > +		WARN_ON_ONCE((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt);
-> >
-> > 	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
-> > }
-> > -- 
-> > 1.6.0.6
-> 
-> Hi, that omits the message @ boot and you are correct, all is/continues to work fine.
-> 
-> Thanks..
-> 
-> As far as the DP55KG reboots, the workaround is set append="reboot=a" -
-> will a BIOS fix address this (other) issue? Try rebooting Linux without 
-> any special parameters (2.6.30+) and the DP55KG will hang at reboot
-> (note, shutdown does shut the machine off).
-> 
+Hello.
 
-I haven't seen this reboot problem on my test system here. So, I don't
-know what the problem is. Probably some BIOS issue.
+Eric W. Biederman wrote:
+> > Indeed. TOMOYO and AppArmor need a hint for prepending "/proc" prefix.
+> > A simple implementation which adds one bit to task_struct is shown below.
+> > In this way, not only the file permission checks inside dentry_open()
+> > but also the directory permission checks inside vfs_path_lookup() can be
+> > prepended "/proc" prefix. AppArmor might want to prepend "/proc" inside
+> > vfs_path_lookup().
+> 
+> There don't appear to be any security hooks in vfs_path_lookup().
+>
+OK. Then, AppArmor won't be confused.
 
-Does "reboot=b" work? Quickest solution will be to add platform dmi
-entry in reboot.c and workaround this.
+> Instead of current->in_sysctl we can just look at the path and see if
+> it is the root of the mount chain and if the fs is proc.
+> 
+> Something like:
+> 
+> diff --git a/security/tomoyo/realpath.c b/security/tomoyo/realpath.c
+> index 5f2e332..0b55faa 100644
+> --- a/security/tomoyo/realpath.c
+> +++ b/security/tomoyo/realpath.c
+> @@ -108,6 +108,15 @@ int tomoyo_realpath_from_path2(struct path *path, char *newname,
+>  		spin_unlock(&dcache_lock);
+>  		path_put(&root);
+>  		path_put(&ns_root);
+> +		/* Prepend "/proc" prefix if using internal proc vfs mount. */
+> +		if (!IS_ERR(sp) && (path->mnt->mnt_parent == path->mnt) &&
+> +		    (strcmp(path->mnt->mnt_sb->s_type->name, "proc") == 0)) {
+> +			sp -= 5;
+> +			if (sp >= newname)
+> +				memcpy(sp, "/proc", 5);
+> +			else
+> +				sp = ERR_PTR(-ENOMEM);
+> +		}
+>  	}
+>  	if (IS_ERR(sp))
+>  		error = PTR_ERR(sp);
 
-Thanks,
-Venki
+Above patch works. Please proceed. Thank you.
 
+Acked-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+
+Why not to use path->mnt->mnt_sb->s_magic == PROC_SUPER_MAGIC rather than
+strcmp(path->mnt->mnt_sb->s_type->name, "proc") == 0 ?
