@@ -1,359 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZKSQDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZKSQIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbZKSQDe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 11:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbZKSQDe
+	id S1757378AbZKSQIc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 11:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbZKSQIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 11:03:34 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:34544 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756104AbZKSQDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 11:03:33 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAJv5BEtGGN1W/2dsb2JhbACBTdRFhDsEgW8
-Date: Thu, 19 Nov 2009 11:03:36 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
-       rth@redhat.com
-Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump
-	patching without stop_machine
-Message-ID: <20091119160336.GA16094@Krystal>
-References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <20091119002826.GB28962@Krystal> <4B055082.50401@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4B055082.50401@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:43:39 up 93 days,  2:33,  3 users,  load average: 0.09, 0.20,
-	0.18
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Nov 2009 11:08:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:41629 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757077AbZKSQIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 11:08:31 -0500
+Date: Thu, 19 Nov 2009 17:06:21 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Haley <aph@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <4B0567E0.5080803@redhat.com>
+Message-ID: <alpine.LFD.2.00.0911191704110.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain> 
+ <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain> <4B0567E0.5080803@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Jason Baron (jbaron@redhat.com) wrote:
-> >> Add text_poke_fixup() which takes a fixup address to where a processor
-> >> jumps if it hits the modifying address while code modifying.
-> >> text_poke_fixup() does following steps for this purpose.
-> >>
-> >>  1. Setup int3 handler for fixup.
-> >>  2. Put a breakpoint (int3) on the first byte of modifying region,
-> >>     and synchronize code on all CPUs.
-> >>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
-> >>  4. Modify the first byte of modifying region, and synchronize code
-> >>     on all CPUs.
-> >>  5. Clear int3 handler.
-> >>
+On Thu, 19 Nov 2009, Andrew Haley wrote:
+> Thomas Gleixner wrote:
+> > There is no real obvious reason why the edi magic needs to be done
+> > _before_ 
 > > 
-> > Hi Masami,
-> > 
-> > I like the approach and the API is clean. I have intersped comments
-> > below.
+> > 	push   %ebp
+> > 	mov    %esp,%ebp
 > 
-> Hi Mathieu,
-> 
-> Thank you for reviewing :-)
-> 
-> > Ingo: I raise a question about text_mutex vs on_each_cpu hangs I
-> > experienced recently in the message below. Might be worth having a look,
-> > I suspect this might have caused the hangs Paul McKenney had with his
-> > past TREE RCU callback migration. I think he did take a mutex in the cpu
-> > hotplug callbacks and might have used IPIs within that same lock.
-> > 
-> >> Thus, if some other processor execute modifying address when step2 to step4,
-> >> it will be jumped to fixup code.
-> >>
-> >> This still has many limitations for modifying multi-instructions at once.
-> >> However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
-> >> because;
-> >>  - Replaced instruction is just one instruction, which is executed atomically.
-> >>  - Replacing instruction is a jump, so we can set fixup address where the jump
-> >>    goes to.
-> >>
-> >> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> >> ---
-> >>  arch/x86/include/asm/alternative.h |   12 ++++
-> >>  arch/x86/include/asm/kprobes.h     |    1 +
-> >>  arch/x86/kernel/alternative.c      |  120 ++++++++++++++++++++++++++++++++++++
-> >>  kernel/kprobes.c                   |    2 +-
-> >>  4 files changed, 134 insertions(+), 1 deletions(-)
-> >>
-> > 
-> > [snip snip]
-> > 
-> >> index de7353c..af47f12 100644
-> >> --- a/arch/x86/kernel/alternative.c
-> >> +++ b/arch/x86/kernel/alternative.c
-> >> @@ -4,6 +4,7 @@
-> >>  #include <linux/list.h>
-> >>  #include <linux/stringify.h>
-> >>  #include <linux/kprobes.h>
-> >> +#include <linux/kdebug.h>
-> >>  #include <linux/mm.h>
-> >>  #include <linux/vmalloc.h>
-> >>  #include <linux/memory.h>
-> >> @@ -552,3 +553,122 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-> >>  	local_irq_restore(flags);
-> >>  	return addr;
-> >>  }
-> >> +
-> >> +/*
-> >> + * On pentium series, Unsynchronized cross-modifying code
-> >> + * operations can cause unexpected instruction execution results.
-> >> + * So after code modified, we should synchronize it on each processor.
-> >> + */
-> >> +static void __kprobes __local_sync_core(void *info)
-> >> +{
-> >> +	sync_core();
-> >> +}
-> >> +
-> >> +void __kprobes sync_core_all(void)
-> >> +{
-> >> +	on_each_cpu(__local_sync_core, NULL, 1);
-> > 
-> > OK, so you rely on the fact that on_each_cpu has memory barriers and
-> > executes the remote "__local_sync_core" with the appropriate memory
-> > barriers underneath, am I correct ?
-> 
-> Right, at least I expected that.
-> 
-> >> +}
-> >> +
-> >> +/* Safely cross-code modifying with fixup address */
-> >> +static void *patch_fixup_from;
-> >> +static void *patch_fixup_addr;
-> >> +
-> >> +static int __kprobes patch_exceptions_notify(struct notifier_block *self,
-> >> +					      unsigned long val, void *data)
-> >> +{
-> >> +	struct die_args *args = data;
-> >> +	struct pt_regs *regs = args->regs;
-> >> +
-> >> +	if (likely(!patch_fixup_from))
-> >> +		return NOTIFY_DONE;
-> >> +
-> >> +	if (val != DIE_INT3 || !regs || user_mode_vm(regs) ||
-> >> +	    (unsigned long)patch_fixup_from != regs->ip)
-> >> +		return NOTIFY_DONE;
-> >> +
-> >> +	args->regs->ip = (unsigned long)patch_fixup_addr;
-> >> +	return NOTIFY_STOP;
-> >> +}
-> >> +
-> >> +/**
-> >> + * text_poke_fixup() -- cross-modifying kernel text with fixup address.
-> >> + * @addr:	Modifying address.
-> >> + * @opcode:	New instruction.
-> >> + * @len:	length of modifying bytes.
-> >> + * @fixup:	Fixup address.
-> >> + *
-> >> + * Note: You must backup replaced instructions before calling this,
-> >> + * if you need to recover it.
-> >> + * Note: Must be called under text_mutex.
-> >> + */
-> >> +void *__kprobes text_poke_fixup(void *addr, const void *opcode, size_t len,
-> >> +				void *fixup)
-> >> +{
-> >> +	static const unsigned char int3_insn = BREAKPOINT_INSTRUCTION;
-> >> +	static const int int3_size = sizeof(int3_insn);
-> >> +
-> >> +	/* Replacing 1 byte can be done atomically. */
-> > 
-> > I'm sure it can be done atomically, but can it be done safely though ?
-> > 
-> > (disclaimer: we're still waiting for the official answer on this
-> > statement): Assuming instruction trace cache effects of SMP cross-code
-> > modification, and that only int3 would be safe to patch, then even
-> > changing 1 single byte could only be done by going to an intermediate
-> > int3 and synchronizing all other cores.
-> 
-> Ah, I see. Certainly, that's possible (int3 might be a special token of
-> cache coherency). So even len==1, we might better use int3 capping.
-> 
-> > 
-> >> +	if (unlikely(len <= 1))
-> >> +		return text_poke(addr, opcode, len);
-> >> +
-> >> +	/* Preparing */
-> >> +	patch_fixup_addr = fixup;
-> >> +	wmb();
-> > 
-> > hrm, missing comment ?
-> 
-> Ah, it's a barrier between patch_fixup_addr and patch_fixup_from.
-> int3 trap handler checks patch_fixup_from first and refers patch_fixup_addr.
+> Sure there is: unless you do the adjustment first %ebp won't be 16-aligned.
 
-When a smp_wmb() is probably enough, and the matching smp_rmb() is
-missing in the int3 handler.
+And why is this not done in 99% of the functions in the kernel, just
+in this one and some random others ?
+ 
+> We're aligning the stack properly, as per the ABI requirements.  Can't
+> you just fix the tracer?
 
-But why to you care about the order of these two ? I agree that an
-unrelated int3 handler (from kprobes ?) could be running concurrently at
-that point, but it clearly cannot be called for this specific address
-until the int3 is written by text_poke.
+Where is that ABI requirement that
 
-What I am pretty much certain is missing would be a smp_wmb()...
+ 	push   %ebp
 
-> 
-> > 
-> >> +	patch_fixup_from = (u8 *)addr + int3_size; /* IP address after int3 */
+needs to happen on an aligned stack ? 
 
-..right here, between where you write to the data used by the int3
-handler and where you write the actual breakpoint. On the read-side,
-this might be a problem with architectures like alpha needing
-smp_read_barrier_depends(), but not for Intel. However, in a spirit to
-make this code solid, what I did in the immed. val. is:
-
-
-                target_after_int3 = insn + BREAKPOINT_INS_LEN;
-                /* register_die_notifier has memory barriers */
-                register_die_notifier(&imv_notify);
-                /* The breakpoint will single-step the bypass */
-                text_poke((void *)insn,
-                        ((unsigned char[]){BREAKPOINT_INSTRUCTION}), 1);
-
-And I unregister the die notifier at the end after having reached
-quiescent state. At least we know that the die notifier chain read-side
-has the proper memory barriers, which is not the case for the breakpoint
-instruction itself.
-
-
-> >> +
-> >> +	/* Cap by an int3 */
-> >> +	text_poke(addr, &int3_insn, int3_size);
-> >> +	sync_core_all();
-> >> +
-> >> +	/* Replace tail bytes */
-> >> +	text_poke((char *)addr + int3_size, (const char *)opcode + int3_size,
-> >> +		  len - int3_size);
-> >> +	sync_core_all();
-> >> +
-> >> +	/* Replace int3 with head byte */
-> >> +	text_poke(addr, opcode, int3_size);
-> >> +	sync_core_all();
-> >> +
-> >> +	/* Cleanup */
-> >> +	patch_fixup_from = NULL;
-> >> +	wmb();
-> > 
-> > missing comment here too.
-> > 
-> >> +	return addr;
-> > 
-> > Little quiz question:
-> > 
-> > When patch_fixup_from is set to NULL, what ensures that the int3
-> > handlers have completed their execution ?
-> > 
-> > I think it's probably OK, because the int3 is an interrupt gate, which
-> > therefore disables interrupts as soon as it runs, and executes the
-> > notifier while irqs are off. When we run sync_core_all() after replacing
-> > the int3 by the new 1st byte, we only return when all other cores have
-> > executed an interrupt, which implies that all int3 handlers previously
-> > running should have ended. Is it right ? It looks to me as if this 3rd
-> > sync_core_all() is only needed because of that. Probably that adding a
-> > comment would be good.
-> 
-> Thanks, it's a good point and that's more what I've thought.
-> As you said, it is probably safe. Even if it's not safe,
-> we can add some int3 fixup handler (with lowest priority)
-> which set regs->ip-1 if there is no int3 anymore, for safety.
-
-Well, just ensuring that the we reaches a "disabled IRQ code quiescent
-state" should be enough. Another way would be to use
-synchronize_sched(), but it might take longer. Actively poking the other
-CPUs with IPIs seems quicker. So I would be tempted to leave your code
-as is in this respect, but to add a comment.
-
-> 
-> > Another thing: I've recently noticed that the following locking seems to
-> > hang the system with doing stress-testing concurrently with cpu
-> > hotplug/hotunplug:
-> > 
-> > mutex_lock(&text_mutex);
-> >   on_each_cpu(something, NULL, 1);
-> > 
-> > The hang seems to be caused by the fact that alternative.c has:
-> > 
-> > within cpu hotplug (cpu hotplug lock held)
-> >   mutex_lock(&text_mutex);
-> > 
-> > It might also be caused by the interaction with the stop_machine()
-> > performed within the cpu hotplug lock. I did not find the root cause of
-> > the problem, but this probably calls for lockdep improvements.
-> 
-> Hmm, would you mean it will happen even if we use stop_machine()
-> under text_mutex locking?
-> It seems that bigger problem of cpu-hotplug and on_each_cpu() etc.
-
-Yes, but, again.. this calls for more testing. Hopefully it's not
-something else in my own code I haven't seen. For not I can just say
-that I've been noticing hangs involving cpu hotplug and text mutex, and
-taking the cpu hotplug mutex around text mutex (in my immediate values
-code) fixed the problem.
+And why is this something GCC did not care about until GCC4.4 ?
 
 Thanks,
 
-Mathieu
+	tglx
 
-> 
-> > In any case, given you are dealing with the exact same locking scenario
-> > here, I would recomment the following stress-test:
-> > 
-> > in a loop, use text_poke_jump()
-> > in a loop, hotunplug all cpus, then hotplug all cpus
-> > 
-> > I had to fix this temporarily by taking get/put_online_cpus() about the
-> > text_mutex.
-> > 
-> > [snip snip]
-> > 
-> >> +static struct notifier_block patch_exceptions_nb = {
-> >> +	.notifier_call = patch_exceptions_notify,
-> >> +	.priority = 0x7fffffff /* we need to be notified first */
-> >> +};
-> >> +
-> >> +static int __init patch_init(void)
-> >> +{
-> >> +	return register_die_notifier(&patch_exceptions_nb);
-> >> +}
-> >> +
-> >> +arch_initcall(patch_init);
-> >> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> >> index e5342a3..43a30d8 100644
-> >> --- a/kernel/kprobes.c
-> >> +++ b/kernel/kprobes.c
-> >> @@ -898,7 +898,7 @@ EXPORT_SYMBOL_GPL(unregister_kprobes);
-> >>  
-> >>  static struct notifier_block kprobe_exceptions_nb = {
-> >>  	.notifier_call = kprobe_exceptions_notify,
-> >> -	.priority = 0x7fffffff /* we need to be notified first */
-> >> +	.priority = 0x7ffffff0 /* High priority, but not first.  */
-> > 
-> > It would be good to keep all these priorities in a centralized header.
-> 
-> Sure, I'll put it in kprobes.h.
-> 
-> Thank you!
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
