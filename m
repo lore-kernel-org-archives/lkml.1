@@ -1,162 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZKSOba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZKSO3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbZKSOba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZKSOb3
+	id S1756241AbZKSO3y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZKSO3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:31:29 -0500
-Received: from www.tglx.de ([62.245.132.106]:44988 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752931AbZKSOb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:31:29 -0500
-Date: Thu, 19 Nov 2009 15:30:58 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: BUG: function graph tracer function frame assumptions
-In-Reply-To: <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Nov 2009 09:29:53 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35606 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752794AbZKSO3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:29:53 -0500
+Date: Thu, 19 Nov 2009 14:31:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Message-ID: <20091119143129.0fe41623@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B05533A.7020508@ru.mvista.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+	<20091118184125.623e063d@lxorguk.ukuu.org.uk>
+	<200911182007.07405.bzolnier@gmail.com>
+	<200911182056.16517.bzolnier@gmail.com>
+	<20091119140259.2fee86e2@lxorguk.ukuu.org.uk>
+	<4B05533A.7020508@ru.mvista.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-B1;2005;0cOn Thu, 19 Nov 2009, Thomas Gleixner wrote:
-> On Thu, 19 Nov 2009, Ingo Molnar wrote:
-> > i've bisected back to it:
-> > 
-> > | 887a29f59b93cf54e21814869a4ab6e80b6fa623 is the first bad commit
-> > | commit 887a29f59b93cf54e21814869a4ab6e80b6fa623
-> > | Author: Feng Tang <feng.tang@intel.com>
-> > | Date:   Thu Sep 3 16:32:53 2009 +0800
-> > |
-> > |    hrtimer: Fix /proc/timer_list regression
-> > 
-> > Config attached.
-> > 
-> > I've removed it from timers/urgent for now.
-> 
-> Come on, this is a patently wrong conclusion.
-> 
-> We call timer_stats_update_stats() which returns on top of the
-> function due to:
-> 
-> 	if (likely(!timer_stats_active))
-> 		return;
-> 
-> timer_stats_active is 0 during boot and you can only activate it by
-> writing to /proc/timer_stats which you certainly did not at this
-> point.
-> 
-> Can you please explain how a call to a function which returns right
-> away can cause that problem ? 
-> 
-> That patch unearthed some other bug and your revert is just papering
-> over that fact.
+>     Point out the breakage please. The driver has been developed and tested 
+> on non-x86 machine with 66 MHz PCI.
 
-Looked deeper into that and found the root cause.
+static int init_chipset_hpt366(struct pci_dev *dev)
 
-The function graph tracer expects that the first code sequence in a
-function is:
+        if (chip_type >= HPT370) {
 
-function_start:
-	 push	%ebp
-	 mov	%esp, %ebp
-	 ....
-	 call   mcount
+               if ((temp & 0xFFFFF000) != 0xABCDE000) {
 
-and on the return side:
+it then falls through and gets a 33MHz answer from the tests.
 
-       	 pop	%ebp
-	 ret
 
-which is the case for most functions except, but not for all
+If I stash the MHz answer from boot then it works. So I imagine the boot
+time value just needs to be dumped into a static for resume to use.
 
-timer_stats_update_stats() and a few others have:
-
-function_start:
-	push   %edi
-	lea    0x8(%esp),%edi
-	and    $0xfffffff0,%esp
-	pushl  -0x4(%edi)
-	push   %ebp
-	mov    %esp,%ebp
-	...
-	call   mcount
-
-and the return does:
-
-	pop    %ebp
-	lea    -0x8(%edi),%esp
-	pop    %edi
-	ret
-
-mcount calls prepare_ftrace_return() with the following calling sequence:
-
-        pushl	%eax
-        pushl	%ecx
-        pushl	%edx
-        movl	0xc(%esp), %edx
-        lea	0x4(%ebp), %eax
-
-Here is where the shit hits the fan.
-
-For the usual function frames this is correct:
-
-ebp points to the stack location where ebp was pushed and ebp + 4
-points to the return address.
-
-For the timer_stats_update_stats case points to the stack location
-where ebp was pushed _BUT_ ebp + 4 is pointing to a stack entry
-_BELOW_ the return address.
-
-        movl	(%ebp), %ecx
-        subl	$MCOUNT_INSN_SIZE, %edx
-        call	prepare_ftrace_return
-        popl	%edx
-        popl	%ecx
-        popl	%eax
-        ret
-
-prepare_ftrace_return does:
-
-void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
-			   unsigned long frame_pointer)
-{
-	unsigned long old;
-	int faulted;
-	unsigned long return_hooker = (unsigned long)
-				&return_to_handler;
-
-	asm volatile(
-		"1: " _ASM_MOV " (%[parent]), %[old]\n"
-		"2: " _ASM_MOV " %[return_hooker], (%[parent])\n"
-		"   movl $0, %[faulted]\n"
-		"3:\n"
-
-So here we modify the "return" address on the stack where parent is
-supposed to point to. That works for the standard function frames, but
-not for the ones which look like timer_stats_update_stats().
-
-In the timer_stats_update_stats() case we do not call the
-return_to_handler when the function returns, because we did not modify
-the return address. So the next return in the calling function will
-trip over the sanity checking and panic.
-
-I'm not yet sure whether this is a compiler problem (using gcc 4.4.1)
-or just the stupid assumption that function frames always start with
-
-	push	%ebp
-	mov	%esp, %ebp
-
-Thanks,
-
-	tglx
+Alan
