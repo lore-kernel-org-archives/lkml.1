@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbZKSOPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZKSOQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbZKSOPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZKSOPo
+	id S1753850AbZKSOQq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZKSOQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:15:44 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:26799 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751652AbZKSOPn (ORCPT
+	Thu, 19 Nov 2009 09:16:45 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:38347 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbZKSOQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:15:43 -0500
-Message-ID: <4B05533A.7020508@ru.mvista.com>
-Date: Thu, 19 Nov 2009 17:16:26 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 19 Nov 2009 09:16:45 -0500
+Date: Thu, 19 Nov 2009 14:16:34 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091119141634.GA311@srcf.ucam.org>
+References: <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> <20091118213355.GA16630@srcf.ucam.org> <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> <20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>	<20091118184125.623e063d@lxorguk.ukuu.org.uk>	<200911182007.07405.bzolnier@gmail.com>	<200911182056.16517.bzolnier@gmail.com> <20091119140259.2fee86e2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119140259.2fee86e2@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+On Thu, Nov 19, 2009 at 02:29:29PM +0100, Kay Sievers wrote:
+> On Thu, Nov 19, 2009 at 14:01, Matthew Garrett <mjg@redhat.com> wrote:
+> > On Thu, Nov 19, 2009 at 12:09:30PM +0100, Kay Sievers wrote:
+> >> On Wed, Nov 18, 2009 at 22:33, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> >> > My use cases are on the order of a second.
+> >>
+> >> Ok, what's the specific use case, which should be triggered after a
+> >> second? I thought you were thinking about disk spindown or similar.
+> >
+> > The first is altering ALPM policy. ALPM will be initiated by the host if
+> > the number of queued requests hits zero - if there's no hysteresis
+> > implemented, then that can result in a significant performance hit. We
+> > don't need /much/ hysteresis, but it's the difference between a 50%
+> > performance hit and not having that.
+> 
+> Can't that logic live entirely in the kernel, instead of being a
+> rather generic userspace event interface (with the current limitation
+> to a single user)?
 
->>BTW we can immediately reclaim 300 LOC by simply merging drivers back..
+It could, but it seems a bit of a hack. It'd still also require the 
+timer to be in the kernel, so we might as well expose that to userspace.
 
-> LoC - lines of comments ? (at least half of them).
-
-> Been testing a bit before fixing up the pata_hpt drivers. Resume from S2R
-> doesn't work with drivers/ide/hpt366.c. So it may have code for resume
-> but it doesn't actually work for all the chips.
-
-> Reason is fairly obvious - the PCI speed detection logic is broken except
-> for the case of a PC boot where the ROM BIOS for the HPT3xx is run. That
-
-    Point out the breakage please. The driver has been developed and tested 
-on non-x86 machine with 66 MHz PCI.
-
-> doesn't occur on a resume from RAM so a 66MHz clocked motherboard device
-> comes back with the speed guessed wrongly.
-
-WBR, Sergei
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
