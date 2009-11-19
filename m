@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZKSPmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbZKSPnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757002AbZKSPmy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 10:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZKSPmx
+	id S1757087AbZKSPnz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbZKSPny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 10:42:53 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:52264 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZKSPmw (ORCPT
+	Thu, 19 Nov 2009 10:43:54 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:49955 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755865AbZKSPnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 10:42:52 -0500
+	Thu, 19 Nov 2009 10:43:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=e01WtwqL/aosCuVJ5B7nRKLpkh23LitzmdaHsglRN8JhLyBh0zaRxBq0YuX3Qzq0Bl
-         mKw2yuxNug/tvE/c9/IJ+o7O6SnWiyitCJXs+uk0iXFYiXoxNeHLeIVASPTsWtjB7H1q
-         4uCsmMeJ+lv5XiAqJaIyY1DZ4+PV6aw1YG1zU=
-Message-ID: <4B056791.5090002@gmail.com>
-Date: Thu, 19 Nov 2009 16:43:13 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=i/K6twJpGFDvW3I6hhshfIdyMEebdiVt2koETaG6wfz9Py2oetfixnHjB8gSZ9u1Qa
+         EMAVQBUqXc/9cGeCBMbYroxfKbaDqkCj5dY5UdtmZ/IBxKJRrIQpGD77ZfQCcmLm8hVm
+         PeAccDe3dvSCmNTQ+qchcLXyW6UCh6LnYxoVI=
+Date: Thu, 19 Nov 2009 16:43:56 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 3/7 v6] perf/core: Add a callback to perf events
+Message-ID: <20091119154349.GA4967@nowhere>
+References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <1257694141-5670-4-git-send-email-fweisbec@gmail.com> <1258457333.7816.186.camel@laptop> <20091118001815.GA8187@nowhere> <1258536669.3918.99.camel@laptop>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits external
- to a process (v7)
-References: <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com> <4AF84E2F.3010305@gmail.com> <20091109173654.GA8809@redhat.com> <4B040A03.2020508@gmail.com> <20091118231532.GA13039@redhat.com>
-In-Reply-To: <20091118231532.GA13039@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258536669.3918.99.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19/2009 12:15 AM, Oleg Nesterov wrote:
-> On 11/18, Jiri Slaby wrote:
->>
->> On the last point: I added explicit ACCESS_ONCE all over there. If you
->> don't like I will trash it.
+On Wed, Nov 18, 2009 at 10:31:09AM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-11-18 at 01:18 +0100, Frederic Weisbecker wrote:
+> > On Tue, Nov 17, 2009 at 12:28:53PM +0100, Peter Zijlstra wrote:
+> > > On Sun, 2009-11-08 at 16:28 +0100, Frederic Weisbecker wrote:
+> > > > A simple callback in a perf event can be used for multiple purposes.
+> > > > For example it is useful for triggered based events like hardware
+> > > > breakpoints that need a callback to dispatch a triggered breakpoint
+> > > > event.
+> > > > 
+> > > > v2: Simplify a bit the callback attribution as suggested by Paul
+> > > >     Mackerras
+> > > 
+> > > Yuck! So we add an opaque callback without semantics nor usage.
+> > 
+> > 
+> > Yeah, this is intended for events that need to be able to trigger
+> > events to different channels. In the case of hw-breakpoints, it's
+> > either perf buffer, ptrace, etc...
+> > 
+> > Should I add some comments about it?
 > 
-> Just curious, why?
+> At the very least.. describe its semantics and preferably rename the
+> thing.
+
+
+May be "event_triggered"?
+
+ 
+> Currently I've no clue what it does and why, your description above
+> about multiple channels does not at all help me understand how this
+> function pointer is used to make that happen.
 > 
-> I mean, do you have any example of the "bad" behaviour which is
-> fixed by ACCESS_ONCE() ?
 
-Hi,
 
-no, I haven't seen any errors caused by that yet. I added those in the
-"just in case compiler starts to do weird things" manner.
+We need it for hardware breakpoints because if we register a breakpoint
+for perf syscall use, we need to dispatch the event to perf. But if we
+register it for ptrace, or any in-kernel uses, we need to dispatch the
+event somewhere else and then we need another callback.
 
->> The only remaining weird user is in
->> kernel/acct.c:
->>         /*
->>          * Accounting records are not subject to resource limits.
->>          */
->>         flim = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
->>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = RLIM_INFINITY;
->>         file->f_op->write(file, (char *)&ac,
->>                                sizeof(acct_t), &file->f_pos);
->>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
->>
->> It means that threads of the process with PACCT caps have unlimited file
->> size for a short while. If there is setrlimit in between, it gets wiped
->> out as well.
-> 
-> This is called when the whole thread-group exits, there are no
-> live threads except current.
-
-Not really, it is called from umount, sys_acct and other paths.
-
-> At least, given that do_acct_process() does override_creds(), an
-> ordinary user can't fool the accounting.
-
-Agreed. That path can be executed only by a user with (at least) PACCT
-or SYS_ADMIN caps. Hopefully.
-
-Thanks.
