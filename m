@@ -1,151 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbZKSRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZKSRcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754942AbZKSRdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbZKSRdQ
+	id S1754271AbZKSRcQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZKSRcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:33:16 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:54923 "EHLO relay.sgi.com"
+	Thu, 19 Nov 2009 12:32:06 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:54929 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753314AbZKSRcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:32:02 -0500
+	id S1753253AbZKSRcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:32:04 -0500
 From: Robin Holt <holt@sgi.com>
-Message-Id: <20091119173207.277928000@alcatraz.americas.sgi.com>
+Message-Id: <20091119173207.945847000@alcatraz.americas.sgi.com>
 User-Agent: quilt/0.47-1
-Date: Thu, 19 Nov 2009 11:32:01 -0600
+Date: Thu, 19 Nov 2009 11:32:02 -0600
 To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de
 Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [patch 4/8] X86: UV - Implement a gru_read_gpa kernel function.
+Subject: [patch 5/8] x86: UV - Update XPC to handle updated BIOS interface.
 References: <20091119173157.337874000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=gru_read_gpa
+Content-Disposition: inline; filename=xpc_uv_bios_changes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The BIOS has decided to store a pointer to the partition reserved page
-in a scratch MMR.  The GRU is only able to read an MMR using a vload
-instruction.  The gru_read_gpa() function will implemented.
+The UV BIOS has moved the location of some of their pointers to the
+"partition reserved page" from memory into a uv hub MMR.  The GRU does
+not support bcopy operations from MMR space so we need to special case
+the MMR addresses using VLOAD operations.
+
+Additionally, the BIOS call for registering a message queue watchlist
+has removed the 'blade' value and eliminated the structure that was
+being passed in.  This is also reflected in this patch.
 
 To: Ingo Molnar <mingo@elte.hu>
 To: tglx@linutronix.de
 Signed-off-by: Robin Holt <holt@sgi.com>
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-Cc: linux-kernel@vger.kernel.org
+Cc: Jack Steiner <steiner@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
 
 ---
- drivers/misc/sgi-gru/gru_instructions.h |   13 +++++++++++++
- drivers/misc/sgi-gru/grukservices.c     |   23 +++++++++++++++++++++++
- drivers/misc/sgi-gru/grukservices.h     |   14 ++++++++++++++
- drivers/misc/sgi-gru/gruprocfs.c        |    1 +
- drivers/misc/sgi-gru/grutables.h        |    1 +
- 5 files changed, 52 insertions(+)
-Index: linux-x86/drivers/misc/sgi-gru/gru_instructions.h
+
+ arch/x86/include/asm/uv/bios.h      |   11 +----------
+ arch/x86/kernel/bios_uv.c           |    8 ++------
+ drivers/misc/sgi-xp/xp_uv.c         |   23 +++++++++++++++++++++++
+ drivers/misc/sgi-xp/xpc_partition.c |   13 +++++++++----
+ drivers/misc/sgi-xp/xpc_uv.c        |   27 +++++++++++++++------------
+ 5 files changed, 50 insertions(+), 32 deletions(-)
+Index: linux-x86/arch/x86/include/asm/uv/bios.h
 ===================================================================
---- linux-x86.orig/drivers/misc/sgi-gru/gru_instructions.h	2009-10-17 03:59:22.000000000 -0500
-+++ linux-x86/drivers/misc/sgi-gru/gru_instructions.h	2009-11-18 21:21:31.000000000 -0600
-@@ -340,6 +340,19 @@ static inline void gru_start_instruction
-  *     	- nelem and stride are in elements
-  *     	- tri0/tri1 is in bytes for the beginning of the data segment.
-  */
-+static inline void gru_vload_phys(void *cb, unsigned long gpa,
-+		unsigned int tri0, int iaa, unsigned long hints)
+--- linux-x86.orig/arch/x86/include/asm/uv/bios.h	2009-10-17 03:59:21.000000000 -0500
++++ linux-x86/arch/x86/include/asm/uv/bios.h	2009-11-18 21:37:58.000000000 -0600
+@@ -76,15 +76,6 @@ union partition_info_u {
+ 	};
+ };
+ 
+-union uv_watchlist_u {
+-	u64	val;
+-	struct {
+-		u64	blade	: 16,
+-			size	: 32,
+-			filler	: 16;
+-	};
+-};
+-
+ enum uv_memprotect {
+ 	UV_MEMPROT_RESTRICT_ACCESS,
+ 	UV_MEMPROT_ALLOW_AMO,
+@@ -100,7 +91,7 @@ extern s64 uv_bios_call_reentrant(enum u
+ 
+ extern s64 uv_bios_get_sn_info(int, int *, long *, long *, long *);
+ extern s64 uv_bios_freq_base(u64, u64 *);
+-extern int uv_bios_mq_watchlist_alloc(int, unsigned long, unsigned int,
++extern int uv_bios_mq_watchlist_alloc(unsigned long, unsigned int,
+ 					unsigned long *);
+ extern int uv_bios_mq_watchlist_free(int, int);
+ extern s64 uv_bios_change_memprotect(u64, u64, enum uv_memprotect);
+Index: linux-x86/arch/x86/kernel/bios_uv.c
+===================================================================
+--- linux-x86.orig/arch/x86/kernel/bios_uv.c	2009-10-17 03:59:21.000000000 -0500
++++ linux-x86/arch/x86/kernel/bios_uv.c	2009-11-18 21:36:45.000000000 -0600
+@@ -101,21 +101,17 @@ s64 uv_bios_get_sn_info(int fc, int *uvt
+ }
+ 
+ int
+-uv_bios_mq_watchlist_alloc(int blade, unsigned long addr, unsigned int mq_size,
++uv_bios_mq_watchlist_alloc(unsigned long addr, unsigned int mq_size,
+ 			   unsigned long *intr_mmr_offset)
+ {
+-	union uv_watchlist_u size_blade;
+ 	u64 watchlist;
+ 	s64 ret;
+ 
+-	size_blade.size = mq_size;
+-	size_blade.blade = blade;
+-
+ 	/*
+ 	 * bios returns watchlist number or negative error number.
+ 	 */
+ 	ret = (int)uv_bios_call_irqsave(UV_BIOS_WATCHLIST_ALLOC, addr,
+-			size_blade.val, (u64)intr_mmr_offset,
++			mq_size, (u64)intr_mmr_offset,
+ 			(u64)&watchlist, 0);
+ 	if (ret < BIOS_STATUS_SUCCESS)
+ 		return ret;
+Index: linux-x86/drivers/misc/sgi-xp/xp_uv.c
+===================================================================
+--- linux-x86.orig/drivers/misc/sgi-xp/xp_uv.c	2009-11-18 21:31:01.000000000 -0600
++++ linux-x86/drivers/misc/sgi-xp/xp_uv.c	2009-11-18 21:31:20.000000000 -0600
+@@ -42,11 +42,34 @@ xp_socket_pa_uv(unsigned long gpa)
+ }
+ 
+ static enum xp_retval
++xp_remote_mmr_read(unsigned long dst_gpa, const unsigned long src_gpa,
++		   size_t len)
 +{
-+	struct gru_instruction *ins = (struct gru_instruction *)cb;
++	int ret;
++	unsigned long *dst_va = __va(uv_gpa_to_soc_phys_ram(dst_gpa));
 +
-+	ins->baddr0 = (long)gpa | ((unsigned long)iaa << 62);
-+	ins->nelem = 1;
-+	ins->tri0 = tri0;
-+	ins->op1_stride = 1;
-+	gru_start_instruction(ins, __opword(OP_VLOAD, 0, XTYPE_DW, iaa, 0,
-+					CB_IMA(hints)));
++	BUG_ON(!uv_gpa_in_mmr_space(src_gpa));
++	BUG_ON(len != 8);
++
++	ret = gru_read_gpa(dst_va, src_gpa);
++	if (ret == 0)
++		return xpSuccess;
++
++	dev_err(xp, "gru_read_gpa() failed, dst_gpa=0x%016lx src_gpa=0x%016lx "
++		"len=%ld\n", dst_gpa, src_gpa, len);
++	return xpGruCopyError;
 +}
 +
- static inline void gru_vload(void *cb, unsigned long mem_addr,
- 		unsigned int tri0, unsigned char xtype, unsigned long nelem,
- 		unsigned long stride, unsigned long hints)
-Index: linux-x86/drivers/misc/sgi-gru/grukservices.c
++
++static enum xp_retval
+ xp_remote_memcpy_uv(unsigned long dst_gpa, const unsigned long src_gpa,
+ 		    size_t len)
+ {
+ 	int ret;
+ 
++	if (uv_gpa_in_mmr_space(src_gpa))
++		return xp_remote_mmr_read(dst_gpa, src_gpa, len);
++
+ 	ret = gru_copy_gpa(dst_gpa, src_gpa, len);
+ 	if (ret == 0)
+ 		return xpSuccess;
+Index: linux-x86/drivers/misc/sgi-xp/xpc_partition.c
 ===================================================================
---- linux-x86.orig/drivers/misc/sgi-gru/grukservices.c	2009-10-17 03:59:22.000000000 -0500
-+++ linux-x86/drivers/misc/sgi-gru/grukservices.c	2009-11-18 21:04:40.000000000 -0600
-@@ -858,6 +858,29 @@ EXPORT_SYMBOL_GPL(gru_get_next_message);
- /* ---------------------- GRU DATA COPY FUNCTIONS ---------------------------*/
+--- linux-x86.orig/drivers/misc/sgi-xp/xpc_partition.c	2009-11-18 21:31:01.000000000 -0600
++++ linux-x86/drivers/misc/sgi-xp/xpc_partition.c	2009-11-18 21:31:20.000000000 -0600
+@@ -18,6 +18,7 @@
+ #include <linux/device.h>
+ #include <linux/hardirq.h>
+ #include "xpc.h"
++#include <asm/uv/uv_hub.h>
  
- /*
-+ * Load a DW from a global GPA. The GPA can be a memory or MMR address.
-+ */
-+int gru_read_gpa(unsigned long *value, unsigned long gpa)
-+{
-+	void *cb;
-+	void *dsr;
-+	int ret, iaa;
+ /* XPC is exiting flag */
+ int xpc_exiting;
+@@ -92,8 +93,12 @@ xpc_get_rsvd_page_pa(int nasid)
+ 			break;
+ 
+ 		/* !!! L1_CACHE_ALIGN() is only a sn2-bte_copy requirement */
+-		if (L1_CACHE_ALIGN(len) > buf_len) {
+-			kfree(buf_base);
++		if (is_shub())
++			len = L1_CACHE_ALIGN(len);
 +
-+	STAT(read_gpa);
-+	if (gru_get_cpu_resources(GRU_NUM_KERNEL_DSR_BYTES, &cb, &dsr))
-+		return MQE_BUG_NO_RESOURCES;
-+	iaa = gpa >> 62;
-+	gru_vload_phys(cb, gpa, gru_get_tri(dsr), iaa, IMA);
-+	ret = gru_wait(cb);
-+	if (ret == CBS_IDLE)
-+		*value = *(unsigned long *)dsr;
-+	gru_free_cpu_resources(cb, dsr);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(gru_read_gpa);
-+
-+
-+/*
-  * Copy a block of data using the GRU resources
-  */
- int gru_copy_gpa(unsigned long dest_gpa, unsigned long src_gpa,
-Index: linux-x86/drivers/misc/sgi-gru/grukservices.h
++		if (len > buf_len) {
++			if (buf_base != NULL)
++				kfree(buf_base);
+ 			buf_len = L1_CACHE_ALIGN(len);
+ 			buf = xpc_kmalloc_cacheline_aligned(buf_len, GFP_KERNEL,
+ 							    &buf_base);
+@@ -105,7 +110,7 @@ xpc_get_rsvd_page_pa(int nasid)
+ 			}
+ 		}
+ 
+-		ret = xp_remote_memcpy(xp_pa(buf), rp_pa, buf_len);
++		ret = xp_remote_memcpy(xp_pa(buf), rp_pa, len);
+ 		if (ret != xpSuccess) {
+ 			dev_dbg(xpc_part, "xp_remote_memcpy failed %d\n", ret);
+ 			break;
+@@ -143,7 +148,7 @@ xpc_setup_rsvd_page(void)
+ 		dev_err(xpc_part, "SAL failed to locate the reserved page\n");
+ 		return -ESRCH;
+ 	}
+-	rp = (struct xpc_rsvd_page *)__va(rp_pa);
++	rp = (struct xpc_rsvd_page *)__va(xp_socket_pa(rp_pa));
+ 
+ 	if (rp->SAL_version < 3) {
+ 		/* SAL_versions < 3 had a SAL_partid defined as a u8 */
+Index: linux-x86/drivers/misc/sgi-xp/xpc_uv.c
 ===================================================================
---- linux-x86.orig/drivers/misc/sgi-gru/grukservices.h	2009-10-17 03:59:22.000000000 -0500
-+++ linux-x86/drivers/misc/sgi-gru/grukservices.h	2009-11-18 21:03:14.000000000 -0600
-@@ -131,6 +131,20 @@ extern void *gru_get_next_message(struct
+--- linux-x86.orig/drivers/misc/sgi-xp/xpc_uv.c	2009-11-18 21:31:01.000000000 -0600
++++ linux-x86/drivers/misc/sgi-xp/xpc_uv.c	2009-11-18 21:42:40.000000000 -0600
+@@ -157,22 +157,24 @@ xpc_gru_mq_watchlist_alloc_uv(struct xpc
+ {
+ 	int ret;
  
- 
- /*
-+ * Read a GRU global GPA. Source can be located in a remote partition.
-+ *
-+ *    Input:
-+ *    	value		memory address where MMR value is returned
-+ *    	gpa		source numalink physical address of GPA
-+ *
-+ *    Output:
-+ *	0		OK
-+ *	>0		error
-+ */
-+int gru_read_gpa(unsigned long *value, unsigned long gpa);
+-#if defined CONFIG_X86_64
+-	ret = uv_bios_mq_watchlist_alloc(mq->mmr_blade, uv_gpa(mq->address),
+-					 mq->order, &mq->mmr_offset);
+-	if (ret < 0) {
+-		dev_err(xpc_part, "uv_bios_mq_watchlist_alloc() failed, "
+-			"ret=%d\n", ret);
+-		return ret;
+-	}
+-#elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
+-	ret = sn_mq_watchlist_alloc(mq->mmr_blade, (void *)uv_gpa(mq->address),
++#if defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
++	int mmr_pnode = uv_blade_to_pnode(mq->mmr_blade);
 +
-+
-+/*
-  * Copy data using the GRU. Source or destination can be located in a remote
-  * partition.
-  *
-Index: linux-x86/drivers/misc/sgi-gru/gruprocfs.c
-===================================================================
---- linux-x86.orig/drivers/misc/sgi-gru/gruprocfs.c	2009-11-18 13:45:38.000000000 -0600
-+++ linux-x86/drivers/misc/sgi-gru/gruprocfs.c	2009-11-18 21:11:34.000000000 -0600
-@@ -98,6 +98,7 @@ static int statistics_show(struct seq_fi
- 	printstat(s, flush_tlb_gru_tgh);
- 	printstat(s, flush_tlb_gru_zero_asid);
- 	printstat(s, copy_gpa);
-+	printstat(s, read_gpa);
- 	printstat(s, mesq_receive);
- 	printstat(s, mesq_receive_none);
- 	printstat(s, mesq_send);
-Index: linux-x86/drivers/misc/sgi-gru/grutables.h
-===================================================================
---- linux-x86.orig/drivers/misc/sgi-gru/grutables.h	2009-10-17 03:59:22.000000000 -0500
-+++ linux-x86/drivers/misc/sgi-gru/grutables.h	2009-11-18 21:07:58.000000000 -0600
-@@ -224,6 +224,7 @@ struct gru_stats_s {
- 	atomic_long_t flush_tlb_gru_zero_asid;
++	ret = sn_mq_watchlist_alloc(mmr_pnode, (void *)uv_gpa(mq->address),
+ 				    mq->order, &mq->mmr_offset);
+ 	if (ret < 0) {
+ 		dev_err(xpc_part, "sn_mq_watchlist_alloc() failed, ret=%d\n",
+ 			ret);
+ 		return -EBUSY;
+ 	}
++#elif defined CONFIG_X86_64
++	ret = uv_bios_mq_watchlist_alloc(uv_gpa(mq->address),
++					 mq->order, &mq->mmr_offset);
++	if (ret < 0) {
++		dev_err(xpc_part, "uv_bios_mq_watchlist_alloc() failed, "
++			"ret=%d\n", ret);
++		return ret;
++	}
+ #else
+ 	#error not a supported configuration
+ #endif
+@@ -185,12 +187,13 @@ static void
+ xpc_gru_mq_watchlist_free_uv(struct xpc_gru_mq_uv *mq)
+ {
+ 	int ret;
++	int mmr_pnode = uv_blade_to_pnode(mq->mmr_blade);
  
- 	atomic_long_t copy_gpa;
-+	atomic_long_t read_gpa;
- 
- 	atomic_long_t mesq_receive;
- 	atomic_long_t mesq_receive_none;
+ #if defined CONFIG_X86_64
+-	ret = uv_bios_mq_watchlist_free(mq->mmr_blade, mq->watchlist_num);
++	ret = uv_bios_mq_watchlist_free(mmr_pnode, mq->watchlist_num);
+ 	BUG_ON(ret != BIOS_STATUS_SUCCESS);
+ #elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
+-	ret = sn_mq_watchlist_free(mq->mmr_blade, mq->watchlist_num);
++	ret = sn_mq_watchlist_free(mmr_pnode, mq->watchlist_num);
+ 	BUG_ON(ret != SALRET_OK);
+ #else
+ 	#error not a supported configuration
 
