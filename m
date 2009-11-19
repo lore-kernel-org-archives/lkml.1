@@ -1,32 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZKSPg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZKSPkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZKSPg7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 10:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbZKSPg6
+	id S1756918AbZKSPkK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbZKSPkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 10:36:58 -0500
-Received: from web82003.mail.mud.yahoo.com ([66.163.178.247]:44573 "HELO
-	web82003.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753287AbZKSPg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 10:36:57 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=il6ncK45qAIfLbCs96NbHWxMU2IZ0BAaN1wgHfPbFwpxEJUNwtYcQnT0HfK/vKcoOgRQ2wMGSsby/Npxk2S0Am1r2oTi+bGbsfOIM3jkZAMEIIJbkTu5qNiyjn3D/nnrTQwH0RQGr3QjpczGDV09V7r54Ervi27mw6CoUtf9f9c=;
-Message-ID: <703300.223.qm@web82003.mail.mud.yahoo.com>
-X-YMail-OSG: 9Dg8CV8VM1kNHDdgfUbqeY4gAOox4nfVxUzlafSoZY7c3iXGHzzRMUFT_ekKvlemphObdc4quE0iS8_kuFjrO1U1GHCZR0nHPvB6rNQ4nLkcTnBAfv_vLHguxTR1467qsukrphJO_S7rvpgKaZG_zq4B8RLGKfalDB7RDKm0jfIMWjvln8Qx4y1PaEr9Ej5nckFy4OiEW0cEhnhe8XX4p0El2QH4X8FbMAtXdMvhou6p2C.V3UkSGK2yZ6w9yEOotuhYdoWV50mlSURQXWGq90bgpD0QcowPB6k.wfajVvKZIZvqgWd74w3dchh8qLKkn06hOBepabhBETxrEPwMmFHWcvwH8kTrJu5xoiHpjhGdhLqGf5.FQCAVLZQTcZpTpSds3lta9cxUf41SbCTKgeLvdTp84jYrXimnUVkpoiEhohPbZ6Ks8L34PWb01xAxL_EEUEAuz2AuvvWKStONb8y4h8LfhBRAxZz3kQLbtohzTay6SB94uH0MWw7vxH5uH1dLr1ZBRqmFMnRumhEoZPbi9e_cQXGCmrC2ewOqbtWRo8_NObMjOgtFFZUyGSqGUYbE9aV4AkBfnTS6djCcpg5oEoaPsayGMXKXGpes7rvsnPLwoMKh1eqRZ4LP8J9IbUL4bI5HVHUsuDZKQErOIyUuw3KAP_Mmo5Xqo6OG.2pf6vQK0m0h_s36TyBEzg--
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
-Date: Thu, 19 Nov 2009 07:37:03 -0800 (PST)
-From: Toyota End Of Year Promo <charlott-carter@sbcglobal.net>
-Reply-To: toyota1@discuz.org
-Subject: Your email ID has won 750.000.00 in this Year Toyota Promo.
-To: undisclosed recipients:;
+	Thu, 19 Nov 2009 10:40:09 -0500
+Received: from www.tglx.de ([62.245.132.106]:51209 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbZKSPkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 10:40:08 -0500
+Date: Thu, 19 Nov 2009 16:37:52 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+ <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Nov 2009, Thomas Gleixner wrote:
 
-Name:....and Address:.
+Can the GCC folks please shed some light on this:
+
+standard function start:
+
+	 push	%ebp
+	 mov	%esp, %ebp
+	 ....
+	 call   mcount
+
+modified function start on a handful of functions only seen with gcc
+4.4.x on x86 32 bit:
+
+	push   %edi
+	lea    0x8(%esp),%edi
+	and    $0xfffffff0,%esp
+	pushl  -0x4(%edi)
+	push   %ebp
+	mov    %esp,%ebp
+	...
+	call   mcount
+
+This modification leads to a hard to solve problem in the kernel
+function graph tracer which assumes that the stack looks like:
+
+       return address
+       saved  ebp
+
+With the modified function start sequence this is not longer true and
+the manipulation of the return address on the stack fails silently.
+
+Neither gcc 4.3 nor gcc 3.4 are generating such function frames, so it
+looks like a gcc 4.4.x feature.
+
+There is no real obvious reason why the edi magic needs to be done
+_before_ 
+
+	push   %ebp
+	mov    %esp,%ebp
+
+Thanks,
+
+	tglx
