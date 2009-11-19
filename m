@@ -1,98 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZKST2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZKSTiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbZKST2D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:28:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZKST2D
+	id S1754079AbZKSTiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZKSTiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:28:03 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48168 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbZKST2B (ORCPT
+	Thu, 19 Nov 2009 14:38:16 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:59850 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbZKSTiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:28:01 -0500
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-In-Reply-To: <4B05982B.6060200@caviumnetworks.com>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
-	 <20091119072040.GA23579@elte.hu>
-	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
-	 <1258653562.22249.682.camel@gandalf.stny.rr.com>
-	 <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>
-	 <4B058CCD.8050605@redhat.com>
-	 <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
-	 <4B05982B.6060200@caviumnetworks.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 19 Nov 2009 14:28:06 -0500
-Message-Id: <1258658886.22249.874.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Thu, 19 Nov 2009 14:38:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=AeIZIUIJAJF3DcIixmRljsFDCTTIxKMROO41UoaLsSYVkZ3uEDeODjiShLN2t1CGQI
+         i0OuTkd5BnmGorS1pNYcvhu0wjtwjwyx9SBbtDZ9C+GPOxMzFVKopQTsdkfrl3/s8dEO
+         nNTNOmitueAxan4LjssDJyjacdotTPRzxC5g4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 20:31:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <4B0590A2.9050306@ru.mvista.com> <200911192003.09675.bzolnier@gmail.com>
+In-Reply-To: <200911192003.09675.bzolnier@gmail.com>
+MIME-Version: 1.0
+Message-Id: <200911192031.31613.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-19 at 11:10 -0800, David Daney wrote:
-> Linus Torvalds wrote:
-
-> For the MIPS port of GCC and Linux I recently added the 
-> -mmcount-ra-address switch.  It causes the location of the return 
-> address (on the stack) to be passed to mcount in a scratch register.
-
-Hehe, scratch register on i686 ;-)
-
-i686 has no extra regs. It just has:
-
-%eax, %ebx, %ecx, %edx - as the general purpose regs
-%esp - stack
-%ebp - frame pointer
-%edi, %esi - counter regs
-
-That's just 8 regs, and half of those are special.
-
+On Thursday 19 November 2009 20:03:09 Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 19 November 2009 19:38:26 Sergei Shtylyov wrote:
+> > Alan Cox wrote:
+> > 
+> > >>Fixed where?  I posted the patch as soon as I noticed the problem.
+> > 
+> > > Its not posted because unlike you I don't post patches as soon as I
+> > > notice them. I test them first. Which is why for example I discovered the
+> > > bug in the drivers/ide one. Did you check the vendor driver and then
+> > > stick 40 and 80 wire cables on the system to check the bits on a 3x2N ?
+> > 
+> > > No I didn't think so. You see if you had you'd have discovered something
+> > > else. You'd have discovered another bug in the old IDE one. The driver
+> > > code for these chips isn't reliable and doesn't work at all in some cases.
+> > 
+> > >>Told me about it?  
+> > 
+> > > Yes - or do you only write replies not read them ?
+> > 
+> > > NAK - the patch is inadequate.
+> > 
+> >     No, it was. And yours isn't quite.
+> > 
+> > > The procedure in the vendor driver does
+> > > appear to work on the newer chips however.
+> > 
+> > > Probably worth double checking
+> > > the HPT37x and seeing if it needs the same debounce delays.
+> > 
+> >     All vendor drivers I have do call StallExec(10) when detecting cable 
+> > type, so need to add the delay to pata_hpt37x too.
 > 
-> Perhaps something similar could be done for x86.  It would make this 
-> patching of the return location more reliable at the expense of more 
-> code at the mcount invocation site.
-
-I rather not put any more code in the call site.
-
+> Given this I take back my ACK to Alan's patch.
 > 
-> For the MIPS case the code size doesn't increase, as it is done in the 
-> delay slot of the call instruction, which would otherwise be a nop.
+> >     I'd suggest to address the delay by another, separate patch to both 
+> > pata_hpt37x and pata_hpt3x2n drivers, and accept Bart's original patch for 
+> > bit reversing...
+> 
+> Yes.
 
-I showed in a previous post what the best would be for x86. That is just
-calling mcount at the very beginning of the function. The return address
-is automatically pushed onto the stack.
+Jeff, this is incremental to my previous fix.
 
-Perhaps we could create another profiler? Instead of calling mcount,
-call a new function: __fentry__ or something. Have it activated with
-another switch. This could make the performance of the function tracer
-even better without all these exceptions.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] pata_hpt{37x,3x2n}: add debounce delay to cable detection methods
 
-	<function>:
-		call __fentry__
-		[...]
+Alan Cox reported that cable detection sometimes works unreliably
+for HPT3xxN and that the issue is fixed by adding debounce delay
+as used by the vendor driver. 
 
-	
--- Steve
+Sergei Shtylyov also noticed that debounce delay is needed for all
+HPT37x and HPT3xxN chipsets according to vendor drivers.
 
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+In comparison to original patch the conversion from PCI access to
+io has been dropped as it is not required for the bugfix and makes
+patch easier for back-porting into -stable kernels.
+
+ drivers/ata/pata_hpt37x.c  |    3 +++
+ drivers/ata/pata_hpt3x2n.c |    3 +++
+ 2 files changed, 6 insertions(+)
+
+Index: b/drivers/ata/pata_hpt37x.c
+===================================================================
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -324,6 +324,9 @@ static int hpt37x_pre_reset(struct ata_l
+ 
+ 	pci_read_config_byte(pdev, 0x5B, &scr2);
+ 	pci_write_config_byte(pdev, 0x5B, scr2 & ~0x01);
++
++	udelay(10); /* debounce */
++
+ 	/* Cable register now active */
+ 	pci_read_config_byte(pdev, 0x5A, &ata66);
+ 	/* Restore state */
+Index: b/drivers/ata/pata_hpt3x2n.c
+===================================================================
+--- a/drivers/ata/pata_hpt3x2n.c
++++ b/drivers/ata/pata_hpt3x2n.c
+@@ -128,6 +128,9 @@ static int hpt3x2n_cable_detect(struct a
+ 
+ 	pci_read_config_byte(pdev, 0x5B, &scr2);
+ 	pci_write_config_byte(pdev, 0x5B, scr2 & ~0x01);
++
++	udelay(10); /* debounce */
++
+ 	/* Cable register now active */
+ 	pci_read_config_byte(pdev, 0x5A, &ata66);
+ 	/* Restore state */
 
