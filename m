@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZKSSEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZKSRU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbZKSSEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 13:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZKSSEv
+	id S1753933AbZKSRU5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZKSRU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 13:04:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23081 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 12:20:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34993 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751901AbZKSSEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 13:04:50 -0500
+	id S1752877AbZKSRUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:20:54 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 03/28] SLOW_WORK: Add support for cancellation of slow work
+Subject: [PATCH 04/28] SLOW_WORK: Add delayed_slow_work support
 To: linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
        linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, steved@redhat.com
-Date: Thu, 19 Nov 2009 17:20:49 +0000
-Message-ID: <20091119172049.1679.58503.stgit@warthog.procyon.org.uk>
+Date: Thu, 19 Nov 2009 17:20:54 +0000
+Message-ID: <20091119172054.1679.3238.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20091119172033.1679.87046.stgit@warthog.procyon.org.uk>
 References: <20091119172033.1679.87046.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -32,196 +32,279 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jens Axboe <jens.axboe@oracle.com>
 
-Add support for cancellation of queued slow work and delayed slow work items.
-The cancellation functions will wait for items that are pending or undergoing
-execution to be discarded by the slow work facility.
-
-Attempting to enqueue work that is in the process of being cancelled will
-result in ECANCELED.
+This adds support for starting slow work with a delay, similar
+to the functionality we have for workqueues.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- Documentation/slow-work.txt |   12 ++++++
- include/linux/slow-work.h   |    2 +
- kernel/slow-work.c          |   81 ++++++++++++++++++++++++++++++++++++++++---
- 3 files changed, 88 insertions(+), 7 deletions(-)
+ Documentation/slow-work.txt |   16 +++++
+ include/linux/slow-work.h   |   29 ++++++++++
+ kernel/slow-work.c          |  129 ++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 171 insertions(+), 3 deletions(-)
 
 diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
-index c655c51..2e384bd 100644
+index 2e384bd..a9d1b0f 100644
 --- a/Documentation/slow-work.txt
 +++ b/Documentation/slow-work.txt
-@@ -108,7 +108,17 @@ on the item, 0 otherwise.
+@@ -41,6 +41,13 @@ expand files, provided the time taken to do so isn't too long.
+ Operations of both types may sleep during execution, thus tying up the thread
+ loaned to it.
+ 
++A further class of work item is available, based on the slow work item class:
++
++ (*) Delayed slow work items.
++
++These are slow work items that have a timer to defer queueing of the item for
++a while.
++
+ 
+ THREAD-TO-CLASS ALLOCATION
+ --------------------------
+@@ -95,6 +102,10 @@ Slow work items may then be set up by:
+ 
+      or:
+ 
++	delayed_slow_work_init(&myitem, &myitem_ops);
++
++     or:
++
+ 	vslow_work_init(&myitem, &myitem_ops);
+ 
+      depending on its class.
+@@ -104,7 +115,9 @@ A suitably set up work item can then be enqueued for processing:
+ 	int ret = slow_work_enqueue(&myitem);
+ 
+ This will return a -ve error if the thread pool is unable to gain a reference
+-on the item, 0 otherwise.
++on the item, 0 otherwise, or (for delayed work):
++
++	int ret = delayed_slow_work_enqueue(&myitem, my_jiffy_delay);
  
  
  The items are reference counted, so there ought to be no need for a flush
--operation.  When all a module's slow work items have been processed, and the
-+operation.  But as the reference counting is optional, means to cancel
-+existing work items are also included:
-+
-+	cancel_slow_work(&myitem);
-+
-+can be used to cancel pending work.  The above cancel function waits for
-+existing work to have been executed (or prevent execution of them, depending
-+on timing).
-+
-+
-+When all a module's slow work items have been processed, and the
- module has no further interest in the facility, it should unregister its
- interest:
+@@ -112,6 +125,7 @@ operation.  But as the reference counting is optional, means to cancel
+ existing work items are also included:
  
+ 	cancel_slow_work(&myitem);
++	cancel_delayed_slow_work(&myitem);
+ 
+ can be used to cancel pending work.  The above cancel function waits for
+ existing work to have been executed (or prevent execution of them, depending
 diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
-index 9adb2b3..eef2018 100644
+index eef2018..b245b9a 100644
 --- a/include/linux/slow-work.h
 +++ b/include/linux/slow-work.h
-@@ -51,6 +51,7 @@ struct slow_work {
- #define SLOW_WORK_EXECUTING	1	/* item currently executing */
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_SLOW_WORK
+ 
+ #include <linux/sysctl.h>
++#include <linux/timer.h>
+ 
+ struct slow_work;
+ 
+@@ -52,10 +53,16 @@ struct slow_work {
  #define SLOW_WORK_ENQ_DEFERRED	2	/* item enqueue deferred */
  #define SLOW_WORK_VERY_SLOW	3	/* item is very slow */
-+#define SLOW_WORK_CANCELLING	4	/* item is being cancelled, don't enqueue */
+ #define SLOW_WORK_CANCELLING	4	/* item is being cancelled, don't enqueue */
++#define SLOW_WORK_DELAYED	5	/* item is struct delayed_slow_work with active timer */
  	const struct slow_work_ops *ops; /* operations table for this item */
  	struct list_head	link;	/* link in queue */
  };
-@@ -88,6 +89,7 @@ static inline void vslow_work_init(struct slow_work *work,
+ 
++struct delayed_slow_work {
++	struct slow_work	work;
++	struct timer_list	timer;
++};
++
+ /**
+  * slow_work_init - Initialise a slow work item
+  * @work: The work item to initialise
+@@ -72,6 +79,20 @@ static inline void slow_work_init(struct slow_work *work,
  }
  
- extern int slow_work_enqueue(struct slow_work *work);
-+extern void slow_work_cancel(struct slow_work *work);
- extern int slow_work_register_user(struct module *owner);
- extern void slow_work_unregister_user(struct module *owner);
- 
-diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index fccf421..671cc43 100644
---- a/kernel/slow-work.c
-+++ b/kernel/slow-work.c
-@@ -236,12 +236,17 @@ static bool slow_work_execute(int id)
- 	if (!test_and_clear_bit(SLOW_WORK_PENDING, &work->flags))
- 		BUG();
- 
--	work->ops->execute(work);
-+	/* don't execute if the work is in the process of being cancelled */
-+	if (!test_bit(SLOW_WORK_CANCELLING, &work->flags))
-+		work->ops->execute(work);
- 
- 	if (very_slow)
- 		atomic_dec(&vslow_work_executing_count);
- 	clear_bit_unlock(SLOW_WORK_EXECUTING, &work->flags);
- 
-+	/* wake up anyone waiting for this work to be complete */
-+	wake_up_bit(&work->flags, SLOW_WORK_EXECUTING);
-+
- 	/* if someone tried to enqueue the item whilst we were executing it,
- 	 * then it'll be left unenqueued to avoid multiple threads trying to
- 	 * execute it simultaneously
-@@ -314,11 +319,16 @@ auto_requeue:
-  * allowed to pick items to execute.  This ensures that very slow items won't
-  * overly block ones that are just ordinarily slow.
-  *
-- * Returns 0 if successful, -EAGAIN if not.
-+ * Returns 0 if successful, -EAGAIN if not (or -ECANCELED if cancelled work is
-+ * attempted queued)
-  */
- int slow_work_enqueue(struct slow_work *work)
- {
- 	unsigned long flags;
-+	int ret;
-+
-+	if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
-+		return -ECANCELED;
- 
- 	BUG_ON(slow_work_user_count <= 0);
- 	BUG_ON(!work);
-@@ -335,6 +345,9 @@ int slow_work_enqueue(struct slow_work *work)
- 	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
- 		spin_lock_irqsave(&slow_work_queue_lock, flags);
- 
-+		if (unlikely(test_bit(SLOW_WORK_CANCELLING, &work->flags)))
-+			goto cancelled;
-+
- 		/* we promise that we will not attempt to execute the work
- 		 * function in more than one thread simultaneously
- 		 *
-@@ -352,8 +365,9 @@ int slow_work_enqueue(struct slow_work *work)
- 		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
- 			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
- 		} else {
--			if (slow_work_get_ref(work) < 0)
--				goto cant_get_ref;
-+			ret = slow_work_get_ref(work);
-+			if (ret < 0)
-+				goto failed;
- 			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
- 				list_add_tail(&work->link, &vslow_work_queue);
- 			else
-@@ -365,12 +379,67 @@ int slow_work_enqueue(struct slow_work *work)
- 	}
- 	return 0;
- 
--cant_get_ref:
-+cancelled:
-+	ret = -ECANCELED;
-+failed:
- 	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
--	return -EAGAIN;
-+	return ret;
- }
- EXPORT_SYMBOL(slow_work_enqueue);
- 
-+static int slow_work_wait(void *word)
+ /**
++ * slow_work_init - Initialise a delayed slow work item
++ * @work: The work item to initialise
++ * @ops: The operations to use to handle the slow work item
++ *
++ * Initialise a delayed slow work item.
++ */
++static inline void delayed_slow_work_init(struct delayed_slow_work *dwork,
++					  const struct slow_work_ops *ops)
 +{
-+	schedule();
-+	return 0;
++	init_timer(&dwork->timer);
++	slow_work_init(&dwork->work, ops);
 +}
 +
 +/**
-+ * slow_work_cancel - Cancel a slow work item
-+ * @work: The work item to cancel
-+ *
-+ * This function will cancel a previously enqueued work item. If we cannot
-+ * cancel the work item, it is guarenteed to have run when this function
-+ * returns.
-+ */
-+void slow_work_cancel(struct slow_work *work)
+  * vslow_work_init - Initialise a very slow work item
+  * @work: The work item to initialise
+  * @ops: The operations to use to handle the slow work item
+@@ -93,6 +114,14 @@ extern void slow_work_cancel(struct slow_work *work);
+ extern int slow_work_register_user(struct module *owner);
+ extern void slow_work_unregister_user(struct module *owner);
+ 
++extern int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
++				     unsigned long delay);
++
++static inline void delayed_slow_work_cancel(struct delayed_slow_work *dwork)
 +{
-+	bool wait = true, put = false;
++	slow_work_cancel(&dwork->work);
++}
 +
-+	set_bit(SLOW_WORK_CANCELLING, &work->flags);
+ #ifdef CONFIG_SYSCTL
+ extern ctl_table slow_work_sysctls[];
+ #endif
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 671cc43..f67e1da 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -406,11 +406,40 @@ void slow_work_cancel(struct slow_work *work)
+ 	bool wait = true, put = false;
+ 
+ 	set_bit(SLOW_WORK_CANCELLING, &work->flags);
++	smp_mb();
 +
-+	spin_lock_irq(&slow_work_queue_lock);
++	/* if the work item is a delayed work item with an active timer, we
++	 * need to wait for the timer to finish _before_ getting the spinlock,
++	 * lest we deadlock against the timer routine
++	 *
++	 * the timer routine will leave DELAYED set if it notices the
++	 * CANCELLING flag in time
++	 */
++	if (test_bit(SLOW_WORK_DELAYED, &work->flags)) {
++		struct delayed_slow_work *dwork =
++			container_of(work, struct delayed_slow_work, work);
++		del_timer_sync(&dwork->timer);
++	}
+ 
+ 	spin_lock_irq(&slow_work_queue_lock);
+ 
+-	if (test_bit(SLOW_WORK_PENDING, &work->flags) &&
+-	    !list_empty(&work->link)) {
++	if (test_bit(SLOW_WORK_DELAYED, &work->flags)) {
++		/* the timer routine aborted or never happened, so we are left
++		 * holding the timer's reference on the item and should just
++		 * drop the pending flag and wait for any ongoing execution to
++		 * finish */
++		struct delayed_slow_work *dwork =
++			container_of(work, struct delayed_slow_work, work);
 +
-+	if (test_bit(SLOW_WORK_PENDING, &work->flags) &&
-+	    !list_empty(&work->link)) {
-+		/* the link in the pending queue holds a reference on the item
-+		 * that we will need to release */
-+		list_del_init(&work->link);
-+		wait = false;
++		BUG_ON(timer_pending(&dwork->timer));
++		BUG_ON(!list_empty(&work->link));
++
++		clear_bit(SLOW_WORK_DELAYED, &work->flags);
 +		put = true;
 +		clear_bit(SLOW_WORK_PENDING, &work->flags);
 +
-+	} else if (test_and_clear_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags)) {
-+		/* the executor is holding our only reference on the item, so
-+		 * we merely need to wait for it to finish executing */
-+		clear_bit(SLOW_WORK_PENDING, &work->flags);
++	} else if (test_bit(SLOW_WORK_PENDING, &work->flags) &&
++		   !list_empty(&work->link)) {
+ 		/* the link in the pending queue holds a reference on the item
+ 		 * that we will need to release */
+ 		list_del_init(&work->link);
+@@ -441,6 +470,102 @@ void slow_work_cancel(struct slow_work *work)
+ EXPORT_SYMBOL(slow_work_cancel);
+ 
+ /*
++ * Handle expiry of the delay timer, indicating that a delayed slow work item
++ * should now be queued if not cancelled
++ */
++static void delayed_slow_work_timer(unsigned long data)
++{
++	struct slow_work *work = (struct slow_work *) data;
++	unsigned long flags;
++	bool queued = false, put = false;
++
++	spin_lock_irqsave(&slow_work_queue_lock, flags);
++	if (likely(!test_bit(SLOW_WORK_CANCELLING, &work->flags))) {
++		clear_bit(SLOW_WORK_DELAYED, &work->flags);
++
++		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
++			/* we discard the reference the timer was holding in
++			 * favour of the one the executor holds */
++			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
++			put = true;
++		} else {
++			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
++				list_add_tail(&work->link, &vslow_work_queue);
++			else
++				list_add_tail(&work->link, &slow_work_queue);
++			queued = true;
++		}
 +	}
 +
-+	spin_unlock_irq(&slow_work_queue_lock);
-+
-+	/* the EXECUTING flag is set by the executor whilst the spinlock is set
-+	 * and before the item is dequeued - so assuming the above doesn't
-+	 * actually dequeue it, simply waiting for the EXECUTING flag to be
-+	 * released here should be sufficient */
-+	if (wait)
-+		wait_on_bit(&work->flags, SLOW_WORK_EXECUTING, slow_work_wait,
-+			    TASK_UNINTERRUPTIBLE);
-+
-+	clear_bit(SLOW_WORK_CANCELLING, &work->flags);
++	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
 +	if (put)
 +		slow_work_put_ref(work);
++	if (queued)
++		wake_up(&slow_work_thread_wq);
 +}
-+EXPORT_SYMBOL(slow_work_cancel);
 +
- /*
++/**
++ * delayed_slow_work_enqueue - Schedule a delayed slow work item for processing
++ * @dwork: The delayed work item to queue
++ * @delay: When to start executing the work, in jiffies from now
++ *
++ * This is similar to slow_work_enqueue(), but it adds a delay before the work
++ * is actually queued for processing.
++ *
++ * The item can have delayed processing requested on it whilst it is being
++ * executed.  The delay will begin immediately, and if it expires before the
++ * item finishes executing, the item will be placed back on the queue when it
++ * has done executing.
++ */
++int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
++			      unsigned long delay)
++{
++	struct slow_work *work = &dwork->work;
++	unsigned long flags;
++	int ret;
++
++	if (delay == 0)
++		return slow_work_enqueue(&dwork->work);
++
++	BUG_ON(slow_work_user_count <= 0);
++	BUG_ON(!work);
++	BUG_ON(!work->ops);
++
++	if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
++		return -ECANCELED;
++
++	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
++		spin_lock_irqsave(&slow_work_queue_lock, flags);
++
++		if (test_bit(SLOW_WORK_CANCELLING, &work->flags))
++			goto cancelled;
++
++		/* the timer holds a reference whilst it is pending */
++		ret = work->ops->get_ref(work);
++		if (ret < 0)
++			goto cant_get_ref;
++
++		if (test_and_set_bit(SLOW_WORK_DELAYED, &work->flags))
++			BUG();
++		dwork->timer.expires = jiffies + delay;
++		dwork->timer.data = (unsigned long) work;
++		dwork->timer.function = delayed_slow_work_timer;
++		add_timer(&dwork->timer);
++
++		spin_unlock_irqrestore(&slow_work_queue_lock, flags);
++	}
++
++	return 0;
++
++cancelled:
++	ret = -ECANCELED;
++cant_get_ref:
++	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
++	return ret;
++}
++EXPORT_SYMBOL(delayed_slow_work_enqueue);
++
++/*
   * Schedule a cull of the thread pool at some time in the near future
   */
+ static void slow_work_schedule_cull(void)
 
