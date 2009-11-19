@@ -1,92 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZKSUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZKSUsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbZKSUyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 15:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZKSUyV
+	id S1755260AbZKSUsv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 15:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZKSUsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 15:54:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45736 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083AbZKSUyV (ORCPT
+	Thu, 19 Nov 2009 15:48:50 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40504 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbZKSUsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 15:54:21 -0500
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Thu, 19 Nov 2009 12:48:35 -0800
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-CC: David Daney <ddaney@caviumnetworks.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Message-ID: <x7qy0oo5rggoe62v832pgmom.1258663715758@email.android.com>
-Content-Type: multipart/mixed; boundary="----FP5XIOQ65UGVL8MACSQSQB2Q790PJ5"
+	Thu, 19 Nov 2009 15:48:50 -0500
+Date: Thu, 19 Nov 2009 20:48:47 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Jerome Glisse <jglisse@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dri-devel@lists.sf.net
+Subject: Re: [PATCH] drm/radeon/kms: Fix oops when set_base is call with no
+ FB
+In-Reply-To: <1258023778.2473.2.camel@localhost>
+Message-ID: <alpine.LFD.2.00.0911181852050.23795@casper.infradead.org>
+References: <1257361399-5128-1-git-send-email-jglisse@redhat.com> <20091110143056.defb1a82.akpm@linux-foundation.org> <1258023778.2473.2.camel@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------FP5XIOQ65UGVL8MACSQSQB2Q790PJ5
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
 
-T24gaTM4NiwgaWYgd2UgY2FsbCBfX2ZlbnRyeV9fIGltbWVkaWF0ZWx5IG9uIGVudHJ5IHRoZSBy
-ZXR1cm4gYWRkcmVzcyB3aWxsIGJlIGluIDQoJWVzcCksIHNvIEkgZmFpbCB0byBzZWUgaG93IHlv
-dSBjb3VsZCBub3QgcmVsaWFibHkgaGF2ZSB0aGUgcmV0dXJuIGFkZHJlc3MuICBPdGhlciBhcmNo
-ZXMgd291bGQgaGF2ZSBkaWZmZXJlbnQgY29uc3RyYWludHMsIG9mIGNvdXJzZS4KCiJGcmVkZXJp
-YyBXZWlzYmVja2VyIiA8ZndlaXNiZWNAZ21haWwuY29tPiB3cm90ZToKCj5PbiBUaHUsIE5vdiAx
-OSwgMjAwOSBhdCAwMzowNTo0MVBNIC0wNTAwLCBTdGV2ZW4gUm9zdGVkdCB3cm90ZToNCj4+IE9u
-IFRodSwgMjAwOS0xMS0xOSBhdCAyMDo0NiArMDEwMCwgRnJlZGVyaWMgV2Vpc2JlY2tlciB3cm90
-ZToNCj4+ID4gT24gVGh1LCBOb3YgMTksIDIwMDkgYXQgMDI6Mjg6MDZQTSAtMDUwMCwgU3RldmVu
-IFJvc3RlZHQgd3JvdGU6DQo+PiANCj4+ID4gPiAJPGZ1bmN0aW9uPjoNCj4+ID4gPiAJCWNhbGwg
-X19mZW50cnlfXw0KPj4gPiA+IAkJWy4uLl0NCj4+ID4gPiANCj4+ID4gPiAJDQo+PiA+ID4gLS0g
-U3RldmUNCj4+ID4gDQo+PiA+IA0KPj4gPiBJIHdvdWxkIHJlYWxseSBsaWtlIHRoaXMuIFNvIHRo
-YXQgd2UgY2FuIGZvcmdldCBhYm91dCBvdGhlciBwb3NzaWJsZQ0KPj4gPiBmdXJ0aGVyIHN1cHJp
-c2VzIGR1ZSB0byBzb3BoaXN0aWNhdGVkIGZ1bmN0aW9uIHByb2xvZ3VlcyBiZWVpbmcgYmVmb3Jl
-DQo+PiA+IHRoZSBtY291bnQgY2FsbC4NCj4+ID4gDQo+PiA+IEFuZCBJIGd1ZXNzIHRoYXQgd291
-bGQgZml4IGl0IGluIGV2ZXJ5IGFyY2hzLg0KPj4gDQo+PiBXZWxsLCBvdGhlciBhcmNocyB1c2Ug
-YSByZWdpc3RlciB0byBzdG9yZSB0aGUgcmV0dXJuIGFkZHJlc3MuIEJ1dCBpdA0KPj4gd291bGQg
-YWxzbyBiZSBlYXN5IHRvIGRvIChwc2V1ZG8gYXJjaCBhc3NlbWJseSk6DQo+PiANCj4+IAk8ZnVu
-Y3Rpb24+Og0KPj4gCQltb3YgbHIsICglc3ApDQo+PiAJCWFkZCA4LCAlc3ANCj4+IAkJYmxyIF9f
-ZmVudHJ5X18NCj4+IAkJc3ViIDgsICVzcA0KPj4gCQltb3YgKCVzcCksIGxyDQo+PiANCj4+IA0K
-Pj4gVGhhdCB3YXkgdGhlIGxyIHdvdWxkIGhhdmUgdGhlIGN1cnJlbnQgZnVuY3Rpb24sIGFuZCB0
-aGUgcGFyZW50IHdvdWxkDQo+PiBzdGlsbCBiZSBhdCA4KCVzcCkNCj4+IA0KPg0KPg0KPlllYWgg
-cmlnaHQsIHdlIG5lZWQgYXQgbGVhc3Qgc3VjaCB2ZXJ5IHRpbnkgcHJvbG9ndWUgZm9yDQo+YXJj
-aHMgdGhhdCBzdG9yZSByZXR1cm4gYWRkcmVzc2VzIGluIGEgcmVnLg0KPg0KPgkNCj4+ID4gDQo+
-PiA+IFRoYXQgc2FpZCwgTGludXMgaGFkIGEgZ29vZCBwb2ludCBhYm91dCB0aGUgZmFjdCB0aGVy
-ZSBtaWdodCBvdGhlciB1c2VzDQo+PiA+IG9mIG1jb3VudCBldmVuIG1vcmUgdHJpY2t5IHRoYW4g
-d2hhdCBkb2VzIHRoZSBmdW5jdGlvbiBncmFwaCB0cmFjZXIsDQo+PiA+IG91dHNpZGUgdGhlIGtl
-cm5lbCwgYW5kIHRob3NlIG1heSBkZXBlbmQgb24gdGhlIHN0cmljdCBBQkkgYXNzdW1wdGlvbg0K
-Pj4gPiB0aGF0IDQoZWJwKSBpcyBhbHdheXMgdGhlIF9yZWFsXyByZXR1cm4gYWRkcmVzcywgYW5k
-IHRoYXQgdGhyb3VnaCBhbGwNCj4+ID4gdGhlIHByZXZpb3VzIHN0YWNrIGNhbGwuIFRoaXMgaXMg
-ZXZlbiBhIGNvbmNlcm4gdGhhdCBleHRyYXBvbGF0ZXMgdGhlDQo+PiA+IHNpbmdsZSBtY291bnQg
-Y2FzZS4NCj4+IA0KPj4gQXMgSSBhbSBwcm9wb3NpbmcgYSBuZXcgY2FsbC4gVGhpcyBtZWFucyB0
-aGF0IG1jb3VudCBzdGF5IGFzIGlzIGZvcg0KPj4gbGVnYWN5IHJlYXNvbnMuIFllcyBJIGtub3cg
-dGhlcmUgZXhpc3RzIHRoZSAtZmluc3RydW1lbnQtZnVuY3Rpb25zIGJ1dA0KPj4gdGhhdCBhZGRz
-IHdheSB0b28gbXVjaCBibG9hdCB0byB0aGUgY29kZS4gT25lIHNpbmdsZSBjYWxsIHRvIHRoZQ0K
-Pj4gcHJvZmlsZXIgaXMgYWxsIEkgd2FudC4NCj4NCj4NCj5TdXJlLCB0aGUgcHVycG9zZSBpcyBu
-b3QgdG8gY2hhbmdlIHRoZSBleGlzdGluZyAtbWNvdW50IHRoaW5nLg0KPldoYXQgSSBtZWFudCBp
-cyB0aGF0IHdlIGNvdWxkIGhhdmUgLW1jb3VudCBhbmQgLXJlYWwtcmEtYmVmb3JlLWZwDQo+YXQg
-dGhlIHNhbWUgdGltZSB0byBndWFyYW50ZWUgZnAgKyA0IGlzIHJlYWxseSB3aGF0IHdlIHdhbnQg
-d2hpbGUNCj51c2luZyAtbWNvdW50Lg0KPg0KPlRoZSBfX2ZlbnRyeV9fIGlkZWEgaXMgbW9yZSBu
-ZWF0LCBidXQgdGhlIGd1YXJhbnRlZSBvZiBhIHJlYWwgcG9pbnRlcg0KPnRvIHRoZSByZXR1cm4g
-YWRkcmVzcyBpcyBzdGlsbCBzb21ldGhpbmcgdGhhdCBsYWNrcy4NCj4NCj4NCj4+ID4gDQo+PiA+
-IFNvIEkgd29uZGVyIHRoYXQgYWN0dWFsbHkgdGhlIHJlYWwgcHJvYmxlbSBpcyB0aGUgbGFjayBv
-ZiBzb21ldGhpbmcgdGhhdA0KPj4gPiBjb3VsZCBwcm92aWRlIHRoaXMgZ3VhcmFudGVlLiBXZSBt
-YXkgbmVlZCBhIC1yZWFsLXJhLWJlZm9yZS1mcCAoeWVhaA0KPj4gPiBJIHN1Y2sgaW4gbmFtaW5n
-KS4NCj4+IA0KPj4gRG9uJ3Qgd29ycnksIHNvIGRvIHRoZSBDIGNvbXBpbGVyIGZvbGtzLCBJIG1l
-YW4sIGNvbWUgb24gIm1jb3VudCI/DQo+DQo+DQo+SSBndWVzcyBpdCBoYXMgYmVlbiBmaXJzdCBj
-cmVhdGVkIGZvciB0aGUgc2luZ2xlIHB1cnBvc2Ugb2YgY291bnRpbmcNCj5zcGVjaWZpYyBmdW5j
-dGlvbnMgYnV0IHRoZW4gaXQgaGFzIGJlZW4gdXNlZCBmb3Igd2lkZXIsIHVucHJlZGljdGVkIHVz
-ZXMgOikNCj4NCgotLQpTZW50IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2UgZXhjdXNlIGFu
-eSBsYWNrIG9mIGZvcm1hdHRpbmcu
+> On Tue, 2009-11-10 at 14:30 -0800, Andrew Morton wrote:
+> > On Wed,  4 Nov 2009 20:03:19 +0100
+> > Jerome Glisse <jglisse@redhat.com> wrote:
+> > 
+> > > Just do nothings crct_set_base i call with no FB.
+> > > 
+> > 
+> > hmpf.  It's obvious that you spent hours carefully describing this
+> > patch for us.
+> > 
+> 
+> Sorry, truth is i don't understand why crtc set_base call back
+> can be call with a null fb, i did just replicate what intel kms
+> and other part of radeon kms was doing in front of such situation.
+> It should go down to 2.6.31, useless before as there is no KMS
+> for radeon in earlier version. The oops will happen when user
+> switch btw X & vt or in some case when changing mode.
+> 
+> Will clearly state my ignorance in future patch.
 
-------FP5XIOQ65UGVL8MACSQSQB2Q790PJ5--
+	The secert to understanding why a oops occurs is to look at the
+function drm_crtc_helper_set_config in drm_crtc_helper.c. This function is 
+called  by both drm_fb_helper_set_par and drm_fb_helper_pan_display as 
+well as from userland attempting to set a mode via the dri layer. The 
+code path for this last case is drm_mode_setcrtc in drm_crtc.c. 
+	 In the userland setting case drm_mode_setcrtc() test to see if a 
+drm_framebuffer is avaliable. Either by user requesting a specific fb or
+by using the default fb from the drm_crtc. If no fb is found then the 
+function returns a error. So the user must prepare a framebuffer before 
+hand.
+	Now the second case is the fbdev emulation layer calling 
+drm_crtc_helper_set_config. First in this method we have two states, 
+mode_change and fb_change. The first test is to see if crtc->fb equals
+the desired fb. If the crtc->fb or the desired fb is NULL it is considered 
+a full mode change. If we have do have both fb which are not the same 
+objects then we expect a fb_change. This is true also we want any panning.
+After that we test if the drm_display_mode passed in and the crtc->mode 
+are equal. If not then it is a mode_change. Now if the driver doesn't 
+support set_base then it is always a mode_change.
+	After all the testing we are ready to change the hardware state. 
+In the mode_change case we save the original fb which is crtc->fb. Then we
+set the crtc->fb to the new fb and then call our function. 
+
+	old_fb = set->crtc->fb;
+        set->crtc->fb = set->fb;
+	...
+        drm_crtc_helper_set_mode(set->crtc, set->mode, set->x, set->y, 
+				old_fb)
+In the fb_change case we also shuffle the fbs like above and call the 
+following.
+
+	old_fb = set->crtc->fb;
+        if (set->crtc->fb != set->fb)
+            set->crtc->fb = set->fb;
+        ret = crtc_funcs->mode_set_base(set->crtc, set->x, set->y, 
+					old_fb);
+
+
+Okay now to the problem with the fbdev emulation layer. If you look at
+drm_fb_helper_single_fb_probe you will notice a new drm_framebuffer could 
+be created. Now the following field at set to this new fb:
+
+  modeset->fb
+  fb_helper->fb
+
+If you notice no crtc->fb is set. This what causes the problems. Even more 
+interesting is the conditional check in drm_fb_helper_set_par.
+
+if (crtc->fb == fb_helper->crtc_info[i].mode_set.fb) {
+
+But because crtc->fb is null the mode is never changed. I repeat the 
+set_par function never changes the graphics mode. The worst part is the 
+var for the framebuffer console ends up out of sync with the dri layer
+if someone attempts to change the mode via the fbdev layer. So what is 
+setting the default graphics mode. Actually it's the panning function 
+drm_fb_helper_pan_display. You will notice that the fb is never checked 
+there.
+
+
+
+
+
 
