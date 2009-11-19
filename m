@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZKSVTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZKSVVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbZKSVTg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 16:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZKSVTf
+	id S1755510AbZKSVVt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 16:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZKSVVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 16:19:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58197
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753965AbZKSVTe (ORCPT
+	Thu, 19 Nov 2009 16:21:49 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:38135 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1753298AbZKSVVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 16:19:34 -0500
-Date: Thu, 19 Nov 2009 13:19:51 -0800 (PST)
-Message-Id: <20091119.131951.26921972.davem@davemloft.net>
-To: David.Choi@Micrel.Com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       shemminger@vyatta.com, greg@kroah.com
-Subject: Re: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network
- driver 
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091119.122734.89781869.davem@davemloft.net>
-References: <C43529A246480145B0A6D0234BDB0F0D021299@MELANITE.micrel.com>
-	<20091119.122734.89781869.davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 19 Nov 2009 16:21:48 -0500
+Message-ID: <4B05B6E3.6080604@ru.mvista.com>
+Date: Fri, 20 Nov 2009 00:21:39 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>	<200911191838.11791.bzolnier@gmail.com>	<20091119175051.6a91d160@lxorguk.ukuu.org.uk>	<200911191852.23061.bzolnier@gmail.com>	<20091119182132.5155f819@lxorguk.ukuu.org.uk>	<4B0590A2.9050306@ru.mvista.com> <20091119194008.2c97edcd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091119194008.2c97edcd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 19 Nov 2009 12:27:34 -0800 (PST)
+Hello.
 
-> From: "Choi, David" <David.Choi@Micrel.Com>
-> Date: Tue, 17 Nov 2009 15:02:36 -0800
-> 
->> This patch is for ks8851 16bit MLL Ethernet network device driver in order to fix bugs and to enhance functions.
->  ...
->> Signed-off-by: David J. Choi <david.choi@micrel.com>
-> 
-> Applied.
+Alan Cox wrote:
 
-Sorry I had to revert this, it adds new warnings to the
-build.
+>>     I'd suggest to address the delay by another, separate patch to both 
+>> pata_hpt37x and pata_hpt3x2n drivers, and accept Bart's original patch for 
+>> bit reversing...
+>>     
+>
+> If you can confirm the 371N is fine without switching to I/O cycles then
+>   
 
-You can't cast pointers to 'int' in order to print them,
-that emits a warning on 64-bit systems because you're
-truncating the top bits.
+   HPT371N datasheet says that the SRC1/2 registers are dual-mapped to 
+PCI and I/O space. Are you paranoid enough to want me to test the 
+drivers on the board with HPT371N too? :-)
 
-There is really no point in printing __iomem pointers,
-those are very architecture specific.  So is the IRQ
-number.
+> I agree entirely with that and I'll push the udelay(10) into all three
+>   
 
-I would just remove this part of your patch entirely
-(don't forget to update the commit message to match).
+   I can't say anything about pata_hpt36x, I don't think I have HPT 
+drivers that old...
 
-Please fix this up and resubmit, thank you.
+> plus the drivers/ide one unless Bart beats me to it.
+>   
+
+   I could beat you to it as well. :-)
+
+> Alan
+
+WBR, Sergei
+
+
