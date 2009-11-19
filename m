@@ -1,42 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbZKSAlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZKRRG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbZKSAlb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 19:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757942AbZKSAla
+	id S1757945AbZKRRG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 12:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbZKRRG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 19:41:30 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55353 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757092AbZKSAlV (ORCPT
+	Wed, 18 Nov 2009 12:06:27 -0500
+Received: from mga06.intel.com ([134.134.136.21]:56053 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757810AbZKRRG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 19:41:21 -0500
-Date: Wed, 18 Nov 2009 19:41:27 -0500
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Valdis.Kletnieks@vt.edu,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Matteo Croce <technoboy85@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-Message-ID: <20091119004127.GJ15157@caffeine.csclub.uwaterloo.ca>
-References: <20091113212148.5cb829d4@lxorguk.ukuu.org.uk> <20091116175006.GA15157@caffeine.csclub.uwaterloo.ca> <20091117115929.4ba23c49@lxorguk.ukuu.org.uk> <7332.1258476527@turing-police.cc.vt.edu> <20091117172515.GI15159@caffeine.csclub.uwaterloo.ca> <4B02DE4E.4070504@zytor.com> <20091117183357.GH15157@caffeine.csclub.uwaterloo.ca> <20091118202109.GJ15159@caffeine.csclub.uwaterloo.ca> <4B046038.4040608@zytor.com> <20091118211122.GI15157@caffeine.csclub.uwaterloo.ca>
-MIME-Version: 1.0
+	Wed, 18 Nov 2009 12:06:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,766,1249282800"; 
+   d="scan'208";a="570800701"
+Date: Wed, 18 Nov 2009 19:42:46 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: herbert@gondor.apana.org.au
+Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
+       youquan.song@intel.com
+Subject: [PATCH]crypto: Add ghash algorithm test before provide to users
+Message-ID: <20091119004246.GB28448@youquan-linux.bj.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091118211122.GI15157@caffeine.csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 04:11:22PM -0500, Lennart Sorensen wrote:
-> Strange how it says that for every value I have tried so far.  Makes me
-> wonder if there is a register somewhere that disables MSR support.
-> I did find a lockout value but I can't read that one either (which says
-> it is always readable).
+Add ghash algorithm test before provide it to users
 
-I tried doing rdmsr on 0x1810 from grub, and it faults too.  cpuid says
-MSRs are supported, I just can't find any that work.
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
+---
 
--- 
-Len Sorensen
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 1f2357b..7620bfc 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1943,6 +1943,15 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		.alg = "ghash",
++		.test = alg_test_hash,
++		.suite = {
++			.hash = {
++				.vecs = ghash_tv_template,
++				.count = GHASH_TEST_VECTORS
++			}
++		}
++	}, {
+ 		.alg = "hmac(md5)",
+ 		.test = alg_test_hash,
+ 		.suite = {
+diff --git a/crypto/testmgr.h b/crypto/testmgr.h
+index 9963b18..fea00cd 100644
+--- a/crypto/testmgr.h
++++ b/crypto/testmgr.h
+@@ -1003,6 +1003,23 @@ static struct hash_testvec tgr128_tv_template[] = {
+ 	},
+ };
+ 
++#define GHASH_TEST_VECTORS 1
++
++static struct hash_testvec ghash_tv_template[] =
++{
++	{
++
++		.key	= "\xdf\xa6\xbf\x4d\xed\x81\xdb\x03\xff\xca\xff\x95\xf8\x30\xf0\x61",
++		.ksize	= 16,
++		.plaintext = "\x95\x2b\x2a\x56\xa5\x60\x04a\xc0\xb3\x2b\x66\x56\xa0\x5b\x40\xb6",
++		.psize	= 16,
++		.digest	= "\xda\x53\xeb\x0a\xd2\xc5\x5b\xb6"
++			  "\x4f\xc4\x80\x2c\xc3\xfe\xda\x60",
++	},
++};
++
++/*
++ * HMAC-MD5 test vectors from RFC2202
+ /*
+  * HMAC-MD5 test vectors from RFC2202
+  * (These need to be fixed to not use strlen).
