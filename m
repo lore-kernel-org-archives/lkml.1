@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZKSOh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZKSOio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbZKSOh4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZKSOh4
+	id S1756551AbZKSOio (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbZKSOin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:37:56 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:4913 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752091AbZKSOhz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:37:55 -0500
-Message-ID: <4B05586E.4080401@ru.mvista.com>
-Date: Thu, 19 Nov 2009 17:38:38 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 19 Nov 2009 09:38:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56704 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753482AbZKSOim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:38:42 -0500
+Date: Thu, 19 Nov 2009 15:38:47 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Jan Blunck <jblunck@suse.de>,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] ext2: Explicitly assign values to on-disk enum of
+ filetypes
+Message-ID: <20091119143846.GB24836@duck.suse.cz>
+References: <20091118162550.GP21750@bolzano.suse.de>
+ <CE98E2AD-F6E2-4AC7-B43A-BE2893E384F8@sun.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>	<20091118184125.623e063d@lxorguk.ukuu.org.uk>	<200911182007.07405.bzolnier@gmail.com>	<200911182056.16517.bzolnier@gmail.com>	<20091119140259.2fee86e2@lxorguk.ukuu.org.uk>	<4B05533A.7020508@ru.mvista.com> <20091119143129.0fe41623@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119143129.0fe41623@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CE98E2AD-F6E2-4AC7-B43A-BE2893E384F8@sun.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-
->>    Point out the breakage please. The driver has been developed and tested 
->>on non-x86 machine with 66 MHz PCI.
-
-> static int init_chipset_hpt366(struct pci_dev *dev)
+On Wed 18-11-09 23:34:46, Andreas Dilger wrote:
+> On 2009-11-18, at 08:25, Jan Blunck wrote:
+> >Here is an old patch that I found in my tree. Andreas, it seems
+> >that this is something you proposed.
+> >
+> >Comments?
 > 
->         if (chip_type >= HPT370) {
+> This is definitely my preferred coding style for constants that form
+> a permanent part of the API/ABI/disk format.
 > 
->                if ((temp & 0xFFFFF000) != 0xABCDE000) {
+> The enum is useful because some debuggers can display the symbolic
+> name of a constant if a named enum is present (though in this case
+> it isn't), but it avoids the risk of someone accidentally inserting
+> or removing a value in the middle of the enum.
+  In this particular case, I don't have a strong opinion... There isn't
+much churn in FT_ fields but OTOH it doesn't hurt to have numbers
+explicitely assigned and as you write for on-disk format it's really
+important to have them fixed. OK, probably I'm slightly in favor of
+merging the patch so I've queued it up.
 
-> it then falls through and gets a 33MHz answer from the tests.
-
-> If I stash the MHz answer from boot then it works. So I imagine the boot
-> time value just needs to be dumped into a static for resume to use.
-
-    Ah, that... sure, this test only works at boot if there was no smart 
-enough BIOS around to save the f_CNT -- then the DPLL gets reprogrammed, and 
-doesn't reflect the default clock anymore...
-
-> Alan
-
-WBR, Sergei
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
