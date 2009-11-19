@@ -1,43 +1,25 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbZKRBab (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 17 Nov 2009 20:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZKRBaa
+	id S1753685AbZKSK4g (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 19 Nov 2009 05:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZKSK4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Nov 2009 20:30:30 -0500
-Received: from sccmmhc91.asp.att.net ([204.127.203.211]:47487 "EHLO
-	sccmmhc91.asp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbZKRBaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Nov 2009 20:30:30 -0500
-From: "Mr Mike  Robert Loan Investment" <robert0031@mchsi.com>
-Reply-to: mikerobert.loaninvestment@gmail.com
-Subject: Xmas Loan Offer======(Apply Now)
-Date: Wed, 18 Nov 2009 01:29:45 +0000
-Message-Id: <111820090129.13622.4B034E09000C858C00003536223045151403010CD2079C080C03BFCECCCFCF9B9D0A0D019D@mchsi.com>
-X-Mailer: AT&T Message Center Version 1 (Mar  2 2009)
-X-Authenticated-Sender: cm9iZXJ0MDAzMUBtY2hzaS5jb20=
+	Thu, 19 Nov 2009 05:56:36 -0500
+Received: from mail2.ecunet.org ([72.250.175.188]:42274 "EHLO mail2.ecunet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752116AbZKSK4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 05:56:35 -0500
+Date: Thu, 19 Nov 2009 05:56:19 -0500
+Message-Id: <200911191056.nAJAuJpq012768@ecunet-web-1.ecunet.org>
+From: jenifer_agurma7@ecunet.org
+Subject: Hello
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ecunet.org [192.168.0.90]); Thu, 19 Nov 2009 05:56:19 -0500 (EST)
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---
-Do you need financial assistance for any type of 
-business or do you have any personal need then 
-contact us via email: 
-mikerobert.loaninvestment@gmail.com
-
-Loan Application Form: 
-
-Your Name............... 
-Amount Needed.............. 
-Purpose For The Loan...... 
-Telephone/cell....... 
-Sex.......
-Country............... 
-Loan Duration........ 
-
- Mike Robert  Loan Ltd try and get back to me if
-you need 
-this loan okay..
-
+hello dear friend
+how are you today i hope that every things is ok with you as is my pleassure to contact you after viewing your profile at which really interest me in having communication with you if you will have the desire with me so that we can get to know each other better and see what happened in future.
+i will be very happy if you can write me through my email for easiest communication and to know all about each other,here is my email(jeny_agurma@yahoo.co.uk) i will be waiting to hear from you as i wish you all the best for your day.
+yours new friend.
+jenifer
