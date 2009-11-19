@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZKSC7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZKSDC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbZKSC7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 21:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbZKSC7i
+	id S932362AbZKSDC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 22:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932298AbZKSDC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 21:59:38 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:65459 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbZKSC7h (ORCPT
+	Wed, 18 Nov 2009 22:02:58 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:58920 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932295AbZKSDC5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 21:59:37 -0500
+	Wed, 18 Nov 2009 22:02:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=YjdbvqpwGt0g4LzVf1L9iaqOik5EjYRi9XY3ibAb6zV5cxkwLIiUeeh5pq0lxRTpB9
-         ozTpGq+I4uxvnkHdrHdRns05UfNOMLdcL1o9DOxQuiAAKNP79q9MDnOjoN0CCQdL9zhN
-         QW3RpBmIcazDLYegFvtVAvYwlhlY1n7qxnc4Y=
-Date: Wed, 18 Nov 2009 18:59:38 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Soeren Sonnenburg <sonne@debian.org>
-Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14626] oops on boot starting udev
-Message-ID: <20091119025938.GB20172@core.coreip.homeip.net>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.fpF.zSdALB@chimera> <20091117011455.GA7977@kroah.com> <20091117020451.GA27967@core.coreip.homeip.net> <1258426743.9883.53.camel@no> <20091117040104.GA5792@core.coreip.homeip.net> <1258430807.12721.12.camel@no>
+        b=oB2OxbPpLCeYefoxNtUyJFxiKBaid+77dsvEKXBM1aMCBzvM8inLLeFSSpZdn5QxhW
+         gDwO6JEuwMQXoU1EqAt4OoSNzy0HdnfIDOibiR69cDc+UeQHrotncn6wkpmM63HhO7wX
+         iaPud4Pe4QBNMPuJq6syAyz3VJWsSge3SP4tI=
+Date: Thu, 19 Nov 2009 04:03:03 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Aristeu Rozanski <aris@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: build ftrace.o when CONFIG_FTRACE_SYSCALLS is
+	set for s390
+Message-ID: <20091119030302.GB4970@nowhere>
+References: <20091118204044.GR3441@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1258430807.12721.12.camel@no>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091118204044.GR3441@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 05:06:47AM +0100, Soeren Sonnenburg wrote:
-> On Mon, 2009-11-16 at 20:01 -0800, Dmitry Torokhov wrote:
-> > On Tue, Nov 17, 2009 at 03:59:03AM +0100, Soeren Sonnenburg wrote:
-> > > On Mon, 2009-11-16 at 18:04 -0800, Dmitry Torokhov wrote:
-> > > > On Mon, Nov 16, 2009 at 05:14:55PM -0800, Greg KH wrote:
-> > > > > On Mon, Nov 16, 2009 at 11:37:48PM +0100, Rafael J. Wysocki wrote:
-> > > > > > This message has been generated automatically as a part of a report
-> > > > > > of recent regressions.
-> > > > > > 
-> > > > > > The following bug entry is on the current list of known regressions
-> > > > > > from 2.6.31.  Please verify if it still should be listed and let me know
-> > > > > > (either way).
-> > > > > > 
-> > > > > > 
-> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14626
-> > > > > > Subject		: oops on boot starting udev
-> > > > > > Submitter	: Soeren Sonnenburg <sonne@debian.org>
-> > > > > > Date		: 2009-11-14 10:16 (3 days old)
-> > > > > > References	: http://marc.info/?l=linux-kernel&m=125819380206800&w=4
-> > > > > 
-> > > > > This looks like an input core problem, as the evdev module was just
-> > > > > loaded and died.
-> > > > > 
-> > > > > Any input developers have any ideas?
-> > > > > 
-> > > > 
-> > > > 
-> > > > Hmm, evdev does:
-> > > > 
-> > > > 	dev_set_name(&evdev->dev, "event%d", minor);
-> > > > 
-> > > > Not sure how it can go wrong...
-> > > 
-> > > Anything I should/could do to narrow it down a bit (apart from
-> > > bisecting?).
-> > > 
-> > 
-> > Umm, I looked through the changes between -rc6 and 7 but nothing jumped
-> > out at me... You don't happen to have any local changes in your tree?
+On Wed, Nov 18, 2009 at 03:40:44PM -0500, Aristeu Rozanski wrote:
+> Trying to build a s390x kernel with CONFIG_FTRACE_SYSCALLS will fail
+> because ftrace.o is not built/linked.
 > 
-> Well only the mouse button #1 emulation - though I don't see what could
-> go wrong there.
+> Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+> 
+> ---
+>  arch/s390/kernel/Makefile |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linus-2.6.orig/arch/s390/kernel/Makefile	2009-10-30 17:49:10.000000000 -0400
+> +++ linus-2.6/arch/s390/kernel/Makefile	2009-11-18 15:39:52.000000000 -0500
+> @@ -44,6 +44,7 @@ obj-$(CONFIG_KPROBES)		+= kprobes.o
+>  obj-$(CONFIG_FUNCTION_TRACER)	+= $(if $(CONFIG_64BIT),mcount64.o,mcount.o)
+>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+>  obj-$(CONFIG_FUNCTION_GRAPH_TRACER) += ftrace.o
+> +obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
+>  
+>  # Kexec part
+>  S390_KEXEC_OBJS := machine_kexec.o crash.o
 > 
 
-I have been looking through the changes and I really don't see anything
-suspicious. I am also not hittign this oops on any of my boxes. Any
-chance you could bisect?
 
-Thanks.
+Thanks!
 
--- 
-Dmitry
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+We probably want this patch for .32
+Not sure in which tree it best fits though, -tip or s390?
+(Adding more people in Cc).
+
