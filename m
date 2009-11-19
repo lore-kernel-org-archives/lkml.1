@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZKSSYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZKSSV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZKSSYa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 13:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZKSSY3
+	id S1754123AbZKSSV2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 13:21:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZKSSV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 13:24:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbZKSSY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 13:24:29 -0500
-Message-ID: <4B058CCD.8050605@redhat.com>
-Date: Thu, 19 Nov 2009 18:22:05 +0000
-From: Andrew Haley <aph@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: Richard Guenther <richard.guenther@gmail.com>
-CC: rostedt@goodmis.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> 	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> 	 <20091119072040.GA23579@elte.hu> 	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain> 	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> 	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain> 	 <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain> 	 <1258653562.22249.682.camel@gandalf.stny.rr.com> <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>
-In-Reply-To: <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Nov 2009 13:21:27 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37697 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752904AbZKSSV1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 13:21:27 -0500
+Date: Thu, 19 Nov 2009 18:23:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] pata_hpt37x: add proper cable detection methods
+Message-ID: <20091119182325.21a23953@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911191910.44609.bzolnier@gmail.com>
+References: <200911191910.44609.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Guenther wrote:
+On Thu, 19 Nov 2009 19:10:44 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-> And
-> you didn't provide us with a testcase either ... so please open
-> a bugzilla and attach preprocessed source of a file that
-> shows the problem, note the function it happens in and provide
-> the command-line options you used for building.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ata/pata_hpt37x.c |   86 +++++++++++++++++++++++++++++-----------------
+>  1 file changed, 56 insertions(+), 30 deletions(-)
+> 
+> Index: b/drivers/ata/pata_hpt37x.c
 
-I've got all that off-list.  I found the cause, and replied in another
-email.  It's not a bug.
+Acked-by: Alan Cox <alan@linux.intel.com>
 
-Andrew.
+I suspect this may also need the udelay(10) adding but even if it does
+its cleaner this way.
