@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZKSNhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbZKSNjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZKSNhS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZKSNgk
+	id S1756353AbZKSNjt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbZKSNjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:36:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27022 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 08:39:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753617AbZKSNfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:35:09 -0500
+	id S1753547AbZKSNfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:35:08 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 29/35] KVM: x86: disallow KVM_{SET,GET}_LAPIC without allocated in-kernel lapic
-Date: Thu, 19 Nov 2009 15:35:05 +0200
-Message-Id: <1258637711-11674-30-git-send-email-avi@redhat.com>
+Subject: [PATCH 30/35] KVM: only clear irq_source_id if irqchip is present
+Date: Thu, 19 Nov 2009 15:35:06 +0200
+Message-Id: <1258637711-11674-31-git-send-email-avi@redhat.com>
 In-Reply-To: <1258637711-11674-1-git-send-email-avi@redhat.com>
 References: <1258637711-11674-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,33 +28,32 @@ Otherwise kvm might attempt to dereference a NULL pointer.
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ virt/kvm/irq_comm.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 97f6f95..cd6fe0a 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1893,6 +1893,9 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 
- 	switch (ioctl) {
- 	case KVM_GET_LAPIC: {
-+		r = -EINVAL;
-+		if (!vcpu->arch.apic)
-+			goto out;
- 		lapic = kzalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
- 
- 		r = -ENOMEM;
-@@ -1908,6 +1911,9 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 		break;
+diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
+index 0d454d3..9b07734 100644
+--- a/virt/kvm/irq_comm.c
++++ b/virt/kvm/irq_comm.c
+@@ -243,6 +243,10 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ 		printk(KERN_ERR "kvm: IRQ source ID out of range!\n");
+ 		goto unlock;
  	}
- 	case KVM_SET_LAPIC: {
-+		r = -EINVAL;
-+		if (!vcpu->arch.apic)
-+			goto out;
- 		lapic = kmalloc(sizeof(struct kvm_lapic_state), GFP_KERNEL);
- 		r = -ENOMEM;
- 		if (!lapic)
++	clear_bit(irq_source_id, &kvm->arch.irq_sources_bitmap);
++	if (!irqchip_in_kernel(kvm))
++		goto unlock;
++
+ 	for (i = 0; i < KVM_IOAPIC_NUM_PINS; i++) {
+ 		clear_bit(irq_source_id, &kvm->arch.vioapic->irq_states[i]);
+ 		if (i >= 16)
+@@ -251,7 +255,6 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id)
+ 		clear_bit(irq_source_id, &pic_irqchip(kvm)->irq_states[i]);
+ #endif
+ 	}
+-	clear_bit(irq_source_id, &kvm->arch.irq_sources_bitmap);
+ unlock:
+ 	mutex_unlock(&kvm->irq_lock);
+ }
 -- 
 1.6.5.2
 
