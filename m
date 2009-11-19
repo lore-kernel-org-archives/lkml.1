@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZKSNCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbZKSNFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbZKSNCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZKSNCR
+	id S1752557AbZKSNFc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZKSNFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:02:17 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:39100 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751626AbZKSNCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:02:16 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: intermittent suspend problem again
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
-	<87r5rwrkqs.fsf@tac.ki.iif.hu> <200911182313.14092.rjw@sisk.pl>
-	<877htmragv.fsf@tac.ki.iif.hu>
-Date: Thu, 19 Nov 2009 14:02:14 +0100
-In-Reply-To: <877htmragv.fsf@tac.ki.iif.hu> (Ferenc Wagner's message of "Thu,
-	19 Nov 2009 13:00:00 +0100")
-Message-ID: <87zl6ipt0p.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 19 Nov 2009 08:05:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60757 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZKSNFa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:05:30 -0500
+Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jean Delvare <khali@linux-fr.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Leon Woestenberg <leon.woestenberg@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091119125906.6ad00edd@lxorguk.ukuu.org.uk>
+References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
+	 <20091107210147.3e754278@hyperion.delvare>
+	 <4AF7148C.9090706@thebigcorporation.com>
+	 <20091112211255.09cd884a@hyperion.delvare>
+	 <alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
+	 <20091116155606.GC29479@sirena.org.uk>
+	 <c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+	 <20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
+	 <c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
+	 <20091118175202.490989d8@hyperion.delvare>
+	 <alpine.LFD.2.00.0911182127040.24119@localhost.localdomain>
+	 <20091119130526.23a69b85@hyperion.delvare>
+	 <20091119125906.6ad00edd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 19 Nov 2009 14:06:54 +0100
+Message-ID: <1258636014.4372.328.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ferenc Wagner <wferi@niif.hu> writes:
+On Thu, 2009-11-19 at 12:59 +0000, Alan Cox wrote:
+> > Well, I guess only people monitoring system latency would notice, as
+> > this is the only thing yield() was supposed to help with in the first
+> > place.
+> 
+> 	if (need_resched())
+> 		schedule();
 
-> Ferenc Wagner <wferi@niif.hu> writes:
->
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>
->>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
->>>
->>>> Ferenc Wagner <wferi@niif.hu> writes:
->>>> 
->>>> Side question: If I run s2disk from the init=/bin/bash prompt, the
->>>> instrumentation in acpi_enter_sleep_state_prep in drivers/acpi/acpica/hwsleep.c
->>>> fires before the "Snapshotting system" phase, but it does not fire if I
->>>> hibernate from the full running desktop.  (That instrumentation was put
->>>> there to investigate the KMS-triggered STR freeze.)  What could explain
->>>> this?
->>>
->>> It looks like it uses the "shutdown" method when run with init=/bin/bash, but
->>> I don't know why exactly.
->>
->> Thanks for the tip, I'll check this too.
->
-> While looking into this, I found a reproducible kernel panic:
->
-> 1. boot with init=/bin/bash
-> 2. mount /usr; swapon -a
-> 3. plug in a USB pendrive
-> 4. s2disk (machine goes to sleep)
-> 5. power on, proceed with resuming, press Enter to cancel resume pause
-> 6. ACPI: Hardware changed while hibernated, cannot resume!
->    Kernel panic - not syncing: ACPI S4 hardware signature mismatch
->
-> Does it make sense?
+aka.
 
-Yes it does: it's the BIOS USB support playing its childish games.
-I can disable it most of the time, except when booting from USB...
+	cond_resched();
 
-I wonder if this problem sould be handled more gracefully, now that USB
-persistence is enabled by default.  It works just fine for STR, but
-potentially panics after hibernation.
--- 
-Regards,
-Feri.
+> will make non-rt tasks act politely at the right moments. RT tasks will
+> likely immediately get to take the CPU again depending upon the
+> scheduling parameters in use.
+
+Right, FIFO will simply NOP it, since if it was the highest running
+task, it will still be. RR could possibly run out of its slice and
+schedule to another RR of the same prio.
+
+
