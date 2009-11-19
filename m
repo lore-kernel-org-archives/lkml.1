@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZKSRVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZKSRVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZKSRVq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbZKSRVo
+	id S1754315AbZKSRVx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZKSRVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:21:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48683 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 12:21:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48389 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754188AbZKSRVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:21:42 -0500
+	id S1754232AbZKSRVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:21:48 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 12/28] FS-Cache: Use radix tree preload correctly in tracking
-	of pages to be stored
+Subject: [PATCH 13/28] FS-Cache: Permit cache retrieval ops to be interrupted
+	in the initial wait phase
 To: linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
        linux-kernel@vger.kernel.org
 Cc: dhowells@redhat.com, steved@redhat.com
-Date: Thu, 19 Nov 2009 17:21:35 +0000
-Message-ID: <20091119172135.1679.8699.stgit@warthog.procyon.org.uk>
+Date: Thu, 19 Nov 2009 17:21:40 +0000
+Message-ID: <20091119172140.1679.45635.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20091119172033.1679.87046.stgit@warthog.procyon.org.uk>
 References: <20091119172033.1679.87046.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,129 +31,353 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__fscache_write_page() attempts to load the radix tree preallocation pool for
-the CPU it is on before calling radix_tree_insert(), as the insertion must be
-done inside a pair of spinlocks.
+Permit the operations to retrieve data from the cache or to allocate space in
+the cache for future writes to be interrupted whilst they're waiting for
+permission for the operation to proceed.  Typically this wait occurs whilst the
+cache object is being looked up on disk in the background.
 
-Use of the preallocation pool, however, is contingent on the radix tree being
-initialised without __GFP_WAIT specified.  __fscache_acquire_cookie() was
-passing GFP_NOFS to INIT_RADIX_TREE() - but that includes __GFP_WAIT.
+If an interruption occurs, and the operation has not yet been given the
+go-ahead to run, the operation is dequeued and cancelled, and control returns
+to the read operation of the netfs routine with none of the requested pages
+having been read or in any way marked as known by the cache.
 
-The solution is to AND out __GFP_WAIT.
+This means that the initial wait is done interruptibly rather than
+uninterruptibly.
 
-Additionally, the banner comment to radix_tree_preload() is altered to make
-note of this prerequisite.  Possibly there should be a WARN_ON() too.
-
-Without this fix, I have seen the following recursive deadlock caused by
-radix_tree_insert() attempting to allocate memory inside the spinlocked
-region, which resulted in FS-Cache being called back into to release memory -
-which required the spinlock already held.
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.32-rc6-cachefs #24
----------------------------------------------
-nfsiod/7916 is trying to acquire lock:
- (&cookie->lock){+.+.-.}, at: [<ffffffffa0076872>] __fscache_uncache_page+0xdb/0x160 [fscache]
-
-but task is already holding lock:
- (&cookie->lock){+.+.-.}, at: [<ffffffffa0076acc>] __fscache_write_page+0x15c/0x3f3 [fscache]
-
-other info that might help us debug this:
-5 locks held by nfsiod/7916:
- #0:  (nfsiod){+.+.+.}, at: [<ffffffff81048290>] worker_thread+0x19a/0x2e2
- #1:  (&task->u.tk_work#2){+.+.+.}, at: [<ffffffff81048290>] worker_thread+0x19a/0x2e2
- #2:  (&cookie->lock){+.+.-.}, at: [<ffffffffa0076acc>] __fscache_write_page+0x15c/0x3f3 [fscache]
- #3:  (&object->lock#2){+.+.-.}, at: [<ffffffffa0076b07>] __fscache_write_page+0x197/0x3f3 [fscache]
- #4:  (&cookie->stores_lock){+.+...}, at: [<ffffffffa0076b0f>] __fscache_write_page+0x19f/0x3f3 [fscache]
-
-stack backtrace:
-Pid: 7916, comm: nfsiod Not tainted 2.6.32-rc6-cachefs #24
-Call Trace:
- [<ffffffff8105ac7f>] __lock_acquire+0x1649/0x16e3
- [<ffffffff81059ded>] ? __lock_acquire+0x7b7/0x16e3
- [<ffffffff8100e27d>] ? dump_trace+0x248/0x257
- [<ffffffff8105ad70>] lock_acquire+0x57/0x6d
- [<ffffffffa0076872>] ? __fscache_uncache_page+0xdb/0x160 [fscache]
- [<ffffffff8135467c>] _spin_lock+0x2c/0x3b
- [<ffffffffa0076872>] ? __fscache_uncache_page+0xdb/0x160 [fscache]
- [<ffffffffa0076872>] __fscache_uncache_page+0xdb/0x160 [fscache]
- [<ffffffffa0077eb7>] ? __fscache_check_page_write+0x0/0x71 [fscache]
- [<ffffffffa00b4755>] nfs_fscache_release_page+0x86/0xc4 [nfs]
- [<ffffffffa00907f0>] nfs_release_page+0x3c/0x41 [nfs]
- [<ffffffff81087ffb>] try_to_release_page+0x32/0x3b
- [<ffffffff81092c2b>] shrink_page_list+0x316/0x4ac
- [<ffffffff81058a9b>] ? mark_held_locks+0x52/0x70
- [<ffffffff8135451b>] ? _spin_unlock_irq+0x2b/0x31
- [<ffffffff81093153>] shrink_inactive_list+0x392/0x67c
- [<ffffffff81058a9b>] ? mark_held_locks+0x52/0x70
- [<ffffffff810934ca>] shrink_list+0x8d/0x8f
- [<ffffffff81093744>] shrink_zone+0x278/0x33c
- [<ffffffff81052c70>] ? ktime_get_ts+0xad/0xba
- [<ffffffff8109453b>] try_to_free_pages+0x22e/0x392
- [<ffffffff8109184c>] ? isolate_pages_global+0x0/0x212
- [<ffffffff8108e16b>] __alloc_pages_nodemask+0x3dc/0x5cf
- [<ffffffff810ae24a>] cache_alloc_refill+0x34d/0x6c1
- [<ffffffff811bcf74>] ? radix_tree_node_alloc+0x52/0x5c
- [<ffffffff810ae929>] kmem_cache_alloc+0xb2/0x118
- [<ffffffff811bcf74>] radix_tree_node_alloc+0x52/0x5c
- [<ffffffff811bcfd5>] radix_tree_insert+0x57/0x19c
- [<ffffffffa0076b53>] __fscache_write_page+0x1e3/0x3f3 [fscache]
- [<ffffffffa00b4248>] __nfs_readpage_to_fscache+0x58/0x11e [nfs]
- [<ffffffffa009bb77>] nfs_readpage_release+0x34/0x9b [nfs]
- [<ffffffffa009c0d9>] nfs_readpage_release_full+0x32/0x4b [nfs]
- [<ffffffffa0006cff>] rpc_release_calldata+0x12/0x14 [sunrpc]
- [<ffffffffa0006e2d>] rpc_free_task+0x59/0x61 [sunrpc]
- [<ffffffffa0006f03>] rpc_async_release+0x10/0x12 [sunrpc]
- [<ffffffff810482e5>] worker_thread+0x1ef/0x2e2
- [<ffffffff81048290>] ? worker_thread+0x19a/0x2e2
- [<ffffffff81352433>] ? thread_return+0x3e/0x101
- [<ffffffffa0006ef3>] ? rpc_async_release+0x0/0x12 [sunrpc]
- [<ffffffff8104bff5>] ? autoremove_wake_function+0x0/0x34
- [<ffffffff81058d25>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff810480f6>] ? worker_thread+0x0/0x2e2
- [<ffffffff8104bd21>] kthread+0x7a/0x82
- [<ffffffff8100beda>] child_rip+0xa/0x20
- [<ffffffff8100b87c>] ? restore_args+0x0/0x30
- [<ffffffff8104c2b9>] ? add_wait_queue+0x15/0x44
- [<ffffffff8104bca7>] ? kthread+0x0/0x82
- [<ffffffff8100bed0>] ? child_rip+0x0/0x20
-
+In addition, extra stats values are made available to show the number of ops
+cancelled and the number of cache space allocations interrupted.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/fscache/cookie.c |    4 +++-
- lib/radix-tree.c    |    3 +++
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ Documentation/filesystems/caching/fscache.txt |    2 +
+ fs/fscache/internal.h                         |    3 +
+ fs/fscache/operation.c                        |   82 ++++++++++++++++---------
+ fs/fscache/page.c                             |   55 +++++++++++++++--
+ fs/fscache/stats.c                            |   12 ++--
+ 5 files changed, 115 insertions(+), 39 deletions(-)
 
-diff --git a/fs/fscache/cookie.c b/fs/fscache/cookie.c
-index b1870a6..e6854f5 100644
---- a/fs/fscache/cookie.c
-+++ b/fs/fscache/cookie.c
-@@ -102,7 +102,9 @@ struct fscache_cookie *__fscache_acquire_cookie(
- 	cookie->netfs_data	= netfs_data;
- 	cookie->flags		= 0;
+diff --git a/Documentation/filesystems/caching/fscache.txt b/Documentation/filesystems/caching/fscache.txt
+index 472398f..21d20bf 100644
+--- a/Documentation/filesystems/caching/fscache.txt
++++ b/Documentation/filesystems/caching/fscache.txt
+@@ -250,6 +250,7 @@ proc files.
+ 		ok=N	Number of successful alloc reqs
+ 		wt=N	Number of alloc reqs that waited on lookup completion
+ 		nbf=N	Number of alloc reqs rejected -ENOBUFS
++		int=N	Number of alloc reqs aborted -ERESTARTSYS
+ 		ops=N	Number of alloc reqs submitted
+ 		owt=N	Number of alloc reqs waited for CPU time
+ 	Retrvls	n=N	Number of retrieval (read) requests seen
+@@ -271,6 +272,7 @@ proc files.
+ 	Ops	pend=N	Number of times async ops added to pending queues
+ 		run=N	Number of times async ops given CPU time
+ 		enq=N	Number of times async ops queued for processing
++		can=N	Number of async ops cancelled
+ 		dfr=N	Number of async ops queued for deferred release
+ 		rel=N	Number of async ops released
+ 		gc=N	Number of deferred-release async ops garbage collected
+diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
+index b85cc89..50324ad 100644
+--- a/fs/fscache/internal.h
++++ b/fs/fscache/internal.h
+@@ -112,6 +112,7 @@ extern int fscache_submit_exclusive_op(struct fscache_object *,
+ 				       struct fscache_operation *);
+ extern int fscache_submit_op(struct fscache_object *,
+ 			     struct fscache_operation *);
++extern int fscache_cancel_op(struct fscache_operation *);
+ extern void fscache_abort_object(struct fscache_object *);
+ extern void fscache_start_operations(struct fscache_object *);
+ extern void fscache_operation_gc(struct work_struct *);
+@@ -140,6 +141,7 @@ extern atomic_t fscache_n_op_enqueue;
+ extern atomic_t fscache_n_op_deferred_release;
+ extern atomic_t fscache_n_op_release;
+ extern atomic_t fscache_n_op_gc;
++extern atomic_t fscache_n_op_cancelled;
  
--	INIT_RADIX_TREE(&cookie->stores, GFP_NOFS);
-+	/* radix tree insertion won't use the preallocation pool unless it's
-+	 * told it may not wait */
-+	INIT_RADIX_TREE(&cookie->stores, GFP_NOFS & ~__GFP_WAIT);
+ extern atomic_t fscache_n_attr_changed;
+ extern atomic_t fscache_n_attr_changed_ok;
+@@ -151,6 +153,7 @@ extern atomic_t fscache_n_allocs;
+ extern atomic_t fscache_n_allocs_ok;
+ extern atomic_t fscache_n_allocs_wait;
+ extern atomic_t fscache_n_allocs_nobufs;
++extern atomic_t fscache_n_allocs_intr;
+ extern atomic_t fscache_n_alloc_ops;
+ extern atomic_t fscache_n_alloc_op_waits;
  
- 	switch (cookie->def->type) {
- 	case FSCACHE_COOKIE_TYPE_INDEX:
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 23abbd9..ae61068 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -200,6 +200,9 @@ radix_tree_node_free(struct radix_tree_node *node)
-  * ensure that the addition of a single element in the tree cannot fail.  On
-  * success, return zero, with preemption disabled.  On error, return -ENOMEM
-  * with preemption not disabled.
-+ *
-+ * To make use of this facility, the radix tree must be initialised without
-+ * __GFP_WAIT being passed to INIT_RADIX_TREE().
+diff --git a/fs/fscache/operation.c b/fs/fscache/operation.c
+index 09e43b6..296492e 100644
+--- a/fs/fscache/operation.c
++++ b/fs/fscache/operation.c
+@@ -34,32 +34,31 @@ void fscache_enqueue_operation(struct fscache_operation *op)
+ 
+ 	fscache_set_op_state(op, "EnQ");
+ 
++	ASSERT(list_empty(&op->pend_link));
+ 	ASSERT(op->processor != NULL);
+ 	ASSERTCMP(op->object->state, >=, FSCACHE_OBJECT_AVAILABLE);
+ 	ASSERTCMP(atomic_read(&op->usage), >, 0);
+ 
+-	if (list_empty(&op->pend_link)) {
+-		switch (op->flags & FSCACHE_OP_TYPE) {
+-		case FSCACHE_OP_FAST:
+-			_debug("queue fast");
+-			atomic_inc(&op->usage);
+-			if (!schedule_work(&op->fast_work))
+-				fscache_put_operation(op);
+-			break;
+-		case FSCACHE_OP_SLOW:
+-			_debug("queue slow");
+-			slow_work_enqueue(&op->slow_work);
+-			break;
+-		case FSCACHE_OP_MYTHREAD:
+-			_debug("queue for caller's attention");
+-			break;
+-		default:
+-			printk(KERN_ERR "FS-Cache: Unexpected op type %lx",
+-			       op->flags);
+-			BUG();
+-			break;
+-		}
+-		fscache_stat(&fscache_n_op_enqueue);
++	fscache_stat(&fscache_n_op_enqueue);
++	switch (op->flags & FSCACHE_OP_TYPE) {
++	case FSCACHE_OP_FAST:
++		_debug("queue fast");
++		atomic_inc(&op->usage);
++		if (!schedule_work(&op->fast_work))
++			fscache_put_operation(op);
++		break;
++	case FSCACHE_OP_SLOW:
++		_debug("queue slow");
++		slow_work_enqueue(&op->slow_work);
++		break;
++	case FSCACHE_OP_MYTHREAD:
++		_debug("queue for caller's attention");
++		break;
++	default:
++		printk(KERN_ERR "FS-Cache: Unexpected op type %lx",
++		       op->flags);
++		BUG();
++		break;
+ 	}
+ }
+ EXPORT_SYMBOL(fscache_enqueue_operation);
+@@ -97,6 +96,7 @@ int fscache_submit_exclusive_op(struct fscache_object *object,
+ 	spin_lock(&object->lock);
+ 	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
+ 	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
++	ASSERT(list_empty(&op->pend_link));
+ 
+ 	ret = -ENOBUFS;
+ 	if (fscache_object_is_active(object)) {
+@@ -202,6 +202,7 @@ int fscache_submit_op(struct fscache_object *object,
+ 	spin_lock(&object->lock);
+ 	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
+ 	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
++	ASSERT(list_empty(&op->pend_link));
+ 
+ 	ostate = object->state;
+ 	smp_rmb();
+@@ -273,12 +274,7 @@ void fscache_start_operations(struct fscache_object *object)
+ 			stop = true;
+ 		}
+ 		list_del_init(&op->pend_link);
+-		object->n_in_progress++;
+-
+-		if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
+-			wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
+-		if (op->processor)
+-			fscache_enqueue_operation(op);
++		fscache_run_op(object, op);
+ 
+ 		/* the pending queue was holding a ref on the object */
+ 		fscache_put_operation(op);
+@@ -291,6 +287,36 @@ void fscache_start_operations(struct fscache_object *object)
+ }
+ 
+ /*
++ * cancel an operation that's pending on an object
++ */
++int fscache_cancel_op(struct fscache_operation *op)
++{
++	struct fscache_object *object = op->object;
++	int ret;
++
++	_enter("OBJ%x OP%x}", op->object->debug_id, op->debug_id);
++
++	spin_lock(&object->lock);
++
++	ret = -EBUSY;
++	if (!list_empty(&op->pend_link)) {
++		fscache_stat(&fscache_n_op_cancelled);
++		list_del_init(&op->pend_link);
++		object->n_ops--;
++		if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags))
++			object->n_exclusive--;
++		if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++			wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
++		fscache_put_operation(op);
++		ret = 0;
++	}
++
++	spin_unlock(&object->lock);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
+  * release an operation
+  * - queues pending ops if this is the last in-progress op
   */
- int radix_tree_preload(gfp_t gfp_mask)
- {
+diff --git a/fs/fscache/page.c b/fs/fscache/page.c
+index 250dfd3..e6f2e61 100644
+--- a/fs/fscache/page.c
++++ b/fs/fscache/page.c
+@@ -295,8 +295,20 @@ int __fscache_read_or_alloc_page(struct fscache_cookie *cookie,
+ 	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
+ 		_debug(">>> WT");
+ 		fscache_stat(&fscache_n_retrieval_op_waits);
+-		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
+-			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		if (wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				fscache_wait_bit_interruptible,
++				TASK_INTERRUPTIBLE) < 0) {
++			ret = fscache_cancel_op(&op->op);
++			if (ret == 0) {
++				ret = -ERESTARTSYS;
++				goto error;
++			}
++
++			/* it's been removed from the pending queue by another
++			 * party, so we should get to run shortly */
++			wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		}
+ 		_debug("<<< GO");
+ 	}
+ 
+@@ -313,6 +325,7 @@ int __fscache_read_or_alloc_page(struct fscache_cookie *cookie,
+ 		fscache_stat_d(&fscache_n_cop_read_or_alloc_page);
+ 	}
+ 
++error:
+ 	if (ret == -ENOMEM)
+ 		fscache_stat(&fscache_n_retrievals_nomem);
+ 	else if (ret == -ERESTARTSYS)
+@@ -412,8 +425,20 @@ int __fscache_read_or_alloc_pages(struct fscache_cookie *cookie,
+ 	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
+ 		_debug(">>> WT");
+ 		fscache_stat(&fscache_n_retrieval_op_waits);
+-		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
+-			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		if (wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				fscache_wait_bit_interruptible,
++				TASK_INTERRUPTIBLE) < 0) {
++			ret = fscache_cancel_op(&op->op);
++			if (ret == 0) {
++				ret = -ERESTARTSYS;
++				goto error;
++			}
++
++			/* it's been removed from the pending queue by another
++			 * party, so we should get to run shortly */
++			wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		}
+ 		_debug("<<< GO");
+ 	}
+ 
+@@ -430,6 +455,7 @@ int __fscache_read_or_alloc_pages(struct fscache_cookie *cookie,
+ 		fscache_stat_d(&fscache_n_cop_read_or_alloc_pages);
+ 	}
+ 
++error:
+ 	if (ret == -ENOMEM)
+ 		fscache_stat(&fscache_n_retrievals_nomem);
+ 	else if (ret == -ERESTARTSYS)
+@@ -505,8 +531,20 @@ int __fscache_alloc_page(struct fscache_cookie *cookie,
+ 	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
+ 		_debug(">>> WT");
+ 		fscache_stat(&fscache_n_alloc_op_waits);
+-		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
+-			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		if (wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				fscache_wait_bit_interruptible,
++				TASK_INTERRUPTIBLE) < 0) {
++			ret = fscache_cancel_op(&op->op);
++			if (ret == 0) {
++				ret = -ERESTARTSYS;
++				goto error;
++			}
++
++			/* it's been removed from the pending queue by another
++			 * party, so we should get to run shortly */
++			wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++				    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		}
+ 		_debug("<<< GO");
+ 	}
+ 
+@@ -515,7 +553,10 @@ int __fscache_alloc_page(struct fscache_cookie *cookie,
+ 	ret = object->cache->ops->allocate_page(op, page, gfp);
+ 	fscache_stat_d(&fscache_n_cop_allocate_page);
+ 
+-	if (ret < 0)
++error:
++	if (ret == -ERESTARTSYS)
++		fscache_stat(&fscache_n_allocs_intr);
++	else if (ret < 0)
+ 		fscache_stat(&fscache_n_allocs_nobufs);
+ 	else
+ 		fscache_stat(&fscache_n_allocs_ok);
+diff --git a/fs/fscache/stats.c b/fs/fscache/stats.c
+index 20233fb..4c07439 100644
+--- a/fs/fscache/stats.c
++++ b/fs/fscache/stats.c
+@@ -25,6 +25,7 @@ atomic_t fscache_n_op_requeue;
+ atomic_t fscache_n_op_deferred_release;
+ atomic_t fscache_n_op_release;
+ atomic_t fscache_n_op_gc;
++atomic_t fscache_n_op_cancelled;
+ 
+ atomic_t fscache_n_attr_changed;
+ atomic_t fscache_n_attr_changed_ok;
+@@ -36,6 +37,7 @@ atomic_t fscache_n_allocs;
+ atomic_t fscache_n_allocs_ok;
+ atomic_t fscache_n_allocs_wait;
+ atomic_t fscache_n_allocs_nobufs;
++atomic_t fscache_n_allocs_intr;
+ atomic_t fscache_n_alloc_ops;
+ atomic_t fscache_n_alloc_op_waits;
+ 
+@@ -169,11 +171,12 @@ static int fscache_stats_show(struct seq_file *m, void *v)
+ 		   atomic_read(&fscache_n_attr_changed_nomem),
+ 		   atomic_read(&fscache_n_attr_changed_calls));
+ 
+-	seq_printf(m, "Allocs : n=%u ok=%u wt=%u nbf=%u\n",
++	seq_printf(m, "Allocs : n=%u ok=%u wt=%u nbf=%u int=%u\n",
+ 		   atomic_read(&fscache_n_allocs),
+ 		   atomic_read(&fscache_n_allocs_ok),
+ 		   atomic_read(&fscache_n_allocs_wait),
+-		   atomic_read(&fscache_n_allocs_nobufs));
++		   atomic_read(&fscache_n_allocs_nobufs),
++		   atomic_read(&fscache_n_allocs_intr));
+ 	seq_printf(m, "Allocs : ops=%u owt=%u\n",
+ 		   atomic_read(&fscache_n_alloc_ops),
+ 		   atomic_read(&fscache_n_alloc_op_waits));
+@@ -201,10 +204,11 @@ static int fscache_stats_show(struct seq_file *m, void *v)
+ 		   atomic_read(&fscache_n_store_ops),
+ 		   atomic_read(&fscache_n_store_calls));
+ 
+-	seq_printf(m, "Ops    : pend=%u run=%u enq=%u\n",
++	seq_printf(m, "Ops    : pend=%u run=%u enq=%u can=%u\n",
+ 		   atomic_read(&fscache_n_op_pend),
+ 		   atomic_read(&fscache_n_op_run),
+-		   atomic_read(&fscache_n_op_enqueue));
++		   atomic_read(&fscache_n_op_enqueue),
++		   atomic_read(&fscache_n_op_cancelled));
+ 	seq_printf(m, "Ops    : dfr=%u rel=%u gc=%u\n",
+ 		   atomic_read(&fscache_n_op_deferred_release),
+ 		   atomic_read(&fscache_n_op_release),
 
