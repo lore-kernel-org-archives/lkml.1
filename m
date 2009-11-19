@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZKSOxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZKSO7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbZKSOxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZKSOxK
+	id S1756844AbZKSO7S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbZKSO7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:53:10 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:58850 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753032AbZKSOxK convert rfc822-to-8bit (ORCPT
+	Thu, 19 Nov 2009 09:59:17 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:56974 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZKSO7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:53:10 -0500
+	Thu, 19 Nov 2009 09:59:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=ekh71JeNroe/QkGX71sdtU5P9gIL/JLNPoOER/MzNAvXv6iQIhQrhlkey7bjiB4+yX
+         iHsOuV7IbHXgzdKALwd0I5qjJOwQ8iYsVC+pTdV0QKc2ZHtcyI6knehapBk876dAuAxs
+         s6gmydh+O/jDHwb+xnKYLbBuwkaQaJFgsfG1U=
+Message-ID: <4B055D46.6060407@gmail.com>
+Date: Thu, 19 Nov 2009 09:59:18 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Ben Hutchings <bhutchings@solarflare.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: NET: Questions about supporting older kernel's with kmods
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4B055479.8070101@gmail.com>
-References: <4B055479.8070101@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: Solarflare Communications
-Date: Thu, 19 Nov 2009 14:53:13 +0000
-Message-Id: <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 19 Nov 2009 14:53:27.0293 (UTC) FILETIME=[0D1A82D0:01CA6928]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17018.004
-X-TM-AS-Result: No--17.434200-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+References: <4B055479.8070101@gmail.com> <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
+In-Reply-To: <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE308AAB0D08EA3D53A0CD144"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-19 at 09:21 -0500, Gregory Haskins wrote:
-> Hi All,
-> 
-> So I was in the process of packaging up my venet driver so that it could
-> not only support the in-tree build (in -next), but also build as a KMP
-> for inclusion in existing distros that already shipped (like SLE, RHEL,
-> CentOS, etc).
-> 
-> The problem I ran into is that the ethtool and netdev_ops components of
-> the in-tree version do not necessarily align with the substrate
-> capabilities of older kernels.  What are the best-practices surrounding
-> this issue?
->
-> Q1) Is there any official CONFIG tags (e.g. HAVE_NETDEV_OPS) I can key
-> off of,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE308AAB0D08EA3D53A0CD144
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-These feature test macros are not consistently provided.
-
-> or should I simply look at the kernel version?
-
-That works up to a point, but the 'enterprise' distros backport a lot to
-earlier kernel versions which can make version tests invalid.
-
-Some out-of-tree/backported drivers use autoconf-style tests, but there
-is no standard way of doing this.
-
-﻿[...]
-> Q2) Is it considered "bad form" to include such compile-time directives
-> in the version of the code going upstream?
+Ben Hutchings wrote:
+> On Thu, 2009-11-19 at 09:21 -0500, Gregory Haskins wrote:
 [...]
+>=20
+>> or should I simply look at the kernel version?
+>=20
+> That works up to a point, but the 'enterprise' distros backport a lot t=
+o
+> earlier kernel versions which can make version tests invalid.
 
-Yes.  Don't do that.
+Good point
 
-Ben.
+>=20
+> Some out-of-tree/backported drivers use autoconf-style tests, but there=
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+> is no standard way of doing this.
+>=20
 
+Yeah, this might be the only sane way.  It turns out that my ETHTOOL
+issue was trivial.  I was missing "#include <linux/ethtool.h>" which
+worked in upstream, but not in older kernels.  So that issue is resolved.=
+
+
+Now I just need to figure out netdev_ops.  Perhaps I will just patch the
+netdev_ops out when building a kmod, since its just
+a different way to describe the same thing, and the resulting driver
+will perform the same.
+
+> =EF=BB=BF[...]
+>> Q2) Is it considered "bad form" to include such compile-time directive=
+s
+>> in the version of the code going upstream?
+> [...]
+>=20
+> Yes.  Don't do that.
+
+Ok.
+
+Thanks Ben,
+-Greg
+
+
+--------------enigE308AAB0D08EA3D53A0CD144
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksFXUYACgkQP5K2CMvXmqGtxwCfQnxSt+62yv2eZaKOd9viBfAW
+0LkAn2CJeEM8qjs6wGU/iiMczBeld1I5
+=xy/f
+-----END PGP SIGNATURE-----
+
+--------------enigE308AAB0D08EA3D53A0CD144--
