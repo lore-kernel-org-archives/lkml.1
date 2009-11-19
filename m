@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZKSTGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZKSTLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZKSTGv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZKSTGu
+	id S1753964AbZKSTLQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZKSTLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:06:50 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59085 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbZKSTGt (ORCPT
+	Thu, 19 Nov 2009 14:11:15 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:3318 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbZKSTLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:06:49 -0500
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Thu, 19 Nov 2009 14:11:15 -0500
+Message-ID: <4B05982B.6060200@caviumnetworks.com>
+Date: Thu, 19 Nov 2009 11:10:35 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>, rostedt@goodmis.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
        Fr??d??ric Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
        gcc@gcc.gnu.org
-In-Reply-To: <20091119184716.GA25458@elte.hu>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
-	 <20091119072040.GA23579@elte.hu>
-	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
-	 <1258653562.22249.682.camel@gandalf.stny.rr.com>
-	 <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>
-	 <alpine.LFD.2.00.0911191026420.2793@localhost.localdomain>
-	 <20091119184716.GA25458@elte.hu>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 19 Nov 2009 14:06:54 -0500
-Message-Id: <1258657614.22249.824.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>   <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>   <20091119072040.GA23579@elte.hu>   <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>    <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>   <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>   <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>   <1258653562.22249.682.camel@gandalf.stny.rr.com>  <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com> <4B058CCD.8050605@redhat.com> <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain> <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain> <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Nov 2009 19:10:36.0035 (UTC) FILETIME=[F959B530:01CA694B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-19 at 19:47 +0100, Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Linus Torvalds wrote:
 > 
-> > Admittedly, anybody who compiles with -pg probably doesn't care deeply 
-> > about smaller and more efficient code, since the mcount call overhead 
-> > tends to make the thing moot anyway, but it really looks like a 
-> > win-win situation to just fix the mcount call sequence regardless.
+> On Thu, 19 Nov 2009, Linus Torvalds wrote:
+>> I bet other people than just the kernel use the mcount hook for subtler 
+>> things than just doing profiles. And even if they don't, the quoted code 
+>> generation is just crazy _crap_.
 > 
-> Just a sidenote: due to dyn-ftrace, which patches out all mcounts during 
-> bootup to be NOPs (and opt-in patches them in again if someone runs the 
-> function tracer), the cost is not as large as one would have it with say 
-> -pg based user-space profiling.
+> For the kernel, if the only case is that timer_stat.c thing that Thomas 
+> pointed at, I guess we can at least work around it with something like the 
+> appended. The kernel code is certainly ugly too, no question about that. 
 > 
-> It's not completely zero-cost as the pure NOPs balloon the i$ footprint 
-> a bit and GCC generates different code too in some cases. But it's 
-> certainly good enough that it's generally pretty hard to prove overhead 
-> via micro or macro benchmarks that the patched out mcounts call sites 
-> are there.
+> It's just that we'd like to be able to depend on mcount code generation 
+> not being insane even in the presense of ugly code..
+> 
+> The alternative would be to have some warning when this happens, so that 
+> we can at least see it. "mcount won't work reliably"
+> 
 
-And frame pointers do add a little overhead as well. Too bad the mcount
-ABI wasn't something like this:
+For the MIPS port of GCC and Linux I recently added the 
+-mmcount-ra-address switch.  It causes the location of the return 
+address (on the stack) to be passed to mcount in a scratch register.
 
+Perhaps something similar could be done for x86.  It would make this 
+patching of the return location more reliable at the expense of more 
+code at the mcount invocation site.
 
-	<function>:
-		call	mcount
-		[...]
+For the MIPS case the code size doesn't increase, as it is done in the 
+delay slot of the call instruction, which would otherwise be a nop.
 
-This way, the function address for mcount would have been (%esp) and the
-parent address would be 4(%esp). Mcount would work without frame
-pointers and this whole mess would also become moot.
-
--- Steve
-
-
+David Daney
