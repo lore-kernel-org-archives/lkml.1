@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751417AbZKSLJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751820AbZKSLiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751417AbZKSLJm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 06:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZKSLJl
+	id S1751820AbZKSLiB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 06:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZKSLiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 06:09:41 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:59589 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZKSLJk (ORCPT
+	Thu, 19 Nov 2009 06:38:00 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:44371 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750830AbZKSLh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 06:09:40 -0500
-MIME-Version: 1.0
-In-Reply-To: <20091118213355.GA16630@srcf.ucam.org>
-References: <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> 
-	<20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> 
-	<20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> 
-	<20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> 
-	<20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> 
-	<20091118213355.GA16630@srcf.ucam.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 19 Nov 2009 12:09:30 +0100
-Message-ID: <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
-	changes
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 19 Nov 2009 06:37:59 -0500
+X-Greylist: delayed 1356 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 06:37:59 EST
+Date: Thu, 19 Nov 2009 12:15:26 +0100
+From: Jesper Nilsson <jesper@jni.nu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Starvik <starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, linux-cris-kernel@axis.com
+Subject: Re: [patch 10/13] cris: Fixup last users of irq_chip->typename
+Message-ID: <20091119111526.GB18155@jni.nu>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.725429771@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117224916.725429771@linutronix.de>
+User-Agent: Mutt/1.4.2.3i
+X-Originating-IP: 83.249.211.213
+X-Scan-Result: No virus found in message 1NB4zp-0000rB-4K.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1NB4zp-0000rB-4K 42972ebf2a45c1f02ec770a90d0746bc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 22:33, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Wed, Nov 18, 2009 at 10:06:33PM +0100, Kay Sievers wrote:
->
->> That's true, but I think there is a significant difference between
->> polling every one or two seconds for media changes, and usually one or
->> two minutes for a disk idle. It's not that we poll in a rather hight
->> frequency, in an arbitrary interval, and check if some condition is
->> met.
->
-> My use cases are on the order of a second.
+On Tue, Nov 17, 2009 at 10:51:20PM -0000, Thomas Gleixner wrote:
+> The typename member of struct irq_chip was kept for migration purposes
+> and is obsolete since more than 2 years. Fix up the leftovers.
 
-Ok, what's the specific use case, which should be triggered after a
-second? I thought you were thinking about disk spindown or similar.
+Looks good, should I take this through the CRIS-tree? Otherwise, here's my
 
-Kay
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+> Cc: linux-cris-kernel@axis.com
+
+/^JN - Jesper Nilsson
+--
+                  Jesper Nilsson -- jesper_at_jni.nu
