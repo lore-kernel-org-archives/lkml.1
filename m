@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZKSTpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZKST41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZKSTpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZKSTpm
+	id S1755392AbZKST41 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbZKST41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:45:42 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39030 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753946AbZKSTpm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:45:42 -0500
-Date: Thu, 19 Nov 2009 19:42:13 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Alan Cox <alan@linux.intel.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Message-ID: <20091119194213.7f4dd425@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911192031.31613.bzolnier@gmail.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>
-	<4B0590A2.9050306@ru.mvista.com>
-	<200911192003.09675.bzolnier@gmail.com>
-	<200911192031.31613.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Nov 2009 14:56:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50430 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755032AbZKST40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 14:56:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Thu, 19 Nov 2009 20:42:17 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc7-rjw; KDE/4.3.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <877htmragv.fsf@tac.ki.iif.hu> <87zl6ipt0p.fsf@tac.ki.iif.hu>
+In-Reply-To: <87zl6ipt0p.fsf@tac.ki.iif.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911192042.18073.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> In comparison to original patch the conversion from PCI access to
-> io has been dropped as it is not required for the bugfix and makes
-> patch easier for back-porting into -stable kernels.
+On Thursday 19 November 2009, Ferenc Wagner wrote:
+> Ferenc Wagner <wferi@niif.hu> writes:
+> 
+> > Ferenc Wagner <wferi@niif.hu> writes:
+> >
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>
+> >>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
+> >>>
+> >>>> Ferenc Wagner <wferi@niif.hu> writes:
+> >>>> 
+> >>>> Side question: If I run s2disk from the init=/bin/bash prompt, the
+> >>>> instrumentation in acpi_enter_sleep_state_prep in drivers/acpi/acpica/hwsleep.c
+> >>>> fires before the "Snapshotting system" phase, but it does not fire if I
+> >>>> hibernate from the full running desktop.  (That instrumentation was put
+> >>>> there to investigate the KMS-triggered STR freeze.)  What could explain
+> >>>> this?
+> >>>
+> >>> It looks like it uses the "shutdown" method when run with init=/bin/bash, but
+> >>> I don't know why exactly.
+> >>
+> >> Thanks for the tip, I'll check this too.
+> >
+> > While looking into this, I found a reproducible kernel panic:
+> >
+> > 1. boot with init=/bin/bash
+> > 2. mount /usr; swapon -a
+> > 3. plug in a USB pendrive
+> > 4. s2disk (machine goes to sleep)
+> > 5. power on, proceed with resuming, press Enter to cancel resume pause
+> > 6. ACPI: Hardware changed while hibernated, cannot resume!
+> >    Kernel panic - not syncing: ACPI S4 hardware signature mismatch
+> >
+> > Does it make sense?
+> 
+> Yes it does: it's the BIOS USB support playing its childish games.
+> I can disable it most of the time, except when booting from USB...
+> 
+> I wonder if this problem sould be handled more gracefully, now that USB
+> persistence is enabled by default.  It works just fine for STR, but
+> potentially panics after hibernation.
 
-Acked-by: Alan Cox <alan@linux.intel.com>
+Add acpi_sleep=s4_nohwsig to the kernel command line.
 
-(and from what Sergey says about the 371N then the I/O conversion
-is probably not needed anyway)
+Thanks,
+Rafael
