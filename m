@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZKSNXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752390AbZKSN2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZKSNXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZKSNXS
+	id S1752390AbZKSN2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZKSN2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:23:18 -0500
-Received: from www.tglx.de ([62.245.132.106]:38160 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbZKSNXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:23:16 -0500
-Date: Thu, 19 Nov 2009 14:22:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Jean Delvare <khali@linux-fr.org>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
-In-Reply-To: <1258636872.4372.354.camel@twins>
-Message-ID: <alpine.LFD.2.00.0911191421450.24119@localhost.localdomain>
-References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>  <20091107210147.3e754278@hyperion.delvare>  <4AF7148C.9090706@thebigcorporation.com>  <20091112211255.09cd884a@hyperion.delvare>  <alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
-  <20091116155606.GC29479@sirena.org.uk>  <c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>  <20091118010520.4cd397d4@lxorguk.ukuu.org.uk>  <c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>  <20091118175202.490989d8@hyperion.delvare>
-  <alpine.LFD.2.00.0911182127040.24119@localhost.localdomain>  <20091119130526.23a69b85@hyperion.delvare>  <alpine.LFD.2.00.0911191357490.24119@localhost.localdomain> <1258636872.4372.354.camel@twins>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 19 Nov 2009 08:28:24 -0500
+Received: from mail4-relais-sop.national.inria.fr ([192.134.164.105]:36046
+	"EHLO mail4-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750715AbZKSN2Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:28:24 -0500
+X-IronPort-AV: E=Sophos;i="4.44,771,1249250400"; 
+   d="scan'208";a="50620925"
+Date: Thu, 19 Nov 2009 14:28:28 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for non-ASCII
+Message-ID: <20091119132828.GA31025@const.bordeaux.inria.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, hpa@zytor.com,
+	alan@lxorguk.ukuu.org.uk, mgarski@post.pl
+References: <20091116135114.GA2719@x200> <20091116190739.GJ4764@const.famille.thibault.fr> <20091116195313.GB4462@x200> <20091116222738.GQ4764@const.famille.thibault.fr> <20091116225429.GB4764@const.famille.thibault.fr> <20091116230523.GC24961@x200> <20091116231520.GD4764@const.famille.thibault.fr> <20091117115503.GB1657@x200> <20091117132358.GJ12736@const.bordeaux.inria.fr> <20091119131854.GA1628@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091119131854.GA1628@x200.localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009, Peter Zijlstra wrote:
-
-> On Thu, 2009-11-19 at 14:11 +0100, Thomas Gleixner wrote:
-> > > You say "NOOP by default", does this imply there is a way to change
-> > > this?
-> > 
-> > There is a sysctl: sysctl_sched_compat_yield 
+Alexey Dobriyan, le Thu 19 Nov 2009 16:18:54 +0300, a écrit :
+> > More precisely, in the kbd source code, in the add_capslock function, in
+> > the unicode case, instead of ignoring the '+', add 0xD800 to the unicode
+> > value if it is below 0x0800.
 > 
-> This makes yield() place current behind all other tasks, and sucks too
-> for some workloads.
+> You suggest to change kernel and keymap and kbd and introduce 0xD800 hack.
+> This is not going to fly.
 
-yield() sucks anyway, so it depends which flavour of suckage you
-prefer.
+Sure, that's precisely what I said here:
 
-    tglx
+> > But again, that's a very limited fix and just fixing the LED interface
+> > would allow to just use modifiers and permit much more powerful keymaps.
+
+Just to make sure you understand my point: your bug is _not_ in the
+kernel, but in kbd, see what the add_capslock() function does when in
+unicode mode:
+
+	fprintf(stderr, _("plus before %s ignored\n"), p);
+
+No wonder capslocked keys don't work, kbd doesn't even tell the kernel
+which keys should get capslock behavior. Breaking the capslock behavior
+to make it a shiftlock to compensate kbd's bug is not going to fly
+either.
+
+Now, as I said, kbd's issue is that it doesn't have any way to express
+that a unicode keysym should get capslock behavior, due to kernel
+interface limitation.  But as I said, it can do like console-setup: use
+a modifier instead of the limited capslock interface. A side issue is
+that modifier locks don't get advertised through keyboard leds. That can
+be solved by adding an interface to make that happen.
+
+Instead of breaking an interface (capslock by making it a shiftlock
+instead), add one that makes sense (being able to configure how modifier
+locks are advertised through LEDs). _That_ will fly.
+
+Samuel
