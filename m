@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZKSLr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbZKSMAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbZKSLr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 06:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZKSLr1
+	id S1752057AbZKSMAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 07:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZKSMAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 06:47:27 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:52370 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751558AbZKSLr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 06:47:26 -0500
-Date: Thu, 19 Nov 2009 19:47:30 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Youquan,Song" <youquan.song@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
-       youquan.song@intel.com
-Subject: Re: [PATCH]crypto: Fix algorithm and driver duplicate registered
-Message-ID: <20091119114730.GC6392@gondor.apana.org.au>
-References: <20091119003202.GA28448@youquan-linux.bj.intel.com> <20091119001827.GC2315@gondor.apana.org.au> <20091119110222.GA19379@youquan-linux.bj.intel.com>
+	Thu, 19 Nov 2009 07:00:18 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:38592 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbZKSMAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 07:00:17 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] intermittent suspend problem again
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
+	<87r5rwrkqs.fsf@tac.ki.iif.hu> <200911182313.14092.rjw@sisk.pl>
+Date: Thu, 19 Nov 2009 13:00:00 +0100
+In-Reply-To: Ferenc Wagner's message of "Wed\, 18 Nov 2009 23\:55\:01 +0100"
+Message-ID: <877htmragv.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091119110222.GA19379@youquan-linux.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 06:02:22AM -0500, Youquan,Song wrote:
-> 
-> I have watched crypto_alg_list includes several duplicate algorithms
-> with same algorithm name and driver name. 
-> Since they are the same algorithms, one is only needed. otherwise,it
-> will make some confusion.
+Ferenc Wagner <wferi@niif.hu> writes:
 
-Can you show me a sample /proc/crypto showing this problem and how
-you created it?
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
+>>
+>>> Ferenc Wagner <wferi@niif.hu> writes:
+>>> 
+>>> Side question: If I run s2disk from the init=/bin/bash prompt, the
+>>> instrumentation in acpi_enter_sleep_state_prep in drivers/acpi/acpica/hwsleep.c
+>>> fires before the "Snapshotting system" phase, but it does not fire if I
+>>> hibernate from the full running desktop.  (That instrumentation was put
+>>> there to investigate the KMS-triggered STR freeze.)  What could explain
+>>> this?
+>>
+>> It looks like it uses the "shutdown" method when run with init=/bin/bash, but
+>> I don't know why exactly.
+>
+> Thanks for the tip, I'll check this too.
 
-Thanks,
+While looking into this, I found a reproducible kernel panic:
+
+1. boot with init=/bin/bash
+2. mount /usr; swapon -a
+3. plug in a USB pendrive
+4. s2disk (machine goes to sleep)
+5. power on, proceed with resuming, press Enter to cancel resume pause
+6. ACPI: Hardware changed while hibernated, cannot resume!
+   Kernel panic - not syncing: ACPI S4 hardware signature mismatch
+
+Does it make sense?
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks,
+Feri.
