@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZKSOrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZKSOs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbZKSOrw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZKSOrv
+	id S1756717AbZKSOs7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:48:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbZKSOs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:47:51 -0500
-Received: from stinky.trash.net ([213.144.137.162]:44070 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbZKSOrv (ORCPT
+	Thu, 19 Nov 2009 09:48:58 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:53397 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226AbZKSOs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:47:51 -0500
-Message-ID: <4B055A9B.1090502@trash.net>
-Date: Thu, 19 Nov 2009 15:47:55 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Thu, 19 Nov 2009 09:48:58 -0500
+Date: Thu, 19 Nov 2009 14:48:53 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091119144853.GA1398@srcf.ucam.org>
+References: <20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> <20091118213355.GA16630@srcf.ucam.org> <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> <20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com> <20091119141634.GA311@srcf.ucam.org> <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com> <20091119143008.GA719@srcf.ucam.org> <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@linux-foundation.com,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
-Subject: Re: [PATCH 1/3] macvlan: Reflect macvlan packets meant for other
- macvlan devices
-References: <1258497551-25959-1-git-send-email-arnd@arndb.de> <200911182332.56309.arnd@arndb.de> <m1bpiz8k1x.fsf@fess.ebiederm.org> <200911191244.43916.arnd@arndb.de>
-In-Reply-To: <200911191244.43916.arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Thursday 19 November 2009, Eric W. Biederman wrote:
->>> It seems that we should never drop dst then. We either forward the frame to
->>> netif_rx or to dev_queue_xmit, and from how I read it now, we want to keep
->>> the dst in both cases.
->> When we loop back on our selves we certainly need to have dst clear because
->> we don't know how to cache routes through multiple network namespaces.
-> 
-> Ah, right. So should I add the explicit dst_drop to the new dev_forward_skb()
-> then? The veth driver doesn't need it, but it also looks like it won't hurt.
+On Thu, Nov 19, 2009 at 03:34:53PM +0100, Kay Sievers wrote:
 
-Yes, I think that should be fine.
+> Single-subscriber event interfaces are usually a no-go for generic
+> infrastructure like this. We still have the unmodified HAL running
+> until it is dead, and this works only because there are no such
+> awkward interfaces. In a few years we will probably have diskfoo
+> replacing dk-disks, and then ... :)
+
+If you've got any ideas for what a multi-subscriber interface would look 
+like, I'm happy look at it. I don't think there's an especially 
+compelling use-case for one right now so I'm not enthusiastic about the 
+additional complexity that'd be required, but as long as there's basic 
+agreement that it's not practical to do this in userspace then we're at 
+least on the same page.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
