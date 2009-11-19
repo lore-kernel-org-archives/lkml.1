@@ -1,189 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbZKSCMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbZKSC2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757824AbZKSCMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 21:12:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbZKSCMO
+	id S1757771AbZKSC2r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 21:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbZKSC2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 21:12:14 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39854 "EHLO smtps.tip.net.au"
+	Wed, 18 Nov 2009 21:28:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43748 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756132AbZKSCMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 21:12:13 -0500
-Date: Thu, 19 Nov 2009 13:12:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kalle Valo <kalle.valo@nokia.com>, Tony Lindgren <tony@atomide.com>,
-       <linux-omap@vger.kernel.org>, Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: linux-next: manual merge of the input tree with the omap tree
-Message-Id: <20091119131216.da16845c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757393AbZKSC2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 21:28:45 -0500
+Date: Thu, 19 Nov 2009 03:28:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Jiri Slaby <jslaby@novell.com>,
+       "jirislaby@gmail.com" <jirislaby@gmail.com>,
+       "nhorman@tuxdriver.com" <nhorman@tuxdriver.com>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "marcin.slusarz@gmail.com" <marcin.slusarz@gmail.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       James Morris <jmorris@namei.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH 03/16] IA64: use ACCESS_ONCE for rlimits
+Message-ID: <20091119022816.GA27729@elte.hu>
+References: <4B040A03.2020508@gmail.com>
+ <1258555922-2064-3-git-send-email-jslaby@novell.com>
+ <57C9024A16AD2D4C97DC78E552063EA3E38E71DD@orsmsx505.amr.corp.intel.com>
+ <alpine.LFD.2.00.0911181138120.2261@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911181138120.2261@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
 
-Today's linux-next merge of the input tree got a conflict in
-arch/arm/mach-omap2/board-rx51-peripherals.c between commit
-ebff0472f451a07fae9f4e72bdc2af4c52ebb682 ("omap3: rx51: Add wl1251 wlan
-driver support") from the omap tree and commit
-5018461a887d58f4601207deeebb7c352c2da20a ("ARM OMAP3: RX-51 board - add
-initialization of gpio keys") from the input tree.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Just overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> So the rule is: if you access unlocked values, you use ACCESS_ONCE(). 
+> You don't say "but it can't matter". Because you simply don't know.
 
-diff --cc arch/arm/mach-omap2/board-rx51-peripherals.c
-index caaeadc,a5c02a4..0000000
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@@ -21,53 -20,103 +21,134 @@@
-  #include <linux/delay.h>
-  #include <linux/regulator/machine.h>
-  #include <linux/gpio.h>
-+ #include <linux/gpio_keys.h>
-  #include <linux/mmc/host.h>
-  
- -#include <mach/mcspi.h>
- -#include <mach/mux.h>
- -#include <mach/board.h>
- -#include <mach/common.h>
- -#include <mach/dma.h>
- -#include <mach/gpmc.h>
- -#include <mach/onenand.h>
- -#include <mach/gpmc-smc91x.h>
- +#include <plat/mcspi.h>
- +#include <plat/mux.h>
- +#include <plat/board.h>
- +#include <plat/common.h>
- +#include <plat/dma.h>
- +#include <plat/gpmc.h>
- +#include <plat/onenand.h>
- +#include <plat/gpmc-smc91x.h>
-  
-  #include "mmc-twl4030.h"
-  
-  #define SYSTEM_REV_B_USES_VAUX3	0x1699
-  #define SYSTEM_REV_S_USES_VAUX3 0x8
-  
- +#define RX51_WL1251_POWER_GPIO		87
- +#define RX51_WL1251_IRQ_GPIO		42
- +
- +static void rx51_wl1251_set_power(bool enable);
- +
- +static struct wl12xx_platform_data wl1251_pdata = {
- +	.set_power = rx51_wl1251_set_power,
- +};
- +
- +static struct omap2_mcspi_device_config wl1251_mcspi_config = {
- +	.turbo_mode	= 0,
- +	.single_channel	= 1,
- +};
- +
- +/* list all spi devices here */
- +enum {
- +	RX51_SPI_WL1251,
- +};
- +
- +static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
- +	[RX51_SPI_WL1251] = {
- +		.modalias		= "wl1251",
- +		.bus_num		= 4,
- +		.chip_select		= 0,
- +		.max_speed_hz   	= 48000000,
- +		.mode                   = SPI_MODE_2,
- +		.controller_data	= &wl1251_mcspi_config,
- +		.platform_data		= &wl1251_pdata,
- +	},
- +};
- +
-+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
-+ 
-+ #define RX51_GPIO_CAMERA_LENS_COVER	110
-+ #define RX51_GPIO_CAMERA_FOCUS		68
-+ #define RX51_GPIO_CAMERA_CAPTURE	69
-+ #define RX51_GPIO_KEYPAD_SLIDE		71
-+ #define RX51_GPIO_LOCK_BUTTON		113
-+ #define RX51_GPIO_PROXIMITY		89
-+ 
-+ #define RX51_GPIO_DEBOUNCE_TIMEOUT	10
-+ 
-+ static struct gpio_keys_button rx51_gpio_keys[] = {
-+ 	{
-+ 		.desc			= "Camera Lens Cover",
-+ 		.type			= EV_SW,
-+ 		.code			= SW_CAMERA_LENS_COVER,
-+ 		.gpio			= RX51_GPIO_CAMERA_LENS_COVER,
-+ 		.active_low		= 1,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}, {
-+ 		.desc			= "Camera Focus",
-+ 		.type			= EV_KEY,
-+ 		.code			= KEY_CAMERA_FOCUS,
-+ 		.gpio			= RX51_GPIO_CAMERA_FOCUS,
-+ 		.active_low		= 1,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}, {
-+ 		.desc			= "Camera Capture",
-+ 		.type			= EV_KEY,
-+ 		.code			= KEY_CAMERA,
-+ 		.gpio			= RX51_GPIO_CAMERA_CAPTURE,
-+ 		.active_low		= 1,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}, {
-+ 		.desc			= "Lock Button",
-+ 		.type			= EV_KEY,
-+ 		.code			= KEY_SCREENLOCK,
-+ 		.gpio			= RX51_GPIO_LOCK_BUTTON,
-+ 		.active_low		= 1,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}, {
-+ 		.desc			= "Keypad Slide",
-+ 		.type			= EV_SW,
-+ 		.code			= SW_KEYPAD_SLIDE,
-+ 		.gpio			= RX51_GPIO_KEYPAD_SLIDE,
-+ 		.active_low		= 1,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}, {
-+ 		.desc			= "Proximity Sensor",
-+ 		.type			= EV_SW,
-+ 		.code			= SW_FRONT_PROXIMITY,
-+ 		.gpio			= RX51_GPIO_PROXIMITY,
-+ 		.active_low		= 0,
-+ 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-+ 	}
-+ };
-+ 
-+ static struct gpio_keys_platform_data rx51_gpio_keys_data = {
-+ 	.buttons	= rx51_gpio_keys,
-+ 	.nbuttons	= ARRAY_SIZE(rx51_gpio_keys),
-+ };
-+ 
-+ static struct platform_device rx51_gpio_keys_device = {
-+ 	.name	= "gpio-keys",
-+ 	.id	= -1,
-+ 	.dev	= {
-+ 		.platform_data	= &rx51_gpio_keys_data,
-+ 	},
-+ };
-+ 
-+ static void __init rx51_add_gpio_keys(void)
-+ {
-+ 	platform_device_register(&rx51_gpio_keys_device);
-+ }
-+ #else
-+ static void __init rx51_add_gpio_keys(void)
-+ {
-+ }
-+ #endif /* CONFIG_KEYBOARD_GPIO || CONFIG_KEYBOARD_GPIO_MODULE */
-+ 
-  static int board_keymap[] = {
-  	KEY(0, 0, KEY_Q),
-  	KEY(0, 1, KEY_O),
+Most of the time we are being lax about it, especially when it's some 
+global value we are accessing, which can only be changed as a sysadmin 
+via a sysctl or so.
+
+[ For example we access pid_max in kernel/pid.c, outside of any lock and 
+  without ACCESS_ONCE() - but that particular case is not a big deal 
+  because changes to pid_max via a sysctl are so rare and are 
+  privileged, and because the effects of any race there are benign. ]
+
+But this patch series is about setrlimit, which makes the per task 
+rlimit value pretty SMP-volatile (a parallel, unprivileged setrlimit can 
+race with usage of the value elsewhere) - and the rlimits have security 
+relevance as well so some extra care in accessing them outside of locks 
+is prudent IMO.
+
+	Ingo
