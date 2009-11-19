@@ -1,77 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZKSHNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZKSHTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbZKSHNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 02:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZKSHNP
+	id S1752775AbZKSHTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 02:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZKSHTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 02:13:15 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64363 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbZKSHNO (ORCPT
+	Thu, 19 Nov 2009 02:19:16 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62338 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbZKSHTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 02:13:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=kUPYlvG6Rowxch0DnFXblqAhYXrcQ7v1qVJxaAfLaJLy9KFGFhV2S0FR75CWpdfI1J
-         CSyDjEY/LA2jNS0+ZuP/KGoQ3nmD0nr9rGdKlja1Frft7QW/Dm9vlmW24GAlKSvET8lM
-         ywkIFZISl2hfllnyJfzwyXclqWRl9nfT6YeE0=
-Date: Wed, 18 Nov 2009 23:13:15 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linux Input <linux-input@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Input: keyboard - add locking around event handling
-Message-ID: <20091119071315.GD3010@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 19 Nov 2009 02:19:15 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ling Ma <ling.ma@intel.com>
+Subject: [PATCH] perf bench: Add new functions for utilizing rep of Nehalem
+Date: Thu, 19 Nov 2009 16:18:59 +0900
+Message-Id: <1258615139-23060-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keyboard input handler is multiplexing events form all keyboard-like
-devices in the system. Because of that per-device lock provided by
-input core is not enough to prevent clashes in ked_event() and we
-need our own lock to ensure that only one thread at a time executing
-kbd_event().
+This patch adds two functions to bench/mem-memcpy.c,
+memcpy_nehalem_rep() and memcpy_orig_of_nehalem_rep().
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+These functions are based on the post by Ling Ma,
+http://marc.info/?l=linux-kernel&m=125800144419838&w=2
+And the purpose of this post is improving performance
+of memcpy() for x86_64.
+
+On my Core i7 box, I can find improvement of performance,
+
+|% perf bench mem memcpy -c -l 1GB -r nehalem-rep
+| # Running mem/memcpy benchmark...
+| # Copying 1GB Bytes from 0x7ff9fc95a010 to 0x7ffa3c95b010 ...
+|
+|        3.099325 Clock/Byte
+| % perf bench mem memcpy -c -l 1GB -r orig-of-nehalem-rep
+| # Running mem/memcpy benchmark...
+| # Copying 1GB Bytes from 0x7f314d1d7010 to 0x7f318d1d8010 ...
+|
+|        4.353351 Clock/Byte
+
+(of course I tested some times, and results are like the above)
+
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ling Ma <ling.ma@intel.com>
 ---
+ tools/perf/bench/mem-memcpy.c |  167 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 167 insertions(+), 0 deletions(-)
 
- drivers/char/keyboard.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index ce2ab67..e095ff3 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -130,6 +130,7 @@ int shift_state = 0;
-  */
+diff --git a/tools/perf/bench/mem-memcpy.c b/tools/perf/bench/mem-memcpy.c
+index d4f4f98..349aeaf 100644
+--- a/tools/perf/bench/mem-memcpy.c
++++ b/tools/perf/bench/mem-memcpy.c
+@@ -37,6 +37,165 @@ static const struct option options[] = {
+ 	OPT_END()
+ };
  
- static struct input_handler kbd_handler;
-+static DEFINE_SPINLOCK(kbd_event_lock);
- static unsigned long key_down[BITS_TO_LONGS(KEY_CNT)];	/* keyboard key bitmap */
- static unsigned char shift_down[NR_SHIFT];		/* shift state counters.. */
- static int dead_key_next;
-@@ -1304,11 +1305,16 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
- static void kbd_event(struct input_handle *handle, unsigned int event_type,
- 		      unsigned int event_code, int value)
- {
-+	/* We are called with interrupts disabled */
-+	spin_lock(&kbd_event_lock);
++#ifdef __x86_64__
 +
- 	if (event_type == EV_MSC && event_code == MSC_RAW && HW_RAW(handle->dev))
- 		kbd_rawcode(value);
- 	if (event_type == EV_KEY)
- 		kbd_keycode(event_code, value, HW_RAW(handle->dev));
- 
-+	spin_unlock(&kbd_event_lock);
++/*
++ * This memcpy_nehalem_rep() is based on Ling Ma <ling.ma@intel.com>'s
++ * memcpy_new() optimized for Nehalem architecture.
++ *
++ * http://marc.info/?l=linux-kernel&m=125800144419838&w=2
++ */
++static void *memcpy_nehalem_rep(void *dst, const void *src __used,
++			     size_t len __used)
++{
++	__asm__(
++		"movq %rdi, %rax\n\t"
++		"movl %edx, %ecx\n\t"
++		"shrl $6, %ecx\n\t"
++		"jz nehalem_rep_2\n\t"
 +
- 	tasklet_schedule(&keyboard_tasklet);
- 	do_poke_blanked_console = 1;
- 	schedule_console_callback();
++		"cmp $0x400, %edx\n\t"
++		"jae nehalem_rep_7\n\t"
++
++		"nehalem_rep_1:\n\t"
++		"decl %ecx\n\t"
++		"movq 0*8(%rsi), %r11\n\t"
++		"movq 1*8(%rdi), %r8\n\t"
++		"movq %r11, 0*8(%rdi)\n\t"
++		"movq %r8, 1*8(%rdi)\n\t"
++		"movq 2*8(%rsi), %r9\n\t"
++		"movq 3*8(%rdi), %r10\n\t"
++		"movq %r9, 2*8(%rdi)\n\t"
++		"movq %r10, 3*8(%rdi)\n\t"
++		"movq 4*8(%rsi), %r11\n\t"
++		"movq 5*8(%rdi), %r8\n\t"
++		"movq %r11, 4*8(%rdi)\n\t"
++		"movq %r8, 5*8(%rdi)\n\t"
++		"movq 6*8(%rsi), %r9\n\t"
++		"movq 7*8(%rdi), %r10\n\t"
++		"movq %r9, 6*8(%rdi)\n\t"
++		"movq %r10, 7*8(%rdi)\n\t"
++		"leaq 64(%rsi), %rsi\n\t"
++		"leaq 64(%rdi), %rdi\n\t"
++		"jnz nehalem_rep_1\n\t"
++
++		"nehalem_rep_2:\n\t"
++		"movl %edx, %ecx\n\t"
++		"andl $63, %ecx\n\t"
++		"shrl $3, %ecx\n\t"
++		"jz nehalem_rep_4\n\t"
++
++		"nehalem_rep_3:\n\t"
++		"decl %ecx\n\t"
++		"movq (%rsi), %r8\n\t"
++		"movq %r8, (%rdi)\n\t"
++		"leaq 8(%rdi), %rdi\n\t"
++		"leaq 8(%rsi), %rsi\n\t"
++		"jnz nehalem_rep_3\n\t"
++
++		"nehalem_rep_4:\n\t"
++		"movl %edx, %ecx\n\t"
++		"andl $7, %ecx\n\t"
++		"jz nehalem_rep_6\n\t"
++
++		"nehalem_rep_5:\n\t"
++		"movb (%rsi), %r8b\n\t"
++		"movb %r8b, (%rdi)\n\t"
++		"incq %rdi\n\t"
++		"incq %rsi\n\t"
++		"decl %ecx\n\t"
++		"jnz nehalem_rep_5\n\t"
++		"nehalem_rep_6:\n\t"
++
++		"retq\n\t"
++		"nehalem_rep_7:\n\t"
++
++		"movl %edx, %ecx\n\t"
++		"shr $3, %ecx\n\t"
++		"andl $7, %edx\n\t"
++		"rep movsq \n\t"
++		"jz nehalem_rep_8\n\t"
++
++		"movl %edx, %ecx\n\t"
++		"rep movsb\n\t"
++		"nehalem_rep_8:\n\t"
++		);
++
++	return dst;
++}
++
++/*
++ * Original memcpy() from arch/x86/lib/memcpy_64.S
++ * Main purpose of this function is comparison with
++ * for-nehalem-rep()
++ */
++
++static void *memcpy_orig_of_nehalem_rep(void *dst, const void *src __used,
++			     size_t len __used)
++{
++	__asm__(
++		"movq %rdi, %rax\n\t"
++		"movl %edx, %ecx\n\t"
++		"shrl $6, %ecx\n\t"
++		"jz orig_of_nehalem_rep2\n\t"
++
++		"mov $0x80, %r8d\n\t"
++		"orig_of_nehalem_rep1:\n\t"
++		"decl %ecx\n\t"
++		"movq 0*8(%rsi), %r11\n\t"
++		"movq 1*8(%rdi), %r8\n\t"
++		"movq %r11, 0*8(%rdi)\n\t"
++		"movq %r8, 1*8(%rdi)\n\t"
++		"movq 2*8(%rsi), %r9\n\t"
++		"movq 3*8(%rdi), %r10\n\t"
++		"movq %r9, 2*8(%rdi)\n\t"
++		"movq %r10, 3*8(%rdi)\n\t"
++		"movq 4*8(%rsi), %r11\n\t"
++		"movq 5*8(%rdi), %r8\n\t"
++		"movq %r11, 4*8(%rdi)\n\t"
++		"movq %r8, 5*8(%rdi)\n\t"
++		"movq 6*8(%rsi), %r9\n\t"
++		"movq 7*8(%rdi), %r10\n\t"
++		"movq %r9, 6*8(%rdi)\n\t"
++		"movq %r10, 7*8(%rdi)\n\t"
++		"leaq 64(%rsi), %rsi\n\t"
++		"leaq 64(%rdi), %rdi\n\t"
++		"jnz orig_of_nehalem_rep1\n\t"
++
++		"orig_of_nehalem_rep2:\n\t"
++		"movl %edx, %ecx\n\t"
++		"andl $63, %ecx\n\t"
++		"shrl $3, %ecx\n\t"
++		"jz orig_of_nehalem_rep4\n\t"
++
++		"orig_of_nehalem_rep3:\n\t"
++		"decl %ecx\n\t"
++		"movq (%rsi), %r8\n\t"
++		"movq %r8, (%rdi)\n\t"
++		"leaq 8(%rdi), %rdi\n\t"
++		"leaq 8(%rsi), %rsi\n\t"
++		"jnz orig_of_nehalem_rep3\n\t"
++
++		"orig_of_nehalem_rep4:\n\t"
++		"movl %edx, %ecx\n\t"
++		"andl $7, %ecx\n\t"
++		"jz orig_of_nehalem_rep6\n\t"
++
++		"orig_of_nehalem_rep5:\n\t"
++		"movb (%rsi), %r8b\n\t"
++		"movb %r8b, (%rdi)\n\t"
++		"incq %rdi\n\t"
++		"incq %rsi\n\t"
++		"decl %ecx\n\t"
++		"jnz orig_of_nehalem_rep5\n\t"
++
++		"orig_of_nehalem_rep6:\n\t"
++		);
++	return dst;
++}
++
++ #endif	/* __x86_64__ */
++
+ struct routine {
+ 	const char *name;
+ 	const char *desc;
+@@ -47,6 +206,14 @@ struct routine routines[] = {
+ 	{ "default",
+ 	  "Default memcpy() provided by glibc",
+ 	  memcpy },
++#ifdef __x86_64__
++	{ "nehalem-rep",
++	  "Optimized memcpy() for Nehalem architecture",
++	  memcpy_nehalem_rep     },
++	{ "orig-of-nehalem-rep",
++	  "Original memcpy() from arch/x86/lib/memcpy_64.S",
++	  memcpy_orig_of_nehalem_rep },
++#endif	/* __x86_64__ */
+ 	{ NULL,
+ 	  NULL,
+ 	  NULL   }
 -- 
-Dmitry
+1.6.5.2
+
