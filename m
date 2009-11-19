@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZKSOvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZKSOxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbZKSOvi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZKSOvh
+	id S1756647AbZKSOxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZKSOxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:51:37 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:16425 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbZKSOvg (ORCPT
+	Thu, 19 Nov 2009 09:53:10 -0500
+Received: from exchange.solarflare.com ([216.237.3.220]:58850 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbZKSOxK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:51:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=GJQtybJlXvlN90nEnNF620hGRsnvoZS1Ud/GYsh44kwfWspoao0zUUlwUgW6fhcNAZ
-         VEwfqylL7b2NFrYptR1SOx33/jIIThMxP37J/O8iitOQcAP3ip3s2D5apLgsAUgPGsDc
-         EvhBew//JkHGfZu1k+nLDnTgsMSWWY0fuT19E=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 15:50:25 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191517.15090.bzolnier@gmail.com> <20091119143351.1d0e2c59@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119143351.1d0e2c59@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911191550.25476.bzolnier@gmail.com>
+	Thu, 19 Nov 2009 09:53:10 -0500
+Subject: Re: NET: Questions about supporting older kernel's with kmods
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4B055479.8070101@gmail.com>
+References: <4B055479.8070101@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Solarflare Communications
+Date: Thu, 19 Nov 2009 14:53:13 +0000
+Message-Id: <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Nov 2009 14:53:27.0293 (UTC) FILETIME=[0D1A82D0:01CA6928]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17018.004
+X-TM-AS-Result: No--17.434200-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 15:33:51 Alan Cox wrote:
-> On Thu, 19 Nov 2009 15:17:14 +0100
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Thu, 2009-11-19 at 09:21 -0500, Gregory Haskins wrote:
+> Hi All,
 > 
-> > On Thursday 19 November 2009 14:16:36 Alan Cox wrote:
-> > > > Only pata_hpt37x has broken cable detection while pata_hpt3x2n is
-> > > > okay. ;)
-> > > 
-> > > I think you have that backwards according to the vendor drivers. 3x2n
-> > > looks like it needs adjusting.
-> > 
-> > lol, just fix the damn pata_hpt37x driver _lacking_ ->cable_detect method..
+> So I was in the process of packaging up my venet driver so that it could
+> not only support the in-tree build (in -next), but also build as a KMP
+> for inclusion in existing distros that already shipped (like SLE, RHEL,
+> CentOS, etc).
 > 
-> It doesn't need one. It still sets the cable type in the pre reset
-> function as the older drivers that haven't converted to a cable_detect
-> method do.
+> The problem I ran into is that the ethtool and netdev_ops components of
+> the in-tree version do not necessarily align with the substrate
+> capabilities of older kernels.  What are the best-practices surrounding
+> this issue?
+>
+> Q1) Is there any official CONFIG tags (e.g. HAVE_NETDEV_OPS) I can key
+> off of,
 
-If you know about other drivers still using ->pre_reset for cable detection
-please let us know because they need fixing ASAP.
+These feature test macros are not consistently provided.
 
-->cable_detect method is there for a reason, by knowingly not using it you
-already have a buggy cable detection (since ->pre_reset ignores the mandatory
-by spec part of cable detection which is probing slave before master) and
-make it more likely to cause breakages in the future when some other developer
-do a change under assumption that all host drivers use API correctly.
+> or should I simply look at the kernel version?
+
+That works up to a point, but the 'enterprise' distros backport a lot to
+earlier kernel versions which can make version tests invalid.
+
+Some out-of-tree/backported drivers use autoconf-style tests, but there
+is no standard way of doing this.
+
+﻿[...]
+> Q2) Is it considered "bad form" to include such compile-time directives
+> in the version of the code going upstream?
+[...]
+
+Yes.  Don't do that.
+
+Ben.
 
 -- 
-Bartlomiej Zolnierkiewicz
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
+
