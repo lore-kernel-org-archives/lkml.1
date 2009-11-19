@@ -1,79 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932538AbZKSENJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbZKSEQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932538AbZKSENJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 23:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932461AbZKSENI
+	id S932535AbZKSEQz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 23:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbZKSEQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 23:13:08 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:41035 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932459AbZKSENH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 23:13:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=wEr03XB5FJkc4GPdmE3WAsHQ7Y47UAcAEXom+YQibH4R3yzgIBH83pJqsabBzsxfXy
-         KTyGHZlCIkfyDkZvhGTOG1d1brDF0UsYBE+iisN/onyqK3w7BqwQmK5l9Nl3H8rb1zTk
-         XegbH1KRYkFT3noLP65PTDJkV1u8awBRfHmhc=
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, x86@kernel.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH] Optimize hweight32 for x86
-Date: Thu, 19 Nov 2009 13:12:12 +0900
-Message-Id: <1258603932-4590-1-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 1.6.5.1
+	Wed, 18 Nov 2009 23:16:54 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:48984 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932468AbZKSEQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 23:16:53 -0500
+Date: Wed, 18 Nov 2009 20:16:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, mhiramat@redhat.com,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
+       rth@redhat.com
+Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump
+	patching without stop_machine
+Message-ID: <20091119041656.GA7056@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <20091119002826.GB28962@Krystal> <20091119005829.GF6683@linux.vnet.ibm.com> <20091119015756.GA10668@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091119015756.GA10668@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Optimize hweight32 by using the same technique in hweight64.
-The proof of this technique can be found in the commit log for
-f9b4192923fa6e38331e88214b1fe5fc21583fcc
+On Wed, Nov 18, 2009 at 08:57:56PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Wed, Nov 18, 2009 at 07:28:26PM -0500, Mathieu Desnoyers wrote:
+> > > * Jason Baron (jbaron@redhat.com) wrote:
+> > > > Add text_poke_fixup() which takes a fixup address to where a processor
+> > > > jumps if it hits the modifying address while code modifying.
+> > > > text_poke_fixup() does following steps for this purpose.
+> > > > 
+> > > >  1. Setup int3 handler for fixup.
+> > > >  2. Put a breakpoint (int3) on the first byte of modifying region,
+> > > >     and synchronize code on all CPUs.
+> > > >  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+> > > >  4. Modify the first byte of modifying region, and synchronize code
+> > > >     on all CPUs.
+> > > >  5. Clear int3 handler.
+> > > > 
+> > > 
+> > > Hi Masami,
+> > > 
+> > > I like the approach and the API is clean. I have intersped comments
+> > > below.
+> > > 
+> > > Ingo: I raise a question about text_mutex vs on_each_cpu hangs I
+> > > experienced recently in the message below. Might be worth having a look,
+> > > I suspect this might have caused the hangs Paul McKenney had with his
+> > > past TREE RCU callback migration. I think he did take a mutex in the cpu
+> > > hotplug callbacks and might have used IPIs within that same lock.
+> > 
+> > Hello, Mathieu,
+> > 
+> > By "mutex", do you mean "mutex_lock()"?  If so, I don't do that from
+> > within the CPU hotplug notifiers.  I do spin_lock_irqsave().
+> > 
+> > People have been known to invoke synchronize_rcu() from CPU hotplug
+> > notifiers, however -- and this does block.  Is that what you are
+> > getting at?
+> 
+> Hi Paul,
+> 
+> What I had in mind is more like a N-way deadlock involving the cpu
+> hotplug mutex, on_each_cpu, and possibly stop_machine interaction.
+> However I did not push the lockup analysis far enough to know for sure,
+> but I feel like it's good to let others know. I am not sure if blocking
+> primitives could be affected by this.
 
-The userspece benchmark on x86_32 showed 20% speedup with
-bitmap_weight() which uses hweight32 to count bits for each
-unsigned long on 32bit architectures.
+Then you might be interested to hear that my attempts to move
+rcu_offline_cpu() to the CPU_DYING and rcu_online_cpu() to CPU_STARTING
+did result in howls of pain from lockdep as well as deadlocks.
+I abandoned such attempts.  ;-)
 
-int main(void)
-{
-	#define SZ (1024 * 1024 * 512)
+(The reason behind my attempts was to reduce the number and complexity
+of race conditions in the RCU implementations -- but no big deal, as I
+have found other ways.)
 
-	static DECLARE_BITMAP(bitmap, SZ) = {
-	        [0 ... 100] = 1,
-	};
+> > I do invoke smp_send_reschedule() with irqs disabled, which did arouse my
+> > suspicions of late.  But this seems to bypass the smp_call_function()
+> > code that is most definitely illegal to invoke with irqs disabled,
+> > so no smoking gun.  All that aside, if invoking smp_send_reschedule()
+> > with irqs disabled is in any way a bad idea, please let me know so I
+> > can rearrange the code appropriately.
+> > 
+> > RCU is currently running reasonably well with the set of patches I have
+> > submitted.  It the kernel is now withstanding a level of punishment that
+> > would have reduced 2.6.28 (for example) to a steaming pile of bits, with
+> > or without the help of rcutorture.  And I am now hitting the occasional
+> > non-RCU bug, so I am starting to feel like RCU is approaching stability.
+> > Approaching, but not there yet -- a few suspicious areas remain.  Time
+> > to crank the testing up another notch or two.  ;-)
+> 
+> Nice :) I've been going through the same "stabilization" phase in the
+> past weeks for LTTng. It's good to see things stabilize even under heavy
+> cpu hotplug stress-tests.
 
-	return bitmap_weight(bitmap, SZ);
-}
+Cool!!!  ;-)
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- lib/hweight.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+							Thanx, Paul
 
-diff --git a/lib/hweight.c b/lib/hweight.c
-index 389424e..63ee4eb 100644
---- a/lib/hweight.c
-+++ b/lib/hweight.c
-@@ -11,11 +11,18 @@
- 
- unsigned int hweight32(unsigned int w)
- {
-+#ifdef ARCH_HAS_FAST_MULTIPLIER
-+	w -= (w >> 1) & 0x55555555;
-+	w =  (w & 0x33333333) + ((w >> 2) & 0x33333333);
-+	w =  (w + (w >> 4)) & 0x0f0f0f0f;
-+	return (w * 0x01010101) >> 24;
-+#else
- 	unsigned int res = w - ((w >> 1) & 0x55555555);
- 	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
- 	res = (res + (res >> 4)) & 0x0F0F0F0F;
- 	res = res + (res >> 8);
- 	return (res + (res >> 16)) & 0x000000FF;
-+#endif
- }
- EXPORT_SYMBOL(hweight32);
- 
--- 
-1.6.5.1
-
+> Thanks,
+> 
+> Mathieu
+> 
+> > 
+> > 							Thanx, Paul
+> > 
+> > > > Thus, if some other processor execute modifying address when step2 to step4,
+> > > > it will be jumped to fixup code.
+> > > > 
+> > > > This still has many limitations for modifying multi-instructions at once.
+> > > > However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
+> > > > because;
+> > > >  - Replaced instruction is just one instruction, which is executed atomically.
+> > > >  - Replacing instruction is a jump, so we can set fixup address where the jump
+> > > >    goes to.
+> > > > 
+> > > > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > > > ---
+> > > >  arch/x86/include/asm/alternative.h |   12 ++++
+> > > >  arch/x86/include/asm/kprobes.h     |    1 +
+> > > >  arch/x86/kernel/alternative.c      |  120 ++++++++++++++++++++++++++++++++++++
+> > > >  kernel/kprobes.c                   |    2 +-
+> > > >  4 files changed, 134 insertions(+), 1 deletions(-)
+> > > > 
+> > > 
+> > > [snip snip]
+> > > 
+> > > > index de7353c..af47f12 100644
+> > > > --- a/arch/x86/kernel/alternative.c
+> > > > +++ b/arch/x86/kernel/alternative.c
+> > > > @@ -4,6 +4,7 @@
+> > > >  #include <linux/list.h>
+> > > >  #include <linux/stringify.h>
+> > > >  #include <linux/kprobes.h>
+> > > > +#include <linux/kdebug.h>
+> > > >  #include <linux/mm.h>
+> > > >  #include <linux/vmalloc.h>
+> > > >  #include <linux/memory.h>
+> > > > @@ -552,3 +553,122 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+> > > >  	local_irq_restore(flags);
+> > > >  	return addr;
+> > > >  }
+> > > > +
+> > > > +/*
+> > > > + * On pentium series, Unsynchronized cross-modifying code
+> > > > + * operations can cause unexpected instruction execution results.
+> > > > + * So after code modified, we should synchronize it on each processor.
+> > > > + */
+> > > > +static void __kprobes __local_sync_core(void *info)
+> > > > +{
+> > > > +	sync_core();
+> > > > +}
+> > > > +
+> > > > +void __kprobes sync_core_all(void)
+> > > > +{
+> > > > +	on_each_cpu(__local_sync_core, NULL, 1);
+> > > 
+> > > OK, so you rely on the fact that on_each_cpu has memory barriers and
+> > > executes the remote "__local_sync_core" with the appropriate memory
+> > > barriers underneath, am I correct ?
+> > > 
+> > > > +}
+> > > > +
+> > > > +/* Safely cross-code modifying with fixup address */
+> > > > +static void *patch_fixup_from;
+> > > > +static void *patch_fixup_addr;
+> > > > +
+> > > > +static int __kprobes patch_exceptions_notify(struct notifier_block *self,
+> > > > +					      unsigned long val, void *data)
+> > > > +{
+> > > > +	struct die_args *args = data;
+> > > > +	struct pt_regs *regs = args->regs;
+> > > > +
+> > > > +	if (likely(!patch_fixup_from))
+> > > > +		return NOTIFY_DONE;
+> > > > +
+> > > > +	if (val != DIE_INT3 || !regs || user_mode_vm(regs) ||
+> > > > +	    (unsigned long)patch_fixup_from != regs->ip)
+> > > > +		return NOTIFY_DONE;
+> > > > +
+> > > > +	args->regs->ip = (unsigned long)patch_fixup_addr;
+> > > > +	return NOTIFY_STOP;
+> > > > +}
+> > > > +
+> > > > +/**
+> > > > + * text_poke_fixup() -- cross-modifying kernel text with fixup address.
+> > > > + * @addr:	Modifying address.
+> > > > + * @opcode:	New instruction.
+> > > > + * @len:	length of modifying bytes.
+> > > > + * @fixup:	Fixup address.
+> > > > + *
+> > > > + * Note: You must backup replaced instructions before calling this,
+> > > > + * if you need to recover it.
+> > > > + * Note: Must be called under text_mutex.
+> > > > + */
+> > > > +void *__kprobes text_poke_fixup(void *addr, const void *opcode, size_t len,
+> > > > +				void *fixup)
+> > > > +{
+> > > > +	static const unsigned char int3_insn = BREAKPOINT_INSTRUCTION;
+> > > > +	static const int int3_size = sizeof(int3_insn);
+> > > > +
+> > > > +	/* Replacing 1 byte can be done atomically. */
+> > > 
+> > > I'm sure it can be done atomically, but can it be done safely though ?
+> > > 
+> > > (disclaimer: we're still waiting for the official answer on this
+> > > statement): Assuming instruction trace cache effects of SMP cross-code
+> > > modification, and that only int3 would be safe to patch, then even
+> > > changing 1 single byte could only be done by going to an intermediate
+> > > int3 and synchronizing all other cores.
+> > > 
+> > > > +	if (unlikely(len <= 1))
+> > > > +		return text_poke(addr, opcode, len);
+> > > > +
+> > > > +	/* Preparing */
+> > > > +	patch_fixup_addr = fixup;
+> > > > +	wmb();
+> > > 
+> > > hrm, missing comment ?
+> > > 
+> > > > +	patch_fixup_from = (u8 *)addr + int3_size; /* IP address after int3 */
+> > > > +
+> > > > +	/* Cap by an int3 */
+> > > > +	text_poke(addr, &int3_insn, int3_size);
+> > > > +	sync_core_all();
+> > > > +
+> > > > +	/* Replace tail bytes */
+> > > > +	text_poke((char *)addr + int3_size, (const char *)opcode + int3_size,
+> > > > +		  len - int3_size);
+> > > > +	sync_core_all();
+> > > > +
+> > > > +	/* Replace int3 with head byte */
+> > > > +	text_poke(addr, opcode, int3_size);
+> > > > +	sync_core_all();
+> > > > +
+> > > > +	/* Cleanup */
+> > > > +	patch_fixup_from = NULL;
+> > > > +	wmb();
+> > > 
+> > > missing comment here too.
+> > > 
+> > > > +	return addr;
+> > > 
+> > > Little quiz question:
+> > > 
+> > > When patch_fixup_from is set to NULL, what ensures that the int3
+> > > handlers have completed their execution ?
+> > > 
+> > > I think it's probably OK, because the int3 is an interrupt gate, which
+> > > therefore disables interrupts as soon as it runs, and executes the
+> > > notifier while irqs are off. When we run sync_core_all() after replacing
+> > > the int3 by the new 1st byte, we only return when all other cores have
+> > > executed an interrupt, which implies that all int3 handlers previously
+> > > running should have ended. Is it right ? It looks to me as if this 3rd
+> > > sync_core_all() is only needed because of that. Probably that adding a
+> > > comment would be good.
+> > > 
+> > > 
+> > > Another thing: I've recently noticed that the following locking seems to
+> > > hang the system with doing stress-testing concurrently with cpu
+> > > hotplug/hotunplug:
+> > > 
+> > > mutex_lock(&text_mutex);
+> > >   on_each_cpu(something, NULL, 1);
+> > > 
+> > > The hang seems to be caused by the fact that alternative.c has:
+> > > 
+> > > within cpu hotplug (cpu hotplug lock held)
+> > >   mutex_lock(&text_mutex);
+> > > 
+> > > It might also be caused by the interaction with the stop_machine()
+> > > performed within the cpu hotplug lock. I did not find the root cause of
+> > > the problem, but this probably calls for lockdep improvements.
+> > > 
+> > > In any case, given you are dealing with the exact same locking scenario
+> > > here, I would recomment the following stress-test:
+> > > 
+> > > in a loop, use text_poke_jump()
+> > > in a loop, hotunplug all cpus, then hotplug all cpus
+> > > 
+> > > I had to fix this temporarily by taking get/put_online_cpus() about the
+> > > text_mutex.
+> > > 
+> > > [snip snip]
+> > > 
+> > > > +static struct notifier_block patch_exceptions_nb = {
+> > > > +	.notifier_call = patch_exceptions_notify,
+> > > > +	.priority = 0x7fffffff /* we need to be notified first */
+> > > > +};
+> > > > +
+> > > > +static int __init patch_init(void)
+> > > > +{
+> > > > +	return register_die_notifier(&patch_exceptions_nb);
+> > > > +}
+> > > > +
+> > > > +arch_initcall(patch_init);
+> > > > diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> > > > index e5342a3..43a30d8 100644
+> > > > --- a/kernel/kprobes.c
+> > > > +++ b/kernel/kprobes.c
+> > > > @@ -898,7 +898,7 @@ EXPORT_SYMBOL_GPL(unregister_kprobes);
+> > > >  
+> > > >  static struct notifier_block kprobe_exceptions_nb = {
+> > > >  	.notifier_call = kprobe_exceptions_notify,
+> > > > -	.priority = 0x7fffffff /* we need to be notified first */
+> > > > +	.priority = 0x7ffffff0 /* High priority, but not first.  */
+> > > 
+> > > It would be good to keep all these priorities in a centralized header.
+> > > 
+> > > Thanks,
+> > > 
+> > > Mathieu
+> > > 
+> > > >  };
+> > > >  
+> > > >  unsigned long __weak arch_deref_entry_point(void *entry)
+> > > > -- 
+> > > > 1.6.5.1
+> > > > 
+> > > 
+> > > -- 
+> > > Mathieu Desnoyers
+> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
