@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758147AbZKSXkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZKSXxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758147AbZKSXkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 18:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbZKSXkP
+	id S1758027AbZKSXxa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 18:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbZKSXx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 18:40:15 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51178 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758101AbZKSXkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 18:40:10 -0500
-Date: Thu, 19 Nov 2009 23:42:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@linux.intel.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Message-ID: <20091119234201.2e1c6f01@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911192249.16860.bzolnier@gmail.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>
-	<200911182056.16517.bzolnier@gmail.com>
-	<4B05BADF.1010205@garzik.org>
-	<200911192249.16860.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Nov 2009 18:53:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:32918 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757873AbZKSXx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 18:53:29 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adam Litke <agl@us.ibm.com>
+Subject: Re: virtio: Add memory statistics reporting to the balloon driver (V3)
+Date: Fri, 20 Nov 2009 10:23:30 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Anthony Liguori <aliguori@us.ibm.com>, qemu-devel@nongnu.org,
+       Avi Kivity <avi@redhat.com>, virtualization@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <1258643169.3464.3.camel@aglitke> <1258643945.3464.5.camel@aglitke>
+In-Reply-To: <1258643945.3464.5.camel@aglitke>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911201023.30709.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Merging drivers is a big pain for distributions and end users, even with 
-> > the new module_alias facility.
+On Fri, 20 Nov 2009 01:49:05 am Adam Litke wrote:
+> Rusty and Anthony,
+> If I've addressed all outstanding issues, please consider this patch for
+> inclusion.  Thanks.
 > 
-> Could please explain in more detail 'a big pain' part?
+> Changes since V2:
+>  - Increase stat field size to 64 bits
+>  - Report all sizes in kb (not pages)
 
-It might confuse the Fedora intall a bit but it shouldn't cause much
-confusion.
+Hi Adam,
 
-> > Absent stronger justification, libata remains with separate drivers, 
-> > even if that means some code duplication.
-> 
-> I can always hold my own tree with such changes if needed.
+   Looks like we're very close.  A few minor things:
 
-My view is that they should be separate because of all the stuff like the
-hpt3x2n clocking. I've got some updates to hpt3x2n pending which I'll
-post as untested too.
+Why k?  Why not just do the simplest possible thing, and just report all
+stats as straight numbers, now we have 64 bits.
 
-If you are going to try merging them then the proof will be in what the
-merge looks like. If you are going to do it anyway it's got to be worth
-making that decision after the merge is done.
+>  - Drop anon_pages stat and fix endianness conversion
 
-Alan
+Please drop endianness conversion.
 
+> +struct virtio_balloon_stat
+> +{
+> +	__le16 tag;
+> +	__le64 val;
+> +};
+
+Let's not introduce padding as well; __attribute__((packed)) here please.
+
+Thanks,
+Rusty.
