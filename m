@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZKSOn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZKSOrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbZKSOn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZKSOn1
+	id S1756199AbZKSOrI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZKSOrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:43:27 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56938 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbZKSOn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:43:26 -0500
-Date: Thu, 19 Nov 2009 15:43:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: JiSheng Zhang <jszhang3@gmail.com>
-Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, stable@kernel.org, rmk@arm.linux.org.uk,
-       linux-arm@lists.infradead.org
-Subject: Re: [BUG]2.6.27.y some contents lost after writing to mmaped file
-Message-ID: <20091119144331.GC24836@duck.suse.cz>
-References: <2df346410911151938r1eb5c5e4q9930ac179d61ef01@mail.gmail.com>
- <20091117015655.GA8683@suse.de>
- <20091117123622.GI27677@think>
- <20091117190635.GB31105@duck.suse.cz>
- <20091118221756.367c005e@ustc>
+	Thu, 19 Nov 2009 09:47:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:51859 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754015AbZKSOrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:47:06 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH 3/3] macvlan: export macvlan mode through netlink
+Date: Thu, 19 Nov 2009 15:47:03 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>
+References: <1258497551-25959-1-git-send-email-arnd@arndb.de> <200911181059.45331.arnd@arndb.de> <4B05586C.5020308@trash.net>
+In-Reply-To: <4B05586C.5020308@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118221756.367c005e@ustc>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911191547.03509.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19ZgIY4rnc5EBxnDN+uzC85pSMj8iZ/oEcV2aJ
+ kshJjlRv+G93flGB86QBRm2XbuZrWl8C/XlGbzjqMssDhUXWn+
+ oF/hidH+z8SgFr4B5JATg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 18-11-09 22:17:56, JiSheng Zhang wrote:
-> On Tue, 17 Nov 2009 20:06:35 +0100
-> Jan Kara <jack@suse.cz> wrote:
+On Thursday 19 November 2009, Patrick McHardy wrote:
+> > +enum ifla_macvlan_mode {
+> > +     MACVLAN_MODE_PRIVATE = 1, /* don't talk to other macvlans */
+> > +     MACVLAN_MODE_VEPA    = 2, /* talk to other ports through ext bridge */
+> > +     MACVLAN_MODE_BRIDGE  = 4, /* talk to bridge ports directly */
+> > +};
 > 
-> > On Tue 17-11-09 07:36:22, Chris Mason wrote:
-> > > On Mon, Nov 16, 2009 at 05:56:55PM -0800, Greg KH wrote:
-> > > > On Mon, Nov 16, 2009 at 11:38:57AM +0800, JiSheng Zhang wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > I triggered a failure in an fs test with fsx-linux from ltp. It seems that
-> > > > > fsx-linux failed at mmap->write sequence.
-> > > > > 
-> > > > > Tested kernel is 2.6.27.12 and 2.6.27.39
-> > > > 
-> > > > Does this work on any kernel you have tested?  Or is it a regression?
-> > > > 
-> > > > > Tested file system: ext3, tmpfs.
-> > > > > IMHO, it impacts all file systems.
-> > > > > 
-> > > > > Some fsx-linux log is:
-> > > > > 
-> > > > > READ BAD DATA: offset = 0x2771b, size = 0xa28e
-> > > > > OFFSET  GOOD    BAD     RANGE
-> > > > > 0x287e0 0x35c9  0x15a9     0x80
-> > > > > operation# (mod 256) for the bad datamay be 21
-> > > > > ...
-> > > > > 7828: 1257514978.306753 READ     0x23dba thru 0x25699 (0x18e0 bytes)
-> > > > > 7829: 1257514978.306899 MAPWRITE 0x27eeb thru 0x2a516 (0x262c bytes)
-> > > > >  ******WWWW
-> > > > > 7830: 1257514978.307504 READ     0x2771b thru 0x319a8 (0xa28e bytes)
-> > > > >  ***RRRR***
-> > > > > Correct content saved for comparison
-> > > > > ...
-> >   Hmm, how long does it take to reproduce? I'm running fsx-linux on tmpfs
-> > for a while on 2.6.27.21 and didn't hit the problem yet.
-> 
-> I forget to mention that the test were done on an arm board with 64M ram. 
-> I have tested fsx-linux again on pc, it seems that failure go away.
->
-> > > > Are you sure that the LTP is correct?  It wouldn't be the first time it
-> > > > wasn't...
-> > > 
-> > > I'm afraid fsx usually finds bugs.  I thought Jan Kara recently fixed
-> > > something here in ext3, does 2.6.32-rc work?
-> >   Yeah, fsx usually finds bugs. Note that he sees the problem also on tmpfs
-> > so it's not ext3 problem. Anyway, trying to reproduce with 2.6.32-rc? would
-> > be interesting.
-> 
-> Currently the arm board doesn't support 2.6.32-rc. But I test with 2.6.32-rc7
-> On my pc box, there's no failure so far.
-  OK, so it's either ARM specific or it's triggered by low amount of
-available memory (you might want to try testing your PC with mem=64M).
+> Please also keep the enum named something without ifla_ since
+> the mode values themselves are not netlink attributes. Just
+> macvlan_mode seems fine.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Ok, good. I was unsure on the naming and also changed between MACVLAN_*
+and MACVLAN_MODE_* a few times.
+
+Thanks for the clarification,
+
+	Arnd <><
