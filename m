@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZKSPjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZKSPmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbZKSPjo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 10:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZKSPjn
+	id S1757002AbZKSPmy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZKSPmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 10:39:43 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:45781 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754064AbZKSPjn convert rfc822-to-8bit (ORCPT
+	Thu, 19 Nov 2009 10:42:53 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:52264 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490AbZKSPmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 10:39:43 -0500
+	Thu, 19 Nov 2009 10:42:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=hkD5oGHsq6sPnuRB4PRxfUf7E689QPEVO0dAsH0N0ty3QSLN/4mXduHZM/jcJ3qsEt
-         Iy/ecPuSnqNcuKM64OKPX+WRMcMCnhBEK0YuT/3MpMDyMgis++lwzZHBs+/GKHRuc6vS
-         6LTJDzDxrwQ9USL0IP1O5tNA+3XbxM8uJuwAM=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=e01WtwqL/aosCuVJ5B7nRKLpkh23LitzmdaHsglRN8JhLyBh0zaRxBq0YuX3Qzq0Bl
+         mKw2yuxNug/tvE/c9/IJ+o7O6SnWiyitCJXs+uk0iXFYiXoxNeHLeIVASPTsWtjB7H1q
+         4uCsmMeJ+lv5XiAqJaIyY1DZ4+PV6aw1YG1zU=
+Message-ID: <4B056791.5090002@gmail.com>
+Date: Thu, 19 Nov 2009 16:43:13 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <200911191903.04915.rusty@rustcorp.com.au>
-References: <200911191903.04915.rusty@rustcorp.com.au>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Thu, 19 Nov 2009 13:39:28 -0200
-Message-ID: <b8bf37780911190739p7537fa16xac3b9f6a78af8ac4@mail.gmail.com>
-Subject: Re: Licensing on lib/bsearch.c?
-To: Rusty Russell <rusty@rustcorp.com.au>, Tim Abbott <tabbott@ksplice.com>
-Cc: linux-kernel@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits external
+ to a process (v7)
+References: <20091104112632.GA9243@elte.hu> <20091105204843.GA2980@hmsreliant.think-freely.org> <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com> <4AF84E2F.3010305@gmail.com> <20091109173654.GA8809@redhat.com> <4B040A03.2020508@gmail.com> <20091118231532.GA13039@redhat.com>
+In-Reply-To: <20091118231532.GA13039@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 6:33 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Hi Tim, Andre,
->
->   I note that the license header on lib/bsearch.c is GPLv2.  I wanted to
-> steal it for SAMBA, which is GPLv3.  This is one reason all my kernel code is
-> v2 or later.
->
-> If you don't have strong objections, could you send something like the
-> following so I don't have to reimplement and re-test?
->
-> Thanks,
-> Rusty.
->
-> Subject: bsearch: extend license to GPL 2+
->
-> Rusty asked nicely.
->
-> diff --git a/lib/bsearch.c b/lib/bsearch.c
-> --- a/lib/bsearch.c
-> +++ b/lib/bsearch.c
-> @@ -6,7 +6,8 @@
->  *
->  * This program is free software; you can redistribute it and/or
->  * modify it under the terms of the GNU General Public License as
-> - * published by the Free Software Foundation; version 2.
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
->  */
->
->  #include <linux/module.h>
->
+On 11/19/2009 12:15 AM, Oleg Nesterov wrote:
+> On 11/18, Jiri Slaby wrote:
+>>
+>> On the last point: I added explicit ACCESS_ONCE all over there. If you
+>> don't like I will trash it.
+> 
+> Just curious, why?
+> 
+> I mean, do you have any example of the "bad" behaviour which is
+> fixed by ACCESS_ONCE() ?
 
-Hi, Rusty!
+Hi,
 
-    It's surely fine by me:
+no, I haven't seen any errors caused by that yet. I added those in the
+"just in case compiler starts to do weird things" manner.
 
-Acked-by: André Goddard Rosa <andre.goddard@gmail.com>
+>> The only remaining weird user is in
+>> kernel/acct.c:
+>>         /*
+>>          * Accounting records are not subject to resource limits.
+>>          */
+>>         flim = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
+>>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = RLIM_INFINITY;
+>>         file->f_op->write(file, (char *)&ac,
+>>                                sizeof(acct_t), &file->f_pos);
+>>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
+>>
+>> It means that threads of the process with PACCT caps have unlimited file
+>> size for a short while. If there is setrlimit in between, it gets wiped
+>> out as well.
+> 
+> This is called when the whole thread-group exits, there are no
+> live threads except current.
 
-    Tim?
+Not really, it is called from umount, sys_acct and other paths.
 
-Thank you,
-André
+> At least, given that do_acct_process() does override_creds(), an
+> ordinary user can't fool the accounting.
+
+Agreed. That path can be executed only by a user with (at least) PACCT
+or SYS_ADMIN caps. Hopefully.
+
+Thanks.
