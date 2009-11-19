@@ -1,217 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZKSCxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZKSC7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbZKSCxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 21:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZKSCx3
+	id S932337AbZKSC7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 21:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbZKSC7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 21:53:29 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:65513 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757719AbZKSCx2 (ORCPT
+	Wed, 18 Nov 2009 21:59:38 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:65459 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758052AbZKSC7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 21:53:28 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+KEaaDykvuzjXlqQke135I
-Date: Wed, 18 Nov 2009 18:53:30 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>,
-       linux-omap@vger.kernel.org, Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: linux-next: manual merge of the input tree with the omap tree
-Message-ID: <20091119025329.GV29266@atomide.com>
-References: <20091119131216.da16845c.sfr@canb.auug.org.au>
+	Wed, 18 Nov 2009 21:59:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YjdbvqpwGt0g4LzVf1L9iaqOik5EjYRi9XY3ibAb6zV5cxkwLIiUeeh5pq0lxRTpB9
+         ozTpGq+I4uxvnkHdrHdRns05UfNOMLdcL1o9DOxQuiAAKNP79q9MDnOjoN0CCQdL9zhN
+         QW3RpBmIcazDLYegFvtVAvYwlhlY1n7qxnc4Y=
+Date: Wed, 18 Nov 2009 18:59:38 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14626] oops on boot starting udev
+Message-ID: <20091119025938.GB20172@core.coreip.homeip.net>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.fpF.zSdALB@chimera> <20091117011455.GA7977@kroah.com> <20091117020451.GA27967@core.coreip.homeip.net> <1258426743.9883.53.camel@no> <20091117040104.GA5792@core.coreip.homeip.net> <1258430807.12721.12.camel@no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091119131216.da16845c.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1258430807.12721.12.camel@no>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Stephen Rothwell <sfr@canb.auug.org.au> [091118 18:11]:
-> Hi Dmitry,
+On Tue, Nov 17, 2009 at 05:06:47AM +0100, Soeren Sonnenburg wrote:
+> On Mon, 2009-11-16 at 20:01 -0800, Dmitry Torokhov wrote:
+> > On Tue, Nov 17, 2009 at 03:59:03AM +0100, Soeren Sonnenburg wrote:
+> > > On Mon, 2009-11-16 at 18:04 -0800, Dmitry Torokhov wrote:
+> > > > On Mon, Nov 16, 2009 at 05:14:55PM -0800, Greg KH wrote:
+> > > > > On Mon, Nov 16, 2009 at 11:37:48PM +0100, Rafael J. Wysocki wrote:
+> > > > > > This message has been generated automatically as a part of a report
+> > > > > > of recent regressions.
+> > > > > > 
+> > > > > > The following bug entry is on the current list of known regressions
+> > > > > > from 2.6.31.  Please verify if it still should be listed and let me know
+> > > > > > (either way).
+> > > > > > 
+> > > > > > 
+> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14626
+> > > > > > Subject		: oops on boot starting udev
+> > > > > > Submitter	: Soeren Sonnenburg <sonne@debian.org>
+> > > > > > Date		: 2009-11-14 10:16 (3 days old)
+> > > > > > References	: http://marc.info/?l=linux-kernel&m=125819380206800&w=4
+> > > > > 
+> > > > > This looks like an input core problem, as the evdev module was just
+> > > > > loaded and died.
+> > > > > 
+> > > > > Any input developers have any ideas?
+> > > > > 
+> > > > 
+> > > > 
+> > > > Hmm, evdev does:
+> > > > 
+> > > > 	dev_set_name(&evdev->dev, "event%d", minor);
+> > > > 
+> > > > Not sure how it can go wrong...
+> > > 
+> > > Anything I should/could do to narrow it down a bit (apart from
+> > > bisecting?).
+> > > 
+> > 
+> > Umm, I looked through the changes between -rc6 and 7 but nothing jumped
+> > out at me... You don't happen to have any local changes in your tree?
 > 
-> Today's linux-next merge of the input tree got a conflict in
-> arch/arm/mach-omap2/board-rx51-peripherals.c between commit
-> ebff0472f451a07fae9f4e72bdc2af4c52ebb682 ("omap3: rx51: Add wl1251 wlan
-> driver support") from the omap tree and commit
-> 5018461a887d58f4601207deeebb7c352c2da20a ("ARM OMAP3: RX-51 board - add
-> initialization of gpio keys") from the input tree.
+> Well only the mouse button #1 emulation - though I don't see what could
+> go wrong there.
 > 
-> Just overlapping additions.  I fixed it up (see below) and can carry the
-> fix as necessary.
 
-Thanks again for dealing with these merge conflicts again Stephen!
+I have been looking through the changes and I really don't see anything
+suspicious. I am also not hittign this oops on any of my boxes. Any
+chance you could bisect?
 
-I've cherry picked 765af10de6d93820def9978c53ed828e4d3bd4f4 from Dmitry's
-tree to keep things compiling. Then I've added a modified version of
-5018461a887d58f4601207deeebb7c352c2da20a to omap for-next branch.
+Thanks.
 
-Dmitry, could you please drop 5018461a887d58f4601207deeebb7c352c2da20a from
-your tree now?
-
-Because of us moving the omap headers from mach to plat, there will be a
-conflict otherwise. Sorry for all the hassles with this merge window, this
-should be an issue for this merge window only.
-
-Regards,
-
-Tony
-
-
-
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc arch/arm/mach-omap2/board-rx51-peripherals.c
-> index caaeadc,a5c02a4..0000000
-> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> @@@ -21,53 -20,103 +21,134 @@@
->   #include <linux/delay.h>
->   #include <linux/regulator/machine.h>
->   #include <linux/gpio.h>
-> + #include <linux/gpio_keys.h>
->   #include <linux/mmc/host.h>
->   
->  -#include <mach/mcspi.h>
->  -#include <mach/mux.h>
->  -#include <mach/board.h>
->  -#include <mach/common.h>
->  -#include <mach/dma.h>
->  -#include <mach/gpmc.h>
->  -#include <mach/onenand.h>
->  -#include <mach/gpmc-smc91x.h>
->  +#include <plat/mcspi.h>
->  +#include <plat/mux.h>
->  +#include <plat/board.h>
->  +#include <plat/common.h>
->  +#include <plat/dma.h>
->  +#include <plat/gpmc.h>
->  +#include <plat/onenand.h>
->  +#include <plat/gpmc-smc91x.h>
->   
->   #include "mmc-twl4030.h"
->   
->   #define SYSTEM_REV_B_USES_VAUX3	0x1699
->   #define SYSTEM_REV_S_USES_VAUX3 0x8
->   
->  +#define RX51_WL1251_POWER_GPIO		87
->  +#define RX51_WL1251_IRQ_GPIO		42
->  +
->  +static void rx51_wl1251_set_power(bool enable);
->  +
->  +static struct wl12xx_platform_data wl1251_pdata = {
->  +	.set_power = rx51_wl1251_set_power,
->  +};
->  +
->  +static struct omap2_mcspi_device_config wl1251_mcspi_config = {
->  +	.turbo_mode	= 0,
->  +	.single_channel	= 1,
->  +};
->  +
->  +/* list all spi devices here */
->  +enum {
->  +	RX51_SPI_WL1251,
->  +};
->  +
->  +static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
->  +	[RX51_SPI_WL1251] = {
->  +		.modalias		= "wl1251",
->  +		.bus_num		= 4,
->  +		.chip_select		= 0,
->  +		.max_speed_hz   	= 48000000,
->  +		.mode                   = SPI_MODE_2,
->  +		.controller_data	= &wl1251_mcspi_config,
->  +		.platform_data		= &wl1251_pdata,
->  +	},
->  +};
->  +
-> + #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
-> + 
-> + #define RX51_GPIO_CAMERA_LENS_COVER	110
-> + #define RX51_GPIO_CAMERA_FOCUS		68
-> + #define RX51_GPIO_CAMERA_CAPTURE	69
-> + #define RX51_GPIO_KEYPAD_SLIDE		71
-> + #define RX51_GPIO_LOCK_BUTTON		113
-> + #define RX51_GPIO_PROXIMITY		89
-> + 
-> + #define RX51_GPIO_DEBOUNCE_TIMEOUT	10
-> + 
-> + static struct gpio_keys_button rx51_gpio_keys[] = {
-> + 	{
-> + 		.desc			= "Camera Lens Cover",
-> + 		.type			= EV_SW,
-> + 		.code			= SW_CAMERA_LENS_COVER,
-> + 		.gpio			= RX51_GPIO_CAMERA_LENS_COVER,
-> + 		.active_low		= 1,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}, {
-> + 		.desc			= "Camera Focus",
-> + 		.type			= EV_KEY,
-> + 		.code			= KEY_CAMERA_FOCUS,
-> + 		.gpio			= RX51_GPIO_CAMERA_FOCUS,
-> + 		.active_low		= 1,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}, {
-> + 		.desc			= "Camera Capture",
-> + 		.type			= EV_KEY,
-> + 		.code			= KEY_CAMERA,
-> + 		.gpio			= RX51_GPIO_CAMERA_CAPTURE,
-> + 		.active_low		= 1,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}, {
-> + 		.desc			= "Lock Button",
-> + 		.type			= EV_KEY,
-> + 		.code			= KEY_SCREENLOCK,
-> + 		.gpio			= RX51_GPIO_LOCK_BUTTON,
-> + 		.active_low		= 1,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}, {
-> + 		.desc			= "Keypad Slide",
-> + 		.type			= EV_SW,
-> + 		.code			= SW_KEYPAD_SLIDE,
-> + 		.gpio			= RX51_GPIO_KEYPAD_SLIDE,
-> + 		.active_low		= 1,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}, {
-> + 		.desc			= "Proximity Sensor",
-> + 		.type			= EV_SW,
-> + 		.code			= SW_FRONT_PROXIMITY,
-> + 		.gpio			= RX51_GPIO_PROXIMITY,
-> + 		.active_low		= 0,
-> + 		.debounce_interval	= RX51_GPIO_DEBOUNCE_TIMEOUT,
-> + 	}
-> + };
-> + 
-> + static struct gpio_keys_platform_data rx51_gpio_keys_data = {
-> + 	.buttons	= rx51_gpio_keys,
-> + 	.nbuttons	= ARRAY_SIZE(rx51_gpio_keys),
-> + };
-> + 
-> + static struct platform_device rx51_gpio_keys_device = {
-> + 	.name	= "gpio-keys",
-> + 	.id	= -1,
-> + 	.dev	= {
-> + 		.platform_data	= &rx51_gpio_keys_data,
-> + 	},
-> + };
-> + 
-> + static void __init rx51_add_gpio_keys(void)
-> + {
-> + 	platform_device_register(&rx51_gpio_keys_device);
-> + }
-> + #else
-> + static void __init rx51_add_gpio_keys(void)
-> + {
-> + }
-> + #endif /* CONFIG_KEYBOARD_GPIO || CONFIG_KEYBOARD_GPIO_MODULE */
-> + 
->   static int board_keymap[] = {
->   	KEY(0, 0, KEY_Q),
->   	KEY(0, 1, KEY_O),
+-- 
+Dmitry
