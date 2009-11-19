@@ -1,71 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZKSNgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZKSNgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbZKSNgm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbZKSNgh
+	id S1754741AbZKSNgE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZKSNf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:36:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:65520 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 08:35:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35290 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbZKSNfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:35:09 -0500
+	id S1753799AbZKSNfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:35:10 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 34/35] KVM: VMX: Report unexpected simultaneous exceptions as internal errors
-Date: Thu, 19 Nov 2009 15:35:10 +0200
-Message-Id: <1258637711-11674-35-git-send-email-avi@redhat.com>
+Subject: [PATCH 35/35] KVM: x86: Add KVM_GET/SET_VCPU_EVENTS
+Date: Thu, 19 Nov 2009 15:35:11 +0200
+Message-Id: <1258637711-11674-36-git-send-email-avi@redhat.com>
 In-Reply-To: <1258637711-11674-1-git-send-email-avi@redhat.com>
 References: <1258637711-11674-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These happen when we trap an exception when another exception is being
-delivered; we only expect these with MCEs and page faults.  If something
-unexpected happens, things probably went south and we're better off reporting
-an internal error and freezing.
+From: Jan Kiszka <jan.kiszka@web.de>
 
+This new IOCTL exports all yet user-invisible states related to
+exceptions, interrupts, and NMIs. Together with appropriate user space
+changes, this fixes sporadic problems of vmsave/restore, live migration
+and system reset.
+
+[avi: future-proof abi by adding a flags field]
+
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c  |   11 ++++++++---
- include/linux/kvm.h |    1 +
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ Documentation/kvm/api.txt       |   49 +++++++++++++++++++++++++
+ arch/x86/include/asm/kvm.h      |   28 ++++++++++++++
+ arch/x86/include/asm/kvm_host.h |    2 +
+ arch/x86/kvm/svm.c              |   22 +++++++++++
+ arch/x86/kvm/vmx.c              |   30 +++++++++++++++
+ arch/x86/kvm/x86.c              |   77 +++++++++++++++++++++++++++++++++++++++
+ include/linux/kvm.h             |    6 +++
+ 7 files changed, 214 insertions(+), 0 deletions(-)
 
+diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
+index 36594ba..e1a1141 100644
+--- a/Documentation/kvm/api.txt
++++ b/Documentation/kvm/api.txt
+@@ -653,6 +653,55 @@ struct kvm_clock_data {
+ 	__u32 pad[9];
+ };
+ 
++4.29 KVM_GET_VCPU_EVENTS
++
++Capability: KVM_CAP_VCPU_EVENTS
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_vcpu_event (out)
++Returns: 0 on success, -1 on error
++
++Gets currently pending exceptions, interrupts, and NMIs as well as related
++states of the vcpu.
++
++struct kvm_vcpu_events {
++	struct {
++		__u8 injected;
++		__u8 nr;
++		__u8 has_error_code;
++		__u8 pad;
++		__u32 error_code;
++	} exception;
++	struct {
++		__u8 injected;
++		__u8 nr;
++		__u8 soft;
++		__u8 pad;
++	} interrupt;
++	struct {
++		__u8 injected;
++		__u8 pending;
++		__u8 masked;
++		__u8 pad;
++	} nmi;
++	__u32 sipi_vector;
++	__u32 flags;   /* must be zero */
++};
++
++4.30 KVM_SET_VCPU_EVENTS
++
++Capability: KVM_CAP_VCPU_EVENTS
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_vcpu_event (in)
++Returns: 0 on success, -1 on error
++
++Set pending exceptions, interrupts, and NMIs as well as related states of the
++vcpu.
++
++See KVM_GET_VCPU_EVENTS for the data structure.
++
++
+ 5. The kvm_run structure
+ 
+ Application code obtains a pointer to the kvm_run structure by
+diff --git a/arch/x86/include/asm/kvm.h b/arch/x86/include/asm/kvm.h
+index ef9b4b7..950df43 100644
+--- a/arch/x86/include/asm/kvm.h
++++ b/arch/x86/include/asm/kvm.h
+@@ -20,6 +20,7 @@
+ #define __KVM_HAVE_MCE
+ #define __KVM_HAVE_PIT_STATE2
+ #define __KVM_HAVE_XEN_HVM
++#define __KVM_HAVE_VCPU_EVENTS
+ 
+ /* Architectural interrupt line count. */
+ #define KVM_NR_INTERRUPTS 256
+@@ -252,4 +253,31 @@ struct kvm_reinject_control {
+ 	__u8 pit_reinject;
+ 	__u8 reserved[31];
+ };
++
++/* for KVM_GET/SET_VCPU_EVENTS */
++struct kvm_vcpu_events {
++	struct {
++		__u8 injected;
++		__u8 nr;
++		__u8 has_error_code;
++		__u8 pad;
++		__u32 error_code;
++	} exception;
++	struct {
++		__u8 injected;
++		__u8 nr;
++		__u8 soft;
++		__u8 pad;
++	} interrupt;
++	struct {
++		__u8 injected;
++		__u8 pending;
++		__u8 masked;
++		__u8 pad;
++	} nmi;
++	__u32 sipi_vector;
++	__u32 flags;
++	__u32 reserved[10];
++};
++
+ #endif /* _ASM_X86_KVM_H */
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 26a74b7..06e0856 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -523,6 +523,8 @@ struct kvm_x86_ops {
+ 				bool has_error_code, u32 error_code);
+ 	int (*interrupt_allowed)(struct kvm_vcpu *vcpu);
+ 	int (*nmi_allowed)(struct kvm_vcpu *vcpu);
++	bool (*get_nmi_mask)(struct kvm_vcpu *vcpu);
++	void (*set_nmi_mask)(struct kvm_vcpu *vcpu, bool masked);
+ 	void (*enable_nmi_window)(struct kvm_vcpu *vcpu);
+ 	void (*enable_irq_window)(struct kvm_vcpu *vcpu);
+ 	void (*update_cr8_intercept)(struct kvm_vcpu *vcpu, int tpr, int irr);
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 34b700f..3de0b37 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -2499,6 +2499,26 @@ static int svm_nmi_allowed(struct kvm_vcpu *vcpu)
+ 		!(svm->vcpu.arch.hflags & HF_NMI_MASK);
+ }
+ 
++static bool svm_get_nmi_mask(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	return !!(svm->vcpu.arch.hflags & HF_NMI_MASK);
++}
++
++static void svm_set_nmi_mask(struct kvm_vcpu *vcpu, bool masked)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	if (masked) {
++		svm->vcpu.arch.hflags |= HF_NMI_MASK;
++		svm->vmcb->control.intercept |= (1UL << INTERCEPT_IRET);
++	} else {
++		svm->vcpu.arch.hflags &= ~HF_NMI_MASK;
++		svm->vmcb->control.intercept &= ~(1UL << INTERCEPT_IRET);
++	}
++}
++
+ static int svm_interrupt_allowed(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+@@ -2946,6 +2966,8 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.queue_exception = svm_queue_exception,
+ 	.interrupt_allowed = svm_interrupt_allowed,
+ 	.nmi_allowed = svm_nmi_allowed,
++	.get_nmi_mask = svm_get_nmi_mask,
++	.set_nmi_mask = svm_set_nmi_mask,
+ 	.enable_nmi_window = enable_nmi_window,
+ 	.enable_irq_window = enable_irq_window,
+ 	.update_cr8_intercept = update_cr8_intercept,
 diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index c0e66dd..22fcd27 100644
+index 22fcd27..778f059 100644
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -2744,9 +2744,14 @@ static int handle_exception(struct kvm_vcpu *vcpu)
- 		return handle_machine_check(vcpu);
+@@ -2639,6 +2639,34 @@ static int vmx_nmi_allowed(struct kvm_vcpu *vcpu)
+ 				GUEST_INTR_STATE_NMI));
+ }
  
- 	if ((vect_info & VECTORING_INFO_VALID_MASK) &&
--						!is_page_fault(intr_info))
--		printk(KERN_ERR "%s: unexpected, vectoring info 0x%x "
--		       "intr info 0x%x\n", __func__, vect_info, intr_info);
-+	    !is_page_fault(intr_info)) {
-+		vcpu->run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
-+		vcpu->run->internal.suberror = KVM_INTERNAL_ERROR_SIMUL_EX;
-+		vcpu->run->internal.ndata = 2;
-+		vcpu->run->internal.data[0] = vect_info;
-+		vcpu->run->internal.data[1] = intr_info;
-+		return 0;
++static bool vmx_get_nmi_mask(struct kvm_vcpu *vcpu)
++{
++	if (!cpu_has_virtual_nmis())
++		return to_vmx(vcpu)->soft_vnmi_blocked;
++	else
++		return !!(vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) &
++			  GUEST_INTR_STATE_NMI);
++}
++
++static void vmx_set_nmi_mask(struct kvm_vcpu *vcpu, bool masked)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++
++	if (!cpu_has_virtual_nmis()) {
++		if (vmx->soft_vnmi_blocked != masked) {
++			vmx->soft_vnmi_blocked = masked;
++			vmx->vnmi_blocked_time = 0;
++		}
++	} else {
++		if (masked)
++			vmcs_set_bits(GUEST_INTERRUPTIBILITY_INFO,
++				      GUEST_INTR_STATE_NMI);
++		else
++			vmcs_clear_bits(GUEST_INTERRUPTIBILITY_INFO,
++					GUEST_INTR_STATE_NMI);
 +	}
++}
++
+ static int vmx_interrupt_allowed(struct kvm_vcpu *vcpu)
+ {
+ 	return (vmcs_readl(GUEST_RFLAGS) & X86_EFLAGS_IF) &&
+@@ -3985,6 +4013,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.queue_exception = vmx_queue_exception,
+ 	.interrupt_allowed = vmx_interrupt_allowed,
+ 	.nmi_allowed = vmx_nmi_allowed,
++	.get_nmi_mask = vmx_get_nmi_mask,
++	.set_nmi_mask = vmx_set_nmi_mask,
+ 	.enable_nmi_window = enable_nmi_window,
+ 	.enable_irq_window = enable_irq_window,
+ 	.update_cr8_intercept = update_cr8_intercept,
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index ba8958d..35eea30 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1342,6 +1342,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_SET_IDENTITY_MAP_ADDR:
+ 	case KVM_CAP_XEN_HVM:
+ 	case KVM_CAP_ADJUST_CLOCK:
++	case KVM_CAP_VCPU_EVENTS:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -1883,6 +1884,61 @@ static int kvm_vcpu_ioctl_x86_set_mce(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
  
- 	if ((intr_info & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI_INTR)
- 		return 1;  /* already handled by vmx_vcpu_run() */
++static void kvm_vcpu_ioctl_x86_get_vcpu_events(struct kvm_vcpu *vcpu,
++					       struct kvm_vcpu_events *events)
++{
++	vcpu_load(vcpu);
++
++	events->exception.injected = vcpu->arch.exception.pending;
++	events->exception.nr = vcpu->arch.exception.nr;
++	events->exception.has_error_code = vcpu->arch.exception.has_error_code;
++	events->exception.error_code = vcpu->arch.exception.error_code;
++
++	events->interrupt.injected = vcpu->arch.interrupt.pending;
++	events->interrupt.nr = vcpu->arch.interrupt.nr;
++	events->interrupt.soft = vcpu->arch.interrupt.soft;
++
++	events->nmi.injected = vcpu->arch.nmi_injected;
++	events->nmi.pending = vcpu->arch.nmi_pending;
++	events->nmi.masked = kvm_x86_ops->get_nmi_mask(vcpu);
++
++	events->sipi_vector = vcpu->arch.sipi_vector;
++
++	events->flags = 0;
++
++	vcpu_put(vcpu);
++}
++
++static int kvm_vcpu_ioctl_x86_set_vcpu_events(struct kvm_vcpu *vcpu,
++					      struct kvm_vcpu_events *events)
++{
++	if (events->flags)
++		return -EINVAL;
++
++	vcpu_load(vcpu);
++
++	vcpu->arch.exception.pending = events->exception.injected;
++	vcpu->arch.exception.nr = events->exception.nr;
++	vcpu->arch.exception.has_error_code = events->exception.has_error_code;
++	vcpu->arch.exception.error_code = events->exception.error_code;
++
++	vcpu->arch.interrupt.pending = events->interrupt.injected;
++	vcpu->arch.interrupt.nr = events->interrupt.nr;
++	vcpu->arch.interrupt.soft = events->interrupt.soft;
++	if (vcpu->arch.interrupt.pending && irqchip_in_kernel(vcpu->kvm))
++		kvm_pic_clear_isr_ack(vcpu->kvm);
++
++	vcpu->arch.nmi_injected = events->nmi.injected;
++	vcpu->arch.nmi_pending = events->nmi.pending;
++	kvm_x86_ops->set_nmi_mask(vcpu, events->nmi.masked);
++
++	vcpu->arch.sipi_vector = events->sipi_vector;
++
++	vcpu_put(vcpu);
++
++	return 0;
++}
++
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
+ {
+@@ -2040,6 +2096,27 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 		r = kvm_vcpu_ioctl_x86_set_mce(vcpu, &mce);
+ 		break;
+ 	}
++	case KVM_GET_VCPU_EVENTS: {
++		struct kvm_vcpu_events events;
++
++		kvm_vcpu_ioctl_x86_get_vcpu_events(vcpu, &events);
++
++		r = -EFAULT;
++		if (copy_to_user(argp, &events, sizeof(struct kvm_vcpu_events)))
++			break;
++		r = 0;
++		break;
++	}
++	case KVM_SET_VCPU_EVENTS: {
++		struct kvm_vcpu_events events;
++
++		r = -EFAULT;
++		if (copy_from_user(&events, argp, sizeof(struct kvm_vcpu_events)))
++			break;
++
++		r = kvm_vcpu_ioctl_x86_set_vcpu_events(vcpu, &events);
++		break;
++	}
+ 	default:
+ 		r = -EINVAL;
+ 	}
 diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 172639e..976f4d1 100644
+index 976f4d1..92045a9 100644
 --- a/include/linux/kvm.h
 +++ b/include/linux/kvm.h
-@@ -163,6 +163,7 @@ struct kvm_pit_config {
+@@ -489,6 +489,9 @@ struct kvm_ioeventfd {
+ #endif
+ #define KVM_CAP_ADJUST_CLOCK 39
+ #define KVM_CAP_INTERNAL_ERROR_DATA 40
++#ifdef __KVM_HAVE_VCPU_EVENTS
++#define KVM_CAP_VCPU_EVENTS 41
++#endif
  
- /* For KVM_EXIT_INTERNAL_ERROR */
- #define KVM_INTERNAL_ERROR_EMULATION 1
-+#define KVM_INTERNAL_ERROR_SIMUL_EX 2
+ #ifdef KVM_CAP_IRQ_ROUTING
  
- /* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
- struct kvm_run {
+@@ -672,6 +675,9 @@ struct kvm_clock_data {
+ /* IA64 stack access */
+ #define KVM_IA64_VCPU_GET_STACK   _IOR(KVMIO,  0x9a, void *)
+ #define KVM_IA64_VCPU_SET_STACK   _IOW(KVMIO,  0x9b, void *)
++/* Available with KVM_CAP_VCPU_EVENTS */
++#define KVM_GET_VCPU_EVENTS       _IOR(KVMIO,  0x9f, struct kvm_vcpu_events)
++#define KVM_SET_VCPU_EVENTS       _IOW(KVMIO,  0xa0, struct kvm_vcpu_events)
+ 
+ #define KVM_DEV_ASSIGN_ENABLE_IOMMU	(1 << 0)
+ 
 -- 
 1.6.5.2
 
