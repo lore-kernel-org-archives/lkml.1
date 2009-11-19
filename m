@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZKSRLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZKSRN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZKSRLg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:11:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbZKSRLe
+	id S1753030AbZKSRN4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZKSRN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:11:34 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:17453 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753728AbZKSRLa (ORCPT
+	Thu, 19 Nov 2009 12:13:56 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36476 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbZKSRNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:11:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=Q6kQj6aa2dWf7HWeQKXyCodP0m6TNL1yX27YtxqvrUeYp2QHkD9gdkHlGXgwtBx0Ti
-         4ttoqpB2oFTeKVgRNihCA1KKklGJa1l9ivGnbrivIkSmMaoAM+hP3BohupIQfGnTh1kM
-         gyYz3pgpY0ucRFXBTVzLy07PiZLTd6DvuO3jQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 18:10:24 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191645.29885.bzolnier@gmail.com> <20091119162738.7e8e5665@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119162738.7e8e5665@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 19 Nov 2009 12:13:55 -0500
+Subject: Re: [PATCH 2/2] lockdep: Don't only check recursive read locks
+ once in a sequence
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>
+In-Reply-To: <20091119155549.GB4967@nowhere>
+References: <1258506398-5151-1-git-send-email-fweisbec@gmail.com>
+	 <1258506398-5151-3-git-send-email-fweisbec@gmail.com>
+	 <4B03C1A7.4070305@cn.fujitsu.com>  <20091119155549.GB4967@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Nov 2009 18:13:48 +0100
+Message-ID: <1258650828.3931.437.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911191810.24721.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 17:27:38 Alan Cox wrote:
+On Thu, 2009-11-19 at 16:55 +0100, Frederic Weisbecker wrote:
+> And btw I
+> don't understand why rwsem read locks are not considered as
+> recursive in lockdep. 
 
-> For the other stuf "Talk to the maintainer" to quote yourself. I've
-> been working on other things for the past couple of years.
+Because they're not.
 
-Indeed.
+rwsems are FIFO fair, so a double read can deadlock when there's a
+pending writer inbetween.
 
-I wonder for how long we will be recovering from your help in TTY...
-
--- 
-Bartlomiej Zolnierkiewicz
