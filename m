@@ -1,98 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZKSSUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZKSSW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbZKSSUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 13:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZKSSUq
+	id S1754209AbZKSSW0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 13:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZKSSW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 13:20:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37779 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 13:22:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23438 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbZKSSUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 13:20:46 -0500
-Date: Thu, 19 Nov 2009 19:17:45 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Spencer Candland <spencer@bluehost.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
-Message-ID: <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com>
-References: <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop>
+	id S1752951AbZKSSWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 13:22:25 -0500
+Message-ID: <4B058C76.9090609@redhat.com>
+Date: Thu, 19 Nov 2009 18:20:38 +0000
+From: Andrew Haley <aph@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258464288.7816.305.camel@laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>  <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 02:24:48PM +0100, Peter Zijlstra wrote:
-> > Seems issue reported then was exactly the same as reported now by
-> > you. Looks like commit 49048622eae698e5c4ae61f7e71200f265ccc529 just
-> > make probability of bug smaller and you did not note it until now.  
-> > 
-> > Could you please test this patch, if it solve all utime decrease
-> > problems for you:
-> > 
-> > http://patchwork.kernel.org/patch/59795/
-> > 
-> > If you confirm it work, I think we should apply it. Otherwise
-> > we need to go to propagate task_{u,s}time everywhere, which is not
-> > (my) preferred solution.
+Thomas Gleixner wrote:
+> On Thu, 19 Nov 2009, Thomas Gleixner wrote:
 > 
-> That patch will create another issue, it will allow a process to hide
-> from top by arranging to never run when the tick hits.
+> Can the GCC folks please shed some light on this:
+> 
+> standard function start:
+> 
+> 	 push	%ebp
+> 	 mov	%esp, %ebp
+> 	 ....
+> 	 call   mcount
+> 
+> modified function start on a handful of functions only seen with gcc
+> 4.4.x on x86 32 bit:
+> 
+> 	push   %edi
+> 	lea    0x8(%esp),%edi
+> 	and    $0xfffffff0,%esp
+> 	pushl  -0x4(%edi)
+> 	push   %ebp
+> 	mov    %esp,%ebp
+> 	...
+> 	call   mcount
+> 
+> This modification leads to a hard to solve problem in the kernel
+> function graph tracer which assumes that the stack looks like:
+> 
+>        return address
+>        saved  ebp
+> 
+> With the modified function start sequence this is not longer true and
+> the manipulation of the return address on the stack fails silently.
+> 
+> Neither gcc 4.3 nor gcc 3.4 are generating such function frames, so it
+> looks like a gcc 4.4.x feature.
+> 
+> There is no real obvious reason why the edi magic needs to be done
+> _before_ 
+> 
+> 	push   %ebp
+> 	mov    %esp,%ebp
 
-What about that?
+OK, I found it.  There is a struct defined as
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1f8d028..9db1cbc 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5194,7 +5194,7 @@ cputime_t task_utime(struct task_struct *p)
- 	}
- 	utime = (cputime_t)temp;
- 
--	p->prev_utime = max(p->prev_utime, utime);
-+	p->prev_utime = max(p->prev_utime, max(p->utime, utime));
- 	return p->prev_utime;
- }
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index ce17760..8be5b75 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -914,8 +914,8 @@ void do_sys_times(struct tms *tms)
- 	struct task_cputime cputime;
- 	cputime_t cutime, cstime;
- 
--	thread_group_cputime(current, &cputime);
- 	spin_lock_irq(&current->sighand->siglock);
-+	thread_group_cputime(current, &cputime);
- 	cutime = current->signal->cutime;
- 	cstime = current->signal->cstime;
- 	spin_unlock_irq(&current->sighand->siglock);
+struct entry {
+ ...
+} __attribute__((__aligned__((1 << (4)))));
 
-It's on top of Hidetoshi patch and fix utime decrease problem 
-on my system. 
+and then in timer_stats_update_stats you have a local variable of type
+struct entry:
 
-Are we not doing something nasty here?
+void timer_stats_update_stats()
+{
+ spinlock_t *lock;
+ struct entry *entry, input;
 
-        cputime_t utime = p->utime, total = utime + p->stime;
-        u64 temp;
+So, gcc has to 16-align the stack pointer to satisfy the alignment
+for struct entry.
 
-        /*
-         * Use CFS's precise accounting:
-         */
-        temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
+Andrew.
 
-        if (total) {
-                temp *= utime;
-                do_div(temp, total);
-        }
-	utime = (cputime_t)temp;
-
-Stanislaw
