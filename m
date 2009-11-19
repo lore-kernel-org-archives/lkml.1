@@ -1,42 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZKSOAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZKSOBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbZKSOAI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:00:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKSOAG
+	id S1753156AbZKSOBE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:01:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZKSOBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:00:06 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:53545 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbZKSOAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:00:05 -0500
-Date: Thu, 19 Nov 2009 15:00:08 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
-Message-ID: <20091119150008.6e757c26@hyperion.delvare>
-In-Reply-To: <1258636014.4372.328.camel@twins>
-References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
-	<20091107210147.3e754278@hyperion.delvare>
-	<4AF7148C.9090706@thebigcorporation.com>
-	<20091112211255.09cd884a@hyperion.delvare>
-	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
-	<20091116155606.GC29479@sirena.org.uk>
-	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
-	<20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
-	<c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
-	<20091118175202.490989d8@hyperion.delvare>
-	<alpine.LFD.2.00.0911182127040.24119@localhost.localdomain>
-	<20091119130526.23a69b85@hyperion.delvare>
-	<20091119125906.6ad00edd@lxorguk.ukuu.org.uk>
-	<1258636014.4372.328.camel@twins>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Thu, 19 Nov 2009 09:01:03 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47101 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752090AbZKSOBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:01:03 -0500
+Date: Thu, 19 Nov 2009 14:02:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Message-ID: <20091119140259.2fee86e2@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911182056.16517.bzolnier@gmail.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+	<20091118184125.623e063d@lxorguk.ukuu.org.uk>
+	<200911182007.07405.bzolnier@gmail.com>
+	<200911182056.16517.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -44,37 +30,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+> BTW we can immediately reclaim 300 LOC by simply merging drivers back..
 
-On Thu, 19 Nov 2009 14:06:54 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-11-19 at 12:59 +0000, Alan Cox wrote:
-> > > Well, I guess only people monitoring system latency would notice, as
-> > > this is the only thing yield() was supposed to help with in the first
-> > > place.
-> > 
-> > 	if (need_resched())
-> > 		schedule();
-> 
-> aka.
-> 
-> 	cond_resched();
+LoC - lines of comments ? (at least half of them).
 
-Are you saying that most calls to yield() should be replaced with calls
-to cond_resched()?
+Been testing a bit before fixing up the pata_hpt drivers. Resume from S2R
+doesn't work with drivers/ide/hpt366.c. So it may have code for resume
+but it doesn't actually work for all the chips.
 
-I admit I a little skeptical. While the description of cond_resched()
-("latency reduction via explicit rescheduling in places that are safe")
-sounds promising, following the calls leads me to:
-
-static inline int need_resched(void)
-{
-	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
-}
-
-So apparently the condition for need_resched() to do anything is
-considered unlikely... suggesting that cond_resched() is a no-op in
-most cases? I don't quite get the point of moving away from sched()
-because it is a no-op, if we end up with a no-op under a different name.
-
--- 
-Jean Delvare
+Reason is fairly obvious - the PCI speed detection logic is broken except
+for the case of a PC boot where the ROM BIOS for the HPT3xx is run. That
+doesn't occur on a resume from RAM so a 66MHz clocked motherboard device
+comes back with the speed guessed wrongly.
