@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbZKSW40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZKSXBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbZKSW40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 17:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbZKSW4Y
+	id S1757883AbZKSXBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 18:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbZKSXBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 17:56:24 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45944 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757826AbZKSW4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 17:56:23 -0500
-Date: Fri, 20 Nov 2009 09:56:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Simek <michal.simek@petalogix.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Nathan Fontenot <nfont@austin.ibm.com>
-Subject: linux-next: microblaze tree build failure
-Message-Id: <20091120095622.5fefb9fa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__20_Nov_2009_09_56_22_+1100_9JX._Pq4P8Ydxyrl"
+	Thu, 19 Nov 2009 18:01:30 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42897 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756853AbZKSXB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 18:01:29 -0500
+Date: Thu, 19 Nov 2009 23:01:22 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "'linux-arm-kernel@lists.infradead.org'" 
+	<linux-arm-kernel@lists.infradead.org>,
+       Andrew Victor <linux@maxim.org.za>,
+       Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [GIT PULL] AT91 Kconfig rework
+Message-ID: <20091119230122.GI22232@n2100.arm.linux.org.uk>
+References: <4B01702B.4080107@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B01702B.4080107@atmel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__20_Nov_2009_09_56_22_+1100_9JX._Pq4P8Ydxyrl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Nov 16, 2009 at 04:30:51PM +0100, Nicolas Ferre wrote:
+> Hi Russell,
+> 
+> This is AT91 Kconfig rework for next merge window. After 
+> discussing it on the mailing-list and Ack by Andrew Victor, I 
+> send you this patchset. You can pull it from:
+> 
+>   git://github.com/at91linux/linux-2.6-at91.git for-rmk
 
-Hi Michal,
+FYI:
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+$ git pull git://github.com/at91linux/linux-2.6-at91.git for-rmk
+remote: Counting objects: 41, done.
+remote: Compressing objects: 100% (28/28), done.
+remote: Total 30 (delta 26), reused 2 (delta 2)
+Unpacking objects: 100% (30/30), done.
+>From git://github.com/at91linux/linux-2.6-at91
+ * branch            for-rmk    -> FETCH_HEAD
+Auto-merging arch/arm/mach-at91/Kconfig
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/Kconfig
+Recorded preimage for 'arch/arm/mach-at91/Kconfig'
+Automatic merge failed; fix conflicts and then commit the result.
+$ git diff-files -u
+diff --cc arch/arm/mach-at91/Kconfig
+index 2fd8843,3df124e..0000000
+--- a/arch/arm/mach-at91/Kconfig
++++ b/arch/arm/mach-at91/Kconfig
+@@@ -320,7 -337,7 +337,11 @@@ config MACH_AT91SAM9G20E
+  
+  config MACH_AT91SAM9G20EK_2MMC
+  	bool "Atmel AT91SAM9G20-EK Evaluation Kit with 2 SD/MMC Slots"
+++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
+ +	depends on ARCH_AT91SAM9G20
+++=======
++ 	select HAVE_NAND_ATMEL_BUSWIDTH_16
+++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
+  	help
+  	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
+  	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
+@@@ -394,7 -411,7 +415,11 @@@ config MTD_AT91_DATAFLASH_CAR
+  
+  config MTD_NAND_ATMEL_BUSWIDTH_16
+  	bool "Enable 16-bit data bus interface to NAND flash"
+++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
+ +	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G20EK_2MMC || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
+++=======
++ 	depends on HAVE_NAND_ATMEL_BUSWIDTH_16
+++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
+  	help
+  	  On AT91SAM926x boards both types of NAND flash can be present
+  	  (8 and 16 bit data bus width).
 
-arch/powerpc/platforms/built-in.o: In function `.ofdt_write':
-reconfig.c:(.text+0xca08): undefined reference to `.of_attach_node'
-arch/powerpc/platforms/built-in.o: In function `.do_device_node':
-vio.c:(.text+0x1be2c): undefined reference to `.of_attach_node'
-
-Caused by commit 5d0c1c076548e1f8d590a2f70f281b4eb7b3aeb2 ("Merge
-of_attach_node") which I have reverted for today.  That patch is missing
-an update to drivers/of/Makefile at least ... and probably some other
-stuff as well.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__20_Nov_2009_09_56_22_+1100_9JX._Pq4P8Ydxyrl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksFzRYACgkQjjKRsyhoI8xy5ACgoFibWLxu7BC5zAuIZm2A38z4
-l34AmwUnRamiHUvxbt7j1Z1o2+LvAK8a
-=UHlP
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_Nov_2009_09_56_22_+1100_9JX._Pq4P8Ydxyrl--
+What's the resolution?  I think the first is just to include both, but
+the second looks like the first depends needs deleting to leave only the
+second?
