@@ -1,160 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZKSVYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbZKSV1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608AbZKSVYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 16:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZKSVYw
+	id S1756315AbZKSV1w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 16:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZKSV1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 16:24:52 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53943 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755837AbZKSVYE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 16:24:04 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline; filename=md-add-syncall-ioctl.patch
-Content-type: TEXT/PLAIN; NAME=''md-add-syncall-ioctl.patch
-Date: Thu, 19 Nov 2009 16:22:46 -0500
-From: scjody@sun.com
-Subject: [patch 5/5] [md] Add SET_RESYNC_ALL and CLEAR_RESYNC_ALL ioctls.
-To: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
-Message-id: <20091119212407.911694324@sun.com>
-References: <20091119212241.283629302@sun.com>
-User-Agent: quilt/0.46-1
+	Thu, 19 Nov 2009 16:27:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63227 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568AbZKSV1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 16:27:49 -0500
+Message-ID: <4B05B7AD.20500@redhat.com>
+Date: Thu, 19 Nov 2009 14:25:01 -0700
+From: Jeff Law <law@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: rostedt@goodmis.org, David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>
+In-Reply-To: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds SET_RESYNC_ALL and CLEAR_RESYNC_ALL ioctls, needed for
-fsck of a filesystem using declared mode.
+On 11/19/09 14:14, H. Peter Anvin wrote:
+> Hence a new unconstrained option...
+>    
+Not arguing against it, just noting there are targets where after the 
+prologue mcount is mandated.   There's certainly hooks in GCC to do it 
+both ways and if there's no clear need to use after-prologue on 
+x86-linux, then before-prologue seems reasonable to me.
 
-SET_RESYNC_ALL instructs an MD block device to perform a resync of all
-stripes read or written until CLEAR_RESYNC_ALL is set.  The intended user
-is e2fsck, which can SET_RESYNC_ALL before journal replay (which includes
-reading from all blocks declared for write prior to a crash) and then
-CLEAR_RESYNC_ALL afterwards.
+It's also the case that aligning stacks on the x86 and the poor code 
+generated when used with profiling is an interaction I doubt anyone has 
+looked at until now.  The result is definitely ugly and inefficient -- 
+and there's something to be said for cleaning that up and at least 
+marginally reducing the overhead of profiling.
 
-Signed-off-by: Jody McIntyre <scjody@sun.com>
+Having said all that, I don't expect to personally be looking at the 
+problem, given the list of other codegen issues that need to be looked 
+at (reload in particular), profiling/stack interactions would be around 
+87 millionth on my list.
 
-Index: linux-2.6.18-128.7.1/drivers/md/md.c
-===================================================================
---- linux-2.6.18-128.7.1.orig/drivers/md/md.c
-+++ linux-2.6.18-128.7.1/drivers/md/md.c
-@@ -4484,6 +4484,24 @@ static int md_ioctl(struct inode *inode,
- 			err = set_bitmap_file(mddev, (int)arg);
- 			goto done_unlock;
- 
-+		case SET_RESYNC_ALL:
-+			if (mddev->pers->set_resync_all == NULL) {
-+				err = -EINVAL;
-+				goto abort_unlock;
-+			}
-+
-+			err = mddev->pers->set_resync_all(mddev, 1);
-+			goto done_unlock;
-+
-+		case CLEAR_RESYNC_ALL:
-+			if (mddev->pers->set_resync_all == NULL) {
-+				err = -EINVAL;
-+				goto abort_unlock;
-+			}
-+
-+			err = mddev->pers->set_resync_all(mddev, 0);
-+			goto done_unlock;
-+
- 		default:
- 			err = -EINVAL;
- 			goto abort_unlock;
-Index: linux-2.6.18-128.7.1/drivers/md/raid5.c
-===================================================================
---- linux-2.6.18-128.7.1.orig/drivers/md/raid5.c
-+++ linux-2.6.18-128.7.1/drivers/md/raid5.c
-@@ -3013,7 +3013,7 @@ retry:
- 			r_sector += sectors_per_chunk;
- 		}
- 		if (sh) {
--			if (bio_flagged(bi, BIO_SYNCRAID)) {
-+			if (bio_flagged(bi, BIO_SYNCRAID) || conf->resync_all) {
- 				if (test_bit(STRIPE_RESYNC_REQ, &sh->state)) {
- 					PRINTK("SYNCRAID on %llu, already resynced\n", bi->bi_sector);
- 				} else {
-@@ -4049,6 +4049,15 @@ static void raid5_quiesce(mddev_t *mddev
- 	}
- }
- 
-+static int raid5_set_resync_all(mddev_t *mddev, int state)
-+{
-+	raid5_conf_t *conf = mddev_to_conf(mddev);
-+
-+	conf->resync_all = state;
-+
-+	return 0;
-+}
-+
- static struct mdk_personality raid6_personality =
- {
- 	.name		= "raid6",
-@@ -4065,6 +4074,7 @@ static struct mdk_personality raid6_pers
- 	.sync_request	= sync_request,
- 	.resize		= raid5_resize,
- 	.quiesce	= raid5_quiesce,
-+	.set_resync_all = raid5_set_resync_all,
- };
- static struct mdk_personality raid5_personality =
- {
-@@ -4086,6 +4096,7 @@ static struct mdk_personality raid5_pers
- 	.start_reshape  = raid5_start_reshape,
- #endif
- 	.quiesce	= raid5_quiesce,
-+	.set_resync_all = raid5_set_resync_all,
- };
- 
- static struct mdk_personality raid4_personality =
-@@ -4104,6 +4115,7 @@ static struct mdk_personality raid4_pers
- 	.sync_request	= sync_request,
- 	.resize		= raid5_resize,
- 	.quiesce	= raid5_quiesce,
-+	.set_resync_all = raid5_set_resync_all,
- };
- 
- static int __init raid5_init(void)
-Index: linux-2.6.18-128.7.1/include/linux/raid/md_u.h
-===================================================================
---- linux-2.6.18-128.7.1.orig/include/linux/raid/md_u.h
-+++ linux-2.6.18-128.7.1/include/linux/raid/md_u.h
-@@ -45,6 +45,8 @@
- #define STOP_ARRAY		_IO (MD_MAJOR, 0x32)
- #define STOP_ARRAY_RO		_IO (MD_MAJOR, 0x33)
- #define RESTART_ARRAY_RW	_IO (MD_MAJOR, 0x34)
-+#define SET_RESYNC_ALL		_IO (MD_MAJOR, 0x35)
-+#define CLEAR_RESYNC_ALL	_IO (MD_MAJOR, 0x36)
- 
- typedef struct mdu_version_s {
- 	int major;
-Index: linux-2.6.18-128.7.1/include/linux/raid/raid5.h
-===================================================================
---- linux-2.6.18-128.7.1.orig/include/linux/raid/raid5.h
-+++ linux-2.6.18-128.7.1/include/linux/raid/raid5.h
-@@ -241,6 +241,7 @@ struct raid5_private_data {
- 
- 	int			seq_flush, seq_write;
- 	int			quiesce;
-+	int			resync_all;
- 
- 	int			fullsync;  /* set to 1 if a full sync is needed,
- 					    * (fresh device added).
-Index: linux-2.6.18-128.7.1/include/linux/raid/md_k.h
-===================================================================
---- linux-2.6.18-128.7.1.orig/include/linux/raid/md_k.h
-+++ linux-2.6.18-128.7.1/include/linux/raid/md_k.h
-@@ -283,6 +283,7 @@ struct mdk_personality
- 	 * others - reserved
- 	 */
- 	void (*quiesce) (mddev_t *mddev, int state);
-+	int (*set_resync_all) (mddev_t *mddev, int state);
- };
- 
- 
+jeff
 
--- 
