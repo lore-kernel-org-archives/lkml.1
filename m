@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZKSJBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbZKSJBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZKSJBN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 04:01:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZKSJBM
+	id S1757982AbZKSJBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 04:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZKSJBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 04:01:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:46598 "EHLO ozlabs.org"
+	Thu, 19 Nov 2009 04:01:23 -0500
+Received: from ozlabs.org ([203.10.76.45]:46621 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755324AbZKSJBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 04:01:11 -0500
+	id S1755252AbZKSJBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 04:01:22 -0500
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911191931.15379.rusty@rustcorp.com.au>
-Date: Thu, 19 Nov 2009 19:31:15 +1030
-Subject: [PATCH 4/6] cpumask: select disabling obsolete cpumask functions on x86
+Message-Id: <200911191931.25847.rusty@rustcorp.com.au>
+Date: Thu, 19 Nov 2009 19:31:25 +1030
+Subject: [PATCH 5/6] cpumask: remove struct cpumask definition when CONFIG_CPUMASK_OFFSTACK=y
 Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
@@ -24,92 +24,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-It currently depends on CONFIG_BROKEN; change to be set by
-CONFIG_CPUMASK_OFFSTACK now it all compiles.
+We're about to change CONFIG_CPUMASK_OFFSTACK so it only allocate
+nr_cpu_ids bits for all cpumasks.  We need to make sure that when
+CONFIG_CPUMASK_OFFSTACK is set:
 
-We also complete it: the header shouldn't refer to the deprected
-CPU_MASK_LAST_WORD, and the deprecated implementations are removed.
+1) Noone uses the old bitmap ops, which use NR_CPUS bits (use cpumask_*)
+2) Noone uses assignment of struct cpumask (use cpumask_copy)
+3) Noone passes a struct cpumask (pass a pointer)
+4) Noone declares them on the stack (use cpumask_var_t)
+
+So we finally remove the definition of struct cpumask when
+CONFIG_CPUMASK_OFFSTACK=y.  This means that these usages will hit a compile
+error the moment that config option is turned on.
+
+Note that it also means you can't declare a static cpumask.  You
+should avoid this anyway (use cpumask_var_t), but there's a
+deliberately-ugly workaround for special cases, using DECLARE_BITMAP()
+and to_cpumask().
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- include/linux/cpumask.h |    4 ++--
- include/linux/sched.h   |    2 +-
- lib/Kconfig             |    5 ++++-
- lib/cpumask.c           |    2 ++
- 4 files changed, 9 insertions(+), 4 deletions(-)
+ include/linux/cpumask.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
 --- a/include/linux/cpumask.h
 +++ b/include/linux/cpumask.h
-@@ -700,7 +700,7 @@ static inline const struct cpumask *get_
- #if NR_CPUS <= BITS_PER_LONG
- #define CPU_BITS_ALL						\
- {								\
--	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD	\
-+	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
- }
+@@ -10,7 +10,15 @@
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
  
- #else /* NR_CPUS > BITS_PER_LONG */
-@@ -708,7 +708,7 @@ static inline const struct cpumask *get_
- #define CPU_BITS_ALL						\
- {								\
- 	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,		\
--	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD		\
-+	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
- }
- #endif /* NR_CPUS > BITS_PER_LONG */
- 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1826,7 +1826,7 @@ static inline int set_cpus_allowed_ptr(s
- }
- #endif
- 
--#ifndef CONFIG_CPUMASK_OFFSTACK
-+#ifndef CONFIG_DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
- static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
- {
- 	return set_cpus_allowed_ptr(p, &new_mask);
-diff --git a/lib/Kconfig b/lib/Kconfig
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -179,6 +179,7 @@ config HAVE_LMB
- 
- config CPUMASK_OFFSTACK
- 	bool "Force CPU masks off stack" if DEBUG_PER_CPU_MAPS
-+	select DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
- 	help
- 	  Use dynamic allocation for cpumask_var_t, instead of putting
- 	  them on the stack.  This is a bit more expensive, but avoids
-@@ -186,7 +187,9 @@ config CPUMASK_OFFSTACK
- 
- config DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
-        bool "Disable obsolete cpumask functions" if DEBUG_PER_CPU_MAPS
--       depends on EXPERIMENTAL && BROKEN
-+       help
-+	 Remove all the definitions of things which are dangerous with
-+	 offstack (ie. dynamically allocated) cpumasks.
- 
- #
- # Netlink attribute parsing support is select'ed if needed
-diff --git a/lib/cpumask.c b/lib/cpumask.c
---- a/lib/cpumask.c
-+++ b/lib/cpumask.c
-@@ -4,6 +4,7 @@
- #include <linux/module.h>
- #include <linux/bootmem.h>
- 
-+#ifndef CONFIG_DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
- int __first_cpu(const cpumask_t *srcp)
- {
- 	return min_t(int, NR_CPUS, find_first_bit(srcp->bits, NR_CPUS));
-@@ -36,6 +37,7 @@ int __any_online_cpu(const cpumask_t *ma
- 	return cpu;
- }
- EXPORT_SYMBOL(__any_online_cpu);
-+#endif /* CONFIG_DISABLE_OBSOLETE_CPUMASK_FUNCTIONS */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++/*
++ * This is never declared, so you can't accidentally create one (see
++ * cpumask_var_t) or copy them by assignment (see cpumask_copy).
++ */
++struct cpumask;
++#else
+ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
++#endif /* CONFIG_CPUMASK_OFFSTACK */
  
  /**
-  * cpumask_next_and - get the next cpu in *src1p & *src2p
+  * cpumask_bits - get the bits in a cpumask
+@@ -19,7 +28,14 @@ typedef struct cpumask { DECLARE_BITMAP(
+  * You should only assume nr_cpu_ids bits of this mask are valid.  This is
+  * a macro so it's const-correct.
+  */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++static inline unsigned long *cpumask_bits(const struct cpumask *mask)
++{
++	return (unsigned long *)mask;
++}
++#else
+ #define cpumask_bits(maskp) ((maskp)->bits)
++#endif
+ 
+ #if NR_CPUS == 1
+ #define nr_cpu_ids		1
 
