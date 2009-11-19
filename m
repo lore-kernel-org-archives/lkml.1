@@ -1,141 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZKSIMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZKSINF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZKSIMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 03:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZKSIMT
+	id S1754593AbZKSINF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 03:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZKSINE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 03:12:19 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:37956 "EHLO gir.skynet.ie"
+	Thu, 19 Nov 2009 03:13:04 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38234 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109AbZKSIMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 03:12:17 -0500
-Date: Thu, 19 Nov 2009 08:12:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Chris Mason <chris.mason@oracle.com>, Milan Broz <mbroz@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>, linux-kernel@vger.kernel.org,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: [PATCH 0/7] Reduce GFP_ATOMIC allocation failures, candidate
-	fix V3
-Message-ID: <20091119081219.GB1119@csn.ul.ie>
-References: <1258054211-2854-1-git-send-email-mel@csn.ul.ie> <20091112202748.GC2811@think> <20091112220005.GD2811@think> <20091113024642.GA7771@think> <4B018157.3080707@redhat.com> <20091116183613.GG27677@think>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S1754185AbZKSIND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 03:13:03 -0500
+Date: Thu, 19 Nov 2009 09:13:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Beulich <JBeulich@novell.com>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Ravikiran Thirumalai <kiran@scalex86.org>,
+       Shai Fultheim <shai@scalemp.com>
+Subject: Re: [PATCH] x86: eliminate redundant/contradicting cache line size config options
+Message-ID: <20091119081307.GA20534@wotan.suse.de>
+References: <4AFD5710020000780001F8F0@vpn.id2.novell.com> <20091116041407.GB5818@wotan.suse.de> <4B011677020000780001FD9D@vpn.id2.novell.com> <20091116105657.GE5818@wotan.suse.de> <20091119035640.GA18236@elte.hu> <20091118205240.11d3d660@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091116183613.GG27677@think>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20091118205240.11d3d660@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 01:36:13PM -0500, Chris Mason wrote:
-> On Mon, Nov 16, 2009 at 05:44:07PM +0100, Milan Broz wrote:
-> > On 11/13/2009 03:46 AM, Chris Mason wrote:
-> > > On Thu, Nov 12, 2009 at 05:00:05PM -0500, Chris Mason wrote:
-> > > 
-> > > [ ...]
-> > > 
-> > >>
-> > >> The punch line is that the btrfs guy thinks we can solve all of this with
-> > >> just one more thread.  If we change dm-crypt to have a thread dedicated
-> > >> to sync IO and a thread dedicated to async IO the system should smooth
-> > >> out.
+On Wed, Nov 18, 2009 at 08:52:40PM -0800, Arjan van de Ven wrote:
+> On Thu, 19 Nov 2009 04:56:40 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
 > > 
-> > Please, can you cc DM maintainers with these kind of patches? dm-devel list at least.
+> > * Nick Piggin <npiggin@suse.de> wrote:
 > > 
-> 
-> Well, my current patch is a hack.  If I had come up with a proven theory
-> (hopefully Mel can prove it ;), it definitely would have gone through
-> the dm-devel lists.
-> 
-
-I can't prove it for sure but the workload might not be targetted enough
-to show better or worse read latencies.
-
-I adjusted the workload to run fake-gitk multiple times to get a better
-sense of the deviation between runs
-
-On X86-64, the timings were
-2.6.30-0000000-force-highorder                Elapsed:10:52.218(stddev:008.085)   Failures:0
-2.6.31-0000000-force-highorder                Elapsed:11:32.258(stddev:130.779)   Failures:0
-2.6.31-0012345-kswapd-stay-awake-when-min     Elapsed:09:34.662(stddev:022.239)   Failures:0
-2.6.31-0123456-dm-crypt-unplug                Elapsed:10:28.718(stddev:060.897)   Failures:0
-2.6.32-rc6-0000000-force-highorder            Elapsed:27:53.686(stddev:207.508)   Failures:37
-2.6.32-rc6-0012345-kswapd-stay-awake-when-min Elapsed:27:26.735(stddev:221.214)   Failures:6
-2.6.32-rc6-0123456-dm-crypt-unplug            Elapsed:27:35.462(stddev:205.017)   Failures:4
-
-On X86, they were
-2.6.30-0000000-force-highorder                Elapsed:13:36.768(stddev:019.514)   Failures:0
-2.6.31-0000000-force-highorder                Elapsed:16:27.922(stddev:134.839)   Failures:0
-2.6.31-0000006-dm-crypt-unplug                Elapsed:15:47.160(stddev:183.488)   Failures:0
-2.6.31-0012345-kswapd-stay-awake-when-min     Elapsed:18:32.458(stddev:182.164)   Failures:0
-2.6.31-0123456-dm-crypt-unplug                Elapsed:17:07.482(stddev:210.404)   Failures:0
-2.6.32-rc6-0000000-force-highorder            Elapsed:26:08.763(stddev:123.926)   Failures:4
-2.6.32-rc6-0000006-dm-crypt-unplug            Elapsed:17:57.550(stddev:254.412)   Failures:1
-2.6.32-rc6-0012345-kswapd-stay-awake-when-min Elapsed:25:03.435(stddev:234.685)   Failures:1
-2.6.32-rc6-0123456-dm-crypt-unplug            Elapsed:25:21.382(stddev:211.252)   Failures:0
-
-(I forgot to queue up the dm-crypt patches on their own for X86-64 which
-is why the results are missing).
-
-While the dm-crypt patch shows small differences, they are well within
-the noise for each run of fake-gitk so I can't draw any major conclusion
-from it.
-
-On X86 for 2.6.31, roughly the same amount of time is spent in
-congestion_wait() with or without the patch. On 2.6.32-rc6, the time
-kswapd spends congestioned on the ASYNC queue is reduced by about 20%
-both when compared against mainline and compared against the other
-patches in the series applied. There is very little difference to the
-congestion on the SYNC queue.
-
-On X86-64 for 2.6.31, the story is slightly different. I don't think
-it's an architecture thing because the X86-64 machine has twice as many
-cores as the X86 test machine. Here, congestion_wait() spent on the
-ASYNC queue remains roughly the same but the time spent on the SYNC
-queue for direct reclaim is reduced by almost a third. Against
-2.6.32-rc6, there was very little difference.
-
-Again, it's hard to draw solid conclusions from this. I know from other
-testing that the low_latency tunable for the IO scheduler is an important
-factor for the performance of this test on 2.6.32-rc6 so if disabled, it
-mgiht show a clearer picture, but right now I can't say for sure it's an
-improvement.
-
-> > Note that the crypt requests can be already processed synchronously or asynchronously,
-> > depending on used crypto module (async it is in the case of some hw acceleration).
+> > > The only other use for L1 cache size macro is to pack objects to 
+> > > cachelines better (so they always use the fewest number of lines).
+> > > But this case is more rare nowadays people don't really count
+> > > cachelines anymore, but I think even then it makes sense for it to
+> > > be the largest line size in the system because we don't know how
+> > > big L1s are, and if you want opimal L1 packing, you likely also
+> > > want optimal Ln packing.
 > > 
-> > Adding another queue make the situation more complicated and because the crypt
-> > requests can be queued in crypto layer I am not sure that this solution will help
-> > in this situation at all.
-> > (Try to run that with AES-NI acceleration for example.)
-> 
-> The problem is that async threads still imply a kind of ordering.
-> If there's a fifo serviced by one thread or 10, the latency ramifications
-> are very similar for a new entry on the list.  We have to wait for a
-> large portion of the low-prio items in order to service a high prio
-> item.
-> 
-> With a queue dedicated to sync requests and one dedicated to async,
-> you'll get better read latencies.  Btrfs has a similar problem around
-> the crc helper threads and it ends up solving things with two different
-> lists (high and low prio) processed by one thread.
-> 
-> -chris
-> 
+> > We could do that - but then this default of X86_INTERNODE_CACHE_SHIFT:
+> > 
+> > +       default "7" if NUMA
+> > 
+> > will bite us and turns the 64 bytes L1_CACHE_BYTES into an effective
+> > 128 bytes value.
+> > 
+> > So ... are you arguing for an increase of the default x86 linesize to 
+> > 128 bytes?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Basically what I think we should do is consider L1_CACHE_BYTES to be
+*the* correct default value to use for 1) avoiding false sharing (which
+seems to be the most common use), and 2) optimal and repeatable per-object
+packing into cachelines (which is more of a micro-optimization to be
+applied carefully to really critical structures).
+
+But in either case, I think basicaly with these semantics, it makes mots
+sense to use the largest line size in the system here (ie. "L1" isn't
+really a good semantic because generic code still doesn't really know
+enough to do much with that).
+
+And then, I believe INTERNODE should basically just remain as a way
+for vSMP to fine tune the size/speed tradeoffs on their platform, which
+makes sense because it is so dissimilar to everyone else.
+
+So with !VSMP, I think INTERNODE should just be the same as L1_CACHE_BYTES.
+
+So this was my main point.
+
+
+> 128 is basically always wrong.
+> (unless you have a P4... but for default really we should not care
+> about those anymore)
+
+My other point was just this, but I don't care too much. But it is worded
+pretty negatively. The key here is that increasing the value too large
+tends to only cost a very small amount of size (and no increase in cacheline
+foot print, only RAM). Wheras making the value too small could hurt 
+scalability by orders of magnitude in the worst case.
+
+For a generic optimised kernel that is claiming to support P4, I think 128
+has to be the correct value. If we want an option that supports a generic
+for everything but P4 option, fine, but I have my doubts that 128 matters
+that much.
+
+Not such a relevant question for mainline, but are distros going to use
+64 soon? I would certainly hate to have a customer "upgrade" a big P4
+system to a much slower kernel that can't be fixed because of ABI issues,
+even if there are only one or two of them left out there.
+
+I don't know, I don't worry about this second point so much though :)
+
