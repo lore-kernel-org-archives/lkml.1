@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZKSTAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZKSTEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZKSTAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZKSTAo
+	id S1754820AbZKSTEG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZKSTEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:00:44 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:61763 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbZKSTAn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:00:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=LVLnx8hRD4kSpKvGghrQk63z9y5gDXjbLzOkPvKnRwbde789pWsbhUIGTAGbZ2CTr1
-         LNGHHpla0DfQNt2EI+Wmnb6+NcaxFLZ6ILKxJbVci953mgUYaGU7Fr0fhruZMWHQgWbj
-         mk+4dWE+4laFzSlht1U5ne6z2CEyovNGcYcHY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 19:58:34 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191852.23061.bzolnier@gmail.com> <20091119182132.5155f819@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119182132.5155f819@lxorguk.ukuu.org.uk>
+	Thu, 19 Nov 2009 14:04:05 -0500
+Received: from www.tglx.de ([62.245.132.106]:37066 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbZKSTEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 14:04:04 -0500
+Date: Thu, 19 Nov 2009 20:01:57 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>, rostedt@goodmis.org,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911191958470.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>   <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>   <20091119072040.GA23579@elte.hu>   <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>  
+ <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>   <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>   <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>   <1258653562.22249.682.camel@gandalf.stny.rr.com>
+ <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com> <4B058CCD.8050605@redhat.com> <alpine.LFD.2.00.0911191039470.2793@localhost.localdomain> <alpine.LFD.2.00.0911191041471.2793@localhost.localdomain>
+ <alpine.LFD.2.00.0911191047350.2793@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Message-Id: <200911191958.34247.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 19:21:32 Alan Cox wrote:
-> > Fixed where?  I posted the patch as soon as I noticed the problem.
+On Thu, 19 Nov 2009, Linus Torvalds wrote:
+> > I bet other people than just the kernel use the mcount hook for subtler 
+> > things than just doing profiles. And even if they don't, the quoted code 
+> > generation is just crazy _crap_.
 > 
-> Its not posted because unlike you I don't post patches as soon as I
-> notice them. I test them first. Which is why for example I discovered the
-> bug in the drivers/ide one. Did you check the vendor driver and then
-> stick 40 and 80 wire cables on the system to check the bits on a 3x2N ?
-> No I didn't think so. You see if you had you'd have discovered something
-
-I did check the vendor driver but I don't have 3x2N to test it so posting
-patch ASAP to make it possible for other people to verify it was the best
-course of action and completely justified.  Don't you agree?
-
-> else. You'd have discovered another bug in the old IDE one. The driver
-
-You mean 'another' like yours _three_ year old 'one'? :)
-
-> code for these chips isn't reliable and doesn't work at all in some cases.
+> For the kernel, if the only case is that timer_stat.c thing that Thomas 
+> pointed at, I guess we can at least work around it with something like the 
+> appended. The kernel code is certainly ugly too, no question about that. 
 > 
-> > Told me about it?  
+> It's just that we'd like to be able to depend on mcount code generation 
+> not being insane even in the presense of ugly code..
 > 
-> Yes - or do you only write replies not read them ?
+> The alternative would be to have some warning when this happens, so that 
+> we can at least see it. "mcount won't work reliably"
 
-Well, yours have low SNR and I value my time..
+There are at least 20 other random functions which have the same
+problem. Have not looked at the details yet.
 
-> NAK - the patch is inadequate. The procedure in the vendor driver does
+Just compiled with -mincoming-stack-boundary=4 and the problem goes
+away as gcc now thinks that the incoming stack is already 16 byte
+aligned. But that might break code which actually uses SSE
 
-Patch is completely adequate in what it tries to achieve (fixing three year
-old problem with testing the bit for the wrong port) and you could have made
-an incremental fix for 'a second issue' easily.
+Thanks,
 
-However I'm not into NIH so your patch is also fine and a more complete one.
+	tglx
 
->     pata_hpt3x2n: Fix cable detection
->     
->     The version inherited from drivers/ide doesn't work on the newer chipsets
->     at least not reliably. The vendors own driver uses a different process and
->     that one appears to produce plausible numbers.
 
-Well, maybe except how you decided to 'skip' in the patch description
-the part about how you have managed to introduce a regression three years
-ago into already unreliable cable detection taken from hpt366.. ;)
-
--- 
-Bartlomiej Zolnierkiewicz
