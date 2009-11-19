@@ -1,240 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZKSNnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbZKSNj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbZKSNnL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZKSNm2
+	id S1756367AbZKSNj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbZKSNj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:42:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34666 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 08:39:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4178 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753427AbZKSNfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753482AbZKSNfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Nov 2009 08:35:08 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 11/35] KVM: Xen PV-on-HVM guest support
-Date: Thu, 19 Nov 2009 15:34:47 +0200
-Message-Id: <1258637711-11674-12-git-send-email-avi@redhat.com>
+Subject: [PATCH 12/35] KVM: x86: Fix guest single-stepping while interruptible
+Date: Thu, 19 Nov 2009 15:34:48 +0200
+Message-Id: <1258637711-11674-13-git-send-email-avi@redhat.com>
 In-Reply-To: <1258637711-11674-1-git-send-email-avi@redhat.com>
 References: <1258637711-11674-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ed Swierk <eswierk@aristanetworks.com>
+From: Jan Kiszka <jan.kiszka@web.de>
 
-Support for Xen PV-on-HVM guests can be implemented almost entirely in
-userspace, except for handling one annoying MSR that maps a Xen
-hypercall blob into guest address space.
+Commit 705c5323 opened the doors of hell by unconditionally injecting
+single-step flags as long as guest_debug signaled this. This doesn't
+work when the guest branches into some interrupt or exception handler
+and triggers a vmexit with flag reloading.
 
-A generic mechanism to delegate MSR writes to userspace seems overkill
-and risks encouraging similar MSR abuse in the future.  Thus this patch
-adds special support for the Xen HVM MSR.
+Fix it by saving cs:rip when user space requests single-stepping and
+restricting the trace flag injection to this guest code position.
 
-I implemented a new ioctl, KVM_XEN_HVM_CONFIG, that lets userspace tell
-KVM which MSR the guest will write to, as well as the starting address
-and size of the hypercall blobs (one each for 32-bit and 64-bit) that
-userspace has loaded from files.  When the guest writes to the MSR, KVM
-copies one page of the blob from userspace to the guest.
-
-I've tested this patch with a hacked-up version of Gerd's userspace
-code, booting a number of guests (CentOS 5.3 i386 and x86_64, and
-FreeBSD 8.0-RC1 amd64) and exercising PV network and block devices.
-
-[jan: fix i386 build warning]
-[avi: future proof abi with a flags field]
-
-Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
 Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- Documentation/kvm/api.txt       |   24 ++++++++++++++++++++
- arch/x86/include/asm/kvm.h      |    1 +
- arch/x86/include/asm/kvm_host.h |    2 +
- arch/x86/kvm/x86.c              |   46 +++++++++++++++++++++++++++++++++++++++
- include/linux/kvm.h             |   16 +++++++++++++
- 5 files changed, 89 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    4 +++
+ arch/x86/kvm/x86.c              |   47 +++++++++++++++++++++++---------------
+ 2 files changed, 32 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
-index 5a4bc8c..3e8684e 100644
---- a/Documentation/kvm/api.txt
-+++ b/Documentation/kvm/api.txt
-@@ -593,6 +593,30 @@ struct kvm_irqchip {
- 	} chip;
- };
- 
-+4.27 KVM_XEN_HVM_CONFIG
-+
-+Capability: KVM_CAP_XEN_HVM
-+Architectures: x86
-+Type: vm ioctl
-+Parameters: struct kvm_xen_hvm_config (in)
-+Returns: 0 on success, -1 on error
-+
-+Sets the MSR that the Xen HVM guest uses to initialize its hypercall
-+page, and provides the starting address and size of the hypercall
-+blobs in userspace.  When the guest writes the MSR, kvm copies one
-+page of a blob (32- or 64-bit, depending on the vcpu mode) to guest
-+memory.
-+
-+struct kvm_xen_hvm_config {
-+	__u32 flags;
-+	__u32 msr;
-+	__u64 blob_addr_32;
-+	__u64 blob_addr_64;
-+	__u8 blob_size_32;
-+	__u8 blob_size_64;
-+	__u8 pad2[30];
-+};
-+
- 5. The kvm_run structure
- 
- Application code obtains a pointer to the kvm_run structure by
-diff --git a/arch/x86/include/asm/kvm.h b/arch/x86/include/asm/kvm.h
-index f02e87a..ef9b4b7 100644
---- a/arch/x86/include/asm/kvm.h
-+++ b/arch/x86/include/asm/kvm.h
-@@ -19,6 +19,7 @@
- #define __KVM_HAVE_MSIX
- #define __KVM_HAVE_MCE
- #define __KVM_HAVE_PIT_STATE2
-+#define __KVM_HAVE_XEN_HVM
- 
- /* Architectural interrupt line count. */
- #define KVM_NR_INTERRUPTS 256
 diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 179a919..36f3b53 100644
+index 36f3b53..2536fbd 100644
 --- a/arch/x86/include/asm/kvm_host.h
 +++ b/arch/x86/include/asm/kvm_host.h
-@@ -410,6 +410,8 @@ struct kvm_arch{
- 
- 	unsigned long irq_sources_bitmap;
- 	u64 vm_init_tsc;
+@@ -371,6 +371,10 @@ struct kvm_vcpu_arch {
+ 	u64 mcg_status;
+ 	u64 mcg_ctl;
+ 	u64 *mce_banks;
 +
-+	struct kvm_xen_hvm_config xen_hvm_config;
++	/* used for guest single stepping over the given code position */
++	u16 singlestep_cs;
++	unsigned long singlestep_rip;
  };
  
- struct kvm_vm_stat {
+ struct kvm_mem_alias {
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 5d450cc..bb842db 100644
+index bb842db..13f30aa 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -857,6 +857,38 @@ static int set_msr_mce(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- 	return 0;
+@@ -235,25 +235,6 @@ bool kvm_require_cpl(struct kvm_vcpu *vcpu, int required_cpl)
+ }
+ EXPORT_SYMBOL_GPL(kvm_require_cpl);
+ 
+-unsigned long kvm_get_rflags(struct kvm_vcpu *vcpu)
+-{
+-	unsigned long rflags;
+-
+-	rflags = kvm_x86_ops->get_rflags(vcpu);
+-	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
+-		rflags &= ~(unsigned long)(X86_EFLAGS_TF | X86_EFLAGS_RF);
+-	return rflags;
+-}
+-EXPORT_SYMBOL_GPL(kvm_get_rflags);
+-
+-void kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
+-{
+-	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
+-		rflags |= X86_EFLAGS_TF | X86_EFLAGS_RF;
+-	kvm_x86_ops->set_rflags(vcpu, rflags);
+-}
+-EXPORT_SYMBOL_GPL(kvm_set_rflags);
+-
+ /*
+  * Load the pae pdptrs.  Return true is they are all valid.
+  */
+@@ -4565,6 +4546,12 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+ 		vcpu->arch.switch_db_regs = (vcpu->arch.dr7 & DR7_BP_EN_MASK);
+ 	}
+ 
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
++		vcpu->arch.singlestep_cs =
++			get_segment_selector(vcpu, VCPU_SREG_CS);
++		vcpu->arch.singlestep_rip = kvm_rip_read(vcpu);
++	}
++
+ 	/*
+ 	 * Trigger an rflags update that will inject or remove the trace
+ 	 * flags.
+@@ -5031,6 +5018,28 @@ int kvm_arch_interrupt_allowed(struct kvm_vcpu *vcpu)
+ 	return kvm_x86_ops->interrupt_allowed(vcpu);
  }
  
-+static int xen_hvm_config(struct kvm_vcpu *vcpu, u64 data)
++unsigned long kvm_get_rflags(struct kvm_vcpu *vcpu)
 +{
-+	struct kvm *kvm = vcpu->kvm;
-+	int lm = is_long_mode(vcpu);
-+	u8 *blob_addr = lm ? (u8 *)(long)kvm->arch.xen_hvm_config.blob_addr_64
-+		: (u8 *)(long)kvm->arch.xen_hvm_config.blob_addr_32;
-+	u8 blob_size = lm ? kvm->arch.xen_hvm_config.blob_size_64
-+		: kvm->arch.xen_hvm_config.blob_size_32;
-+	u32 page_num = data & ~PAGE_MASK;
-+	u64 page_addr = data & PAGE_MASK;
-+	u8 *page;
-+	int r;
++	unsigned long rflags;
 +
-+	r = -E2BIG;
-+	if (page_num >= blob_size)
-+		goto out;
-+	r = -ENOMEM;
-+	page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!page)
-+		goto out;
-+	r = -EFAULT;
-+	if (copy_from_user(page, blob_addr + (page_num * PAGE_SIZE), PAGE_SIZE))
-+		goto out_free;
-+	if (kvm_write_guest(kvm, page_addr, page, PAGE_SIZE))
-+		goto out_free;
-+	r = 0;
-+out_free:
-+	kfree(page);
-+out:
-+	return r;
++	rflags = kvm_x86_ops->get_rflags(vcpu);
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP)
++		rflags &= ~(unsigned long)(X86_EFLAGS_TF | X86_EFLAGS_RF);
++	return rflags;
 +}
++EXPORT_SYMBOL_GPL(kvm_get_rflags);
 +
- int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- {
- 	switch (msr) {
-@@ -972,6 +1004,8 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- 			"0x%x data 0x%llx\n", msr, data);
- 		break;
- 	default:
-+		if (msr && (msr == vcpu->kvm->arch.xen_hvm_config.msr))
-+			return xen_hvm_config(vcpu, data);
- 		if (!ignore_msrs) {
- 			pr_unimpl(vcpu, "unhandled wrmsr: 0x%x data %llx\n",
- 				msr, data);
-@@ -1246,6 +1280,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_PIT2:
- 	case KVM_CAP_PIT_STATE2:
- 	case KVM_CAP_SET_IDENTITY_MAP_ADDR:
-+	case KVM_CAP_XEN_HVM:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-@@ -2441,6 +2476,17 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
- 	}
-+	case KVM_XEN_HVM_CONFIG: {
-+		r = -EFAULT;
-+		if (copy_from_user(&kvm->arch.xen_hvm_config, argp,
-+				   sizeof(struct kvm_xen_hvm_config)))
-+			goto out;
-+		r = -EINVAL;
-+		if (kvm->arch.xen_hvm_config.flags)
-+			goto out;
-+		r = 0;
-+		break;
-+	}
- 	default:
- 		;
- 	}
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index f8f8900..b694c1d 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -436,6 +436,9 @@ struct kvm_ioeventfd {
- #endif
- #define KVM_CAP_IOEVENTFD 36
- #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
-+#ifdef __KVM_HAVE_XEN_HVM
-+#define KVM_CAP_XEN_HVM 38
-+#endif
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -488,6 +491,18 @@ struct kvm_x86_mce {
- };
- #endif
- 
-+#ifdef KVM_CAP_XEN_HVM
-+struct kvm_xen_hvm_config {
-+	__u32 flags;
-+	__u32 msr;
-+	__u64 blob_addr_32;
-+	__u64 blob_addr_64;
-+	__u8 blob_size_32;
-+	__u8 blob_size_64;
-+	__u8 pad2[30];
-+};
-+#endif
++void kvm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
++{
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP &&
++	    vcpu->arch.singlestep_cs ==
++			get_segment_selector(vcpu, VCPU_SREG_CS) &&
++	    vcpu->arch.singlestep_rip == kvm_rip_read(vcpu))
++		rflags |= X86_EFLAGS_TF | X86_EFLAGS_RF;
++	kvm_x86_ops->set_rflags(vcpu, rflags);
++}
++EXPORT_SYMBOL_GPL(kvm_set_rflags);
 +
- #define KVM_IRQFD_FLAG_DEASSIGN (1 << 0)
- 
- struct kvm_irqfd {
-@@ -546,6 +561,7 @@ struct kvm_irqfd {
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
- #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
- #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-+#define KVM_XEN_HVM_CONFIG        _IOW(KVMIO, 0x7a, struct kvm_xen_hvm_config)
- 
- /*
-  * ioctls for vcpu fds
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_exit);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_inj_virq);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_page_fault);
 -- 
 1.6.5.2
 
