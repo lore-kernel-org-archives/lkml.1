@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbZKSXTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZKSX1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbZKSXTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 18:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZKSXTP
+	id S1757541AbZKSX1I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 18:27:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZKSX1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 18:19:15 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:40424 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbZKSXTO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 18:19:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=kEQXR87uz4R44i76Wn0HttW8rYSTpqoRbUcx7N/j4seMU85lrPHAybDRYo+dWS/qUA
-         v147cf9zptd0jhUNavaVg0sHfTKfubJSHfmj1dz5nV/NcpJiNggRq86IZ8S8vc5bfAp4
-         dOB+P5dTwUIRtXYyYxQm4bZI3cIK0PDHJyRec=
+	Thu, 19 Nov 2009 18:27:08 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51648 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755233AbZKSX1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 18:27:07 -0500
+Message-ID: <4B05D44B.9010606@garzik.org>
+Date: Thu, 19 Nov 2009 18:27:07 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <43e72e890911161708o607da2a5hefe98e92fd13ee7a@mail.gmail.com>
-References: <4ADE2F66.1070703@gmail.com> <43e72e890911161515q64ff527cyefd7d769f3c501b@mail.gmail.com> 
-	<a44ae5cd0911161641n36d3c746pb69a9cac1eba1784@mail.gmail.com> 
-	<43e72e890911161708o607da2a5hefe98e92fd13ee7a@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 19 Nov 2009 15:19:00 -0800
-Message-ID: <43e72e890911191519h73bd6699if860257c049ba1a0@mail.gmail.com>
-Subject: Re: 2.6.32-rc5-git1 -- BUG kmalloc-8192: Poison overwritten (ath9k 
-	implicated)
-To: Miles Lane <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Felix Fietkau <nbd@openwrt.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Thomas Chou <thomas@wytron.com.tw>
+CC: linux-ide@vger.kernel.org,
+       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>
+Subject: Re: [PATCH v2] ata: New PATA driver for Altera CompactFlash.
+References: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
+In-Reply-To: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 5:08 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> On Mon, Nov 16, 2009 at 4:41 PM, Miles Lane <miles.lane@gmail.com> wrote:
->> On Mon, Nov 16, 2009 at 6:15 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->>> On Tue, Oct 20, 2009 at 1:45 PM, Miles Lane <miles.lane@gmail.com> wrote:
->>>> Let me know if you want my .config file.  I think this was triggered by
->>>> suspending my laptop.
->>>>
->>>> BUG kmalloc-8192: Poison overwritten
->>>
->>> Thanks for your report Miles.
->>>
->>> Are you using Linus' tree? Felix wrote some patches that got rid of
->>> the rate control private area which we kmalloc/kfree and at least one
->>> user reported that these patches fixed a memory leak. I'm curious if
->>> the same patches would resolve this issue.
->>>
->>> Only thing is these patches apply against wireless-testing and not
->>> 2.6.32. To test them you'd have to pull wireless-testing master to
->>> your tree and then apply the patches both before and after.
->>>
->>> Would you be up to try that?
->>
->> Yes, definitely.  Thanks.  I will try to accomplish this and let you
->> know if I get stuck.
+On 10/07/2009 09:58 PM, Thomas Chou wrote:
+> This patch adds a new PATA driver to support the Altera SOPC Builder
+> CompactFlash component as a PATA device with support for insertion
+> and removal of CF cards.  It uses the platform driver model.
 >
-> OK, not sure if a merge of wireless-testing will be clean so you may
-> want to just clone fresh.. Anyway after you get wireless-testing bits
-> you'll want to apply these:
+> For each probed platform device, the driver spawns a kthread to
+> handle insertion and removal of CF cards by creating and removing the
+> underlying ATA host interface.  The Altera CompactFlash component
+> includes a register bit to indicate whether a CF card is detected
+> and an interrupt triggered when this bit changes.  The driver has a
+> handler for this interrupt which flags that something has changed and
+> wakes up the kthread to deal with it.
 >
-> http://patchwork.kernel.org/patch/60127/
-> http://patchwork.kernel.org/patch/60128/
-> http://patchwork.kernel.org/patch/60126/
+> The platform device uses 2 IORESOURCE_MEM resources and 2
+> IORESOURCE_IRQ resources.  The first memory resource is for the
+> CompactFlash component's IDE registers and the second is for the
+> component's CF status and control registers.  The first IRQ resource
+> is for the IDE and the second is for the CF detection interrupt.
 >
-> If you want to merge wireless-testing you can try:
->
-> git merge git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
-> master
->
-> If that'd doesn't gos smooth just clone it and I think you should be
-> able to safely --reference your current tree for objects for Linus'
-> tree.
+> Signed-off-by: Ian Abbott<abbotti@mev.co.uk>
+> Signed-off-by: Thomas Chou<thomas@wytron.com.tw>
+> ---
+>   drivers/ata/Kconfig          |   11 +
+>   drivers/ata/Makefile         |    1 +
+>   drivers/ata/pata_altera_cf.c |  582 ++++++++++++++++++++++++++++++++++++++++++
+>   3 files changed, 594 insertions(+), 0 deletions(-)
+>   create mode 100644 drivers/ata/pata_altera_cf.c
 
-Miles I see no reply from you yet so I backported the patches in
-question for you. Can you please try 2.6.32-rc7 and apply these
-patches on top:
+Ping...  still waiting on v3, updated with Alan's feedback.
 
-http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
-http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
 
-  Luis
