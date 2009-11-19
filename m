@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZKSO7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZKSPA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756844AbZKSO7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbZKSO7R
+	id S1755478AbZKSPA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZKSPA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:59:17 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:56974 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZKSO7Q (ORCPT
+	Thu, 19 Nov 2009 10:00:56 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:58999 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbZKSPA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:59:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=ekh71JeNroe/QkGX71sdtU5P9gIL/JLNPoOER/MzNAvXv6iQIhQrhlkey7bjiB4+yX
-         iHsOuV7IbHXgzdKALwd0I5qjJOwQ8iYsVC+pTdV0QKc2ZHtcyI6knehapBk876dAuAxs
-         s6gmydh+O/jDHwb+xnKYLbBuwkaQaJFgsfG1U=
-Message-ID: <4B055D46.6060407@gmail.com>
-Date: Thu, 19 Nov 2009 09:59:18 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 19 Nov 2009 10:00:56 -0500
 MIME-Version: 1.0
-To: Ben Hutchings <bhutchings@solarflare.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: NET: Questions about supporting older kernel's with kmods
-References: <4B055479.8070101@gmail.com> <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
-In-Reply-To: <1258642393.2837.5.camel@achroite.uk.solarflarecom.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE308AAB0D08EA3D53A0CD144"
+In-Reply-To: <20091119144853.GA1398@srcf.ucam.org>
+References: <20091118200712.GA14026@srcf.ucam.org> <20091118213355.GA16630@srcf.ucam.org> 
+	<ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> 
+	<20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com> 
+	<20091119141634.GA311@srcf.ucam.org> <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com> 
+	<20091119143008.GA719@srcf.ucam.org> <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com> 
+	<20091119144853.GA1398@srcf.ucam.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 19 Nov 2009 16:00:46 +0100
+Message-ID: <ac3eb2510911190700o6f4e80cm172c14dc0f28451d@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle 
+	changes
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-hotplug@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE308AAB0D08EA3D53A0CD144
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Thu, Nov 19, 2009 at 15:48, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Thu, Nov 19, 2009 at 03:34:53PM +0100, Kay Sievers wrote:
+>
+>> Single-subscriber event interfaces are usually a no-go for generic
+>> infrastructure like this. We still have the unmodified HAL running
+>> until it is dead, and this works only because there are no such
+>> awkward interfaces. In a few years we will probably have diskfoo
+>> replacing dk-disks, and then ... :)
+>
+> If you've got any ideas for what a multi-subscriber interface would look
+> like, I'm happy look at it.
 
-Ben Hutchings wrote:
-> On Thu, 2009-11-19 at 09:21 -0500, Gregory Haskins wrote:
-[...]
->=20
->> or should I simply look at the kernel version?
->=20
-> That works up to a point, but the 'enterprise' distros backport a lot t=
-o
-> earlier kernel versions which can make version tests invalid.
+Yeah, it would not be as simple as your patch. It probably involves a
+way to get a file descriptor per listener, to let the kernel know if
+anybody is interested, and to auto-cleanup when the listener dies, and
+to have per instance timers.
 
-Good point
+> I don't think there's an especially
+> compelling use-case for one right now so I'm not enthusiastic about the
+> additional complexity that'd be required,
 
->=20
-> Some out-of-tree/backported drivers use autoconf-style tests, but there=
+Right, but we've been there, and it's a pain, if you can not subscribe
+to an interface because something else is already using it/expecting
+it is the only user ever. So there needs to be a good reason for
+adding something like this as a new interface, which will very likely
+hit us back some day.
 
-> is no standard way of doing this.
->=20
+> but as long as there's basic
+> agreement that it's not practical to do this in userspace then we're at
+> least on the same page.
 
-Yeah, this might be the only sane way.  It turns out that my ETHTOOL
-issue was trivial.  I was missing "#include <linux/ethtool.h>" which
-worked in upstream, but not in older kernels.  So that issue is resolved.=
+I'm all for executing the policy inside the kernel and let userspace
+only enable/configure it. It think there is not much to disagr4ee
+about such an approach.
 
-
-Now I just need to figure out netdev_ops.  Perhaps I will just patch the
-netdev_ops out when building a kmod, since its just
-a different way to describe the same thing, and the resulting driver
-will perform the same.
-
-> =EF=BB=BF[...]
->> Q2) Is it considered "bad form" to include such compile-time directive=
-s
->> in the version of the code going upstream?
-> [...]
->=20
-> Yes.  Don't do that.
-
-Ok.
-
-Thanks Ben,
--Greg
-
-
---------------enigE308AAB0D08EA3D53A0CD144
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksFXUYACgkQP5K2CMvXmqGtxwCfQnxSt+62yv2eZaKOd9viBfAW
-0LkAn2CJeEM8qjs6wGU/iiMczBeld1I5
-=xy/f
------END PGP SIGNATURE-----
-
---------------enigE308AAB0D08EA3D53A0CD144--
+Thanks,
+Kay
