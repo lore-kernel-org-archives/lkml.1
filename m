@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbZKSPzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbZKSP5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbZKSPzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 10:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZKSPzu
+	id S1757250AbZKSP5t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZKSP5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 10:55:50 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:41978 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbZKSPzt (ORCPT
+	Thu, 19 Nov 2009 10:57:48 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43451 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756787AbZKSP5r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 10:55:49 -0500
+	Thu, 19 Nov 2009 10:57:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dIP/t3X2pe6mhCMu+kLnnmywdd0CVRWvGlOw9UfzgFwLiOvxOpgXbME7i6zCE1XAJi
-         IZjfpSuzr7VhdKGlSp2qUXmuOhmiWjas0vYKCAZLNZQNdfxbphp+I6iTFeKiPyDpcvbP
-         gT+np461KwTbQCDd5iwnbwY5PCngrn4oU/DZc=
-Date: Thu, 19 Nov 2009 16:55:55 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH 2/2] lockdep: Don't only check recursive read locks
-	once in a sequence
-Message-ID: <20091119155549.GB4967@nowhere>
-References: <1258506398-5151-1-git-send-email-fweisbec@gmail.com> <1258506398-5151-3-git-send-email-fweisbec@gmail.com> <4B03C1A7.4070305@cn.fujitsu.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tf4XE4Hb8G7SQm6RPbF8FAtp5yOTSiCAKGFN1lhr1UlnuXBbeOXdDPzOrwZ29zvdLk
+         8C2Tet9dsz01d4J41wWenemna9anAQj9BSUoW2IBBo1PavI0YALN1APQoDmdkLR2jlXs
+         kpoLWcbuptiYYIuSNfKE95cMzopA+wcXxZ2yI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B03C1A7.4070305@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B056A1A.1020609@zytor.com>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
+	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
+	 <20091119072040.GA23579@elte.hu>
+	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+	 <4B0567E0.5080803@redhat.com> <4B056A1A.1020609@zytor.com>
+Date: Thu, 19 Nov 2009 16:57:53 +0100
+Message-ID: <84fc9c000911190757w42186dav1d3b0141bb6cf79b@mail.gmail.com>
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+From: Richard Guenther <richard.guenther@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Haley <aph@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org, "H.J. Lu" <hjl.tools@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 05:43:03PM +0800, Lai Jiangshan wrote:
-> Frederic Weisbecker wrote:
-> > Say we have the following locks:
-> > A (rwlock, Aw: writelock, Ar: recursive read lock)
-> > B (normal lock)
-> > 
-> > and the following sequences:
-> > Ar -> B -> Ar
-> > Aw -> B
-> > 
-> > This won't be detected as a lock inversion
-> 
-> """
-> read-preference <==> read-recursive ability  (rwlock)
-> otherwise ==> read-recursive disability      (rwsem)
-> """
+On Thu, Nov 19, 2009 at 4:54 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 11/19/2009 07:44 AM, Andrew Haley wrote:
+>>
+>> We're aligning the stack properly, as per the ABI requirements.  Can't
+>> you just fix the tracer?
+>>
+>
+> "Per the ABI requirements?"  We're talking 32 bits, here.
 
+Hm, even with
 
+void bar (int *);
+void foo (void)
+{
+  int x;
+  bar (&x);
+}
 
-I don't understand the idea of "read-preference". And btw I
-don't understand why rwsem read locks are not considered as
-recursive in lockdep.
+gcc -S -O2 -m32 -mincoming-stack-boundary=2 t.c
 
+we re-align the stack.  That looks indeed bogus.
 
- 
-> If "B -> Ar" is always after "Ar", it's NOT a really
-> lock inversion because rwlock is read-preference, we
-> can ignore all "Ar" which are after "B".
+HJ, you invented all this code, what's the reason for the above?
 
-
-
-It's not a lock inversion in itself because it's legal to have:
-
-Ar -> B -> Ar
-
-
-
-> If sometimes "B -> Ar" is not after "Ar",
-> then we have these sequences:
-> B -> Ar
-> Aw -> B
-> 
-> Lockdep can detects it now(without this patch applied).
-> 
-> Maybe I have misunderstood your patch.
-
-
-
-Well.
-In my example we have this sequence first:
-
-Ar -> B -> Ar
-
-And this second one:
-
-Aw -> B
-
-In the lockdep tree, the read lock won't even be registered,
-so we'll just have Aw -> B in the tree.
-
-If we insert these in the tree, we'll have one branch that will
-look like that:
-
-			Aw
-                         |
-                         B
-                         |
-                         Ar
-
-Like we do with any other kind of lock. We just plug the dependencies
-between them. We know that B depends on Aw, but Ar also depends on B.
-Although the merged sequence might never happen, there is still a risk
-and the above is not legal.
-
+Richard.
