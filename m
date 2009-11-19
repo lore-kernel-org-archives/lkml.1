@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZKSHtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZKSIFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZKSHtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 02:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZKSHtt
+	id S1753986AbZKSIFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 03:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZKSIFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 02:49:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45958 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752752AbZKSHts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 02:49:48 -0500
-Date: Wed, 18 Nov 2009 23:49:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: linux-spi <spi-devel-general@lists.sourceforge.net>,
-       David Brownell-sourceforge <dbrownell@users.sourceforge.net>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ARM: Add spi controller driver support for NUC900
-Message-Id: <20091118234928.8d86a9f9.akpm@linux-foundation.org>
-In-Reply-To: <e68bb3470911182223r28e9bac0lf185c1443168ff52@mail.gmail.com>
-References: <4B024748.9080001@gmail.com>
-	<20091118142109.ff2c5ef6.akpm@linux-foundation.org>
-	<e68bb3470911182223r28e9bac0lf185c1443168ff52@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 03:05:22 -0500
+Received: from mga14.intel.com ([143.182.124.37]:12263 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752823AbZKSIFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 03:05:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,770,1249282800"; 
+   d="scan'208";a="213294898"
+Date: Thu, 19 Nov 2009 16:05:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 07/12] writeback: remove unused nonblocking and
+	congestion checks (xfs)
+Message-ID: <20091119080522.GC5922@localhost>
+References: <20091118082648.140755818@intel.com> <20091118082846.279046849@intel.com> <20091118212755.GM9467@discord.disaster>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118212755.GM9467@discord.disaster>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009 14:23:49 +0800 Wan ZongShun <mcuos.com@gmail.com> wrote:
-
-> >> +static int __devexit w90p910_spi_remove(struct platform_device *dev)
-> >> +{
-> >> + __ __ struct w90p910_spi *hw = platform_get_drvdata(dev);
-> >> +
-> >> + __ __ platform_set_drvdata(dev, NULL);
-> >> +
-> >> + __ __ spi_unregister_master(hw->master);
-> >> +
-> >> + __ __ clk_disable(hw->clk);
-> >> + __ __ clk_put(hw->clk);
-> >
-> > As far as I can tell, a hardware interrupt could still be pending, or
-> > be under service while the above code is executing?
-> >
-> > If so, I expect bad things will happen?
+On Thu, Nov 19, 2009 at 05:27:55AM +0800, Dave Chinner wrote:
+> On Wed, Nov 18, 2009 at 04:26:55PM +0800, Wu Fengguang wrote:
+> > No one is calling wb_writeback and write_cache_pages with
+> > wbc.nonblocking=1 any more. And lumpy pageout will want to do
+> > nonblocking writeback without the congestion wait.
 > 
-> Do you mean that I should put this 'free_irq()' in the front of
-> w90p910_spi_remove___
+> ....
 > 
-> such as:
-> "
-> free_irq(hw->irq, hw);
+> > --- linux.orig/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:22:35.000000000 +0800
+> > +++ linux/fs/xfs/linux-2.6/xfs_aops.c	2009-11-06 09:52:21.000000000 +0800
+> > @@ -908,12 +908,8 @@ xfs_convert_page(
+> >  
+> >  			bdi = inode->i_mapping->backing_dev_info;
+> >  			wbc->nr_to_write--;
+> > -			if (bdi_write_congested(bdi)) {
+> > -				wbc->encountered_congestion = 1;
 > 
-> platform_set_drvdata(dev, NULL);
-> 
-> spi_unregister_master(hw->master);
-> 
-> clk_disable(hw->clk);
-> clk_put(hw->clk);
+> bdi is unused now, so can be removed as well. Otherwise looks fine.
 
-I don't know, because I don't know what operation the hardware needs to
-stop it from generating interrupts.  Perhaps that's clk_disable()?
+Thanks, here is the updated patch.
 
-Once you've stopped the source of interrupts then the code should wait
-for the IRQ handler to complete if it's running on another CPU.  Yes,
-free_irq() does that.
+---
+writeback: remove unused nonblocking and congestion checks (xfs)
 
-It's only after the clk_disable() and the free_irq() that you can
-guarantee that no interrupt handler will run and attempt to access the
-device and its associated data structures.
+No one is calling wb_writeback and write_cache_pages with
+wbc.nonblocking=1 any more. And lumpy pageout will want to do
+nonblocking writeback without the congestion wait.
 
+CC: Dave Chinner <david@fromorbit.com> 
+CC: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/xfs/linux-2.6/xfs_aops.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+--- linux.orig/fs/xfs/linux-2.6/xfs_aops.c	2009-11-19 16:00:51.000000000 +0800
++++ linux/fs/xfs/linux-2.6/xfs_aops.c	2009-11-19 16:04:33.000000000 +0800
+@@ -904,16 +904,9 @@ xfs_convert_page(
+ 
+ 	if (startio) {
+ 		if (count) {
+-			struct backing_dev_info *bdi;
+-
+-			bdi = inode->i_mapping->backing_dev_info;
+ 			wbc->nr_to_write--;
+-			if (bdi_write_congested(bdi)) {
+-				wbc->encountered_congestion = 1;
+-				done = 1;
+-			} else if (wbc->nr_to_write <= 0) {
++			if (wbc->nr_to_write <= 0)
+ 				done = 1;
+-			}
+ 		}
+ 		xfs_start_page_writeback(page, !page_dirty, count);
+ 	}
