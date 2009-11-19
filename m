@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZKSTsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZKSTzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754999AbZKSTsi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 14:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZKSTsh
+	id S1755274AbZKSTzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 14:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZKSTzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 14:48:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55435 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbZKSTsh (ORCPT
+	Thu, 19 Nov 2009 14:55:42 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:58466 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754770AbZKSTzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 14:48:37 -0500
-Date: Thu, 19 Nov 2009 11:50:20 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tglx@linutronix.de
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: commit b00bc0b237055b breaking perf subsystem
-Message-ID: <20091119115020.7bd8896b@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Nov 2009 14:55:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=nWYazk2GACQqL/09yntbMNN3MIrmgm0kZAofyYRbZO3qUHeV7qgFRyQHCqoAwGp4iH
+         lFuHKuhKRFR3EwXfPYMCM7w/s/PhpIoQ7iVI+5EETjPdQu8p/KzQXNklPXeGiOf1Xgbu
+         /aPy/Ey3AgvwtYGsVGiV2eDKJOQlQZGzCUA5M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 20:54:32 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911192031.31613.bzolnier@gmail.com> <20091119194213.7f4dd425@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091119194213.7f4dd425@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Message-Id: <200911192054.32533.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 19 November 2009 20:42:13 Alan Cox wrote:
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> > In comparison to original patch the conversion from PCI access to
+> > io has been dropped as it is not required for the bugfix and makes
+> > patch easier for back-porting into -stable kernels.
+> 
+> Acked-by: Alan Cox <alan@linux.intel.com>
+> 
+> (and from what Sergey says about the 371N then the I/O conversion
+> is probably not needed anyway)
 
-commit b00bc0b237055b4c45816325ee14f0bd83e6f590
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Mon Nov 2 13:01:56 2009 +0100
+Thanks, I'll re-sync other pata_hpt37x patches on top of this one later.
 
-    uids: Prevent tear down race
-
-has been bisected to break the perf system between -rc5 and -rc7;
-and reverting this patch in rc7 also fixes the issue.
-
-now this patch is.... fun and seemingly unrelated to perf, so I
-am pretty sure something else is going on.
-
-the symptom of the breakage is that a userland client of perf
-(in my case, powertop) does not get to see new events if there
-is only, say, one or two of them. The data_head pointer just does
-not get updated.
-
-Based on the patch, I have a suspicion that this pointer gets updated
-from synchronize RCU context, and this patch just makes that happen
-more.
-
-If that is the case, what we really need is a new ioctl to perf that
-will cause all pending buffer state to be flushed to the ring buffer,
-that applications using perf can then just always call before looking
-at the ring. As a concept, that sounds like a good idea to me anyway...
-
-comments/suggestions/saying-I'm-full-of-sh*t ?
-
-
+ps if you could also push the fix to hpt366.c it would be great
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Bartlomiej Zolnierkiewicz
