@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZKSNaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZKSM5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbZKSNaY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZKSNaX
+	id S1752116AbZKSM5p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 07:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZKSM5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:30:23 -0500
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:57159 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbZKSNaW (ORCPT
+	Thu, 19 Nov 2009 07:57:44 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52035 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751369AbZKSM5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:30:22 -0500
-X-Greylist: delayed 1952 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 08:30:22 EST
-X-AuditID: b753bd60-ab846ba000006009-21-4b0540d2906b
-Message-ID: <4B0540C1.3060605@hitachi.com>
-Date: Thu, 19 Nov 2009 21:57:37 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH -tip 2/2] Pass mm->flags as a coredump parameter for	consistency
-References: <20091117235305.30900.43344.stgit@dhcp-100-2-132.bos.redhat.com> <20091117235401.30900.70697.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20091117235401.30900.70697.stgit@dhcp-100-2-132.bos.redhat.com>
-Content-Type: text/plain; charset=us-ascii
+	Thu, 19 Nov 2009 07:57:43 -0500
+Date: Thu, 19 Nov 2009 12:59:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Leon Woestenberg <leon.woestenberg@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
+Message-ID: <20091119125906.6ad00edd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091119130526.23a69b85@hyperion.delvare>
+References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
+	<20091107210147.3e754278@hyperion.delvare>
+	<4AF7148C.9090706@thebigcorporation.com>
+	<20091112211255.09cd884a@hyperion.delvare>
+	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
+	<20091116155606.GC29479@sirena.org.uk>
+	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+	<20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
+	<c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
+	<20091118175202.490989d8@hyperion.delvare>
+	<alpine.LFD.2.00.0911182127040.24119@localhost.localdomain>
+	<20091119130526.23a69b85@hyperion.delvare>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
-X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hiramatsu-san,
+> Well, I guess only people monitoring system latency would notice, as
+> this is the only thing yield() was supposed to help with in the first
+> place.
 
-Masami Hiramatsu wrote:
+	if (need_resched())
+		schedule();
 
->> Pass mm->flags as a coredump parameter for consistency.
->> 
->>  ---
->> 1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
->> 1788                 up_write(&mm->mmap_sem);
->> 1789                 put_cred(cred);
->> 1790                 goto fail;
->> 1791         }
->> 1792
->> [...]
->> 1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
->> 1799                 flag = O_EXCL;          /* Stop rewrite attacks */
->> 1800                 cred->fsuid = 0;        /* Dump root private */
->> 1801         }
->>  ---
->> 
->> Since dumpable bits are not protected by lock, there is a
->> chance to change these bits between (1) and (2).
-
-Yes, a race condition can be caused by prctl from another thread.
-And your patch is fine with me.  Thanks!
-
-Reviewed-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
---
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+will make non-rt tasks act politely at the right moments. RT tasks will
+likely immediately get to take the CPU again depending upon the
+scheduling parameters in use.
