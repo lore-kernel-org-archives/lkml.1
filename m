@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZKSX1I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbZKSXgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbZKSX1I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 18:27:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZKSX1I
+	id S1757774AbZKSXgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 18:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZKSXgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 18:27:08 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51648 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755233AbZKSX1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 18:27:07 -0500
-Message-ID: <4B05D44B.9010606@garzik.org>
-Date: Thu, 19 Nov 2009 18:27:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Thomas Chou <thomas@wytron.com.tw>
-CC: linux-ide@vger.kernel.org,
-       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
-       linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>
-Subject: Re: [PATCH v2] ata: New PATA driver for Altera CompactFlash.
-References: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
-In-Reply-To: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Nov 2009 18:36:18 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60291 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755527AbZKSXgR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 18:36:17 -0500
+Date: Thu, 19 Nov 2009 23:38:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Message-ID: <20091119233802.65cdb4f8@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B05BF3F.3040407@garzik.org>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+	<200911181919.19127.bzolnier@gmail.com>
+	<4B05BA72.2030406@garzik.org>
+	<200911192242.59476.bzolnier@gmail.com>
+	<4B05BF3F.3040407@garzik.org>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/2009 09:58 PM, Thomas Chou wrote:
-> This patch adds a new PATA driver to support the Altera SOPC Builder
-> CompactFlash component as a PATA device with support for insertion
-> and removal of CF cards.  It uses the platform driver model.
->
-> For each probed platform device, the driver spawns a kthread to
-> handle insertion and removal of CF cards by creating and removing the
-> underlying ATA host interface.  The Altera CompactFlash component
-> includes a register bit to indicate whether a CF card is detected
-> and an interrupt triggered when this bit changes.  The driver has a
-> handler for this interrupt which flags that something has changed and
-> wakes up the kthread to deal with it.
->
-> The platform device uses 2 IORESOURCE_MEM resources and 2
-> IORESOURCE_IRQ resources.  The first memory resource is for the
-> CompactFlash component's IDE registers and the second is for the
-> component's CF status and control registers.  The first IRQ resource
-> is for the IDE and the second is for the CF detection interrupt.
->
-> Signed-off-by: Ian Abbott<abbotti@mev.co.uk>
-> Signed-off-by: Thomas Chou<thomas@wytron.com.tw>
-> ---
->   drivers/ata/Kconfig          |   11 +
->   drivers/ata/Makefile         |    1 +
->   drivers/ata/pata_altera_cf.c |  582 ++++++++++++++++++++++++++++++++++++++++++
->   3 files changed, 594 insertions(+), 0 deletions(-)
->   create mode 100644 drivers/ata/pata_altera_cf.c
+> Oh, I'm happy to wait until one of two scenarios occurs:
+> 
+> 1) Bart annoys Alan sufficiently to motivate Alan to add feature X
 
-Ping...  still waiting on v3, updated with Alan's feedback.
+I'm rather hard to annoy but I'm happy Bart is going over the drivers.
+Whatever his motivation I am very sure he'll find more bugs in the
+process. He'll even be able to correct blame me for a few I am sure.
 
+> 2) Alan annoys Bart sufficiently to motivate Bart to add feature X
 
+Well latest score is Bart fixes libata bug, Alan fixes the IDE tree
+version. Not quite the expected outcome but who cares ;)
+
+Alan
