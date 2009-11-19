@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZKSXxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZKTAAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbZKSXxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 18:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbZKSXx3
+	id S1758009AbZKTAAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757942AbZKTAAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 18:53:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:32918 "EHLO ozlabs.org"
+	Thu, 19 Nov 2009 19:00:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29768 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757873AbZKSXx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 18:53:29 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: virtio: Add memory statistics reporting to the balloon driver (V3)
-Date: Fri, 20 Nov 2009 10:23:30 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Anthony Liguori <aliguori@us.ibm.com>, qemu-devel@nongnu.org,
-       Avi Kivity <avi@redhat.com>, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <1258643169.3464.3.camel@aglitke> <1258643945.3464.5.camel@aglitke>
-In-Reply-To: <1258643945.3464.5.camel@aglitke>
+	id S1757789AbZKTAAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:00:42 -0500
+Message-ID: <4B05DBBF.5000804@redhat.com>
+Date: Thu, 19 Nov 2009 16:58:55 -0700
+From: Jeff Law <law@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: rostedt@goodmis.org
+CC: "H. Peter Anvin" <hpa@zytor.com>, David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com> 	 <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com>
+In-Reply-To: <1258670580.22249.1002.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911201023.30709.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Nov 2009 01:49:05 am Adam Litke wrote:
-> Rusty and Anthony,
-> If I've addressed all outstanding issues, please consider this patch for
-> inclusion.  Thanks.
-> 
-> Changes since V2:
->  - Increase stat field size to 64 bits
->  - Report all sizes in kb (not pages)
+On 11/19/09 15:43, Steven Rostedt wrote:
+> On Thu, 2009-11-19 at 14:25 -0700, Jeff Law wrote:
+>
+>    
+>> Having said all that, I don't expect to personally be looking at the
+>> problem, given the list of other codegen issues that need to be looked
+>> at (reload in particular), profiling/stack interactions would be around
+>> 87 millionth on my list.
+>>      
+> Is there someone else that can look at it?
+>
+>    
+Unsure at the moment...  Like everyone else, GCC developers are busy and 
+this probably isn't going to be a high priority item for anyone.
 
-Hi Adam,
 
-   Looks like we're very close.  A few minor things:
+> Or at the very least, could you point us to where that code is, and one
+> of us tracing folks could take a crack at switching hats to be a
+> compiler writer (with the obvious prerequisite of drinking a lot of beer
+> first, or is there a better drug to cope with the pain of writing gcc?).
+>    
+It _might_ be as easy as defining PROFILE_BEFORE_PROLOGUE in
+gcc-<someversion>gcc/config/i386/linux.h & rebuilding GCC.
 
-Why k?  Why not just do the simplest possible thing, and just report all
-stats as straight numbers, now we have 64 bits.
+Based on comments elsewhere, the sun386i support may have used 
+PROFILE_BEFORE_PROLOGUE in the past and thus the x86 backend may not 
+need further adjustment.  That is obviously the ideal case.
 
->  - Drop anon_pages stat and fix endianness conversion
+If that appears to work for your needs, I'll volunteer to test it more 
+thoroughly and assuming those tests look good shepherd it into the 
+source tree.
 
-Please drop endianness conversion.
-
-> +struct virtio_balloon_stat
-> +{
-> +	__le16 tag;
-> +	__le64 val;
-> +};
-
-Let's not introduce padding as well; __attribute__((packed)) here please.
-
-Thanks,
-Rusty.
+Jeff
