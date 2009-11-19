@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZKSRs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZKSRxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbZKSRs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZKSRs6
+	id S1754624AbZKSRxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZKSRxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:48:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56634 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752913AbZKSRs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:48:58 -0500
-Date: Thu, 19 Nov 2009 17:50:51 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Message-ID: <20091119175051.6a91d160@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911191838.11791.bzolnier@gmail.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>
-	<200911191645.29885.bzolnier@gmail.com>
-	<20091119162738.7e8e5665@lxorguk.ukuu.org.uk>
-	<200911191838.11791.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 12:53:23 -0500
+Received: from www.tglx.de ([62.245.132.106]:37952 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754440AbZKSRxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 12:53:22 -0500
+Date: Thu, 19 Nov 2009 18:51:30 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911191846350.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+ <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain> <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009 18:38:11 +0100
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-
-> On Thursday 19 November 2009 17:27:38 Alan Cox wrote:
-> > > > > already have a buggy cable detection (since ->pre_reset ignores the mandatory
-> > > > 
-> > > > Wrong.
-> > > 
-> > > You cannot know it unless you know how chip operates internally.  That's it.
-> > 
-> > Read the code. How the chip operates is irrelevant.
+On Thu, 19 Nov 2009, Linus Torvalds wrote:
+> Umm. But it still does, doesn't it? That
 > 
-> lol, there is a genuine cable detection bug in pata_hpt3x2n on closer look...
+> 	pushl  -0x4(%edi)
+> 	push   %ebp
+> 
+> should do it - the "-0x4(%edi)" thing seems to be trying to reload the 
+> return address. No? 
+> 
+> Maybe I misread the code - but regardless, it does look like a gcc code 
+> generation bug if only because we really don't want a 16-byte aligned 
+> stack anyway, and have asked for it to not be done.
+> 
+> So I agree that gcc shouldn't do that crazy prologue (and certainly _not_ 
+> before calling mcount anyway), but I'm not sure I agree with that detail 
+> of your analysis or explanation.
 
-Oh you found it now I told you which one was buggy - well done. Already
-patched along with adding suspend/resume and fixing a performance funny.
+Yes, it does store the return address before the pushed ebp, but this
+is a copy of the real stack entry which is before the pushed edi.
+
+The function graph tracer needs to redirect the return into the tracer
+and it therefor saves the real return address and modifies the stack
+so the return ends up in the tracer code which then goes back to the
+real return address.
+
+But in this prologue/aligment case we modify the copy and not the real
+return address on the stack, so we return without calling into the
+tracer which is causing the headache because the state of the tracer
+becomes confused.
+
+Thanks,
+
+	tglx
