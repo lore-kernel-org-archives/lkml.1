@@ -1,188 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZKSNi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZKSNmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbZKSNi6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZKSNge
+	id S1756703AbZKSNmJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 08:42:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZKSNjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:36:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42330 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 08:39:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63482 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753706AbZKSNfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:35:09 -0500
+	id S1753572AbZKSNfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 08:35:08 -0500
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 21/35] KVM: x86 shared msr infrastructure
-Date: Thu, 19 Nov 2009 15:34:57 +0200
-Message-Id: <1258637711-11674-22-git-send-email-avi@redhat.com>
+Subject: [PATCH 22/35] KVM: VMX: Use shared msr infrastructure
+Date: Thu, 19 Nov 2009 15:34:58 +0200
+Message-Id: <1258637711-11674-23-git-send-email-avi@redhat.com>
 In-Reply-To: <1258637711-11674-1-git-send-email-avi@redhat.com>
 References: <1258637711-11674-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The various syscall-related MSRs are fairly expensive to switch.  Currently
-we switch them on every vcpu preemption, which is far too often:
+Instead of reloading syscall MSRs on every preemption, use the new shared
+msr infrastructure to reload them at the last possible minute (just before
+exit to userspace).
 
-- if we're switching to a kernel thread (idle task, threaded interrupt,
-  kernel-mode virtio server (vhost-net), for example) and back, then
-  there's no need to switch those MSRs since kernel threasd won't
-  be exiting to userspace.
+Improves vcpu/idle/vcpu switches by about 2000 cycles (when EFER needs to be
+reloaded as well).
 
-- if we're switching to another guest running an identical OS, most likely
-  those MSRs will have the same value, so there's little point in reloading
-  them.
+[jan: fix slot index missing indirection]
 
-- if we're running the same OS on the guest and host, the MSRs will have
-  identical values and reloading is unnecessary.
-
-This patch uses the new user return notifiers to implement last-minute
-switching, and checks the msr values to avoid unnecessary reloading.
-
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    3 +
- arch/x86/kvm/Kconfig            |    1 +
- arch/x86/kvm/x86.c              |   81 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 85 insertions(+), 0 deletions(-)
+ arch/x86/kvm/vmx.c |  112 +++++++++++++++++++--------------------------------
+ 1 files changed, 42 insertions(+), 70 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 0558ff8..26a74b7 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -809,4 +809,7 @@ int kvm_cpu_has_interrupt(struct kvm_vcpu *vcpu);
- int kvm_arch_interrupt_allowed(struct kvm_vcpu *vcpu);
- int kvm_cpu_get_interrupt(struct kvm_vcpu *v);
- 
-+void kvm_define_shared_msr(unsigned index, u32 msr);
-+void kvm_set_shared_msr(unsigned index, u64 val);
-+
- #endif /* _ASM_X86_KVM_HOST_H */
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index b84e571..4cd4983 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -28,6 +28,7 @@ config KVM
- 	select HAVE_KVM_IRQCHIP
- 	select HAVE_KVM_EVENTFD
- 	select KVM_APIC_ARCHITECTURE
-+	select USER_RETURN_NOTIFIER
- 	---help---
- 	  Support hosting fully virtualized guest machines using hardware
- 	  virtualization extensions.  You will need a fairly recent
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index e16cdc9..58c5cdd 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -37,6 +37,7 @@
- #include <linux/iommu.h>
- #include <linux/intel-iommu.h>
- #include <linux/cpufreq.h>
-+#include <linux/user-return-notifier.h>
- #include <trace/events/kvm.h>
- #undef TRACE_INCLUDE_FILE
- #define CREATE_TRACE_POINTS
-@@ -87,6 +88,25 @@ EXPORT_SYMBOL_GPL(kvm_x86_ops);
- int ignore_msrs = 0;
- module_param_named(ignore_msrs, ignore_msrs, bool, S_IRUGO | S_IWUSR);
- 
-+#define KVM_NR_SHARED_MSRS 16
-+
-+struct kvm_shared_msrs_global {
-+	int nr;
-+	struct kvm_shared_msr {
-+		u32 msr;
-+		u64 value;
-+	} msrs[KVM_NR_SHARED_MSRS];
-+};
-+
-+struct kvm_shared_msrs {
-+	struct user_return_notifier urn;
-+	bool registered;
-+	u64 current_value[KVM_NR_SHARED_MSRS];
-+};
-+
-+static struct kvm_shared_msrs_global __read_mostly shared_msrs_global;
-+static DEFINE_PER_CPU(struct kvm_shared_msrs, shared_msrs);
-+
- struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "pf_fixed", VCPU_STAT(pf_fixed) },
- 	{ "pf_guest", VCPU_STAT(pf_guest) },
-@@ -123,6 +143,64 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ NULL }
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 3251251..bf46253 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -86,6 +86,11 @@ struct vmcs {
+ 	char data[0];
  };
  
-+static void kvm_on_user_return(struct user_return_notifier *urn)
-+{
-+	unsigned slot;
-+	struct kvm_shared_msr *global;
-+	struct kvm_shared_msrs *locals
-+		= container_of(urn, struct kvm_shared_msrs, urn);
++struct shared_msr_entry {
++	unsigned index;
++	u64 data;
++};
 +
-+	for (slot = 0; slot < shared_msrs_global.nr; ++slot) {
-+		global = &shared_msrs_global.msrs[slot];
-+		if (global->value != locals->current_value[slot]) {
-+			wrmsrl(global->msr, global->value);
-+			locals->current_value[slot] = global->value;
-+		}
-+	}
-+	locals->registered = false;
-+	user_return_notifier_unregister(urn);
-+}
+ struct vcpu_vmx {
+ 	struct kvm_vcpu       vcpu;
+ 	struct list_head      local_vcpus_link;
+@@ -93,8 +98,7 @@ struct vcpu_vmx {
+ 	int                   launched;
+ 	u8                    fail;
+ 	u32                   idt_vectoring_info;
+-	struct kvm_msr_entry *guest_msrs;
+-	struct kvm_msr_entry *host_msrs;
++	struct shared_msr_entry *guest_msrs;
+ 	int                   nmsrs;
+ 	int                   save_nmsrs;
+ 	int                   msr_offset_efer;
+@@ -108,7 +112,6 @@ struct vcpu_vmx {
+ 		u16           fs_sel, gs_sel, ldt_sel;
+ 		int           gs_ldt_reload_needed;
+ 		int           fs_reload_needed;
+-		int           guest_efer_loaded;
+ 	} host_state;
+ 	struct {
+ 		int vm86_active;
+@@ -195,6 +198,8 @@ static struct kvm_vmx_segment_field {
+ 	VMX_SEGMENT_FIELD(LDTR),
+ };
+ 
++static u64 host_efer;
 +
-+void kvm_define_shared_msr(unsigned slot, u32 msr)
-+{
-+	int cpu;
-+	u64 value;
-+
-+	if (slot >= shared_msrs_global.nr)
-+		shared_msrs_global.nr = slot + 1;
-+	shared_msrs_global.msrs[slot].msr = msr;
-+	rdmsrl_safe(msr, &value);
-+	shared_msrs_global.msrs[slot].value = value;
-+	for_each_online_cpu(cpu)
-+		per_cpu(shared_msrs, cpu).current_value[slot] = value;
-+}
-+EXPORT_SYMBOL_GPL(kvm_define_shared_msr);
-+
-+static void kvm_shared_msr_cpu_online(void)
-+{
-+	unsigned i;
-+	struct kvm_shared_msrs *locals = &__get_cpu_var(shared_msrs);
-+
-+	for (i = 0; i < shared_msrs_global.nr; ++i)
-+		locals->current_value[i] = shared_msrs_global.msrs[i].value;
-+}
-+
-+void kvm_set_shared_msr(unsigned slot, u64 value)
-+{
-+	struct kvm_shared_msrs *smsr = &__get_cpu_var(shared_msrs);
-+
-+	if (value == smsr->current_value[slot])
-+		return;
-+	smsr->current_value[slot] = value;
-+	wrmsrl(shared_msrs_global.msrs[slot].msr, value);
-+	if (!smsr->registered) {
-+		smsr->urn.on_user_return = kvm_on_user_return;
-+		user_return_notifier_register(&smsr->urn);
-+		smsr->registered = true;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(kvm_set_shared_msr);
-+
- unsigned long segment_base(u16 selector)
+ static void ept_save_pdptrs(struct kvm_vcpu *vcpu);
+ 
+ /*
+@@ -209,22 +214,6 @@ static const u32 vmx_msr_index[] = {
+ };
+ #define NR_VMX_MSR ARRAY_SIZE(vmx_msr_index)
+ 
+-static void load_msrs(struct kvm_msr_entry *e, int n)
+-{
+-	int i;
+-
+-	for (i = 0; i < n; ++i)
+-		wrmsrl(e[i].index, e[i].data);
+-}
+-
+-static void save_msrs(struct kvm_msr_entry *e, int n)
+-{
+-	int i;
+-
+-	for (i = 0; i < n; ++i)
+-		rdmsrl(e[i].index, e[i].data);
+-}
+-
+ static inline int is_page_fault(u32 intr_info)
  {
- 	struct descriptor_table gdt;
-@@ -4815,6 +4893,9 @@ int kvm_arch_hardware_enable(void *garbage)
- 		int cpu = raw_smp_processor_id();
- 		per_cpu(cpu_tsc_khz, cpu) = 0;
- 	}
-+
-+	kvm_shared_msr_cpu_online();
-+
- 	return kvm_x86_ops->hardware_enable(garbage);
+ 	return (intr_info & (INTR_INFO_INTR_TYPE_MASK | INTR_INFO_VECTOR_MASK |
+@@ -373,7 +362,7 @@ static int __find_msr_index(struct vcpu_vmx *vmx, u32 msr)
+ 	int i;
+ 
+ 	for (i = 0; i < vmx->nmsrs; ++i)
+-		if (vmx->guest_msrs[i].index == msr)
++		if (vmx_msr_index[vmx->guest_msrs[i].index] == msr)
+ 			return i;
+ 	return -1;
+ }
+@@ -404,7 +393,7 @@ static inline void __invept(int ext, u64 eptp, gpa_t gpa)
+ 			: : "a" (&operand), "c" (ext) : "cc", "memory");
  }
  
+-static struct kvm_msr_entry *find_msr_entry(struct vcpu_vmx *vmx, u32 msr)
++static struct shared_msr_entry *find_msr_entry(struct vcpu_vmx *vmx, u32 msr)
+ {
+ 	int i;
+ 
+@@ -595,17 +584,15 @@ static void reload_tss(void)
+ 	load_TR_desc();
+ }
+ 
+-static void load_transition_efer(struct vcpu_vmx *vmx)
++static bool update_transition_efer(struct vcpu_vmx *vmx)
+ {
+ 	int efer_offset = vmx->msr_offset_efer;
+-	u64 host_efer;
+ 	u64 guest_efer;
+ 	u64 ignore_bits;
+ 
+ 	if (efer_offset < 0)
+-		return;
+-	host_efer = vmx->host_msrs[efer_offset].data;
+-	guest_efer = vmx->guest_msrs[efer_offset].data;
++		return false;
++	guest_efer = vmx->vcpu.arch.shadow_efer;
+ 
+ 	/*
+ 	 * NX is emulated; LMA and LME handled by hardware; SCE meaninless
+@@ -619,26 +606,18 @@ static void load_transition_efer(struct vcpu_vmx *vmx)
+ 		ignore_bits &= ~(u64)EFER_SCE;
+ #endif
+ 	if ((guest_efer & ~ignore_bits) == (host_efer & ~ignore_bits))
+-		return;
++		return false;
+ 
+-	vmx->host_state.guest_efer_loaded = 1;
+ 	guest_efer &= ~ignore_bits;
+ 	guest_efer |= host_efer & ignore_bits;
+-	wrmsrl(MSR_EFER, guest_efer);
+-	vmx->vcpu.stat.efer_reload++;
+-}
+-
+-static void reload_host_efer(struct vcpu_vmx *vmx)
+-{
+-	if (vmx->host_state.guest_efer_loaded) {
+-		vmx->host_state.guest_efer_loaded = 0;
+-		load_msrs(vmx->host_msrs + vmx->msr_offset_efer, 1);
+-	}
++	vmx->guest_msrs[efer_offset].data = guest_efer;
++	return true;
+ }
+ 
+ static void vmx_save_host_state(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	int i;
+ 
+ 	if (vmx->host_state.loaded)
+ 		return;
+@@ -680,8 +659,9 @@ static void vmx_save_host_state(struct kvm_vcpu *vcpu)
+ 		wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
+ 	}
+ #endif
+-	load_msrs(vmx->guest_msrs, vmx->save_nmsrs);
+-	load_transition_efer(vmx);
++	for (i = 0; i < vmx->save_nmsrs; ++i)
++		kvm_set_shared_msr(vmx->guest_msrs[i].index,
++				   vmx->guest_msrs[i].data);
+ }
+ 
+ static void __vmx_load_host_state(struct vcpu_vmx *vmx)
+@@ -709,9 +689,6 @@ static void __vmx_load_host_state(struct vcpu_vmx *vmx)
+ 		local_irq_restore(flags);
+ 	}
+ 	reload_tss();
+-	save_msrs(vmx->guest_msrs, vmx->save_nmsrs);
+-	load_msrs(vmx->host_msrs, vmx->save_nmsrs);
+-	reload_host_efer(vmx);
+ #ifdef CONFIG_X86_64
+ 	if (is_long_mode(&vmx->vcpu)) {
+ 		rdmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
+@@ -908,19 +885,14 @@ static void vmx_queue_exception(struct kvm_vcpu *vcpu, unsigned nr,
+ /*
+  * Swap MSR entry in host/guest MSR entry array.
+  */
+-#ifdef CONFIG_X86_64
+ static void move_msr_up(struct vcpu_vmx *vmx, int from, int to)
+ {
+-	struct kvm_msr_entry tmp;
++	struct shared_msr_entry tmp;
+ 
+ 	tmp = vmx->guest_msrs[to];
+ 	vmx->guest_msrs[to] = vmx->guest_msrs[from];
+ 	vmx->guest_msrs[from] = tmp;
+-	tmp = vmx->host_msrs[to];
+-	vmx->host_msrs[to] = vmx->host_msrs[from];
+-	vmx->host_msrs[from] = tmp;
+ }
+-#endif
+ 
+ /*
+  * Set up the vmcs to automatically save and restore system
+@@ -929,15 +901,13 @@ static void move_msr_up(struct vcpu_vmx *vmx, int from, int to)
+  */
+ static void setup_msrs(struct vcpu_vmx *vmx)
+ {
+-	int save_nmsrs;
++	int save_nmsrs, index;
+ 	unsigned long *msr_bitmap;
+ 
+ 	vmx_load_host_state(vmx);
+ 	save_nmsrs = 0;
+ #ifdef CONFIG_X86_64
+ 	if (is_long_mode(&vmx->vcpu)) {
+-		int index;
+-
+ 		index = __find_msr_index(vmx, MSR_SYSCALL_MASK);
+ 		if (index >= 0)
+ 			move_msr_up(vmx, index, save_nmsrs++);
+@@ -956,9 +926,11 @@ static void setup_msrs(struct vcpu_vmx *vmx)
+ 			move_msr_up(vmx, index, save_nmsrs++);
+ 	}
+ #endif
+-	vmx->save_nmsrs = save_nmsrs;
++	vmx->msr_offset_efer = index = __find_msr_index(vmx, MSR_EFER);
++	if (index >= 0 && update_transition_efer(vmx))
++		move_msr_up(vmx, index, save_nmsrs++);
+ 
+-	vmx->msr_offset_efer = __find_msr_index(vmx, MSR_EFER);
++	vmx->save_nmsrs = save_nmsrs;
+ 
+ 	if (cpu_has_vmx_msr_bitmap()) {
+ 		if (is_long_mode(&vmx->vcpu))
+@@ -1000,7 +972,7 @@ static void guest_write_tsc(u64 guest_tsc, u64 host_tsc)
+ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ {
+ 	u64 data;
+-	struct kvm_msr_entry *msr;
++	struct shared_msr_entry *msr;
+ 
+ 	if (!pdata) {
+ 		printk(KERN_ERR "BUG: get_msr called with NULL pdata\n");
+@@ -1019,9 +991,9 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ 		vmx_load_host_state(to_vmx(vcpu));
+ 		data = to_vmx(vcpu)->msr_guest_kernel_gs_base;
+ 		break;
++#endif
+ 	case MSR_EFER:
+ 		return kvm_get_msr_common(vcpu, msr_index, pdata);
+-#endif
+ 	case MSR_IA32_TSC:
+ 		data = guest_read_tsc();
+ 		break;
+@@ -1035,6 +1007,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ 		data = vmcs_readl(GUEST_SYSENTER_ESP);
+ 		break;
+ 	default:
++		vmx_load_host_state(to_vmx(vcpu));
+ 		msr = find_msr_entry(to_vmx(vcpu), msr_index);
+ 		if (msr) {
+ 			vmx_load_host_state(to_vmx(vcpu));
+@@ -1056,7 +1029,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	struct kvm_msr_entry *msr;
++	struct shared_msr_entry *msr;
+ 	u64 host_tsc;
+ 	int ret = 0;
+ 
+@@ -1565,7 +1538,10 @@ continue_rmode:
+ static void vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	struct kvm_msr_entry *msr = find_msr_entry(vmx, MSR_EFER);
++	struct shared_msr_entry *msr = find_msr_entry(vmx, MSR_EFER);
++
++	if (!msr)
++		return;
+ 
+ 	/*
+ 	 * Force kernel_gs_base reloading before EFER changes, as control
+@@ -2417,10 +2393,8 @@ static int vmx_vcpu_setup(struct vcpu_vmx *vmx)
+ 		if (wrmsr_safe(index, data_low, data_high) < 0)
+ 			continue;
+ 		data = data_low | ((u64)data_high << 32);
+-		vmx->host_msrs[j].index = index;
+-		vmx->host_msrs[j].reserved = 0;
+-		vmx->host_msrs[j].data = data;
+-		vmx->guest_msrs[j] = vmx->host_msrs[j];
++		vmx->guest_msrs[j].index = i;
++		vmx->guest_msrs[j].data = 0;
+ 		++vmx->nmsrs;
+ 	}
+ 
+@@ -3821,7 +3795,6 @@ static void vmx_free_vcpu(struct kvm_vcpu *vcpu)
+ 		__clear_bit(vmx->vpid, vmx_vpid_bitmap);
+ 	spin_unlock(&vmx_vpid_lock);
+ 	vmx_free_vmcs(vcpu);
+-	kfree(vmx->host_msrs);
+ 	kfree(vmx->guest_msrs);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vmx);
+@@ -3848,10 +3821,6 @@ static struct kvm_vcpu *vmx_create_vcpu(struct kvm *kvm, unsigned int id)
+ 		goto uninit_vcpu;
+ 	}
+ 
+-	vmx->host_msrs = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if (!vmx->host_msrs)
+-		goto free_guest_msrs;
+-
+ 	vmx->vmcs = alloc_vmcs();
+ 	if (!vmx->vmcs)
+ 		goto free_msrs;
+@@ -3882,8 +3851,6 @@ static struct kvm_vcpu *vmx_create_vcpu(struct kvm *kvm, unsigned int id)
+ free_vmcs:
+ 	free_vmcs(vmx->vmcs);
+ free_msrs:
+-	kfree(vmx->host_msrs);
+-free_guest_msrs:
+ 	kfree(vmx->guest_msrs);
+ uninit_vcpu:
+ 	kvm_vcpu_uninit(&vmx->vcpu);
+@@ -4033,7 +4000,12 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 
+ static int __init vmx_init(void)
+ {
+-	int r;
++	int r, i;
++
++	rdmsrl_safe(MSR_EFER, &host_efer);
++
++	for (i = 0; i < NR_VMX_MSR; ++i)
++		kvm_define_shared_msr(i, vmx_msr_index[i]);
+ 
+ 	vmx_io_bitmap_a = (unsigned long *)__get_free_page(GFP_KERNEL);
+ 	if (!vmx_io_bitmap_a)
 -- 
 1.6.5.2
 
