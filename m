@@ -1,84 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZKSWfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbZKSWl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZKSWfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 17:35:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZKSWfJ
+	id S1757622AbZKSWl3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 17:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZKSWl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 17:35:09 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:55483 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757092AbZKSWfI (ORCPT
+	Thu, 19 Nov 2009 17:41:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45889 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757307AbZKSWl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 17:35:08 -0500
-Message-ID: <4B05C817.9020705@canonical.com>
-Date: Thu, 19 Nov 2009 14:35:03 -0800
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/23] Removal of binary sysctl support
-References: <m1zl6j65by.fsf@fess.ebiederm.org>	<200911190704.CHI18293.VJOMHFtOLQSOFF@I-love.SAKURA.ne.jp>	<m1k4xn8nba.fsf@fess.ebiederm.org>	<200911192333.EHB57391.FSQOHOJtMFFLVO@I-love.SAKURA.ne.jp>	<m1ocmy4d7b.fsf@fess.ebiederm.org>	<200911200717.CDF87535.JQMSFFtOFVOHOL@I-love.SAKURA.ne.jp> <m1lji2upc2.fsf@fess.ebiederm.org>
-In-Reply-To: <m1lji2upc2.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Nov 2009 17:41:27 -0500
+Subject: Re: [PATCH 3/7 v6] perf/core: Add a callback to perf events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <20091119154349.GA4967@nowhere>
+References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com>
+	 <1257694141-5670-4-git-send-email-fweisbec@gmail.com>
+	 <1258457333.7816.186.camel@laptop> <20091118001815.GA8187@nowhere>
+	 <1258536669.3918.99.camel@laptop>  <20091119154349.GA4967@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Nov 2009 23:40:53 +0100
+Message-ID: <1258670453.11284.278.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> writes:
+On Thu, 2009-11-19 at 16:43 +0100, Frederic Weisbecker wrote:
+> On Wed, Nov 18, 2009 at 10:31:09AM +0100, Peter Zijlstra wrote:
+> > On Wed, 2009-11-18 at 01:18 +0100, Frederic Weisbecker wrote:
+> > > On Tue, Nov 17, 2009 at 12:28:53PM +0100, Peter Zijlstra wrote:
+> > > > On Sun, 2009-11-08 at 16:28 +0100, Frederic Weisbecker wrote:
+> > > > > A simple callback in a perf event can be used for multiple purposes.
+> > > > > For example it is useful for triggered based events like hardware
+> > > > > breakpoints that need a callback to dispatch a triggered breakpoint
+> > > > > event.
+> > > > > 
+> > > > > v2: Simplify a bit the callback attribution as suggested by Paul
+> > > > >     Mackerras
+> > > > 
+> > > > Yuck! So we add an opaque callback without semantics nor usage.
+> > > 
+> > > 
+> > > Yeah, this is intended for events that need to be able to trigger
+> > > events to different channels. In the case of hw-breakpoints, it's
+> > > either perf buffer, ptrace, etc...
+> > > 
+> > > Should I add some comments about it?
+> > 
+> > At the very least.. describe its semantics and preferably rename the
+> > thing.
 > 
->> Hello.
->>
->> Eric W. Biederman wrote:
->>>> Indeed. TOMOYO and AppArmor need a hint for prepending "/proc" prefix.
->>>> A simple implementation which adds one bit to task_struct is shown below.
->>>> In this way, not only the file permission checks inside dentry_open()
->>>> but also the directory permission checks inside vfs_path_lookup() can be
->>>> prepended "/proc" prefix. AppArmor might want to prepend "/proc" inside
->>>> vfs_path_lookup().
->>> There don't appear to be any security hooks in vfs_path_lookup().
->>>
->> OK. Then, AppArmor won't be confused.
->>
->>> Instead of current->in_sysctl we can just look at the path and see if
->>> it is the root of the mount chain and if the fs is proc.
->>>
->>> Something like:
->>>
->>> diff --git a/security/tomoyo/realpath.c b/security/tomoyo/realpath.c
->>> index 5f2e332..0b55faa 100644
->>> --- a/security/tomoyo/realpath.c
->>> +++ b/security/tomoyo/realpath.c
->>> @@ -108,6 +108,15 @@ int tomoyo_realpath_from_path2(struct path *path, char *newname,
->>>  		spin_unlock(&dcache_lock);
->>>  		path_put(&root);
->>>  		path_put(&ns_root);
->>> +		/* Prepend "/proc" prefix if using internal proc vfs mount. */
->>> +		if (!IS_ERR(sp) && (path->mnt->mnt_parent == path->mnt) &&
->>> +		    (strcmp(path->mnt->mnt_sb->s_type->name, "proc") == 0)) {
->>> +			sp -= 5;
->>> +			if (sp >= newname)
->>> +				memcpy(sp, "/proc", 5);
->>> +			else
->>> +				sp = ERR_PTR(-ENOMEM);
->>> +		}
->>>  	}
->>>  	if (IS_ERR(sp))
->>>  		error = PTR_ERR(sp);
->> Above patch works. Please proceed. Thank you.
->>
->> Acked-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
->>
->> Why not to use path->mnt->mnt_sb->s_magic == PROC_SUPER_MAGIC rather than
->> strcmp(path->mnt->mnt_sb->s_type->name, "proc") == 0 ?
 > 
-> Brain short circuit.
-> 
-The patch look good to me too.
+> May be "event_triggered"?
 
-Acked-by: John Johansen <john.johansen@canonical.com>
+What event? There is no caller.
+
+> > Currently I've no clue what it does and why, your description above
+> > about multiple channels does not at all help me understand how this
+> > function pointer is used to make that happen.
+> > 
+> 
+> 
+> We need it for hardware breakpoints because if we register a breakpoint
+> for perf syscall use, we need to dispatch the event to perf. But if we
+> register it for ptrace, or any in-kernel uses, we need to dispatch the
+> event somewhere else and then we need another callback.
+
+So you simply want to have a different overflow/sample handler?
+
+Doesn't something like the below work? We need that anyway for kernel
+based consumers that want to do anything with the sampling event.
+
+Index: linux-2.6/include/linux/perf_event.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_event.h
++++ linux-2.6/include/linux/perf_event.h
+@@ -567,6 +567,8 @@ struct perf_pending_entry {
+ 
+ typedef void (*perf_callback_t)(struct perf_event *, void *);
+ 
++struct perf_sample_data;
++
+ /**
+  * struct perf_event - performance event kernel representation:
+  */
+@@ -658,6 +660,10 @@ struct perf_event {
+ 	struct pid_namespace		*ns;
+ 	u64				id;
+ 
++	void (*overflow_handler)(struct perf_event *event,
++			int nmi, struct perf_sample_data *data,
++			struct pt_regs *regs);
++
+ #ifdef CONFIG_EVENT_PROFILE
+ 	struct event_filter		*filter;
+ #endif
+Index: linux-2.6/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -3710,7 +3710,11 @@ static int __perf_event_overflow(struct 
+ 			perf_event_disable(event);
+ 	}
+ 
+-	perf_event_output(event, nmi, data, regs);
++	if (event->overflow_handler)
++		event->overflow_handler(event, nmi, data, regs);
++	else
++		perf_event_output(event, nmi, data, regs);
++
+ 	return ret;
+ }
+ 
+@@ -4836,6 +4849,8 @@ inherit_event(struct perf_event *parent_
+ 	if (parent_event->attr.freq)
+ 		child_event->hw.sample_period = parent_event->hw.sample_period;
+ 
++	child_event->overflow_handler = parent->overflow_handler;
++
+ 	/*
+ 	 * Link it up in the child's context:
+ 	 */
+
 
