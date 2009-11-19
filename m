@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZKSVmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbZKSVo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbZKSVmJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 16:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZKSVmI
+	id S1756982AbZKSVo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 16:44:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZKSVo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 16:42:08 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:56980 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbZKSVmH (ORCPT
+	Thu, 19 Nov 2009 16:44:29 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:35909 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbZKSVo2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 16:42:07 -0500
-X-SpamScore: 2
-X-BigFish: VS2(zzzz1202h10c0jzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B05BBAE.2050005@am.sony.com>
-Date: Thu, 19 Nov 2009 13:42:06 -0800
-From: Frank Rowand <frank.rowand@am.sony.com>
-Reply-To: frank.rowand@am.sony.com
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 19 Nov 2009 16:44:28 -0500
+X-Greylist: delayed 7923 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 16:44:27 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=p+ZDmGX+fyHS2OPNyosTpEfvTaWquBMt7DzqyZgaC5vz87ApA7yXWPr9IgWTFwVUym
+         G/mm7E0+r/eqiQDw5aHWMC975yjAZkTlKoArMMB8sUlH4f4ClMvq5n4QlX6N5SrQFJam
+         Td2xB2ECpcH2bsfX15PRpqaO0ymOJZPGJIvOQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 22:42:59 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911181919.19127.bzolnier@gmail.com> <4B05BA72.2030406@garzik.org>
+In-Reply-To: <4B05BA72.2030406@garzik.org>
 MIME-Version: 1.0
-To: peterz@infradead.org, mingo@redhat.com
-CC: tom.leiming@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] LOCKSTAT: patch test - Fix min, max times in /proc/lock_stats
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Nov 2009 21:42:04.0598 (UTC) FILETIME=[228E5D60:01CA6961]
-X-SEL-encryption-scan: scanned
-X-Reverse-DNS: mail8.fw-sd.sony.com
+Message-Id: <200911192242.59476.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix min, max times in /proc/lock_stats
+On Thursday 19 November 2009 22:36:50 Jeff Garzik wrote:
+> On 11/18/2009 01:19 PM, Bartlomiej Zolnierkiewicz wrote:
+> > On Tuesday 17 November 2009 15:51:39 Alan Cox wrote:
+> >> Signed-off-by: Alan Cox<alan@linux.intel.com>
+> >> ---
+> >>
+> >>   drivers/ata/Kconfig |    8 ++++----
+> >>   1 files changed, 4 insertions(+), 4 deletions(-)
+> >>
+> >>
+> >> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> >> index f2df6e2..36931e0 100644
+> >> --- a/drivers/ata/Kconfig
+> >> +++ b/drivers/ata/Kconfig
+> >> @@ -374,7 +374,7 @@ config PATA_HPT366
+> >>   	  If unsure, say N.
+> >>
+> >>   config PATA_HPT37X
+> >> -	tristate "HPT 370/370A/371/372/374/302 PATA support (Experimental)"
+> >> +	tristate "HPT 370/370A/371/372/374/302 PATA support"
+> >>   	depends on PCI&&  EXPERIMENTAL
+> >>   	help
+> >>   	  This option enables support for the majority of the later HPT
+> >> @@ -383,7 +383,7 @@ config PATA_HPT37X
+> >>   	  If unsure, say N.
+> >>
+> >>   config PATA_HPT3X2N
+> >> -	tristate "HPT 372N/302N PATA support (Experimental)"
+> >> +	tristate "HPT 372N/302N PATA support"
+> >>   	depends on PCI&&  EXPERIMENTAL
+> >>   	help
+> >>   	  This option enables support for the N variant HPT PATA
+> >
+> > Maybe they are 'stable' but when it comes to features they are behind hpt366
+> > (i.e. they lack PCI PM), which is also much cleaner than your drivers, easier
+> > to understand and much smaller..
+> 
+> That sounds like an ACK to Alan's patch, to me ;-)
+> 
+> A libata driver can be stable, yet not have all the features of drivers/ide.
+> 
+> That said, I do agree that libata drivers need to have the features 
+> found in the drivers/ide/ drivers.
 
-(1) When collecting lock hold and wait times, if the current minimum time is
-    zero, it will be replaced by the next time.
+Feel free to add them Mr. Maintainer. :)
 
-(2) When aggregating minimum and maximum lock hold and wait times accross cpus,
-    the values are added, instead of selecting the minimum and maximum.
-
-
-Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
-
----
- kernel/lockdep.c |   11 	9 +	2 -	0 !
- 1 files changed, 9 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -168,7 +168,7 @@ static void lock_time_inc(struct lock_ti
- 	if (time > lt->max)
- 		lt->max = time;
- 
--	if (time < lt->min || !lt->min)
-+	if (time < lt->min || !lt->nr)
- 		lt->min = time;
- 
- 	lt->total += time;
-@@ -177,8 +177,15 @@ static void lock_time_inc(struct lock_ti
- 
- static inline void lock_time_add(struct lock_time *src, struct lock_time *dst)
- {
--	dst->min += src->min;
--	dst->max += src->max;
-+	if (!src->nr)
-+		return;
-+
-+	if (src->max > dst->max)
-+		dst->max = src->max;
-+
-+	if (src->min < dst->min || !dst->nr)
-+		dst->min = src->min;
-+
- 	dst->total += src->total;
- 	dst->nr += src->nr;
- }
-
+-- 
+Bartlomiej Zolnierkiewicz
