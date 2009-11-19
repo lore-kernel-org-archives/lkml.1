@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZKSOs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZKSOvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbZKSOs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbZKSOs6
+	id S1755314AbZKSOvi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZKSOvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:48:58 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:53397 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbZKSOs6 (ORCPT
+	Thu, 19 Nov 2009 09:51:37 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:16425 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbZKSOvg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:48:58 -0500
-Date: Thu, 19 Nov 2009 14:48:53 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091119144853.GA1398@srcf.ucam.org>
-References: <20091118200712.GA14026@srcf.ucam.org> <ac3eb2510911181306g221e8940xfbcf8b8e7fa9a56e@mail.gmail.com> <20091118213355.GA16630@srcf.ucam.org> <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> <20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com> <20091119141634.GA311@srcf.ucam.org> <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com> <20091119143008.GA719@srcf.ucam.org> <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com>
+	Thu, 19 Nov 2009 09:51:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=GJQtybJlXvlN90nEnNF620hGRsnvoZS1Ud/GYsh44kwfWspoao0zUUlwUgW6fhcNAZ
+         VEwfqylL7b2NFrYptR1SOx33/jIIThMxP37J/O8iitOQcAP3ip3s2D5apLgsAUgPGsDc
+         EvhBew//JkHGfZu1k+nLDnTgsMSWWY0fuT19E=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Thu, 19 Nov 2009 15:50:25 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191517.15090.bzolnier@gmail.com> <20091119143351.1d0e2c59@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091119143351.1d0e2c59@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911191550.25476.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 03:34:53PM +0100, Kay Sievers wrote:
+On Thursday 19 November 2009 15:33:51 Alan Cox wrote:
+> On Thu, 19 Nov 2009 15:17:14 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > On Thursday 19 November 2009 14:16:36 Alan Cox wrote:
+> > > > Only pata_hpt37x has broken cable detection while pata_hpt3x2n is
+> > > > okay. ;)
+> > > 
+> > > I think you have that backwards according to the vendor drivers. 3x2n
+> > > looks like it needs adjusting.
+> > 
+> > lol, just fix the damn pata_hpt37x driver _lacking_ ->cable_detect method..
+> 
+> It doesn't need one. It still sets the cable type in the pre reset
+> function as the older drivers that haven't converted to a cable_detect
+> method do.
 
-> Single-subscriber event interfaces are usually a no-go for generic
-> infrastructure like this. We still have the unmodified HAL running
-> until it is dead, and this works only because there are no such
-> awkward interfaces. In a few years we will probably have diskfoo
-> replacing dk-disks, and then ... :)
+If you know about other drivers still using ->pre_reset for cable detection
+please let us know because they need fixing ASAP.
 
-If you've got any ideas for what a multi-subscriber interface would look 
-like, I'm happy look at it. I don't think there's an especially 
-compelling use-case for one right now so I'm not enthusiastic about the 
-additional complexity that'd be required, but as long as there's basic 
-agreement that it's not practical to do this in userspace then we're at 
-least on the same page.
+->cable_detect method is there for a reason, by knowingly not using it you
+already have a buggy cable detection (since ->pre_reset ignores the mandatory
+by spec part of cable detection which is probing slave before master) and
+make it more likely to cause breakages in the future when some other developer
+do a change under assumption that all host drivers use API correctly.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Bartlomiej Zolnierkiewicz
