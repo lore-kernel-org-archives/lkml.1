@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbZKSVo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZKSVsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756982AbZKSVo3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 16:44:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZKSVo3
+	id S1757237AbZKSVsa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 16:48:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756764AbZKSVs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 16:44:29 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35909 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373AbZKSVo2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 16:44:28 -0500
-X-Greylist: delayed 7923 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 16:44:27 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=p+ZDmGX+fyHS2OPNyosTpEfvTaWquBMt7DzqyZgaC5vz87ApA7yXWPr9IgWTFwVUym
-         G/mm7E0+r/eqiQDw5aHWMC975yjAZkTlKoArMMB8sUlH4f4ClMvq5n4QlX6N5SrQFJam
-         Td2xB2ECpcH2bsfX15PRpqaO0ymOJZPGJIvOQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 22:42:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911181919.19127.bzolnier@gmail.com> <4B05BA72.2030406@garzik.org>
-In-Reply-To: <4B05BA72.2030406@garzik.org>
+	Thu, 19 Nov 2009 16:48:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:34943 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753655AbZKSVs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 16:48:29 -0500
+Message-ID: <4B05BD2A.5070706@pobox.com>
+Date: Thu, 19 Nov 2009 16:48:26 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191645.29885.bzolnier@gmail.com> <20091119162738.7e8e5665@lxorguk.ukuu.org.uk> <200911191838.11791.bzolnier@gmail.com>
+In-Reply-To: <200911191838.11791.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911192242.59476.bzolnier@gmail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 22:36:50 Jeff Garzik wrote:
-> On 11/18/2009 01:19 PM, Bartlomiej Zolnierkiewicz wrote:
-> > On Tuesday 17 November 2009 15:51:39 Alan Cox wrote:
-> >> Signed-off-by: Alan Cox<alan@linux.intel.com>
-> >> ---
-> >>
-> >>   drivers/ata/Kconfig |    8 ++++----
-> >>   1 files changed, 4 insertions(+), 4 deletions(-)
-> >>
-> >>
-> >> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> >> index f2df6e2..36931e0 100644
-> >> --- a/drivers/ata/Kconfig
-> >> +++ b/drivers/ata/Kconfig
-> >> @@ -374,7 +374,7 @@ config PATA_HPT366
-> >>   	  If unsure, say N.
-> >>
-> >>   config PATA_HPT37X
-> >> -	tristate "HPT 370/370A/371/372/374/302 PATA support (Experimental)"
-> >> +	tristate "HPT 370/370A/371/372/374/302 PATA support"
-> >>   	depends on PCI&&  EXPERIMENTAL
-> >>   	help
-> >>   	  This option enables support for the majority of the later HPT
-> >> @@ -383,7 +383,7 @@ config PATA_HPT37X
-> >>   	  If unsure, say N.
-> >>
-> >>   config PATA_HPT3X2N
-> >> -	tristate "HPT 372N/302N PATA support (Experimental)"
-> >> +	tristate "HPT 372N/302N PATA support"
-> >>   	depends on PCI&&  EXPERIMENTAL
-> >>   	help
-> >>   	  This option enables support for the N variant HPT PATA
-> >
-> > Maybe they are 'stable' but when it comes to features they are behind hpt366
-> > (i.e. they lack PCI PM), which is also much cleaner than your drivers, easier
-> > to understand and much smaller..
-> 
-> That sounds like an ACK to Alan's patch, to me ;-)
-> 
-> A libata driver can be stable, yet not have all the features of drivers/ide.
-> 
-> That said, I do agree that libata drivers need to have the features 
-> found in the drivers/ide/ drivers.
+On 11/19/2009 12:38 PM, Bartlomiej Zolnierkiewicz wrote:
+>
+> Index: b/drivers/ata/pata_hpt3x2n.c
+> ===================================================================
+> --- a/drivers/ata/pata_hpt3x2n.c
+> +++ b/drivers/ata/pata_hpt3x2n.c
+> @@ -133,7 +133,7 @@ static int hpt3x2n_cable_detect(struct a
+>   	/* Restore state */
+>   	pci_write_config_byte(pdev, 0x5B, scr2);
+>
+> -	if (ata66&  (1<<  ap->port_no))
+> +	if (ata66&  (2>>  ap->port_no))
+>   		return ATA_CBL_PATA40;
+>   	else
+>   		return ATA_CBL_PATA80;
 
-Feel free to add them Mr. Maintainer. :)
 
--- 
-Bartlomiej Zolnierkiewicz
+Applied.
+
+Note to Alan -- even if cable detect wants more changes, this is a nice, 
+self-contained fix easily backported to stable@, etc.  So I preferred 
+the above form of change.
+
+Please do send any updates you guys (Bart | Alan) have on top of 
+libata-dev.git#upstream.
+
+Thanks,
+
+	Jeff
+
+
+
