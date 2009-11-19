@@ -1,134 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZKSHKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZKSHNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZKSHKK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 02:10:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZKSHKJ
+	id S1752934AbZKSHNQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 02:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZKSHNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 02:10:09 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45269 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbZKSHKH (ORCPT
+	Thu, 19 Nov 2009 02:13:15 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64363 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZKSHNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 02:10:07 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 19 Nov 2009 16:09:53 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [BUG] cpu controller can't provide fair CPU time for each group
-Cc: Miao Xie <miaox@cn.fujitsu.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       containers <containers@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Kengo Kuwahara <kuwahara.kengo@jp.fujitsu.com>
-In-Reply-To: <20091112095947.7229.E1E9C6FF@jp.fujitsu.com>
-References: <1257934048.23203.76.camel@twins> <20091112095947.7229.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20091119152535.0C18.E1E9C6FF@jp.fujitsu.com>
+	Thu, 19 Nov 2009 02:13:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=kUPYlvG6Rowxch0DnFXblqAhYXrcQ7v1qVJxaAfLaJLy9KFGFhV2S0FR75CWpdfI1J
+         CSyDjEY/LA2jNS0+ZuP/KGoQ3nmD0nr9rGdKlja1Frft7QW/Dm9vlmW24GAlKSvET8lM
+         ywkIFZISl2hfllnyJfzwyXclqWRl9nfT6YeE0=
+Date: Wed, 18 Nov 2009 23:13:15 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linux Input <linux-input@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Input: keyboard - add locking around event handling
+Message-ID: <20091119071315.GD3010@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Peter-san.
-Sorry for late response.
+Keyboard input handler is multiplexing events form all keyboard-like
+devices in the system. Because of that per-device lock provided by
+input core is not enough to prevent clashes in ked_event() and we
+need our own lock to ensure that only one thread at a time executing
+kbd_event().
 
-> > On Wed, 2009-11-11 at 15:21 +0900, Yasunori Goto wrote:
-> > > > Someone needs to fix that if they really care.
-> > > 
-> > > To be honest, I don't have any good idea because I'm not familiar with
-> > > schduler's code. 
-> > 
-> > You could possible try something like the below, its rather gross but
-> > might maybe work,.. has other issues though.
-> 
-> Thank you very much for your patch. I'm very glad.
-> 
-> Unfortunately, my test staff and I don't have test box today,
-> I'll report the result later.
-> 
-> Thanks again for your time.
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
 
-We tested your patch. It works perfectly as we expected.
-
-In addition, we confirmed the environment how this issue occurs.
-Even if we doesn't use neither affinity nor cpuset, this issue can be
-reproduced.
-
-For example, we made 2 groups which had same share values on the box
-which had 2 cores.
-
-                                      CPU time            CPU time
-           # of tasks      shares    w/o your patch     with your patch
-group A       1             1024       Avg  71%           Avg 100%
-group B       3             1024       Avg 129%           Avg 100%
-
-Probably, this is the worst case for current cpu controller.
-But your patch can fix this.
-
-So, I would like to push this patch into main line if you are ok.
-Though you may feel this patch is ugly, I think this is good for stable kernel.
-
-Anyway, thanks a lot for your patch.
-
-Regards.
-
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Tested-by: Kengo Kuwahara <kuwahara.kengo@jp.fujitsu.com>
+ drivers/char/keyboard.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 
-> 
-> > 
-> > 
-> > ---
-> >  kernel/sched.c |    9 +++++++--
-> >  1 files changed, 7 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 91642c1..65629a3 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -1614,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
-> >   */
-> >  static int tg_shares_up(struct task_group *tg, void *data)
-> >  {
-> > -	unsigned long weight, rq_weight = 0, shares = 0;
-> > +	unsigned long weight, rq_weight = 0, sum_weight = 0, shares = 0;
-> >  	unsigned long *usd_rq_weight;
-> >  	struct sched_domain *sd = data;
-> >  	unsigned long flags;
-> > @@ -1630,6 +1630,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
-> >  		weight = tg->cfs_rq[i]->load.weight;
-> >  		usd_rq_weight[i] = weight;
-> >  
-> > +		rq_weight += weight;
-> >  		/*
-> >  		 * If there are currently no tasks on the cpu pretend there
-> >  		 * is one of average load so that when a new task gets to
-> > @@ -1638,10 +1639,14 @@ static int tg_shares_up(struct task_group *tg, void *data)
-> >  		if (!weight)
-> >  			weight = NICE_0_LOAD;
-> >  
-> > -		rq_weight += weight;
-> > +		sum_weight += weight;
-> > +
-> >  		shares += tg->cfs_rq[i]->shares;
-> >  	}
-> >  
-> > +	if (!rq_weight)
-> > +		rq_weight = sum_weight;
-> > +
-> >  	if ((!shares && rq_weight) || shares > tg->shares)
-> >  		shares = tg->shares;
-> >  
-> > 
-> 
-> -- 
-> Yasunori Goto 
-
+diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+index ce2ab67..e095ff3 100644
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -130,6 +130,7 @@ int shift_state = 0;
+  */
+ 
+ static struct input_handler kbd_handler;
++static DEFINE_SPINLOCK(kbd_event_lock);
+ static unsigned long key_down[BITS_TO_LONGS(KEY_CNT)];	/* keyboard key bitmap */
+ static unsigned char shift_down[NR_SHIFT];		/* shift state counters.. */
+ static int dead_key_next;
+@@ -1304,11 +1305,16 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ static void kbd_event(struct input_handle *handle, unsigned int event_type,
+ 		      unsigned int event_code, int value)
+ {
++	/* We are called with interrupts disabled */
++	spin_lock(&kbd_event_lock);
++
+ 	if (event_type == EV_MSC && event_code == MSC_RAW && HW_RAW(handle->dev))
+ 		kbd_rawcode(value);
+ 	if (event_type == EV_KEY)
+ 		kbd_keycode(event_code, value, HW_RAW(handle->dev));
+ 
++	spin_unlock(&kbd_event_lock);
++
+ 	tasklet_schedule(&keyboard_tasklet);
+ 	do_poke_blanked_console = 1;
+ 	schedule_console_callback();
 -- 
-Yasunori Goto 
-
-
+Dmitry
