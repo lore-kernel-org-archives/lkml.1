@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZKSW3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZKSWaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbZKSW3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 17:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZKSW3z
+	id S1757475AbZKSWaU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 17:30:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbZKSWaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 17:29:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46728 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756827AbZKSW3y (ORCPT
+	Thu, 19 Nov 2009 17:30:20 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56931 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753589AbZKSWaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 17:29:54 -0500
-Subject: Re: [PATCH] LOCKSTAT: patch test - Fix min, max times in
- /proc/lock_stats
-From: Peter Zijlstra <peterz@infradead.org>
-To: frank.rowand@am.sony.com
-Cc: mingo@redhat.com, tom.leiming@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <4B05BBAE.2050005@am.sony.com>
-References: <4B05BBAE.2050005@am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 Nov 2009 23:29:55 +0100
-Message-ID: <1258669795.11284.256.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 17:30:18 -0500
+Date: Thu, 19 Nov 2009 23:30:18 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] procfs: make /proc style symlinks behave like "normal"
+ symlinks
+Message-ID: <20091119223018.GC11212@elf.ucw.cz>
+References: <1258638251-20034-1-git-send-email-jlayton@redhat.com>
+ <m14ooq5tq3.fsf@fess.ebiederm.org>
+ <20091119132833.30bc93a4@barsoom.rdu.redhat.com>
+ <m1skca2vi3.fsf@fess.ebiederm.org>
+ <20091119143555.7851953f@barsoom.rdu.redhat.com>
+ <20091119213935.GA11212@elf.ucw.cz>
+ <m1vdh6uqjn.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1vdh6uqjn.fsf@fess.ebiederm.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-19 at 13:42 -0800, Frank Rowand wrote:
-> Fix min, max times in /proc/lock_stats
-> 
-> (1) When collecting lock hold and wait times, if the current minimum time is
->     zero, it will be replaced by the next time.
-> 
-> (2) When aggregating minimum and maximum lock hold and wait times accross cpus,
->     the values are added, instead of selecting the minimum and maximum.
-> 
-> 
-> Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
+Hi!
 
-Thanks Frank, took both patches.
+(Sorry, missed Cc's first time).
 
+> >> Adding the missing revalidations is fine, but I don't believe that
+> >> helps to fix Pavel's issue. I'll go back and take a more careful look
+> >> at the suggestion that Miklos made and see whether it makes sense to
+> >> implement a new FS_* flag for this, and see what it'll take to fix
+> >> Pavel's issue.
+> >
+> > One posibility would be to make open(/proc/XX/fd/XX) behave like
+> > dup(). That should solve the NFS problems, too, no?
+> 
+> Not for bind mounts, and the revalidate in follow_mounts is a bug regardless.
+
+Really? So dup() is also broken on nfs? How do bind mounts affect
+dup()?
+                                                                        Pavel   
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
