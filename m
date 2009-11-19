@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZKSPkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZKSPjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbZKSPkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 10:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbZKSPkJ
+	id S1756362AbZKSPjo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 10:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZKSPjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 10:40:09 -0500
-Received: from www.tglx.de ([62.245.132.106]:51209 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754080AbZKSPkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 10:40:08 -0500
-Date: Thu, 19 Nov 2009 16:37:52 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-In-Reply-To: <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
- <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 19 Nov 2009 10:39:43 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:45781 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754064AbZKSPjn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 10:39:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=hkD5oGHsq6sPnuRB4PRxfUf7E689QPEVO0dAsH0N0ty3QSLN/4mXduHZM/jcJ3qsEt
+         Iy/ecPuSnqNcuKM64OKPX+WRMcMCnhBEK0YuT/3MpMDyMgis++lwzZHBs+/GKHRuc6vS
+         6LTJDzDxrwQ9USL0IP1O5tNA+3XbxM8uJuwAM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200911191903.04915.rusty@rustcorp.com.au>
+References: <200911191903.04915.rusty@rustcorp.com.au>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Thu, 19 Nov 2009 13:39:28 -0200
+Message-ID: <b8bf37780911190739p7537fa16xac3b9f6a78af8ac4@mail.gmail.com>
+Subject: Re: Licensing on lib/bsearch.c?
+To: Rusty Russell <rusty@rustcorp.com.au>, Tim Abbott <tabbott@ksplice.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009, Thomas Gleixner wrote:
+On Thu, Nov 19, 2009 at 6:33 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Hi Tim, Andre,
+>
+>   I note that the license header on lib/bsearch.c is GPLv2.  I wanted to
+> steal it for SAMBA, which is GPLv3.  This is one reason all my kernel code is
+> v2 or later.
+>
+> If you don't have strong objections, could you send something like the
+> following so I don't have to reimplement and re-test?
+>
+> Thanks,
+> Rusty.
+>
+> Subject: bsearch: extend license to GPL 2+
+>
+> Rusty asked nicely.
+>
+> diff --git a/lib/bsearch.c b/lib/bsearch.c
+> --- a/lib/bsearch.c
+> +++ b/lib/bsearch.c
+> @@ -6,7 +6,8 @@
+>  *
+>  * This program is free software; you can redistribute it and/or
+>  * modify it under the terms of the GNU General Public License as
+> - * published by the Free Software Foundation; version 2.
+> + * published by the Free Software Foundation; either version 2 of
+> + * the License, or (at your option) any later version.
+>  */
+>
+>  #include <linux/module.h>
+>
 
-Can the GCC folks please shed some light on this:
+Hi, Rusty!
 
-standard function start:
+    It's surely fine by me:
 
-	 push	%ebp
-	 mov	%esp, %ebp
-	 ....
-	 call   mcount
+Acked-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-modified function start on a handful of functions only seen with gcc
-4.4.x on x86 32 bit:
+    Tim?
 
-	push   %edi
-	lea    0x8(%esp),%edi
-	and    $0xfffffff0,%esp
-	pushl  -0x4(%edi)
-	push   %ebp
-	mov    %esp,%ebp
-	...
-	call   mcount
-
-This modification leads to a hard to solve problem in the kernel
-function graph tracer which assumes that the stack looks like:
-
-       return address
-       saved  ebp
-
-With the modified function start sequence this is not longer true and
-the manipulation of the return address on the stack fails silently.
-
-Neither gcc 4.3 nor gcc 3.4 are generating such function frames, so it
-looks like a gcc 4.4.x feature.
-
-There is no real obvious reason why the edi magic needs to be done
-_before_ 
-
-	push   %ebp
-	mov    %esp,%ebp
-
-Thanks,
-
-	tglx
+Thank you,
+André
