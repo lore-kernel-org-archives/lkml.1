@@ -1,366 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZKSA1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZKSAdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZKSA1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 19:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZKSA1n
+	id S1757231AbZKSAdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 19:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZKSAdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 19:27:43 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:49024 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754503AbZKSA1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 19:27:42 -0500
-Date: Wed, 18 Nov 2009 16:27:46 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH tip/core/rcu] fix CPU-hotplug-induced grace-period stall on
-	large systems
-Message-ID: <20091119002746.GA19604@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
+	Wed, 18 Nov 2009 19:33:24 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:35320 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756133AbZKSAdY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Nov 2009 19:33:24 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAKMfBEtGGN1W/2dsb2JhbACBTddahDsEgW8
+Date: Wed, 18 Nov 2009 19:28:26 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, mhiramat@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
+       rth@redhat.com
+Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump
+	patching without stop_machine
+Message-ID: <20091119002826.GB28962@Krystal>
+References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 18:43:09 up 92 days, 10:32,  5 users,  load average: 0.10, 0.11,
+	0.14
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the last CPU of a given leaf rcu_node structure goes offline,
-all of the tasks queued on that leaf rcu_node structure (due to having
-blocked in their current RCU read-side critical sections) are requeued
-onto the root rcu_node structure.  This requeuing is carried out by
-rcu_preempt_offline_tasks().  However, it is possible that these queued
-tasks are the only thing preventing the leaf rcu_node structure from
-reporting a quiescent state up the rcu_node hierarchy.  Unfortunately,
-the old code would fail to do this reporting, resulting in a grace-period
-stall given the following sequence of events:
+* Jason Baron (jbaron@redhat.com) wrote:
+> Add text_poke_fixup() which takes a fixup address to where a processor
+> jumps if it hits the modifying address while code modifying.
+> text_poke_fixup() does following steps for this purpose.
+> 
+>  1. Setup int3 handler for fixup.
+>  2. Put a breakpoint (int3) on the first byte of modifying region,
+>     and synchronize code on all CPUs.
+>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+>  4. Modify the first byte of modifying region, and synchronize code
+>     on all CPUs.
+>  5. Clear int3 handler.
+> 
 
-1.	Kernel built for more than 32 CPUs on 32-bit systems or for more
-	than 64 CPUs on 64-bit systems, so that there is more than one
-	rcu_node structure.  (Or CONFIG_RCU_FANOUT is artificially set
-	to a number smaller than CONFIG_NR_CPUS.)
+Hi Masami,
 
-2.	The kernel is built with CONFIG_TREE_PREEMPT_RCU.
+I like the approach and the API is clean. I have intersped comments
+below.
 
-3.	A task running on a CPU associated with a given leaf rcu_node
-	structure blocks while in an RCU read-side critical section
-	-and- that CPU has not yet passed through a quiescent state
-	for the current RCU grace period.  This will cause the task
-	to be queued on the leaf rcu_node's blocked_tasks[] array, in
-	particular, on the element of this array corresponding to the
-	current grace period.
+Ingo: I raise a question about text_mutex vs on_each_cpu hangs I
+experienced recently in the message below. Might be worth having a look,
+I suspect this might have caused the hangs Paul McKenney had with his
+past TREE RCU callback migration. I think he did take a mutex in the cpu
+hotplug callbacks and might have used IPIs within that same lock.
 
-4.	Each of the remaining CPUs corresponding to this same leaf rcu_node
-	structure pass through a quiescent state.  However, the task is
-	still in its RCU read-side critical section, so these quiescent
-	states cannot be reported further up the rcu_node hierarchy.
-	Nevertheless, all bits in the leaf rcu_node structure's ->qsmask
-	field are now zero.
+> Thus, if some other processor execute modifying address when step2 to step4,
+> it will be jumped to fixup code.
+> 
+> This still has many limitations for modifying multi-instructions at once.
+> However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
+> because;
+>  - Replaced instruction is just one instruction, which is executed atomically.
+>  - Replacing instruction is a jump, so we can set fixup address where the jump
+>    goes to.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+>  arch/x86/include/asm/alternative.h |   12 ++++
+>  arch/x86/include/asm/kprobes.h     |    1 +
+>  arch/x86/kernel/alternative.c      |  120 ++++++++++++++++++++++++++++++++++++
+>  kernel/kprobes.c                   |    2 +-
+>  4 files changed, 134 insertions(+), 1 deletions(-)
+> 
 
-5.	Each of the remaining CPUs go offline.  (The events in step
-	#4 and #5 can happen in any order as long as each CPU passes
-	through a quiescent state before going offline.)
+[snip snip]
 
-6.	When the last CPU goes offline, __rcu_offline_cpu() will invoke
-	rcu_preempt_offline_tasks(), which will move the task to the
-	root rcu_node structure, but without reporting a quiescent state
-	up the rcu_node hierarchy (and this failure to report a quiescent
-	state is the bug).
+> index de7353c..af47f12 100644
+> --- a/arch/x86/kernel/alternative.c
+> +++ b/arch/x86/kernel/alternative.c
+> @@ -4,6 +4,7 @@
+>  #include <linux/list.h>
+>  #include <linux/stringify.h>
+>  #include <linux/kprobes.h>
+> +#include <linux/kdebug.h>
+>  #include <linux/mm.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/memory.h>
+> @@ -552,3 +553,122 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+>  	local_irq_restore(flags);
+>  	return addr;
+>  }
+> +
+> +/*
+> + * On pentium series, Unsynchronized cross-modifying code
+> + * operations can cause unexpected instruction execution results.
+> + * So after code modified, we should synchronize it on each processor.
+> + */
+> +static void __kprobes __local_sync_core(void *info)
+> +{
+> +	sync_core();
+> +}
+> +
+> +void __kprobes sync_core_all(void)
+> +{
+> +	on_each_cpu(__local_sync_core, NULL, 1);
 
-	But because this leaf rcu_node structure's ->qsmask field is
-	already zero and its ->block_tasks[] entries are all empty,
-	force_quiescent_state() will skip this rcu_node structure.
+OK, so you rely on the fact that on_each_cpu has memory barriers and
+executes the remote "__local_sync_core" with the appropriate memory
+barriers underneath, am I correct ?
 
-	Therefore, grace periods are now hung.
+> +}
+> +
+> +/* Safely cross-code modifying with fixup address */
+> +static void *patch_fixup_from;
+> +static void *patch_fixup_addr;
+> +
+> +static int __kprobes patch_exceptions_notify(struct notifier_block *self,
+> +					      unsigned long val, void *data)
+> +{
+> +	struct die_args *args = data;
+> +	struct pt_regs *regs = args->regs;
+> +
+> +	if (likely(!patch_fixup_from))
+> +		return NOTIFY_DONE;
+> +
+> +	if (val != DIE_INT3 || !regs || user_mode_vm(regs) ||
+> +	    (unsigned long)patch_fixup_from != regs->ip)
+> +		return NOTIFY_DONE;
+> +
+> +	args->regs->ip = (unsigned long)patch_fixup_addr;
+> +	return NOTIFY_STOP;
+> +}
+> +
+> +/**
+> + * text_poke_fixup() -- cross-modifying kernel text with fixup address.
+> + * @addr:	Modifying address.
+> + * @opcode:	New instruction.
+> + * @len:	length of modifying bytes.
+> + * @fixup:	Fixup address.
+> + *
+> + * Note: You must backup replaced instructions before calling this,
+> + * if you need to recover it.
+> + * Note: Must be called under text_mutex.
+> + */
+> +void *__kprobes text_poke_fixup(void *addr, const void *opcode, size_t len,
+> +				void *fixup)
+> +{
+> +	static const unsigned char int3_insn = BREAKPOINT_INSTRUCTION;
+> +	static const int int3_size = sizeof(int3_insn);
+> +
+> +	/* Replacing 1 byte can be done atomically. */
 
-This patch abstracts some code out of rcu_read_unlock_special(), calling
-the result task_quiet() by analogy with cpu_quiet(), and invokes task_quiet()
-from both rcu_read_lock_special() and __rcu_offline_cpu().  Invoking
-task_quiet() from __rcu_offline_cpu() reports the quiescent state up
-the rcu_node hierarchy, fixing the bug.  This ends up requiring a separate
-lock_class_key per level of the rcu_node hierarchy, which this patch also
-provides.
+I'm sure it can be done atomically, but can it be done safely though ?
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- kernel/rcutree.c        |   27 ++++++++++---
- kernel/rcutree.h        |    9 +++-
- kernel/rcutree_plugin.h |   99 +++++++++++++++++++++++++++++++++--------------
- 3 files changed, 97 insertions(+), 38 deletions(-)
+(disclaimer: we're still waiting for the official answer on this
+statement): Assuming instruction trace cache effects of SMP cross-code
+modification, and that only int3 would be safe to patch, then even
+changing 1 single byte could only be done by going to an intermediate
+int3 and synchronizing all other cores.
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index e3565cd..b79bfcd 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -51,7 +51,7 @@
- 
- /* Data structures. */
- 
--static struct lock_class_key rcu_root_class;
-+static struct lock_class_key rcu_node_class[NUM_RCU_LVLS];
- 
- #define RCU_STATE_INITIALIZER(name) { \
- 	.level = { &name.node[0] }, \
-@@ -936,6 +936,7 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
- {
- 	unsigned long flags;
- 	unsigned long mask;
-+	int need_quiet = 0;
- 	struct rcu_data *rdp = rsp->rda[cpu];
- 	struct rcu_node *rnp;
- 
-@@ -949,16 +950,30 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
- 		spin_lock(&rnp->lock);		/* irqs already disabled. */
- 		rnp->qsmaskinit &= ~mask;
- 		if (rnp->qsmaskinit != 0) {
--			spin_unlock(&rnp->lock); /* irqs remain disabled. */
-+			if (rnp != rdp->mynode)
-+				spin_unlock(&rnp->lock); /* irqs remain disabled. */
- 			break;
- 		}
--		rcu_preempt_offline_tasks(rsp, rnp, rdp);
-+		if (rnp == rdp->mynode)
-+			need_quiet = rcu_preempt_offline_tasks(rsp, rnp, rdp);
-+		else
-+			spin_unlock(&rnp->lock); /* irqs remain disabled. */
- 		mask = rnp->grpmask;
--		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
- 		rnp = rnp->parent;
- 	} while (rnp != NULL);
- 
--	spin_unlock_irqrestore(&rsp->onofflock, flags);
-+	/*
-+	 * We still hold the leaf rcu_node structure lock here, and
-+	 * irqs are still disabled.  The reason for this subterfuge is
-+	 * because invoking task_quiet() with ->onofflock held leads
-+	 * to deadlock.
-+	 */
-+	spin_unlock(&rsp->onofflock); /* irqs remain disabled. */
-+	rnp = rdp->mynode;
-+	if (need_quiet)
-+		task_quiet(rnp, flags);
-+	else
-+		spin_unlock_irqrestore(&rnp->lock, flags);
- 
- 	rcu_adopt_orphan_cbs(rsp);
- }
-@@ -1718,6 +1733,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 		rnp = rsp->level[i];
- 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
- 			spin_lock_init(&rnp->lock);
-+			lockdep_set_class(&rnp->lock, &rcu_node_class[i]);
- 			rnp->gpnum = 0;
- 			rnp->qsmask = 0;
- 			rnp->qsmaskinit = 0;
-@@ -1740,7 +1756,6 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
- 		}
- 	}
--	lockdep_set_class(&rcu_get_root(rsp)->lock, &rcu_root_class);
- }
- 
- /*
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index f478503..a81188c 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -305,14 +305,17 @@ static void rcu_bootup_announce(void);
- long rcu_batches_completed(void);
- static void rcu_preempt_note_context_switch(int cpu);
- static int rcu_preempted_readers(struct rcu_node *rnp);
-+#ifdef CONFIG_HOTPLUG_CPU
-+static void task_quiet(struct rcu_node *rnp, unsigned long flags);
-+#endif /* #ifdef CONFIG_HOTPLUG_CPU */
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- static void rcu_print_task_stall(struct rcu_node *rnp);
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
- static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp);
- #ifdef CONFIG_HOTPLUG_CPU
--static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
--				      struct rcu_node *rnp,
--				      struct rcu_data *rdp);
-+static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
-+				     struct rcu_node *rnp,
-+				     struct rcu_data *rdp);
- static void rcu_preempt_offline_cpu(int cpu);
- #endif /* #ifdef CONFIG_HOTPLUG_CPU */
- static void rcu_preempt_check_callbacks(int cpu);
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index a1cf16d..bbf1923 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -160,11 +160,51 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
- 	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
- }
- 
-+/*
-+ * Record a quiescent state for all tasks that were previously queued
-+ * on the specified rcu_node structure and that were blocking the current
-+ * RCU grace period.  The caller must hold the specified rnp->lock with
-+ * irqs disabled, and this lock is released upon return, but irqs remain
-+ * disabled.
-+ */
-+static void task_quiet(struct rcu_node *rnp, unsigned long flags)
-+	__releases(rnp->lock)
-+{
-+	unsigned long mask;
-+	struct rcu_node *rnp_p;
-+
-+	if (rnp->qsmask != 0 || rcu_preempted_readers(rnp)) {
-+		spin_unlock_irqrestore(&rnp->lock, flags);
-+		return;  /* Still need more quiescent states! */
-+	}
-+
-+	rnp_p = rnp->parent;
-+	if (rnp_p == NULL) {
-+		/*
-+		 * Either there is only one rcu_node in the tree,
-+		 * or tasks were kicked up to root rcu_node due to
-+		 * CPUs going offline.
-+		 */
-+		cpu_quiet_msk_finish(&rcu_preempt_state, flags);
-+		return;
-+	}
-+
-+	/* Report up the rest of the hierarchy. */
-+	mask = rnp->grpmask;
-+	spin_unlock(&rnp->lock);	/* irqs remain disabled. */
-+	spin_lock(&rnp_p->lock);	/* irqs already disabled. */
-+	cpu_quiet_msk(mask, &rcu_preempt_state, rnp_p, flags);
-+}
-+
-+/*
-+ * Handle special cases during rcu_read_unlock(), such as needing to
-+ * notify RCU core processing or task having blocked during the RCU
-+ * read-side critical section.
-+ */
- static void rcu_read_unlock_special(struct task_struct *t)
- {
- 	int empty;
- 	unsigned long flags;
--	unsigned long mask;
- 	struct rcu_node *rnp;
- 	int special;
- 
-@@ -213,30 +253,15 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 		/*
- 		 * If this was the last task on the current list, and if
- 		 * we aren't waiting on any CPUs, report the quiescent state.
--		 * Note that both cpu_quiet_msk_finish() and cpu_quiet_msk()
--		 * drop rnp->lock and restore irq.
-+		 * Note that task_quiet() releases rnp->lock.
- 		 */
--		if (!empty && rnp->qsmask == 0 &&
--		    !rcu_preempted_readers(rnp)) {
--			struct rcu_node *rnp_p;
--
--			if (rnp->parent == NULL) {
--				/* Only one rcu_node in the tree. */
--				cpu_quiet_msk_finish(&rcu_preempt_state, flags);
--				return;
--			}
--			/* Report up the rest of the hierarchy. */
--			mask = rnp->grpmask;
-+		if (empty)
- 			spin_unlock_irqrestore(&rnp->lock, flags);
--			rnp_p = rnp->parent;
--			spin_lock_irqsave(&rnp_p->lock, flags);
--			WARN_ON_ONCE(rnp->qsmask);
--			cpu_quiet_msk(mask, &rcu_preempt_state, rnp_p, flags);
--			return;
--		}
--		spin_unlock(&rnp->lock);
-+		else
-+			task_quiet(rnp, flags);
-+	} else {
-+		local_irq_restore(flags);
- 	}
--	local_irq_restore(flags);
- }
- 
- /*
-@@ -303,22 +328,25 @@ static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp)
-  * rcu_node.  The reason for not just moving them to the immediate
-  * parent is to remove the need for rcu_read_unlock_special() to
-  * make more than two attempts to acquire the target rcu_node's lock.
-+ * Returns true if there were tasks blocking the current RCU grace
-+ * period.
-  *
-  * The caller must hold rnp->lock with irqs disabled.
-  */
--static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
--				      struct rcu_node *rnp,
--				      struct rcu_data *rdp)
-+static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
-+				     struct rcu_node *rnp,
-+				     struct rcu_data *rdp)
- {
- 	int i;
- 	struct list_head *lp;
- 	struct list_head *lp_root;
-+	int retval;
- 	struct rcu_node *rnp_root = rcu_get_root(rsp);
- 	struct task_struct *tp;
- 
- 	if (rnp == rnp_root) {
- 		WARN_ONCE(1, "Last CPU thought to be offlined?");
--		return;  /* Shouldn't happen: at least one CPU online. */
-+		return 0;  /* Shouldn't happen: at least one CPU online. */
- 	}
- 	WARN_ON_ONCE(rnp != rdp->mynode &&
- 		     (!list_empty(&rnp->blocked_tasks[0]) ||
-@@ -330,6 +358,7 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
- 	 * rcu_nodes in terms of gp_num value.  This fact allows us to
- 	 * move the blocked_tasks[] array directly, element by element.
- 	 */
-+	retval = rcu_preempted_readers(rnp);
- 	for (i = 0; i < 2; i++) {
- 		lp = &rnp->blocked_tasks[i];
- 		lp_root = &rnp_root->blocked_tasks[i];
-@@ -342,6 +371,7 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
- 			spin_unlock(&rnp_root->lock); /* irqs remain disabled */
- 		}
- 	}
-+	return retval;
- }
- 
- /*
-@@ -506,6 +536,16 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
- 	return 0;
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+
-+/* Because preemptible RCU does not exist, no quieting of tasks. */
-+static void task_quiet(struct rcu_node *rnp, unsigned long flags)
-+{
-+	spin_unlock_irqrestore(&rnp->lock, flags);
-+}
-+
-+#endif /* #ifdef CONFIG_HOTPLUG_CPU */
-+
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 
- /*
-@@ -534,10 +574,11 @@ static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp)
-  * Because preemptable RCU does not exist, it never needs to migrate
-  * tasks that were blocked within RCU read-side critical sections.
-  */
--static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
--				      struct rcu_node *rnp,
--				      struct rcu_data *rdp)
-+static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
-+				     struct rcu_node *rnp,
-+				     struct rcu_data *rdp)
- {
-+	return 0;
- }
- 
- /*
+> +	if (unlikely(len <= 1))
+> +		return text_poke(addr, opcode, len);
+> +
+> +	/* Preparing */
+> +	patch_fixup_addr = fixup;
+> +	wmb();
+
+hrm, missing comment ?
+
+> +	patch_fixup_from = (u8 *)addr + int3_size; /* IP address after int3 */
+> +
+> +	/* Cap by an int3 */
+> +	text_poke(addr, &int3_insn, int3_size);
+> +	sync_core_all();
+> +
+> +	/* Replace tail bytes */
+> +	text_poke((char *)addr + int3_size, (const char *)opcode + int3_size,
+> +		  len - int3_size);
+> +	sync_core_all();
+> +
+> +	/* Replace int3 with head byte */
+> +	text_poke(addr, opcode, int3_size);
+> +	sync_core_all();
+> +
+> +	/* Cleanup */
+> +	patch_fixup_from = NULL;
+> +	wmb();
+
+missing comment here too.
+
+> +	return addr;
+
+Little quiz question:
+
+When patch_fixup_from is set to NULL, what ensures that the int3
+handlers have completed their execution ?
+
+I think it's probably OK, because the int3 is an interrupt gate, which
+therefore disables interrupts as soon as it runs, and executes the
+notifier while irqs are off. When we run sync_core_all() after replacing
+the int3 by the new 1st byte, we only return when all other cores have
+executed an interrupt, which implies that all int3 handlers previously
+running should have ended. Is it right ? It looks to me as if this 3rd
+sync_core_all() is only needed because of that. Probably that adding a
+comment would be good.
+
+
+Another thing: I've recently noticed that the following locking seems to
+hang the system with doing stress-testing concurrently with cpu
+hotplug/hotunplug:
+
+mutex_lock(&text_mutex);
+  on_each_cpu(something, NULL, 1);
+
+The hang seems to be caused by the fact that alternative.c has:
+
+within cpu hotplug (cpu hotplug lock held)
+  mutex_lock(&text_mutex);
+
+It might also be caused by the interaction with the stop_machine()
+performed within the cpu hotplug lock. I did not find the root cause of
+the problem, but this probably calls for lockdep improvements.
+
+In any case, given you are dealing with the exact same locking scenario
+here, I would recomment the following stress-test:
+
+in a loop, use text_poke_jump()
+in a loop, hotunplug all cpus, then hotplug all cpus
+
+I had to fix this temporarily by taking get/put_online_cpus() about the
+text_mutex.
+
+[snip snip]
+
+> +static struct notifier_block patch_exceptions_nb = {
+> +	.notifier_call = patch_exceptions_notify,
+> +	.priority = 0x7fffffff /* we need to be notified first */
+> +};
+> +
+> +static int __init patch_init(void)
+> +{
+> +	return register_die_notifier(&patch_exceptions_nb);
+> +}
+> +
+> +arch_initcall(patch_init);
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index e5342a3..43a30d8 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -898,7 +898,7 @@ EXPORT_SYMBOL_GPL(unregister_kprobes);
+>  
+>  static struct notifier_block kprobe_exceptions_nb = {
+>  	.notifier_call = kprobe_exceptions_notify,
+> -	.priority = 0x7fffffff /* we need to be notified first */
+> +	.priority = 0x7ffffff0 /* High priority, but not first.  */
+
+It would be good to keep all these priorities in a centralized header.
+
+Thanks,
+
+Mathieu
+
+>  };
+>  
+>  unsigned long __weak arch_deref_entry_point(void *entry)
+> -- 
+> 1.6.5.1
+> 
+
 -- 
-1.5.2.5
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
