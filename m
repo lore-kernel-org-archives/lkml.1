@@ -1,83 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbZKSOVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZKSOV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbZKSOVq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZKSOVq
+	id S1755521AbZKSOV7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZKSOV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:21:46 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:59572 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZKSOVp (ORCPT
+	Thu, 19 Nov 2009 09:21:58 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59735 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754234AbZKSOVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:21:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type;
-        b=d0cIZgUEKmxrnYNZE6GD1/R1lQ+eBuYVwXkycakVQuVsJB9UwkKB8+t8+jqOdcYvwq
-         aPtQhXo02EdVsxNK9pWZBjfs9HBmhc0RwF+wKZm1PHkdbgaG97Ia0X6ZrMTumvuDWLlb
-         p+j7gZ9egjyx0yUvaOaPLvay1q1aHho9/bTDE=
-Message-ID: <4B055479.8070101@gmail.com>
-Date: Thu, 19 Nov 2009 09:21:45 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: NET: Questions about supporting older kernel's with kmods
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig87BC562EEA99524E08FF33E3"
+	Thu, 19 Nov 2009 09:21:46 -0500
+To: linux-kernel@vger.kernel.org
+From: Martin Mares <mj+gone@ucw.cz>
+Subject: The linux-joystick mailing list has been moved
+Message-Id: <20091119142151.E752CF063E@atrey.karlin.mff.cuni.cz>
+Date: Thu, 19 Nov 2009 15:21:51 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig87BC562EEA99524E08FF33E3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The linux-joystick mailing list has been superseded by the linux-input
+list run at vger.kernel.org.  See http://vger.kernel.org/vger-lists.html for
+information on the new list server (or consult your local oracle).
 
-Hi All,
-
-So I was in the process of packaging up my venet driver so that it could
-not only support the in-tree build (in -next), but also build as a KMP
-for inclusion in existing distros that already shipped (like SLE, RHEL,
-CentOS, etc).
-
-The problem I ran into is that the ethtool and netdev_ops components of
-the in-tree version do not necessarily align with the substrate
-capabilities of older kernels.  What are the best-practices surrounding
-this issue?
-
-Q1) Is there any official CONFIG tags (e.g. HAVE_NETDEV_OPS) I can key
-off of, or should I simply look at the kernel version?  If the latter,
-any recommendation on what to use for the aforementioned features?  (I
-can always try to git-annotate to figure it out, but I wonder if there
-are best-practices already in place).
-
-Q2) Is it considered "bad form" to include such compile-time directives
-in the version of the code going upstream?  E.g. can my driver in -next
-have "#ifdef CONFIG_HAVE_NETDEV_OPS" or other version/capability deps,
-or do I need to patch these externally into the code destined for the
-kmod, and leave the upstream code "pure"?
-
-Thanks in advance,
--Greg
-
-
---------------enig87BC562EEA99524E08FF33E3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksFVHkACgkQP5K2CMvXmqEx6ACeNFgKO8X0f3TYAPcoenc11yRf
-ungAn0JhYG23/1XVsJcMfn0gqbvBTPeB
-=P0ZY
------END PGP SIGNATURE-----
-
---------------enig87BC562EEA99524E08FF33E3--
+		Yours virtually,
+					Martin Mares
