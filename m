@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZKSOio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZKSOn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbZKSOio (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 09:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbZKSOin
+	id S1756317AbZKSOn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZKSOn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 09:38:43 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56704 "EHLO mx2.suse.de"
+	Thu, 19 Nov 2009 09:43:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56938 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753482AbZKSOim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 09:38:42 -0500
-Date: Thu, 19 Nov 2009 15:38:47 +0100
+	id S1753876AbZKSOn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:43:26 -0500
+Date: Thu, 19 Nov 2009 15:43:31 +0100
 From: Jan Kara <jack@suse.cz>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Jan Blunck <jblunck@suse.de>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] ext2: Explicitly assign values to on-disk enum of
- filetypes
-Message-ID: <20091119143846.GB24836@duck.suse.cz>
-References: <20091118162550.GP21750@bolzano.suse.de>
- <CE98E2AD-F6E2-4AC7-B43A-BE2893E384F8@sun.com>
+To: JiSheng Zhang <jszhang3@gmail.com>
+Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, stable@kernel.org, rmk@arm.linux.org.uk,
+       linux-arm@lists.infradead.org
+Subject: Re: [BUG]2.6.27.y some contents lost after writing to mmaped file
+Message-ID: <20091119144331.GC24836@duck.suse.cz>
+References: <2df346410911151938r1eb5c5e4q9930ac179d61ef01@mail.gmail.com>
+ <20091117015655.GA8683@suse.de>
+ <20091117123622.GI27677@think>
+ <20091117190635.GB31105@duck.suse.cz>
+ <20091118221756.367c005e@ustc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CE98E2AD-F6E2-4AC7-B43A-BE2893E384F8@sun.com>
+In-Reply-To: <20091118221756.367c005e@ustc>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 18-11-09 23:34:46, Andreas Dilger wrote:
-> On 2009-11-18, at 08:25, Jan Blunck wrote:
-> >Here is an old patch that I found in my tree. Andreas, it seems
-> >that this is something you proposed.
-> >
-> >Comments?
+On Wed 18-11-09 22:17:56, JiSheng Zhang wrote:
+> On Tue, 17 Nov 2009 20:06:35 +0100
+> Jan Kara <jack@suse.cz> wrote:
 > 
-> This is definitely my preferred coding style for constants that form
-> a permanent part of the API/ABI/disk format.
+> > On Tue 17-11-09 07:36:22, Chris Mason wrote:
+> > > On Mon, Nov 16, 2009 at 05:56:55PM -0800, Greg KH wrote:
+> > > > On Mon, Nov 16, 2009 at 11:38:57AM +0800, JiSheng Zhang wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > I triggered a failure in an fs test with fsx-linux from ltp. It seems that
+> > > > > fsx-linux failed at mmap->write sequence.
+> > > > > 
+> > > > > Tested kernel is 2.6.27.12 and 2.6.27.39
+> > > > 
+> > > > Does this work on any kernel you have tested?  Or is it a regression?
+> > > > 
+> > > > > Tested file system: ext3, tmpfs.
+> > > > > IMHO, it impacts all file systems.
+> > > > > 
+> > > > > Some fsx-linux log is:
+> > > > > 
+> > > > > READ BAD DATA: offset = 0x2771b, size = 0xa28e
+> > > > > OFFSET  GOOD    BAD     RANGE
+> > > > > 0x287e0 0x35c9  0x15a9     0x80
+> > > > > operation# (mod 256) for the bad datamay be 21
+> > > > > ...
+> > > > > 7828: 1257514978.306753 READ     0x23dba thru 0x25699 (0x18e0 bytes)
+> > > > > 7829: 1257514978.306899 MAPWRITE 0x27eeb thru 0x2a516 (0x262c bytes)
+> > > > >  ******WWWW
+> > > > > 7830: 1257514978.307504 READ     0x2771b thru 0x319a8 (0xa28e bytes)
+> > > > >  ***RRRR***
+> > > > > Correct content saved for comparison
+> > > > > ...
+> >   Hmm, how long does it take to reproduce? I'm running fsx-linux on tmpfs
+> > for a while on 2.6.27.21 and didn't hit the problem yet.
 > 
-> The enum is useful because some debuggers can display the symbolic
-> name of a constant if a named enum is present (though in this case
-> it isn't), but it avoids the risk of someone accidentally inserting
-> or removing a value in the middle of the enum.
-  In this particular case, I don't have a strong opinion... There isn't
-much churn in FT_ fields but OTOH it doesn't hurt to have numbers
-explicitely assigned and as you write for on-disk format it's really
-important to have them fixed. OK, probably I'm slightly in favor of
-merging the patch so I've queued it up.
+> I forget to mention that the test were done on an arm board with 64M ram. 
+> I have tested fsx-linux again on pc, it seems that failure go away.
+>
+> > > > Are you sure that the LTP is correct?  It wouldn't be the first time it
+> > > > wasn't...
+> > > 
+> > > I'm afraid fsx usually finds bugs.  I thought Jan Kara recently fixed
+> > > something here in ext3, does 2.6.32-rc work?
+> >   Yeah, fsx usually finds bugs. Note that he sees the problem also on tmpfs
+> > so it's not ext3 problem. Anyway, trying to reproduce with 2.6.32-rc? would
+> > be interesting.
+> 
+> Currently the arm board doesn't support 2.6.32-rc. But I test with 2.6.32-rc7
+> On my pc box, there's no failure so far.
+  OK, so it's either ARM specific or it's triggered by low amount of
+available memory (you might want to try testing your PC with mem=64M).
 
 								Honza
 -- 
