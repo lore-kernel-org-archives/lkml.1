@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbZKSNtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZKSOAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbZKSNtv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 08:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbZKSNtv
+	id S1752675AbZKSOAI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 09:00:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKSOAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 08:49:51 -0500
-Received: from n12b.bullet.mail.mud.yahoo.com ([209.191.125.179]:35753 "HELO
-	n12b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753421AbZKSNtu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 08:49:50 -0500
-X-Yahoo-Newman-Id: 438448.87046.bm@omp425.mail.mud.yahoo.com
-X-Yahoo-SMTP: qGLgp.mswBDSnFfWmYVMF5Rmg6NJ
-X-YMail-OSG: 9V9ficEVM1nQMQ9WVbsb_JFc4EPnrwy0WeHgdKOT060u27t1Sl_xMKo65c4rD3A5OWKv0o5x7AM3hPusID4cD_aSkU3Zd5TNNfjnDjl5OIfWQt63kQsPe5VnAhTMs1BU9BrFfraxwZuaqyrDKo3STbrSiXlqLhJdLBQXXXJmfs3GGMa9fJnNnGzG.zbuxV67i5K.GbrkNy01wRxh8pXyxVYANUNsBSb.d9vSjLKP2eZ5HtF4Hsjxb7YSeKP28eJ57KEblmDfyRXZrT_KGD7HVGNUI7i.uz6ZjtTLO.ITSmSUoy3b5U5dw99e_cSAizGSPDzsKLiDISnxV8QKRXvi
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [Repost without wordwrapping] Merge m68k and m68knommu
-Date: Thu, 19 Nov 2009 05:49:53 -0800
-User-Agent: KMail/1.9.9
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
-       uclinux-dev@uclinux.org, Greg Ungerer <gerg@snapgear.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-References: <200910181655.40579.sfking00@yahoo.com> <10f740e80911181332u48f8e610o4354cfd3994c8510@mail.gmail.com>
-In-Reply-To: <10f740e80911181332u48f8e610o4354cfd3994c8510@mail.gmail.com>
-Organization: fdwdc.com
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911190549.53749.sfking@fdwdc.com>
+	Thu, 19 Nov 2009 09:00:06 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:53545 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZKSOAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 09:00:05 -0500
+Date: Thu, 19 Nov 2009 15:00:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       Leon Woestenberg <leon.woestenberg@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       linux-i2c@vger.kernel.org, rt-users <linux-rt-users@vger.kernel.org>,
+       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: yield() in i2c non-happy paths hits BUG under -rt patch
+Message-ID: <20091119150008.6e757c26@hyperion.delvare>
+In-Reply-To: <1258636014.4372.328.camel@twins>
+References: <c384c5ea0911071101u7415d37o2611c542e5fae309@mail.gmail.com>
+	<20091107210147.3e754278@hyperion.delvare>
+	<4AF7148C.9090706@thebigcorporation.com>
+	<20091112211255.09cd884a@hyperion.delvare>
+	<alpine.LFD.2.00.0911132139560.24119@localhost.localdomain>
+	<20091116155606.GC29479@sirena.org.uk>
+	<c384c5ea0911171650t1c441dc4v746d31e4154fcb30@mail.gmail.com>
+	<20091118010520.4cd397d4@lxorguk.ukuu.org.uk>
+	<c384c5ea0911180828x7c857189w3316c93bb78100ab@mail.gmail.com>
+	<20091118175202.490989d8@hyperion.delvare>
+	<alpine.LFD.2.00.0911182127040.24119@localhost.localdomain>
+	<20091119130526.23a69b85@hyperion.delvare>
+	<20091119125906.6ad00edd@lxorguk.ukuu.org.uk>
+	<1258636014.4372.328.camel@twins>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 November 2009 01:32:25 Geert Uytterhoeven wrote:
+Hi Peter,
 
-> > The patch modifies the toplevel Makefile so that ARCH=m68knommu still
-> > works (by setting SRCARCH=m68k) and adds the m68knommu Kconfig and
-> > Makefile to the m68k Kconfig and Makefile, using the definition of ARCH
-> > to select which values to use.
->
-> (still dreaming of my pet Amiga-nommu project) I prefer to use
-> CONFIG_MMU as the selector...
+On Thu, 19 Nov 2009 14:06:54 +0100, Peter Zijlstra wrote:
+> On Thu, 2009-11-19 at 12:59 +0000, Alan Cox wrote:
+> > > Well, I guess only people monitoring system latency would notice, as
+> > > this is the only thing yield() was supposed to help with in the first
+> > > place.
+> > 
+> > 	if (need_resched())
+> > 		schedule();
+> 
+> aka.
+> 
+> 	cond_resched();
 
-CONFIG_MMU is used as the selector elsewhere, but for Kconfig and the 
-Makefiles something else was needed.
->
-> > Thus when building for either a m68k or an m68knommu target, one still
-> > specifies either ARCH=m68k or ARCH=m68knommu and everything should
-> > build EXACTLY as it did pre-merge.  (I think).
->
-> ... using CONFIG_MMU would change this?
+Are you saying that most calls to yield() should be replaced with calls
+to cond_resched()?
 
-Yes; originally I tried using CONFIG_MMU to choose between the mmu and nommu 
-portions of the Kconfig and Makefile, but that broke the defconfigs.  Rather 
-than patch the defconfigs or make a more elaborate patch for the Kconfig, for 
-this initial patch I wanted to keep it as simple and as un-invasive as 
-possible so that it would be trivial (?) to verify the merged kernel tree 
-produces a kernel that is the same as the pre-merged kernel tree, thus 
-providing a baseline for bisecting any problems with the subsequent patches 
-that do the real merging of the individual files.  A later patch will do a 
-better job of merging the Kconfigs and Makefiles.  Then you'd be able to have 
-your Amiga-nommu and I can have my Coldfire 5484 either as mmu or nommu...
+I admit I a little skeptical. While the description of cond_resched()
+("latency reduction via explicit rescheduling in places that are safe")
+sounds promising, following the calls leads me to:
+
+static inline int need_resched(void)
+{
+	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
+}
+
+So apparently the condition for need_resched() to do anything is
+considered unlikely... suggesting that cond_resched() is a no-op in
+most cases? I don't quite get the point of moving away from sched()
+because it is a no-op, if we end up with a no-op under a different name.
 
 -- 
-Steven King -- sfking at fdwdc dot com
-
+Jean Delvare
