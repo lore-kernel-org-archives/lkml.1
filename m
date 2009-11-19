@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZKSJBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZKSJCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbZKSJBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 04:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbZKSJBd
+	id S1757178AbZKSJCp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 04:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZKSJCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 04:01:33 -0500
-Received: from ozlabs.org ([203.10.76.45]:46639 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756180AbZKSJBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 04:01:32 -0500
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Message-Id: <200911191931.36749.rusty@rustcorp.com.au>
-Date: Thu, 19 Nov 2009 19:31:36 +1030
-Subject: [PATCH 6/6] cpumask: reduce cpumask_size
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>
+	Thu, 19 Nov 2009 04:02:44 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33507 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754958AbZKSJCm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 04:02:42 -0500
+Date: Thu, 19 Nov 2009 09:02:04 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-spi <spi-devel-general@lists.sourceforge.net>,
+       David Brownell-sourceforge <dbrownell@users.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] ARM: Add spi controller driver support for NUC900
+Message-ID: <20091119090204.GB13376@n2100.arm.linux.org.uk>
+References: <4B024748.9080001@gmail.com> <20091118142109.ff2c5ef6.akpm@linux-foundation.org> <e68bb3470911182223r28e9bac0lf185c1443168ff52@mail.gmail.com> <20091118234928.8d86a9f9.akpm@linux-foundation.org> <e68bb3470911190040v2c14bbcfi46177cd58649e1c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e68bb3470911190040v2c14bbcfi46177cd58649e1c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 19, 2009 at 04:40:50PM +0800, Wan ZongShun wrote:
+> 2009/11/19 Andrew Morton <akpm@linux-foundation.org>:
+> > I don't know, because I don't know what operation the hardware needs to
+> > stop it from generating interrupts.  Perhaps that's clk_disable()?
+> 
+> The interrupt will be not occur as long as I run clk_disable().
+> 
+> > Once you've stopped the source of interrupts then the code should wait
+> > for the IRQ handler to complete if it's running on another CPU.  Yes,
+> > free_irq() does that.
+> 
+> So, regarding my system of single CPU, maybe I need put this
+> 'clk_disable()' in the front of function of w90p910_spi_remove().
+> 
+> right?
 
-Now we're sure noone is using old cpumask operators, nor *cpumask, we can
-allocate less bits safely.  This reduces the memory usage of off-stack
-cpumasks when CONFIG_CPUMASK_OFFSTACK=y but we don't have NR_CPUS actual
-cpus.
+Depending on the hardware, that's not the right answer.  If turning off
+the clock also causes register accesses to the device to abort, it is
+a very dangerous thing to do.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- include/linux/cpumask.h |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+It can also be dangerous if the clock is used to synchronise the interrupt
+output - it can lead to the output being permanently asserted if the clock
+is turned off with it asserted.
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -1014,13 +1014,11 @@ static inline int cpulist_parse(const ch
- /**
-  * cpumask_size - size to allocate for a 'struct cpumask' in bytes
-  *
-- * This will eventually be a runtime variable, depending on nr_cpu_ids.
-+ * This can be a runtime variable, depending on nr_cpu_ids.
-  */
- static inline size_t cpumask_size(void)
- {
--	/* FIXME: Once all cpumask assignments are eliminated, this
--	 * can be nr_cpumask_bits */
--	return BITS_TO_LONGS(NR_CPUS) * sizeof(long);
-+	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
- }
- 
- /*
-
+Normally devices have an "interrupt enable" register.  You should disable
+all interrupts from the device using this register after unregistering
+the driver from the (SPI) subsystem.
