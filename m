@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbZKSRiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZKSRlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbZKSRiq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 12:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZKSRiq
+	id S1753321AbZKSRlq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 12:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZKSRlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 12:38:46 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:6290 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752922AbZKSRip (ORCPT
+	Thu, 19 Nov 2009 12:41:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34375 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751893AbZKSRlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 12:38:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=kaZs6XEnmfBSs9da/P5OPGx4q8y2ZS38HtTNqlCYK/Cz6BmTWXbX0ejgZKJ7ynbbD+
-         vi0sQ+S/DD7CPugAAYneIFEJqSxei3bqiKHKw2YLXobsGX57BfOFeqQvRSFAGKw4IA2c
-         6Rj4hk6IcyKTa51+xnDzOFfUam4lgtqyIeznE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Thu, 19 Nov 2009 18:38:11 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-96.fc12.x86_64; KDE/4.3.2; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911191645.29885.bzolnier@gmail.com> <20091119162738.7e8e5665@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091119162738.7e8e5665@lxorguk.ukuu.org.uk>
+	Thu, 19 Nov 2009 12:41:45 -0500
+Date: Thu, 19 Nov 2009 09:39:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> <20091119072040.GA23579@elte.hu> <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+ <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Message-Id: <200911191838.11791.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 17:27:38 Alan Cox wrote:
-> > > > already have a buggy cable detection (since ->pre_reset ignores the mandatory
-> > > 
-> > > Wrong.
-> > 
-> > You cannot know it unless you know how chip operates internally.  That's it.
+
+
+On Thu, 19 Nov 2009, Thomas Gleixner wrote:
 > 
-> Read the code. How the chip operates is irrelevant.
+> standard function start:
+> 
+> 	 push	%ebp
+> 	 mov	%esp, %ebp
+> 	 ....
+> 	 call   mcount
+> 
+> modified function start on a handful of functions only seen with gcc
+> 4.4.x on x86 32 bit:
+> 
+> 	push   %edi
+> 	lea    0x8(%esp),%edi
+> 	and    $0xfffffff0,%esp
+> 	pushl  -0x4(%edi)
+> 	push   %ebp
+> 	mov    %esp,%ebp
+> 	...
+> 	call   mcount
 
-lol, there is a genuine cable detection bug in pata_hpt3x2n on closer look...
+That's some crazy sh*t anyway, since we don't _want_ the stack to be 
+16-byte aligned in the kernel. We do
 
-Jeff, please apply the patch below.
+        KBUILD_CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
 
+why is that not working?
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_hpt3x2n: fix cable detection
+So this looks like a gcc bug, plain and simple.
 
-The detection was reversed between primary and secondary ports.
+> This modification leads to a hard to solve problem in the kernel
+> function graph tracer which assumes that the stack looks like:
+> 
+>        return address
+>        saved  ebp
 
-Fix it to match hpt366 and the vendor driver.
+Umm. But it still does, doesn't it? That
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ata/pata_hpt3x2n.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	pushl  -0x4(%edi)
+	push   %ebp
 
-Index: b/drivers/ata/pata_hpt3x2n.c
-===================================================================
---- a/drivers/ata/pata_hpt3x2n.c
-+++ b/drivers/ata/pata_hpt3x2n.c
-@@ -133,7 +133,7 @@ static int hpt3x2n_cable_detect(struct a
- 	/* Restore state */
- 	pci_write_config_byte(pdev, 0x5B, scr2);
- 
--	if (ata66 & (1 << ap->port_no))
-+	if (ata66 & (2 >> ap->port_no))
- 		return ATA_CBL_PATA40;
- 	else
- 		return ATA_CBL_PATA80;
+should do it - the "-0x4(%edi)" thing seems to be trying to reload the 
+return address. No? 
+
+Maybe I misread the code - but regardless, it does look like a gcc code 
+generation bug if only because we really don't want a 16-byte aligned 
+stack anyway, and have asked for it to not be done.
+
+So I agree that gcc shouldn't do that crazy prologue (and certainly _not_ 
+before calling mcount anyway), but I'm not sure I agree with that detail 
+of your analysis or explanation.
+
+				Linus
