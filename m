@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbZKSSZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZKSSUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038AbZKSSZh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 13:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZKSSZg
+	id S1753551AbZKSSUr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 13:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZKSSUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 13:25:36 -0500
-Received: from smtp.eu.citrix.com ([62.200.22.115]:52758 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753052AbZKSSZf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 13:25:35 -0500
-X-Greylist: delayed 592 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 13:25:35 EST
-X-IronPort-AV: E=Sophos;i="4.44,772,1249257600"; 
-   d="scan'208";a="8136339"
+	Thu, 19 Nov 2009 13:20:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37779 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752555AbZKSSUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 13:20:46 -0500
+Date: Thu, 19 Nov 2009 19:17:45 +0100
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Spencer Candland <spencer@bluehost.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
+Message-ID: <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com>
+References: <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-ID: <19205.35669.210191.691969@mariner.uk.xensource.com>
-Date: Thu, 19 Nov 2009 18:15:49 +0000
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Alan Cox <alan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Markus Armbruster <armbru@redhat.com>, Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH] Do not read IIR in serial8250_start_tx when
- UART_BUG_TXEN
-In-Reply-To: <alpine.LSU.2.00.0911191734570.15039@wotan.suse.de>
-References: <alpine.LSU.2.00.0911181101090.15039@wotan.suse.de>
-	<alpine.LSU.2.00.0911191734570.15039@wotan.suse.de>
-X-Mailer: VM 8.0.9 under Emacs 21.4.1 (i486-pc-linux-gnu)
-From: Ian Jackson <Ian.Jackson@eu.citrix.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258464288.7816.305.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina writes ("Re: [PATCH] Do not read IIR in serial8250_start_tx when UART_BUG_TXEN"):
-> Does anyone have any comments about this please?
+On Tue, Nov 17, 2009 at 02:24:48PM +0100, Peter Zijlstra wrote:
+> > Seems issue reported then was exactly the same as reported now by
+> > you. Looks like commit 49048622eae698e5c4ae61f7e71200f265ccc529 just
+> > make probability of bug smaller and you did not note it until now.  
+> > 
+> > Could you please test this patch, if it solve all utime decrease
+> > problems for you:
+> > 
+> > http://patchwork.kernel.org/patch/59795/
+> > 
+> > If you confirm it work, I think we should apply it. Otherwise
+> > we need to go to propagate task_{u,s}time everywhere, which is not
+> > (my) preferred solution.
 > 
-> In a nutshell -- this is needed so that we make the UART_BUG_TXEN really 
-> harmless (which I guess it originally inteded to be, but reading IIR has 
-> some unwanted sideeffects and is in fact not needed).
+> That patch will create another issue, it will allow a process to hide
+> from top by arranging to never run when the tick hits.
 
-Yes.
+What about that?
 
-> We need to have this in to handle properly the cases in which BUG_TXEN is 
-> misdetected, and we can't blacklist such systems as we do for some SoL 
-> hardware (see commit b6adea334c6c (" 8250: fix boot hang with serial 
-> console when using with Serial Over Lan port"). Also there doesn't seem to 
-> be any straightforward way to workaround the misdetection, so this seems 
-> to be proper fix, unbreaking all the possible scenarios.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 1f8d028..9db1cbc 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5194,7 +5194,7 @@ cputime_t task_utime(struct task_struct *p)
+ 	}
+ 	utime = (cputime_t)temp;
+ 
+-	p->prev_utime = max(p->prev_utime, utime);
++	p->prev_utime = max(p->prev_utime, max(p->utime, utime));
+ 	return p->prev_utime;
+ }
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index ce17760..8be5b75 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -914,8 +914,8 @@ void do_sys_times(struct tms *tms)
+ 	struct task_cputime cputime;
+ 	cputime_t cutime, cstime;
+ 
+-	thread_group_cputime(current, &cputime);
+ 	spin_lock_irq(&current->sighand->siglock);
++	thread_group_cputime(current, &cputime);
+ 	cutime = current->signal->cutime;
+ 	cstime = current->signal->cstime;
+ 	spin_unlock_irq(&current->sighand->siglock);
 
-Unless the code has changed, the UART_BUG_TXEN detection is
-fundamentally broken and racy.  So fixing that too would be good (and
-possible, when I looked at it).
+It's on top of Hidetoshi patch and fix utime decrease problem 
+on my system. 
 
-But even without fixing the UART_BUG_TXEN detection, the IIR read is
-absolutely and definitely wrong.  The only purpose of the IIR read is
-to avoid an unnecessary but harmless call to transmit_chars.
+Are we not doing something nasty here?
 
-It seems to me that the author of the UART_BUG_TXEN patch did not
-appreciate that reading the IIR was not side effect free, and that
-they were just trying a minor (and perhaps ill-advised) optimisation.
+        cputime_t utime = p->utime, total = utime + p->stime;
+        u64 temp;
 
-In any case we don't have any useful information (in comments or
-commit logs) explaining why they did it this way and it is (a) easily
-seen to be buggy and (b) causes actual real problems.
+        /*
+         * Use CFS's precise accounting:
+         */
+        temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
 
-So my patch should be applied.  The last time we discussed this we had
-some kind of FUD along the lines of "but real serial ports often have
-bugs so you can't reason about them properly".  I don't think that's a
-sensible basis for discussion.  How can it be falsified ?
+        if (total) {
+                temp *= utime;
+                do_div(temp, total);
+        }
+	utime = (cputime_t)temp;
 
-If there is some specific bug that real ports have that might be
-relevant, sure, take it into account.  But we should not have the
-situation where we hear the mere assertion that there often are bugs;
-therefore reasoning doesn't show change to be safe; therefore no
-change can be made.
-
-Ian.
+Stanislaw
