@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZKSWD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZKSWIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZKSWD3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 17:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZKSWD2
+	id S1757295AbZKSWIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 17:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZKSWIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 17:03:28 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47808 "EHLO mail.dvmed.net"
+	Thu, 19 Nov 2009 17:08:38 -0500
+Received: from mga14.intel.com ([143.182.124.37]:31202 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752752AbZKSWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 17:03:27 -0500
-Message-ID: <4B05C0B1.2020307@garzik.org>
-Date: Thu, 19 Nov 2009 17:03:29 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911182056.16517.bzolnier@gmail.com> <4B05BADF.1010205@garzik.org> <200911192249.16860.bzolnier@gmail.com>
-In-Reply-To: <200911192249.16860.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756563AbZKSWIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 17:08:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
+   d="scan'208";a="213602514"
+Subject: Re: 2.6.31.4: WARNING: at arch/x86/kernel/hpet.c:390
+ hpet_next_event+0x70/0x80() [occurs when ACPI_PROCESSOR=y]
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
+References: <1258069232.14894.9.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0911130045070.24119@localhost.localdomain>
+	 <alpine.DEB.2.00.0911121855170.5147@p34.internal.lan>
+	 <7E82351C108FA840AB1866AC776AEC467647ABBD@orsmsx505.amr.corp.intel.com>
+	 <alpine.LFD.2.00.0911131035550.24119@localhost.localdomain>
+	 <1258137165.21141.20.camel@localhost.localdomain>
+	 <alpine.DEB.2.00.0911131340140.5316@p34.internal.lan>
+	 <1258161139.21141.29.camel@localhost.localdomain>
+	 <alpine.DEB.2.00.0911140344430.29547@p34.internal.lan>
+	 <alpine.DEB.2.00.0911170643430.25285@p34.internal.lan>
+	 <20091117213711.GA19132@linux-os.sc.intel.com>
+	 <alpine.DEB.2.00.0911171750420.3800@p34.internal.lan>
+Content-Type: text/plain
+Date: Thu, 19 Nov 2009 14:08:43 -0800
+Message-Id: <1258668523.21141.109.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19/2009 04:49 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 19 November 2009 22:38:39 Jeff Garzik wrote:
->> On 11/18/2009 02:56 PM, Bartlomiej Zolnierkiewicz wrote:
->>> On Wednesday 18 November 2009 20:07:07 Bartlomiej Zolnierkiewicz wrote:
->>>> On Wednesday 18 November 2009 19:41:25 Alan Cox wrote:
->>>>>> Maybe they are 'stable' but when it comes to features they are behind hpt366
->>>>>> (i.e. they lack PCI PM), which is also much cleaner than your drivers, easier
->>>>>> to understand and much smaller..
->>>>>
->>>>> 37x and 3xn lack PCI PM.  Added to the TODO list.
->>>>>
->>>>> The smaller size is a bit questionable given its mostly comments, and
->>>>> three drivers versus one.
->>>>
->>>> I wonder what you find 'questionable' in the numbers given..
->>>
->>> BTW we can immediately reclaim 300 LOC by simply merging drivers back..
->>
->> Merging drivers is a big pain for distributions and end users, even with
->> the new module_alias facility.
->
-> Could please explain in more detail 'a big pain' part?
+On Tue, 2009-11-17 at 14:53 -0800, Justin Piszcz wrote:
+> 
+> On Tue, 17 Nov 2009, Pallipadi, Venkatesh wrote:
+> 
+> > On Tue, Nov 17, 2009 at 03:45:31AM -0800, Justin Piszcz wrote:
+> > +		WARN_ON_ONCE((u32)hpet_readl(HPET_Tn_CMP(timer)) != cnt);
+> >
+> > 	return (s32)((u32)hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
+> > }
+> > -- 
+> > 1.6.0.6
+> 
+> Hi, that omits the message @ boot and you are correct, all is/continues to work fine.
+> 
+> Thanks..
+> 
+> As far as the DP55KG reboots, the workaround is set append="reboot=a" -
+> will a BIOS fix address this (other) issue? Try rebooting Linux without 
+> any special parameters (2.6.30+) and the DP55KG will hang at reboot
+> (note, shutdown does shut the machine off).
+> 
 
-It makes issue tracking (bug reports, feature requests, etc.) more 
-difficult.  The "where did my driver go?" issue, which is largely a 
-communication/education not technical problem.  Manually specifying 
-drivers in /etc/modprobe.conf remains supported.
+I haven't seen this reboot problem on my test system here. So, I don't
+know what the problem is. Probably some BIOS issue.
 
+Does "reboot=b" work? Quickest solution will be to add platform dmi
+entry in reboot.c and workaround this.
 
->> Absent stronger justification, libata remains with separate drivers,
->> even if that means some code duplication.
->
-> I can always hold my own tree with such changes if needed.
-
-If it really bugs you, you could take the drivers/ata/sata_promise.h 
-approach, or do multi-file modules.
-
-	Jeff
-
-
+Thanks,
+Venki
 
