@@ -1,53 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZKSAkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbZKSAk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZKSAkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Nov 2009 19:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZKSAkk
+	id S1757718AbZKSAk7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Nov 2009 19:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZKSAk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Nov 2009 19:40:40 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:48823 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755865AbZKSAkk (ORCPT
+	Wed, 18 Nov 2009 19:40:58 -0500
+Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:51692 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756328AbZKSAk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Nov 2009 19:40:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=m6w3zmw9rZlR0sP85o3iDY1GgCnFCqDi5jmhh8kExNYyYKm55AgkstqJk51NA+L41a
-         Tt0gkJSClE5NN25zmCy6WAHWpqZ5x6282bd9YRt7qm+ctIKg2DYYh6WSUze0aaD2OGx2
-         knBDPt2kj+DQkT+/ZzetiI0e8MenDlDw1M4fA=
+	Wed, 18 Nov 2009 19:40:57 -0500
+Message-ID: <4B04941B.2060608@internode.on.net>
+Date: Thu, 19 Nov 2009 11:10:59 +1030
+From: indexer <indexer@internode.on.net>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4B046AEA.80109@wpkg.org>
-References: <4B046AEA.80109@wpkg.org>
-Date: Wed, 18 Nov 2009 19:40:46 -0500
-X-Google-Sender-Auth: 9261bd3a8cb76f22
-Message-ID: <c0c067900911181640h64971680l4da14cdbe9fa6d59@mail.gmail.com>
-Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
-From: Dan Merillat <dan.merillat@gmail.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: preining@logic.at, riel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: Regression in efi.c 2.6.32-rc7
+References: <4B02B654.9080304@internode.on.net> <4B03A706.6040400@zytor.com>
+In-Reply-To: <4B03A706.6040400@zytor.com>
+Content-Type: multipart/mixed;
+ boundary="------------060901010306020503030807"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 4:45 PM, Tomasz Chmielewski <mangoo@wpkg.org> wrote:
+This is a multi-part message in MIME format.
+--------------060901010306020503030807
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> I have a pretty powerful desktop machine with 8 GB RAM, fast disks with
-> RAID-1 etc.
+H. Peter Anvin
 
-> Every 10 minutes or so, machine is really unresponsive, load jumps to 10 or
-> 20. Mouse pointer jumps, it's impossible to change between windows etc.
+I am sadly very new to git and its functions but i did the best i could, 
+and i had build errors on the last attempt, but i have narrowed this 
+down to three commits. Find the out put of git bisect view --stat 
+attached with these commits included. Now i may be wrong, but it appears 
+that only the commit in realtion to 64 bit memory maps will affect my 
+system (as i am running x86_64) . For extra details, it seems that 
+commit was to fix an issue with Macbook gen 5 rev 2, where i am using a 
+gen 5 rev 3. I will try to finish the bisect once i have received help 
+about this build issue.
 
-This is the type of hefty workstation many of the core developers
-have, running similar workloads, so I'm somewhat surprised that the
-default VM settings have this kind of issue.
+Your time is appreciated.
 
-> Do a "swapoff -a", and everything is snappy and responsive as it should,
-> there are no more lags.
+Sincerely
 
-Yes, that's my exact finding.
+William
 
-Is this weird IO storm happening for anyone else with plenty of memory
-(for their taskload?)
+
+H. Peter Anvin wrote:
+> On 11/17/2009 06:42 AM, indexer wrote:
+>   
+>> I would like to report a possible regression in efi.c with kernels
+>> 2.6.31 , 2.6.32-rc5 and 2.6.32.rc7.
+>>
+>> Attempting to boot x86_64 with elilo succeeds using 2.6.30 . Using the
+>> same config cannot boot with any of the 3 afore mentioned kernels. Elilo
+>> freezes at bootloader as system attempts to initiate. Cannot attach a
+>> serial console for debug, and no errors appear on screen. No version of
+>> refit, elilo, efi firmware changes, only the kernel in question. This
+>> results in an unbootable system using efi.
+>>
+>> I have already followed the patch described here,
+>> http://bugzilla.kernel.org/show_bug.cgi?id=14466 , it does not change
+>> the situation on 2.6.31 or 2.6.32-rc5, and no need to patch 2.6.32-rc7
+>> as it was merged already.
+>>
+>> The below diff shows the differences in efi.c between 2.6.30 and
+>> 2.6.32-rc7. Please also find attached my .config for 2.6.32.rc7
+>>
+>>     
+>
+> Can you do a git bisect between 2.6.30 and 2.6.31?
+>
+> 	-hpa
+>
+>   
+
+
+--------------060901010306020503030807
+Content-Type: text/plain; x-mac-type="0"; x-mac-creator="0";
+ name="git-bisect-changes"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="git-bisect-changes"
+
+Y29tbWl0IGZkYjhhNDI3NDJhYzk1NjA2NjY4ZjczNDgxZGZiMmY3NjA2NThmZGQKQXV0aG9y
+OiBSb2VsIEtsdWluIDxyb2VsLmtsdWluQGdtYWlsLmNvbT4KRGF0ZTogICBUaHUgQXVnIDYg
+MTU6NTg6MTMgMjAwOSAtMDcwMAoKICAgIHg4NjogZml4IGJ1ZmZlciBvdmVyZmxvdyBpbiBl
+ZmlfaW5pdCgpCiAgICAKICAgIElmIHRoZSB2ZW5kb3IgbmFtZSAoZnJvbSBjMTYpIGNhbiBi
+ZSBsb25nZXIgdGhhbiAxMDAgYnl0ZXMgKG9yIG1pc3NpbmcgYQogICAgdGVybWluYXRpbmcg
+bnVsbCksIHRoZW4gdGhlIG51bGwgaXMgd3JpdHRlbiBwYXN0IHRoZSBlbmQgb2YgdmVuZG9y
+W10uCiAgICAKICAgIEZvdW5kIHdpdGggUGFyZmFpdCwgaHR0cDovL3Jlc2VhcmNoLnN1bi5j
+b20vcHJvamVjdHMvcGFyZmFpdC8KICAgIAogICAgU2lnbmVkLW9mZi1ieTogUm9lbCBLbHVp
+biA8cm9lbC5rbHVpbkBnbWFpbC5jb20+CiAgICBDYzogSW5nbyBNb2xuYXIgPG1pbmdvQGVs
+dGUuaHU+CiAgICBTaWduZWQtb2ZmLWJ5OiBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZv
+dW5kYXRpb24ub3JnPgogICAgU2lnbmVkLW9mZi1ieTogSC4gUGV0ZXIgQW52aW4gPGhwYUB6
+eXRvci5jb20+CiAgICBDYzogSHVhbmcgWWluZyA8eWluZy5odWFuZ0BpbnRlbC5jb20+Cgog
+YXJjaC94ODYva2VybmVsL2VmaS5jIHwgICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGlu
+c2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pCgpjb21taXQgNmE3YmJkNTdlZDUwYmI2MmM5
+YTgxYWU1ZjJlMjAyY2E2ODllNTk2NApBdXRob3I6IFBhdWwgTWFja2VycmFzIDxwYXVsdXNA
+c2FtYmEub3JnPgpEYXRlOiAgIE1vbiBBdWcgMyAyMjozODoxMCAyMDA5ICsxMDAwCgogICAg
+eDg2OiBNYWtlIDY0LWJpdCBlZmlfaW9yZW1hcCB1c2UgaW9yZW1hcCBvbiBNTUlPIHJlZ2lv
+bnMKICAgIAogICAgQm9vdGluZyBjdXJyZW50IDY0LWJpdCB4ODYga2VybmVscyBvbiB0aGUg
+bGF0ZXN0IEFwcGxlIE1hY0Jvb2sKICAgIChNYWNCb29rNSwyKSB2aWEgRUZJIGdpdmVzIHRo
+ZSBmb2xsb3dpbmcgd2FybmluZzoKICAgIAogICAgWyAgICAwLjE4MjIwOV0gLS0tLS0tLS0t
+LS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tCiAgICBbICAgIDAuMTgyMjIyXSBXQVJOSU5H
+OiBhdCBhcmNoL3g4Ni9tbS9wYWdlYXR0ci5jOjU4MSBfX2NwYV9wcm9jZXNzX2ZhdWx0KzB4
+NDQvMHhhMCgpCiAgICBbICAgIDAuMTgyMjI3XSBIYXJkd2FyZSBuYW1lOiBNYWNCb29rNSwy
+CiAgICBbICAgIDAuMTgyMjMxXSBDUEE6IGNhbGxlZCBmb3IgemVybyBwdGUuIHZhZGRyID0g
+ZmZmZjg4MDBmZmUwMDAwMCBjcGEtPnZhZGRyID0gZmZmZjg4MDBmZmUwMDAwMAogICAgWyAg
+ICAwLjE4MjIzNl0gTW9kdWxlcyBsaW5rZWQgaW46CiAgICBbICAgIDAuMTgyMjQyXSBQaWQ6
+IDAsIGNvbW06IHN3YXBwZXIgTm90IHRhaW50ZWQgMi42LjMxLXJjNCAjNgogICAgWyAgICAw
+LjE4MjI0Nl0gQ2FsbCBUcmFjZToKICAgIFsgICAgMC4xODIyNTRdICBbPGZmZmZmZmZmODEw
+MmM3NTQ+XSA/IF9fY3BhX3Byb2Nlc3NfZmF1bHQrMHg0NC8weGEwCiAgICBbICAgIDAuMTgy
+MjYxXSAgWzxmZmZmZmZmZjgxMDQ4NjY4Pl0gd2Fybl9zbG93cGF0aF9jb21tb24rMHg3OC8w
+eGQwCiAgICBbICAgIDAuMTgyMjY2XSAgWzxmZmZmZmZmZjgxMDQ4NzQ0Pl0gd2Fybl9zbG93
+cGF0aF9mbXQrMHg2NC8weDcwCiAgICBbICAgIDAuMTgyMjcyXSAgWzxmZmZmZmZmZjgxMDJj
+N2VjPl0gPyB1cGRhdGVfcGFnZV9jb3VudCsweDNjLzB4NTAKICAgIFsgICAgMC4xODIyODBd
+ICBbPGZmZmZmZmZmODE4ZDI1YzU+XSA/IHBoeXNfcG1kX2luaXQrMHgxNDAvMHgyMmUKICAg
+IFsgICAgMC4xODIyODZdICBbPGZmZmZmZmZmODEwMmM3NTQ+XSBfX2NwYV9wcm9jZXNzX2Zh
+dWx0KzB4NDQvMHhhMAogICAgWyAgICAwLjE4MjI5Ml0gIFs8ZmZmZmZmZmY4MTAyY2U2MD5d
+IF9fY2hhbmdlX3BhZ2VfYXR0cl9zZXRfY2xyKzB4NWYwLzB4YjQwCiAgICBbICAgIDAuMTgy
+MzAxXSAgWzxmZmZmZmZmZjgxMGQxMDM1Pl0gPyB2bV91bm1hcF9hbGlhc2VzKzB4MTc1LzB4
+MTkwCiAgICBbICAgIDAuMTgyMzA3XSAgWzxmZmZmZmZmZjgxMDJkNGFlPl0gY2hhbmdlX3Bh
+Z2VfYXR0cl9zZXRfY2xyKzB4ZmUvMHgzZDAKICAgIFsgICAgMC4xODIzMTRdICBbPGZmZmZm
+ZmZmODEwMmRjY2E+XSBfc2V0X21lbW9yeV91YysweDJhLzB4MzAKICAgIFsgICAgMC4xODIz
+MTldICBbPGZmZmZmZmZmODEwMmRkNGI+XSBzZXRfbWVtb3J5X3VjKzB4N2IvMHhiMAogICAg
+WyAgICAwLjE4MjMyN10gIFs8ZmZmZmZmZmY4MThhZmUzMT5dIGVmaV9lbnRlcl92aXJ0dWFs
+X21vZGUrMHgyYWQvMHgyYzkKICAgIFsgICAgMC4xODIzMzRdICBbPGZmZmZmZmZmODE4YTFj
+NjY+XSBzdGFydF9rZXJuZWwrMHgyZGIvMHgzZjQKICAgIFsgICAgMC4xODIzNDBdICBbPGZm
+ZmZmZmZmODE4YTEyODk+XSB4ODZfNjRfc3RhcnRfcmVzZXJ2YXRpb25zKzB4OTkvMHhiOQog
+ICAgWyAgICAwLjE4MjM0NV0gIFs8ZmZmZmZmZmY4MThhMTM4OT5dIHg4Nl82NF9zdGFydF9r
+ZXJuZWwrMHhlMC8weGYyCiAgICBbICAgIDAuMTgyMzU3XSAtLS1bIGVuZCB0cmFjZSA0ZWFh
+MmE4NmE4ZTJkYTIyIF0tLS0KICAgIFsgICAgMC4xODI5ODJdIGluaXRfbWVtb3J5X21hcHBp
+bmc6IDAwMDAwMDAwZmZmZmMwMDAtMDAwMDAwMDEwMDAwMDAwMAogICAgWyAgICAwLjE4Mjk5
+M10gIDAwZmZmZmMwMDAgLSAwMTAwMDAwMDAwIHBhZ2UgNGsKICAgIAogICAgVGhpcyBoYXBw
+ZW5zIGJlY2F1c2UgdGhlIDY0LWJpdCB2ZXJzaW9uIG9mIGVmaV9pb3JlbWFwIGNhbGxzCiAg
+ICBpbml0X21lbW9yeV9tYXBwaW5nIGZvciBhbGwgYWRkcmVzc2VzLCByZWdhcmRsZXNzIG9m
+IHdoZXRoZXIgdGhleSBhcmUKICAgIFJBTSBvciBNTUlPLiAgVGhlIEVGSSB0YWJsZXMgb24g
+dGhpcyBtYWNoaW5lIGFzayBmb3IgcnVudGltZSBhY2Nlc3MgdG8KICAgIHNvbWUgTU1JTyBy
+ZWdpb25zOgogICAgCiAgICBbICAgIDAuMDAwMDAwXSBFRkk6IG1lbTE5NTogdHlwZT0xMSwg
+YXR0cj0weDgwMDAwMDAwMDAwMDAwMDAsIHJhbmdlPVsweDAwMDAwMDAwOTM0MDAwMDAtMHgw
+MDAwMDAwMDkzNDAxMDAwKSAoME1CKQogICAgWyAgICAwLjAwMDAwMF0gRUZJOiBtZW0xOTY6
+IHR5cGU9MTEsIGF0dHI9MHg4MDAwMDAwMDAwMDAwMDAwLCByYW5nZT1bMHgwMDAwMDAwMGZm
+YzAwMDAwLTB4MDAwMDAwMDBmZmM0MDAwMCkgKDBNQikKICAgIFsgICAgMC4wMDAwMDBdIEVG
+STogbWVtMTk3OiB0eXBlPTExLCBhdHRyPTB4ODAwMDAwMDAwMDAwMDAwMCwgcmFuZ2U9WzB4
+MDAwMDAwMDBmZmM0MDAwMC0weDAwMDAwMDAwZmZjODAwMDApICgwTUIpCiAgICBbICAgIDAu
+MDAwMDAwXSBFRkk6IG1lbTE5ODogdHlwZT0xMSwgYXR0cj0weDgwMDAwMDAwMDAwMDAwMDAs
+IHJhbmdlPVsweDAwMDAwMDAwZmZjODAwMDAtMHgwMDAwMDAwMGZmY2E0MDAwKSAoME1CKQog
+ICAgWyAgICAwLjAwMDAwMF0gRUZJOiBtZW0xOTk6IHR5cGU9MTEsIGF0dHI9MHg4MDAwMDAw
+MDAwMDAwMDAwLCByYW5nZT1bMHgwMDAwMDAwMGZmY2E0MDAwLTB4MDAwMDAwMDBmZmNiNDAw
+MCkgKDBNQikKICAgIFsgICAgMC4wMDAwMDBdIEVGSTogbWVtMjAwOiB0eXBlPTExLCBhdHRy
+PTB4ODAwMDAwMDAwMDAwMDAwMCwgcmFuZ2U9WzB4MDAwMDAwMDBmZmNiNDAwMC0weDAwMDAw
+MDAwZmZmZmMwMDApICgzTUIpCiAgICBbICAgIDAuMDAwMDAwXSBFRkk6IG1lbTIwMTogdHlw
+ZT0xMSwgYXR0cj0weDgwMDAwMDAwMDAwMDAwMDAsIHJhbmdlPVsweDAwMDAwMDAwZmZmZmMw
+MDAtMHgwMDAwMDAwMTAwMDAwMDAwKSAoME1CKQogICAgCiAgICBUaGlzIGFycmFuZ2VzIHRv
+IHBhc3MgdGhlIEVGSSBtZW1vcnkgdHlwZSB0aHJvdWdoIHRvIGVmaV9pb3JlbWFwLCBhbmQK
+ICAgIG1ha2VzIGVmaV9pb3JlbWFwIHVzZSBpb3JlbWFwIHJhdGhlciB0aGFuIGluaXRfbWVt
+b3J5X21hcHBpbmcgaWYgdGhlCiAgICB0eXBlIGlzIEVGSV9NRU1PUllfTUFQUEVEX0lPLiAg
+V2l0aCB0aGlzLCB0aGUgYWJvdmUgd2FybmluZyBnb2VzIGF3YXkuCiAgICAKICAgIFNpZ25l
+ZC1vZmYtYnk6IFBhdWwgTWFja2VycmFzIDxwYXVsdXNAc2FtYmEub3JnPgogICAgTEtNTC1S
+ZWZlcmVuY2U6IDwxOTA2Mi41NTg1OC41MzM0OTQuNDcxMTUzQGNhcmdvLm96bGFicy5pYm0u
+Y29tPgogICAgQ2M6IEh1YW5nIFlpbmcgPHlpbmcuaHVhbmdAaW50ZWwuY29tPgogICAgU2ln
+bmVkLW9mZi1ieTogSC4gUGV0ZXIgQW52aW4gPGhwYUB6eXRvci5jb20+CgogYXJjaC94ODYv
+a2VybmVsL2VmaS5jICAgIHwgICAgMiArLQogYXJjaC94ODYva2VybmVsL2VmaV82NC5jIHwg
+ICAgNiArKysrKy0KIDIgZmlsZXMgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCAyIGRlbGV0
+aW9ucygtKQoKY29tbWl0IGUyYTcxNDc2NDBhNTRlYjgxMmM4YWI1ZjNlZTQ0MjRiOTJkYjQ4
+NTYKQXV0aG9yOiBDbGlmZiBXaWNrbWFuIDxjcHdAc2dpLmNvbT4KRGF0ZTogICBUdWUgSnVu
+IDE2IDE2OjQzOjQwIDIwMDkgLTA1MDAKCiAgICB4ODY6IGNvcnJlY3QgdGhlIGNvbnZlcnNp
+b24gb2YgRUZJIG1lbW9yeSB0eXBlcwogICAgCiAgICBUaGlzIHBhdGNoIGNhdXNlcyBhbGwg
+dGhlIEVGSV9SRVNFUlZFRF9UWVBFIG1lbW9yeSByZXNlcnZhdGlvbnMgdG8gYmUgcmVjb3Jk
+ZWQKICAgIGluIHRoZSBlODIwIHRhYmxlIGFzIHR5cGUgRTgyMF9SRVNFUlZFRC4KICAgIAog
+ICAgKFRoaXMgcGF0Y2ggcmVwbGFjZXMgb25lIGNhbGxlZCAneDg2OiB2ZW5kb3IgcmVzZXJ2
+ZWQgbWVtb3J5IHR5cGUnLgogICAgIFRoaXMgdmVyc2lvbiBoYXMgYmVlbiBkaXNjdXNzZWQg
+YSBiaXQgd2l0aCBQZXRlciBhbmQgWWluZ2hhaSBidXQgbm90IGdpdmVuCiAgICAgYSBmaW5h
+bCBvcGluaW9uLikKICAgIAogICAgV2l0aG91dCB0aGlzIHBhdGNoIEVGSV9SRVNFUlZFRF9U
+WVBFIG1lbW9yeSByZXNlcnZhdGlvbnMgbWF5IGJlCiAgICBtYXJrZWQgdXNhYmxlIGluIHRo
+ZSBlODIwIHRhYmxlLiBUaGVyZSBtYXkgYmUgYSBjb2xsaXNpb24gYmV0d2VlbgogICAga2Vy
+bmVsIHVzZSBhbmQgc29tZSByZXNlcnZlcidzIHVzZSBvZiB0aGlzIG1lbW9yeS4KICAgIAog
+ICAgKEFuIGV4YW1wbGUgdXNlIG9mIHRoaXMgZnVuY3Rpb25hbGl0eSBpcyB0aGUgVVYgc3lz
+dGVtLCB3aGljaAogICAgIHdpbGwgYWNjZXNzIGV4dHJlbWVseSBsYXJnZSBhcmVhcyBvZiBt
+ZW1vcnkgd2l0aCBhIG1lbW9yeSBlbmdpbmUKICAgICB0aGF0IGFsbG93cyBhIHVzZXIgdG8g
+YWRkcmVzcyBiZXlvbmQgdGhlIHByb2Nlc3NvcidzIHJhbmdlLiAgU3VjaAogICAgIGFyZWFz
+IGFyZSByZXNlcnZlZCBpbiB0aGUgRUZJIHRhYmxlIGJ5IHRoZSBCSU9TLgogICAgIFNvbWUg
+bG9hZGVycyBoYXZlIGEgcmVzdHJpY3RlZCBudW1iZXIgb2YgZW50cmllcyBwb3NzaWJsZSBp
+biB0aGUgZTgyMCB0YWJsZSwKICAgICBoZW5jZSB0aGUgbmVlZCB0byByZWNvcmQgdGhlIHJl
+c2VydmF0aW9ucyBpbiB0aGUgdW5yZXN0cmljdGVkIEVGSSB0YWJsZS4pCiAgICAKICAgIFRo
+ZSBjYWxsIHRvIGRvX2FkZF9lZmlfbWVtbWFwKCkgaXMgb25seSBtYWRlIGlmICJhZGRfZWZp
+X21lbW1hcCIgaXMgc3BlY2lmaWVkCiAgICBvbiB0aGUga2VybmVsIGNvbW1hbmQgbGluZS4K
+ICAgIAogICAgU2lnbmVkLW9mZi1ieTogQ2xpZmYgV2lja21hbiA8Y3B3QHNnaS5jb20+CiAg
+ICBTaWduZWQtb2ZmLWJ5OiBILiBQZXRlciBBbnZpbiA8aHBhQHp5dG9yLmNvbT4KCiBhcmNo
+L3g4Ni9rZXJuZWwvZWZpLmMgfCAgIDMxICsrKysrKysrKysrKysrKysrKysrKysrKysrKyst
+LS0KIDEgZmlsZXMgY2hhbmdlZCwgMjggaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkK
+
+--------------060901010306020503030807--
