@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbZKTUyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZKTU5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbZKTUyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZKTUyO
+	id S1755983AbZKTU5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZKTU5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:54:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8399 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754918AbZKTUyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:54:11 -0500
-Date: Fri, 20 Nov 2009 15:54:16 -0500
-From: Mike Snitzer <snitzer@redhat.com>
-To: dm-devel@redhat.com
-Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 06/13] dm snapshot: merge target should not allocate
- new exceptions
-Message-ID: <20091120205416.GB9458@redhat.com>
-References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
- <1258748873-24185-7-git-send-email-snitzer@redhat.com>
+	Fri, 20 Nov 2009 15:57:32 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:55359 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165AbZKTU5b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:57:31 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19JNc9GH9oHklAy4eNJp6uP
+Date: Fri, 20 Nov 2009 12:57:33 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-omap@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: omap tree misaplied patch
+Message-ID: <20091120205731.GB5764@atomide.com>
+References: <20091120130228.f3b82588.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1258748873-24185-7-git-send-email-snitzer@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091120130228.f3b82588.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20 2009 at  3:27pm -0500,
-Mike Snitzer <snitzer@redhat.com> wrote:
+* Stephen Rothwell <sfr@canb.auug.org.au> [091119 18:01]:
+> Hi Tony,
+> 
+> I think commit 8552f084d80cfc191ea5affacbeffe44e8629496 ("ARM OMAP3:
+> RX-51 board - add initialization of gpio keys") has been misapplied.  It
+> has this line:
+> 
+> 	+#endif /* CONFIG_KEYBOARD_GPIO || CONFIG_KEYBOARD_GPIO_MODULE */
+> 
+> with the leading '+'.   I noticed this when merging with the input tree
+> as this made for a strange looking conflict.
 
-> If a write request to a merging snapshot device is to be dispatched
-> directly to the origin (because the chunk is not remapped or was already
-> merged), snapshot_merge_map() must make exceptions in other snapshots.
-...
-> +static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
-> +			      union map_info *map_context)
-> +{
-> +	struct dm_exception *e;
-> +	struct dm_snapshot *s = ti->private;
-> +	int r = DM_MAPIO_REMAPPED;
-> +	chunk_t chunk;
-> +
-> +	chunk = sector_to_chunk(s->store, bio->bi_sector);
-> +
-> +	down_read(&s->lock);
-> +
-> +	/* Full snapshots are not usable */
-> +	if (!s->valid) {
-> +		r = -EIO;
-> +		goto out_unlock;
-> +	}
-> +
-> +	/* If the block is already remapped - use that */
-> +	e = dm_lookup_exception(&s->complete, chunk);
-> +	if (e) {
-> +		remap_exception(s, e, bio, chunk);
-> +		goto out_unlock;
-> +	}
-> +
-> +	bio->bi_bdev = s->origin->bdev;
-> +
-> +	if (bio_rw(bio) == WRITE) {
-> +		up_write(&s->lock);
-> +		return do_origin(s->origin, bio);
-> +	}
+Oops, my fault. Will fix ASAP.
 
-OK, I caught this in review but clearly didn't refresh the patch; the
-above up_write() should be up_read().
+Regards,
 
-Mike
+Tony
+
