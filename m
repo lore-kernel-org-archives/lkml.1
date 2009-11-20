@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZKTAaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZKTAav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbZKTAaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbZKTAaN
+	id S1758186AbZKTAav (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758020AbZKTAau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:30:13 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:55953 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757912AbZKTAaL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:30:11 -0500
-Date: Fri, 20 Nov 2009 00:29:43 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PULL] please pull bjdooks' i2c-pnx-fixes branch
-Message-ID: <20091120002943.GA19796@fluff.org.uk>
+	Thu, 19 Nov 2009 19:30:50 -0500
+Received: from mga11.intel.com ([192.55.52.93]:14224 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757923AbZKTAau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:30:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
+   d="scan'208";a="515660711"
+From: "Sean Hefty" <sean.hefty@intel.com>
+To: "'Roland Dreier'" <rdreier@cisco.com>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: <general@lists.openfabrics.org>, <linux-next@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+References: <20091120110342.5128b8f8.sfr@canb.auug.org.au> <ada1vju6oa6.fsf@roland-alpha.cisco.com>
+Subject: RE: linux-next: infiniband tree build failure
+Date: Thu, 19 Nov 2009 16:30:55 -0800
+Message-ID: <6307584467EB4D168602C43E0B185157@amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcppdyFKoXyqrY3GQpeG4r9lST7cXQAAIrtQ
+In-Reply-To: <ada1vju6oa6.fsf@roland-alpha.cisco.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 648f4e3e50c4793d9dbf9a09afa193631f76fa26:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc8
+>Sorry, will track it down.  Sean this probably came from your patches,
+>any idea off the top of your head?
 
-are available in the git repository at:
+Off the top of my head, I'll guess that maybe we need to add something like
 
-  git://git.fluff.org/bjdooks/linux i2c-pnx-fixes
+#if defined(CONFIG_IPv6) || defined(CONFIG_IPV6_MODULE)
 
-Kevin Wells (3):
-      i2c: i2c-pnx: Limit minimum jiffie timeout to 2
-      i2c: i2c-pnx: Made buf type unsigned to prevent sign extension
-      i2c: i2c-pnx: Added missing mach/i2c.h and linux/io.h header file includes
+to cma_check_linklocal() in cma.c.  Does this build failure occur when IPv6 is
+excluded?
 
- drivers/i2c/busses/i2c-pnx.c |    5 +++++
- include/linux/i2c-pnx.h      |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+- Sean
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
