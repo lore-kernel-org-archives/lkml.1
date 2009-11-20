@@ -1,219 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZKTK5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZKTLFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbZKTK5r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 05:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZKTK5q
+	id S1752817AbZKTLFy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 06:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZKTLFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 05:57:46 -0500
-Received: from ukmta3.baesystems.com ([20.133.40.55]:43362 "EHLO
-	ukmta3.baesystems.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbZKTK5o (ORCPT
+	Fri, 20 Nov 2009 06:05:54 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48430 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbZKTLFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 05:57:44 -0500
-X-IronPort-AV: E=Sophos;i="4.44,776,1249254000"; 
-   d="scan'208";a="34094450"
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 20 Nov 2009 06:05:53 -0500
+Message-ID: <4B067816.6070304@cs.helsinki.fi>
+Date: Fri, 20 Nov 2009 13:05:58 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <peterz@infradead.org>
+CC: paulmck@linux.vnet.ibm.com, linux-mm@kvack.org, cl@linux-foundation.org,
+       mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+References: <20091118181202.GA12180@linux.vnet.ibm.com>	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>	 <1258709153.11284.429.camel@laptop>	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop>
+In-Reply-To: <1258714328.11284.522.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
-Date: Fri, 20 Nov 2009 10:57:47 -0000
-Message-ID: <FEBDE48FB0344846BAE4FB976A42642802BD9877@GLKMS2101.GREENLNK.NET>
-In-Reply-To: <FEBDE48FB0344846BAE4FB976A42642802BA8271@GLKMS2101.GREENLNK.NET>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
-Thread-Index: AcppEi7wIIY+PkoxSNiMBwUwvkw6kwAAYeKQAC8e46A=
-References: <d0ced6d70911190416w3a354a50jcb0e93934805ca07@mail.gmail.com> <FEBDE48FB0344846BAE4FB976A42642802BA8271@GLKMS2101.GREENLNK.NET>
-From: "Ahmed, Subhan (UK)" <Subhan.Ahmed@baesystems.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 20 Nov 2009 10:57:48.0362 (UTC) FILETIME=[4C0E9AA0:01CA69D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Peter Zijlstra kirjoitti:
+> On Fri, 2009-11-20 at 12:38 +0200, Pekka Enberg wrote:
+>>
+>> On Fri, Nov 20, 2009 at 11:25 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>>>  2) propagate the nesting information and user spin_lock_nested(), given
+>>> that slab is already a rat's nest, this won't make it any less obvious.
+>> spin_lock_nested() doesn't really help us here because there's a
+>> _real_ possibility of a recursive spin lock here, right? 
+> 
+> Well, I was working under the assumption that your analysis of it being
+> a false positive was right ;-)
+> 
+> I briefly tried to verify that, but got lost and gave up, at which point
+> I started looking for ways to annotate.
 
-I know this is not email list for programming questions but it relates
-to Kernel as well, in fact relying on kernel. Could someone please
-through a light or guide me to the right direction.
+Uh, ok, so apparently I was right after all. There's a comment in 
+free_block() above the slab_destroy() call that refers to the comment 
+above alloc_slabmgmt() function definition which explains it all.
 
+Long story short: ->slab_cachep never points to the same kmalloc cache 
+we're allocating or freeing from. Where do we need to put the 
+spin_lock_nested() annotation? Would it be enough to just use it in 
+cache_free_alien() for alien->lock or do we need it in 
+cache_flusharray() as well?
 
-Problem Statement:	High CPU clock speed/freq
-Requirement:		Obtain a stable CPU clock ticks/speed/freq on
-Suse 11.1 with kernel 2.6.27.7-9
-Questions:			Please refer to the bottom of this page
-Artifacts in Use:
------------------------------------
-OS:					Suse 11.1
-GCC Version:		4.3.2 (Suse Linux) [gcc_4_3-brach revision
-141291]
-Kernel:				2.6.27.7-9
-Kernel Mods:		
-					* Un-check the Tickless option
-					* Timer Frequency - 1000Hz
-					* Preempt kernel
-
-Others 1
------------
-OS:					Suse 10.2
-GCC Version:		4.1.2 20061115 (prerelease)(SUSE Linux)
-Kernel:				2.6.18.2-34-default
-Kernel Mods:
-					* Preemptible Kernel
-(Low-Latency Desktop) (NEW)
-					* Preempt The Big Kernel Lock
-(NEW)
-					* Timer frequency (NEW) - 1000
-Hz (NEW)
-
-Others 2
------------
-OS:					Suse 9.3
-GCC Version:		3.3.5 20050117 (prerelease)(SUSE Linux)
-Kernel				2.6.11.4-20a-default
-Kernel Mods:		None
-
-I executed the following c++ code on the above stated builds
-
-CODE - file name test.cpp
-#include <signal.h>
-#include <sys/time.h>
-#include <iostream>
-#include <cstdlib>
-
-
-using namespace std;
-
-long long int counter = 0;
-struct timeval last_time;
-struct timeval curr_time;
-double dif = 0.0;
-double freq_sum = 0.0;
-double reps = 0.0;
-double freq_min = 99999.0;
-double freq_max = 0.0;
-long long int num_too_low = 0;
-
-void time_check(int data)
-{
-    // work out the frequecy of the SIGALRMs
-    ++counter;
-    if (counter >= 1000)
-    {
-
-        // need to work out time since last 1000 ticks
-	gettimeofday(&curr_time, NULL);
-	dif = ((curr_time.tv_usec + curr_time.tv_sec * 1000000)
-		- (last_time.tv_usec + last_time.tv_sec * 1000000));
-        double freq = (counter / dif)  * 1000000;
-
-        freq_sum = ((freq_sum * reps) + freq) / (reps + 1) ;
-
-        ++reps;
-        cout << "Frequency = " << freq << " reps= " << dif / 1000000 <<
-endl;
-        if (freq_min > freq) freq_min = freq;
-        if (freq_max < freq) freq_max = freq;
-        if (freq < 950) 
-            ++num_too_low;
-        last_time = curr_time;
-        counter = 0;
-    }
-}
-
-int main (int argc, char * argv[])
-{
-    cout << "go" /* << "\a \a \a" */ << endl;
-	
-    int res;
-    gettimeofday(&last_time, NULL);
-    struct sigaction action;
-
-    struct itimerval timer_value;
-
-    timer_value.it_value.tv_sec = 0;
-    timer_value.it_value.tv_usec = 1;
-    timer_value.it_interval.tv_sec = 0;
-    timer_value.it_interval.tv_usec = 1;
-
-    action.sa_handler = time_check;
-    action.sa_flags = SA_NOMASK;
-    sigemptyset(&action.sa_mask);
-
-    sigaction( SIGALRM, &action, NULL);
-    res = setitimer( ITIMER_REAL, &timer_value, NULL );
-    if (res == -1)
-        cout << "error in setitimer" << endl;
-
-    cout << "Starting CPU Test program" << endl;
-    // loop for a long time
-
-    while (reps < 3000.0)
-    {
-        sleep(1);
-    }
-    cout << "average CPU frequency = " << freq_sum << endl;
-    cout << "reps = " << reps << endl;
-    cout << "Min = " << freq_min << "  Max = " << freq_max << endl;
-    cout << "number of low = " << num_too_low << endl;
-    return 0;
-}
-
-Compiled the above code with 	"g++ -o test test.cpp"
-Run the above code with 		"./test"
-
-Observations:
-SUSE Version    AVG. Frequency        		AVG. REPS
-Suse 9.3  		999.xxx to 990.xxx  			reps > 1
-(on average)
-Suse 10.2 		999.xxx to 998.xxx  			reps (1
-- 1.001)
-Suse 10.3     	1000.xxx to 912.xxx  			reps (1 - 1.090)
-Suse 11.1       0 to  324263.xxx  				reps
-(-2e-0.6 upto 0.005112)
-
-Suse 11.1 - Options:
-
-- Turn off ACPI in options when booting with clock=tsc | clock=pit
-
-Observations for suse 11.1 with options acpi=off and clock=tsc |
-clock=pit
-
-SUSE Version    AVG. Frequency        		AVG. REPS
-Suse 11.1 		710.xxx to 999.xxx      		reps
-(1.37xx to 1.0002)
-
-Hardware used for Suse 11.1 - HP Pavilion Slimline s3821uk Desktop PC
-(NQ808AA) specifications - HP Home & Home Office products
-http://h10010.www1.hp.com/wwpc/uk/en/ho/WF10a/12454-12454-3329740-64546-
-64546-3884669.html?jumpid=in_r2515_uk/en/hho/ipg/psc404redirect-ot-xx-xx
--/chev/
-
-While testing no other application/s were running.
-
-Question:
-
-* Is my c++ code correct?
-* Am I using the correct way to get the clock ticks or is there more
-reliable tchnique avaliable to do this?
-* Is that a problem with new Kernel if so is it a known issue ?
-* Do I need to modify the Kernel to obtain regular and stable clock tick
-at 1000 Hz ?
-* Do I have to upgrade the Kernel ?
-* Would be great, if pointed to the right direction for solution (e.g.
-another forum) if no solution at hand.
-
-Thanks
-
-Subhan
-
-********************************************************************
-This email and any attachments are confidential to the intended
-recipient and may also be privileged. If you are not the intended
-recipient please delete it from your system and notify the sender.
-You should not copy it or use it for any purpose nor disclose or
-distribute its contents to any other person.
-********************************************************************
-
+			Pekka
