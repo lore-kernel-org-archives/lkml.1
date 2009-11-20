@@ -1,266 +1,440 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZKTIPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZKTIP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbZKTIPY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 03:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZKTIPX
+	id S1754203AbZKTIP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 03:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZKTIP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 03:15:23 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:43365 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753104AbZKTIPV (ORCPT
+	Fri, 20 Nov 2009 03:15:56 -0500
+Received: from www84.your-server.de ([213.133.104.84]:46923 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbZKTIPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 03:15:21 -0500
-X-Sasl-enc: zzt0GxRByKrNu/zN+FEJE/Wet7uRKEVFHrw3JGlzbkgP 1258704926
-Message-ID: <4B06501B.8080509@ladisch.de>
-Date: Fri, 20 Nov 2009 09:15:23 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] k10temp: temperature sensor for AMD Family 10h/11h CPUs
-References: <4AF91F70.10106@ladisch.de>
-In-Reply-To: <4AF91F70.10106@ladisch.de>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Nov 2009 03:15:55 -0500
+Subject: [PATCH 0/7] kfifo: new API v0.7
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 20 Nov 2009 09:15:42 +0100
+Message-ID: <1258704942.4426.5.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a driver for the internal temperature sensor of AMD Family 10h
-and 11h CPUs.
+Sorry, the last version was corrupted by the mail client.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
----
- Documentation/hwmon/k10temp |   54 +++++++++++++++++
- drivers/hwmon/Kconfig       |   12 +++
- drivers/hwmon/Makefile      |    1 
- drivers/hwmon/k10temp.c     |  135 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 202 insertions(+)
+This is a new generic kernel FIFO implementation.
 
---- /dev/null
-+++ linux-2.6/Documentation/hwmon/k10temp
-@@ -0,0 +1,54 @@
-+Kernel driver k10temp
-+=====================
-+
-+Supported chips:
-+* AMD Family 10h processors:
-+  Socket F: Quad-Core/Six-Core/Embedded AMD Opteron
-+  Socket AM2+: Phenom II X3/X4
-+  Socket AM3: Quad-Core Opteron, Athlon/Phenom II X2/X3/X4, Sempron II
-+  mobile: Athlon II, Sempron, Turion II
-+
-+  Prefix: 'k10temp'
-+  Addresses scanned: PCI space
-+  Datasheets: see http://developer.amd.com/documentation/guides/
-+    #31116: BIOS and Kernel Developer's Guide For AMD Family 10h Processors
-+    #41322: Revision Guide for AMD Family 10h Processors
-+
-+* AMD Family 11h processors:
-+  mobile: Athlon (X2), Sempron (X2), Turion X2 (Ultra)
-+
-+  Prefix: 'k10temp'
-+  Addresses scanned: PCI space
-+  Datasheets: see http://developer.amd.com/documentation/guides/
-+    #41256: BIOS and Kernel Developer's Guide For AMD Family 11h Processors
-+    #41788: Revision Guide for AMD Family 11h Processors
-+
-+Author: Clemens Ladisch <clemens@ladisch.de>
-+
-+Description
-+-----------
-+
-+This driver permits reading of the internal temperature sensor of AMD
-+Family 10h and 11h processors.
-+
-+All these processors have a sensor, but on older revisions of Family 10h
-+processors, the sensor returns inconsistent values (erratum 319). The driver
-+refuses to load with these revisions (DR-BA, DR-B2, DR-B3: some Embedded
-+Opterons on Socket F; and Quad-Core Opteron, Phenom Triple/Quad-Core, and
-+Athon Dual-Core on Socket AM2+). All later revisions (RB-C2, BL-C2, DA-C2,
-+RB-C3, HY-D0) work fine; see the list above.
-+
-+There is one temperature value, available as temp1_input in sysfs. It is
-+measured in degrees Celsius with a resolution of 1/8th degree. Please note
-+that it is defined as a relative value; to quote the AMD manual:
-+
-+  Tctl is the processor temperatur control value, used by the platform to
-+  control cooling systems. Tctl is a non-physical temperature on an arbitrary
-+  scale measured in degrees. It does _not_ represent an actual physical
-+  temperature like die or case temperature. Instead, it specifies the
-+  processor temperature relative to the point at which the system must supply
-+  the maximum cooling for the processor's specified maximum case temperature
-+  and maximum thermal power dissipation.
-+
-+The maximum value for Tctl is usually defined as 70 degrees, so, as a rule of
-+thumb, this value should not exceed 60 degrees.
---- linux-2.6/drivers/hwmon/Kconfig
-+++ linux-2.6/drivers/hwmon/Kconfig
-@@ -222,6 +222,18 @@ config SENSORS_K8TEMP
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called k8temp.
+The current kernel fifo API is not very widely used, because it has to many
+constrains. Only 17 files in the current 2.6.31-rc5 used it. FIFO's are
+like list's a very basic thing and a kfifo API which handles the most use
+case would save a lot of development time and memory resources.
+
+I think this are the reasons why kfifo is not in use:
+
+- The API is to simple, important functions are missing
+- A fifo can be only allocated dynamically
+- There is a need of a spinlock despite you need it or not
+- There is no support for data records inside a fifo
+
+So i decided to extend the kfifo in a more generic way without blowing up
+the API to much. The new API has the following benefits:
+
+- Generic usage: For kernel internal use and/or device driver.
+- Provide an API for the most use case.
+- Slim API: The whole API provides 25 functions.
+- Linux style habit.
+- DECLARE_KFIFO, DEFINE_KFIFO and INIT_KFIFO Macros
+- Direct copy_to_user from the fifo and copy_from_user into the fifo.
+- The kfifo itself is an in place member of the using data structure, this save an 
+  indirection access and does not waste the kernel allocator. 
+- Lockless access: if only one reader and one writer is active on the fifo,
+  which is the common use case, no additional locking is necessary.
+- Remove spinlock - give the user the freedom of choice what kind of locking to use if 
+  one is required.
+- Ability to handle records. Three type of records are supported:
+  - Variable length records between 0-255 bytes, with a record size field of 1 bytes.
+  - Variable length records between 0-65535 bytes, with a record size field of 2 bytes.
+  - Fixed size records, which no record size field.
+- Preserve memory resource.
+- Performance!
+- Easy to use!
+
+ChangeLog:
+
+v.0 03.08.2009
+ First proposal, post a draft
+v.1 04.08.2009
+ add kfifo_init()
+ kfifo_put() and kfifo_get() restored to the original behavior (but without locking)
+ introduce new kfifo_put_rec() and kfifo_put_rec() for FIFO record handling
+ kfifo_alloc() does only allocate the FIFO buffer
+ kfifo_free() does only release the FIFO buffer
+ revert to power of two buffer sizes
+v.2 12.08.2009
+ simplify record handling
+ add new kfifo_reset_out() function
+ rename kfifo_put_* into kfifo_in_* to prevent miss-use by non in-kernel-tree drivers
+ rename kfifo_get_* into kfifo_out_* to prevent miss-use by non in-kernel-tree drivers
+ split it into separated patches
+v.3 14.08.2009
+ fix documentation
+ fix some issues
+ refactorized code
+ refactorized patches
+v.4 16.08.2009
+ kfifo_in_rec(): change @from type into a void pointer  
+ kfifo_out_rec(): change @to type into a void pointer
+ rename internal used KFIFO_INIT() macro into  __kfifo_initializer()
+ fix bug in record handling - sorry, i posted an intermediate version
+ fix bug in kfifo_in() - sorry, i posted an intermediate version 
+ renamed the buffer used by the macros into name##kfifo_buffer (was name##_buffer)
+ fix source comments
+ cleanup and fix proposal document
+v.5 19.08.2009
+ Cleaned up record functionality
+ Add mini "how to porting to the new API" guide
+ Update some inline comments
+v.6 24.10.2009
+ Synchronized with kernel 2.6.32-rc5
+ New function kfifo_avail_rec
+v.7 20.11.2009
+ Fix typos (thanks to Roger Quadros)
+ Fix tab's
+
+The API:
+--------
+
+int kfifo_alloc(struct kfifo *fifo, unsigned int size, gfp_t gfp_mask)
+ Allocates a new FIFO internal buffer
+ The size will be rounded-up to a power of 2.
+ The buffer will be release with kfifo_free().
+ Return 0 if no error, otherwise the an error code.
+
+ @fifo: the fifo to assign then new buffer
+ @size: the size of the internal buffer to be allocated.
+ @gfp_mask: get_free_pages mask, passed to kmalloc()
+
+
+void kfifo_init(struct kfifo *fifo, unsigned char *buffer, unsigned int size)
+ Initialize a FIFO using a preallocated buffer
+
+ @fifo: the fifo to assign the buffer
+ @buffer: the preallocated buffer to be used.
+ @size: the size of the internal buffer, this have to be a power of 2.
+
+
+void kfifo_free(struct kfifo *fifo)
+ frees a dynamic allocated FIFO
+ @fifo: the fifo to be freed.
+
+
+void kfifo_reset(struct kfifo *fifo)
+ removes the entire FIFO contents
+ @fifo: the fifo to be emptied.
+
+
+void kfifo_reset_out(struct kfifo *fifo)
+ Skip output FIFO contents
+ @fifo: the fifo to be emptied.
+
+
+unsigned int kfifo_len(struct kfifo *fifo)
+ Returns the number of used bytes in the FIFO
+ @fifo: the fifo to be used.
+
+
+unsigned int kfifo_size(struct kfifo *fifo)
+ returns the size of the fifo in bytes
+ @fifo: the fifo to be used.
+
+
+kfifo_is_empty(struct kfifo *fifo)
+ returns true if the fifo is empty
+ @fifo: the fifo to be used.
+
+
+kfifo_is_full(struct kfifo *fifo)
+ Returns true if the fifo is full
+ @fifo: the fifo to be used.
+
+
+unsigned int kfifo_avail(struct kfifo *fifo)
+ Returns the number of bytes available in the FIFO
+ @fifo: the fifo to be used.
+
+
+unsigned int kfifo_in(struct kfifo *fifo, unsigned char *from, unsigned int n)
+ Puts some data into the FIFO.
+
+ This function copies at most @n bytes from @from into
+ the FIFO depending on the free space, and returns the number of
+ bytes copied.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @from: the data to be added.
+ @n: the length of the data to be added.
+
+
+unsigned int kfifo_out(struct kfifo *fifo, unsigned char *to, unsigned int n)
+ Gets some data from the FIFO.
+
+ This function copies at most @n bytes from the FIFO into
+ @to and returns the number of copied bytes.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+
  
-+config SENSORS_K10TEMP
-+	tristate "AMD Phenom/Sempron/Turion/Opteron temperature sensor"
-+	depends on X86 && PCI
-+	help
-+	  If you say yes here you get support for the temperature
-+	  sensor inside your CPU. Supported are later revisions of
-+	  the AMD Family 10h and all revisions of the AMD Family 11h
-+	  microarchitectures.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called k10temp.
-+
- config SENSORS_AMS
- 	tristate "Apple Motion Sensor driver"
- 	depends on PPC_PMAC && !PPC64 && INPUT && ((ADB_PMU && I2C = y) || (ADB_PMU && !I2C) || I2C) && EXPERIMENTAL
---- linux-2.6/drivers/hwmon/Makefile
-+++ linux-2.6/drivers/hwmon/Makefile
-@@ -53,6 +53,7 @@ obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
- obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
- obj-$(CONFIG_SENSORS_IT87)	+= it87.o
- obj-$(CONFIG_SENSORS_K8TEMP)	+= k8temp.o
-+obj-$(CONFIG_SENSORS_K10TEMP)	+= k10temp.o
- obj-$(CONFIG_SENSORS_LIS3LV02D) += lis3lv02d.o hp_accel.o
- obj-$(CONFIG_SENSORS_LIS3_SPI)	+= lis3lv02d.o lis3lv02d_spi.o
- obj-$(CONFIG_SENSORS_LM63)	+= lm63.o
---- /dev/null
-+++ linux-2.6/drivers/hwmon/k10temp.c
-@@ -0,0 +1,135 @@
-+/*
-+ * k10temp.c - AMD Family 10h/11h CPUs hardware monitoring
-+ *
-+ * Copyright (c) 2009 Clemens Ladisch <clemens@ladisch.de>
-+ *
-+ *
-+ * This driver is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License; either
-+ * version 2 of the License, or (at your option) any later version.
-+ *
-+ * This driver is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ * See the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this driver; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/hwmon.h>
-+#include <linux/hwmon-sysfs.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <asm/processor.h>
-+
-+MODULE_DESCRIPTION("AMD Family 10h/11h CPU core temperature monitor");
-+MODULE_AUTHOR("Clemens Ladisch <clemens@ladisch.de>");
-+MODULE_LICENSE("GPL");
-+
-+#define REG_REPORTED_TEMPERATURE	0xa4
-+#define CURTMP_TO_MILLIDEGREES(regval)	(((regval) >> 21) * 125)
-+
-+static ssize_t show_temp(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	u32 regval;
-+
-+	pci_read_config_dword(to_pci_dev(dev),
-+			      REG_REPORTED_TEMPERATURE, &regval);
-+	return sprintf(buf, "%u\n", CURTMP_TO_MILLIDEGREES(regval));
-+}
-+
-+static ssize_t show_name(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "k10temp\n");
-+}
-+
-+static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL, 0);
-+static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-+
-+static bool __devinit has_erratum_319(void)
-+{
-+	/*
-+	 * Erratum 319: The thermal sensor of older Family 10h processors
-+	 *              (B steppings) is unreliable.
-+	 */
-+	return boot_cpu_data.x86 == 0x10 && boot_cpu_data.x86_model <= 2;
-+}
-+
-+static int __devinit k10temp_probe(struct pci_dev *pdev,
-+				   const struct pci_device_id *id)
-+{
-+	struct device *hwmon_dev;
-+	int err;
-+
-+	if (has_erratum_319()) {
-+		dev_err(&pdev->dev,
-+			"unreliable CPU thermal sensor; monitoring disabled\n");
-+		err = -ENODEV;
-+		goto exit;
-+	}
-+
-+	err = device_create_file(&pdev->dev,
-+				 &sensor_dev_attr_temp1_input.dev_attr);
-+	if (err)
-+		goto exit;
-+
-+	err = device_create_file(&pdev->dev, &dev_attr_name);
-+	if (err)
-+		goto exit_remove1;
-+
-+	hwmon_dev = hwmon_device_register(&pdev->dev);
-+	if (IS_ERR(hwmon_dev)) {
-+		err = PTR_ERR(hwmon_dev);
-+		goto exit_remove2;
-+	}
-+
-+	dev_set_drvdata(&pdev->dev, hwmon_dev);
-+	return 0;
-+
-+exit_remove2:
-+	device_remove_file(&pdev->dev, &dev_attr_name);
-+exit_remove1:
-+	device_remove_file(&pdev->dev, &sensor_dev_attr_temp1_input.dev_attr);
-+exit:
-+	return err;
-+}
-+
-+static void __devexit k10temp_remove(struct pci_dev *pdev)
-+{
-+	hwmon_device_unregister(dev_get_drvdata(&pdev->dev));
-+	device_remove_file(&pdev->dev, &dev_attr_name);
-+	device_remove_file(&pdev->dev, &sensor_dev_attr_temp1_input.dev_attr);
-+	dev_set_drvdata(&pdev->dev, NULL);
-+}
-+
-+static struct pci_device_id k10temp_id_table[] = {
-+	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
-+	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(pci, k10temp_id_table);
-+
-+static struct pci_driver k10temp_driver = {
-+	.name = "k10temp",
-+	.id_table = k10temp_id_table,
-+	.probe = k10temp_probe,
-+	.remove = __devexit_p(k10temp_remove),
-+};
-+
-+static int __init k10temp_init(void)
-+{
-+	return pci_register_driver(&k10temp_driver);
-+}
-+
-+static void __exit k10temp_exit(void)
-+{
-+	pci_unregister_driver(&k10temp_driver);
-+}
-+
-+module_init(k10temp_init)
-+module_exit(k10temp_exit)
+unsigned int kfifo_from_user(struct kfifo *fifo, const void __user *from, unsigned int n)
+ Puts some data from user space into the FIFO.
+
+ This function copies at most @n bytes from the @from into the FIFO
+ and returns the number of copied bytes.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @from: pointer to the data to be added.
+ @n: the length of the data to be added.
+
+
+unsigned int kfifo_to_user(struct kfifo *fifo, void __user *to, unsigned int n)
+ Gets data from the FIFO and write it to user space.
+
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+
+ This function copies at most @n bytes from the FIFO into @to
+ and returns the number of copied bytes.
+
+ Note that with only one concurrent reader and one concurrent writer, you don't
+ need extra locking to use these functions.
+
+
+void kfifo_skip(struct kfifo *fifo, unsigned int len)
+ Skip output data
+ @fifo: the fifo to be used.
+ @len: number of bytes to skip
+
+
+Functions for simplify porting:
+-------------------------------
+
+unsigned int kfifo_in_locked(struct kfifo *fifo,
+	const unsigned char *from, unsigned int n, spinlock_t *lock)
+ Puts some data into the FIFO using a spinlock for locking
+ @fifo: the fifo to be used.
+ @from: the data to be added.
+ @len: the length of the data to be added.
+ @lock: pointer to the spinlock to use for locking.
+
+ This function copies at most @len bytes from the @from buffer into
+ the FIFO depending on the free space, and returns the number of
+ bytes copied.
+
+
+unsigned int kfifo_out_locked(struct kfifo *fifo,
+	unsigned char *to, unsigned int n, spinlock_t *lock)
+ Gets some data from the FIFO using a spinlock for locking
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @len: the size of the destination buffer.
+ @lock: pointer to the spinlock to use for locking.
+
+ This function copies at most @len bytes from the FIFO into the
+ @to buffer and returns the number of copied bytes.
+
+
+These are the functions for handling records:
+---------------------------------------------
+
+The functions supports three different kinds of records:
+
+- Fix size records.
+  The @recsize parameter is 0 and exactly @len bytes will be copied
+- Varible size records with 1 byte length field
+  The @recsize parameter is 1 and a record of 0-255 bytes will be copied
+- Varible size records with 2 byte length field
+  The @recsize parameter is 2 and a record of 0-65535 bytes will be copied
+
+
+unsigned int kfifo_in_rec(struct kfifo *fifo,
+	void *from, unsigned int n, unsigned int recsize)
+ Puts some record data into the FIFO.
+
+ This function copies @n bytes from the @from into
+ the FIFO and returns the number of bytes which cannot be copied.
+ A returned value greater than the @n value means that the record doesn't
+ fit into the buffer.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+ @fifo: the fifo to be used.
+ @from: the data to be added.
+ @n: the length of the data to be added.
+ @recsize: size of record field
+
+
+unsigned int kfifo_out_rec(struct kfifo *fifo,
+	void *to, unsigned int n, unsigned int recsize,
+	unsigned int *total)
+ Gets some record data from the FIFO.
+ 
+ This function copies at most @n bytes from the @to into
+ the FIFO and returns the number of bytes which cannot be copied.
+
+ A returned value greater than the @n value means that the record doesn't
+ fit into the @to buffer.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+ @recsize: size of record field
+ @total: pointer where the total number of to copied bytes should stored
+
+
+unsigned int kfifo_from_user_rec(struct kfifo *fifo,
+	const void __user *from, unsigned int n, unsigned int recsize)
+ Puts some data from user space into the FIFO
+ 
+ This function copies @n bytes from the @from into the
+ FIFO and returns the number of bytes which cannot be copied. If the 
+ returned value is equal or less the @n value, the copy_from_user() functions has 
+ failed. Otherwise the record doesn't fit into the buffer.
+ 
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+ @fifo: the fifo to be used.
+ @from: pointer to the data to be added.
+ @n: the length of the data to be added.
+ @recsize: size of record field
+
+
+unsigned int kfifo_to_user_rec(struct kfifo *fifo,
+		void __user *to, unsigned int n, unsigned int recsize,
+		unsigned int *total)
+ Gets data from the FIFO and write it to user space
+
+ This function copies at most @n bytes from the FIFO into @to.
+ In case of an error, the function returns the number of bytes which cannot
+ be copied. If the returned value is equal or less the @n value, the
+ copy_to_user() functions has failed. Otherwise the record doesn't fit into
+ the @to buffer.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+ @recsize: size of record field
+ @total: pointer where the total number of to copied bytes should stored
+
+
+unsigned long kfifo_peek_rec(struct kfifo *fifo, unsigned long recsize)
+ Gets the size of the next FIFO record data.
+
+ This function returns the size of the next FIFO record in number of bytes
+ @fifo: the fifo to be used.
+ @recsize: size of record field
+
+
+unsigned int kfifo_skip_rec(struct kfifo *fifo,	unsigned int recsize)
+ Skip the next output record
+
+ This function skips the next FIFO record
+
+ @fifo: the fifo to be used.
+ @recsize: size of record field
+
+unsigned int kfifo_avail_rec(struct kfifo *fifo, unsigned int recsize)
+ Returns the number of bytes available in a record FIFO
+
+ @fifo: the fifo to be used
+ @recsize: size of record field
+
+
+Macros defined for kernel FIFO:
+-------------------------------
+
+DECLARE_KFIFO(name, size)
+ Macro to declare a kfifo and the associated buffer
+
+ Note: the macro can be used inside struct or union declaration
+
+ @name: name of the declared kfifo datatype
+ @size: size of the fifo buffer
+
+
+INIT_KFIFO(name)
+ Macro to initialize a with DECLARE_KFIFO declared kfifo
+ @name: name of the declared kfifo datatype
+ @size: size of the fifo buffer
+
+
+DEFINE_KFIFO(name, size)
+ Macro to define and initialize a kfifo
+
+ Note: the macro can be used for global and local kfifo data type variables
+
+ @name: name of the declared kfifo datatype
+ @size: size of the fifo buffer
+
+<End of API Documentation>
+
+One thing is that the new API is not compatible with the old one. I had
+a look at the current user of the old kfifo API and it is was easy to adapt it to
+the new API. These are the files which currently use the kfifo API:
+
+drivers/char/nozomi.c
+drivers/char/sonypi.c
+drivers/infiniband/hw/cxgb3/cxio_resource.c
+drivers/media/video/meye.c
+drivers/net/wireless/libertas/main.c
+drivers/platform/x86/fujitsu-laptop.c
+drivers/platform/x86/sony-laptop.c
+drivers/scsi/libiscsi.c
+drivers/scsi/libiscsi_tcp.c
+drivers/scsi/libsrp.c
+drivers/usb/host/fhci.h
+net/dccp/probe.c
+drivers/usb/serial/usb-serial.c
+drivers/usb/serial/generic.c
+
+The patch is splitted into 7 parts:
+
+ Part 1: move struct kfifo in place
+ Part 2: move out spinlock
+ Part 3: Cleanup namespace
+ Part 4: rename kfifo_put... -> kfifo_in... and kfifo_get... -> kfifo_out...
+ Part 5: add DEFINE_KFIFO and friends, add very tiny functions
+ Part 6: add kfifo_skip, kfifo_from_user and kfifo_to_user (does some reorg)
+ Part 7: add record handling functions (does some reorg)
+
+The patch-set is against linux-2.6.32-rc5.
+
+Greetings,
+Stefani
+
+
+
