@@ -1,65 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZKTK5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZKTK5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZKTK5a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 05:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZKTK53
+	id S1752886AbZKTK5r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 05:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZKTK5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 05:57:29 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50944 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbZKTK52 (ORCPT
+	Fri, 20 Nov 2009 05:57:46 -0500
+Received: from ukmta3.baesystems.com ([20.133.40.55]:43362 "EHLO
+	ukmta3.baesystems.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbZKTK5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 05:57:28 -0500
-Date: Fri, 20 Nov 2009 11:57:26 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 2/3] staging/dream: add missing include files
-Message-ID: <20091120105726.GH11212@elf.ucw.cz>
-References: <20091101222717.GB20740@elf.ucw.cz>
- <20091119225602.GC18710@kroah.com>
+	Fri, 20 Nov 2009 05:57:44 -0500
+X-IronPort-AV: E=Sophos;i="4.44,776,1249254000"; 
+   d="scan'208";a="34094450"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091119225602.GC18710@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+Subject: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
+Date: Fri, 20 Nov 2009 10:57:47 -0000
+Message-ID: <FEBDE48FB0344846BAE4FB976A42642802BD9877@GLKMS2101.GREENLNK.NET>
+In-Reply-To: <FEBDE48FB0344846BAE4FB976A42642802BA8271@GLKMS2101.GREENLNK.NET>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
+Thread-Index: AcppEi7wIIY+PkoxSNiMBwUwvkw6kwAAYeKQAC8e46A=
+References: <d0ced6d70911190416w3a354a50jcb0e93934805ca07@mail.gmail.com> <FEBDE48FB0344846BAE4FB976A42642802BA8271@GLKMS2101.GREENLNK.NET>
+From: "Ahmed, Subhan (UK)" <Subhan.Ahmed@baesystems.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Nov 2009 10:57:48.0362 (UTC) FILETIME=[4C0E9AA0:01CA69D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-11-19 14:56:02, Greg KH wrote:
-> On Sun, Nov 01, 2009 at 11:27:17PM +0100, Pavel Machek wrote:
-> > Add missing files/includes neccessary for Dream compilation.
-> >     
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> 
-> This patch includes a file that is not in the drivers/staging/
-> directory, and it does this Kconfig mess:
+Hi All,
 
-Oops, sorry. That one escaped me. I'll submit fixed version.
+I know this is not email list for programming questions but it relates
+to Kernel as well, in fact relying on kernel. Could someone please
+through a light or guide me to the right direction.
 
-> > +config GENERIC_GPIO
-> > +	bool
-> > +	default y
-> 
-> Which breaks the i386 build.  Don't force on a general config option
-> like this, that's not nice at all :(
 
-Ok, I should figure out how to limit it to arch-msm.
+Problem Statement:	High CPU clock speed/freq
+Requirement:		Obtain a stable CPU clock ticks/speed/freq on
+Suse 11.1 with kernel 2.6.27.7-9
+Questions:			Please refer to the bottom of this page
+Artifacts in Use:
+-----------------------------------
+OS:					Suse 11.1
+GCC Version:		4.3.2 (Suse Linux) [gcc_4_3-brach revision
+141291]
+Kernel:				2.6.27.7-9
+Kernel Mods:		
+					* Un-check the Tickless option
+					* Timer Frequency - 1000Hz
+					* Preempt kernel
 
-> So I'll not apply this one, and the 3/3 patch.
+Others 1
+-----------
+OS:					Suse 10.2
+GCC Version:		4.1.2 20061115 (prerelease)(SUSE Linux)
+Kernel:				2.6.18.2-34-default
+Kernel Mods:
+					* Preemptible Kernel
+(Low-Latency Desktop) (NEW)
+					* Preempt The Big Kernel Lock
+(NEW)
+					* Timer frequency (NEW) - 1000
+Hz (NEW)
 
-Where can I get the tree to diff against?
-gregkh-08-staging-2.6.32-rc7-git4.patch just reverts everything.
+Others 2
+-----------
+OS:					Suse 9.3
+GCC Version:		3.3.5 20050117 (prerelease)(SUSE Linux)
+Kernel				2.6.11.4-20a-default
+Kernel Mods:		None
 
-I guess I can extract it from
-://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/series ...
+I executed the following c++ code on the above stated builds
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+CODE - file name test.cpp
+#include <signal.h>
+#include <sys/time.h>
+#include <iostream>
+#include <cstdlib>
+
+
+using namespace std;
+
+long long int counter = 0;
+struct timeval last_time;
+struct timeval curr_time;
+double dif = 0.0;
+double freq_sum = 0.0;
+double reps = 0.0;
+double freq_min = 99999.0;
+double freq_max = 0.0;
+long long int num_too_low = 0;
+
+void time_check(int data)
+{
+    // work out the frequecy of the SIGALRMs
+    ++counter;
+    if (counter >= 1000)
+    {
+
+        // need to work out time since last 1000 ticks
+	gettimeofday(&curr_time, NULL);
+	dif = ((curr_time.tv_usec + curr_time.tv_sec * 1000000)
+		- (last_time.tv_usec + last_time.tv_sec * 1000000));
+        double freq = (counter / dif)  * 1000000;
+
+        freq_sum = ((freq_sum * reps) + freq) / (reps + 1) ;
+
+        ++reps;
+        cout << "Frequency = " << freq << " reps= " << dif / 1000000 <<
+endl;
+        if (freq_min > freq) freq_min = freq;
+        if (freq_max < freq) freq_max = freq;
+        if (freq < 950) 
+            ++num_too_low;
+        last_time = curr_time;
+        counter = 0;
+    }
+}
+
+int main (int argc, char * argv[])
+{
+    cout << "go" /* << "\a \a \a" */ << endl;
+	
+    int res;
+    gettimeofday(&last_time, NULL);
+    struct sigaction action;
+
+    struct itimerval timer_value;
+
+    timer_value.it_value.tv_sec = 0;
+    timer_value.it_value.tv_usec = 1;
+    timer_value.it_interval.tv_sec = 0;
+    timer_value.it_interval.tv_usec = 1;
+
+    action.sa_handler = time_check;
+    action.sa_flags = SA_NOMASK;
+    sigemptyset(&action.sa_mask);
+
+    sigaction( SIGALRM, &action, NULL);
+    res = setitimer( ITIMER_REAL, &timer_value, NULL );
+    if (res == -1)
+        cout << "error in setitimer" << endl;
+
+    cout << "Starting CPU Test program" << endl;
+    // loop for a long time
+
+    while (reps < 3000.0)
+    {
+        sleep(1);
+    }
+    cout << "average CPU frequency = " << freq_sum << endl;
+    cout << "reps = " << reps << endl;
+    cout << "Min = " << freq_min << "  Max = " << freq_max << endl;
+    cout << "number of low = " << num_too_low << endl;
+    return 0;
+}
+
+Compiled the above code with 	"g++ -o test test.cpp"
+Run the above code with 		"./test"
+
+Observations:
+SUSE Version    AVG. Frequency        		AVG. REPS
+Suse 9.3  		999.xxx to 990.xxx  			reps > 1
+(on average)
+Suse 10.2 		999.xxx to 998.xxx  			reps (1
+- 1.001)
+Suse 10.3     	1000.xxx to 912.xxx  			reps (1 - 1.090)
+Suse 11.1       0 to  324263.xxx  				reps
+(-2e-0.6 upto 0.005112)
+
+Suse 11.1 - Options:
+
+- Turn off ACPI in options when booting with clock=tsc | clock=pit
+
+Observations for suse 11.1 with options acpi=off and clock=tsc |
+clock=pit
+
+SUSE Version    AVG. Frequency        		AVG. REPS
+Suse 11.1 		710.xxx to 999.xxx      		reps
+(1.37xx to 1.0002)
+
+Hardware used for Suse 11.1 - HP Pavilion Slimline s3821uk Desktop PC
+(NQ808AA) specifications - HP Home & Home Office products
+http://h10010.www1.hp.com/wwpc/uk/en/ho/WF10a/12454-12454-3329740-64546-
+64546-3884669.html?jumpid=in_r2515_uk/en/hho/ipg/psc404redirect-ot-xx-xx
+-/chev/
+
+While testing no other application/s were running.
+
+Question:
+
+* Is my c++ code correct?
+* Am I using the correct way to get the clock ticks or is there more
+reliable tchnique avaliable to do this?
+* Is that a problem with new Kernel if so is it a known issue ?
+* Do I need to modify the Kernel to obtain regular and stable clock tick
+at 1000 Hz ?
+* Do I have to upgrade the Kernel ?
+* Would be great, if pointed to the right direction for solution (e.g.
+another forum) if no solution at hand.
+
+Thanks
+
+Subhan
+
+********************************************************************
+This email and any attachments are confidential to the intended
+recipient and may also be privileged. If you are not the intended
+recipient please delete it from your system and notify the sender.
+You should not copy it or use it for any purpose nor disclose or
+distribute its contents to any other person.
+********************************************************************
+
