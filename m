@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZKTLHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZKTLMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbZKTLHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 06:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKTLHu
+	id S1752922AbZKTLMH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 06:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZKTLMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 06:07:50 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52742 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZKTLHt (ORCPT
+	Fri, 20 Nov 2009 06:12:07 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:35070 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbZKTLMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 06:07:49 -0500
-Date: Fri, 20 Nov 2009 11:07:28 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, Brian Swetland <swetland@google.com>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 2/3] staging/dream: add missing include files
-Message-ID: <20091120110728.GB10644@n2100.arm.linux.org.uk>
-References: <20091101222717.GB20740@elf.ucw.cz> <20091119225602.GC18710@kroah.com> <20091120105726.GH11212@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120105726.GH11212@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Nov 2009 06:12:05 -0500
+Subject: kvm hangs w/o nolapic
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm <kvm@vger.kernel.org>, Cyrill Gorcunov <gorcunov@openvz.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-rMrPnJmgjq+1ZnBdmz3r"
+Date: Fri, 20 Nov 2009 12:11:55 +0100
+Message-ID: <1258715515.7094.51.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
-> On Thu 2009-11-19 14:56:02, Greg KH wrote:
-> > On Sun, Nov 01, 2009 at 11:27:17PM +0100, Pavel Machek wrote:
-> > > +config GENERIC_GPIO
-> > > +	bool
-> > > +	default y
-> > 
-> > Which breaks the i386 build.  Don't force on a general config option
-> > like this, that's not nice at all :(
-> 
-> Ok, I should figure out how to limit it to arch-msm.
 
-You do it by 'select'ing the symbol in arch/arm/Kconfig.  See the many
-other examples therein of how to do it.
+--=-rMrPnJmgjq+1ZnBdmz3r
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+My 2.6.32-rc7 kvm (both guest+host, x86_64) hangs w/o "nolapic" here:
+
+  while (lapic_cal_loops <=3D LAPIC_CAL_LOOPS)
+     cpu_relax();
+
+because lapic_cal_loops never changes from -1.
+
+Code was last changed by
+commit 2f04fa888d270951b9e0fe9e641ddd560d77ad1b
+Author: Yinghai Lu <yhlu.kernel@gmail.com>
+Date:   Sun Aug 24 02:01:54 2008 -0700
+
+    x86: apic copy calibrate_APIC_clock to each other in apic_32/64.c
+
+but I haven't tested reverting that.
+
+johannes
+
+--=-rMrPnJmgjq+1ZnBdmz3r
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLBnl4AAoJEODzc/N7+QmaoRsP/jbrs/N0x3L3lBoDeGzx0JA5
+gf0+XOR8voAG9cxuK/x1FG9w16kVGhyMAt6L4I9QpdsU/ufJIACUqoflggHKPzyK
+q9qxqxaTXCxZOSA226rDnk+B+MXS2PWXGfB7DWCF26mwgP4kjHgqtim+0ksRwa+A
+ecE57XxdqpIdC//7q7kZyFhwmXuWUy+f+SiZeSb1aRoENFvuGuqi8xEB00Xt/Hex
+ePHig4mIEjuXKe45csfo/NfZpx3tvwWHh1reR3fQ1uJGCCuZnWnJAJJGpxwm/l8o
+SM5jboyU5Q1N+UcqVymJZUq5H7ns4It+kYQkwBhm0L7Q5Y+TRsGrnejCeO4XGbiv
+q6c0Pk1xPP9tagQ3TqJ4N7zpB/K8oZnJyjCbHKqX6bnfWVFClOrbnLF61tAe+ujg
+ddZS6p5LrH8+DtVaUkVkwNXNGUB30DqVnI59m6ZZmj6fsb8AbMFXtFMJz/PMSNA2
+qCdB8x6Hg5twFDPxd87gQ6CiaY/pnP8K1ATO9UfBLv1Tg+x+i2ZfV8cdCxSkYDqe
+WynhPQsnBmskd59dDPHcjdoAAH5MPcnY+SYO2ASKVb49G0QkNUMD1DhirLdX6DE4
+bKUDZEC0blg+W+sDBPYLnblZ35DGDC6s07XgcSBiOB/0qoe0H5ImQqlqyo350mgG
+yOBBk2bUYM0to7cxWAdz
+=R4+x
+-----END PGP SIGNATURE-----
+
+--=-rMrPnJmgjq+1ZnBdmz3r--
+
