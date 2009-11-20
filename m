@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZKTVQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZKTVST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbZKTVQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbZKTVQh
+	id S1755104AbZKTVST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZKTVSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:16:37 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33108 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbZKTVQh (ORCPT
+	Fri, 20 Nov 2009 16:18:18 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:48138 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753297AbZKTVSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:16:37 -0500
-Date: Fri, 20 Nov 2009 19:16:39 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: A generic kernel compatibilty code
-Message-ID: <20091120191639.263714e2@pedra>
-In-Reply-To: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Nov 2009 16:18:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=V2IduTE7AqKOcLAiIVyY/6SoY1Zv3+0A1QXJvV+IaAflFZWMF3ZUG2WNaU0jEQtnEY
+         r9bZXIXgj034RYY+s2gj42TOAE6bM34XU59TVx4OJ9W5PdnJKt9akoiaRLrsZHyMQpfl
+         z2FfevQ3GxOaginee84fTthEobL4mg2zbgCO8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 4/5] pata: Update experimental tags
+Date: Fri, 20 Nov 2009 22:17:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911192249.16860.bzolnier@gmail.com> <4B05C0B1.2020307@garzik.org>
+In-Reply-To: <4B05C0B1.2020307@garzik.org>
+MIME-Version: 1.0
+Message-Id: <200911202217.31982.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luis,
+On Thursday 19 November 2009 11:03:29 pm Jeff Garzik wrote:
+> On 11/19/2009 04:49 PM, Bartlomiej Zolnierkiewicz wrote:
 
-Em Fri, 20 Nov 2009 12:45:51 -0800
-"Luis R. Rodriguez" <mcgrof@gmail.com> escreveu:
-
-> Everyone and their mother reinvents the wheel when it comes to
-> backporting kernel modules. It a painful job and it seems to me an
-> alternative is possible. If we can write generic compatibilty code for
-> a new routine introduced on the next kernel how about just merging it
-> to the kernel under some generic compat module. This would be
-> completey ignored by everyone using the stable kernel but can be
-> copied by anyone doing backport work.
+> >> Absent stronger justification, libata remains with separate drivers,
+> >> even if that means some code duplication.
+> >
+> > I can always hold my own tree with such changes if needed.
 > 
-> So I'm thinking something as simple as a generic compat/comat.ko with
-> compat-2.6.32.[ch] files.
-> 
-> We've already backported everything needed for wireless drivers under
-> compat-wireless under this format down to even 2.6.25. I volunteer to
-> be the sucker for this if this is reasonable and given the shot to try
-> it.
-> 
+> If it really bugs you, you could take the drivers/ata/sata_promise.h 
+> approach, or do multi-file modules.
 
-We have several backport stuff at our development tree, that works for
-V4L/DVB up to kernel 2.6.16 (so, up to RHEL5).
+One of the main problems with separate drivers is a needless complexity
+of the detection logic (different chips share same PCI IDs) and relevant
+code parts presenting the issue were already posted in this thread.
 
-It is based on a compat.h file, plus some extra tests inside the drivers.
-They are at:
-	http://linuxtv.org/hg/v4l-dvb
+PS It would bug me really if I were the author or the maintainer of said
+code but since I'm not I'll get to fixing it only when I'm bored enough..
 
-I also started working on a different approach of dynamically patching the
-drivers based on some semantic rules, parsed in perl, but I hadn't enough
-time to finish.
-
-If you want to take a look, it is at:
-
-	http://linuxtv.org/hg/~mchehab/backport/
-
-
-Cheers,
-Mauro
+--
+Bartlomiej Zolnierkiewicz
