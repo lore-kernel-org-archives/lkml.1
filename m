@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZKTAAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZKTADp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbZKTAAo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757942AbZKTAAn
+	id S1758052AbZKTADp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbZKTADo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:00:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29768 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 19:03:44 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44618 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757789AbZKTAAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:00:42 -0500
-Message-ID: <4B05DBBF.5000804@redhat.com>
-Date: Thu, 19 Nov 2009 16:58:55 -0700
-From: Jeff Law <law@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: "H. Peter Anvin" <hpa@zytor.com>, David Daney <ddaney@caviumnetworks.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com> 	 <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com>
-In-Reply-To: <1258670580.22249.1002.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757642AbZKTADn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:03:43 -0500
+Date: Fri, 20 Nov 2009 11:03:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: infiniband tree build failure
+Message-Id: <20091120110342.5128b8f8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19/09 15:43, Steven Rostedt wrote:
-> On Thu, 2009-11-19 at 14:25 -0700, Jeff Law wrote:
->
->    
->> Having said all that, I don't expect to personally be looking at the
->> problem, given the list of other codegen issues that need to be looked
->> at (reload in particular), profiling/stack interactions would be around
->> 87 millionth on my list.
->>      
-> Is there someone else that can look at it?
->
->    
-Unsure at the moment...  Like everyone else, GCC developers are busy and 
-this probably isn't going to be a high priority item for anyone.
+--Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-> Or at the very least, could you point us to where that code is, and one
-> of us tracing folks could take a crack at switching hats to be a
-> compiler writer (with the obvious prerequisite of drinking a lot of beer
-> first, or is there a better drug to cope with the pain of writing gcc?).
->    
-It _might_ be as easy as defining PROFILE_BEFORE_PROLOGUE in
-gcc-<someversion>gcc/config/i386/linux.h & rebuilding GCC.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-Based on comments elsewhere, the sun386i support may have used 
-PROFILE_BEFORE_PROLOGUE in the past and thus the x86 backend may not 
-need further adjustment.  That is obviously the ideal case.
+ERROR: ".__ipv6_addr_type" [drivers/infiniband/core/rdma_cm.ko] undefined!
 
-If that appears to work for your needs, I'll volunteer to test it more 
-thoroughly and assuming those tests look good shepherd it into the 
-source tree.
+I have used the version of the infiniband tree from next-20091119 for
+today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Jeff
+--Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksF3N4ACgkQjjKRsyhoI8wkDwCgt095Dt0ikHbRwEoRPGzGz+uV
+QCAAn3xzbJf9q8Jc42d6fcqAlGF2Y/QK
+=Jclc
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK--
