@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZKTQFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZKTQIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbZKTQFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 11:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZKTQFv
+	id S1754124AbZKTQIy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 11:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZKTQIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 11:05:51 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:39662 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172AbZKTQFu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 11:05:50 -0500
-Date: Fri, 20 Nov 2009 16:05:26 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091120160526.GD20634@shareable.org>
-References: <20091025225342.007138f5@infradead.org> <20091111020108.GA11423@localhost> <20091110223456.01ef355f@infradead.org> <4AFA6AEF.5060306@garzik.org> <20091111081905.270a4e55@infradead.org> <y0m3a4kpsiw.fsf@fche.csb> <4AFB4AC7.1090405@intel.com> <20091112072217.GA31719@elte.hu> <20091120104335.GB29143@infradead.org> <20091120064511.268cc8fd@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120064511.268cc8fd@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 20 Nov 2009 11:08:54 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:33241 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753079AbZKTQIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 11:08:53 -0500
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
+ and big packets in virtio_net
+From: Shirley Ma <mashirle@us.ibm.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4B063509.10006@gmail.com>
+References: <1258697745.7416.20.camel@localhost.localdomain>
+	 <4B063509.10006@gmail.com>
+Content-Type: text/plain
+Date: Fri, 20 Nov 2009 08:08:52 -0800
+Message-Id: <1258733332.4108.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> in my case it's not about finding the file, but finding the place in
-> the application that is doing the writing. The last pathname component
-> is more than enough for this....
+On Fri, 2009-11-20 at 07:19 +0100, Eric Dumazet wrote:
+> > +void virtio_free_pages(void *buf)
+> > +{
+> > +     struct page *page = (struct page *)buf;
+> > +
+> > +     while (page) {
+> > +             __free_pages(page, 0);
+> > +             page = (struct page *)page->private;
+> > +     }
+> > +}
+> > +
+> 
+> Interesting use after free :)
 
-So what you really need is the source file and line number in your
-application where it does the writing :-)
+Good catch. This code was run when virtio_net removal. I run many times
+of remove virtio_net, and didn't hit any panic :(. Fixed it as below:
 
--- Jamie
+void virtio_free_pages(void *buf)
+{
+	struct page *page = (struct page *)buf;
+	struct page *npage;
+
+	while (page) {
+		npage = page->private;
+		__free_pages(page, 0);
+		page = npage;
+	}
+}
+
+Thanks
+Shirley
+
+
