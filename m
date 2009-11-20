@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZKTEry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbZKTEtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZKTEry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 23:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbZKTErw
+	id S1758434AbZKTEtf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 23:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758287AbZKTEtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 23:47:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45032 "EHLO hera.kernel.org"
+	Thu, 19 Nov 2009 23:49:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45113 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754818AbZKTErr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 23:47:47 -0500
+	id S1755804AbZKTEsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 23:48:16 -0500
 From: Tejun Heo <tj@kernel.org>
 To: torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -16,9 +16,9 @@ To: torvalds@linux-foundation.org, awalls@radix.net,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 10/19] workqueue: merge feature parametesr into flags
-Date: Fri, 20 Nov 2009 13:46:38 +0900
-Message-Id: <1258692407-8985-11-git-send-email-tj@kernel.org>
+Subject: [PATCH 11/19] workqueue: update cwq alignement and make one more flag bit available
+Date: Fri, 20 Nov 2009 13:46:39 +0900
+Message-Id: <1258692407-8985-12-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258692407-8985-1-git-send-email-tj@kernel.org>
 References: <1258692407-8985-1-git-send-email-tj@kernel.org>
@@ -26,134 +26,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, __create_workqueue_key() takes @singlethread and
-@freezeable paramters and store them separately in workqueue_struct.
-Merge them into a single flags parameter and field and use
-WQ_FREEZEABLE and WQ_SINGLE_THREAD.
+Currently cwqs are aligned to cacheline and lower two bits of
+work_struct->data are considered to be available and used as flags.
+Make the alignement requirement official by defining
+WORK_STRUCT_FLAG_BITS and aligning cwqs to two's power of it.
+
+This is in preparation of concurrency managed workqueue and cwqs being
+aligned to cacheline wouldn't matter as much.  While at it, this patch
+reserves one more bit for work flags and make sure the resulting
+alignment is at least equal to or larger than that of long long.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/workqueue.h |   25 +++++++++++++++----------
- kernel/workqueue.c        |   17 +++++++----------
- 2 files changed, 22 insertions(+), 20 deletions(-)
+ include/linux/workqueue.h |   19 +++++++++++++++----
+ kernel/workqueue.c        |   15 +++++++++++++--
+ 2 files changed, 28 insertions(+), 6 deletions(-)
 
 diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index ac06c55..495572a 100644
+index 495572a..5ff8c44 100644
 --- a/include/linux/workqueue.h
 +++ b/include/linux/workqueue.h
-@@ -184,13 +184,17 @@ static inline bool work_static(struct work_struct *work) { return false; }
- #define work_clear_pending(work) \
- 	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
+@@ -22,12 +22,23 @@ typedef void (*work_func_t)(struct work_struct *work);
+  */
+ #define work_data_bits(work) ((unsigned long *)(&(work)->data))
  
 +enum {
-+	WQ_FREEZEABLE		= 1 << 0, /* freeze during suspend */
-+	WQ_SINGLE_THREAD	= 1 << 1, /* no per-cpu worker */
++	WORK_STRUCT_PENDING	= 0,	/* work item is pending execution */
++	WORK_STRUCT_STATIC	= 1,	/* static initializer (debugobjects) */
++
++	/*
++	 * Reserve 3bits off of cwq pointer.  This is enough and
++	 * provides acceptable alignment on both 32 and 64bit
++	 * machines.
++	 */
++	WORK_STRUCT_FLAG_BITS	= 3,
++
++	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
++	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
 +};
- 
- extern struct workqueue_struct *
--__create_workqueue_key(const char *name, int singlethread, int freezeable,
-+__create_workqueue_key(const char *name, unsigned int flags,
- 		       struct lock_class_key *key, const char *lock_name);
- 
++
+ struct work_struct {
+ 	atomic_long_t data;
+-#define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
+-#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
+-#define WORK_STRUCT_FLAG_MASK (3UL)
+-#define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+ 	struct list_head entry;
+ 	work_func_t func;
  #ifdef CONFIG_LOCKDEP
--#define __create_workqueue(name, singlethread, freezeable)	\
-+#define __create_workqueue(name, flags)				\
- ({								\
- 	static struct lock_class_key __key;			\
- 	const char *__lock_name;				\
-@@ -200,19 +204,20 @@ __create_workqueue_key(const char *name, int singlethread, int freezeable,
- 	else							\
- 		__lock_name = #name;				\
- 								\
--	__create_workqueue_key((name), (singlethread),		\
--			       (freezeable), &__key,		\
-+	__create_workqueue_key((name), (flags), &__key,		\
- 			       __lock_name);			\
- })
- #else
--#define __create_workqueue(name, singlethread, freezeable)	\
--	__create_workqueue_key((name), (singlethread), (freezeable), \
--			       NULL, NULL)
-+#define __create_workqueue(name, flags)				\
-+	__create_workqueue_key((name), (flags), NULL, NULL)
- #endif
- 
--#define create_workqueue(name) __create_workqueue((name), 0, 0)
--#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
--#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
-+#define create_workqueue(name)					\
-+	__create_workqueue((name), 0)
-+#define create_freezeable_workqueue(name)			\
-+	__create_workqueue((name), WQ_FREEZEABLE | WQ_SINGLE_THREAD)
-+#define create_singlethread_workqueue(name)			\
-+	__create_workqueue((name), WQ_SINGLE_THREAD)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
- 
 diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index e16c457..579041f 100644
+index 579041f..f30977f 100644
 --- a/kernel/workqueue.c
 +++ b/kernel/workqueue.c
-@@ -67,11 +67,10 @@ struct cpu_workqueue_struct {
-  * per-CPU workqueues:
+@@ -48,7 +48,9 @@
+ 
+ /*
+  * The per-CPU workqueue (if single thread, we always use the first
+- * possible cpu).
++ * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
++ * work_struct->data are used for flags and thus cwqs need to be
++ * aligned at two's power of the number of flag bits.
   */
- struct workqueue_struct {
-+	unsigned int		flags;		/* I: WQ_* flags */
- 	struct cpu_workqueue_struct *cpu_wq;	/* I: cwq's */
- 	struct list_head	list;		/* W: list of all workqueues */
- 	const char		*name;		/* I: workqueue name */
--	int singlethread;
--	int freezeable;		/* Freeze threads during suspend */
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map	lockdep_map;
- #endif
-@@ -203,9 +202,9 @@ static const struct cpumask *cpu_singlethread_map __read_mostly;
- static cpumask_var_t cpu_populated_map __read_mostly;
+ struct cpu_workqueue_struct {
  
- /* If it's single threaded, it isn't in the list of workqueues. */
--static inline int is_wq_single_threaded(struct workqueue_struct *wq)
-+static inline bool is_wq_single_threaded(struct workqueue_struct *wq)
+@@ -60,7 +62,7 @@ struct cpu_workqueue_struct {
+ 
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+ 	struct task_struct	*thread;
+-} ____cacheline_aligned;
++} __attribute__((aligned(1 << WORK_STRUCT_FLAG_BITS)));
+ 
+ /*
+  * The externally visible workqueue abstraction is an array of
+@@ -1198,6 +1200,15 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
+ 
+ void __init init_workqueues(void)
  {
--	return wq->singlethread;
-+	return wq->flags & WQ_SINGLE_THREAD;
- }
++	/*
++	 * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
++	 * Make sure that the alignment isn't lower than that of
++	 * unsigned long long in case this code survives for longer
++	 * than twenty years.  :-P
++	 */
++	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
++		     __alignof__(unsigned long long));
++
+ 	alloc_cpumask_var(&cpu_populated_map, GFP_KERNEL);
  
- static const struct cpumask *wq_cpu_map(struct workqueue_struct *wq)
-@@ -456,7 +455,7 @@ static int worker_thread(void *__cwq)
- 	struct cpu_workqueue_struct *cwq = __cwq;
- 	DEFINE_WAIT(wait);
- 
--	if (cwq->wq->freezeable)
-+	if (cwq->wq->flags & WQ_FREEZEABLE)
- 		set_freezable();
- 
- 	for (;;) {
-@@ -981,8 +980,7 @@ static void start_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
- }
- 
- struct workqueue_struct *__create_workqueue_key(const char *name,
--						int singlethread,
--						int freezeable,
-+						unsigned int flags,
- 						struct lock_class_key *key,
- 						const char *lock_name)
- {
-@@ -998,13 +996,12 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	if (!wq->cpu_wq)
- 		goto err;
- 
-+	wq->flags = flags;
- 	wq->name = name;
- 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
--	wq->singlethread = singlethread;
--	wq->freezeable = freezeable;
- 	INIT_LIST_HEAD(&wq->list);
- 
--	if (singlethread) {
-+	if (flags & WQ_SINGLE_THREAD) {
- 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
- 		err = create_workqueue_thread(cwq, singlethread_cpu);
- 		start_workqueue_thread(cwq, -1);
+ 	cpumask_copy(cpu_populated_map, cpu_online_mask);
 -- 
 1.6.4.2
 
