@@ -1,68 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZKTQlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZKTQlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbZKTQlP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 11:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZKTQlN
+	id S1754484AbZKTQlb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 11:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZKTQl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 11:41:13 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41574 "EHLO mx1.suse.de"
+	Fri, 20 Nov 2009 11:41:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51278 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754294AbZKTQlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 11:41:12 -0500
-From: Jan Blunck <jblunck@suse.de>
-To: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, jkacur@redhat.com,
-       Arnd Bergmann <arnd@arndb.de>,
-       =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Jamie Lokier <jamie@shareable.org>, Jan Blunck <jblunck@suse.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       Randy Dunlap <rdunlap@xenotime.net>
-Subject: [PATCH 15/15] BKL: Update documentation on llseek( =?ISO-8859-1?Q?=08?=)
-Date: Fri, 20 Nov 2009 17:40:45 +0100
-Message-Id: <1258735245-25826-16-git-send-email-jblunck@suse.de>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1258735245-25826-1-git-send-email-jblunck@suse.de>
-References: <1258735245-25826-1-git-send-email-jblunck@suse.de>
+	id S1754432AbZKTQlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 11:41:25 -0500
+Date: Fri, 20 Nov 2009 17:41:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
+Message-ID: <20091120164110.GA24183@elte.hu>
+References: <4B064AF5.9060208@cn.fujitsu.com>
+ <20091120081440.GA19778@elte.hu>
+ <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com>
+ <20091120083053.GB19778@elte.hu>
+ <4B0657A4.2040606@cs.helsinki.fi>
+ <4B06590C.7010109@cn.fujitsu.com>
+ <20091120090353.GE19778@elte.hu>
+ <20091120144215.GH18283@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091120144215.GH18283@ghostprotocols.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The inode's i_size is not protected by the big kernel lock. Therefore it
-does not make sense to recommend taking the BKL in filesystems llseek
-operations. Instead it should use the inode's mutex or use just use
-i_size_read() instead. Add a note that this is not protecting file->f_pos.
 
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: John Kacur <jkacur@redhat.com>
----
- Documentation/filesystems/Locking |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
 
-diff --git a/Documentation/filesystems/Locking b/Documentation/filesystems/Locking
-index 18b9d0c..25159d4 100644
---- a/Documentation/filesystems/Locking
-+++ b/Documentation/filesystems/Locking
-@@ -429,8 +429,9 @@ check_flags:		no
- implementations.  If your fs is not using generic_file_llseek, you
- need to acquire and release the appropriate locks in your ->llseek().
- For many filesystems, it is probably safe to acquire the inode
--semaphore.  Note some filesystems (i.e. remote ones) provide no
--protection for i_size so you will need to use the BKL.
-+mutex or just to use i_size_read() instead.
-+Note: this does not protect the file->f_pos against concurrent modifications
-+since this is something the userspace has to take care about.
- 
- Note: ext2_release() was *the* source of contention on fs-intensive
- loads and dropping BKL on ->release() helps to get rid of that (we still
--- 
-1.6.4.2
+> Em Fri, Nov 20, 2009 at 10:03:53AM +0100, Ingo Molnar escreveu:
+> > 
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> > > > (2) doing "perf kmem record" on machine A (think embedded here) and 
+> > > > then "perf kmem report" on machine B. I haven't tried kmemtrace-user 
+> > > > for a while but it did support both of them quite nicely at some 
+> > > > point.
+> > > 
+> > > Everything needed and machine-specific will be recorded in perf.data, 
+> > > so this should already been supported. I'll try it.
+> > 
+> > Right now the DSOs are not recorded in the perf.data - but it would be 
+> > useful to add it and to turn perf.data into a self-sufficient capture of 
+> > all relevant data, which can be analyzed on any box.
+> 
+> Well, the DSOs are recorded in perf.data, just not its symtabs, but now
+> we have buildids, so we can ask for them to be installed on the other
+> machine and it'll all work. Or should. :)
+> 
+> For instance:
+> 
+> [root@doppio linux-2.6-tip]# perf buildid-list -i perf.data | egrep 'vmlinux|nfs|libc-'
+> ec8dd400904ddfcac8b1c343263a790f977159dc /lib64/libc-2.10.1.so
+> 0da49504693a200583fda6f1b949e6d2f799e692 /usr/lib64/libnfsidmap_nsswitch.so.0.0.0
+> c90269c87eaf08559012a9fa29f60780743360cd /usr/lib64/libnfsidmap.so.0.3.0
+> 18e7cc53db62a7d35e9d6f6c9ddc23017d38ee9a vmlinux
+> 3982866276471cde6ac5821fdced42a7b1bfd848 [nfs]
+> 1489007276a50005753e730198fd93dd05b2082f [nfsd]
+> 5a128f082fe7fdcab6fb5d1b71935accb1f34383 [nfs_acl]
+> [root@doppio linux-2.6-tip]#
+> 
+> Now if I ask that the buildid for /usr/lib64/libnfsidmap.so.0.3.0 above
+> to be installed, like this:
+> 
+> [root@doppio linux-2.6-tip]# yum install /usr/lib/debug/.build-id/c9/0269c87eaf08559012a9fa29f60780743360cd
+> Loaded plugins: auto-update-debuginfo, refresh-packagekit
+> Found 44 installed debuginfo package(s)
+> Enabling fedora-debuginfo: Fedora 11 - x86_64 - Debug
+> Reading repository metadata in from local files
+> Enabling updates-debuginfo: Fedora 11 - x86_64 - Updates - Debug
+> Reading repository metadata in from local files
+> Setting up Install Process
+> Importing additional filelist information
+> Resolving Dependencies
+> --> Running transaction check
+> ---> Package nfs-utils-lib-debuginfo.x86_64 0:1.1.4-6.fc11 set to be updated
+> --> Finished Dependency Resolution
+> 
+> Dependencies Resolved
+> 
+> ========================================================================
+>  Package                   Arch   Version       Repository	 Size
+> ========================================================================
+> Installing:
+>  nfs-utils-lib-debuginfo   x86_64 1.1.4-6.fc11  fedora-debuginfo 174 k
+> 
+> Transaction Summary
+> ========================================================================
+> Install       1 Package(s)
+> Upgrade       0 Package(s)
+> 
+> Total download size: 174 k
+> Is this ok [y/N]:
+> 
+> So now we have:
+> 
+> 1) 'perf record' records the build-ids into perf.data
+> 2) 'perf buildid-list' list them, distro specific porcelain needed
+>    to do the equivalent to the yum install above.
+> 3) 'perf report' will only use the symtab in a file that has the matching
+>    build-id, if a build-id is found in the perf.data header for a
+>    particular DSO.
+> 
+> So we have a mechanism that is already present in several distros
+> (build-id), that is in the kernel build process since ~2.6.23, and that
+> avoids using mismatching DSOs when resolving symbols.
 
+But what do we do if we have another box that runs say on a MIPS CPU, 
+uses some minimal distro - and copy that perf.data over to an x86 box.
+
+The idea is there to be some new mode of perf.data where all the 
+relevant DSO contents (symtabs but also sections with instructions for 
+perf annotate to work) are copied into perf.data, during or after data 
+capture - on the box that does the recording.
+
+Once we have everything embedded in the perf.data, analysis passes only 
+have to work based on that particular perf.data - no external data.
+
+	Ingo
