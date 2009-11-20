@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZKTWvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbZKTXBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZKTWvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 17:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbZKTWvl
+	id S1753151AbZKTXBM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 18:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZKTXBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 17:51:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39214 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754884AbZKTWvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 17:51:39 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/6] perf symbols: Change the kernel DSO name if it comes from kallsyms
-Date: Fri, 20 Nov 2009 20:51:29 -0200
-Message-Id: <1258757489-5978-6-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1258757489-5978-5-git-send-email-acme@infradead.org>
-References: <1258757489-5978-1-git-send-email-acme@infradead.org>
- <1258757489-5978-2-git-send-email-acme@infradead.org>
- <1258757489-5978-3-git-send-email-acme@infradead.org>
- <1258757489-5978-4-git-send-email-acme@infradead.org>
- <1258757489-5978-5-git-send-email-acme@infradead.org>
+	Fri, 20 Nov 2009 18:01:12 -0500
+Received: from solo.fdn.fr ([80.67.169.19]:57689 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZKTXBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 18:01:11 -0500
+Date: Sat, 21 Nov 2009 00:01:14 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] Fix braille keyboard keysym generation
+Message-ID: <20091120230114.GN4986@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+References: <20091117135111.GA14470@const.bordeaux.inria.fr> <20091120131954.0e61c0b6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20091120131954.0e61c0b6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Andrew Morton, le Fri 20 Nov 2009 13:19:54 -0800, a �crit :
+> >  	if (keycode >= NR_KEYS)
+> >  		if (keycode >= KEY_BRL_DOT1 && keycode <= KEY_BRL_DOT8)
+> > -			keysym = K(KT_BRL, keycode - KEY_BRL_DOT1 + 1);
+> > +			keysym = U(K(KT_BRL, keycode - KEY_BRL_DOT1 + 1));
+> >  		else
+> >  			return;
+> >  	else
+> 
+> Sorry, but I cannot work out (with a reasonable amount of effort) what
+> the user-visible effects of this bug are likely to be.  So I am not in
+> a position to decide which kernel(s) this patch should be merged into.
 
-So that the user have a clearer indication about the source of the
-symbols, as we only state buildid mismatches in verbose mode, because
-'perf top' would overwrite such warning anyway.
+It will make braille keyboards actually work.  Apparently I had never
+really tried it and so it has never worked up to now.
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/symbol.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+> Please be careful to include this aspect in the changelog when
+> appropriate, thanks.
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 9cf6dbc..48f87f0 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -108,6 +108,8 @@ static size_t symbol__fprintf(struct symbol *self, FILE *fp)
- 
- static void dso__set_long_name(struct dso *self, char *name)
- {
-+	if (name == NULL)
-+		return;
- 	self->long_name = name;
- 	self->long_name_len = strlen(name);
- }
-@@ -1377,8 +1379,11 @@ static int dso__load_kernel_sym(struct dso *self, struct map *map,
- {
- 	int err = dso__load_vmlinux(self, map, self->name, filter);
- 
--	if (err <= 0)
-+	if (err <= 0) {
- 		err = kernel_maps__load_kallsyms(filter);
-+		if (err > 0)
-+                        dso__set_long_name(self, strdup("[kernel.kallsyms]"));
-+	}
- 
- 	if (err > 0) {
- 		map__fixup_start(map);
--- 
-1.6.2.5
+Right, sorry.  Braille keyboards announced as KEY_BRL_DOT* are still
+pretty rare (that's why the bug completely went unnoticed from the
+start), so it's maybe not worth including the patch in the stable
+kernels, but making it for 2.6.32 would be a good thing.
 
+Samuel
