@@ -1,208 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZKTEow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZKTEsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbZKTEow (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 23:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbZKTEow
+	id S1755889AbZKTEsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 23:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZKTEsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 23:44:52 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51394 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755940AbZKTEov (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 23:44:51 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B061E9A.8040100@jp.fujitsu.com>
-Date: Fri, 20 Nov 2009 13:44:10 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Spencer Candland <spencer@bluehost.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
-       =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: [PATCH tip/sched/core] introduce task_times() to replace task_[us]time()
- pair
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Nov 2009 23:48:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45099 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755655AbZKTEsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 23:48:08 -0500
+From: Tejun Heo <tj@kernel.org>
+To: torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, peterz@infradead.org, johannes@sipsolutions.net
+Subject: [PATCHSET] workqueue: prepare for concurrency managed workqueue, take#2
+Date: Fri, 20 Nov 2009 13:46:28 +0900
+Message-Id: <1258692407-8985-1-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Function task_[us]times() are called consecutively in almost all
-cases.  However task_stime() is implemented to call task_utime()
-from its inside, so such paired calls run task_utime() twice.
+Hello, all.
 
-It means we do heavy divisions (div_u64 + do_div) twice to get
-stime and utime which can be obtained at same time by one set
-of divisions.
+This patchset is the second take of prep-for-concurrent-managed-wq
+patchset.  Changes from the last take[L] are
 
-This patch introduces task_times(*tsk, *utime, *stime) to get
-stime and utime at once, in better, optimized way.
+* sched_notifier implementation redone such that it's more similar to
+  preempt_notifier and activate/deactivate ops are replaced with
+  wakeup/sleep.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- fs/proc/array.c       |    3 +-
- include/linux/sched.h |    1 +
- kernel/exit.c         |    7 ++++-
- kernel/sched.c        |   55 +++++++++++++++++++++++++++++++-----------------
- kernel/sys.c          |    3 +-
- 5 files changed, 43 insertions(+), 26 deletions(-)
+  I thought about doing state based callback[s] - three callbacks for
+  the three states - run, ready, sleep but it makes things more
+  complicated for the caller and there are only four transition edges
+  among the states anyway.
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index e209f64..330deda 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -535,8 +535,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
- 	if (!whole) {
- 		min_flt = task->min_flt;
- 		maj_flt = task->maj_flt;
--		utime = task_utime(task);
--		stime = task_stime(task);
-+		task_times(task, &utime, &stime);
- 		gtime = task_gtime(task);
- 	}
- 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 78ba664..fe6ae15 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1723,6 +1723,7 @@ static inline void put_task_struct(struct task_struct *t)
- extern cputime_t task_utime(struct task_struct *p);
- extern cputime_t task_stime(struct task_struct *p);
- extern cputime_t task_gtime(struct task_struct *p);
-+extern void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st);
- 
- /*
-  * Per process flags
-diff --git a/kernel/exit.c b/kernel/exit.c
-index e61891f..a19e429 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -91,6 +91,8 @@ static void __exit_signal(struct task_struct *tsk)
- 	if (atomic_dec_and_test(&sig->count))
- 		posix_cpu_timers_exit_group(tsk);
- 	else {
-+		cputime_t utime, stime;
-+
- 		/*
- 		 * If there is any task waiting for the group exit
- 		 * then notify it:
-@@ -110,8 +112,9 @@ static void __exit_signal(struct task_struct *tsk)
- 		 * We won't ever get here for the group leader, since it
- 		 * will have been the last reference on the signal_struct.
- 		 */
--		sig->utime = cputime_add(sig->utime, task_utime(tsk));
--		sig->stime = cputime_add(sig->stime, task_stime(tsk));
-+		task_times(tsk, &utime, &stime);
-+		sig->utime = cputime_add(sig->utime, utime);
-+		sig->stime = cputime_add(sig->stime, stime);
- 		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
- 		sig->min_flt += tsk->min_flt;
- 		sig->maj_flt += tsk->maj_flt;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ab9a034..18c89e0 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5155,6 +5155,14 @@ cputime_t task_stime(struct task_struct *p)
- {
- 	return p->stime;
- }
-+
-+void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
-+{
-+	if (ut)
-+		*ut = task_utime(p);
-+	if (st)
-+		*st = task_stime(p);
-+}
- #else
- 
- #ifndef nsecs_to_cputime
-@@ -5162,41 +5170,48 @@ cputime_t task_stime(struct task_struct *p)
- 	msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
- #endif
- 
--cputime_t task_utime(struct task_struct *p)
-+void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
- {
--	cputime_t utime = p->utime, total = utime + p->stime;
--	u64 temp;
-+	cputime_t rtime, utime = p->utime, total = utime + p->stime;
- 
- 	/*
- 	 * Use CFS's precise accounting:
- 	 */
--	temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
-+	rtime = nsecs_to_cputime(p->se.sum_exec_runtime);
- 
- 	if (total) {
--		temp *= utime;
-+		u64 temp;
-+
-+		temp = (u64)(rtime * utime);
- 		do_div(temp, total);
--	}
--	utime = (cputime_t)temp;
-+		utime = (cputime_t)temp;
-+	} else
-+		utime = rtime;
- 
-+	/*
-+	 * Compare with previous values, to keep monotonicity:
-+	 */
- 	p->prev_utime = max(p->prev_utime, utime);
--	return p->prev_utime;
-+	p->prev_stime = max(p->prev_stime, rtime - p->prev_utime);
-+
-+	if (ut)
-+		*ut = p->prev_utime;
-+	if (st)
-+		*st = p->prev_stime;
-+}
-+
-+cputime_t task_utime(struct task_struct *p)
-+{
-+	cputime_t utime;
-+	task_times(p, &utime, NULL);
-+	return utime;
- }
- 
- cputime_t task_stime(struct task_struct *p)
- {
- 	cputime_t stime;
--
--	/*
--	 * Use CFS's precise accounting. (we subtract utime from
--	 * the total, to make sure the total observed by userspace
--	 * grows monotonically - apps rely on that):
--	 */
--	stime = nsecs_to_cputime(p->se.sum_exec_runtime) - task_utime(p);
--
--	if (stime >= 0)
--		p->prev_stime = max(p->prev_stime, stime);
--
--	return p->prev_stime;
-+	task_times(p, NULL, &stime);
-+	return stime;
- }
- #endif
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 255475d..b6caf1e 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1344,8 +1344,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- 	utime = stime = cputime_zero;
- 
- 	if (who == RUSAGE_THREAD) {
--		utime = task_utime(current);
--		stime = task_stime(current);
-+		task_times(current, &utime, &stime);
- 		accumulate_thread_rusage(p, r);
- 		maxrss = p->signal->maxrss;
- 		goto out;
--- 
-1.6.5.3
+  Another alternative to the current wakeup/sleep/in/out would be
+  wakeup/sleep/run/preempted where the only difference would be
+  preempted is not called after sleep is called while out is called
+  even after sleep is called.  Either is not much better than the
+  other and the current use case fits in/out better, so I left it as
+  was.
 
+* cpu_populated_map is killed but single thread implementation is now
+  left largely unchanged.  I'll follow up with further patches on
+  this.
+
+* force_cpus_allowed_ptr() renamed to force_cpus_allowed().
+
+* Locking bug in introduce-worker fixed.
+
+This patchset contains the following patches.
+
+0001-sched-kvm-fix-race-condition-involving-sched_in_pree.patch
+0002-workqueue-Add-debugobjects-support.patch
+0003-sched-rename-preempt_notifier-to-sched_notifier-and-.patch
+0004-sched-update-sched_notifier-and-add-wakeup-sleep-not.patch
+0005-sched-implement-sched_notifier_wake_up_process.patch
+0006-scheduler-implement-force_cpus_allowed.patch
+0007-acpi-use-queue_work_on-instead-of-binding-workqueue-.patch
+0008-stop_machine-reimplement-without-using-workqueue.patch
+0009-workqueue-misc-cosmetic-updates.patch
+0010-workqueue-merge-feature-parametesr-into-flags.patch
+0011-workqueue-update-cwq-alignement-and-make-one-more-fl.patch
+0012-workqueue-define-both-bit-position-and-mask-for-work.patch
+0013-workqueue-separate-out-process_one_work.patch
+0014-workqueue-temporarily-disable-workqueue-tracing.patch
+0015-workqueue-kill-cpu_populated_map.patch
+0016-workqueue-reimplement-workqueue-flushing-using-color.patch
+0017-workqueue-introduce-worker.patch
+0018-workqueue-reimplement-work-flushing-using-linked-wor.patch
+0019-workqueue-reimplement-workqueue-freeze-using-cwq-fro.patch
+
+If there's no objection (especially the scheduler notifier part), I
+want to push the patches into linux-next and wait a while before
+pushing concurrency managed workqueue.  This prep patchset already
+contains a lot of changes so I think it would be helpful to verify
+things are okay at this point.
+
+This patchset is available in the following git tree.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git review-wq-prep
+
+Please note that the above tree is temporary.  It needs to be rebased
+once the fix patches appear upstream.
+
+This patchset contains the following changes.
+
+ arch/ia64/kvm/Kconfig        |    1 
+ arch/powerpc/kvm/Kconfig     |    1 
+ arch/s390/kvm/Kconfig        |    1 
+ arch/x86/kernel/smpboot.c    |    4 
+ arch/x86/kvm/Kconfig         |    1 
+ drivers/acpi/osl.c           |   41 -
+ include/linux/kvm_host.h     |    4 
+ include/linux/preempt.h      |   43 -
+ include/linux/sched.h        |   58 +
+ include/linux/stop_machine.h |    6 
+ include/linux/workqueue.h    |  110 ++-
+ init/Kconfig                 |    4 
+ init/main.c                  |    2 
+ kernel/power/process.c       |   22 
+ kernel/sched.c               |  194 +++---
+ kernel/stop_machine.c        |  151 +++-
+ kernel/trace/Kconfig         |    4 
+ kernel/workqueue.c           | 1362 +++++++++++++++++++++++++++++++++----------
+ lib/Kconfig.debug            |    8 
+ virt/kvm/kvm_main.c          |   28 
+ 20 files changed, 1507 insertions(+), 538 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[L] http://thread.gmane.org/gmane.linux.kernel/914545
