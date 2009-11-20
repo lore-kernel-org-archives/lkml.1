@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZKTLHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZKTLHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbZKTLHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 06:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZKTLHU
+	id S1752938AbZKTLHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 06:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKTLHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 06:07:20 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:55821 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZKTLHT (ORCPT
+	Fri, 20 Nov 2009 06:07:50 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52742 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZKTLHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 06:07:19 -0500
-Message-ID: <4B067868.9070902@monstr.eu>
-Date: Fri, 20 Nov 2009 12:07:20 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Fri, 20 Nov 2009 06:07:49 -0500
+Date: Fri, 20 Nov 2009 11:07:28 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, Brian Swetland <swetland@google.com>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 2/3] staging/dream: add missing include files
+Message-ID: <20091120110728.GB10644@n2100.arm.linux.org.uk>
+References: <20091101222717.GB20740@elf.ucw.cz> <20091119225602.GC18710@kroah.com> <20091120105726.GH11212@elf.ucw.cz>
 MIME-Version: 1.0
-To: steve@digidescorp.com
-CC: microblaze-uclinux@itee.uq.edu.au, monstr@monstr.eu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RESEND] microblaze: Fix level interrupt ACKing
-References: <1258469019-3863-1-git-send-email-steve@digidescorp.com>
-In-Reply-To: <1258469019-3863-1-git-send-email-steve@digidescorp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091120105726.GH11212@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
-
-steve@digidescorp.com wrote:
-> Level interrupts need to be ack'd in the unmask handler, as in powerpc. 
-> Among other issues, this bug causes the system clock to appear to run at 
-> double-speed.
-
-Can you send me any step-by-step manual how to demonstrate me this 
-fault? If system clock runs at double-speed, then I should be able able 
-to see that time is two times faster. Or do you mean different behavior?
-
-Thanks,
-Michal
-
-
-
+On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
+> On Thu 2009-11-19 14:56:02, Greg KH wrote:
+> > On Sun, Nov 01, 2009 at 11:27:17PM +0100, Pavel Machek wrote:
+> > > +config GENERIC_GPIO
+> > > +	bool
+> > > +	default y
+> > 
+> > Which breaks the i386 build.  Don't force on a general config option
+> > like this, that's not nice at all :(
 > 
-> Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
-> ---
-> diff -uprN a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
-> --- a/arch/microblaze/kernel/intc.c	2009-06-02 15:26:28.000000000 -0500
-> +++ b/arch/microblaze/kernel/intc.c	2009-06-02 15:27:39.000000000 -0500
-> @@ -41,8 +41,16 @@ unsigned int nr_irq;
->  
->  static void intc_enable_or_unmask(unsigned int irq)
->  {
-> +	unsigned long mask = 1 << irq;
->  	pr_debug("enable_or_unmask: %d\n", irq);
-> -	out_be32(INTC_BASE + SIE, 1 << irq);
-> +	out_be32(INTC_BASE + SIE, mask);
-> +
-> +	/* ack level irqs because they can't be acked during
-> +	 * ack function since the handle_level_irq function
-> +	 * acks the irq before calling the interrupt handler
-> +	 */
-> +	if (irq_desc[irq].status & IRQ_LEVEL)
-> +		out_be32(INTC_BASE + IAR, mask);
->  }
->  
->  static void intc_disable_or_mask(unsigned int irq)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Ok, I should figure out how to limit it to arch-msm.
 
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+You do it by 'select'ing the symbol in arch/arm/Kconfig.  See the many
+other examples therein of how to do it.
