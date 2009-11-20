@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZKTOGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZKTOGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbZKTOGd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZKTOGc
+	id S1753759AbZKTOGa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZKTOG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:06:32 -0500
-Received: from mail.windriver.com ([147.11.1.11]:55964 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753777AbZKTOGb (ORCPT
+	Fri, 20 Nov 2009 09:06:29 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:35498 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbZKTOG2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 09:06:31 -0500
-Message-ID: <4B06A268.203@windriver.com>
-Date: Fri, 20 Nov 2009 08:06:32 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 20 Nov 2009 09:06:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=qMGuc7kCGHc6eYrVMsSJoWFHyObroLU0v7jjBzpZT8UC4BG91ZG3ycR4BA7P8vMMpH
+         4hEGb9cwnUre4HlgxMjtBao4u3F5zf5+/mcmfbOBdmTAgYZ7DG9H64HZAqdtwlAgNDPY
+         Wy7Qk+3pXEnraic+0k3+NjGlU2YVYafTtamt0=
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix section mismatch in early ehci dbgp
-References: <4B06ACCD02000078000211E0@vpn.id2.novell.com>
-In-Reply-To: <4B06ACCD02000078000211E0@vpn.id2.novell.com>
+Date: Fri, 20 Nov 2009 09:06:33 -0500
+Message-ID: <2aa71ac70911200606tdf97f3lbc718046ca14d332@mail.gmail.com>
+Subject: Measuring page faults
+From: Mike Gagnon <mikegagnon@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Nov 2009 14:06:32.0455 (UTC) FILETIME=[A9BE1170:01CA69EA]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Commit 917778267fbe67703ab7d5c6f0b7a05d4c3df485 removed __init from
-> ehci_wait_for_port(), but left it in place on ehci_reset_port(), which
-> is being called from the former function.
->
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Jason Wessel <jason.wessel@windriver.com>
->   
+Hi all,
 
-Acked-by: Jason Wessel <jason.wessel@windriver.com>
+I would like to measure the latency (execution time) of Linux page
+faults.  I tried using lmbench, but I get unrealistically fast results
+from the lmbench lat_pagefault benchmark.  The problem seems to be
+that lmbench attempts to ensure pages are paged out using msync with
+the MS_INVALIDATE flag set, but this doesn't seem to cause page outs
+on Linux.  http://www.bitmover.com/lmbench/lat_pagefault.8.html
 
-> ---
->  drivers/usb/early/ehci-dbgp.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.32-rc8/drivers/usb/early/ehci-dbgp.c	2009-11-20 14:11:29.000000000 +0100
-> +++ 2.6.32-rc8-ehci-dbgp-section-mismatch/drivers/usb/early/ehci-dbgp.c	2009-11-20 11:23:52.000000000 +0100
-> @@ -613,7 +613,7 @@ err:
->  }
->  EXPORT_SYMBOL_GPL(dbgp_external_startup);
->  
-> -static int __init ehci_reset_port(int port)
-> +static int ehci_reset_port(int port)
->  {
->  	u32 portsc;
->  	u32 delay_time, delay;
->
->
->
->   
+I would like to adapt lmbench to correctly measure page faults on
+Linux, but I need a mechanism to ensure specific pages are paged-out.
+Is there a good way to reliably cause page-outs in Linux (so that I
+may then cause page faults by touching the paged-out pages)?
 
+Thanks,
+Michael Gagnon
