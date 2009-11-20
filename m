@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbZKTPRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZKTPTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784AbZKTPRo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 10:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZKTPRn
+	id S1753974AbZKTPTE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 10:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZKTPTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 10:17:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48560 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbZKTPRn (ORCPT
+	Fri, 20 Nov 2009 10:19:03 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:25939 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752792AbZKTPTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 10:17:43 -0500
-Subject: Re: lockdep complaints in slab allocator
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       cl@linux-foundation.org, mpm@selenic.com,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20091120144855.GB22527@linux.vnet.ibm.com>
-References: <20091118181202.GA12180@linux.vnet.ibm.com>
-	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-	 <1258709153.11284.429.camel@laptop>
-	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
-	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
-	 <20091120144855.GB22527@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2009 16:17:40 +0100
-Message-ID: <1258730260.4104.240.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 10:19:02 -0500
+Date: Fri, 20 Nov 2009 10:18:22 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: tytso@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Monakhov <rjevskiy@gmail.com>, Sage Weil <sage@newdream.net>
+Subject: Re: [Bug #14619] ext3/jbd oops in journal_start
+Message-ID: <20091120151822.GV3110@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>, tytso@mit.edu,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Dmitry Monakhov <rjevskiy@gmail.com>, Sage Weil <sage@newdream.net>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+ <xXQGFmujPl.A.wQG.8SdALB@chimera>
+ <20091120150648.GB4921@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091120150648.GB4921@thunk.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B06B342.016D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 06:48 -0800, Paul E. McKenney wrote:
-> On Fri, Nov 20, 2009 at 01:05:58PM +0200, Pekka Enberg wrote:
-> > Peter Zijlstra kirjoitti:
-> >> On Fri, 2009-11-20 at 12:38 +0200, Pekka Enberg wrote:
-> >>>
-> >>> On Fri, Nov 20, 2009 at 11:25 AM, Peter Zijlstra <peterz@infradead.org> 
-> >>> wrote:
-> >>>>  2) propagate the nesting information and user spin_lock_nested(), given
-> >>>> that slab is already a rat's nest, this won't make it any less obvious.
-> >>> spin_lock_nested() doesn't really help us here because there's a
-> >>> _real_ possibility of a recursive spin lock here, right? 
-> >> Well, I was working under the assumption that your analysis of it being
-> >> a false positive was right ;-)
-> >> I briefly tried to verify that, but got lost and gave up, at which point
-> >> I started looking for ways to annotate.
-> >
-> > Uh, ok, so apparently I was right after all. There's a comment in 
-> > free_block() above the slab_destroy() call that refers to the comment above 
-> > alloc_slabmgmt() function definition which explains it all.
-> >
-> > Long story short: ->slab_cachep never points to the same kmalloc cache 
-> > we're allocating or freeing from. Where do we need to put the 
-> > spin_lock_nested() annotation? Would it be enough to just use it in 
-> > cache_free_alien() for alien->lock or do we need it in cache_flusharray() 
-> > as well?
+On Fri, Nov 20, 2009 at 10:06:48AM -0500, tytso@mit.edu wrote:
+> On Mon, Nov 16, 2009 at 11:37:46PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14619
+> > Subject		: ext3/jbd oops in journal_start
+> > Submitter	: Sage Weil <sage@newdream.net>
+> > Date		: 2009-10-31 6:14 (17 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125696970418300&w=4
+> > 
 > 
-> Hmmm...  If the nc->lock spinlocks are always from different slabs
-> (as alloc_slabmgmt()'s block comment claims), why not just give each
-> array_cache structure's lock its own struct lock_class_key?  They
-> are zero size unless you have lockdep enabled.
+> Sage, any updates on this?  What was the last kernel version where you
+> weren't having this problem?  Sounds like you can't mount any ext3
+> file systems at all?
 
-Because more classes:
+This is a btrfs bug and is fixed.  I've updated the bugzilla.
 
- - takes more (static/limited) lockdep resources
-
- - make more chains, weakening lock dependency tracking
-   because it can no longer use the state observed in one branch
-   on state observed in another branch.
-
-Suppose you have 3 locks and 2 classes, lock 1 and 2 part of class A and
-lock 3 of class B
-
-Then if we observe 1 -> 3, and 3 -> 2, we'd see A->B and B->A, and go
-yell. Now if we split class A into two classes and these locks get into
-separate classes we loose that cycle.
-
-Now in this case we want to break a cycle, so the above will be correct,
-but all resulting chains will be equivalent for 99% (with the one
-exception of this funny recursion case) wasting lots of resources and
-state matching opportunity.
-
-Therefore it would be much better to use the _nested annotation if
-possible.
+-chris
 
