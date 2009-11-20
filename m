@@ -1,37 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbZKTDgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbZKTDeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbZKTDgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 22:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757731AbZKTDgO
+	id S1758263AbZKTDeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 22:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757305AbZKTDd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 22:36:14 -0500
-Received: from e154.smartservercontrol.com ([81.223.254.54]:56440 "EHLO
-	e154.nethat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757277AbZKTDgO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 22:36:14 -0500
-X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 22:36:14 EST
-Date: Fri, 20 Nov 2009 04:26:58 +0100
-To: linux-kernel@vger.kernel.org
-From: Daniela <daniela.pazza@gmail.com>
-Reply-to: Daniela <daniela.pazza@gmail.com>
-Subject: Inserisci il tuo annuncio personale
-Message-ID: <6919678777d3d92df1bf20d617f78454@www.mailtrade.net>
-X-Priority: 1
-X-Mailer: RIV
-X-Mailer-MsgId: bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==
-X-Mailer-CSID: MTExXzI1OQ==
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Nov 2009 22:33:59 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33951 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753469AbZKTDd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 22:33:59 -0500
+Subject: Re: [PATCH] enclosure: fix oops while iterating enclosure_status
+ array
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jeff Mahoney <jeffm@jeffreymahoney.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <4B05E183.4010301@jeffreymahoney.com>
+References: <4B05E183.4010301@jeffreymahoney.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 19 Nov 2009 22:33:57 -0500
+Message-Id: <1258688037.6363.719.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-www.bakecaincontri.com e' il nuovo portale di annunci personali.
+Adding linux-scsi to the cc list.
 
-Sfoglia le migliaia di annunci gia' pubblicati e inserisci il tuo.
+Patch looks fine to me, though, thanks.
 
-ti aspettiamo su www.bakecaincontri.com
+James
+
+On Thu, 2009-11-19 at 19:23 -0500, Jeff Mahoney wrote:
+> enclosure_status is expected to be a NULL terminated array of strings
+>  but isn't actually NULL terminated. When writing an invalid value to
+>  /sys/class/enclosure/.../.../status, it goes off the end of the array
+>  and Oopses.
+> 
+>  This patch uses the array size instead.
+> 
+> Reported-by: Artur Wojcik <artur.wojcik@intel.com>
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> ---
+>  drivers/misc/enclosure.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> --- a/drivers/misc/enclosure.c
+> +++ b/drivers/misc/enclosure.c
+> @@ -412,8 +412,9 @@ static ssize_t set_component_status(stru
+>  	struct enclosure_component *ecomp = to_enclosure_component(cdev);
+>  	int i;
+>  
+> -	for (i = 0; enclosure_status[i]; i++) {
+> -		if (strncmp(buf, enclosure_status[i],
+> +	for (i = 0; i < ARRAY_SIZE(enclosure_status); i++) {
+> +		if (enclosure_status[i] &&
+> +		    strncmp(buf, enclosure_status[i],
+>  			    strlen(enclosure_status[i])) == 0 &&
+>  		    (buf[strlen(enclosure_status[i])] == '\n' ||
+>  		     buf[strlen(enclosure_status[i])] == '\0'))
 
 
