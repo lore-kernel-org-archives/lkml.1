@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZKTADp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZKTAQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbZKTADp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbZKTADo
+	id S1758077AbZKTAQf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757772AbZKTAQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:03:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44618 "EHLO smtps.tip.net.au"
+	Thu, 19 Nov 2009 19:16:34 -0500
+Received: from mga11.intel.com ([192.55.52.93]:14814 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757642AbZKTADn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:03:43 -0500
-Date: Fri, 20 Nov 2009 11:03:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: infiniband tree build failure
-Message-Id: <20091120110342.5128b8f8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK"
+	id S1757194AbZKTAQe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:16:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
+   d="scan'208";a="748740270"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "H. Peter Anvin" <hpa@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Date: Thu, 19 Nov 2009 16:16:38 -0800
+Subject: [PATCH 0/3] x86/pic: introduce legacy_pic abstraction
+Thread-Topic: [PATCH 0/3] x86/pic: introduce legacy_pic abstraction
+Thread-Index: Acppdroj2vfDrc5tSRmsUAHfe1u48g==
+Message-ID: <43F901BD926A4E43B106BF17856F07558A00D90C@orsmsx508.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patchset is intended to allow runtime selection of legacy pic driver. it
+decouples legacy pic code by replacing global function calls with an abstracted
+legacy_pic structure.
 
-Hi all,
+.arch/x86/include/asm/hw_irq.h  |    7 ----
+ arch/x86/include/asm/i8259.h   |   19 +++++++----
+ arch/x86/include/asm/io_apic.h |    2 -
+ arch/x86/kernel/apic/apic.c    |    8 ++--
+ arch/x86/kernel/apic/io_apic.c |   67 +++++++++++++++++++---------------------
+ arch/x86/kernel/apic/nmi.c     |    2 +-
+ arch/x86/kernel/i8259.c        |   64 ++++++++++++++++++++++++++++++++++----
+ arch/x86/kernel/irqinit.c      |    2 +-
+ arch/x86/kernel/smpboot.c      |    5 ++-
+ arch/x86/kernel/visws_quirks.c |   14 +++++---
+ 10 files changed, 119 insertions(+), 71 deletions(-)
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-
-ERROR: ".__ipv6_addr_type" [drivers/infiniband/core/rdma_cm.ko] undefined!
-
-I have used the version of the infiniband tree from next-20091119 for
-today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksF3N4ACgkQjjKRsyhoI8wkDwCgt095Dt0ikHbRwEoRPGzGz+uV
-QCAAn3xzbJf9q8Jc42d6fcqAlGF2Y/QK
-=Jclc
------END PGP SIGNATURE-----
-
---Signature=_Fri__20_Nov_2009_11_03_42_+1100_78ZqVIz7ja4xNeJK--
