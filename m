@@ -1,119 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZKTOmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZKTOnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZKTOmd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZKTOmd
+	id S1753804AbZKTOnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZKTOni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:42:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49419 "EHLO
+	Fri, 20 Nov 2009 09:43:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34219 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbZKTOmc (ORCPT
+	with ESMTP id S1752222AbZKTOnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 09:42:32 -0500
-Date: Fri, 20 Nov 2009 12:42:15 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
-Message-ID: <20091120144215.GH18283@ghostprotocols.net>
-References: <4B064AF5.9060208@cn.fujitsu.com> <20091120081440.GA19778@elte.hu> <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com> <20091120083053.GB19778@elte.hu> <4B0657A4.2040606@cs.helsinki.fi> <4B06590C.7010109@cn.fujitsu.com> <20091120090353.GE19778@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120090353.GE19778@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	Fri, 20 Nov 2009 09:43:37 -0500
+Date: Fri, 20 Nov 2009 06:45:11 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
+Message-ID: <20091120064511.268cc8fd@infradead.org>
+In-Reply-To: <20091120104335.GB29143@infradead.org>
+References: <20091025225342.007138f5@infradead.org>
+	<20091111020108.GA11423@localhost>
+	<20091110223456.01ef355f@infradead.org>
+	<4AFA6AEF.5060306@garzik.org>
+	<20091111081905.270a4e55@infradead.org>
+	<y0m3a4kpsiw.fsf@fche.csb>
+	<4AFB4AC7.1090405@intel.com>
+	<20091112072217.GA31719@elte.hu>
+	<20091120104335.GB29143@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Nov 20, 2009 at 10:03:53AM +0100, Ingo Molnar escreveu:
+On Fri, 20 Nov 2009 05:43:35 -0500
+Christoph Hellwig <hch@infradead.org> wrote:
+
 > 
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Which btw brings up another good argument - to make the tracing really
+> useful we need to have conventions.  While the inode number seems to
+> be a realtively easy one printing the device is more difficult.  XFS
+> just prints the raw major/minor to stay simple, ext4 has a
+> complicated ad-hoc cache of device names, and this one just prints
+> the superblock id string.
+
+I was just trying to stay compatible with blockdump, and it even makes
+sense ;)
+
 > 
-> > > (2) doing "perf kmem record" on machine A (think embedded here) and 
-> > > then "perf kmem report" on machine B. I haven't tried kmemtrace-user 
-> > > for a while but it did support both of them quite nicely at some 
-> > > point.
-> > 
-> > Everything needed and machine-specific will be recorded in perf.data, 
-> > so this should already been supported. I'll try it.
+> Of course for a user the name is a lot more meaninful, but also
+> relatively expensive to generate.  Then again I'm not even sure how
+> the last pathname component only here is all that useful - it can't
+> be used to easily find the file.
+
+in my case it's not about finding the file, but finding the place in
+the application that is doing the writing. The last pathname component
+is more than enough for this....
+
 > 
-> Right now the DSOs are not recorded in the perf.data - but it would be 
-> useful to add it and to turn perf.data into a self-sufficient capture of 
-> all relevant data, which can be analyzed on any box.
 
-Well, the DSOs are recorded in perf.data, just not its symtabs, but now
-we have buildids, so we can ask for them to be installed on the other
-machine and it'll all work. Or should. :)
 
-For instance:
-
-[root@doppio linux-2.6-tip]# perf buildid-list -i perf.data | egrep 'vmlinux|nfs|libc-'
-ec8dd400904ddfcac8b1c343263a790f977159dc /lib64/libc-2.10.1.so
-0da49504693a200583fda6f1b949e6d2f799e692 /usr/lib64/libnfsidmap_nsswitch.so.0.0.0
-c90269c87eaf08559012a9fa29f60780743360cd /usr/lib64/libnfsidmap.so.0.3.0
-18e7cc53db62a7d35e9d6f6c9ddc23017d38ee9a vmlinux
-3982866276471cde6ac5821fdced42a7b1bfd848 [nfs]
-1489007276a50005753e730198fd93dd05b2082f [nfsd]
-5a128f082fe7fdcab6fb5d1b71935accb1f34383 [nfs_acl]
-[root@doppio linux-2.6-tip]#
-
-Now if I ask that the buildid for /usr/lib64/libnfsidmap.so.0.3.0 above
-to be installed, like this:
-
-[root@doppio linux-2.6-tip]# yum install /usr/lib/debug/.build-id/c9/0269c87eaf08559012a9fa29f60780743360cd
-Loaded plugins: auto-update-debuginfo, refresh-packagekit
-Found 44 installed debuginfo package(s)
-Enabling fedora-debuginfo: Fedora 11 - x86_64 - Debug
-Reading repository metadata in from local files
-Enabling updates-debuginfo: Fedora 11 - x86_64 - Updates - Debug
-Reading repository metadata in from local files
-Setting up Install Process
-Importing additional filelist information
-Resolving Dependencies
---> Running transaction check
----> Package nfs-utils-lib-debuginfo.x86_64 0:1.1.4-6.fc11 set to be updated
---> Finished Dependency Resolution
-
-Dependencies Resolved
-
-========================================================================
- Package                   Arch   Version       Repository	 Size
-========================================================================
-Installing:
- nfs-utils-lib-debuginfo   x86_64 1.1.4-6.fc11  fedora-debuginfo 174 k
-
-Transaction Summary
-========================================================================
-Install       1 Package(s)
-Upgrade       0 Package(s)
-
-Total download size: 174 k
-Is this ok [y/N]:
-
-So now we have:
-
-1) 'perf record' records the build-ids into perf.data
-2) 'perf buildid-list' list them, distro specific porcelain needed
-   to do the equivalent to the yum install above.
-3) 'perf report' will only use the symtab in a file that has the matching
-   build-id, if a build-id is found in the perf.data header for a
-   particular DSO.
-
-So we have a mechanism that is already present in several distros
-(build-id), that is in the kernel build process since ~2.6.23, and that
-avoids using mismatching DSOs when resolving symbols.
-
-I'm working on some of these aspects, but most of the infrastructure is
-alreadu in tip.
-
-- Arnaldo
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
