@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbZKTKnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZKTKos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbZKTKnr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 05:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZKTKnr
+	id S1752623AbZKTKos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 05:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZKTKos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 05:43:47 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40245 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbZKTKnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 05:43:46 -0500
-Date: Fri, 20 Nov 2009 05:43:35 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091120104335.GB29143@infradead.org>
-References: <20091025225342.007138f5@infradead.org> <20091111020108.GA11423@localhost> <20091110223456.01ef355f@infradead.org> <4AFA6AEF.5060306@garzik.org> <20091111081905.270a4e55@infradead.org> <y0m3a4kpsiw.fsf@fche.csb> <4AFB4AC7.1090405@intel.com> <20091112072217.GA31719@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091112072217.GA31719@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 20 Nov 2009 05:44:48 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:52674 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752181AbZKTKor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 05:44:47 -0500
+Date: Fri, 20 Nov 2009 11:44:50 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Cc: Clemens Ladisch <clemens@ladisch.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH] k10temp: temperature sensor for AMD Family
+  10h/11h CPUs
+Message-ID: <20091120114450.12c0be85@hyperion.delvare>
+In-Reply-To: <87ws1l5wcl.fsf@depni.sinp.msu.ru>
+References: <4AF91F70.10106@ladisch.de>
+	<4B06501B.8080509@ladisch.de>
+	<87ws1l5wcl.fsf@depni.sinp.msu.ru>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guys, I think both the inode number and name do have a use case.  For
-file system developers observing the filesystem the inode number is very
-useful, and if you look at the ext4 tracing already in tree or the xfs
-tracing going in in the next window they use the inode number all over.
+On Fri, 20 Nov 2009 10:22:50 +0000, Serge Belyshev wrote:
+> 
+> > +All these processors have a sensor, but on older revisions of Family 10h
+> > +processors, the sensor returns inconsistent values (erratum 319). The driver
+> > +refuses to load with these revisions (DR-BA, DR-B2, DR-B3: some Embedded
+> > +Opterons on Socket F; and Quad-Core Opteron, Phenom Triple/Quad-Core, and
+> > +Athon Dual-Core on Socket AM2+). All later revisions (RB-C2, BL-C2, DA-C2,
+> > +RB-C3, HY-D0) work fine; see the list above.
+> 
+> Please note that erratum actually states that the sensor only "may report
+> inconsistent values.", not that it is always broken.  As evident by my
+> own experience (tested with a userspace application), it actually works
+> perfectly on all B3 stepping processors that I have.
 
-Which btw brings up another good argument - to make the tracing really
-useful we need to have conventions.  While the inode number seems to be
-a realtively easy one printing the device is more difficult.  XFS just
-prints the raw major/minor to stay simple, ext4 has a complicated ad-hoc
-cache of device names, and this one just prints the superblock id
-string.
+We don't care that 5% of the CPU have working sensors. 95% [1] of
+theses CPUs have broken sensors and their users will ask us for help
+and we are fed up with this. So all these CPUs are blacklisted, period.
 
-Of course for a user the name is a lot more meaninful, but also
-relatively expensive to generate.  Then again I'm not even sure how the
-last pathname component only here is all that useful - it can't be used
-to easily find the file.
+> > +static bool __devinit has_erratum_319(void)
+> > +{
+> > +	/*
+> > +	 * Erratum 319: The thermal sensor of older Family 10h processors
+> > +	 *              (B steppings) is unreliable.
+> > +	 */
+> > +	return boot_cpu_data.x86 == 0x10 && boot_cpu_data.x86_model <= 2;
+> > +}
+> ...
+> > +	if (has_erratum_319()) {
+> > +		dev_err(&pdev->dev,
+> > +			"unreliable CPU thermal sensor; monitoring disabled\n");
+> > +		err = -ENODEV;
+> > +		goto exit;
+> > +	}
+> 
+> So, please provide an alternative for those who have a working sensor on a
+> revision B processor and want to use it.
 
+The alternative already exists: you can rebuild the driver yourself
+without this check.
+
+Or yet another alternative: become the maintainer of the hwmon
+subsystem, and do lm-sensors user support for a couple years. Then you
+will be allowed to decide what goes in.
+
+And yet another one: instead of asking others to solve your very own
+problem, why don't you try and solve it yourself? I'm sure Clemens
+would welcome patches to his driver.
+
+Thank you very much.
+
+[1] Yes these numbers are totally made up. There is no reliable way to
+tell a broken sensor from a working one anyway.
+
+-- 
+Jean Delvare
