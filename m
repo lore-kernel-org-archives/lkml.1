@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZKTJW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZKTJ0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZKTJW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 04:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZKTJW5
+	id S1754119AbZKTJ0F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 04:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKTJ0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 04:22:57 -0500
-Received: from mga12.intel.com ([143.182.124.36]:51607 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750803AbZKTJW5 (ORCPT
+	Fri, 20 Nov 2009 04:26:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60685 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751901AbZKTJ0C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 04:22:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,776,1249282800"; 
-   d="scan'208";a="213787179"
-Date: Fri, 20 Nov 2009 10:24:46 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] twl4030: Fix warning
-Message-ID: <20091120092445.GC3733@sortiz.org>
-References: <20091117154841.3941.35813.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091117154841.3941.35813.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 20 Nov 2009 04:26:02 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: paulmck@linux.vnet.ibm.com, linux-mm@kvack.org, cl@linux-foundation.org,
+       mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+References: <20091118181202.GA12180@linux.vnet.ibm.com>
+	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 10:25:53 +0100
+Message-ID: <1258709153.11284.429.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 03:48:47PM +0000, Alan Cox wrote:
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-Applied, thanks Alan.
-
-Cheers,
-Samuel.
-
-
-> ---
+On Fri, 2009-11-20 at 08:49 +0200, Pekka Enberg wrote:
+> Hi Paul,
 > 
->  drivers/mfd/twl4030-irq.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> On Wed, Nov 18, 2009 at 8:12 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > I am seeing some lockdep complaints in rcutorture runs that include
+> > frequent CPU-hotplug operations.  The tests are otherwise successful.
+> > My first thought was to send a patch that gave each array_cache
+> > structure's ->lock field its own struct lock_class_key, but you already
+> > have a init_lock_keys() that seems to be intended to deal with this.
+> >
+> > So, please see below for the lockdep complaint and the .config file.
+> >
+> >                                                        Thanx, Paul
+> >
+> > ------------------------------------------------------------------------
+> >
+> > =============================================
+> > [ INFO: possible recursive locking detected ]
+> > 2.6.32-rc4-autokern1 #1
+> > ---------------------------------------------
+> > syslogd/2908 is trying to acquire lock:
+> >  (&nc->lock){..-...}, at: [<c0000000001407f4>] .kmem_cache_free+0x118/0x2d4
+> >
+> > but task is already holding lock:
+> >  (&nc->lock){..-...}, at: [<c0000000001411bc>] .kfree+0x1f0/0x324
+> >
+> > other info that might help us debug this:
+> > 3 locks held by syslogd/2908:
+> >  #0:  (&u->readlock){+.+.+.}, at: [<c0000000004556f8>] .unix_dgram_recvmsg+0x70/0x338
+> >  #1:  (&nc->lock){..-...}, at: [<c0000000001411bc>] .kfree+0x1f0/0x324
+> >  #2:  (&parent->list_lock){-.-...}, at: [<c000000000140f64>] .__drain_alien_cache+0x50/0xb8
 > 
-> 
-> diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-> index fb194fe..c78b5ad 100644
-> --- a/drivers/mfd/twl4030-irq.c
-> +++ b/drivers/mfd/twl4030-irq.c
-> @@ -728,7 +728,8 @@ int twl_init_irq(int irq_num, unsigned irq_base, unsigned irq_end)
->  		goto fail_rqirq;
->  	}
->  
-> -	task = kthread_run(twl4030_irq_thread, (void *)irq_num, "twl4030-irq");
-> +	task = kthread_run(twl4030_irq_thread, (void *)(long)irq_num,
-> +								"twl4030-irq");
->  	if (IS_ERR(task)) {
->  		pr_err("twl4030: could not create irq %d thread!\n", irq_num);
->  		status = PTR_ERR(task);
-> 
+> I *think* this is a false positive. The nc->lock in slab_destroy()
+> should always be different from the one we took in kfree() because
+> it's a per-struct kmem_cache "slab cache". Peter, what do you think?
+> If my analysis is correct, any suggestions how to fix lockdep
+> annotations in slab?
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Did anything change recently? git-log mm/slab.c doesn't show anything
+obvious, although ec5a36f94e7ca4b1f28ae4dd135cd415a704e772 has the exact
+same lock recursion msg ;-)
+
+So basically its this stupid recursion issue where you allocate the slab
+meta structure using the slab allocator, and now have to free while
+freeing, right?
+
+/me gets lost in slab, tries again..
+
+The code in kmem_cache_create() suggests its not even fixed size, so
+there is no single cache backing all this OFF_SLAB muck :-(
+
+It does appear to be limited to the kmalloc slabs..
+
+There's a few possible solutions -- in order of preference:
+
+ 1) do the great slab cleanup now and remove slab.c, this will avoid any
+further waste of manhours and braincells trying to make slab limp along.
+
+ 2) propagate the nesting information and user spin_lock_nested(), given
+that slab is already a rat's nest, this won't make it any less obvious.
+
+ 3) Give each kmalloc cache its own lock class.
+
