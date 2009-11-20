@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZKTJHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZKTJL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZKTJHk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 04:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZKTJHj
+	id S1753909AbZKTJL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 04:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZKTJL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 04:07:39 -0500
-Received: from bld-mail18.adl2.internode.on.net ([150.101.137.103]:36622 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752373AbZKTJHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 04:07:38 -0500
-Message-ID: <4B065C44.5000209@internode.on.net>
-Date: Fri, 20 Nov 2009 19:37:16 +1030
-From: indexer <indexer@internode.on.net>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091107)
+	Fri, 20 Nov 2009 04:11:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51168 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751594AbZKTJLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 04:11:55 -0500
+Message-ID: <4B065D37.5080902@cn.fujitsu.com>
+Date: Fri, 20 Nov 2009 17:11:19 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Huang Ying <ying.huang@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression in efi.c 2.6.32-rc7
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
+References: <4B064AF5.9060208@cn.fujitsu.com> <20091120085536.GC19778@elte.hu>
+In-Reply-To: <20091120085536.GC19778@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter, Huang
+Ingo Molnar wrote:
+> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> ---
+>>  tools/perf/Makefile       |    1 +
+>>  tools/perf/builtin-kmem.c |  578 +++++++++++++++++++++++++++++++++++++++++++++
+>>  tools/perf/builtin.h      |    1 +
+>>  tools/perf/perf.c         |   27 +-
+>>  4 files changed, 594 insertions(+), 13 deletions(-)
+>>  create mode 100644 tools/perf/builtin-kmem.c
+> 
+> btw., you might want to add it to command-list.txt as well (in a future 
+> patch), so that 'kmem' shows up in the default 'perf' output.
+> 
+> Plus a Documentation/perf-kmem.txt file will make sure that 'perf help 
+> kmem' and 'perf kmem --help' displays a help page, etc.
+> 
 
-I have finally solved the issues i had with bisecting and have completed
-successfully bisecting the efi issue. It exists between 2.6.30-rc7 and
-2.6.30-rc8.
+I planed to do these after collecting comments and getting positive
+responses. So sure, I'll post further patches.
 
-9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3 is the first bad commit
-commit 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Tue Jun 2 20:07:25 2009 -0700
-
-    Linux 2.6.30-rc8
-
-:100644 100644 739fd34a72a2422f14937ccd084f77d52edc0fc1
-610d1c332c45d1d8d2da3adc42e0fb0ad20c7123 M    Makefile
-
-Is the output of git bisect. I hope this helps to find the problem and
-resolve it
-
-William
