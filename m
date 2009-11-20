@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZKTOnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZKTOsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbZKTOnj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZKTOni
+	id S1753868AbZKTOsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZKTOsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:43:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34219 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbZKTOnh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 09:43:37 -0500
-Date: Fri, 20 Nov 2009 06:45:11 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] vfs: Add a trace point in the mark_inode_dirty function
-Message-ID: <20091120064511.268cc8fd@infradead.org>
-In-Reply-To: <20091120104335.GB29143@infradead.org>
-References: <20091025225342.007138f5@infradead.org>
-	<20091111020108.GA11423@localhost>
-	<20091110223456.01ef355f@infradead.org>
-	<4AFA6AEF.5060306@garzik.org>
-	<20091111081905.270a4e55@infradead.org>
-	<y0m3a4kpsiw.fsf@fche.csb>
-	<4AFB4AC7.1090405@intel.com>
-	<20091112072217.GA31719@elte.hu>
-	<20091120104335.GB29143@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 20 Nov 2009 09:48:51 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:38569 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbZKTOsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 09:48:51 -0500
+Date: Fri, 20 Nov 2009 06:48:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       cl@linux-foundation.org, mpm@selenic.com,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091120144855.GB22527@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091118181202.GA12180@linux.vnet.ibm.com> <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B067816.6070304@cs.helsinki.fi>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Nov 2009 05:43:35 -0500
-Christoph Hellwig <hch@infradead.org> wrote:
+On Fri, Nov 20, 2009 at 01:05:58PM +0200, Pekka Enberg wrote:
+> Peter Zijlstra kirjoitti:
+>> On Fri, 2009-11-20 at 12:38 +0200, Pekka Enberg wrote:
+>>>
+>>> On Fri, Nov 20, 2009 at 11:25 AM, Peter Zijlstra <peterz@infradead.org> 
+>>> wrote:
+>>>>  2) propagate the nesting information and user spin_lock_nested(), given
+>>>> that slab is already a rat's nest, this won't make it any less obvious.
+>>> spin_lock_nested() doesn't really help us here because there's a
+>>> _real_ possibility of a recursive spin lock here, right? 
+>> Well, I was working under the assumption that your analysis of it being
+>> a false positive was right ;-)
+>> I briefly tried to verify that, but got lost and gave up, at which point
+>> I started looking for ways to annotate.
+>
+> Uh, ok, so apparently I was right after all. There's a comment in 
+> free_block() above the slab_destroy() call that refers to the comment above 
+> alloc_slabmgmt() function definition which explains it all.
+>
+> Long story short: ->slab_cachep never points to the same kmalloc cache 
+> we're allocating or freeing from. Where do we need to put the 
+> spin_lock_nested() annotation? Would it be enough to just use it in 
+> cache_free_alien() for alien->lock or do we need it in cache_flusharray() 
+> as well?
 
-> 
-> Which btw brings up another good argument - to make the tracing really
-> useful we need to have conventions.  While the inode number seems to
-> be a realtively easy one printing the device is more difficult.  XFS
-> just prints the raw major/minor to stay simple, ext4 has a
-> complicated ad-hoc cache of device names, and this one just prints
-> the superblock id string.
+Hmmm...  If the nc->lock spinlocks are always from different slabs
+(as alloc_slabmgmt()'s block comment claims), why not just give each
+array_cache structure's lock its own struct lock_class_key?  They
+are zero size unless you have lockdep enabled.
 
-I was just trying to stay compatible with blockdump, and it even makes
-sense ;)
-
-> 
-> Of course for a user the name is a lot more meaninful, but also
-> relatively expensive to generate.  Then again I'm not even sure how
-> the last pathname component only here is all that useful - it can't
-> be used to easily find the file.
-
-in my case it's not about finding the file, but finding the place in
-the application that is doing the writing. The last pathname component
-is more than enough for this....
-
-> 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+							Thanx, Paul
