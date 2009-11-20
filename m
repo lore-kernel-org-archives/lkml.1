@@ -1,65 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZKTVBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZKTVCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZKTVBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbZKTVBA
+	id S1756000AbZKTVCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZKTVCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:01:00 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:22317 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175AbZKTVA7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:00:59 -0500
-Subject: Re: A generic kernel compatibilty code
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Fri, 20 Nov 2009 21:00:58 +0000
-Message-Id: <1258750858.2877.58.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Nov 2009 21:01:16.0606 (UTC) FILETIME=[99DA2DE0:01CA6A24]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17020.003
-X-TM-AS-Result: No--22.087800-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+	Fri, 20 Nov 2009 16:02:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:25254 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754333AbZKTVCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 16:02:32 -0500
+Date: Fri, 20 Nov 2009 16:02:38 -0500
+From: Mike Snitzer <snitzer@redhat.com>
+To: dm-devel@redhat.com
+Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH v4 06/13] dm snapshot: merge target should not allocate new
+ exceptions
+Message-ID: <20091120210238.GC9458@redhat.com>
+References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
+ <1258748873-24185-7-git-send-email-snitzer@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258748873-24185-7-git-send-email-snitzer@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 12:45 -0800, Luis R. Rodriguez wrote:
-> Everyone and their mother reinvents the wheel when it comes to
-> backporting kernel modules. It a painful job and it seems to me an
-> alternative is possible. If we can write generic compatibilty code for
-> a new routine introduced on the next kernel how about just merging it
-> to the kernel under some generic compat module. This would be
-> completey ignored by everyone using the stable kernel but can be
-> copied by anyone doing backport work.
-> 
-> So I'm thinking something as simple as a generic compat/comat.ko with
-> compat-2.6.32.[ch] files.
-> 
-> We've already backported everything needed for wireless drivers under
-> compat-wireless under this format down to even 2.6.25.
-[...]
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-If you think 2.6.25 is old then I don't think you understand the scale
-of the problem.
+The snapshot-merge target should not allocate new exceptions because the
+intent is to merge all of its exceptions as quickly and safely as
+possible.
 
-OEMs still expect us to support RHEL 4 (2.6.9) and SLES 9 (2.6.5) though
-the latter will probably be dropped soon.  Some other vendors apparently
-still need to support even 2.4 kernels!
+Introduce new method, snapshot_merge_map(), that won't allocate
+exceptions.  Modify __origin_write() so that it doesn't allocate
+exceptions in merging snapshots.
 
-Ben.
+If a write request to a merging snapshot device is to be dispatched
+directly to the origin (because the chunk is not remapped or was already
+merged), snapshot_merge_map() must make exceptions in other snapshots.
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Mike Snitzer <snitzer@redhat.com>
+---
+ drivers/md/dm-snap.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/md/dm-snap.c
+===================================================================
+--- linux-2.6.orig/drivers/md/dm-snap.c
++++ linux-2.6/drivers/md/dm-snap.c
+@@ -127,6 +127,11 @@ static int bdev_equal(struct block_devic
+ 	return lhs == rhs;
+ }
+ 
++static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
++			      union map_info *map_context);
++
++#define is_merge(ti) ((ti)->type->map == snapshot_merge_map)
++
+ struct dm_snap_pending_exception {
+ 	struct dm_exception e;
+ 
+@@ -1292,6 +1297,44 @@ static int snapshot_map(struct dm_target
+ 	return r;
+ }
+ 
++static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
++			      union map_info *map_context)
++{
++	struct dm_exception *e;
++	struct dm_snapshot *s = ti->private;
++	int r = DM_MAPIO_REMAPPED;
++	chunk_t chunk;
++
++	chunk = sector_to_chunk(s->store, bio->bi_sector);
++
++	down_read(&s->lock);
++
++	/* Full snapshots are not usable */
++	if (!s->valid) {
++		r = -EIO;
++		goto out_unlock;
++	}
++
++	/* If the block is already remapped - use that */
++	e = dm_lookup_exception(&s->complete, chunk);
++	if (e) {
++		remap_exception(s, e, bio, chunk);
++		goto out_unlock;
++	}
++
++	bio->bi_bdev = s->origin->bdev;
++
++	if (bio_rw(bio) == WRITE) {
++		up_read(&s->lock);
++		return do_origin(s->origin, bio);
++	}
++
++ out_unlock:
++	up_read(&s->lock);
++
++	return r;
++}
++
+ static int snapshot_end_io(struct dm_target *ti, struct bio *bio,
+ 			   int error, union map_info *map_context)
+ {
+@@ -1442,6 +1485,10 @@ static int __origin_write(struct list_he
+ 	/* Do all the snapshots on this origin */
+ 	list_for_each_entry (snap, snapshots, list) {
+ 
++		/* Don't make new exceptions in a merging snapshot */
++		if (is_merge(snap->ti))
++			continue;
++
+ 		down_write(&snap->lock);
+ 
+ 		/* Only deal with valid and active snapshots */
+@@ -1670,7 +1717,7 @@ static struct target_type merge_target =
+ 	.module  = THIS_MODULE,
+ 	.ctr     = snapshot_ctr,
+ 	.dtr     = snapshot_dtr,
+-	.map     = snapshot_map,
++	.map     = snapshot_merge_map,
+ 	.end_io  = snapshot_end_io,
+ 	.postsuspend = snapshot_postsuspend,
+ 	.preresume  = snapshot_preresume,
 
