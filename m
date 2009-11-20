@@ -1,102 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZKTARJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZKTAT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZKTARJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbZKTARH
+	id S1758154AbZKTAT0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZKTATZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:17:07 -0500
-Received: from mga03.intel.com ([143.182.124.21]:25704 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758101AbZKTARD convert rfc822-to-8bit (ORCPT
+	Thu, 19 Nov 2009 19:19:25 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:14072 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757772AbZKTATY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:17:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
-   d="scan'208,223";a="213647438"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-Date: Thu, 19 Nov 2009 16:17:06 -0800
-Subject: [PATCH 3/3] x86/apic: remove io_apic_disable_legacy
-Thread-Topic: [PATCH 3/3] x86/apic: remove io_apic_disable_legacy
-Thread-Index: Acppdssux6ucV+arTXuQs5O4VfYqKA==
-Message-ID: <43F901BD926A4E43B106BF17856F07558A00D910@orsmsx508.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 19 Nov 2009 19:19:24 -0500
+Authentication-Results: sj-iport-3.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAENvBUurRN+K/2dsb2JhbAC+BJdxhDsE
+X-IronPort-AV: E=Sophos;i="4.44,773,1249257600"; 
+   d="scan'208";a="203406806"
+From: Roland Dreier <rdreier@cisco.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, sean.hefty@intel.com
+Cc: general@lists.openfabrics.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: infiniband tree build failure
+References: <20091120110342.5128b8f8.sfr@canb.auug.org.au>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 19 Nov 2009 16:19:29 -0800
+In-Reply-To: <20091120110342.5128b8f8.sfr@canb.auug.org.au> (Stephen
+	Rothwell's message of "Fri, 20 Nov 2009 11:03:42 +1100")
+Message-ID: <ada1vju6oa6.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Nov 2009 00:19:30.0034 (UTC) FILETIME=[20798520:01CA6977]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8a484e0e5ac3f972e3ed842a9899a4dc1610253a Mon Sep 17 00:00:00 2001
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Thu, 19 Nov 2009 07:48:16 -0800
-Subject: [PATCH] x86/apic: remove io_apic_disable_legacy
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
----
- arch/x86/include/asm/io_apic.h |    2 --
- arch/x86/kernel/apic/io_apic.c |   13 ++++++-------
- 2 files changed, 6 insertions(+), 9 deletions(-)
+ > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+ > 
+ > ERROR: ".__ipv6_addr_type" [drivers/infiniband/core/rdma_cm.ko] undefined!
+ > 
+ > I have used the version of the infiniband tree from next-20091119 for
+ > today.
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c7c16c..84fdd51 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -143,8 +143,6 @@ extern int noioapicreroute;
- /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
- extern int timer_through_8259;
- 
--extern void io_apic_disable_legacy(void);
--
- /*
-  * If we use the IO-APIC for IRQ routing, disable automatic
-  * assignment of PCI IRQ's.
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 35aa616..6b417b1 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -97,7 +97,7 @@ struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
- int mp_irq_entries;
- 
- /* GSI interrupts */
--static int nr_irqs_gsi = NR_IRQS_LEGACY;
-+int nr_irqs_gsi = NR_IRQS_LEGACY;
- 
- #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
- int mp_bus_id_to_type[MAX_MP_BUSSES];
-@@ -176,12 +176,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS] = {
- 	[15] = { .vector = IRQ15_VECTOR, },
- };
- 
--void __init io_apic_disable_legacy(void)
--{
--	nr_legacy_irqs = 0;
--	nr_irqs_gsi = 0;
--}
--
- int __init arch_early_irq_init(void)
- {
- 	struct irq_cfg *cfg;
-@@ -190,6 +184,11 @@ int __init arch_early_irq_init(void)
- 	int node;
- 	int i;
- 
-+	if (!legacy_pic->nr_legacy_irqs) {
-+		nr_irqs_gsi = 0;
-+		io_apic_irqs = ~0UL;
-+	}
-+
- 	cfg = irq_cfgx;
- 	count = ARRAY_SIZE(irq_cfgx);
- 	node= cpu_to_node(boot_cpu_id);
--- 
-1.5.6.5
-
+Sorry, will track it down.  Sean this probably came from your patches,
+any idea off the top of your head?
