@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZKTRwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZKTR4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZKTRwg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZKTRwg
+	id S1754756AbZKTR4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 12:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZKTR4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:52:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49122 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZKTRwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:52:35 -0500
-Date: Fri, 20 Nov 2009 15:52:28 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
-Message-ID: <20091120175228.GD27926@ghostprotocols.net>
-References: <4B064AF5.9060208@cn.fujitsu.com> <20091120081440.GA19778@elte.hu> <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com> <20091120083053.GB19778@elte.hu> <4B0657A4.2040606@cs.helsinki.fi> <4B06590C.7010109@cn.fujitsu.com> <20091120090353.GE19778@elte.hu> <20091120144215.GH18283@ghostprotocols.net> <20091120164110.GA24183@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120164110.GA24183@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 20 Nov 2009 12:56:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11018 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753392AbZKTR4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 12:56:08 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091120094217.b94d99bb.akpm@linux-foundation.org>
+References: <20091120094217.b94d99bb.akpm@linux-foundation.org> <20091117141314.0238a49b.akpm@linux-foundation.org> <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <6207.1255706090@redhat.com> <23382.1255707790@redhat.com> <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> <16299.1258729209@redhat.com> 
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, Eric Paris <eparis@redhat.com>, graff.yang@gmail.com,
+       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+Date: Fri, 20 Nov 2009 17:54:24 +0000
+Message-ID: <18122.1258739664@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Nov 20, 2009 at 05:41:10PM +0100, Ingo Molnar escreveu:
-> > So we have a mechanism that is already present in several distros
-> > (build-id), that is in the kernel build process since ~2.6.23, and that
-> > avoids using mismatching DSOs when resolving symbols.
-> 
-> But what do we do if we have another box that runs say on a MIPS CPU, 
-> uses some minimal distro - and copy that perf.data over to an x86 box.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-There would be no problem, it would be just a matter of installing the
-right -debuginfo packages, for MIPS.
+> I'll hold off, as Eric is preparing an alternative for "the end of this
+> week".  If that doesn't work out, we can add
+> nommu-ignore-the-address-parameter-in-the-file_mmap-security-check.patch
+> to 2.6.32.1, OK?
 
-Or the original, unstripped FS image sent to the machine with the MIPS
-cpu, if there aren't -debuginfo packages.
+I'll be on holiday next week.
 
-Either one, the right DSOs would be found by the buildids.
-
-There are other scenarios, like a binary that gets updated while a long
-running perf record session runs, the way to differentiate between the
-two DSOs wouldn't be the name, but the buildid.
-
-> The idea is there to be some new mode of perf.data where all the 
-> relevant DSO contents (symtabs but also sections with instructions for 
-> perf annotate to work) are copied into perf.data, during or after data 
-> capture - on the box that does the recording.
-> 
-> Once we have everything embedded in the perf.data, analysis passes only 
-> have to work based on that particular perf.data - no external data.
-
-Well, we can that, additionally, but think about stripped binaries, we
-would lose potentially a lot because the symtabs on that small machine
-would have poorer symtabs than the ones in an unstriped binary (or in a
--debuginfo package).
-
-- Arnaldo
+David
