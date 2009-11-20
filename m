@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZKTVsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZKTVyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbZKTVsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZKTVsW
+	id S1755972AbZKTVyy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZKTVyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:48:22 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:43198 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754841AbZKTVsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:48:21 -0500
-Date: Fri, 20 Nov 2009 15:48:26 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: UV enable RTC clocksource
-Message-ID: <20091120214826.GA20016@sgi.com>
+	Fri, 20 Nov 2009 16:54:53 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45470 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755854AbZKTVyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 16:54:52 -0500
+Message-ID: <4B071000.9080408@zytor.com>
+Date: Fri, 20 Nov 2009 13:54:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, mathieu.desnoyers@polymtl.ca,
+       tglx@linutronix.de, rostedt@goodmis.org, andi@firstfloor.org,
+       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com
+Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump patching
+ without stop_machine
+References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com>
+In-Reply-To: <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always enable the RTC clocksource on UV systems.
+On 11/18/2009 02:43 PM, Jason Baron wrote:
+> Add text_poke_fixup() which takes a fixup address to where a processor
+> jumps if it hits the modifying address while code modifying.
+> text_poke_fixup() does following steps for this purpose.
+> 
+>  1. Setup int3 handler for fixup.
+>  2. Put a breakpoint (int3) on the first byte of modifying region,
+>     and synchronize code on all CPUs.
+>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+>  4. Modify the first byte of modifying region, and synchronize code
+>     on all CPUs.
+>  5. Clear int3 handler.
+> 
+> Thus, if some other processor execute modifying address when step2 to step4,
+> it will be jumped to fixup code.
+> 
+> This still has many limitations for modifying multi-instructions at once.
+> However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
+> because;
+>  - Replaced instruction is just one instruction, which is executed atomically.
+>  - Replacing instruction is a jump, so we can set fixup address where the jump
+>    goes to.
+> 
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+I just had a thought about this... regardless of if this is safe or not
+(which still remains to be determined)... I have a bit more of a
+fundamental question about it:
 
----
+This code ends up taking *two* global IPIs for each instruction
+modification.  Each of those requires whole-system synchronization.  How
+is this better than taking one IPI and having the other CPUs wait until
+the modification is complete before returning?
 
- arch/x86/kernel/uv_time.c |   17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
-
-Index: linux/arch/x86/kernel/uv_time.c
-===================================================================
---- linux.orig/arch/x86/kernel/uv_time.c	2009-11-20 14:57:31.000000000 -0600
-+++ linux/arch/x86/kernel/uv_time.c	2009-11-20 15:41:32.000000000 -0600
-@@ -74,7 +74,6 @@ struct uv_rtc_timer_head {
-  */
- static struct uv_rtc_timer_head		**blade_info __read_mostly;
- 
--static int				uv_rtc_enable;
- static int				uv_rtc_evt_enable;
- 
- /*
-@@ -335,14 +334,6 @@ static void uv_rtc_interrupt(void)
- 	ced->event_handler(ced);
- }
- 
--static int __init uv_enable_rtc(char *str)
--{
--	uv_rtc_enable = 1;
--
--	return 1;
--}
--__setup("uvrtc", uv_enable_rtc);
--
- static int __init uv_enable_evt_rtc(char *str)
- {
- 	uv_rtc_evt_enable = 1;
-@@ -364,12 +355,16 @@ static __init int uv_rtc_setup_clock(voi
- {
- 	int rc;
- 
--	if (!uv_rtc_enable || !is_uv_system() || x86_platform_ipi_callback)
-+	if (!is_uv_system())
- 		return -ENODEV;
- 
- 	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
- 				clocksource_uv.shift);
- 
-+	/* If single blade, prefer tsc */
-+	if (uv_num_possible_blades() == 1)
-+		clocksource_uv.rating = 250;
-+
- 	rc = clocksource_register(&clocksource_uv);
- 	if (rc)
- 		printk(KERN_INFO "UV RTC clocksource failed rc %d\n", rc);
-@@ -377,7 +372,7 @@ static __init int uv_rtc_setup_clock(voi
- 		printk(KERN_INFO "UV RTC clocksource registered freq %lu MHz\n",
- 			sn_rtc_cycles_per_second/(unsigned long)1E6);
- 
--	if (rc || !uv_rtc_evt_enable)
-+	if (rc || !uv_rtc_evt_enable || x86_platform_ipi_callback)
- 		return rc;
- 
- 	/* Setup and register clockevents */
+	-hpa
