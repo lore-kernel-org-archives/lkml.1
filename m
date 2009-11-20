@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZKTVST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZKTVag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbZKTVST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZKTVSS
+	id S1756148AbZKTVag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbZKTVac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:18:18 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48138 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753297AbZKTVSR (ORCPT
+	Fri, 20 Nov 2009 16:30:32 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37229 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755511AbZKTVa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:18:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=V2IduTE7AqKOcLAiIVyY/6SoY1Zv3+0A1QXJvV+IaAflFZWMF3ZUG2WNaU0jEQtnEY
-         r9bZXIXgj034RYY+s2gj42TOAE6bM34XU59TVx4OJ9W5PdnJKt9akoiaRLrsZHyMQpfl
-         z2FfevQ3GxOaginee84fTthEobL4mg2zbgCO8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-Date: Fri, 20 Nov 2009 22:17:31 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <200911192249.16860.bzolnier@gmail.com> <4B05C0B1.2020307@garzik.org>
-In-Reply-To: <4B05C0B1.2020307@garzik.org>
+	Fri, 20 Nov 2009 16:30:29 -0500
+Date: Fri, 20 Nov 2009 16:18:38 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: A generic kernel compatibilty code
+Message-ID: <20091120211837.GA22815@tuxdriver.com>
+References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com> <43e72e890911201251t6210ee19n177eaf003a4fffc@mail.gmail.com> <43e72e890911201253obc466c8k2102e04457c48c92@mail.gmail.com>
 MIME-Version: 1.0
-Message-Id: <200911202217.31982.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890911201253obc466c8k2102e04457c48c92@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 November 2009 11:03:29 pm Jeff Garzik wrote:
-> On 11/19/2009 04:49 PM, Bartlomiej Zolnierkiewicz wrote:
-
-> >> Absent stronger justification, libata remains with separate drivers,
-> >> even if that means some code duplication.
+On Fri, Nov 20, 2009 at 12:53:51PM -0800, Luis R. Rodriguez wrote:
+> On Fri, Nov 20, 2009 at 12:51 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> > On Fri, Nov 20, 2009 at 12:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> >> Everyone and their mother reinvents the wheel when it comes to
+> >> backporting kernel modules. It a painful job and it seems to me an
+> >> alternative is possible. If we can write generic compatibilty code for
+> >> a new routine introduced on the next kernel how about just merging it
+> >> to the kernel under some generic compat module. This would be
+> >> completey ignored by everyone using the stable kernel but can be
+> >> copied by anyone doing backport work.
+> >>
+> >> So I'm thinking something as simple as a generic compat/comat.ko with
+> >> compat-2.6.32.[ch] files.
 > >
-> > I can always hold my own tree with such changes if needed.
+> > FWIW, I meant a compat-2.6.32.[ch] and compat-2.6.31.[ch] and so on.
+> > All these would link to the compat.ko
 > 
-> If it really bugs you, you could take the drivers/ata/sata_promise.h 
-> approach, or do multi-file modules.
+> I supose this could juse be a separate tree with some generic
+> compat.ko module. That might work better.
 
-One of the main problems with separate drivers is a needless complexity
-of the detection logic (different chips share same PCI IDs) and relevant
-code parts presenting the issue were already posted in this thread.
+This is what I would suggest for pursuing this idea.  Perhaps you
+could split-off from compat-wireless, then make that tree depend on
+the new tree (compat-core?)...
 
-PS It would bug me really if I were the author or the maintainer of said
-code but since I'm not I'll get to fixing it only when I'm bored enough..
+Hth...
 
---
-Bartlomiej Zolnierkiewicz
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
