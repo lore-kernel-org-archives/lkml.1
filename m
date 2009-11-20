@@ -1,139 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZKTU2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZKTU3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZKTU2E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZKTU16
+	id S1755979AbZKTU3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbZKTU3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:27:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29471 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755481AbZKTU14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:27:56 -0500
-From: Mike Snitzer <snitzer@redhat.com>
-To: dm-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 13/13] dm snapshot: merge a linear region of chunks using one large IO
-Date: Fri, 20 Nov 2009 15:27:53 -0500
-Message-Id: <1258748873-24185-14-git-send-email-snitzer@redhat.com>
-In-Reply-To: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
-References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
+	Fri, 20 Nov 2009 15:29:20 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:58313 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754840AbZKTU3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:29:16 -0500
+Date: Fri, 20 Nov 2009 20:29:09 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091120202909.GA31117@srcf.ucam.org>
+References: <20091118213355.GA16630@srcf.ucam.org> <ac3eb2510911190309y6d0d8445wd907fc5664595c6f@mail.gmail.com> <20091119130107.GB20949@srcf.ucam.org> <ac3eb2510911190529p6810508fve4941f3077dfd3d9@mail.gmail.com> <20091119141634.GA311@srcf.ucam.org> <ac3eb2510911190625i7432644aod6e99829b8a03dc4@mail.gmail.com> <20091119143008.GA719@srcf.ucam.org> <ac3eb2510911190634m20947c86w78340d22eff290ca@mail.gmail.com> <20091119144853.GA1398@srcf.ucam.org> <ac3eb2510911190700o6f4e80cm172c14dc0f28451d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510911190700o6f4e80cm172c14dc0f28451d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-s->store->type->prepare_merge returns the number of chunks that can be
-linearly copied starting from the returned chunk number backward (but
-the caller is allowed to copy less, and the caller passes the number of
-copied chunks to s->store->type->commit_merge).
+On Thu, Nov 19, 2009 at 04:00:46PM +0100, Kay Sievers wrote:
 
-I.e. if returned chunk numbers are old_chunk == 10 and new_chunk == 20
-and returned value is 3, then chunk 20 can be copied to 10, chunk 19 to
-9 and 18 to 8.
+> Yeah, it would not be as simple as your patch. It probably involves a
+> way to get a file descriptor per listener, to let the kernel know if
+> anybody is interested, and to auto-cleanup when the listener dies, and
+> to have per instance timers.
 
-s->merge_write_interlock_n has been increased up to the full range of
-chunks returned from s->store->type->prepare_merge.  Until now kcopyd
-was only ever allowed to copy one chunk at a time; as a result
-snapshot-merge performance was extremely slow.
+This would seem to involve a lot of extra locking in the block 
+submission and completion code. I don't think it's ideal. How about 
+this:
 
-Relative to the snapshot target, snapshot-merge's performance is now
-comparable.
+* idle_hysteresis contains a value. If it's greater than 0, attempting 
+to increase it will give -EINVAL. It can be polled.
 
-Also, snapshot_merge_process() needs to delay the merging of _all_
-chunks that have in-progress writes; not just the first chunk in the
-region that is to be merged.
+* On idle state transition, applications listening to the stat sysfs 
+node will get woken. The stat output will include the number of msecs 
+that the disk has been idle. If this is less than the application 
+requested, it can set a timer to wake it up again in the future and 
+recheck.
 
-Signed-off-by: Mike Snitzer <snitzer@redhat.com>
----
- drivers/md/dm-snap.c |   35 +++++++++++++++++++++++------------
- 1 files changed, 23 insertions(+), 12 deletions(-)
+* When an application exits, if (and only if) it wrote a value to 
+idle_hysteresis, it should set this back to 0. This will notify any 
+other apps, which may then set their own wakeup time.
 
-diff --git a/drivers/md/dm-snap.c b/drivers/md/dm-snap.c
-index 74f7f38..4d6387e 100644
---- a/drivers/md/dm-snap.c
-+++ b/drivers/md/dm-snap.c
-@@ -752,11 +752,12 @@ static void merge_callback(int read_err, unsigned long write_err,
- 
- static void snapshot_merge_process(struct dm_snapshot *s)
- {
--	int r;
-+	int r, i, linear_chunks;
- 	chunk_t old_chunk, new_chunk, n;
- 	struct origin *o;
- 	int must_wait;
- 	struct dm_io_region src, dest;
-+	sector_t io_size;
- 
- 	BUG_ON(!s->merge_running);
- 	if (s->merge_shutdown)
-@@ -767,27 +768,34 @@ static void snapshot_merge_process(struct dm_snapshot *s)
- 		goto shut;
- 	}
- 
--	r = s->store->type->prepare_merge(s->store, &old_chunk, &new_chunk);
--	if (r <= 0) {
--		if (r < 0)
-+	linear_chunks = s->store->type->prepare_merge(s->store,
-+						      &old_chunk, &new_chunk);
-+	if (linear_chunks <= 0) {
-+		if (linear_chunks < 0)
- 			DMERR("Read error in exception store, "
- 			      "shutting down merge");
- 		goto shut;
- 	}
-+	/* Adjust old_chunk and new_chunk to reflect start of linear region */
-+	old_chunk = old_chunk + 1 - linear_chunks;
-+	new_chunk = new_chunk + 1 - linear_chunks;
- 
--	/* TODO: use larger I/O size once we verify that kcopyd handles it */
-+	/*
-+	 * Use one (potentially large) I/O to copy all 'linear_chunks'
-+	 * from the exception store to the origin
-+	 */
-+	io_size = linear_chunks * s->store->chunk_size;
- 
- 	dest.bdev = s->origin->bdev;
- 	dest.sector = chunk_to_sector(s->store, old_chunk);
--	dest.count = min((sector_t)s->store->chunk_size,
--			 get_dev_size(dest.bdev) - dest.sector);
-+	dest.count = min(io_size, get_dev_size(dest.bdev) - dest.sector);
- 
- 	src.bdev = s->cow->bdev;
- 	src.sector = chunk_to_sector(s->store, new_chunk);
- 	src.count = dest.count;
- 
- test_again:
--	/* Reallocate other snapshots */
-+	/* Reallocate other snapshots; must account for all 'linear_chunks' */
- 	must_wait = 0;
- 	/*
- 	 * Merging snapshot already has the origin's __minimum_chunk_size()
-@@ -796,7 +804,7 @@ test_again:
- 	BUG_ON(!s->ti->split_io);
- 	down_read(&_origins_lock);
- 	o = __lookup_origin(s->origin->bdev);
--	for (n = 0; n < s->store->chunk_size; n += s->ti->split_io) {
-+	for (n = 0; n < io_size; n += s->ti->split_io) {
- 		r = __origin_write(&o->snapshots, dest.sector + n, NULL);
- 		if (r == DM_MAPIO_SUBMITTED)
- 			must_wait = 1;
-@@ -809,11 +817,14 @@ test_again:
- 
- 	down_write(&s->lock);
- 	s->merge_write_interlock = old_chunk;
--	s->merge_write_interlock_n = 1;
-+	s->merge_write_interlock_n = linear_chunks;
- 	up_write(&s->lock);
- 
--	while (__chunk_is_tracked(s, old_chunk))
--		msleep(1);
-+	/* Wait until writes to all 'linear_chunks' drain */
-+	for (i = 0; i < linear_chunks; i++) {
-+		while (__chunk_is_tracked(s, old_chunk + i))
-+			msleep(1);
-+	}
- 
- 	dm_kcopyd_copy(s->kcopyd_client, &src, 1, &dest, 0, merge_callback, s);
- 	return;
+It's not beautiful but it satisfies the constraints. There's a minimum 
+of extra wakeups, it doesn't complicate the block path any further and 
+multiple applications can take advantage of it.
+
 -- 
-1.6.5.2
-
+Matthew Garrett | mjg59@srcf.ucam.org
