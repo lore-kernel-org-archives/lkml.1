@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZKTIpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZKTIr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312AbZKTIpH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 03:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZKTIpG
+	id S1753440AbZKTIr3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 03:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZKTIr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 03:45:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:37335 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbZKTIpE (ORCPT
+	Fri, 20 Nov 2009 03:47:28 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56220 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZKTIr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 03:45:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=jU54BWCBFgjI28ZlIn5Z17h2DjteH9rLY4XY+WKoNWe7swhkP2MtJc9fkQnZqfzycy
-         UMBdjKyflTwsYl0J5PfNxNvd7UqO+vg+K/yQcYrvsEKOFPjXH5PPWjRwKONkhjJKJ1jh
-         MPw/DbJNsEPxJuE7v5fxQ3CaEbhehuFeDzd1I=
-Message-ID: <4B065712.4050202@gmail.com>
-Date: Fri, 20 Nov 2009 09:45:06 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091117 SUSE/3.0.0-2.1 Thunderbird/3.0
+	Fri, 20 Nov 2009 03:47:27 -0500
+Message-ID: <4B0657A4.2040606@cs.helsinki.fi>
+Date: Fri, 20 Nov 2009 10:47:32 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Johnny Hung <johnny.hacking@gmail.com>
-CC: kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: Re: How to move two valuables to x86 CPU register ebx, ecx by using
- AT&A 	inline asm.
-References: <cb9ecdfa0911190150w4edbacdfp24a7069c618193f4@mail.gmail.com>
-In-Reply-To: <cb9ecdfa0911190150w4edbacdfp24a7069c618193f4@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
+References: <4B064AF5.9060208@cn.fujitsu.com> <20091120081440.GA19778@elte.hu> <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com> <20091120083053.GB19778@elte.hu>
+In-Reply-To: <20091120083053.GB19778@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19/2009 10:50 AM, Johnny Hung wrote:
-> Hi All:
->     I want to move two local valuables to x86 arch CPU ebx, ecx
-> register and do outb cpu instruction by using AT&A inline asm in
-> kernel driver.  The following code was I wrote but gcc report syntax
-> error:
-> ==
->     unsigned int val = 10;
->     unsigned int tmp = 5;
->     ....
->     __asm__ volatile ("movl %0, %%ebx"
->           "movl %1, %%ecx"
->           "outb $0x27, $0xb2"
->           :
->           :"r"(val), "r"(tmp)
->           :"%ebx", "%ecx"
->    );
-> 
-> Does anyone can point me out. Any reply is appreciated.
+Ingo Molnar kirjoitti:
+> Regarding patch 2 - can we set some definitive benchmark threshold for 
+> that? I.e. a list of must-have features in 'perf kmem' before we can do 
+> it? 100% information and analysis equivalency with kmemtrace-user tool? 
 
-Why not just:
-("outb $0x27, %%al" : : "a" (0xb2), "b"(val), "c" (tmp));
--- 
-js
-Faculty of Informatics, Masaryk University
-Suse Labs, Novell
+I'd be interested to hear Eduard's comment on that.
+
+That said, I'll try to find some time to test "perf kmem" and provide 
+feedback on that. I can ACK the patch when I'm happy with the output. :-)
+
+I'm mostly interested in two scenarios: (1) getting a nice report on 
+worst fragmented call-sites (perf kmem needs symbol lookup) and (2) 
+doing "perf kmem record" on machine A (think embedded here) and then 
+"perf kmem report" on machine B. I haven't tried kmemtrace-user for a 
+while but it did support both of them quite nicely at some point.
+
+			Pekka
