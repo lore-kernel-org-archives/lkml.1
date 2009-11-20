@@ -1,145 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbZKTSol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZKTSnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbZKTSol (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZKTSok
+	id S1754978AbZKTSnk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZKTSnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:44:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33546 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbZKTSok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:44:40 -0500
-Date: Fri, 20 Nov 2009 13:42:57 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [RFC] Block IO Controller V2 - some results
-Message-ID: <20091120184257.GG5872@redhat.com>
-References: <20091116221827.GL13235@redhat.com> <1258461527.2862.2.camel@cail> <20091118153227.GA5796@redhat.com> <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com> <20091118225626.GA2974@redhat.com> <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com> <20091120141840.GA5872@redhat.com> <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com> <20091120150421.GC5872@redhat.com> <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com>
+	Fri, 20 Nov 2009 13:43:40 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:53633 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753760AbZKTSnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 13:43:39 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: [PATCH v4] [RFC] NEXIO (or iNexio) support for usbtouchscreen
+Date: Fri, 20 Nov 2009 19:43:46 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
+       linux-kernel@vger.kernel.org
+References: <200911161515.00907.linux@rainbow-software.org> <200911191756.04615.oliver@neukum.org> <200911201021.45410.linux@rainbow-software.org>
+In-Reply-To: <200911201021.45410.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911201943.46696.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 07:32:28PM +0100, Corrado Zoccolo wrote:
-> On Fri, Nov 20, 2009 at 4:04 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Fri, Nov 20, 2009 at 03:28:27PM +0100, Corrado Zoccolo wrote:
-> >> Hi Vivek,
-> >> On Fri, Nov 20, 2009 at 3:18 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >> > Hi Corrado,
-> >> >
-> >> > I liked the idea of putting all the sync-noidle queues together in root
-> >> > group to achieve better throughput and implemeted a small patch.
-> >> >
-> >> > It works fine for random readers. But when I do multiple direct random writers
-> >> > in one group vs a random reader in other group, I am getting strange
-> >> > behavior. Random reader moves to root group as sync-noidle workload. But
-> >> > random writers are largely sync queues in remain in other group. But many
-> >> > a times also jump into root group and preempt random reader.
-> >>
-> >> can you try the attached patches?
-> >> They fix the problems you identified about no-idle preemption, and
-> >> deep seeky queues.
-> >> With those, you should not see this jumping any more.
-> >> I'll send them to Jens as soon has he comes back from vacation.
-> >>
-> >> Corrado
-> >>
-> >> > Anyway, with 4 random writers and 1 random reader running for 30 seconds
-> >> > in root group I get following.
-> >> >
-> >> > rw: 59,963KB/s
-> >> > rr: 66KB/s
-> >> >
-> >> > But if these are put in seprate groups test1 and test2 then
-> >> >
-> >> > rw: 30,587KB/s
-> >> > rr: 23KB/s
-> >> >
+Am Freitag, 20. November 2009 10:21:43 schrieb Ondrej Zary:
+> On Thursday 19 November 2009, Oliver Neukum wrote:
+> > > +struct nexio_priv {
+> > > +	struct urb *ack;
+> > > +	char ack_buf[2];
+> > > +};
 > >
-> > I quickly tried your new patches to try to keep idling enabled on deep
-> > seeky sync queues so that it does not jump around too much and consume
-> > share both in sync workload and sync-noidle workload.
-> >
-> > Here are new results.
-> >
-> > Without cgroup.
-> >
-> > rw: 58,571KB/s
-> > rr: 83KB/s
-> >
-> > With cgroup:
-> >
-> > rw: 32,525KB/s
-> > rr: 25KB/s
-> >
-> > So without cgroup it looks like that random reader gained a bit and that's
-> > a good thing.
+> > No. Every buffer needs to have an exclusive cache line for DMA
+> > to work on the incoherent archotectures. Therefore you must allocate
+> > each buffer with its own kmalloc.
 > 
-> Great.
+> OK, thanks for your patience.
 
-Should we also take into account the "cfqq->dispatched" request in
-determining whether we should enable idling on deep queue random seeky
-readers?
+No problem. I should have explained better.
 
-Adding that helps me a bit in cgroup setup but I still see sync seeky random
-writers switching between sync and sync-noidle so frequently. 
+> > > +	/* read replies */
+> > > +	for (i = 0; i < 3; i++) {
+> > > +		memset(buf, 0, NEXIO_BUFSIZE);
+> > > +		ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP),
+> > > +				   buf, NEXIO_BUFSIZE, &actual_len,
+> > > +				   NEXIO_TIMEOUT);
+> > > +		if (ret < 0 || actual_len < 1 || buf[1] != actual_len)
+> > > +			continue;
+> > > +		switch (buf[0]) {
+> > > +			case 0x83:	/* firmware version */
+> > > +				firmware_ver = kstrdup(&buf[2], GFP_KERNEL);
 
-In fact I think that's part of the reason why it is slow. Out of 4, 1 
-random seeky reader will switch group so often and then will not drive
-the enough queue depth. Rest of them seem to be running in other group.
+On second thought this is not nice. If a device is broken enough to report
+a name or a firmware version twice, you produce a memory leak.
+Do you know very buggy devices to exist?
 
-In fact sometimes this same writer will jump to second group, get the time
-slice and then jump back to root group and then again get the time slice
-in sync-noidle category. This will preempt the reader in root group at the
-same time will not drive higher queue depths as rest of the writers are
-in other groups.
-
-So frequent switching of type of random seeky reqder queue from
-sync --> sync-noidle--->sync seems to be one of the hurting factors.
-
-But when I started taking cfqq->dispatched also in account, share of
-random writers increased when running without cgroups. So it is kind of
-puzzling.
-
-But in general, we need to stablize the type of a queue and it should
-not vary so fast, given the fact nature of the workload/queue has not
-changed.
-
-> > With cgroup, problem still persists. I am wondering why both are loosing.
-> > Looks like I am idling somewhere otherwise at least one person should have
-> > gained.
-> With just 2 groups (one is the root), you can't be idling 50% of the
-> time. How is the disk utilization during the test?
-> 
-
-How do I measure the utilization of the array?
-
-> Note that you can lose even if you're not idling enough.
-> How does this workload fare with noop or deadline.
-> Thanks
-> Corrado
-> 
+> > > +				break;
+> > > +			case 0x84:	/* device name */
+> > > +				device_name = kstrdup(&buf[2], GFP_KERNEL);
+> > > +				break;
+> > > +		}
+> > > +	}
+> > > +	printk(KERN_INFO "Nexio device: %s, firmware version: %s\n",
+> > > +	       device_name, firmware_ver);
 > >
-> > Thanks
-> > Vivek
-> >
+> > How do you know device_name and firmware_ver are not NULL?
 > 
-> 
-> 
-> -- 
-> __________________________________________________________________________
-> 
-> dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-> PhD - Department of Computer Science - University of Pisa, Italy
-> --------------------------------------------------------------------------
-> The self-confidence of a warrior is not the self-confidence of the average
-> man. The average man seeks certainty in the eyes of the onlooker and calls
-> that self-confidence. The warrior seeks impeccability in his own eyes and
-> calls that humbleness.
->                                Tales of Power - C. Castaneda
+> printk works fine with NULL, it prints <NULL>. Is it necessary to add more
+> code only to make the output nice?
+
+No, for niceness it is not necessary. The question is whether you want
+to treat this as an error or print a warning. That is a matter of taste.
+ 
+
+ 
+> Looks like a bug in the original usbtouchscreen code. There's no locking.
+> Will a spinlock in usbtouch_open() and usbtouch_disconnect() fix it? Or
+> do you see more problems here?
+
+You must not call usb_kill_urb() with a spinlock held.
+I'll lokk at the usbtouchscreen code.
+The new version looks good to me.
+
+	Regards
+		Oliver
