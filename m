@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbZKTTHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZKTTIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755103AbZKTTHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 14:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZKTTHf
+	id S1755212AbZKTTIy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 14:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZKTTIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 14:07:35 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59001 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbZKTTHe (ORCPT
+	Fri, 20 Nov 2009 14:08:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:51554 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129AbZKTTIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 14:07:34 -0500
-Date: Fri, 20 Nov 2009 20:07:30 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>, pavel@ucw.cz
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, mgarski@post.pl
-Subject: Re: [PATCH] kbd: (#7063) make CapsLock work as expected even for
-	non-ASCII
-Message-ID: <20091120190730.GB1434@ucw.cz>
-References: <20091116222738.GQ4764@const.famille.thibault.fr> <20091116225429.GB4764@const.famille.thibault.fr> <20091116230523.GC24961@x200> <20091116231520.GD4764@const.famille.thibault.fr> <20091117115503.GB1657@x200> <20091117132358.GJ12736@const.bordeaux.inria.fr> <20091119131854.GA1628@x200.localdomain> <20091119132828.GA31025@const.bordeaux.inria.fr> <20091119133737.GE31025@const.bordeaux.inria.fr> <4B055F24.8030307@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B055F24.8030307@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Nov 2009 14:08:53 -0500
+Subject: Re: [PATCH 1/1] twl4030-regulator: Remove regulator from all
+ groups when disabling
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Eduardo Valentin <eduardo.valentin@nokia.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "\\\"De-Schrijver Peter (Nokia-D/Helsinki)\\\"" 
+	<Peter.De-Schrijver@nokia.com>
+In-Reply-To: <1258734559-15594-1-git-send-email-eduardo.valentin@nokia.com>
+References: <1258734559-15594-1-git-send-email-eduardo.valentin@nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 19:07:59 +0000
+Message-ID: <1258744079.3640.435.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 2009-11-20 at 18:29 +0200, Eduardo Valentin wrote:
+> Just remove regulator from all groups when disabling. This way we
+> avoid problems if boot loader touches twl4030 registers.
+> 
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@nokia.com>
+> ---
+>  drivers/regulator/twl4030-regulator.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/regulator/twl4030-regulator.c b/drivers/regulator/twl4030-regulator.c
+> index e2032fb..27b3115 100644
+> --- a/drivers/regulator/twl4030-regulator.c
+> +++ b/drivers/regulator/twl4030-regulator.c
+> @@ -126,7 +126,7 @@ static int twl4030reg_disable(struct regulator_dev *rdev)
+>  	if (grp < 0)
+>  		return grp;
+>  
+> -	grp &= ~P1_GRP;
+> +	grp &= ~(P1_GRP & P2_GRP | P3_GRP);
+>  	return twl4030reg_write(info, VREG_GRP, grp);
+>  }
+>  
 
-> > So we agree, and so the right solution is to either completely rework
-> > the interface (ugh), or just add LED routing (which can be very useful,
-> > actually, I for instance don't care at all about the num lock state, but
-> > I _do_ care about the lock that lets me shift between different keyboard
-> > layouts).
-> > 
-> 
-> Adding LED routing and using keyboard levels is so clearly The Right Thing.
-> 
-> We already allow the LEDs to be programmed; we should probably just
-> have, for each LED, the ability to program it off/on/flashing/connected
-> to modifier #X.
-> 
-> The current KDSETLED/KDGETLED interface is of course too limited for
-> this -- we need an interface with at least a byte per LED.
+Applied.
 
-Actually, we already have very nice /sys/class/led interface, and we
-should just use it for keyboard leds, too. Actually I have a patch,
-somewhere...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks
+
+Liam
+
