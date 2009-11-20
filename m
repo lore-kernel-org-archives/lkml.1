@@ -1,667 +1,546 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZKTUWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbZKTUW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZKTUWy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZKTUWw
+	id S1755763AbZKTUW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbZKTUWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:22:52 -0500
-Received: from lazybastard.de ([212.112.238.170]:48502 "EHLO
+	Fri, 20 Nov 2009 15:22:54 -0500
+Received: from lazybastard.de ([212.112.238.170]:48503 "EHLO
 	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755432AbZKTUWl (ORCPT
+	with ESMTP id S1755508AbZKTUWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:22:41 -0500
-X-Greylist: delayed 2660 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:40 EST
+	Fri, 20 Nov 2009 15:22:43 -0500
+X-Greylist: delayed 2655 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:42 EST
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
 From: Joern Engel <joern@logfs.org>
-Subject: [PATCH 14/17] [LogFS] super.c
+Subject: [PATCH 15/17] [LogFS] btree headers
 References: <20091120181113.GA2159@logfs.org>
-Message-Id: <E1NBZJD-0003hk-Cb@longford.logfs.org>
-Date: Fri, 20 Nov 2009 20:38:19 +0100
+Message-Id: <E1NBZJH-0003hw-FM@longford.logfs.org>
+Date: Fri, 20 Nov 2009 20:38:23 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 ---
- fs/logfs/super.c                    |  634 ++++++++++
+ include/linux/btree-128.h           |  109 ++
+ include/linux/btree-type.h          |  147 +++
+ include/linux/btree.h               |  243 ++++
 
-diff --git a/fs/logfs/super.c b/fs/logfs/super.c
+diff --git a/include/linux/btree-128.h b/include/linux/btree-128.h
 new file mode 100644
-index 0000000..d128a2c
+index 0000000..0b3414c
 --- /dev/null
-+++ b/fs/logfs/super.c
-@@ -0,0 +1,634 @@
-+/*
-+ * fs/logfs/super.c
-+ *
-+ * As should be obvious for Linux kernel code, license is GPLv2
-+ *
-+ * Copyright (c) 2005-2008 Joern Engel <joern@logfs.org>
-+ *
-+ * Generally contains mount/umount code and also serves as a dump area for
-+ * any functions that don't fit elsewhere and neither justify a file of their
-+ * own.
-+ */
-+#include "logfs.h"
-+#include <linux/bio.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/statfs.h>
-+#include <linux/buffer_head.h>
++++ b/include/linux/btree-128.h
+@@ -0,0 +1,109 @@
++extern struct btree_geo btree_geo128;
 +
-+static DEFINE_MUTEX(emergency_mutex);
-+static struct page *emergency_page;
++struct btree_head128 { struct btree_head h; };
 +
-+struct page *emergency_read_begin(struct address_space *mapping, pgoff_t index)
++static inline void btree_init_mempool128(struct btree_head128 *head,
++					 mempool_t *mempool)
 +{
-+	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
-+	struct page *page;
-+	int err;
-+
-+	page = read_cache_page(mapping, index, filler, NULL);
-+	if (page)
-+		return page;
-+
-+	/* No more pages available, switch to emergency page */
-+	printk(KERN_INFO"Logfs: Using emergency page\n");
-+	mutex_lock(&emergency_mutex);
-+	err = filler(NULL, emergency_page);
-+	if (err) {
-+		mutex_unlock(&emergency_mutex);
-+		printk(KERN_EMERG"Logfs: Error reading emergency page\n");
-+		return ERR_PTR(err);
-+	}
-+	return emergency_page;
++	btree_init_mempool(&head->h, mempool);
 +}
 +
-+void emergency_read_end(struct page *page)
++static inline int btree_init128(struct btree_head128 *head)
 +{
-+	if (page == emergency_page)
-+		mutex_unlock(&emergency_mutex);
-+	else
-+		page_cache_release(page);
++	return btree_init(&head->h);
 +}
 +
-+static void dump_segfile(struct super_block *sb)
++static inline void btree_destroy128(struct btree_head128 *head)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_entry se;
-+	u32 segno;
-+
-+	for (segno = 0; segno < super->s_no_segs; segno++) {
-+		logfs_get_segment_entry(sb, segno, &se);
-+		printk("%3x: %6x %8x", segno, be32_to_cpu(se.ec_level),
-+				be32_to_cpu(se.valid));
-+		if (++segno < super->s_no_segs) {
-+			logfs_get_segment_entry(sb, segno, &se);
-+			printk(" %6x %8x", be32_to_cpu(se.ec_level),
-+					be32_to_cpu(se.valid));
-+		}
-+		if (++segno < super->s_no_segs) {
-+			logfs_get_segment_entry(sb, segno, &se);
-+			printk(" %6x %8x", be32_to_cpu(se.ec_level),
-+					be32_to_cpu(se.valid));
-+		}
-+		if (++segno < super->s_no_segs) {
-+			logfs_get_segment_entry(sb, segno, &se);
-+			printk(" %6x %8x", be32_to_cpu(se.ec_level),
-+					be32_to_cpu(se.valid));
-+		}
-+		printk("\n");
-+	}
++	btree_destroy(&head->h);
 +}
 +
-+/*
-+ * logfs_crash_dump - dump debug information to device
-+ *
-+ * The LogFS superblock only occupies part of a segment.  This function will
-+ * write as much debug information as it can gather into the spare space.
-+ */
-+void logfs_crash_dump(struct super_block *sb)
++static inline void *btree_lookup128(struct btree_head128 *head, u64 k1, u64 k2)
 +{
-+	dump_segfile(sb);
++	u64 key[2] = {k1, k2};
++	return btree_lookup(&head->h, &btree_geo128, (unsigned long *)&key);
 +}
 +
-+/*
-+ * TODO: move to lib/string.c
-+ */
-+/**
-+ * memchr_inv - Find a character in an area of memory.
-+ * @s: The memory area
-+ * @c: The byte to search for
-+ * @n: The size of the area.
-+ *
-+ * returns the address of the first character other than @c, or %NULL
-+ * if the whole buffer contains just @c.
-+ */
-+void *memchr_inv(const void *s, int c, size_t n)
++static inline void *btree_get_prev128(struct btree_head128 *head,
++				      u64 *k1, u64 *k2)
 +{
-+	const unsigned char *p = s;
-+	while (n-- != 0)
-+		if ((unsigned char)c != *p++)
-+			return (void *)(p - 1);
++	u64 key[2] = {*k1, *k2};
++	void *val;
 +
-+	return NULL;
++	val = btree_get_prev(&head->h, &btree_geo128,
++			     (unsigned long *)&key);
++	*k1 = key[0];
++	*k2 = key[1];
++	return val;
 +}
 +
-+/*
-+ * FIXME: There should be a reserve for root, similar to ext2.
-+ */
-+int logfs_statfs(struct dentry *dentry, struct kstatfs *stats)
++static inline int btree_insert128(struct btree_head128 *head, u64 k1, u64 k2,
++				  void *val, gfp_t gfp)
 +{
-+	struct super_block *sb = dentry->d_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	stats->f_type		= LOGFS_MAGIC_U32;
-+	stats->f_bsize		= sb->s_blocksize;
-+	stats->f_blocks		= super->s_size >> LOGFS_BLOCK_BITS >> 3;
-+	stats->f_bfree		= super->s_free_bytes >> sb->s_blocksize_bits;
-+	stats->f_bavail		= super->s_free_bytes >> sb->s_blocksize_bits;
-+	stats->f_files		= 0;
-+	stats->f_ffree		= 0;
-+	stats->f_namelen	= LOGFS_MAX_NAMELEN;
-+	return 0;
++	u64 key[2] = {k1, k2};
++	return btree_insert(&head->h, &btree_geo128,
++			    (unsigned long *)&key, val, gfp);
 +}
 +
-+static int logfs_sb_set(struct super_block *sb, void *_super)
++static inline int btree_update128(struct btree_head128 *head, u64 k1, u64 k2,
++				  void *val)
 +{
-+	struct logfs_super *super = _super;
-+
-+	sb->s_fs_info = super;
-+	sb->s_mtd = super->s_mtd;
-+	sb->s_bdev = super->s_bdev;
-+	return 0;
++	u64 key[2] = {k1, k2};
++	return btree_update(&head->h, &btree_geo128,
++			    (unsigned long *)&key, val);
 +}
 +
-+static int logfs_sb_test(struct super_block *sb, void *_super)
++static inline void *btree_remove128(struct btree_head128 *head, u64 k1, u64 k2)
 +{
-+	struct logfs_super *super = _super;
-+	struct mtd_info *mtd = super->s_mtd;
-+
-+	if (mtd && sb->s_mtd == mtd)
-+		return 1;
-+	if (super->s_bdev && sb->s_bdev == super->s_bdev)
-+		return 1;
-+	return 0;
++	u64 key[2] = {k1, k2};
++	return btree_remove(&head->h, &btree_geo128, (unsigned long *)&key);
 +}
 +
-+static void set_segment_header(struct logfs_segment_header *sh, u8 type,
-+		u8 level, u32 segno, u32 ec)
++static inline void *btree_last128(struct btree_head128 *head, u64 *k1, u64 *k2)
 +{
-+	sh->pad = 0;
-+	sh->type = type;
-+	sh->level = level;
-+	sh->segno = cpu_to_be32(segno);
-+	sh->ec = cpu_to_be32(ec);
-+	sh->gec = cpu_to_be64(segno);
-+	sh->crc = logfs_crc32(sh, LOGFS_SEGMENT_HEADERSIZE, 4);
-+}
++	u64 key[2];
++	void *val;
 +
-+static void logfs_write_ds(struct super_block *sb, struct logfs_disk_super *ds,
-+		u32 segno, u32 ec)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_header *sh = &ds->ds_sh;
-+	int i;
-+
-+	memset(ds, 0, sizeof(*ds));
-+	set_segment_header(sh, SEG_SUPER, 0, segno, ec);
-+
-+	ds->ds_ifile_levels	= super->s_ifile_levels;
-+	ds->ds_iblock_levels	= super->s_iblock_levels;
-+	ds->ds_data_levels	= super->s_data_levels; /* XXX: Remove */
-+	ds->ds_segment_shift	= super->s_segshift;
-+	ds->ds_block_shift	= sb->s_blocksize_bits;
-+	ds->ds_write_shift	= super->s_writeshift;
-+	ds->ds_filesystem_size	= cpu_to_be64(super->s_size);
-+	ds->ds_segment_size	= cpu_to_be32(super->s_segsize);
-+	ds->ds_bad_seg_reserve	= cpu_to_be32(super->s_bad_seg_reserve);
-+	ds->ds_feature_incompat	= cpu_to_be64(super->s_feature_incompat);
-+	ds->ds_feature_ro_compat= cpu_to_be64(super->s_feature_ro_compat);
-+	ds->ds_feature_compat	= cpu_to_be64(super->s_feature_compat);
-+	ds->ds_feature_flags	= cpu_to_be64(super->s_feature_flags);
-+	ds->ds_root_reserve	= cpu_to_be64(super->s_root_reserve);
-+	ds->ds_speed_reserve	= cpu_to_be64(super->s_speed_reserve);
-+	journal_for_each(i)
-+		ds->ds_journal_seg[i] = cpu_to_be32(super->s_journal_seg[i]);
-+	ds->ds_magic		= cpu_to_be64(LOGFS_MAGIC);
-+	ds->ds_crc = logfs_crc32(ds, sizeof(*ds),
-+			LOGFS_SEGMENT_HEADERSIZE + 12);
-+}
-+
-+static int write_one_sb(struct super_block *sb,
-+		struct page *(*find_sb)(struct super_block *sb, u64 *ofs))
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_disk_super *ds;
-+	struct logfs_segment_entry se;
-+	struct page *page;
-+	u64 ofs;
-+	u32 ec, segno;
-+	int err;
-+
-+	page = find_sb(sb, &ofs);
-+	if (!page)
-+		return -EIO;
-+	ds = page_address(page);
-+	segno = seg_no(sb, ofs);
-+	logfs_get_segment_entry(sb, segno, &se);
-+	ec = be32_to_cpu(se.ec_level) >> 4;
-+	ec++;
-+	logfs_set_segment_erased(sb, segno, ec, 0);
-+	logfs_write_ds(sb, ds, segno, ec);
-+	err = super->s_devops->write_sb(sb, page);
-+	page_cache_release(page);
-+	return err;
-+}
-+
-+int logfs_write_sb(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int err;
-+
-+	/* First superblock */
-+	err = write_one_sb(sb, super->s_devops->find_first_sb);
-+	if (err)
-+		return err;
-+
-+	/* Last superblock */
-+	err = write_one_sb(sb, super->s_devops->find_last_sb);
-+	if (err)
-+		return err;
-+	return 0;
-+}
-+
-+static int ds_cmp(const void *ds0, const void *ds1)
-+{
-+	size_t len = sizeof(struct logfs_disk_super);
-+
-+	/* We know the segment headers differ, so ignore them */
-+	len -= LOGFS_SEGMENT_HEADERSIZE;
-+	ds0 += LOGFS_SEGMENT_HEADERSIZE;
-+	ds1 += LOGFS_SEGMENT_HEADERSIZE;
-+	return memcmp(ds0, ds1, len);
-+}
-+
-+static int logfs_recover_sb(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_disk_super _ds0, *ds0 = &_ds0;
-+	struct logfs_disk_super _ds1, *ds1 = &_ds1;
-+	int err, valid0, valid1;
-+
-+	/* read first superblock */
-+	err = wbuf_read(sb, super->s_sb_ofs[0], sizeof(*ds0), ds0);
-+	if (err)
-+		return err;
-+	/* read last superblock */
-+	err = wbuf_read(sb, super->s_sb_ofs[1], sizeof(*ds1), ds1);
-+	if (err)
-+		return err;
-+	valid0 = logfs_check_ds(ds0) == 0;
-+	valid1 = logfs_check_ds(ds1) == 0;
-+
-+	if (!valid0 && valid1) {
-+		printk(KERN_INFO"First superblock is invalid - fixing.\n");
-+		return write_one_sb(sb, super->s_devops->find_first_sb);
-+	}
-+	if (valid0 && !valid1) {
-+		printk(KERN_INFO"Last superblock is invalid - fixing.\n");
-+		return write_one_sb(sb, super->s_devops->find_last_sb);
-+	}
-+	if (valid0 && valid1 && ds_cmp(ds0, ds1)) {
-+		printk(KERN_INFO"Superblocks don't match - fixing.\n");
-+		return write_one_sb(sb, super->s_devops->find_last_sb);
-+	}
-+	/* If neither is valid now, something's wrong.  Didn't we properly
-+	 * check them before?!? */
-+	BUG_ON(!valid0 && !valid1);
-+	return 0;
-+}
-+
-+static int logfs_make_writeable(struct super_block *sb)
-+{
-+	int err;
-+
-+	/* Repair any broken superblock copies */
-+	err = logfs_recover_sb(sb);
-+	if (err)
-+		return err;
-+
-+	/* Check areas for trailing unaccounted data */
-+	err = logfs_check_areas(sb);
-+	if (err)
-+		return err;
-+
-+	err = logfs_open_segfile(sb);
-+	if (err)
-+		return err;
-+
-+	/* Do one GC pass before any data gets dirtied */
-+	logfs_gc_pass(sb);
-+
-+	/* after all initializations are done, replay the journal
-+	 * for rw-mounts, if necessary */
-+	err = logfs_replay_journal(sb);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+static int logfs_get_sb_final(struct super_block *sb, struct vfsmount *mnt)
-+{
-+	struct inode *rootdir;
-+	int err;
-+
-+	/* root dir */
-+	rootdir = logfs_iget(sb, LOGFS_INO_ROOT);
-+	if (IS_ERR(rootdir))
-+		goto fail;
-+
-+	sb->s_root = d_alloc_root(rootdir);
-+	if (!sb->s_root)
-+		goto fail;
-+
-+	/* FIXME: check for read-only mounts */
-+	err = logfs_make_writeable(sb);
-+	if (err)
-+		goto fail2;
-+
-+	log_super("LogFS: Finished mounting\n");
-+	simple_set_mnt(mnt, sb);
-+	return 0;
-+
-+fail2:
-+	iput(rootdir);
-+fail:
-+	iput(logfs_super(sb)->s_master_inode);
-+	return -EIO;
-+}
-+
-+int logfs_check_ds(struct logfs_disk_super *ds)
-+{
-+	struct logfs_segment_header *sh = &ds->ds_sh;
-+
-+	if (ds->ds_magic != cpu_to_be64(LOGFS_MAGIC))
-+		return -EINVAL;
-+	if (sh->crc != logfs_crc32(sh, LOGFS_SEGMENT_HEADERSIZE, 4))
-+		return -EINVAL;
-+	if (ds->ds_crc != logfs_crc32(ds, sizeof(*ds),
-+				LOGFS_SEGMENT_HEADERSIZE + 12))
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static struct page *find_super_block(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct page *first, *last;
-+
-+	first = super->s_devops->find_first_sb(sb, &super->s_sb_ofs[0]);
-+	if (!first || IS_ERR(first))
-+		return NULL;
-+	last = super->s_devops->find_last_sb(sb, &super->s_sb_ofs[1]);
-+	if (!last || IS_ERR(first)) {
-+		page_cache_release(first);
-+		return NULL;
++	val = btree_last(&head->h, &btree_geo128, (unsigned long *)&key[0]);
++	if (val) {
++		*k1 = key[0];
++		*k2 = key[1];
 +	}
 +
-+	if (!logfs_check_ds(page_address(first))) {
-+		page_cache_release(last);
-+		return first;
-+	}
-+
-+	/* First one didn't work, try the second superblock */
-+	if (!logfs_check_ds(page_address(last))) {
-+		page_cache_release(first);
-+		return last;
-+	}
-+
-+	/* Neither worked, sorry folks */
-+	page_cache_release(first);
-+	page_cache_release(last);
-+	return NULL;
++	return val;
 +}
 +
-+static int __logfs_read_sb(struct super_block *sb)
++static inline int btree_merge128(struct btree_head128 *target,
++				 struct btree_head128 *victim,
++				 gfp_t gfp)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct page *page;
-+	struct logfs_disk_super *ds;
-+	int i;
-+
-+	page = find_super_block(sb);
-+	if (!page)
-+		return -EIO;
-+
-+	ds = page_address(page);
-+	super->s_size = be64_to_cpu(ds->ds_filesystem_size);
-+	super->s_root_reserve = be64_to_cpu(ds->ds_root_reserve);
-+	super->s_speed_reserve = be64_to_cpu(ds->ds_speed_reserve);
-+	super->s_bad_seg_reserve = be32_to_cpu(ds->ds_bad_seg_reserve);
-+	super->s_segsize = 1 << ds->ds_segment_shift;
-+	super->s_segmask = (1 << ds->ds_segment_shift) - 1;
-+	super->s_segshift = ds->ds_segment_shift;
-+	sb->s_blocksize = 1 << ds->ds_block_shift;
-+	sb->s_blocksize_bits = ds->ds_block_shift;
-+	super->s_writesize = 1 << ds->ds_write_shift;
-+	super->s_writeshift = ds->ds_write_shift;
-+	super->s_no_segs = super->s_size >> super->s_segshift;
-+	super->s_no_blocks = super->s_segsize >> sb->s_blocksize_bits;
-+	super->s_feature_incompat = be64_to_cpu(ds->ds_feature_incompat);
-+	super->s_feature_ro_compat = be64_to_cpu(ds->ds_feature_ro_compat);
-+	super->s_feature_compat = be64_to_cpu(ds->ds_feature_compat);
-+	super->s_feature_flags = be64_to_cpu(ds->ds_feature_flags);
-+
-+	journal_for_each(i)
-+		super->s_journal_seg[i] = be32_to_cpu(ds->ds_journal_seg[i]);
-+
-+	super->s_ifile_levels = ds->ds_ifile_levels;
-+	super->s_iblock_levels = ds->ds_iblock_levels;
-+	super->s_data_levels = ds->ds_data_levels;
-+	super->s_total_levels = super->s_ifile_levels + super->s_iblock_levels
-+		+ super->s_data_levels;
-+	page_cache_release(page);
-+	return 0;
++	return btree_merge(&target->h, &victim->h, &btree_geo128, gfp);
 +}
 +
-+static int logfs_read_sb(struct super_block *sb)
++void visitor128(void *elem, unsigned long opaque, unsigned long *__key,
++		size_t index, void *__func);
++
++typedef void (*visitor128_t)(void *elem, unsigned long opaque,
++			     u64 key1, u64 key2, size_t index);
++
++static inline size_t btree_visitor128(struct btree_head128 *head,
++				      unsigned long opaque,
++				      visitor128_t func2)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	int ret;
-+
-+	super->s_btree_pool = mempool_create(32, btree_alloc, btree_free, NULL);
-+	if (!super->s_btree_pool)
-+		return -ENOMEM;
-+
-+	btree_init_mempool64(&super->s_shadow_tree.new, super->s_btree_pool);
-+	btree_init_mempool64(&super->s_shadow_tree.old, super->s_btree_pool);
-+
-+	ret = logfs_init_mapping(sb);
-+	if (ret)
-+		return ret;
-+
-+	ret = __logfs_read_sb(sb);
-+	if (ret)
-+		return ret;
-+
-+	mutex_init(&super->s_dirop_mutex);
-+	mutex_init(&super->s_object_alias_mutex);
-+	INIT_LIST_HEAD(&super->s_freeing_list);
-+
-+	ret = logfs_init_rw(sb);
-+	if (ret)
-+		return ret;
-+
-+	ret = logfs_init_areas(sb);
-+	if (ret)
-+		return ret;
-+
-+	ret = logfs_init_gc(sb);
-+	if (ret)
-+		return ret;
-+
-+	ret = logfs_init_journal(sb);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
++	return btree_visitor(&head->h, &btree_geo128, opaque,
++			     visitor128, func2);
 +}
 +
-+static void logfs_kill_sb(struct super_block *sb)
++static inline size_t btree_grim_visitor128(struct btree_head128 *head,
++					   unsigned long opaque,
++					   visitor128_t func2)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	log_super("LogFS: Start unmounting\n");
-+	/* Alias entries slow down mount, so evict as many as possible */
-+	sync_filesystem(sb);
-+	logfs_write_anchor(super->s_master_inode);
-+
-+	/*
-+	 * From this point on alias entries are simply dropped - and any
-+	 * writes to the object store are considered bugs.
-+	 */
-+	super->s_flags |= LOGFS_SB_FLAG_SHUTDOWN;
-+	log_super("LogFS: Now in shutdown\n");
-+	generic_shutdown_super(sb);
-+
-+	BUG_ON(super->s_dirty_used_bytes || super->s_dirty_free_bytes);
-+
-+	logfs_cleanup_gc(sb);
-+	logfs_cleanup_journal(sb);
-+	logfs_cleanup_areas(sb);
-+	logfs_cleanup_rw(sb);
-+	super->s_devops->put_device(sb);
-+	mempool_destroy(super->s_btree_pool);
-+	mempool_destroy(super->s_alias_pool);
-+	kfree(super);
-+	log_super("LogFS: Finished unmounting\n");
++	return btree_grim_visitor(&head->h, &btree_geo128, opaque,
++				  visitor128, func2);
 +}
 +
-+int logfs_get_sb_device(struct file_system_type *type, int flags,
-+		struct mtd_info *mtd, struct block_device *bdev,
-+		const struct logfs_device_ops *devops, struct vfsmount *mnt)
-+{
-+	struct logfs_super *super;
-+	struct super_block *sb;
-+	int err = -ENOMEM;
-+	static int mount_count;
++#define btree_for_each_safe128(head, k1, k2, val)	\
++	for (val = btree_last128(head, &k1, &k2);	\
++	     val;					\
++	     val = btree_get_prev128(head, &k1, &k2))
 +
-+	log_super("LogFS: Start mount %x\n", mount_count++);
-+	super = kzalloc(sizeof(*super), GFP_KERNEL);
-+	if (!super)
-+		goto err0;
+diff --git a/include/linux/btree-type.h b/include/linux/btree-type.h
+new file mode 100644
+index 0000000..9a1147e
+--- /dev/null
++++ b/include/linux/btree-type.h
+@@ -0,0 +1,147 @@
++#define __BTREE_TP(pfx, type, sfx)	pfx ## type ## sfx
++#define _BTREE_TP(pfx, type, sfx)	__BTREE_TP(pfx, type, sfx)
++#define BTREE_TP(pfx)			_BTREE_TP(pfx, BTREE_TYPE_SUFFIX,)
++#define BTREE_FN(name)			BTREE_TP(btree_ ## name)
++#define BTREE_TYPE_HEAD			BTREE_TP(struct btree_head)
++#define VISITOR_FN			BTREE_TP(visitor)
++#define VISITOR_FN_T			_BTREE_TP(visitor, BTREE_TYPE_SUFFIX, _t)
 +
-+	super->s_mtd	= mtd;
-+	super->s_bdev	= bdev;
-+	err = -EINVAL;
-+	sb = sget(type, logfs_sb_test, logfs_sb_set, super);
-+	if (IS_ERR(sb))
-+		goto err0;
-+
-+	if (sb->s_root) {
-+		/* Device is already in use */
-+		err = 0;
-+		simple_set_mnt(mnt, sb);
-+		goto err0;
-+	}
-+
-+	super->s_devops = devops;
-+
-+	/*
-+	 * sb->s_maxbytes is limited to 8TB.  On 32bit systems, the page cache
-+	 * only covers 16TB and the upper 8TB are used for indirect blocks.
-+	 * On 64bit system we could bump up the limit, but that would make
-+	 * the filesystem incompatible with 32bit systems.
-+	 */
-+	sb->s_maxbytes	= (1ull << 43) - 1;
-+	sb->s_op	= &logfs_super_operations;
-+	sb->s_flags	= flags | MS_NOATIME;
-+
-+	err = logfs_read_sb(sb);
-+	if (err)
-+		goto err1;
-+
-+	sb->s_flags |= MS_ACTIVE;
-+	err = logfs_get_sb_final(sb, mnt);
-+	if (err)
-+		goto err1;
-+	return 0;
-+
-+err1:
-+	up_write(&sb->s_umount);
-+	deactivate_super(sb);
-+	return err;
-+err0:
-+	kfree(super);
-+	//devops->put_device(sb);
-+	return err;
-+}
-+
-+static int logfs_get_sb(struct file_system_type *type, int flags,
-+		const char *devname, void *data, struct vfsmount *mnt)
-+{
-+	ulong mtdnr;
-+
-+	if (!devname)
-+		return logfs_get_sb_bdev(type, flags, devname, mnt);
-+	if (strncmp(devname, "mtd", 3))
-+		return logfs_get_sb_bdev(type, flags, devname, mnt);
-+
-+	{
-+		char *garbage;
-+		mtdnr = simple_strtoul(devname+3, &garbage, 0);
-+		if (*garbage)
-+			return -EINVAL;
-+	}
-+
-+	return logfs_get_sb_mtd(type, flags, mtdnr, mnt);
-+}
-+
-+static struct file_system_type logfs_fs_type = {
-+	.owner		= THIS_MODULE,
-+	.name		= "logfs",
-+	.get_sb		= logfs_get_sb,
-+	.kill_sb	= logfs_kill_sb,
-+	.fs_flags	= FS_REQUIRES_DEV,
-+
++BTREE_TYPE_HEAD {
++	struct btree_head h;
 +};
 +
-+static int __init logfs_init(void)
++static inline void BTREE_FN(init_mempool)(BTREE_TYPE_HEAD *head,
++					  mempool_t *mempool)
 +{
-+	int ret;
-+
-+	emergency_page = alloc_pages(GFP_KERNEL, 0);
-+	if (!emergency_page)
-+		return -ENOMEM;
-+
-+	ret = logfs_compr_init();
-+	if (ret)
-+		goto out1;
-+
-+	ret = logfs_init_inode_cache();
-+	if (ret)
-+		goto out2;
-+
-+	return register_filesystem(&logfs_fs_type);
-+out2:
-+	logfs_compr_exit();
-+out1:
-+	__free_pages(emergency_page, 0);
-+	return ret;
++	btree_init_mempool(&head->h, mempool);
 +}
 +
-+static void __exit logfs_exit(void)
++static inline int BTREE_FN(init)(BTREE_TYPE_HEAD *head)
 +{
-+	unregister_filesystem(&logfs_fs_type);
-+	logfs_destroy_inode_cache();
-+	logfs_compr_exit();
-+	__free_pages(emergency_page, 0);
++	return btree_init(&head->h);
 +}
 +
-+module_init(logfs_init);
-+module_exit(logfs_exit);
++static inline void BTREE_FN(destroy)(BTREE_TYPE_HEAD *head)
++{
++	btree_destroy(&head->h);
++}
 +
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Joern Engel <joern@logfs.org>");
-+MODULE_DESCRIPTION("scalable flash filesystem");
++static inline int BTREE_FN(merge)(BTREE_TYPE_HEAD *target,
++				  BTREE_TYPE_HEAD *victim,
++				  gfp_t gfp)
++{
++	return btree_merge(&target->h, &victim->h, BTREE_TYPE_GEO, gfp);
++}
++
++#if (BITS_PER_LONG > BTREE_TYPE_BITS)
++static inline void *BTREE_FN(lookup)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key)
++{
++	unsigned long _key = key;
++	return btree_lookup(&head->h, BTREE_TYPE_GEO, &_key);
++}
++
++static inline int BTREE_FN(insert)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key,
++				   void *val, gfp_t gfp)
++{
++	unsigned long _key = key;
++	return btree_insert(&head->h, BTREE_TYPE_GEO, &_key, val, gfp);
++}
++
++static inline int BTREE_FN(update)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key,
++		void *val)
++{
++	unsigned long _key = key;
++	return btree_update(&head->h, BTREE_TYPE_GEO, &_key, val);
++}
++
++static inline void *BTREE_FN(remove)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key)
++{
++	unsigned long _key = key;
++	return btree_remove(&head->h, BTREE_TYPE_GEO, &_key);
++}
++
++static inline void *BTREE_FN(last)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE *key)
++{
++	unsigned long _key;
++	void *val = btree_last(&head->h, BTREE_TYPE_GEO, &_key);
++	if (val)
++		*key = _key;
++	return val;
++}
++
++static inline void *BTREE_FN(get_prev)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE *key)
++{
++	unsigned long _key = *key;
++	void *val = btree_get_prev(&head->h, BTREE_TYPE_GEO, &_key);
++	if (val)
++		*key = _key;
++	return val;
++}
++#else
++static inline void *BTREE_FN(lookup)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key)
++{
++	return btree_lookup(&head->h, BTREE_TYPE_GEO, (unsigned long *)&key);
++}
++
++static inline int BTREE_FN(insert)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key,
++			   void *val, gfp_t gfp)
++{
++	return btree_insert(&head->h, BTREE_TYPE_GEO, (unsigned long *)&key,
++			    val, gfp);
++}
++
++static inline int BTREE_FN(update)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key,
++		void *val)
++{
++	return btree_update(&head->h, BTREE_TYPE_GEO, (unsigned long *)&key, val);
++}
++
++static inline void *BTREE_FN(remove)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE key)
++{
++	return btree_remove(&head->h, BTREE_TYPE_GEO, (unsigned long *)&key);
++}
++
++static inline void *BTREE_FN(last)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE *key)
++{
++	return btree_last(&head->h, BTREE_TYPE_GEO, (unsigned long *)key);
++}
++
++static inline void *BTREE_FN(get_prev)(BTREE_TYPE_HEAD *head, BTREE_KEYTYPE *key)
++{
++	return btree_get_prev(&head->h, BTREE_TYPE_GEO, (unsigned long *)key);
++}
++#endif
++
++void VISITOR_FN(void *elem, unsigned long opaque, unsigned long *key,
++		size_t index, void *__func);
++
++typedef void (*VISITOR_FN_T)(void *elem, unsigned long opaque,
++			     BTREE_KEYTYPE key, size_t index);
++
++static inline size_t BTREE_FN(visitor)(BTREE_TYPE_HEAD *head,
++				       unsigned long opaque,
++				       VISITOR_FN_T func2)
++{
++	return btree_visitor(&head->h, BTREE_TYPE_GEO, opaque,
++			     visitorl, func2);
++}
++
++static inline size_t BTREE_FN(grim_visitor)(BTREE_TYPE_HEAD *head,
++					    unsigned long opaque,
++					    VISITOR_FN_T func2)
++{
++	return btree_grim_visitor(&head->h, BTREE_TYPE_GEO, opaque,
++				  visitorl, func2);
++}
++
++#undef VISITOR_FN
++#undef VISITOR_FN_T
++#undef __BTREE_TP
++#undef _BTREE_TP
++#undef BTREE_TP
++#undef BTREE_FN
++#undef BTREE_TYPE_HEAD
++#undef BTREE_TYPE_SUFFIX
++#undef BTREE_TYPE_GEO
++#undef BTREE_KEYTYPE
++#undef BTREE_TYPE_BITS
+diff --git a/include/linux/btree.h b/include/linux/btree.h
+new file mode 100644
+index 0000000..65b5bb0
+--- /dev/null
++++ b/include/linux/btree.h
+@@ -0,0 +1,243 @@
++#ifndef BTREE_H
++#define BTREE_H
++
++#include <linux/kernel.h>
++#include <linux/mempool.h>
++
++/**
++ * DOC: B+Tree basics
++ *
++ * A B+Tree is a data structure for looking up arbitrary (currently allowing
++ * unsigned long, u32, u64 and 2 * u64) keys into pointers. The data structure
++ * is described at http://en.wikipedia.org/wiki/B-tree, we currently do not
++ * use binary search to find the key on lookups.
++ *
++ * Each B+Tree consists of a head, that contains bookkeeping information and
++ * a variable number (starting with zero) nodes. Each node contains the keys
++ * and pointers to sub-nodes, or, for leaf nodes, the keys and values for the
++ * tree entries.
++ *
++ * Each node in this implementation has the following layout:
++ * [key1, key2, ..., keyN] [val1, val2, ..., valN]
++ *
++ * Each key here is an array of unsigned longs, geo->no_longs in total. The
++ * number of keys and values (N) is geo->no_pairs.
++ */
++
++/**
++ * struct btree_head - btree head
++ *
++ * @node: the first node in the tree
++ * @mempool: mempool used for node allocations
++ * @height: current of the tree
++ */
++struct btree_head {
++	unsigned long *node;
++	mempool_t *mempool;
++	int height;
++};
++
++/* btree geometry */
++struct btree_geo;
++
++/**
++ * btree_alloc - allocate function for the mempool
++ * @gfp_mask: gfp mask for the allocation
++ * @pool_data: unused
++ */
++void *btree_alloc(gfp_t gfp_mask, void *pool_data);
++
++/**
++ * btree_free - free function for the mempool
++ * @element: the element to free
++ * @pool_data: unused
++ */
++void btree_free(void *element, void *pool_data);
++
++/**
++ * btree_init_mempool - initialise a btree with given mempool
++ *
++ * @head: the btree head to initialise
++ * @mempool: the mempool to use
++ *
++ * When this function is used, there is no need to destroy
++ * the mempool.
++ */
++void btree_init_mempool(struct btree_head *head, mempool_t *mempool);
++
++/**
++ * btree_init - initialise a btree
++ *
++ * @head: the btree head to initialise
++ *
++ * This function allocates the memory pool that the
++ * btree needs. Returns zero or a negative error code
++ * (-%ENOMEM) when memory allocation fails.
++ *
++ */
++int __must_check btree_init(struct btree_head *head);
++
++/**
++ * btree_destroy - destroy mempool
++ *
++ * @head: the btree head to destroy
++ *
++ * This function destroys the internal memory pool, use only
++ * when using btree_init(), not with btree_init_mempool().
++ */
++void btree_destroy(struct btree_head *head);
++
++/**
++ * btree_lookup - look up a key in the btree
++ *
++ * @head: the btree to look in
++ * @geo: the btree geometry
++ * @key: the key to look up
++ *
++ * This function returns the value for the given key, or %NULL.
++ */
++void *btree_lookup(struct btree_head *head, struct btree_geo *geo,
++		   unsigned long *key);
++
++/**
++ * btree_insert - insert an entry into the btree
++ *
++ * @head: the btree to add to
++ * @geo: the btree geometry
++ * @key: the key to add (must not already be present)
++ * @val: the value to add (must not be %NULL)
++ * @gfp: allocation flags for node allocations
++ *
++ * This function returns 0 if the item could be added, or an
++ * error code if it failed (may fail due to memory pressure).
++ */
++int __must_check btree_insert(struct btree_head *head, struct btree_geo *geo,
++			      unsigned long *key, void *val, gfp_t gfp);
++/**
++ * btree_update - update an entry in the btree
++ *
++ * @head: the btree to update
++ * @geo: the btree geometry
++ * @key: the key to update
++ * @val: the value to change it to (must not be %NULL)
++ *
++ * This function returns 0 if the update was successful, or
++ * -%ENOENT if the key could not be found.
++ */
++int btree_update(struct btree_head *head, struct btree_geo *geo,
++		 unsigned long *key, void *val);
++/**
++ * btree_remove - remove an entry from the btree
++ *
++ * @head: the btree to update
++ * @geo: the btree geometry
++ * @key: the key to remove
++ *
++ * This function returns the removed entry, or %NULL if the key
++ * could not be found.
++ */
++void *btree_remove(struct btree_head *head, struct btree_geo *geo,
++		   unsigned long *key);
++
++/**
++ * btree_merge - merge two btrees
++ *
++ * @target: the tree that gets all the entries
++ * @victim: the tree that gets merged into @target
++ * @geo: the btree geometry
++ * @gfp: allocation flags
++ *
++ * The two trees @target and @victim may not contain the same keys,
++ * that is a bug and triggers a BUG(). This function returns zero
++ * if the trees were merged successfully, and may return a failure
++ * when memory allocation fails, in which case both trees might have
++ * been partially merged, i.e. some entries have been moved from
++ * @victim to @target.
++ */
++int btree_merge(struct btree_head *target, struct btree_head *victim,
++		struct btree_geo *geo, gfp_t gfp);
++
++/**
++ * btree_last - get last entry in btree
++ *
++ * @head: btree head
++ * @geo: btree geometry
++ * @key: last key
++ *
++ * Returns the last entry in the btree, and sets @key to the key
++ * of that entry; returns NULL if the tree is empty, in that case
++ * key is not changed.
++ */
++void *btree_last(struct btree_head *head, struct btree_geo *geo,
++		 unsigned long *key);
++
++/**
++ * btree_get_prev - get previous entry
++ *
++ * @head: btree head
++ * @geo: btree geometry
++ * @key: pointer to key
++ *
++ * The function returns the next item right before the value pointed to by
++ * @key, and updates @key with its key, or returns %NULL when there is no
++ * entry with a key smaller than the given key.
++ */
++void *btree_get_prev(struct btree_head *head, struct btree_geo *geo,
++		     unsigned long *key);
++
++
++/* internal use, use btree_visitor{l,32,64,128} */
++size_t btree_visitor(struct btree_head *head, struct btree_geo *geo,
++		     unsigned long opaque,
++		     void (*func)(void *elem, unsigned long opaque,
++				  unsigned long *key, size_t index,
++				  void *func2),
++		     void *func2);
++
++/* internal use, use btree_grim_visitor{l,32,64,128} */
++size_t btree_grim_visitor(struct btree_head *head, struct btree_geo *geo,
++			  unsigned long opaque,
++			  void (*func)(void *elem, unsigned long opaque,
++				       unsigned long *key,
++				       size_t index, void *func2),
++			  void *func2);
++
++
++#include <linux/btree-128.h>
++
++extern struct btree_geo btree_geo32;
++#define BTREE_TYPE_SUFFIX l
++#define BTREE_TYPE_BITS BITS_PER_LONG
++#define BTREE_TYPE_GEO &btree_geo32
++#define BTREE_KEYTYPE unsigned long
++#include <linux/btree-type.h>
++
++#define btree_for_each_safel(head, key, val)	\
++	for (val = btree_lastl(head, &key);	\
++	     val;				\
++	     val = btree_get_prevl(head, &key))
++
++#define BTREE_TYPE_SUFFIX 32
++#define BTREE_TYPE_BITS 32
++#define BTREE_TYPE_GEO &btree_geo32
++#define BTREE_KEYTYPE u32
++#include <linux/btree-type.h>
++
++#define btree_for_each_safe32(head, key, val)	\
++	for (val = btree_last32(head, &key);	\
++	     val;				\
++	     val = btree_get_prev32(head, &key))
++
++extern struct btree_geo btree_geo64;
++#define BTREE_TYPE_SUFFIX 64
++#define BTREE_TYPE_BITS 64
++#define BTREE_TYPE_GEO &btree_geo64
++#define BTREE_KEYTYPE u64
++#include <linux/btree-type.h>
++
++#define btree_for_each_safe64(head, key, val)	\
++	for (val = btree_last64(head, &key);	\
++	     val;				\
++	     val = btree_get_prev64(head, &key))
++
++#endif
