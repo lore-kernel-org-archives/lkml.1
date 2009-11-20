@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbZKTUAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZKTUJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbZKTUAx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZKTUAw
+	id S1755182AbZKTUJG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:09:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZKTUJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:00:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3358 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbZKTUAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:00:51 -0500
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-From: Eric Paris <eparis@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, graff.yang@gmail.com,
-       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org, john.johansen@canonical.com
-In-Reply-To: <20091120115016.82d01eaa.akpm@linux-foundation.org>
-References: <20091120094217.b94d99bb.akpm@linux-foundation.org>
-	 <20091117141314.0238a49b.akpm@linux-foundation.org>
-	 <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com>
-	 <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com>
-	 <1255516134-4838-1-git-send-email-graff.yang@gmail.com>
-	 <18475.1255529305@redhat.com> <6207.1255706090@redhat.com>
-	 <23382.1255707790@redhat.com>
-	 <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com>
-	 <16299.1258729209@redhat.com> <18122.1258739664@redhat.com>
-	 <1258745522.2916.3.camel@dhcp231-106.rdu.redhat.com>
-	 <20091120115016.82d01eaa.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2009 14:58:52 -0500
-Message-Id: <1258747132.2916.15.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 15:09:06 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51166 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754929AbZKTUJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:09:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xAZ5CzH2DsGQYKkZEGWdm79LW9SbfNlZJUo8tEAqRD1K/Tkfd283sXsG7DAmhxDdv5
+         4jgtrRsGsz0/DUEDRUgU6LAFlTyF/PY9LbAk/xcxMgph43qV5Win704Bhss+I7zQ5TCg
+         MrrPk2SOrssKT0+Qsov1Bsxj1F/PpRROvZhZk=
+MIME-Version: 1.0
+In-Reply-To: <20091120192250.GA16773@kroah.com>
+References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
+	 <20091106224728.GA32205@kroah.com>
+	 <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
+	 <20091107000749.GA26070@kroah.com>
+	 <a4c8a6d00911061723v6017ad7bqf96ba7c905922a45@mail.gmail.com>
+	 <a4c8a6d00911061745s4508d997v684683a1dbad821d@mail.gmail.com>
+	 <20091119193447.GA29091@kroah.com>
+	 <a4c8a6d00911201118n7607b0f8nf56f7af1e071afb6@mail.gmail.com>
+	 <20091120192250.GA16773@kroah.com>
+Date: Fri, 20 Nov 2009 18:09:09 -0200
+Message-ID: <a4c8a6d00911201209p2da69bb5s50b6d098107842db@mail.gmail.com>
+Subject: Re: [PATCH v2] staging/otus: trivial, fix sparse warnig.
+From: Thiago Farina <tfransosi@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
+       Luis.Rodriguez@atheros.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 11:50 -0800, Andrew Morton wrote:
-> On Fri, 20 Nov 2009 14:32:02 -0500
+On Fri, Nov 20, 2009 at 5:22 PM, Greg KH <greg@kroah.com> wrote:
+> On Fri, Nov 20, 2009 at 05:18:09PM -0200, Thiago Farina wrote:
+>> Hi Greg,
+>>
+>> On Thu, Nov 19, 2009 at 5:34 PM, Greg KH <greg@kroah.com> wrote:
+>> > On Fri, Nov 06, 2009 at 11:45:05PM -0200, Thiago Farina wrote:
+>> >> *apdbg.c: use NULL pointer instead of 0 integer.
+>> >>
+>> >> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+>> >
+>> > Still doesn't apply, I don't know what you are doing wrong here :(
+>> >
+>> > odd.
+>>
+>> How are you applying it?
+>
+> 'patch -p1 < your_email'
 
-> >     security: do not check mmap_min_addr on nommu systems
-> >     
-> >     nommu systems can do anything with memory they please and so they already
-> >     win.  mmap_min_addr is the least of their worries.  Currently the
-> >     mmap_min_addr implementation is problamatic on such systems.  This patch
-> >     changes the addr_only argument to be a flags which can take the arguments
-> >     for addr_only or not_addr.  LSMs then need to properly implement these two
-> >     flags.
-> >     
-> >     Signed-off-by: Eric Paris <eparis@redhat.com>
-> 
-> Patch doesn't apply to current mainline for some reason.  I fixed that
-> up and checked that the affected files compile OK on superh.
+Are you getting something like: "Hmm... Ignoring the trailing garbage." ?
 
-It was against my linux-next devel tree, probably something new in
-James' for-next tree.  Are people hoping for this in stable or should we
-just queue for -next?  This is a pretty old bug I guess people are just
-hitting for the first time...
-
-> The patch adds trailing whitespace.  If only we had a tool for that ;)
-
-Fixed.
-
+The output for me was this:
+...
+Patching file drivers/staging/otus/apdbg.c using Plan A...
+Hunk #1 succeeded at 109.
+Hunk #2 succeeded at 123.
+Hmm...  Ignoring the trailing garbage.
+done
