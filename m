@@ -1,763 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZKTU0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZKTUWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZKTU0r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZKTU0p
+	id S1755456AbZKTUWJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbZKTUWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:26:45 -0500
-Received: from lazybastard.de ([212.112.238.170]:48490 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755240AbZKTUWH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Nov 2009 15:22:07 -0500
-X-Greylist: delayed 2671 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:06 EST
+Received: from lazybastard.de ([212.112.238.170]:48489 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755104AbZKTUWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:22:01 -0500
+X-Greylist: delayed 2658 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:00 EST
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
 From: Joern Engel <joern@logfs.org>
-Subject: [PATCH 7/17] [LogFS] gc.c
+Subject: [PATCH 8/17] [LogFS] inode.c
 References: <20091120181113.GA2159@logfs.org>
-Message-Id: <E1NBZIW-0003gS-El@longford.logfs.org>
-Date: Fri, 20 Nov 2009 20:37:36 +0100
+Message-Id: <E1NBZIa-0003gg-59@longford.logfs.org>
+Date: Fri, 20 Nov 2009 20:37:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 ---
- fs/logfs/gc.c                       |  730 ++++++++++++
+ fs/logfs/inode.c                    |  417 +++++++
 
-diff --git a/fs/logfs/gc.c b/fs/logfs/gc.c
+diff --git a/fs/logfs/inode.c b/fs/logfs/inode.c
 new file mode 100644
-index 0000000..b3656c4
+index 0000000..6d08b37
 --- /dev/null
-+++ b/fs/logfs/gc.c
-@@ -0,0 +1,730 @@
++++ b/fs/logfs/inode.c
+@@ -0,0 +1,417 @@
 +/*
-+ * fs/logfs/gc.c	- garbage collection code
++ * fs/logfs/inode.c	- inode handling code
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2008 Joern Engel <joern@logfs.org>
 + */
 +#include "logfs.h"
-+#include <linux/sched.h>
++#include <linux/writeback.h>
++#include <linux/backing-dev.h>
 +
 +/*
-+ * Wear leveling needs to kick in when the difference between low erase
-+ * counts and high erase counts gets too big.  A good value for "too big"
-+ * may be somewhat below 10% of maximum erase count for the device.
-+ * Why not 397, to pick a nice round number with no specific meaning? :)
++ * How soon to reuse old inode numbers?  LogFS doesn't store deleted inodes
++ * on the medium.  It therefore also lacks a method to store the previous
++ * generation number for deleted inodes.  Instead a single generation number
++ * is stored which will be used for new inodes.  Being just a 32bit counter,
++ * this can obvious wrap relatively quickly.  So we only reuse inodes if we
++ * know that a fair number of inodes can be created before we have to increment
++ * the generation again - effectively adding some bits to the counter.
++ * But being too aggressive here means we keep a very large and very sparse
++ * inode file, wasting space on indirect blocks.
++ * So what is a good value?  Beats me.  64k seems moderately bad on both
++ * fronts, so let's use that for now...
 + *
-+ * WL_RATELIMIT is the minimum time between two wear level events.  A huge
-+ * number of segments may fulfil the requirements for wear leveling at the
-+ * same time.  If that happens we don't want to cause a latency from hell,
-+ * but just gently pick one segment every so often and minimize overhead.
++ * NFS sucks, as everyone already knows.
 + */
-+#define WL_DELTA 397
-+#define WL_RATELIMIT 100
-+#define MAX_OBJ_ALIASES	2600
-+#define SCAN_RATIO 512	/* number of scanned segments per gc'd segment */
-+#define LIST_SIZE 64	/* base size of candidate lists */
-+#define SCAN_ROUNDS 128	/* maximum number of complete medium scans */
-+#define SCAN_ROUNDS_HIGH 4 /* maximum number of higher-level scans */
++#define INOS_PER_WRAP (0x10000)
 +
-+static int no_free_segments(struct super_block *sb)
++/*
++ * Logfs' requirement to read inodes for garbage collection makes life a bit
++ * harder.  GC may have to read inodes that are in I_FREEING state, when they
++ * are being written out - and waiting for GC to make progress, naturally.
++ *
++ * So we cannot just call iget() or some variant of it, but first have to check
++ * wether the inode in question might be in I_FREEING state.  Therefore we
++ * maintain our own per-sb list of "almost deleted" inodes and check against
++ * that list first.  Normally this should be at most 1-2 entries long.
++ *
++ * Also, inodes have logfs-specific reference counting on top of what the vfs
++ * does.  When .destroy_inode is called, normally the reference count will drop
++ * to zero and the inode gets deleted.  But if GC accessed the inode, its
++ * refcount will remain nonzero and final deletion will have to wait.
++ *
++ * As a result we have two sets of functions to get/put inodes:
++ * logfs_safe_iget/logfs_safe_iput	- safe to call from GC context
++ * logfs_iget/iput			- normal version
++ */
++static struct kmem_cache *logfs_inode_cache;
++
++static DEFINE_SPINLOCK(logfs_inode_lock);
++
++static void logfs_inode_setops(struct inode *inode)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	return super->s_free_list.count;
-+}
-+
-+/* journal has distance -1, top-most ifile layer distance 0 */
-+static u8 root_distance(struct super_block *sb, gc_level_t __gc_level)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	u8 gc_level = (__force u8)__gc_level;
-+
-+	switch (gc_level) {
-+	case 0: /* fall through */
-+	case 1: /* fall through */
-+	case 2: /* fall through */
-+	case 3:
-+		/* file data or indirect blocks */
-+		return super->s_ifile_levels + super->s_iblock_levels - gc_level;
-+	case 6: /* fall through */
-+	case 7: /* fall through */
-+	case 8: /* fall through */
-+	case 9:
-+		/* inode file data or indirect blocks */
-+		return super->s_ifile_levels - (gc_level - 6);
++	switch (inode->i_mode & S_IFMT) {
++	case S_IFDIR:
++		inode->i_op = &logfs_dir_iops;
++		inode->i_fop = &logfs_dir_fops;
++		inode->i_mapping->a_ops = &logfs_reg_aops;
++		break;
++	case S_IFREG:
++		inode->i_op = &logfs_reg_iops;
++		inode->i_fop = &logfs_reg_fops;
++		inode->i_mapping->a_ops = &logfs_reg_aops;
++		break;
++	case S_IFLNK:
++		inode->i_op = &logfs_symlink_iops;
++		inode->i_mapping->a_ops = &logfs_reg_aops;
++		break;
++	case S_IFSOCK:	/* fall through */
++	case S_IFBLK:	/* fall through */
++	case S_IFCHR:	/* fall through */
++	case S_IFIFO:
++		init_special_inode(inode, inode->i_mode, inode->i_rdev);
++		break;
 +	default:
-+		printk(KERN_ERR"LOGFS: segment of unknown level %x found\n",
-+				gc_level);
-+		WARN_ON(1);
-+		return super->s_ifile_levels + super->s_iblock_levels;
++		BUG();
 +	}
 +}
 +
-+static int segment_is_reserved(struct super_block *sb, u32 segno)
++static struct inode *__logfs_iget(struct super_block *sb, ino_t ino)
++{
++	struct inode *inode = iget_locked(sb, ino);
++	int err;
++
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++	if (!(inode->i_state & I_NEW))
++		return inode;
++
++	err = logfs_read_inode(inode);
++	if (err || inode->i_nlink == 0) {
++		/* inode->i_nlink == 0 can be true when called from
++		 * block validator */
++		/* set i_nlink to 0 to prevent caching */
++		inode->i_nlink = 0;
++		logfs_inode(inode)->li_flags |= LOGFS_IF_ZOMBIE;
++		iget_failed(inode);
++		if (!err)
++			err = -ENOENT;
++		return ERR_PTR(err);
++	}
++
++	logfs_inode_setops(inode);
++	unlock_new_inode(inode);
++	return inode;
++}
++
++struct inode *logfs_iget(struct super_block *sb, ino_t ino)
++{
++	BUG_ON(ino == LOGFS_INO_MASTER);
++	BUG_ON(ino == LOGFS_INO_SEGFILE);
++	return __logfs_iget(sb, ino);
++}
++
++/*
++ * is_cached is set to 1 if we hand out a cached inode, 0 otherwise.
++ * this allows logfs_iput to do the right thing later
++ */
++struct inode *logfs_safe_iget(struct super_block *sb, ino_t ino, int *is_cached)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_area *area;
-+	void *reserved;
++	struct logfs_inode *li;
++
++	if (ino == LOGFS_INO_MASTER)
++		return super->s_master_inode;
++	if (ino == LOGFS_INO_SEGFILE)
++		return super->s_segfile_inode;
++
++	spin_lock(&logfs_inode_lock);
++	list_for_each_entry(li, &super->s_freeing_list, li_freeing_list)
++		if (li->vfs_inode.i_ino == ino) {
++			li->li_refcount++;
++			spin_unlock(&logfs_inode_lock);
++			*is_cached = 1;
++			return &li->vfs_inode;
++		}
++	spin_unlock(&logfs_inode_lock);
++
++	*is_cached = 0;
++	return __logfs_iget(sb, ino);
++}
++
++static void __logfs_destroy_inode(struct inode *inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++
++	BUG_ON(li->li_block);
++	list_del(&li->li_freeing_list);
++	kmem_cache_free(logfs_inode_cache, li);
++}
++
++static void logfs_destroy_inode(struct inode *inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++
++	BUG_ON(list_empty(&li->li_freeing_list));
++	spin_lock(&logfs_inode_lock);
++	li->li_refcount--;
++	if (li->li_refcount == 0)
++		__logfs_destroy_inode(inode);
++	spin_unlock(&logfs_inode_lock);
++}
++
++void logfs_safe_iput(struct inode *inode, int is_cached)
++{
++	if (inode->i_ino == LOGFS_INO_MASTER)
++		return;
++	if (inode->i_ino == LOGFS_INO_SEGFILE)
++		return;
++
++	if (is_cached) {
++		logfs_destroy_inode(inode);
++		return;
++	}
++
++	iput(inode);
++}
++
++static void logfs_init_inode(struct super_block *sb, struct inode *inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
 +	int i;
 +
-+	/* Some segments are reserved.  Just pretend they were all valid */
-+	reserved = btree_lookup32(&super->s_reserved_segments, segno);
-+	if (reserved)
-+		return 1;
++	li->li_flags	= 0;
++	li->li_height	= 0;
++	li->li_used_bytes = 0;
++	li->li_block	= NULL;
++	inode->i_uid	= 0;
++	inode->i_gid	= 0;
++	inode->i_size	= 0;
++	inode->i_blocks	= 0;
++	inode->i_ctime	= CURRENT_TIME;
++	inode->i_mtime	= CURRENT_TIME;
++	inode->i_nlink	= 1;
++	INIT_LIST_HEAD(&li->li_freeing_list);
 +
-+	/* Currently open segments */
-+	for_each_area(i) {
-+		area = super->s_area[i];
-+		if (area->a_is_open && area->a_segno == segno)
-+			return 1;
-+	}
++	for (i = 0; i < LOGFS_EMBEDDED_FIELDS; i++)
++		li->li_data[i] = 0;
 +
-+	return 0;
++	return;
 +}
 +
-+static void logfs_mark_segment_bad(struct super_block *sb, u32 segno)
++static struct inode *logfs_alloc_inode(struct super_block *sb)
 +{
-+	BUG();
++	struct logfs_inode *li;
++
++	li = kmem_cache_alloc(logfs_inode_cache, GFP_NOFS);
++	if (!li)
++		return NULL;
++	logfs_init_inode(sb, &li->vfs_inode);
++	return &li->vfs_inode;
 +}
 +
 +/*
-+ * Returns the bytes consumed by valid objects in this segment.  Object headers
-+ * are counted, the segment header is not.
++ * In logfs inodes are written to an inode file.  The inode file, like any
++ * other file, is managed with a inode.  The inode file's inode, aka master
++ * inode, requires special handling in several respects.  First, it cannot be
++ * written to the inode file, so it is stored in the journal instead.
++ *
++ * Secondly, this inode cannot be written back and destroyed before all other
++ * inodes have been written.  The ordering is important.  Linux' VFS is happily
++ * unaware of the ordering constraint and would ordinarily destroy the master
++ * inode at umount time while other inodes are still in use and dirty.  Not
++ * good.
++ *
++ * So logfs makes sure the master inode is not written until all other inodes
++ * have been destroyed.  Sadly, this method has another side-effect.  The VFS
++ * will notice one remaining inode and print a frightening warning message.
++ * Worse, it is impossible to judge whether such a warning was caused by the
++ * master inode or any other inodes have leaked as well.
++ *
++ * Our attempt of solving this is with logfs_new_meta_inode() below.  Its
++ * purpose is to create a new inode that will not trigger the warning if such
++ * an inode is still in use.  An ugly hack, no doubt.  Suggections for
++ * improvement are welcome.
 + */
-+static u32 logfs_valid_bytes(struct super_block *sb, u32 segno, u32 *ec,
-+		gc_level_t *gc_level)
-+{
-+	struct logfs_segment_entry se;
-+	u32 ec_level;
-+
-+	logfs_get_segment_entry(sb, segno, &se);
-+	if (se.ec_level == cpu_to_be32(BADSEG) ||
-+			se.valid == cpu_to_be32(RESERVED))
-+		return RESERVED;
-+
-+	ec_level = be32_to_cpu(se.ec_level);
-+	*ec = ec_level >> 4;
-+	*gc_level = GC_LEVEL(ec_level & 0xf);
-+	return be32_to_cpu(se.valid);
-+}
-+
-+static void logfs_cleanse_block(struct super_block *sb, u64 ofs, u64 ino,
-+		u64 bix, gc_level_t gc_level)
++struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino)
 +{
 +	struct inode *inode;
-+	int err, cookie;
 +
-+	inode = logfs_safe_iget(sb, ino, &cookie);
-+	err = logfs_rewrite_block(inode, bix, ofs, gc_level, 0);
-+	BUG_ON(err);
-+	logfs_safe_iput(inode, cookie);
-+}
++	inode = logfs_alloc_inode(sb);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
 +
-+static u32 logfs_gc_segment(struct super_block *sb, u32 segno, u8 dist)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_header sh;
-+	struct logfs_object_header oh;
-+	u64 ofs, ino, bix;
-+	u32 seg_ofs, logical_segno, cleaned = 0;
-+	int err, len, valid;
-+	gc_level_t gc_level;
++	inode->i_mode = S_IFREG;
++	inode->i_ino = ino;
++	inode->i_sb = sb;
 +
-+	LOGFS_BUG_ON(segment_is_reserved(sb, segno), sb);
++	/* This is a blatant copy of alloc_inode code.  We'd need alloc_inode
++	 * to be nonstatic, alas. */
++	{
++		struct address_space * const mapping = &inode->i_data;
 +
-+	btree_insert32(&super->s_reserved_segments, segno, (void *)1, GFP_NOFS);
-+	err = wbuf_read(sb, dev_ofs(sb, segno, 0), sizeof(sh), &sh);
-+	BUG_ON(err);
-+	gc_level = GC_LEVEL(sh.level);
-+	logical_segno = be32_to_cpu(sh.segno);
-+	if (sh.crc != logfs_crc32(&sh, sizeof(sh), 4)) {
-+		logfs_mark_segment_bad(sb, segno);
-+		cleaned = -1;
-+		goto out;
++		mapping->a_ops = &logfs_reg_aops;
++		mapping->host = inode;
++		mapping->flags = 0;
++		mapping_set_gfp_mask(mapping, GFP_NOFS);
++		mapping->assoc_mapping = NULL;
++		mapping->backing_dev_info = &default_backing_dev_info;
++		inode->i_mapping = mapping;
++		inode->i_nlink = 1;
 +	}
 +
-+	for (seg_ofs = LOGFS_SEGMENT_HEADERSIZE;
-+			seg_ofs + sizeof(oh) < super->s_segsize; ) {
-+		ofs = dev_ofs(sb, logical_segno, seg_ofs);
-+		err = wbuf_read(sb, dev_ofs(sb, segno, seg_ofs), sizeof(oh),
-+				&oh);
-+		BUG_ON(err);
++	return inode;
++}
 +
-+		if (!memchr_inv(&oh, 0xff, sizeof(oh)))
-+			break;
++struct inode *logfs_read_meta_inode(struct super_block *sb, u64 ino)
++{
++	struct inode *inode;
++	int err;
 +
-+		if (oh.crc != logfs_crc32(&oh, sizeof(oh) - 4, 4)) {
-+			logfs_mark_segment_bad(sb, segno);
-+			cleaned = super->s_segsize - 1;
-+			goto out;
-+		}
++	inode = logfs_new_meta_inode(sb, ino);
++	if (IS_ERR(inode))
++		return inode;
 +
-+		ino = be64_to_cpu(oh.ino);
-+		bix = be64_to_cpu(oh.bix);
-+		len = sizeof(oh) + be16_to_cpu(oh.len);
-+		valid = logfs_is_valid_block(sb, ofs, ino, bix, gc_level);
-+		if (valid == 1) {
-+			logfs_cleanse_block(sb, ofs, ino, bix, gc_level);
-+			cleaned += len;
-+		} else if (valid == 2) {
-+			/* Will be invalid upon journal commit */
-+			cleaned += len;
-+		}
-+		seg_ofs += len;
++	err = logfs_read_inode(inode);
++	if (err) {
++		destroy_meta_inode(inode);
++		return ERR_PTR(err);
 +	}
-+out:
-+	btree_remove32(&super->s_reserved_segments, segno);
-+	return cleaned;
++	logfs_inode_setops(inode);
++	return inode;
 +}
 +
-+static struct gc_candidate *add_list(struct gc_candidate *cand,
-+		struct candidate_list *list)
++static int logfs_write_inode(struct inode *inode, int do_sync)
 +{
-+	struct rb_node **p = &list->rb_tree.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct gc_candidate *cur;
-+	int comp;
++	int ret;
++	long flags = WF_LOCK;
 +
-+	cand->list = list;
-+	while (*p) {
-+		parent = *p;
-+		cur = rb_entry(parent, struct gc_candidate, rb_node);
-+
-+		if (list->sort_by_ec)
-+			comp = cand->erase_count < cur->erase_count;
-+		else
-+			comp = cand->valid < cur->valid;
-+
-+		if (comp)
-+			p = &parent->rb_left;
-+		else
-+			p = &parent->rb_right;
-+	}
-+	rb_link_node(&cand->rb_node, parent, p);
-+	rb_insert_color(&cand->rb_node, &list->rb_tree);
-+
-+	if (list->count <= list->maxcount) {
-+		list->count++;
-+		return NULL;
-+	}
-+	cand = rb_entry(rb_last(&list->rb_tree), struct gc_candidate, rb_node);
-+	rb_erase(&cand->rb_node, &list->rb_tree);
-+	cand->list = NULL;
-+	return cand;
-+}
-+
-+static void remove_from_list(struct gc_candidate *cand)
-+{
-+	struct candidate_list *list = cand->list;
-+
-+	rb_erase(&cand->rb_node, &list->rb_tree);
-+	list->count--;
-+}
-+
-+static void free_candidate(struct super_block *sb, struct gc_candidate *cand)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	btree_remove32(&super->s_cand_tree, cand->segno);
-+	kfree(cand);
-+}
-+
-+u32 get_best_cand(struct super_block *sb, struct candidate_list *list, u32 *ec)
-+{
-+	struct gc_candidate *cand;
-+	u32 segno;
-+
-+	BUG_ON(list->count == 0);
-+
-+	cand = rb_entry(rb_first(&list->rb_tree), struct gc_candidate, rb_node);
-+	remove_from_list(cand);
-+	segno = cand->segno;
-+	if (ec)
-+		*ec = cand->erase_count;
-+	free_candidate(sb, cand);
-+	return segno;
-+}
-+
-+/*
-+ * We have several lists to manage segments with.  The reserve_list is used to
-+ * deal with bad blocks.  We try to keep the best (lowest ec) segments on this
-+ * list.
-+ * The free_list contains free segments for normal usage.  It usually gets the
-+ * second pick after the reserve_list.  But when the free_list is running short
-+ * it is more important to keep the free_list full than to keep a reserve.
-+ *
-+ * Segments that are not free are put onto a per-level low_list.  If we have
-+ * to run garbage collection, we pick a candidate from there.  All segments on
-+ * those lists should have at least some free space so GC will make progress.
-+ *
-+ * And last we have the ec_list, which is used to pick segments for wear
-+ * leveling.
-+ *
-+ * If all appropriate lists are full, we simply free the candidate and forget
-+ * about that segment for a while.  We have better candidates for each purpose.
-+ */
-+static void __add_candidate(struct super_block *sb, struct gc_candidate *cand)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	u32 full = super->s_segsize - LOGFS_SEGMENT_RESERVE;
-+
-+	if (cand->valid == 0) {
-+		/* 100% free segments */
-+		log_gc_noisy("add reserve segment %x (ec %x) at %llx\n",
-+				cand->segno, cand->erase_count,
-+				dev_ofs(sb, cand->segno, 0));
-+		cand = add_list(cand, &super->s_reserve_list);
-+		if (cand) {
-+			log_gc_noisy("add free segment %x (ec %x) at %llx\n",
-+					cand->segno, cand->erase_count,
-+					dev_ofs(sb, cand->segno, 0));
-+			cand = add_list(cand, &super->s_free_list);
-+		}
-+	} else {
-+		/* good candidates for Garbage Collection */
-+		if (cand->valid < full)
-+			cand = add_list(cand, &super->s_low_list[cand->dist]);
-+		/* good candidates for wear leveling,
-+		 * segments that were recently written get ignored */
-+		if (cand)
-+			cand = add_list(cand, &super->s_ec_list);
-+	}
-+	if (cand)
-+		free_candidate(sb, cand);
-+}
-+
-+static int add_candidate(struct super_block *sb, u32 segno, u32 valid, u32 ec,
-+		u8 dist)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct gc_candidate *cand;
-+
-+	cand = kmalloc(sizeof(*cand), GFP_NOFS);
-+	if (!cand)
-+		return -ENOMEM;
-+
-+	cand->segno = segno;
-+	cand->valid = valid;
-+	cand->erase_count = ec;
-+	cand->dist = dist;
-+
-+	btree_insert32(&super->s_cand_tree, segno, cand, GFP_NOFS);
-+	__add_candidate(sb, cand);
-+	return 0;
-+}
-+
-+static void remove_segment_from_lists(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct gc_candidate *cand;
-+
-+	cand = btree_lookup32(&super->s_cand_tree, segno);
-+	if (cand) {
-+		remove_from_list(cand);
-+		free_candidate(sb, cand);
-+	}
-+}
-+
-+static void scan_segment(struct super_block *sb, u32 segno)
-+{
-+	u32 valid, ec = 0;
-+	gc_level_t gc_level = 0;
-+	u8 dist;
-+
-+	if (segment_is_reserved(sb, segno))
-+		return;
-+
-+	remove_segment_from_lists(sb, segno);
-+	valid = logfs_valid_bytes(sb, segno, &ec, &gc_level);
-+	if (valid == RESERVED)
-+		return;
-+
-+	dist = root_distance(sb, gc_level);
-+	add_candidate(sb, segno, valid, ec, dist);
-+}
-+
-+static struct gc_candidate *first_in_list(struct candidate_list *list)
-+{
-+	if (list->count == 0)
-+		return NULL;
-+	return rb_entry(rb_first(&list->rb_tree), struct gc_candidate, rb_node);
-+}
-+
-+/*
-+ * Find the best segment for garbage collection.  Main criterion is
-+ * the segment requiring the least effort to clean.  Secondary
-+ * criterion is to GC on the lowest level available.
-+ *
-+ * So we search the least effort segment on the lowest level first,
-+ * then move up and pick another segment iff is requires significantly
-+ * less effort.  Hence the LOGFS_MAX_OBJECTSIZE in the comparison.
-+ */
-+static struct gc_candidate *get_candidate(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i, max_dist;
-+	struct gc_candidate *cand = NULL, *this;
-+
-+	max_dist = min(no_free_segments(sb), LOGFS_NO_AREAS);
-+
-+	for (i = max_dist; i >= 0; i--) {
-+		this = first_in_list(&super->s_low_list[i]);
-+		if (!this)
-+			continue;
-+		if (!cand)
-+			cand = this;
-+		if (this->valid + LOGFS_MAX_OBJECTSIZE <= cand->valid)
-+			cand = this;
-+	}
-+	return cand;
-+}
-+
-+static int __logfs_gc_once(struct super_block *sb, struct gc_candidate *cand)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	gc_level_t gc_level;
-+	u32 cleaned, valid, segno, ec;
-+	u8 dist;
-+
-+	if (!cand) {
-+		log_gc("GC attempted, but no candidate found\n");
++	/* Can only happen if creat() failed.  Safe to skip. */
++	if (logfs_inode(inode)->li_flags & LOGFS_IF_STILLBORN)
 +		return 0;
-+	}
 +
-+	segno = cand->segno;
-+	dist = cand->dist;
-+	valid = logfs_valid_bytes(sb, segno, &ec, &gc_level);
-+	free_candidate(sb, cand);
-+	log_gc("GC segment #%02x at %llx, %x required, %x free, %x valid, %llx free\n",
-+			segno, (u64)segno << super->s_segshift,
-+			dist, no_free_segments(sb), valid,
-+			super->s_free_bytes);
-+	cleaned = logfs_gc_segment(sb, segno, dist);
-+	log_gc("GC segment #%02x complete - now %x valid\n", segno,
-+			valid - cleaned);
-+	BUG_ON(cleaned != valid);
-+	return 1;
-+}
-+
-+static int logfs_gc_once(struct super_block *sb)
-+{
-+	struct gc_candidate *cand;
-+
-+	cand = get_candidate(sb);
-+	if (cand)
-+		remove_from_list(cand);
-+	return __logfs_gc_once(sb, cand);
-+}
-+
-+/* returns 1 if a wrap occurs, 0 otherwise */
-+static int logfs_scan_some(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	u32 segno;
-+	int i, ret = 0;
-+
-+	segno = super->s_sweeper;
-+	for (i = SCAN_RATIO; i > 0; i--) {
-+		segno++;
-+		if (segno >= super->s_no_segs) {
-+			segno = 0;
-+			ret = 1;
-+			/* Break out of the loop.  We want to read a single
-+			 * block from the segment size on next invocation if
-+			 * SCAN_RATIO is set to match block size
-+			 */
-+			break;
-+		}
-+
-+		scan_segment(sb, segno);
-+	}
-+	super->s_sweeper = segno;
++	ret = __logfs_write_inode(inode, flags);
++	LOGFS_BUG_ON(ret, inode->i_sb);
 +	return ret;
 +}
 +
-+/*
-+ * In principle, this function should loop forever, looking for GC candidates
-+ * and moving data.  LogFS is designed in such a way that this loop is
-+ * guaranteed to terminate.
-+ *
-+ * Limiting the loop to some iterations serves purely to catch cases when
-+ * these guarantees have failed.  An actual endless loop is an obvious bug
-+ * and should be reported as such.
-+ */
-+static void __logfs_gc_pass(struct super_block *sb, int target)
++void destroy_meta_inode(struct inode *inode)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_block *block;
-+	int round, progress, last_progress = 0;
-+
-+	if (no_free_segments(sb) >= target &&
-+			super->s_no_object_aliases < MAX_OBJ_ALIASES)
-+		return;
-+
-+	log_gc("__logfs_gc_pass(%x)\n", target);
-+	for (round = 0; round < SCAN_ROUNDS; ) {
-+		if (no_free_segments(sb) >= target)
-+			goto write_alias;
-+
-+		/* Sync in-memory state with on-medium state in case they
-+		 * diverged */
-+		logfs_write_anchor(super->s_master_inode);
-+		round += logfs_scan_some(sb);
-+		if (no_free_segments(sb) >= target)
-+			goto write_alias;
-+		progress = logfs_gc_once(sb);
-+		if (progress)
-+			last_progress = round;
-+		else if (round - last_progress > 2)
-+			break;
-+		continue;
-+
-+		/*
-+		 * The goto logic is nasty, I just don't know a better way to
-+		 * code it.  GC is supposed to ensure two things:
-+		 * 1. Enough free segments are available.
-+		 * 2. The number of aliases is bounded.
-+		 * When 1. is achieved, we take a look at 2. and write back
-+		 * some alias-containing blocks, if necessary.  However, after
-+		 * each such write we need to go back to 1., as writes can
-+		 * consume free segments.
-+		 */
-+write_alias:
-+		if (super->s_no_object_aliases < MAX_OBJ_ALIASES)
-+			return;
-+		if (list_empty(&super->s_object_alias)) {
-+			/* All aliases are still in btree */
-+			return;
-+		}
-+		log_gc("Write back one alias\n");
-+		block = list_entry(super->s_object_alias.next,
-+				struct logfs_block, alias_list);
-+		block->ops->write_block(block);
-+		/*
-+		 * To round off the nasty goto logic, we reset round here.  It
-+		 * is a safety-net for GC not making any progress and limited
-+		 * to something reasonably small.  If incremented it for every
-+		 * single alias, the loop could terminate rather quickly.
-+		 */
-+		round = 0;
-+	}
-+	LOGFS_BUG(sb);
-+}
-+
-+static int wl_ratelimit(struct super_block *sb, u64 *next_event)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	if (*next_event < super->s_gec) {
-+		*next_event = super->s_gec + WL_RATELIMIT;
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static void logfs_wl_pass(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct gc_candidate *wl_cand, *free_cand;
-+
-+	if (wl_ratelimit(sb, &super->s_wl_gec_ostore))
-+		return;
-+
-+	wl_cand = first_in_list(&super->s_ec_list);
-+	if (!wl_cand)
-+		return;
-+	free_cand = first_in_list(&super->s_free_list);
-+	if (!free_cand)
-+		return;
-+
-+	if (wl_cand->erase_count < free_cand->erase_count + WL_DELTA) {
-+		remove_from_list(wl_cand);
-+		__logfs_gc_once(sb, wl_cand);
++	if (inode) {
++		if (inode->i_data.nrpages)
++			truncate_inode_pages(&inode->i_data, 0);
++		logfs_clear_inode(inode);
++		kmem_cache_free(logfs_inode_cache, logfs_inode(inode));
 +	}
 +}
 +
-+/*
-+ * The journal needs wear leveling as well.  But moving the journal is an
-+ * expensive operation so we try to avoid it as much as possible.  And if we
-+ * have to do it, we move the whole journal, not individual segments.
-+ *
-+ * Ratelimiting is not strictly necessary here, it mainly serves to avoid the
-+ * calculations.  First we check whether moving the journal would be a
-+ * significant improvement.  That means that a) the current journal segments
-+ * have more wear than the future journal segments and b) the current journal
-+ * segments have more wear than normal ostore segments.
-+ * Rationale for b) is that we don't have to move the journal if it is aging
-+ * less than the ostore, even if the reserve segments age even less (they are
-+ * excluded from wear leveling, after all).
-+ * Next we check that the superblocks have less wear than the journal.  Since
-+ * moving the journal requires writing the superblocks, we have to protect the
-+ * superblocks even more than the journal.
-+ *
-+ * Also we double the acceptable wear difference, compared to ostore wear
-+ * leveling.  Journal data is read and rewritten rapidly, comparatively.  So
-+ * soft errors have much less time to accumulate and we allow the journal to
-+ * be a bit worse than the ostore.
-+ */
-+static void logfs_journal_wl_pass(struct super_block *sb)
++/* called with inode_lock held */
++static void logfs_drop_inode(struct inode *inode)
++{
++	struct logfs_super *super = logfs_super(inode->i_sb);
++	struct logfs_inode *li = logfs_inode(inode);
++
++	spin_lock(&logfs_inode_lock);
++	list_move(&li->li_freeing_list, &super->s_freeing_list);
++	spin_unlock(&logfs_inode_lock);
++	generic_drop_inode(inode);
++}
++
++static void logfs_set_ino_generation(struct super_block *sb,
++		struct inode *inode)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	struct gc_candidate *cand;
-+	u32 min_journal_ec = -1, max_reserve_ec = 0;
++	u64 ino;
++
++	mutex_lock(&super->s_journal_mutex);
++	ino = logfs_seek_hole(super->s_master_inode, super->s_last_ino);
++	super->s_last_ino = ino;
++	super->s_inos_till_wrap--;
++	if (super->s_inos_till_wrap < 0) {
++		super->s_last_ino = LOGFS_RESERVED_INOS;
++		super->s_generation++;
++		super->s_inos_till_wrap = INOS_PER_WRAP;
++	}
++	inode->i_ino = ino;
++	inode->i_generation = super->s_generation;
++	mutex_unlock(&super->s_journal_mutex);
++}
++
++struct inode *logfs_new_inode(struct inode *dir, int mode)
++{
++	struct super_block *sb = dir->i_sb;
++	struct inode *inode;
++
++	inode = new_inode(sb);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++
++	logfs_init_inode(sb, inode);
++
++	/* inherit parent flags */
++	logfs_inode(inode)->li_flags |=
++		logfs_inode(dir)->li_flags & LOGFS_FL_INHERITED;
++
++	inode->i_mode = mode;
++	logfs_set_ino_generation(sb, inode);
++
++	inode->i_uid = current_fsuid();
++	inode->i_gid = current_fsgid();
++	if (dir->i_mode & S_ISGID) {
++		inode->i_gid = dir->i_gid;
++		if (S_ISDIR(mode))
++			inode->i_mode |= S_ISGID;
++	}
++
++	logfs_inode_setops(inode);
++	insert_inode_hash(inode);
++
++	return inode;
++}
++
++static void logfs_init_once(void *_li)
++{
++	struct logfs_inode *li = _li;
 +	int i;
 +
-+	if (wl_ratelimit(sb, &super->s_wl_gec_journal))
-+		return;
-+
-+	if (super->s_reserve_list.count < super->s_no_journal_segs) {
-+		/* Reserve is not full enough to move complete journal */
-+		return;
-+	}
-+
-+	journal_for_each(i)
-+		if (super->s_journal_seg[i])
-+			min_journal_ec = min(min_journal_ec,
-+					super->s_journal_ec[i]);
-+	cand = rb_entry(rb_first(&super->s_free_list.rb_tree),
-+			struct gc_candidate, rb_node);
-+	max_reserve_ec = cand->erase_count;
-+	for (i = 0; i < 2; i++) {
-+		struct logfs_segment_entry se;
-+		u32 segno = seg_no(sb, super->s_sb_ofs[i]);
-+		u32 ec;
-+
-+		logfs_get_segment_entry(sb, segno, &se);
-+		ec = be32_to_cpu(se.ec_level) >> 4;
-+		max_reserve_ec = max(max_reserve_ec, ec);
-+	}
-+
-+	if (min_journal_ec > max_reserve_ec + 2 * WL_DELTA) {
-+		do_logfs_journal_wl_pass(sb);
-+	}
++	li->li_flags = 0;
++	li->li_used_bytes = 0;
++	li->li_refcount = 1;
++	for (i = 0; i < LOGFS_EMBEDDED_FIELDS; i++)
++		li->li_data[i] = 0;
++	inode_init_once(&li->vfs_inode);
 +}
 +
-+void logfs_gc_pass(struct super_block *sb)
++static int logfs_sync_fs(struct super_block *sb, int wait)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	//BUG_ON(mutex_trylock(&logfs_super(sb)->s_w_mutex));
-+	/* Write journal before free space is getting saturated with dirty
-+	 * objects.
-+	 */
-+	if (super->s_dirty_used_bytes + super->s_dirty_free_bytes
-+			+ LOGFS_MAX_OBJECTSIZE >= super->s_free_bytes)
-+		logfs_write_anchor(super->s_master_inode);
-+	__logfs_gc_pass(sb, logfs_super(sb)->s_total_levels);
-+	logfs_wl_pass(sb);
-+	logfs_journal_wl_pass(sb);
-+}
-+
-+static int check_area(struct super_block *sb, int i)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_area *area = super->s_area[i];
-+	struct logfs_object_header oh;
-+	u32 segno = area->a_segno;
-+	u32 ofs = area->a_used_bytes;
-+	__be32 crc;
-+	int err;
-+
-+	if (!area->a_is_open)
-+		return 0;
-+
-+	for (ofs = area->a_used_bytes;
-+	     ofs <= super->s_segsize - sizeof(oh);
-+	     ofs += (u32)be16_to_cpu(oh.len) + sizeof(oh)) {
-+		err = wbuf_read(sb, dev_ofs(sb, segno, ofs), sizeof(oh), &oh);
-+		if (err)
-+			return err;
-+
-+		if (!memchr_inv(&oh, 0xff, sizeof(oh)))
-+			break;
-+
-+		crc = logfs_crc32(&oh, sizeof(oh) - 4, 4);
-+		if (crc != oh.crc) {
-+			printk(KERN_INFO "interrupted header at %llx\n",
-+					dev_ofs(sb, segno, ofs));
-+			return 0;
-+		}
-+	}
-+	if (ofs != area->a_used_bytes) {
-+		printk(KERN_INFO "%x bytes unaccounted data found at %llx\n",
-+				ofs - area->a_used_bytes,
-+				dev_ofs(sb, segno, area->a_used_bytes));
-+		area->a_used_bytes = ofs;
-+	}
++	/* FIXME: write anchor */
++	logfs_super(sb)->s_devops->sync(sb);
 +	return 0;
 +}
 +
-+int logfs_check_areas(struct super_block *sb)
-+{
-+	int i, err;
++const struct super_operations logfs_super_operations = {
++	.alloc_inode	= logfs_alloc_inode,
++	.clear_inode	= logfs_clear_inode,
++	.delete_inode	= logfs_delete_inode,
++	.destroy_inode	= logfs_destroy_inode,
++	.drop_inode	= logfs_drop_inode,
++	.write_inode	= logfs_write_inode,
++	.statfs		= logfs_statfs,
++	.sync_fs	= logfs_sync_fs,
++};
 +
-+	for_each_area(i) {
-+		err = check_area(sb, i);
-+		if (err)
-+			return err;
-+	}
++int logfs_init_inode_cache(void)
++{
++	logfs_inode_cache = kmem_cache_create("logfs_inode_cache",
++			sizeof(struct logfs_inode), 0, SLAB_RECLAIM_ACCOUNT,
++			logfs_init_once);
++	if (!logfs_inode_cache)
++		return -ENOMEM;
 +	return 0;
 +}
 +
-+static void logfs_init_candlist(struct candidate_list *list, int maxcount,
-+		int sort_by_ec)
++void logfs_destroy_inode_cache(void)
 +{
-+	list->count = 0;
-+	list->maxcount = maxcount;
-+	list->sort_by_ec = sort_by_ec;
-+	list->rb_tree = RB_ROOT;
-+}
-+
-+int logfs_init_gc(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i;
-+
-+	btree_init_mempool32(&super->s_cand_tree, super->s_btree_pool);
-+	logfs_init_candlist(&super->s_free_list, LIST_SIZE + SCAN_RATIO, 1);
-+	logfs_init_candlist(&super->s_reserve_list,
-+			super->s_bad_seg_reserve, 1);
-+	for_each_area(i)
-+		logfs_init_candlist(&super->s_low_list[i], LIST_SIZE, 0);
-+	logfs_init_candlist(&super->s_ec_list, LIST_SIZE, 1);
-+	return 0;
-+}
-+
-+static void logfs_cleanup_list(struct super_block *sb,
-+		struct candidate_list *list)
-+{
-+	struct gc_candidate *cand;
-+
-+	while (list->count) {
-+		cand = rb_entry(list->rb_tree.rb_node, struct gc_candidate,
-+				rb_node);
-+		remove_from_list(cand);
-+		free_candidate(sb, cand);
-+	}
-+	BUG_ON(list->rb_tree.rb_node);
-+}
-+
-+void logfs_cleanup_gc(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i;
-+
-+	if (!super->s_free_list.count)
-+		return;
-+
-+	/*
-+	 * FIXME: The btree may still contain a single empty node.  So we
-+	 * call the grim visitor to clean up that mess.  Btree code should
-+	 * do it for us, really.
-+	 */
-+	btree_grim_visitor32(&super->s_cand_tree, 0, NULL);
-+	logfs_cleanup_list(sb, &super->s_free_list);
-+	logfs_cleanup_list(sb, &super->s_reserve_list);
-+	for_each_area(i)
-+		logfs_cleanup_list(sb, &super->s_low_list[i]);
-+	logfs_cleanup_list(sb, &super->s_ec_list);
++	kmem_cache_destroy(logfs_inode_cache);
 +}
