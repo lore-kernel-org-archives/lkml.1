@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZKTQlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZKTQlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbZKTQlp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 11:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZKTQln
+	id S1754411AbZKTQlP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 11:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZKTQlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 11:41:43 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39050 "EHLO mx2.suse.de"
+	Fri, 20 Nov 2009 11:41:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41574 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754341AbZKTQlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 11:41:10 -0500
+	id S1754294AbZKTQlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 11:41:12 -0500
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
@@ -19,10 +19,10 @@ Cc: Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
        =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
        Jamie Lokier <jamie@shareable.org>, Jan Blunck <jblunck@suse.de>,
        Christoph Hellwig <hch@infradead.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 14/15] BKL: Remove BKL from default_llseek()
-Date: Fri, 20 Nov 2009 17:40:44 +0100
-Message-Id: <1258735245-25826-15-git-send-email-jblunck@suse.de>
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: [PATCH 15/15] BKL: Update documentation on llseek( =?ISO-8859-1?Q?=08?=)
+Date: Fri, 20 Nov 2009 17:40:45 +0100
+Message-Id: <1258735245-25826-16-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1258735245-25826-1-git-send-email-jblunck@suse.de>
 References: <1258735245-25826-1-git-send-email-jblunck@suse.de>
@@ -33,13 +33,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using the BKL in llseek() does not protect the inode's i_size from
-modification since the i_size is protected by a seqlock nowadays. Since
-default_llseek() is already using the i_size_read() wrapper it is not the
-BKL which is serializing the access here.
-The access to file->f_pos is not protected by the BKL either since its
-access in vfs_write()/vfs_read() is not protected by any lock. If the BKL
-is not protecting anything here it can clearly get removed.
+The inode's i_size is not protected by the big kernel lock. Therefore it
+does not make sense to recommend taking the BKL in filesystems llseek
+operations. Instead it should use the inode's mutex or use just use
+i_size_read() instead. Add a note that this is not protecting file->f_pos.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Cc: Arnd Bergmann <arnd@arndb.de>
@@ -47,29 +44,25 @@ Cc: Christoph Hellwig <hch@infradead.org>
 Cc: Frédéric Weisbecker <fweisbec@gmail.com>
 Cc: John Kacur <jkacur@redhat.com>
 ---
- fs/read_write.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ Documentation/filesystems/Locking |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 7a01d11..cbe54e4 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -113,7 +113,6 @@ loff_t default_llseek(struct file *file, loff_t offset, int origin)
- {
- 	loff_t retval;
+diff --git a/Documentation/filesystems/Locking b/Documentation/filesystems/Locking
+index 18b9d0c..25159d4 100644
+--- a/Documentation/filesystems/Locking
++++ b/Documentation/filesystems/Locking
+@@ -429,8 +429,9 @@ check_flags:		no
+ implementations.  If your fs is not using generic_file_llseek, you
+ need to acquire and release the appropriate locks in your ->llseek().
+ For many filesystems, it is probably safe to acquire the inode
+-semaphore.  Note some filesystems (i.e. remote ones) provide no
+-protection for i_size so you will need to use the BKL.
++mutex or just to use i_size_read() instead.
++Note: this does not protect the file->f_pos against concurrent modifications
++since this is something the userspace has to take care about.
  
--	lock_kernel();
- 	switch (origin) {
- 		case SEEK_END:
- 			offset += i_size_read(file->f_path.dentry->d_inode);
-@@ -134,7 +133,6 @@ loff_t default_llseek(struct file *file, loff_t offset, int origin)
- 		retval = offset;
- 	}
- out:
--	unlock_kernel();
- 	return retval;
- }
- EXPORT_SYMBOL(default_llseek);
+ Note: ext2_release() was *the* source of contention on fs-intensive
+ loads and dropping BKL on ->release() helps to get rid of that (we still
 -- 
 1.6.4.2
 
