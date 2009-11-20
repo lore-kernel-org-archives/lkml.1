@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZKTVjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZKTVnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbZKTVjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbZKTVjS
+	id S1754559AbZKTVnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZKTVnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:39:18 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:51388 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755929AbZKTVjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:39:15 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
-	<1257665233-12468-6-git-send-email-ebiederm@xmission.com>
-	<20091120201355.GA30590@kroah.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 20 Nov 2009 13:39:06 -0800
-In-Reply-To: <20091120201355.GA30590@kroah.com> (Greg KH's message of "Fri\, 20 Nov 2009 12\:13\:55 -0800")
-Message-ID: <m1k4xk7u6d.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out sysfs_sd_setattr
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Fri, 20 Nov 2009 16:43:16 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54845 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753002AbZKTVnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 16:43:15 -0500
+Subject: Re: [PATCH] enclosure: fix oops while iterating enclosure_status
+ array
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jeff Mahoney <jeffm@jeffreymahoney.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <4B05E183.4010301@jeffreymahoney.com>
+References: <4B05E183.4010301@jeffreymahoney.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 16:43:14 -0500
+Message-Id: <1258753394.2889.315.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+*really* (promise) adding linux-scsi to the cc list this time.
 
-> On Sat, Nov 07, 2009 at 11:27:04PM -0800, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->> 
->> Cleanly separate the work that is specific to setting the
->> attributes of a sysfs_dirent from what is needed to update
->> the attributes of a vfs inode.
->> 
->> Additionally grab the sysfs_mutex to keep any nasties from
->> surprising us when updating the sysfs_dirent.
->> 
->> Acked-by: Tejun Heo <tj@kernel.org>
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
->
-> Due to the extended attr work for sysfs that went into Linus's tree
-> recently, this patch doesn't apply at all anymore.
+Patch looks fine to me, though, thanks.
 
-I will take a look.  I'm  scratching my about how that caused a problem
-because that patch came out of my tree originally, before the rest of
-these patches.  So if anything I should have problems in the other direction.
+James
 
-Eric
+On Thu, 2009-11-19 at 19:23 -0500, Jeff Mahoney wrote:
+> enclosure_status is expected to be a NULL terminated array of strings
+>  but isn't actually NULL terminated. When writing an invalid value to
+>  /sys/class/enclosure/.../.../status, it goes off the end of the array
+>  and Oopses.
+> 
+>  This patch uses the array size instead.
+> 
+> Reported-by: Artur Wojcik <artur.wojcik@intel.com>
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> ---
+>  drivers/misc/enclosure.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> --- a/drivers/misc/enclosure.c
+> +++ b/drivers/misc/enclosure.c
+> @@ -412,8 +412,9 @@ static ssize_t set_component_status(stru
+>  	struct enclosure_component *ecomp = to_enclosure_component(cdev);
+>  	int i;
+>  
+> -	for (i = 0; enclosure_status[i]; i++) {
+> -		if (strncmp(buf, enclosure_status[i],
+> +	for (i = 0; i < ARRAY_SIZE(enclosure_status); i++) {
+> +		if (enclosure_status[i] &&
+> +		    strncmp(buf, enclosure_status[i],
+>  			    strlen(enclosure_status[i])) == 0 &&
+>  		    (buf[strlen(enclosure_status[i])] == '\n' ||
+>  		     buf[strlen(enclosure_status[i])] == '\0'))
+
+
 
