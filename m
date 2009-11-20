@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZKTSYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZKTSZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZKTSYN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZKTSYM
+	id S1753893AbZKTSZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZKTSZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:24:12 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35113 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbZKTSYL (ORCPT
+	Fri, 20 Nov 2009 13:25:30 -0500
+Received: from mail-px0-f204.google.com ([209.85.216.204]:62123 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbZKTSZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:24:11 -0500
-Date: Fri, 20 Nov 2009 19:24:05 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Paul Parsons <lost.distance@yahoo.com>, linux-input@vger.kernel.org,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu, linux-kernel@vger.kernel.org,
-       Dirk@Opfer-Online.de, arminlitzel@web.de, metan@ucw.cz,
-       thommycheck@gmail.com, linux-arm-kernel@lists.infradead.org,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz
-Subject: Re: [PATCH] hx4700: fix hx4700 touchscreen pressure values
-Message-ID: <20091120182405.GA1378@ucw.cz>
-References: <E1NAYJo-00016g-PW@pih-relay04.plus.net> <20091118172849.GD25150@elf.ucw.cz> <20091118173934.GA4458@core.coreip.homeip.net> <20091118174649.GB4458@core.coreip.homeip.net>
+	Fri, 20 Nov 2009 13:25:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=srqvxeu+VRJIwlT6t2J0zlG8vdcn9AQrkz9yj8WDYLu4fppVaJSaa1PHsRac9KA0ar
+         2DaQXXBQt48e3NSHuxdwHIcfXjY6YXXT+X2gQ+sdcusNwSxMobyOER5NkJS9ws3kFHky
+         tXauwQbsa2/qL5QF7rv8fQNtRhTDTz+2jBV9I=
+Date: Fri, 20 Nov 2009 10:25:28 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-input@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: ads7846 touchscreen: fix pressure
+Message-ID: <20091120182528.GB16447@core.coreip.homeip.net>
+References: <20091120182238.GA1344@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091118174649.GB4458@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091120182238.GA1344@ucw.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > > Dmitry, those pressure values are reverted on more than one machine,
-> > > and we do not have anyone reporting it works ok for them. Can we
-> > > perhaps just.... fix it?
-> > 
-> > OK, so we have 4 instances where pressure is inverted and nobody wants
-> > to come out with a non-inverted example... I'll queue for .33 then - .32
-> > it too close to the release.
-> > 
+On Fri, Nov 20, 2009 at 07:22:39PM +0100, Pavel Machek wrote:
 > 
-> Btw, could you send me the latest version of your patch please?
+> On Zaurus, pressure is reported inverted -- the lighter the pressure,
+> the bigger numerical value. This should fix it.
+> 
 
-Yep, resent in separate mail.
-								Pavel
+Thanks. Didn't you also have a bigger cleanup patch for ads7846?
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dmitry
