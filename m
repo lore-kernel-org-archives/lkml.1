@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZKTUvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZKTUyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbZKTUvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZKTUvl
+	id S1756006AbZKTUyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKTUyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:51:41 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:56648 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754619AbZKTUvk (ORCPT
+	Fri, 20 Nov 2009 15:54:38 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:51300 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755721AbZKTUyh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:51:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=QsDKPOPs0cPp7I9rFZPTCExTu6ZUYtkFPH/dNuR9k3DH7mpzpgkQx2/QSDglVG9I9G
-         PZMUTFLMUDvWe5TfmA3V5lokatFXv6RrvGe/QgI9rG86xWJg7vejjPh/8mt1x2Dx3cPe
-         DNQNXuYjRdWKA8w+VgAqcUDJgIUysDoM+Hceo=
+	Fri, 20 Nov 2009 15:54:37 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/liO0YKAEKm9a+gm23laHV
+Date: Fri, 20 Nov 2009 12:53:49 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>,
+       linux-omap@vger.kernel.org, Jani Nikula <ext-jani.1.nikula@nokia.com>
+Subject: Re: linux-next: manual merge of the input tree with the omap tree
+Message-ID: <20091120205345.GA5764@atomide.com>
+References: <20091119131216.da16845c.sfr@canb.auug.org.au>
+ <20091119025329.GV29266@atomide.com>
+ <20091120085858.GE3009@core.coreip.homeip.net>
 MIME-Version: 1.0
-In-Reply-To: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 20 Nov 2009 12:51:26 -0800
-Message-ID: <43e72e890911201251t6210ee19n177eaf003a4fffc@mail.gmail.com>
-Subject: Re: A generic kernel compatibilty code
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091120085858.GE3009@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 12:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> Everyone and their mother reinvents the wheel when it comes to
-> backporting kernel modules. It a painful job and it seems to me an
-> alternative is possible. If we can write generic compatibilty code for
-> a new routine introduced on the next kernel how about just merging it
-> to the kernel under some generic compat module. This would be
-> completey ignored by everyone using the stable kernel but can be
-> copied by anyone doing backport work.
->
-> So I'm thinking something as simple as a generic compat/comat.ko with
-> compat-2.6.32.[ch] files.
+* Dmitry Torokhov <dmitry.torokhov@gmail.com> [091120 00:59]:
+> On Wed, Nov 18, 2009 at 06:53:30PM -0800, Tony Lindgren wrote:
+> > 
+> > Dmitry, could you please drop 5018461a887d58f4601207deeebb7c352c2da20a from
+> > your tree now?
+> > 
+> 
+> Done.
 
-FWIW, I meant a compat-2.6.32.[ch] and compat-2.6.31.[ch] and so on.
-All these would link to the compat.ko
+Thanks!
 
-  Luis
+Tony
