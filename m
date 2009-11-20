@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZKTA3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZKTAaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbZKTA3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbZKTA3j
+	id S1758165AbZKTAaO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:30:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbZKTAaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:29:39 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:35854 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757392AbZKTA3j (ORCPT
+	Thu, 19 Nov 2009 19:30:13 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:55953 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757912AbZKTAaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:29:39 -0500
-Message-ID: <4B05E183.4010301@jeffreymahoney.com>
-Date: Thu, 19 Nov 2009 19:23:31 -0500
-From: Jeff Mahoney <jeffm@jeffreymahoney.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Thu, 19 Nov 2009 19:30:11 -0500
+Date: Fri, 20 Nov 2009 00:29:43 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PULL] please pull bjdooks' i2c-pnx-fixes branch
+Message-ID: <20091120002943.GA19796@fluff.org.uk>
 MIME-Version: 1.0
-To: James Bottomley <JBottomley@Novell.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] enclosure: fix oops while iterating enclosure_status array
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- enclosure_status is expected to be a NULL terminated array of strings
- but isn't actually NULL terminated. When writing an invalid value to
- /sys/class/enclosure/.../.../status, it goes off the end of the array
- and Oopses.
+The following changes since commit 648f4e3e50c4793d9dbf9a09afa193631f76fa26:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc8
 
- This patch uses the array size instead.
+are available in the git repository at:
 
-Reported-by: Artur Wojcik <artur.wojcik@intel.com>
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- drivers/misc/enclosure.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+  git://git.fluff.org/bjdooks/linux i2c-pnx-fixes
 
---- a/drivers/misc/enclosure.c
-+++ b/drivers/misc/enclosure.c
-@@ -412,8 +412,9 @@ static ssize_t set_component_status(stru
- 	struct enclosure_component *ecomp = to_enclosure_component(cdev);
- 	int i;
- 
--	for (i = 0; enclosure_status[i]; i++) {
--		if (strncmp(buf, enclosure_status[i],
-+	for (i = 0; i < ARRAY_SIZE(enclosure_status); i++) {
-+		if (enclosure_status[i] &&
-+		    strncmp(buf, enclosure_status[i],
- 			    strlen(enclosure_status[i])) == 0 &&
- 		    (buf[strlen(enclosure_status[i])] == '\n' ||
- 		     buf[strlen(enclosure_status[i])] == '\0'))
+Kevin Wells (3):
+      i2c: i2c-pnx: Limit minimum jiffie timeout to 2
+      i2c: i2c-pnx: Made buf type unsigned to prevent sign extension
+      i2c: i2c-pnx: Added missing mach/i2c.h and linux/io.h header file includes
+
+ drivers/i2c/busses/i2c-pnx.c |    5 +++++
+ include/linux/i2c-pnx.h      |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletions(-)
+
 -- 
-Jeff Mahoney
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
