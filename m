@@ -1,174 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZKTNaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZKTN3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbZKTNaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 08:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZKTNaK
+	id S1753443AbZKTN3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 08:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZKTN3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 08:30:10 -0500
-Received: from nox.protox.org ([88.191.38.29]:47420 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348AbZKTN3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 08:29:43 -0500
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH 3/3] drm/radeon/kms: Add range pinning to crtc/cursor bo
-Date: Fri, 20 Nov 2009 14:29:24 +0100
-Message-Id: <1258723764-4399-4-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1258723764-4399-3-git-send-email-jglisse@redhat.com>
-References: <1258723764-4399-1-git-send-email-jglisse@redhat.com>
- <1258723764-4399-2-git-send-email-jglisse@redhat.com>
- <1258723764-4399-3-git-send-email-jglisse@redhat.com>
+	Fri, 20 Nov 2009 08:29:50 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:39927 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753367AbZKTN3o convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 08:29:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KVr349hUh6nXDGbA6QySaurtybav97ILVcCwKTbTv0BFnxur1TIsQ0s1CUWDmtXr33
+         SRxjUjOjDpEVRQ1nCngou7ELuynhxmjYUu3/1t0XLR2eqMUiy7HRi7PZqDA443yCfl2D
+         jC893TDRgm+w6ZHiNVSRWj1hetcApZzAm9pJ0=
+MIME-Version: 1.0
+In-Reply-To: <4B01577E.2020003@chelsio.com>
+References: <4B014F95.8000906@chelsio.com>
+	 <20091116.051835.125328285.davem@davemloft.net>
+	 <4B01577E.2020003@chelsio.com>
+Date: Fri, 20 Nov 2009 15:29:24 +0200
+Message-ID: <b263e5900911200529n1c002097q48a625d1bcda4db6@mail.gmail.com>
+Subject: Re: [RFC-PATCH] libiscsi dhcp handler
+From: Dan Carpenter <error27.lkml@gmail.com>
+To: Rakesh Ranjan <rakesh@chelsio.com>
+Cc: David Miller <davem@davemloft.net>, michaelc@cs.wisc.edu,
+       open-iscsi@googlegroups.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@suse.de, kxie@chelsio.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We force the crtc & cursor bo to be in the first 64M, this
-will help on legacy modesetting hw where the offset of
-scanout buffer and cursor are relative to a base address.
+On 11/16/09, Rakesh Ranjan <rakesh@chelsio.com> wrote:
+> David Miller wrote:
+>> From: Rakesh Ranjan <rakesh@chelsio.com>
+>> Date: Mon, 16 Nov 2009 18:41:49 +0530
+>>
+>>> Herein attached patches to support dhcp based provisioning for iSCSI
+>>> offload capable cards. I have made dhcp code as generic as possible,
+>>> please go through the code. Based on the feedback I will submit final
+>>> version of these patches.
+>>
+>> You can't really add objects to the build before the patch that
+>> adds the source for that object.
+>>
+>
+> Hi david,
+>
+> Fixed patch attached.
+>
+> Regards
+> Rakesh Ranjan
+>
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon.h             |    3 ++
- drivers/gpu/drm/radeon/radeon_cursor.c      |    3 +-
- drivers/gpu/drm/radeon/radeon_gem.c         |   15 +++++++++++
- drivers/gpu/drm/radeon/radeon_legacy_crtc.c |    6 ++++-
- drivers/gpu/drm/radeon/radeon_object.c      |   35 +++++++++++++++++++++++++++
- drivers/gpu/drm/radeon/radeon_object.h      |    2 +
- 6 files changed, 62 insertions(+), 2 deletions(-)
+The header file changes cause warnings in allmodconfig.
 
-diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
-index 4b5d86b..5cb1b79 100644
---- a/drivers/gpu/drm/radeon/radeon.h
-+++ b/drivers/gpu/drm/radeon/radeon.h
-@@ -245,6 +245,9 @@ int radeon_gem_object_create(struct radeon_device *rdev, int size,
- 				struct drm_gem_object **obj);
- int radeon_gem_object_pin(struct drm_gem_object *obj, uint32_t pin_domain,
- 			  uint64_t *gpu_addr);
-+extern int radeon_gem_object_pin_range(struct drm_gem_object *obj,
-+				uint32_t pin_domain, uint64_t *gpu_addr,
-+				unsigned long start, unsigned long end);
- void radeon_gem_object_unpin(struct drm_gem_object *obj);
- 
- 
-diff --git a/drivers/gpu/drm/radeon/radeon_cursor.c b/drivers/gpu/drm/radeon/radeon_cursor.c
-index 28772a3..205fca1 100644
---- a/drivers/gpu/drm/radeon/radeon_cursor.c
-+++ b/drivers/gpu/drm/radeon/radeon_cursor.c
-@@ -156,7 +156,8 @@ int radeon_crtc_cursor_set(struct drm_crtc *crtc,
- 		return -EINVAL;
- 	}
- 
--	ret = radeon_gem_object_pin(obj, RADEON_GEM_DOMAIN_VRAM, &gpu_addr);
-+	ret = radeon_gem_object_pin_range(obj, RADEON_GEM_DOMAIN_VRAM,
-+					&gpu_addr, 0, 64 * 1024 * 1024);
- 	if (ret)
- 		goto fail;
- 
-diff --git a/drivers/gpu/drm/radeon/radeon_gem.c b/drivers/gpu/drm/radeon/radeon_gem.c
-index f3fb2bf..7db8fcb 100644
---- a/drivers/gpu/drm/radeon/radeon_gem.c
-+++ b/drivers/gpu/drm/radeon/radeon_gem.c
-@@ -92,6 +92,21 @@ int radeon_gem_object_pin(struct drm_gem_object *obj, uint32_t pin_domain,
- 	return r;
- }
- 
-+int radeon_gem_object_pin_range(struct drm_gem_object *obj,
-+				uint32_t pin_domain, uint64_t *gpu_addr,
-+				unsigned long start, unsigned long end)
-+{
-+	struct radeon_bo *robj = obj->driver_private;
-+	int r;
-+
-+	r = radeon_bo_reserve(robj, false);
-+	if (unlikely(r != 0))
-+		return r;
-+	r = radeon_bo_pin_range(robj, pin_domain, gpu_addr, start, end);
-+	radeon_bo_unreserve(robj);
-+	return r;
-+}
-+
- void radeon_gem_object_unpin(struct drm_gem_object *obj)
- {
- 	struct radeon_bo *robj = obj->driver_private;
-diff --git a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-index e8a984d..3a2fb68 100644
---- a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-+++ b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-@@ -439,7 +439,11 @@ int radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y,
- 	r = radeon_bo_reserve(rbo, false);
- 	if (unlikely(r != 0))
- 		return r;
--	r = radeon_bo_pin(rbo, RADEON_GEM_DOMAIN_VRAM, &base);
-+	/* Pin buffer in the first 64M and always set crtc_base to start of
-+	 * vram
-+	 */
-+	r = radeon_bo_pin_range(rbo, RADEON_GEM_DOMAIN_VRAM, &base,
-+				0, 64 * 1024 * 1024);
- 	if (unlikely(r != 0)) {
- 		radeon_bo_unreserve(rbo);
- 		return -EINVAL;
-diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
-index bec4943..15399e6 100644
---- a/drivers/gpu/drm/radeon/radeon_object.c
-+++ b/drivers/gpu/drm/radeon/radeon_object.c
-@@ -200,6 +200,41 @@ retry:
- 	return r;
- }
- 
-+int radeon_bo_pin_range(struct radeon_bo *bo, u32 domain, u64 *gpu_addr,
-+			unsigned long start, unsigned long end)
-+{
-+	u32 flags;
-+	u32 tmp;
-+	int r;
-+
-+	flags = radeon_ttm_flags_from_domain(domain);
-+	if (bo->pin_count) {
-+		bo->pin_count++;
-+		if (gpu_addr)
-+			*gpu_addr = radeon_bo_gpu_offset(bo);
-+		return 0;
-+	}
-+	tmp = bo->tbo.mem.placement;
-+	ttm_flag_masked(&tmp, flags, TTM_PL_MASK_MEM);
-+	bo->tbo.proposed_placement = tmp | TTM_PL_FLAG_NO_EVICT |
-+					TTM_PL_MASK_CACHING;
-+retry:
-+	r = ttm_buffer_object_validate_range(&bo->tbo,
-+						bo->tbo.proposed_placement,
-+						start, end, true, false);
-+	if (likely(r == 0)) {
-+		bo->pin_count = 1;
-+		if (gpu_addr != NULL)
-+			*gpu_addr = radeon_bo_gpu_offset(bo);
-+	}
-+	if (unlikely(r != 0)) {
-+		if (r == -ERESTART)
-+			goto retry;
-+		dev_err(bo->rdev->dev, "%p pin failed\n", bo);
-+	}
-+	return r;
-+}
-+
- int radeon_bo_unpin(struct radeon_bo *bo)
- {
- 	int r;
-diff --git a/drivers/gpu/drm/radeon/radeon_object.h b/drivers/gpu/drm/radeon/radeon_object.h
-index e9da130..a40bf67 100644
---- a/drivers/gpu/drm/radeon/radeon_object.h
-+++ b/drivers/gpu/drm/radeon/radeon_object.h
-@@ -153,6 +153,8 @@ extern int radeon_bo_kmap(struct radeon_bo *bo, void **ptr);
- extern void radeon_bo_kunmap(struct radeon_bo *bo);
- extern void radeon_bo_unref(struct radeon_bo **bo);
- extern int radeon_bo_pin(struct radeon_bo *bo, u32 domain, u64 *gpu_addr);
-+extern int radeon_bo_pin_range(struct radeon_bo *bo, u32 domain, u64 *gpu_addr,
-+				unsigned long start, unsigned long end);
- extern int radeon_bo_unpin(struct radeon_bo *bo);
- extern int radeon_bo_evict_vram(struct radeon_device *rdev);
- extern void radeon_bo_force_delete(struct radeon_device *rdev);
--- 
-1.6.5.2
+   CC [M]  drivers/scsi/be2iscsi/be_iscsi.o
++In file included from drivers/scsi/be2iscsi/be_iscsi.c:21:
++include/scsi/libiscsi.h:445: warning: ‘struct net_device’ declared
+inside parameter list
++include/scsi/libiscsi.h:445: warning: its scope is only this
+definition or declaration, which is probably not what you want
++include/scsi/libiscsi.h:447: warning: ‘struct sk_buff’ declared
+inside parameter list
++include/scsi/libiscsi.h:447: warning: ‘struct net_device’ declared
+inside parameter list
 
+regards,
+dan carpenter
