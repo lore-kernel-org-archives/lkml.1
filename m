@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZKTVjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZKTVjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZKTVjB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZKTVjA
+	id S1756301AbZKTVjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbZKTVjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:39:00 -0500
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:44181 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754741AbZKTVi7 convert rfc822-to-8bit (ORCPT
+	Fri, 20 Nov 2009 16:39:18 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:51388 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929AbZKTVjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:38:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=g4cBtKAf9QerjmaQJxRuQPZA171lb+1Fn2Jk0t2EMRuEFlXEIsd5jsnOx2JiZYTFiw
-         N0IgjZL1BmsSDk+oBbB0DBIbEEKSBMfKz6+EzQnV9OwIAK3SV3pObdJYmps3YRap1/L4
-         YsJDIw3VO0napwAmeOIh/cU1u9tu8QB5r7WeI=
+	Fri, 20 Nov 2009 16:39:15 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
+	<1257665233-12468-6-git-send-email-ebiederm@xmission.com>
+	<20091120201355.GA30590@kroah.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 20 Nov 2009 13:39:06 -0800
+In-Reply-To: <20091120201355.GA30590@kroah.com> (Greg KH's message of "Fri\, 20 Nov 2009 12\:13\:55 -0800")
+Message-ID: <m1k4xk7u6d.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20091120211837.GA22815@tuxdriver.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com> 
-	<43e72e890911201251t6210ee19n177eaf003a4fffc@mail.gmail.com> 
-	<43e72e890911201253obc466c8k2102e04457c48c92@mail.gmail.com> 
-	<20091120211837.GA22815@tuxdriver.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 20 Nov 2009 13:38:45 -0800
-Message-ID: <43e72e890911201338w4c403d51q651afc3638d1739c@mail.gmail.com>
-Subject: Re: A generic kernel compatibilty code
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out sysfs_sd_setattr
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 1:18 PM, John W. Linville
-<linville@tuxdriver.com> wrote:
-> On Fri, Nov 20, 2009 at 12:53:51PM -0800, Luis R. Rodriguez wrote:
->> On Fri, Nov 20, 2009 at 12:51 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->> > On Fri, Nov 20, 2009 at 12:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
->> >> Everyone and their mother reinvents the wheel when it comes to
->> >> backporting kernel modules. It a painful job and it seems to me an
->> >> alternative is possible. If we can write generic compatibilty code for
->> >> a new routine introduced on the next kernel how about just merging it
->> >> to the kernel under some generic compat module. This would be
->> >> completey ignored by everyone using the stable kernel but can be
->> >> copied by anyone doing backport work.
->> >>
->> >> So I'm thinking something as simple as a generic compat/comat.ko with
->> >> compat-2.6.32.[ch] files.
->> >
->> > FWIW, I meant a compat-2.6.32.[ch] and compat-2.6.31.[ch] and so on.
->> > All these would link to the compat.ko
->>
->> I supose this could juse be a separate tree with some generic
->> compat.ko module. That might work better.
+Greg KH <greg@kroah.com> writes:
+
+> On Sat, Nov 07, 2009 at 11:27:04PM -0800, Eric W. Biederman wrote:
+>> From: Eric W. Biederman <ebiederm@xmission.com>
+>> 
+>> Cleanly separate the work that is specific to setting the
+>> attributes of a sysfs_dirent from what is needed to update
+>> the attributes of a vfs inode.
+>> 
+>> Additionally grab the sysfs_mutex to keep any nasties from
+>> surprising us when updating the sysfs_dirent.
+>> 
+>> Acked-by: Tejun Heo <tj@kernel.org>
+>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 >
-> This is what I would suggest for pursuing this idea.  Perhaps you
-> could split-off from compat-wireless, then make that tree depend on
-> the new tree (compat-core?)...
+> Due to the extended attr work for sysfs that went into Linus's tree
+> recently, this patch doesn't apply at all anymore.
 
-OK thanks, will try that for the next kernel.
+I will take a look.  I'm  scratching my about how that caused a problem
+because that patch came out of my tree originally, before the rest of
+these patches.  So if anything I should have problems in the other direction.
 
-  Luis
+Eric
+
