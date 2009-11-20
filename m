@@ -1,79 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756288AbZKTVb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZKTVbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756288AbZKTVb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZKTVbi
+	id S1756272AbZKTVbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbZKTVbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:31:38 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34635 "EHLO
+	Fri, 20 Nov 2009 16:31:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34637 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755480AbZKTV22 (ORCPT
+	with ESMTP id S1755686AbZKTV22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Nov 2009 16:28:28 -0500
-Message-Id: <20091120212508.606459548@chello.nl>
+Message-Id: <20091120212508.685559857@chello.nl>
 References: <20091120211942.676891948@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Nov 2009 22:19:48 +0100
+Date: Fri, 20 Nov 2009 22:19:49 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 06/15] perf: optimize perf_event_mmap_ctx()
-Content-Disposition: inline; filename=perf-event-5.patch
+Subject: [PATCH 07/15] perf: Fix PERF_FORMAT_GROUP scale info
+Content-Disposition: inline; filename=perf-time-0.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove a rcu_read_{,un}lock() pair and a few conditionals.
+As Corey reported, the total_enabled and total_running times could
+occasionally be 0, even though there were events counted.
 
-We can remove the rcu_read_lock() by increasing the scope of one in
-the calling function.
+It turns out this is because we record the times before reading the
+counter while the latter updates the times.
 
-We can do away with the system_state check if the machine still boots
-after this patch (seems to be the case).
+This patch corrects that.
 
-We can do away with the list_empty() check because the bare
-list_for_each_entry_rcu() reduces to that now that we've removed
-everything else.
+While looking at this code I found that there is a lot of locking
+iffyness around, the following patches correct most of that.
 
+Reported-by: Corey Ashford <cjashfor@linux.vnet.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/perf_event.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ kernel/perf_event.c |   52 +++++++++++++++++++++-------------------------------
+ 1 file changed, 21 insertions(+), 31 deletions(-)
 
 Index: linux-2.6/kernel/perf_event.c
 ===================================================================
 --- linux-2.6.orig/kernel/perf_event.c
 +++ linux-2.6/kernel/perf_event.c
-@@ -3493,15 +3493,10 @@ static void perf_event_mmap_ctx(struct p
- {
- 	struct perf_event *event;
+@@ -1784,30 +1784,15 @@ u64 perf_event_read_value(struct perf_ev
+ }
+ EXPORT_SYMBOL_GPL(perf_event_read_value);
  
--	if (system_state != SYSTEM_RUNNING || list_empty(&ctx->event_list))
--		return;
+-static int perf_event_read_entry(struct perf_event *event,
+-				   u64 read_format, char __user *buf)
+-{
+-	int n = 0, count = 0;
+-	u64 values[2];
 -
--	rcu_read_lock();
- 	list_for_each_entry_rcu(event, &ctx->event_list, event_entry) {
- 		if (perf_event_mmap_match(event, mmap_event))
- 			perf_event_mmap_output(event, mmap_event);
+-	values[n++] = perf_event_read_value(event);
+-	if (read_format & PERF_FORMAT_ID)
+-		values[n++] = primary_event_id(event);
+-
+-	count = n * sizeof(u64);
+-
+-	if (copy_to_user(buf, values, count))
+-		return -EFAULT;
+-
+-	return count;
+-}
+-
+ static int perf_event_read_group(struct perf_event *event,
+ 				   u64 read_format, char __user *buf)
+ {
+ 	struct perf_event *leader = event->group_leader, *sub;
+-	int n = 0, size = 0, err = -EFAULT;
+-	u64 values[3];
++	int n = 0, size = 0, ret = 0;
++	u64 values[5];
++	u64 count;
++
++	count = perf_event_read_value(leader);
+ 
+ 	values[n++] = 1 + leader->nr_siblings;
+ 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED) {
+@@ -1818,28 +1803,33 @@ static int perf_event_read_group(struct 
+ 		values[n++] = leader->total_time_running +
+ 			atomic64_read(&leader->child_total_time_running);
  	}
--	rcu_read_unlock();
++	values[n++] = count;
++	if (read_format & PERF_FORMAT_ID)
++		values[n++] = primary_event_id(leader);
+ 
+ 	size = n * sizeof(u64);
+ 
+ 	if (copy_to_user(buf, values, size))
+ 		return -EFAULT;
+ 
+-	err = perf_event_read_entry(leader, read_format, buf + size);
+-	if (err < 0)
+-		return err;
+-
+-	size += err;
++	ret += size;
+ 
+ 	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
+-		err = perf_event_read_entry(sub, read_format,
+-				buf + size);
+-		if (err < 0)
+-			return err;
++		n = 0;
+ 
+-		size += err;
++		values[n++] = perf_event_read_value(sub);
++		if (read_format & PERF_FORMAT_ID)
++			values[n++] = primary_event_id(sub);
++
++		size = n * sizeof(u64);
++
++		if (copy_to_user(buf + size, values, size))
++			return -EFAULT;
++
++		ret += size;
+ 	}
+ 
+-	return size;
++	return ret;
  }
  
- static void perf_event_mmap_event(struct perf_mmap_event *mmap_event)
-@@ -3557,11 +3552,11 @@ got_name:
- 
- 	mmap_event->event_id.header.size = sizeof(mmap_event->event_id) + size;
- 
-+	rcu_read_lock();
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_event_mmap_ctx(&cpuctx->ctx, mmap_event);
- 	put_cpu_var(perf_cpu_context);
- 
--	rcu_read_lock();
- 	/*
- 	 * doesn't really matter which of the child contexts the
- 	 * events ends up in.
+ static int perf_event_read_one(struct perf_event *event,
 
 -- 
 
