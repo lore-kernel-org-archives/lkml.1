@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZKTAQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbZKTARX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZKTAQf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757772AbZKTAQe
+	id S1758170AbZKTARX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757772AbZKTARW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:16:34 -0500
-Received: from mga11.intel.com ([192.55.52.93]:14814 "EHLO mga11.intel.com"
+	Thu, 19 Nov 2009 19:17:22 -0500
+Received: from mga01.intel.com ([192.55.52.88]:40463 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757194AbZKTAQe convert rfc822-to-8bit (ORCPT
+	id S1757912AbZKTARS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:16:34 -0500
+	Thu, 19 Nov 2009 19:17:18 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
-   d="scan'208";a="748740270"
+   d="scan'208,223";a="515656748"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 CC: "H. Peter Anvin" <hpa@linux.intel.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
        Ingo Molnar <mingo@elte.hu>
-Date: Thu, 19 Nov 2009 16:16:38 -0800
-Subject: [PATCH 0/3] x86/pic: introduce legacy_pic abstraction
-Thread-Topic: [PATCH 0/3] x86/pic: introduce legacy_pic abstraction
-Thread-Index: Acppdroj2vfDrc5tSRmsUAHfe1u48g==
-Message-ID: <43F901BD926A4E43B106BF17856F07558A00D90C@orsmsx508.amr.corp.intel.com>
+Date: Thu, 19 Nov 2009 16:16:54 -0800
+Subject: [PATCH 1/3] x86/pic: introduce legacy_pic abstraction
+Thread-Topic: [PATCH 1/3] x86/pic: introduce legacy_pic abstraction
+Thread-Index: AcppdsOt2X+UbfQeR+GiqkLFogODOQ==
+Message-ID: <43F901BD926A4E43B106BF17856F07558A00D90E@orsmsx508.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -36,19 +36,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset is intended to allow runtime selection of legacy pic driver. it
-decouples legacy pic code by replacing global function calls with an abstracted
-legacy_pic structure.
+>From aa0de4edc17ef1e5e4933d927db5525f990288f5 Mon Sep 17 00:00:00 2001
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Date: Mon, 9 Nov 2009 11:24:14 -0800
+Subject: [PATCH] x86/pic: introduce legacy_pic abstraction
 
-.arch/x86/include/asm/hw_irq.h  |    7 ----
- arch/x86/include/asm/i8259.h   |   19 +++++++----
- arch/x86/include/asm/io_apic.h |    2 -
- arch/x86/kernel/apic/apic.c    |    8 ++--
- arch/x86/kernel/apic/io_apic.c |   67 +++++++++++++++++++---------------------
- arch/x86/kernel/apic/nmi.c     |    2 +-
- arch/x86/kernel/i8259.c        |   64 ++++++++++++++++++++++++++++++++++----
- arch/x86/kernel/irqinit.c      |    2 +-
- arch/x86/kernel/smpboot.c      |    5 ++-
- arch/x86/kernel/visws_quirks.c |   14 +++++---
- 10 files changed, 119 insertions(+), 71 deletions(-)
+this patch makes i8259a like legacy programmable interrupt controller code into a driver
+so that legacy pic functions can be selected at runtime based on platform information, such
+as HW subarchitecure ID.
+default structure of legacy_pic maintains the current code path for x86pc.
+
+Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+---
+ arch/x86/include/asm/i8259.h |   13 ++++++++++++
+ arch/x86/kernel/i8259.c      |   43 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/i8259.h b/arch/x86/include/asm/i8259.h
+index 58d7091..e8a3e05 100644
+--- a/arch/x86/include/asm/i8259.h
++++ b/arch/x86/include/asm/i8259.h
+@@ -57,6 +57,19 @@ static inline void outb_pic(unsigned char value, unsigned int port)
+ 
+ extern struct irq_chip i8259A_chip;
+ 
++struct legacy_pic {
++	int nr_legacy_irqs;
++	struct irq_chip *chip;
++	void (*mask_all)(void);
++	void (*restore_mask)(void);
++	void (*init)(int auto_eoi);
++	int (*irq_pending)(unsigned int irq);
++	void (*make_irq)(unsigned int irq);
++};
++
++extern struct legacy_pic *legacy_pic;
++extern struct legacy_pic null_legacy_pic;
++
+ extern void mask_8259A(void);
+ extern void unmask_8259A(void);
+ 
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index df89102..b80987c 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -358,3 +358,46 @@ void init_8259A(int auto_eoi)
+ 
+ 	spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
++/*
++ * make i8259 a driver so that we can select pic functions at run time. the goal
++ * is to make x86 binary compatible among pc compatible and non-pc compatible
++ * platforms, such as x86 MID.
++ */
++
++static void __init legacy_pic_noop(void) { };
++static void __init legacy_pic_uint_noop(unsigned int unused) { };
++static void __init legacy_pic_int_noop(int unused) { };
++
++static struct irq_chip dummy_pic_chip  = {
++	.name = "dummy pic",
++	.mask = legacy_pic_uint_noop,
++	.unmask = legacy_pic_uint_noop,
++	.disable = legacy_pic_uint_noop,
++	.mask_ack = legacy_pic_uint_noop,
++};
++static int legacy_pic_irq_pending_noop(unsigned int irq)
++{
++	return 0;
++}
++
++struct legacy_pic null_legacy_pic = {
++	.nr_legacy_irqs = 0,
++	.chip = &dummy_pic_chip,
++	.mask_all = legacy_pic_noop,
++	.restore_mask = legacy_pic_noop,
++	.init = legacy_pic_int_noop,
++	.irq_pending = legacy_pic_irq_pending_noop,
++	.make_irq = legacy_pic_uint_noop,
++};
++
++struct legacy_pic default_legacy_pic = {
++	.nr_legacy_irqs = NR_IRQS_LEGACY,
++	.chip  = &i8259A_chip,
++	.mask_all  = mask_8259A,
++	.restore_mask = unmask_8259A,
++	.init = init_8259A,
++	.irq_pending = i8259A_irq_pending,
++	.make_irq = make_8259A_irq,
++};
++
++struct legacy_pic *legacy_pic = &default_legacy_pic;
+-- 
+1.5.6.5
 
