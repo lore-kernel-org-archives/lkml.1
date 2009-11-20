@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZKTMSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZKTMVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbZKTMSx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZKTMSw
+	id S1753172AbZKTMVo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZKTMVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:18:52 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:56525 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbZKTMSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:18:52 -0500
-Date: Fri, 20 Nov 2009 13:18:55 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v2] k10temp: temperature sensor for AMD Family 10h/11h 
- CPUs
-Message-ID: <20091120131855.7f8f8722@hyperion.delvare>
-In-Reply-To: <4B068402.7020606@ladisch.de>
-References: <4AF91F70.10106@ladisch.de>
-	<4B06501B.8080509@ladisch.de>
-	<87ws1l5wcl.fsf@depni.sinp.msu.ru>
-	<4B0673D7.5010006@ladisch.de>
-	<20091120123016.19d98ab4@hyperion.delvare>
-	<4B068402.7020606@ladisch.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Fri, 20 Nov 2009 07:21:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:63552 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbZKTMVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 07:21:43 -0500
+Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
+	<ext-juha.1.keski-saari@nokia.com>,
+       "Peter 'p2' De Schrijver" <peter.de-schrijver@nokia.com>,
+       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
+       "dtor@mail.ru" <dtor@mail.ru>,
+       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
+In-Reply-To: <20091120112812.GC20236@rakim.wolfsonmicro.main>
+References: <4B03DE53.6010007@nokia.com> <4B03DE9B.40800@nokia.com>
+	 <20091118133938.GE6592@rakim.wolfsonmicro.main>
+	 <20091118143609.GD2832@esdhcp037198.research.nokia.com>
+	 <20091118144145.GA16852@rakim.wolfsonmicro.main>
+	 <4B04EDE8.1010906@nokia.com>
+	 <20091119092412.GA4696@codecarver.research.nokia.com>
+	 <20091119103054.GC9763@rakim.wolfsonmicro.main>
+	 <20091120100633.GE3733@sortiz.org> <1258713145.3640.11.camel@odin>
+	 <20091120112812.GC20236@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 12:21:43 +0000
+Message-ID: <1258719703.3640.41.camel@odin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Nov 2009 12:56:50 +0100, Clemens Ladisch wrote:
-> Jean Delvare wrote:
-> > On Fri, 20 Nov 2009 11:47:51 +0100, Clemens Ladisch wrote:
-> > > v2: Erratum 319 now results in a warning, not an error, because it cannot
-> > >     be reliably detected; Serge Belyshev reports that his CPU sensor works.
-> > 
-> > Nack. Unreliable sensors -> the default must be to NOT bind to these
-> > CPUs. ... Otherwise your driver will _never_ make it into the
-> > kernel tree.
+On Fri, 2009-11-20 at 11:28 +0000, Mark Brown wrote:
+> On Fri, Nov 20, 2009 at 10:32:25AM +0000, Liam Girdwood wrote:
+> > On Fri, 2009-11-20 at 11:06 +0100, Samuel Ortiz wrote:
 > 
-> Then how did the k8temp driver make it into the kernel tree?  :-)
-
-For the K8 family, the history is the other way around: early models
-worked fine, while later models did not. So there was no objection to
-the k8temp driver initially, there really was no reason for it.
-
-It is much harder to remove a driver from the kernel tree than to add
-it. Likewise, it is much harder to reject specific models if you have
-been supporting them before, because some users may see it as a
-regression. This is the reason why I would like us to be much more
-cautious with the family 10h CPU support than we have been for the K8
-family. Let us learn from our past errors.
-
-> > Feel free to provide a way to force the bind to happen (and still
-> > print a big fat warning that this is a very bad idea), but do NOT make
-> > it the default. 
+> > > Would you mind carrying this one with your twl4030-mfd branch ? It doesnt
+> > > apply cleanly to my tree due to the missing twl4030 patches from Peter.
 > 
-> Okay, I'll add a force parameter.
-> I'd guess k8temp should get the same?
+> > > Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+> 
+> > Juha, this doesn't apply to regulator for-next either. Is it possible to
+> > split it out into a patch for mfd and a patch for regulator (against
+> > their for-next branches) ?
+> 
+> Either the existing twl4030-mfd branch or split patches work for me.
 
-It would make sense, yes, even though you will get complaints from some
-users.
+What's the upstream path for your twl4030-mfd ASoC branch ? 
 
--- 
-Jean Delvare
+Regulator + mfd patches either go upstream via the regulator or mfd
+repositories.  
+
+Liam
+
