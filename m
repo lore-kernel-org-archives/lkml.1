@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbZKTAwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbZKTA5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbZKTAwF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:52:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZKTAwE
+	id S1756395AbZKTA5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZKTA5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:52:04 -0500
-Received: from mga11.intel.com ([192.55.52.93]:48802 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755153AbZKTAwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:52:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,773,1249282800"; 
-   d="scan'208";a="515666510"
-From: "Sean Hefty" <sean.hefty@intel.com>
-To: "'Roland Dreier'" <rdreier@cisco.com>
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, <linux-next@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-References: <20091120110342.5128b8f8.sfr@canb.auug.org.au>	<ada1vju6oa6.fsf@roland-alpha.cisco.com>	<6307584467EB4D168602C43E0B185157@amr.corp.intel.com> <adaocmy58hl.fsf@roland-alpha.cisco.com>
-Subject: RE: linux-next: infiniband tree build failure
-Date: Thu, 19 Nov 2009 16:52:10 -0800
-Message-ID: <D77E1576A4E24759B7A602F5F3EAB2B6@amr.corp.intel.com>
+	Thu, 19 Nov 2009 19:57:42 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:22818 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbZKTA5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:57:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ud+e8H6Ct+vld04fTHGM7tK5OuOZGS4X6DbB4kPauXig1L6EApVZlY6M1Vi9hrtYFP
+         s3MCX5G80H8rt2KnDH58Ts+SFbYRJ2lyiE2PHVXxOBtf8wSkjGyJLvprjvXoKlc1XiIk
+         I37LCAZb4EfcG8ulp8rK28OqGCG0ys+/COfns=
+Date: Fri, 20 Nov 2009 01:57:46 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [PATCH 2/2] lockdep: Don't only check recursive read locks
+	once in a sequence
+Message-ID: <20091120005743.GJ4967@nowhere>
+References: <1258506398-5151-1-git-send-email-fweisbec@gmail.com> <1258506398-5151-3-git-send-email-fweisbec@gmail.com> <4B03C1A7.4070305@cn.fujitsu.com> <20091119155549.GB4967@nowhere> <1258650828.3931.437.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: AcppeteSm26yoHKWRe2jsTxlW9LDcwAAJQ4A
-In-Reply-To: <adaocmy58hl.fsf@roland-alpha.cisco.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258650828.3931.437.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->OK, so I threw this into the ipv6 patch, I think it's right:
+On Thu, Nov 19, 2009 at 06:13:48PM +0100, Peter Zijlstra wrote:
+> On Thu, 2009-11-19 at 16:55 +0100, Frederic Weisbecker wrote:
+> > And btw I
+> > don't understand why rwsem read locks are not considered as
+> > recursive in lockdep. 
+> 
+> Because they're not.
+> 
+> rwsems are FIFO fair, so a double read can deadlock when there's a
+> pending writer inbetween.
+> 
 
-Looks correct - thanks.
 
->diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
->index 71e616a..fbdd731 100644
->--- a/drivers/infiniband/core/cma.c
->+++ b/drivers/infiniband/core/cma.c
->@@ -2083,6 +2083,7 @@ static int cma_get_port(struct rdma_id_private *id_priv)
-> static int cma_check_linklocal(struct rdma_dev_addr *dev_addr,
-> 			       struct sockaddr *addr)
-> {
->+#if defined(CONFIG_IPv6) || defined(CONFIG_IPV6_MODULE)
-> 	struct sockaddr_in6 *sin6;
->
-> 	if (addr->sa_family != AF_INET6)
->@@ -2094,6 +2095,7 @@ static int cma_check_linklocal(struct rdma_dev_addr
->*dev_addr,
-> 			return -EINVAL;
->
-> 	dev_addr->bound_dev_if = sin6->sin6_scope_id;
->+#endif
-> 	return 0;
-> }
->
+Aah ok. That's the subtle thing I was missing :)
+
+Thanks.
 
