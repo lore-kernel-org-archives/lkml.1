@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZKTQY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZKTQ3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbZKTQY7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 11:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZKTQY6
+	id S1752411AbZKTQ3P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 11:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZKTQ3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 11:24:58 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:54318 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753475AbZKTQY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 11:24:57 -0500
-Date: Fri, 20 Nov 2009 08:25:01 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       cl@linux-foundation.org, mpm@selenic.com,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-Message-ID: <20091120162501.GA6772@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091118181202.GA12180@linux.vnet.ibm.com> <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <20091120144855.GB22527@linux.vnet.ibm.com> <1258730260.4104.240.camel@laptop>
+	Fri, 20 Nov 2009 11:29:15 -0500
+Received: from mail1.microsoft.com ([131.107.115.212]:59580 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZKTQ3O convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 11:29:14 -0500
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: "'gregkh@suse.de'" <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Staging: hv: Fix vmbus event handler bug
+Thread-Topic: [PATCH] Staging: hv: Fix vmbus event handler bug
+Thread-Index: AQHKafdNSiK6YVrk+0exzA2+sXwakpE/J0Ug
+Date: Fri, 20 Nov 2009 16:29:17 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF721E431CF3@TK5EX14MBXC130.redmond.corp.microsoft.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258730260.4104.240.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 04:17:40PM +0100, Peter Zijlstra wrote:
-> On Fri, 2009-11-20 at 06:48 -0800, Paul E. McKenney wrote:
-> > On Fri, Nov 20, 2009 at 01:05:58PM +0200, Pekka Enberg wrote:
-> > > Peter Zijlstra kirjoitti:
-> > >> On Fri, 2009-11-20 at 12:38 +0200, Pekka Enberg wrote:
-> > >>>
-> > >>> On Fri, Nov 20, 2009 at 11:25 AM, Peter Zijlstra <peterz@infradead.org> 
-> > >>> wrote:
-> > >>>>  2) propagate the nesting information and user spin_lock_nested(), given
-> > >>>> that slab is already a rat's nest, this won't make it any less obvious.
-> > >>> spin_lock_nested() doesn't really help us here because there's a
-> > >>> _real_ possibility of a recursive spin lock here, right? 
-> > >> Well, I was working under the assumption that your analysis of it being
-> > >> a false positive was right ;-)
-> > >> I briefly tried to verify that, but got lost and gave up, at which point
-> > >> I started looking for ways to annotate.
-> > >
-> > > Uh, ok, so apparently I was right after all. There's a comment in 
-> > > free_block() above the slab_destroy() call that refers to the comment above 
-> > > alloc_slabmgmt() function definition which explains it all.
-> > >
-> > > Long story short: ->slab_cachep never points to the same kmalloc cache 
-> > > we're allocating or freeing from. Where do we need to put the 
-> > > spin_lock_nested() annotation? Would it be enough to just use it in 
-> > > cache_free_alien() for alien->lock or do we need it in cache_flusharray() 
-> > > as well?
-> > 
-> > Hmmm...  If the nc->lock spinlocks are always from different slabs
-> > (as alloc_slabmgmt()'s block comment claims), why not just give each
-> > array_cache structure's lock its own struct lock_class_key?  They
-> > are zero size unless you have lockdep enabled.
-> 
-> Because more classes:
-> 
->  - takes more (static/limited) lockdep resources
-> 
->  - make more chains, weakening lock dependency tracking
->    because it can no longer use the state observed in one branch
->    on state observed in another branch.
-> 
-> Suppose you have 3 locks and 2 classes, lock 1 and 2 part of class A and
-> lock 3 of class B
-> 
-> Then if we observe 1 -> 3, and 3 -> 2, we'd see A->B and B->A, and go
-> yell. Now if we split class A into two classes and these locks get into
-> separate classes we loose that cycle.
-> 
-> Now in this case we want to break a cycle, so the above will be correct,
-> but all resulting chains will be equivalent for 99% (with the one
-> exception of this funny recursion case) wasting lots of resources and
-> state matching opportunity.
-> 
-> Therefore it would be much better to use the _nested annotation if
-> possible.
+From: Haiyang Zhang <haiyangz@microsoft.com>
 
-Got it, thank you for the explanation!!!
+Fix vmbus event handler bug.
+The flag ENABLE_POLLING is always enabled in original Makefile, 
+but accidently removed during porting to mainline kernel. The patch 
+fixes this bug which can cause stalled network communication. 
+Credit needs to go to Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
+For pointing out a typo in the original code as well.
 
-I will keep this in mind when reconsidering the RCU lockdep interactions.
+This patch needs to be applied to the 2.6.32 mainline.
 
-							Thanx, Paul
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+
+---
+diff --git a/drivers/staging/hv/Channel.c b/drivers/staging/hv/Channel.c
+index d649ee1..746370e 100644
+--- a/drivers/staging/hv/Channel.c
++++ b/drivers/staging/hv/Channel.c
+@@ -611,7 +611,7 @@ void VmbusChannelClose(struct vmbus_channel *Channel)
+ 
+ 	/* Stop callback and cancel the timer asap */
+ 	Channel->OnChannelCallback = NULL;
+-	del_timer(&Channel->poll_timer);
++	del_timer_sync(&Channel->poll_timer);
+ 
+ 	/* Send a closing message */
+ 	info = kmalloc(sizeof(*info) +
+@@ -978,14 +978,10 @@ void VmbusChannelOnChannelEvent(struct vmbus_channel *Channel)
+ {
+ 	DumpVmbusChannel(Channel);
+ 	ASSERT(Channel->OnChannelCallback);
+-#ifdef ENABLE_POLLING
+-	del_timer(&Channel->poll_timer);
+-	Channel->OnChannelCallback(Channel->ChannelCallbackContext);
+-	channel->poll_timer.expires(jiffies + usecs_to_jiffies(100);
+-	add_timer(&channel->poll_timer);
+-#else
++
+ 	Channel->OnChannelCallback(Channel->ChannelCallbackContext);
+-#endif
++
++	mod_timer(&Channel->poll_timer, jiffies + usecs_to_jiffies(100));
+ }
+ 
+ /**
+@@ -997,10 +993,6 @@ void VmbusChannelOnTimer(unsigned long data)
+ 
+ 	if (channel->OnChannelCallback) {
+ 		channel->OnChannelCallback(channel->ChannelCallbackContext);
+-#ifdef ENABLE_POLLING
+-		channel->poll_timer.expires(jiffies + usecs_to_jiffies(100);
+-		add_timer(&channel->poll_timer);
+-#endif
+ 	}
+ }
+ 
+diff --git a/drivers/staging/hv/ChannelMgmt.c b/drivers/staging/hv/ChannelMgmt.c
+index 3db62ca..ef38467 100644
+--- a/drivers/staging/hv/ChannelMgmt.c
++++ b/drivers/staging/hv/ChannelMgmt.c
+@@ -119,7 +119,7 @@ static inline void ReleaseVmbusChannel(void *context)
+  */
+ void FreeVmbusChannel(struct vmbus_channel *Channel)
+ {
+-	del_timer(&Channel->poll_timer);
++	del_timer_sync(&Channel->poll_timer);
+ 
+ 	/*
+ 	 * We have to release the channel's workqueue/thread in the vmbus's
