@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbZKTHH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932069AbZKTHH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106AbZKTHH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 02:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbZKTHHW
+	id S932069AbZKTHH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 02:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZKTHHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 02:07:22 -0500
-Received: from mga11.intel.com ([192.55.52.93]:9688 "EHLO mga11.intel.com"
+	Fri, 20 Nov 2009 02:07:25 -0500
+Received: from mga14.intel.com ([143.182.124.37]:12461 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbZKTHHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757148AbZKTHHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Nov 2009 02:07:20 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,774,1249282800"; 
-   d="scan'208";a="748856819"
-Subject: [PATCH 7/8] async_tx: build-time toggling of async_{syndrome,
-	xor}_val dma support
+X-IronPort-AV: E=Sophos;i="4.44,776,1249282800"; 
+   d="scan'208";a="213750612"
+Subject: [PATCH 8/8] ioat3: fix pq completion versus channel deallocation race
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, maciej.sosnowski@intel.com
-Date: Fri, 20 Nov 2009 00:06:49 -0700
-Message-ID: <20091120070649.13478.64153.stgit@dwillia2-linux.ch.intel.com>
+Date: Fri, 20 Nov 2009 00:06:54 -0700
+Message-ID: <20091120070654.13478.57156.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20091120070506.13478.77838.stgit@dwillia2-linux.ch.intel.com>
 References: <20091120070506.13478.77838.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,161 +28,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ioat3.2 does not support asynchronous error notifications which makes
-the driver experience latencies when non-zero pq validate results are
-expected.  Provide a mechanism for turning off async_xor_val and
-async_syndrome_val via Kconfig.  This approach is generally useful for
-any driver that specifies ASYNC_TX_DISABLE_CHANNEL_SWITCH and would like
-to force the async_tx api to fall back to the synchronous path for
-certain operations.
+The completion of a pq operation is notified with a null descriptor
+appended to the end of the chain.  This descriptor needs to be visible
+to dma clients otherwise the client is precluded from ensuring all
+operations are quiesced before freeing channel resources, i.e. due to
+descriptor polling it may get the completion notification ahead of the
+interrupt delivered by the null descriptor.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- crypto/async_tx/Kconfig     |    5 +++++
- crypto/async_tx/async_pq.c  |   14 +++++++++++---
- crypto/async_tx/async_xor.c |   15 ++++++++++++---
- drivers/dma/Kconfig         |    2 ++
- drivers/dma/dmaengine.c     |    6 ++++++
- drivers/dma/ioat/dma_v3.c   |   10 ++++++++++
- 6 files changed, 46 insertions(+), 6 deletions(-)
+ drivers/dma/ioat/dma_v3.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/crypto/async_tx/Kconfig b/crypto/async_tx/Kconfig
-index e5aeb2b..e28e276 100644
---- a/crypto/async_tx/Kconfig
-+++ b/crypto/async_tx/Kconfig
-@@ -23,3 +23,8 @@ config ASYNC_RAID6_RECOV
- 	select ASYNC_CORE
- 	select ASYNC_PQ
- 
-+config ASYNC_TX_DISABLE_PQ_VAL_DMA
-+	bool
-+
-+config ASYNC_TX_DISABLE_XOR_VAL_DMA
-+	bool
-diff --git a/crypto/async_tx/async_pq.c b/crypto/async_tx/async_pq.c
-index 6b5cc4f..ec87f53 100644
---- a/crypto/async_tx/async_pq.c
-+++ b/crypto/async_tx/async_pq.c
-@@ -240,6 +240,16 @@ async_gen_syndrome(struct page **blocks, unsigned int offset, int disks,
- }
- EXPORT_SYMBOL_GPL(async_gen_syndrome);
- 
-+static inline struct dma_chan *
-+pq_val_chan(struct async_submit_ctl *submit, struct page **blocks, int disks, size_t len)
-+{
-+	#ifdef CONFIG_ASYNC_TX_DISABLE_PQ_VAL_DMA
-+	return NULL;
-+	#endif
-+	return async_tx_find_channel(submit, DMA_PQ_VAL, NULL, 0,  blocks,
-+				     disks, len);
-+}
-+
- /**
-  * async_syndrome_val - asynchronously validate a raid6 syndrome
-  * @blocks: source blocks from idx 0..disks-3, P @ disks-2 and Q @ disks-1
-@@ -260,9 +270,7 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		   size_t len, enum sum_check_flags *pqres, struct page *spare,
- 		   struct async_submit_ctl *submit)
- {
--	struct dma_chan *chan = async_tx_find_channel(submit, DMA_PQ_VAL,
--						      NULL, 0,  blocks, disks,
--						      len);
-+	struct dma_chan *chan = pq_val_chan(submit, blocks, disks, len);
- 	struct dma_device *device = chan ? chan->device : NULL;
- 	struct dma_async_tx_descriptor *tx;
- 	unsigned char coefs[disks-2];
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 79182dc..079ae8c 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -234,6 +234,17 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
- 		memcmp(a, a + 4, len - 4) == 0);
- }
- 
-+static inline struct dma_chan *
-+xor_val_chan(struct async_submit_ctl *submit, struct page *dest,
-+		 struct page **src_list, int src_cnt, size_t len)
-+{
-+	#ifdef CONFIG_ASYNC_TX_DISABLE_XOR_VAL_DMA
-+	return NULL;
-+	#endif
-+	return async_tx_find_channel(submit, DMA_XOR_VAL, &dest, 1, src_list,
-+				     src_cnt, len);
-+}
-+
- /**
-  * async_xor_val - attempt a xor parity check with a dma engine.
-  * @dest: destination page used if the xor is performed synchronously
-@@ -255,9 +266,7 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 	      int src_cnt, size_t len, enum sum_check_flags *result,
- 	      struct async_submit_ctl *submit)
- {
--	struct dma_chan *chan = async_tx_find_channel(submit, DMA_XOR_VAL,
--						      &dest, 1, src_list,
--						      src_cnt, len);
-+	struct dma_chan *chan = xor_val_chan(submit, dest, src_list, src_cnt, len);
- 	struct dma_device *device = chan ? chan->device : NULL;
- 	struct dma_async_tx_descriptor *tx = NULL;
- 	dma_addr_t *dma_src = NULL;
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 5903a88..b401dad 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -26,6 +26,8 @@ config INTEL_IOATDMA
- 	select DMA_ENGINE
- 	select DCA
- 	select ASYNC_TX_DISABLE_CHANNEL_SWITCH
-+	select ASYNC_TX_DISABLE_PQ_VAL_DMA
-+	select ASYNC_TX_DISABLE_XOR_VAL_DMA
- 	help
- 	  Enable support for the Intel(R) I/OAT DMA engine present
- 	  in recent Intel Xeon chipsets.
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index b6442f0..8f99354 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -632,16 +632,22 @@ static bool device_has_all_tx_types(struct dma_device *device)
- 	#if defined(CONFIG_ASYNC_XOR) || defined(CONFIG_ASYNC_XOR_MODULE)
- 	if (!dma_has_cap(DMA_XOR, device->cap_mask))
- 		return false;
-+
-+	#ifndef CONFIG_ASYNC_TX_DISABLE_XOR_VAL_DMA
- 	if (!dma_has_cap(DMA_XOR_VAL, device->cap_mask))
- 		return false;
- 	#endif
-+	#endif
- 
- 	#if defined(CONFIG_ASYNC_PQ) || defined(CONFIG_ASYNC_PQ_MODULE)
- 	if (!dma_has_cap(DMA_PQ, device->cap_mask))
- 		return false;
-+
-+	#ifndef CONFIG_ASYNC_TX_DISABLE_PQ_VAL_DMA
- 	if (!dma_has_cap(DMA_PQ_VAL, device->cap_mask))
- 		return false;
- 	#endif
-+	#endif
- 
- 	return true;
- }
 diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index 252cf2d..189788f 100644
+index 189788f..e30e0ac 100644
 --- a/drivers/dma/ioat/dma_v3.c
 +++ b/drivers/dma/ioat/dma_v3.c
-@@ -1206,6 +1206,16 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 		device->timer_fn = ioat2_timer_event;
- 	}
+@@ -730,7 +730,7 @@ __ioat3_prep_pq_lock(struct dma_chan *c, enum sum_check_flags *result,
+ 	dump_desc_dbg(ioat, compl_desc);
  
-+	#ifdef CONFIG_ASYNC_TX_DISABLE_PQ_VAL_DMA
-+	dma_cap_clear(DMA_PQ_VAL, dma->cap_mask);
-+	dma->device_prep_dma_pq_val = NULL;
-+	#endif
-+
-+	#ifdef CONFIG_ASYNC_TX_DISABLE_XOR_VAL_DMA
-+	dma_cap_clear(DMA_XOR_VAL, dma->cap_mask);
-+	dma->device_prep_dma_xor_val = NULL;
-+	#endif
-+
- 	/* -= IOAT ver.3 workarounds =- */
- 	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
- 	 * that can cause stability issues for IOAT ver.3
+ 	/* we leave the channel locked to ensure in order submission */
+-	return &desc->txd;
++	return &compl_desc->txd;
+ }
+ 
+ static struct dma_async_tx_descriptor *
 
