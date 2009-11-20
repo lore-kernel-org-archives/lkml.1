@@ -1,40 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZKTPBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZKTPCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbZKTPBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 10:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZKTPBl
+	id S1753945AbZKTPCI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 10:02:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZKTPCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 10:01:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7497 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbZKTPBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 10:01:40 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20091117141314.0238a49b.akpm@linux-foundation.org>
-References: <20091117141314.0238a49b.akpm@linux-foundation.org> <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <6207.1255706090@redhat.com> <23382.1255707790@redhat.com> <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Eric Paris <eparis@redhat.com>, graff.yang@gmail.com,
-       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-Date: Fri, 20 Nov 2009 15:00:09 +0000
-Message-ID: <16299.1258729209@redhat.com>
+	Fri, 20 Nov 2009 10:02:07 -0500
+Received: from mail.free-electrons.com ([88.191.76.200]:49323 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZKTPCG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 10:02:06 -0500
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: akpm@linux-foundation.org
+Cc: rmk+lkml@arm.linux.org.uk, tbm@cyrius.com, linux-kernel@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: [PATCH] ARM: Add support for LZMA-compressed kernel images
+Date: Fri, 20 Nov 2009 16:02:03 +0100
+Message-Id: <1258729323-16318-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+This patch allows using a kernel image compressed with LZMA on ARM,
+using the support for multiple decompressors introduced in the LZO
+support patch.
+Extracting the image is fairly slow, but it might be useful on machines
+with a very limited amount of storage.
 
-> So what's the status of this issue now?  Should I merge the below into
-> 2.6.32?
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Tested-by: Martin Michlmayr <tbm@cyrius.com>
+---
+ arch/arm/Kconfig                      |    1 +
+ arch/arm/boot/compressed/Makefile     |    1 +
+ arch/arm/boot/compressed/misc.c       |    4 ++++
+ arch/arm/boot/compressed/piggy.lzma.S |    6 ++++++
+ 4 files changed, 12 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/boot/compressed/piggy.lzma.S
 
-Yes please.
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 350921d..34163da 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -20,6 +20,7 @@ config ARM
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_LZO
++	select HAVE_KERNEL_LZMA
+ 	help
+ 	  The ARM series is a line of low-power-consumption RISC chip designs
+ 	  licensed by ARM Ltd and targeted at embedded applications and
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index 2d4d88b..3906432 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -65,6 +65,7 @@ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
+ 
+ suffix_$(CONFIG_KERNEL_GZIP) = gzip
+ suffix_$(CONFIG_KERNEL_LZO)  = lzo
++suffix_$(CONFIG_KERNEL_LZMA)  = lzma
+ 
+ targets       := vmlinux vmlinux.lds \
+ 		 piggy.$(suffix_y) piggy.$(suffix_y).o \
+diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
+index 7e0fe4d..4e35a10 100644
+--- a/arch/arm/boot/compressed/misc.c
++++ b/arch/arm/boot/compressed/misc.c
+@@ -237,6 +237,10 @@ static unsigned long free_mem_end_ptr;
+ #include "../../../../lib/decompress_inflate.c"
+ #endif
+ 
++#ifdef CONFIG_KERNEL_LZMA
++#include "../../../../lib/decompress_unlzma.c"
++#endif
++
+ #ifdef CONFIG_KERNEL_LZO
+ #include "../../../../lib/decompress_unlzo.c"
+ #endif
+diff --git a/arch/arm/boot/compressed/piggy.lzma.S b/arch/arm/boot/compressed/piggy.lzma.S
+new file mode 100644
+index 0000000..d7e69cf
+--- /dev/null
++++ b/arch/arm/boot/compressed/piggy.lzma.S
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.lzma"
++	.globl	input_data_end
++input_data_end:
+-- 
+1.6.3.3
 
-Thanks,
-David
