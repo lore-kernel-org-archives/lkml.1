@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZKTUyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZKTUyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZKTUyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZKTUyi
+	id S1755639AbZKTUyH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZKTUyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:54:38 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:51300 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755721AbZKTUyh (ORCPT
+	Fri, 20 Nov 2009 15:54:06 -0500
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:48564 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754974AbZKTUyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:54:37 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/liO0YKAEKm9a+gm23laHV
-Date: Fri, 20 Nov 2009 12:53:49 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>,
-       linux-omap@vger.kernel.org, Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: linux-next: manual merge of the input tree with the omap tree
-Message-ID: <20091120205345.GA5764@atomide.com>
-References: <20091119131216.da16845c.sfr@canb.auug.org.au>
- <20091119025329.GV29266@atomide.com>
- <20091120085858.GE3009@core.coreip.homeip.net>
+	Fri, 20 Nov 2009 15:54:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=R16CXCaJE5+x5ubVBLgpXAct500sRuoOj/AmiEgc+TCyKzvCEt/cWQDWY2dQ9maNCe
+         ap6AHcF6dV+072g+gxvGyelhikPG8mlKU4fTOs8J1Jz5gZQpH5ywc6cDFbA3h6P0/kk7
+         oSbSh1RO3Znh75B+9f8mgS5dvn1Lh2k1Qo/yU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120085858.GE3009@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <43e72e890911201251t6210ee19n177eaf003a4fffc@mail.gmail.com>
+References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com> 
+	<43e72e890911201251t6210ee19n177eaf003a4fffc@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 20 Nov 2009 12:53:51 -0800
+Message-ID: <43e72e890911201253obc466c8k2102e04457c48c92@mail.gmail.com>
+Subject: Re: A generic kernel compatibilty code
+To: linux-kernel@vger.kernel.org
+Cc: linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com> [091120 00:59]:
-> On Wed, Nov 18, 2009 at 06:53:30PM -0800, Tony Lindgren wrote:
-> > 
-> > Dmitry, could you please drop 5018461a887d58f4601207deeebb7c352c2da20a from
-> > your tree now?
-> > 
-> 
-> Done.
+On Fri, Nov 20, 2009 at 12:51 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Fri, Nov 20, 2009 at 12:45 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> Everyone and their mother reinvents the wheel when it comes to
+>> backporting kernel modules. It a painful job and it seems to me an
+>> alternative is possible. If we can write generic compatibilty code for
+>> a new routine introduced on the next kernel how about just merging it
+>> to the kernel under some generic compat module. This would be
+>> completey ignored by everyone using the stable kernel but can be
+>> copied by anyone doing backport work.
+>>
+>> So I'm thinking something as simple as a generic compat/comat.ko with
+>> compat-2.6.32.[ch] files.
+>
+> FWIW, I meant a compat-2.6.32.[ch] and compat-2.6.31.[ch] and so on.
+> All these would link to the compat.ko
 
-Thanks!
+I supose this could juse be a separate tree with some generic
+compat.ko module. That might work better.
 
-Tony
+  Luis
