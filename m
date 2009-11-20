@@ -1,97 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZKTMmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbZKTNKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZKTMmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZKTMmt
+	id S1753169AbZKTNKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 08:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZKTNK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:42:49 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:54500 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753062AbZKTMmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:42:49 -0500
-Message-ID: <4B068EBF.9020403@atmel.com>
-Date: Fri, 20 Nov 2009 13:42:39 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 20 Nov 2009 08:10:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49437 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbZKTNK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 08:10:28 -0500
+Date: Fri, 20 Nov 2009 13:09:54 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       aph@redhat.com, torvalds@linux-foundation.org, peterz@infradead.org,
+       richard.guenther@gmail.com, law@redhat.com, akpm@linux-foundation.org,
+       rostedt@goodmis.org, ddaney@caviumnetworks.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       aph@redhat.com, torvalds@linux-foundation.org, peterz@infradead.org,
+       rostedt@goodmis.org, akpm@linux-foundation.org,
+       richard.guenther@gmail.com, law@redhat.com, ddaney@caviumnetworks.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+References: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Prevent GCC 4.4.x (pentium-mmx et al) function prologue wreckage
+Message-ID: <tip-746357d6a526d6da9d89a2ec645b28406e959c2e@git.kernel.org>
+Git-Commit-ID: 746357d6a526d6da9d89a2ec645b28406e959c2e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "'linux-arm-kernel@lists.infradead.org'" 
-	<linux-arm-kernel@lists.infradead.org>,
-       Andrew Victor <linux@maxim.org.za>,
-       Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [GIT PULL] AT91 Kconfig rework
-References: <4B01702B.4080107@atmel.com> <20091119230122.GI22232@n2100.arm.linux.org.uk>
-In-Reply-To: <20091119230122.GI22232@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux :
-> On Mon, Nov 16, 2009 at 04:30:51PM +0100, Nicolas Ferre wrote:
->> Hi Russell,
->>
->> This is AT91 Kconfig rework for next merge window. After 
->> discussing it on the mailing-list and Ack by Andrew Victor, I 
->> send you this patchset. You can pull it from:
->>
->>   git://github.com/at91linux/linux-2.6-at91.git for-rmk
-> 
-> FYI:
-> 
-> $ git pull git://github.com/at91linux/linux-2.6-at91.git for-rmk
-> remote: Counting objects: 41, done.
-> remote: Compressing objects: 100% (28/28), done.
-> remote: Total 30 (delta 26), reused 2 (delta 2)
-> Unpacking objects: 100% (30/30), done.
->>From git://github.com/at91linux/linux-2.6-at91
->  * branch            for-rmk    -> FETCH_HEAD
-> Auto-merging arch/arm/mach-at91/Kconfig
-> CONFLICT (content): Merge conflict in arch/arm/mach-at91/Kconfig
-> Recorded preimage for 'arch/arm/mach-at91/Kconfig'
-> Automatic merge failed; fix conflicts and then commit the result.
-> $ git diff-files -u
-> diff --cc arch/arm/mach-at91/Kconfig
-> index 2fd8843,3df124e..0000000
-> --- a/arch/arm/mach-at91/Kconfig
-> +++ b/arch/arm/mach-at91/Kconfig
-> @@@ -320,7 -337,7 +337,11 @@@ config MACH_AT91SAM9G20E
->   
->   config MACH_AT91SAM9G20EK_2MMC
->   	bool "Atmel AT91SAM9G20-EK Evaluation Kit with 2 SD/MMC Slots"
-> ++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
->  +	depends on ARCH_AT91SAM9G20
-> ++=======
-> + 	select HAVE_NAND_ATMEL_BUSWIDTH_16
-> ++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
->   	help
->   	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
->   	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
-> @@@ -394,7 -411,7 +415,11 @@@ config MTD_AT91_DATAFLASH_CAR
->   
->   config MTD_NAND_ATMEL_BUSWIDTH_16
->   	bool "Enable 16-bit data bus interface to NAND flash"
-> ++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
->  +	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G20EK_2MMC || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
-> ++=======
-> + 	depends on HAVE_NAND_ATMEL_BUSWIDTH_16
-> ++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
->   	help
->   	  On AT91SAM926x boards both types of NAND flash can be present
->   	  (8 and 16 bit data bus width).
-> 
-> What's the resolution?  I think the first is just to include both, but
-> the second looks like the first depends needs deleting to leave only the
-> second?
+Commit-ID:  746357d6a526d6da9d89a2ec645b28406e959c2e
+Gitweb:     http://git.kernel.org/tip/746357d6a526d6da9d89a2ec645b28406e959c2e
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Fri, 20 Nov 2009 12:01:43 +0100
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Fri, 20 Nov 2009 14:06:46 +0100
 
-Well, in fact the resolution for both is to keep the second line only.
+x86: Prevent GCC 4.4.x (pentium-mmx et al) function prologue wreckage
 
-Thanks.
+When the kernel is compiled with -pg for tracing GCC 4.4.x inserts
+stack alignment of a function _before_ the mcount prologue if the
+-march=pentium-mmx is set and -mtune=generic is not set. This breaks
+the assumption of the function graph tracer which expects that the
+mcount prologue
 
-Best regards,
--- 
-Nicolas Ferre
+       push %ebp
+       mov  %esp, %ebp
 
+is the first stack operation in a function because it needs to modify
+the function return address on the stack to trap into the tracer
+before returning to the real caller.
+
+The generated code is:
+
+        push   %edi
+        lea    0x8(%esp),%edi
+        and    $0xfffffff0,%esp
+        pushl  -0x4(%edi)
+        push   %ebp
+        mov    %esp,%ebp
+
+so the tracer modifies the copy of the return address which is stored
+after the stack alignment and therefor does not trap the return which
+in turn breaks the call chain logic of the tracer and leads to a
+kernel panic.
+
+Aside of the fact that the generated code is horrible for no good
+reason other -march -mtune options generate the expected:
+
+        push   %ebp
+        mov    %esp,%ebp
+        and    $0xfffffff0,%esp
+
+which does the same and keeps everything intact.
+
+After some experimenting we found out that this problem is restricted
+to gcc4.4.x and to the following -march settings:
+
+i586, pentium, pentium-mmx, k6, k6-2, k6-3, winchip-c6, winchip2, c3,
+geode
+
+By adding -mtune=generic the code generator produces always the
+expected code.
+
+So forcing -mtune=generic when CONFIG_FUNCTION_GRAPH_TRACER=y is not
+pretty, but at the moment the only way to prevent that the kernel
+trips over gcc-shrooms induced code madness.
+
+Most distro kernels have CONFIG_X86_GENERIC=y anyway which forces
+-mtune=generic as well so it will not impact those.
+
+References: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109
+	    http://lkml.org/lkml/2009/11/19/17
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+Cc: Jeff Law <law@redhat.com>
+Cc: gcc@gcc.gnu.org
+Cc: David Daney <ddaney@caviumnetworks.com>
+Cc: Andrew Haley <aph@redhat.com>
+Cc: Richard Guenther <richard.guenther@gmail.com>
+Cc: stable@kernel.org
+---
+ arch/x86/Makefile_32.cpu |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index 30e9a26..df7fdf8 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -46,6 +46,12 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
+ # cpu entries
+ cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+ 
++# Work around the pentium-mmx code generator madness of gcc4.4.x which
++# does stack alignment by generating horrible code _before_ the mcount
++# prologue (push %ebp, mov %esp, %ebp) which breaks the function graph
++# tracer assumptions 
++cflags-$(CONFIG_FUNCTION_GRAPH_TRACER) += $(call cc-option,-mtune=generic)
++
+ # Bug fix for binutils: this option is required in order to keep
+ # binutils from generating NOPL instructions against our will.
+ ifneq ($(CONFIG_X86_P6_NOP),y)
