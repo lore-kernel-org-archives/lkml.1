@@ -1,41 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZKTR4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZKTSCD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbZKTR4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZKTR4J
+	id S1754820AbZKTSCD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:02:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZKTSCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:56:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11018 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753392AbZKTR4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:56:08 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20091120094217.b94d99bb.akpm@linux-foundation.org>
-References: <20091120094217.b94d99bb.akpm@linux-foundation.org> <20091117141314.0238a49b.akpm@linux-foundation.org> <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <6207.1255706090@redhat.com> <23382.1255707790@redhat.com> <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> <16299.1258729209@redhat.com> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Eric Paris <eparis@redhat.com>, graff.yang@gmail.com,
-       linux-kernel@vger.kernel.org, gyang@blackfin.uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-Date: Fri, 20 Nov 2009 17:54:24 +0000
-Message-ID: <18122.1258739664@redhat.com>
+	Fri, 20 Nov 2009 13:02:03 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:39559 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754254AbZKTSCC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 13:02:02 -0500
+MIME-Version: 1.0
+In-Reply-To: <20091114001001.5343.99566.stgit@angua>
+References: <20091114001001.5343.99566.stgit@angua>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 20 Nov 2009 11:01:40 -0700
+X-Google-Sender-Auth: 23e2edec98a1aa48
+Message-ID: <fa686aa40911201001m1ce0959dg21bcc2174653cd8a@mail.gmail.com>
+Subject: Re: [RFC] MAINTAINERS: add SPI co-maintainer.
+To: akpm@linux-foundation.org, dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Ping?  Any comments on this?
 
-> I'll hold off, as Eric is preparing an alternative for "the end of this
-> week".  If that doesn't work out, we can add
-> nommu-ignore-the-address-parameter-in-the-file_mmap-security-check.patch
-> to 2.6.32.1, OK?
+If I don't hear anything, then I think I'm going to go ahead and push
+out a tree with all the SPI changes I've signed off on and ask sfr to
+add it to his list, just so that I'm sure that they get some
+linux-next exposure before Linus opens the merge window.  I won't
+necessarily ask LInus to pull it, I just want the testing.
 
-I'll be on holiday next week.
+Cheers.
+g.
 
-David
+On Fri, Nov 13, 2009 at 5:25 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+> Hi David, Andrew.
+>
+> David, I know that you haven't had enough time lately to keep on top
+> of the pending SPI patches, so I was wondering if you would like some
+> help?  If you are interested, I'm willing to act as co-maintainer of
+> for the SPI subsystem.
+>
+> Here's what I'm thinking.  Right now all SPI patches are going through
+> the -mm tree and just adding to akpm's burden.  I'd be more than happy
+> to take over the task of actually collecting the acked patches into a
+> git tree, getting them some exposure on linux-next, and asking Linus
+> to pull it during the merge window.  If you ack them, then I'll merge
+> them.
+>
+> I'm also be willing to take responsibility for all powerpc-specific
+> SPI patches so that you don't need to look at them.
+>
+> How does this sound to you?
+>
+> Cheers,
+> g.
+>
+>  MAINTAINERS |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a1a2ace..2b697cb 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4937,6 +4937,7 @@ F:        drivers/char/specialix*
+>
+>  SPI SUBSYSTEM
+>  M:     David Brownell <dbrownell@users.sourceforge.net>
+> +M:     Grant Likely <grant.likely@secretlab.ca>
+>  L:     spi-devel-general@lists.sourceforge.net
+>  S:     Maintained
+>  F:     Documentation/spi/
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
