@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZKTGZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZKTGc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZKTGZI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 01:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZKTGZH
+	id S1754883AbZKTGc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 01:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbZKTGcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 01:25:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34941 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbZKTGZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 01:25:06 -0500
-Message-ID: <4B063614.5030105@kernel.org>
-Date: Fri, 20 Nov 2009 15:24:20 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Fri, 20 Nov 2009 01:32:55 -0500
+Received: from mail-yw0-f202.google.com ([209.85.211.202]:38532 "EHLO
+	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbZKTGcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 01:32:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=eYZggKSj8LHZsIaumSpRFdaEZciRPuKF+Z0l4dFjM7zT29zP/a3LESY0gOGahEy2c/
+         mGLpq3nPFnFs87QTLDyRUtLnlHhK/i8PCzPthGGpfArEUX1Qr54ivYey+eUZvjV120kH
+         +SAjfaUkEzESYTyJxoA94zEByE5DzFcArea1s=
+Message-ID: <4B06384C.2080703@gmail.com>
+Date: Fri, 20 Nov 2009 14:33:48 +0800
+From: "Helight.Xu" <helight.xu@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: torvalds@linux-foundation.org, awalls@radix.net,
-       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       dhowells@redhat.com, arjan@linux.intel.com, avi@redhat.com,
-       peterz@infradead.org, johannes@sipsolutions.net
-Subject: Re: [PATCH 07/19] acpi: use queue_work_on() instead of binding workqueue
- worker to cpu0
-References: <1258692407-8985-1-git-send-email-tj@kernel.org>	<1258692407-8985-8-git-send-email-tj@kernel.org> <20091119210909.b112bc77.akpm@linux-foundation.org>
-In-Reply-To: <20091119210909.b112bc77.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?5aaC5L2V6YCa6L+HZmTmib7liLDmiZPlvIDmlofku7bnmoTot6/lvoQ=?=
+ =?UTF-8?B?5Y+K5ZCN56ew?=
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-11/20/2009 02:09 PM, Andrew Morton wrote:
->> -	kacpid_wq = create_singlethread_workqueue("kacpid");
->> -	bind_workqueue(kacpid_wq);
->> -	kacpi_notify_wq = create_singlethread_workqueue("kacpi_notify");
->> -	bind_workqueue(kacpi_notify_wq);
->> -	kacpi_hotplug_wq = create_singlethread_workqueue("kacpi_hotplug");
->> -	bind_workqueue(kacpi_hotplug_wq);
->> +	kacpid_wq = create_workqueue("kacpid");
->> +	kacpi_notify_wq = create_workqueue("kacpi_notify");
->> +	kacpi_hotplug_wq = create_workqueue("kacpi_hotplug");
-> 
-> Well that sucks.  We create an additional ((num_possible_cpus()-1)*3)
-> kernel threads just because the previous code was "unorthodox"?
-> 
-> I guess that problem goes away with concurrency-managed workqueues. 
-> But please let's not merge this patch without also merging
-> concurrency-managed workqueues!
-
-Yeah, it's just prepping the code for the conversion to concurrency
-managed workqueues.  I'll put this into linux-next for some time
-without full conversion but it will never go upstream without it.
-
-Thanks.
+在用户程序中打开文件进行编辑，那在内核中如何能通过open后的fd
+来找到相应打开文件的路径及其名字呢？
 
 -- 
-tejun
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+
