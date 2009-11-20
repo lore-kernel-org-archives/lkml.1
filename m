@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZKTMe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZKTMeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZKTMe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZKTMe2
+	id S1752999AbZKTMeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZKTMeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:34:28 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:25500 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753193AbZKTMe0 (ORCPT
+	Fri, 20 Nov 2009 07:34:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62418 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbZKTMeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:34:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=jtdDg7/wRpgBffx47MwgDoJTI4BknK7VD5khPYDA9I0FZ+US318MmjLJIC/ZG+DmLe
-         l1+KxK4evh0Lc7ytwn5nsfNHFLZ04uXDIbtKEirvUfgSbHCXPTqkxU2jxcpm2u2sYOum
-         F5kUlOHFk/oL5kwQypBVv6W4qG59F4AgnhSBE=
-Date: Fri, 20 Nov 2009 14:34:14 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Alan Cox <alan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/5] tty: push the BKL down into the handlers a bit
-Message-ID: <20091120123414.GA29012@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org
-References: <20091118142313.3806.47368.stgit@localhost.localdomain> <20091118142404.3806.19238.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118142404.3806.19238.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Nov 2009 07:34:15 -0500
+Subject: Re: [PATCH] gcc mcount-nofp was Re: BUG: GCC-4.4.x changes the
+ function frame on some functions
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+In-Reply-To: <87iqd54iz5.fsf_-_@basil.nowhere.org>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
+	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
+	 <20091119072040.GA23579@elte.hu>
+	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911191607440.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911190934070.2793@localhost.localdomain>
+	 <1258653562.22249.682.camel@gandalf.stny.rr.com>
+	 <84fc9c000911191003t244eb864o3d5b355ab5485f@mail.gmail.com>
+	 <alpine.LFD.2.00.0911191026420.2793@localhost.localdomain>
+	 <20091119184716.GA25458@elte.hu>
+	 <1258657614.22249.824.camel@gandalf.stny.rr.com>
+	 <87iqd54iz5.fsf_-_@basil.nowhere.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Fri, 20 Nov 2009 07:34:19 -0500
+Message-Id: <1258720459.22249.1018.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 02:25:43PM +0000, Alan Cox wrote:
-> Start trying to untangle the remaining BKL mess
+On Fri, 2009-11-20 at 10:57 +0100, Andi Kleen wrote:
+> Steven Rostedt <rostedt@goodmis.org> writes:
+> >
+> > And frame pointers do add a little overhead as well. Too bad the mcount
+> > ABI wasn't something like this:
+> >
+> >
+> > 	<function>:
+> > 		call	mcount
+> > 		[...]
+> >
+> > This way, the function address for mcount would have been (%esp) and the
+> > parent address would be 4(%esp). Mcount would work without frame
+> > pointers and this whole mess would also become moot.
 > 
-> Signed-off-by: Alan "I must be out of my tree" Cox <alan@linux.intel.com>
-> ---
-> 
->  drivers/char/pty.c       |    2 -
->  drivers/char/tty_io.c    |  140 ++++++++++++++++++++++++++--------------------
->  drivers/char/tty_ldisc.c |   13 ++++
->  include/linux/tty.h      |    2 -
->  4 files changed, 94 insertions(+), 63 deletions(-)
+> I did a patch to do this in x86 gcc some time ago. The motivation
+> was indeed the frame pointer overhead on Atom with tracing.
 > 
 
-  1565                  if (o_tty->termios != tty->driver->other->termios[idx]) {
-  1566                          unlock_kernel();
-  1567                          printk(KERN_DEBUG "tty_release_dev: other->termios[%d] "
-  1568                                            "not o_termios for (%s)\n",
-  1569                                 idx, tty->name);
-  1570                          return 0;
-  1571                  }
-  1572                  if (o_tty->link != tty) {
+Yes, I remember you talking about this but I don't remember how far it
+went.
 
-We would need an unlock_kernel() here.
 
-  1573                          printk(KERN_DEBUG "tty_release_dev: bad pty pointers\n");
-  1574                          return 0;
-  1575                  }
 
-regards,
-dan carpenter
+> Unfortunately it also requires glibc changes (I did those too). For
+> compatibility and catching mistakes the new function was called
+> __mcount_nofp.
+
+Actually, could you change the name? I really hate the "mcount" name, it
+is legacy and with a new feature, it should be abandoned. Something like
+"__fentry__" would be nicer.
+
+> 
+> I haven't tried it with current gcc and last time I missed the 
+> gcc feature merge window with this.
+> 
+> But perhaps you find it useful. Of course it would need more
+> kernel changes to probe for the new option and handle it.
+> 
+> Here's the old patch. I haven't retested it with a current
+> gcc version, but I think it still applies at least.
+> 
+> If there's interest I can polish it up and submit formally.
+
+I would definitely be interested, and I would also be willing to test
+it.
+
+Thanks!
+
+-- Steve
+
+
 
