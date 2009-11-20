@@ -1,95 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZKTJ0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZKTJ3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbZKTJ0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 04:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKTJ0E
+	id S1754192AbZKTJ3E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 04:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZKTJ3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 04:26:04 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60685 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbZKTJ0C (ORCPT
+	Fri, 20 Nov 2009 04:29:02 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:43080 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbZKTJ3A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 04:26:02 -0500
-Subject: Re: lockdep complaints in slab allocator
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: paulmck@linux.vnet.ibm.com, linux-mm@kvack.org, cl@linux-foundation.org,
-       mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-References: <20091118181202.GA12180@linux.vnet.ibm.com>
-	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2009 10:25:53 +0100
-Message-ID: <1258709153.11284.429.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 04:29:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pPByt7wlmbAmhG/rz3UQ2N1rbOGFyE0f9NPV+rmgRtkLcuw1VvKubh0wwqY0KR/85d
+         WAFG9O4BFS3En9quTgj9G5izO+jmI1mSflCyMuqehmHr9KHHKrBeDRwhXB5lhKIVeYgP
+         BGkmyX4KFb1gruLVf6mPntOzDGAUSVv/aY+2U=
+MIME-Version: 1.0
+In-Reply-To: <4B065648.6040609@garzik.org>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.n7F.4SdALB@chimera>
+	 <20091119.120550.183823935.davem@davemloft.net>
+	 <40a4ed590911192359o563b104fo562f325ad9f5358e@mail.gmail.com>
+	 <4B065648.6040609@garzik.org>
+Date: Fri, 20 Nov 2009 10:29:03 +0100
+Message-ID: <40a4ed590911200129p6f0d048dqef10df2b311d4744@mail.gmail.com>
+Subject: Re: [Bug #14622] Second IDE device not found
+From: Zeno Davatz <zdavatz@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 08:49 +0200, Pekka Enberg wrote:
-> Hi Paul,
-> 
-> On Wed, Nov 18, 2009 at 8:12 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > I am seeing some lockdep complaints in rcutorture runs that include
-> > frequent CPU-hotplug operations.  The tests are otherwise successful.
-> > My first thought was to send a patch that gave each array_cache
-> > structure's ->lock field its own struct lock_class_key, but you already
-> > have a init_lock_keys() that seems to be intended to deal with this.
-> >
-> > So, please see below for the lockdep complaint and the .config file.
-> >
-> >                                                        Thanx, Paul
-> >
-> > ------------------------------------------------------------------------
-> >
-> > =============================================
-> > [ INFO: possible recursive locking detected ]
-> > 2.6.32-rc4-autokern1 #1
-> > ---------------------------------------------
-> > syslogd/2908 is trying to acquire lock:
-> >  (&nc->lock){..-...}, at: [<c0000000001407f4>] .kmem_cache_free+0x118/0x2d4
-> >
-> > but task is already holding lock:
-> >  (&nc->lock){..-...}, at: [<c0000000001411bc>] .kfree+0x1f0/0x324
-> >
-> > other info that might help us debug this:
-> > 3 locks held by syslogd/2908:
-> >  #0:  (&u->readlock){+.+.+.}, at: [<c0000000004556f8>] .unix_dgram_recvmsg+0x70/0x338
-> >  #1:  (&nc->lock){..-...}, at: [<c0000000001411bc>] .kfree+0x1f0/0x324
-> >  #2:  (&parent->list_lock){-.-...}, at: [<c000000000140f64>] .__drain_alien_cache+0x50/0xb8
-> 
-> I *think* this is a false positive. The nc->lock in slab_destroy()
-> should always be different from the one we took in kfree() because
-> it's a per-struct kmem_cache "slab cache". Peter, what do you think?
-> If my analysis is correct, any suggestions how to fix lockdep
-> annotations in slab?
+On Fri, Nov 20, 2009 at 9:41 AM, Jeff Garzik <jeff@garzik.org> wrote:
+> On 11/20/2009 02:59 AM, Zeno Davatz wrote:
+>>
+>> On Thu, Nov 19, 2009 at 9:05 PM, David Miller<davem@davemloft.net>  wrote:
+>>>
+>>> From: "Rafael J. Wysocki"<rjw@sisk.pl>
+>>> Date: Mon, 16 Nov 2009 23:37:47 +0100 (CET)
+>>>
+>>>> This message has been generated automatically as a part of a report
+>>>> of recent regressions.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> from 2.6.31.  Please verify if it still should be listed and let me know
+>>>> (either way).
+>>>>
+>>>>
+>>>> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=14622
+>>>> Subject               : Second IDE device not found
+>>>> Submitter     : Zeno Davatz<zdavatz@gmail.com>
+>>>> Date          : 2009-11-11 17:31 (6 days old)
+>>>> References    : http://marc.info/?l=linux-kernel&m=125796105822353&w=4
+>>>
+>>> We're going to need more information to diagnose this.
+>>>
+>>> And linux-ide should have been at least CC:'d from the very
+>>> beginning.
+>>>
+>>>  From what I can discern the problem is introduced somewhere between
+>>> 2.6.27 and 2.6.31, you have a Serverworks CSB5 and primarily the issue
+>>> is that attaching or detaching your CD-ROM driver influences whether
+>>> both of your disks are properly detected.  Correct?
+>>>
+>>> You seem to have played around with using the IDE layer vs. the
+>>> ATA layer.  Can you see any difference in behavior if you try
+>>> using just the IDE layer vs. just the ATA layer with the 2.6.31
+>>> kernel?
+>>
+>> Please see:
+>>
+>> http://www.flickr.com/photos/zrr/4118682747/
+>>
+>> and
+>>
+>> http://www.flickr.com/photos/zrr/4119453092/
+>
+> Unfortunately, both of these photos only show that MD (block major 9) device
+> could not be found for root.
+>
+> For either ATA or IDE, we would need to see full dmesg somehow -- perhaps
+> capturing serial console output?  (Documentation/serial-console.txt)
 
-Did anything change recently? git-log mm/slab.c doesn't show anything
-obvious, although ec5a36f94e7ca4b1f28ae4dd135cd415a704e772 has the exact
-same lock recursion msg ;-)
+Ok, I appended
 
-So basically its this stupid recursion issue where you allocate the slab
-meta structure using the slab allocator, and now have to free while
-freeing, right?
+console=ttyS1,9600 console=tty0
 
-/me gets lost in slab, tries again..
+to the kernel command line at lilo after choosing the kernel image and
+I get a ton of output. But how to I save the output to a file?
 
-The code in kmem_cache_create() suggests its not even fixed size, so
-there is no single cache backing all this OFF_SLAB muck :-(
+>> I makes no difference if I choose ATA or only IDE.
+>>
+>> I am also attaching you my Kernel .config
+>>
+>> I could also test with 2.6.32-rc8 (torvalds-git)
+>>
+>> I suggest you send me two .config that I can both test with 2.6.31.6
+>
+> I bet libata fails because CONFIG_BLK_DEV_SD is not enabled.  Probably want
+> to enable CONFIG_BLK_DEV_SR too, for libata CD-ROM support.  I would be
+> interested to see your failing ATA config, with IDE disabled.
 
-It does appear to be limited to the kmalloc slabs..
+I enabled CONFIG_BLK_DEV_SR. Do you want above test with or without
 
-There's a few possible solutions -- in order of preference:
+CONFIG_BLK_DEV_SVWKS (OSB4/CSB5) enabled?
 
- 1) do the great slab cleanup now and remove slab.c, this will avoid any
-further waste of manhours and braincells trying to make slab limp along.
-
- 2) propagate the nesting information and user spin_lock_nested(), given
-that slab is already a rat's nest, this won't make it any less obvious.
-
- 3) Give each kmalloc cache its own lock class.
-
+Best
+Zeno
