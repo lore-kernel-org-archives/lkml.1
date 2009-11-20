@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbZKTReq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZKTRnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbZKTReq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZKTReq
+	id S1754593AbZKTRnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 12:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZKTRnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:34:46 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:47624 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754468AbZKTRep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:34:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=scHEEhLPWbIl6w8lipt8d39DGRBL785+ATU2pK6dqIeqyQ9wmtGJ9eFYGIY4EfgvqS
-         xgemwPDNGzAbje2SIuD5E6sreUklT/zHaI8sj68UqhboexnJ3KNjMYqcxN4NjJmX//ib
-         golTxj3q8te4B2RY/pgeHl00wcwG7L1B/1icM=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] kill-the-bkl/reiserfs: turn GFP_ATOMIC flag to GFP_NOFS in reiserfs_get_block()
-Date: Fri, 20 Nov 2009 18:34:50 +0100
-Message-Id: <1258738490-5856-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Fri, 20 Nov 2009 12:43:47 -0500
+Received: from kroah.org ([198.145.64.141]:40251 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZKTRnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 12:43:46 -0500
+Date: Fri, 20 Nov 2009 09:35:17 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/11] sdio_uart: Switch to the open/close helpers
+Message-ID: <20091120173517.GA14888@kroah.com>
+References: <20091118141802.3582.47363.stgit@localhost.localdomain>
+ <20091118141952.3582.66265.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118141952.3582.66265.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GFP_ATOMIC was used in reiserfs_get_block to not lose the Bkl so that
-nobody can modify the tree in the middle of its work. Now that we
-kicked out the bkl, we can use a more friendly flag. We use GFP_NOFS
-here because we already hold the reiserfs lock.
+On Wed, Nov 18, 2009 at 02:19:57PM +0000, Alan Cox wrote:
+> Gets us proper tty semantics, removes some code and fixes up a few corner
+> case races (hangup during open etc)
+> 
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jeff Mahoney <jeffm@suse.com>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Laurent Riffard <laurent.riffard@free.fr>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- fs/reiserfs/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Something is wierd here, this patch doesn't apply.  And if I do it by
+hand and fix up the errors, then patch 7 doesn't apply.
 
-diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index 0d493a3..3a28e77 100644
---- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -932,7 +932,7 @@ int reiserfs_get_block(struct inode *inode, sector_t block,
- 			if (blocks_needed == 1) {
- 				un = &unf_single;
- 			} else {
--				un = kzalloc(min(blocks_needed, max_to_insert) * UNFM_P_SIZE, GFP_ATOMIC);	// We need to avoid scheduling.
-+				un = kzalloc(min(blocks_needed, max_to_insert) * UNFM_P_SIZE, GFP_NOFS);
- 				if (!un) {
- 					un = &unf_single;
- 					blocks_needed = 1;
--- 
-1.6.2.3
+Wierd.
 
+How about I take the first 5 and then you resync and send me the next 6?
+
+thanks,
+
+greg k-h
