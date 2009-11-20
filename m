@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZKTOAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbZKTODv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbZKTOAK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZKTOAJ
+	id S1753626AbZKTODv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZKTODu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:00:09 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:29269 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753184AbZKTOAI convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;3:1>);
-	Fri, 20 Nov 2009 09:00:08 -0500
-Message-Id: <4B06AEFE02000078000211F4@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 20 Nov 2009 14:00:14 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: suppress stack overrun message for init_task
+	Fri, 20 Nov 2009 09:03:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55764 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753214AbZKTODu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 09:03:50 -0500
+Subject: [PATCH] ixgbe: move tc variable to CONFIG_IXGBE_DCB
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: David Miller <davem@davemloft.net>, Yi Zou <yi.zou@intel.com>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 19:32:27 +0530
+Message-Id: <1258725747.3562.5.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-init_task doesn't get its stack end location set to STACK_END_MAGIC,
-and hence the message is confusing rather than helpful in this case.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+tc is required by CONFIG_IXGBE_DCB.
+This also fixes compilation warning:
 
+ drivers/net/ixgbe/ixgbe_main.c: In function ‘ixgbe_tx_is_paused’:
+ drivers/net/ixgbe/ixgbe_main.c:245: warning: unused variable ‘tc’
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/mm/fault.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ixgbe/ixgbe_main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---- linux-2.6.32-rc8/arch/x86/mm/fault.c
-+++ 2.6.32-rc8-x86-init-task-stack/arch/x86/mm/fault.c
-@@ -658,7 +658,7 @@ no_context(struct pt_regs *regs, unsigne
- 	show_fault_oops(regs, error_code, address);
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+index ebcec30..61a02ce 100644
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -242,11 +242,11 @@ static void ixgbe_unmap_and_free_tx_resource(struct ixgbe_adapter *adapter,
+ static inline bool ixgbe_tx_is_paused(struct ixgbe_adapter *adapter,
+                                       struct ixgbe_ring *tx_ring)
+ {
+-	int tc;
+ 	u32 txoff = IXGBE_TFCS_TXOFF;
  
- 	stackend = end_of_stack(tsk);
--	if (*stackend != STACK_END_MAGIC)
-+	if (tsk != &init_task && *stackend != STACK_END_MAGIC)
- 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+ #ifdef CONFIG_IXGBE_DCB
+ 	if (adapter->flags & IXGBE_FLAG_DCB_ENABLED) {
++		int tc;
+ 		int reg_idx = tx_ring->reg_idx;
+ 		int dcb_i = adapter->ring_feature[RING_F_DCB].indices;
  
- 	tsk->thread.cr2		= address;
-
+-- 
+1.6.5.3
 
 
