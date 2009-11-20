@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZKTMgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZKTMmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZKTMgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZKTMgj
+	id S1753253AbZKTMmu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZKTMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:36:39 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51356 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753123AbZKTMgh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:36:37 -0500
-Date: Fri, 20 Nov 2009 12:36:42 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
-	<ext-juha.1.keski-saari@nokia.com>,
-       "Peter 'p2' De Schrijver" <peter.de-schrijver@nokia.com>,
-       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-       "dtor@mail.ru" <dtor@mail.ru>,
-       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
-Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
-Message-ID: <20091120123642.GA23283@rakim.wolfsonmicro.main>
-References: <20091118133938.GE6592@rakim.wolfsonmicro.main>
- <20091118143609.GD2832@esdhcp037198.research.nokia.com>
- <20091118144145.GA16852@rakim.wolfsonmicro.main>
- <4B04EDE8.1010906@nokia.com>
- <20091119092412.GA4696@codecarver.research.nokia.com>
- <20091119103054.GC9763@rakim.wolfsonmicro.main>
- <20091120100633.GE3733@sortiz.org>
- <1258713145.3640.11.camel@odin>
- <20091120112812.GC20236@rakim.wolfsonmicro.main>
- <1258719703.3640.41.camel@odin>
+	Fri, 20 Nov 2009 07:42:49 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:54500 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753062AbZKTMmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 07:42:49 -0500
+Message-ID: <4B068EBF.9020403@atmel.com>
+Date: Fri, 20 Nov 2009 13:42:39 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258719703.3640.41.camel@odin>
-X-Cookie: Used staples are good with SOY SAUCE!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "'linux-arm-kernel@lists.infradead.org'" 
+	<linux-arm-kernel@lists.infradead.org>,
+       Andrew Victor <linux@maxim.org.za>,
+       Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [GIT PULL] AT91 Kconfig rework
+References: <4B01702B.4080107@atmel.com> <20091119230122.GI22232@n2100.arm.linux.org.uk>
+In-Reply-To: <20091119230122.GI22232@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 12:21:43PM +0000, Liam Girdwood wrote:
-> On Fri, 2009-11-20 at 11:28 +0000, Mark Brown wrote:
+Russell King - ARM Linux :
+> On Mon, Nov 16, 2009 at 04:30:51PM +0100, Nicolas Ferre wrote:
+>> Hi Russell,
+>>
+>> This is AT91 Kconfig rework for next merge window. After 
+>> discussing it on the mailing-list and Ack by Andrew Victor, I 
+>> send you this patchset. You can pull it from:
+>>
+>>   git://github.com/at91linux/linux-2.6-at91.git for-rmk
+> 
+> FYI:
+> 
+> $ git pull git://github.com/at91linux/linux-2.6-at91.git for-rmk
+> remote: Counting objects: 41, done.
+> remote: Compressing objects: 100% (28/28), done.
+> remote: Total 30 (delta 26), reused 2 (delta 2)
+> Unpacking objects: 100% (30/30), done.
+>>From git://github.com/at91linux/linux-2.6-at91
+>  * branch            for-rmk    -> FETCH_HEAD
+> Auto-merging arch/arm/mach-at91/Kconfig
+> CONFLICT (content): Merge conflict in arch/arm/mach-at91/Kconfig
+> Recorded preimage for 'arch/arm/mach-at91/Kconfig'
+> Automatic merge failed; fix conflicts and then commit the result.
+> $ git diff-files -u
+> diff --cc arch/arm/mach-at91/Kconfig
+> index 2fd8843,3df124e..0000000
+> --- a/arch/arm/mach-at91/Kconfig
+> +++ b/arch/arm/mach-at91/Kconfig
+> @@@ -320,7 -337,7 +337,11 @@@ config MACH_AT91SAM9G20E
+>   
+>   config MACH_AT91SAM9G20EK_2MMC
+>   	bool "Atmel AT91SAM9G20-EK Evaluation Kit with 2 SD/MMC Slots"
+> ++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
+>  +	depends on ARCH_AT91SAM9G20
+> ++=======
+> + 	select HAVE_NAND_ATMEL_BUSWIDTH_16
+> ++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
+>   	help
+>   	  Select this if you are using an Atmel AT91SAM9G20-EK Evaluation Kit
+>   	  with 2 SD/MMC Slots. This is the case for AT91SAM9G20-EK rev. C and
+> @@@ -394,7 -411,7 +415,11 @@@ config MTD_AT91_DATAFLASH_CAR
+>   
+>   config MTD_NAND_ATMEL_BUSWIDTH_16
+>   	bool "Enable 16-bit data bus interface to NAND flash"
+> ++<<<<<<< HEAD:arch/arm/mach-at91/Kconfig
+>  +	depends on (MACH_AT91SAM9260EK || MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK || MACH_AT91SAM9263EK || MACH_AT91SAM9G20EK || MACH_AT91SAM9G20EK_2MMC || MACH_AT91SAM9G45EKES || MACH_AT91CAP9ADK)
+> ++=======
+> + 	depends on HAVE_NAND_ATMEL_BUSWIDTH_16
+> ++>>>>>>> 0912e5359f89f303f53fd4874dadab77a4949a8a:arch/arm/mach-at91/Kconfig
+>   	help
+>   	  On AT91SAM926x boards both types of NAND flash can be present
+>   	  (8 and 16 bit data bus width).
+> 
+> What's the resolution?  I think the first is just to include both, but
+> the second looks like the first depends needs deleting to leave only the
+> second?
 
-> > Either the existing twl4030-mfd branch or split patches work for me.
+Well, in fact the resolution for both is to keep the second line only.
 
-> What's the upstream path for your twl4030-mfd ASoC branch ? 
+Thanks.
 
-ALSA with bits also pulled into the OMAP tree.
+Best regards,
+-- 
+Nicolas Ferre
 
-> Regulator + mfd patches either go upstream via the regulator or mfd
-> repositories.  
-
-Yes, ideally - the existing stuff is going via ALSA since the MFD and
-ASoC sides can't be split up sensibly without breaking bisection.
-
-Another option would be to hold off on applying the patch until things
-have settled down in the merge window and then push it via regulator -
-the ALSA tree normally goes in early in the merge window.
