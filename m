@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZKTBeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbZKTBeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZKTBeg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 20:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZKTBef
+	id S1757226AbZKTBeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 20:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbZKTBeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 20:34:35 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33468 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755518AbZKTBee (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 20:34:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51667 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755611AbZKTBee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Nov 2009 20:34:34 -0500
-Message-ID: <4B05F0EA.2090808@zytor.com>
-Date: Thu, 19 Nov 2009 17:29:14 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+Date: Fri, 20 Nov 2009 02:29:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: Zombie process when ptracing
+Message-ID: <20091120012930.GA3985@redhat.com>
+References: <20091119102543.GB5602@wotan.suse.de>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Jeff Law <law@redhat.com>,
-       rostedt@goodmis.org, David Daney <ddaney@caviumnetworks.com>,
-       Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>   <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com> <4B05DBBF.5000804@redhat.com> <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain> <alpine.LFD.2.00.0911191652430.2793@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0911191652430.2793@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091119102543.GB5602@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19/2009 04:59 PM, Linus Torvalds wrote:
-> 
-> [ Btw, looking at that, why are X86_L1_CACHE_BYTES and X86_L1_CACHE_SHIFT 
->   totally unrelated numbers? Very confusing. ]
-> 
+Hi,
 
-Yes, there is another thread to clean up that particular mess; it is
-already in -tip:
+On 11/19, Nick Piggin wrote:
+>
+> Running recent git kernel, I have a process stuck in Z state
+>
+> bash          ? 0000000000000000     0  3188   3187 0x00000000
+>  ffff88012e24fec8 0000000000000046 0000000000000000 0000000000000012
+>  ffff88012e24fec8 ffff88012e24e000 ffff88012e24ffd8 ffff88012e24e000
+>  000000000000efc8 ffff88012e24e000 ffff88012ea82090 ffff88012ff78640
+> Call Trace:
+>  [<ffffffff8124baee>] ? proc_clear_tty+0x5e/0x70
+>  [<ffffffff810587a8>] ? exit_ptrace+0xb8/0x140
+>  [<ffffffff8105126a>] do_exit+0x58a/0x7c0
+>  [<ffffffff810514dd>] do_group_exit+0x3d/0xb0
+>  [<ffffffff81051562>] sys_exit_group+0x12/0x20
+>  [<ffffffff8100b3eb>] system_call_fastpath+0x16/0x1b
+>
+> This was after stracing a few test programs.
+>
+> It also seems to have lost job control (^C) at the same time.
 
-http://git.kernel.org/tip/350f8f5631922c7848ec4b530c111cb8c2ff7caa
+This can happen if the tracer (strace) itself hangs, zombies
+should go away once the tracer is killed. Or its ->real_parent
+is stopped or hangs...
 
-	-hpa
+(I assume you didn't strace /sbin/init)
+
+But,
+
+> Hmm, and the kernel just paniced with an nmi lockup while I was
+> trying to get more info.
+
+this probably means we have a kernel bug ;)
+
+If you see a zombie again, could you look at its /ptoc/pid/status?
+
+
+And of course, which programs did you trace and how? It would be
+great if we can reproduce the problem.
+
+Oleg.
+
