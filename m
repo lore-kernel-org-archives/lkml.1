@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZKTTNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZKTTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755227AbZKTTNk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 14:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZKTTNj
+	id S1755253AbZKTTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 14:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbZKTTP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 14:13:39 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47663
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752390AbZKTTNi (ORCPT
+	Fri, 20 Nov 2009 14:15:26 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:41332 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754027AbZKTTPZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 14:13:38 -0500
-Date: Fri, 20 Nov 2009 11:13:55 -0800 (PST)
-Message-Id: <20091120.111355.141716974.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: jaswinder@kernel.org, yi.zou@intel.com, peter.p.waskiewicz.jr@intel.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ixgbe: move tc variable to CONFIG_IXGBE_DCB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9929d2390911200624mf352c28u55a8b2aee8b52fa3@mail.gmail.com>
-References: <1258725747.3562.5.camel@ht.satnam>
-	<9929d2390911200624mf352c28u55a8b2aee8b52fa3@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Fri, 20 Nov 2009 14:15:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dxBtuOoKFtO5ZLjgE5SKH28u9Ya86BdJferKIet1ksuiBwQN8Z3AyapyaEi4egfsPX
+         L0TvO8ZZJgNj7Y4+G8a1vqvd+FDajCmN4oHr5CkkxnkJ1FClObQAyOr4giLwGAs7YiOw
+         Zf4lw7osg9S480vqFNvggTGatwdo9Vd43UEOE=
+MIME-Version: 1.0
+In-Reply-To: <4B0215E3.2020400@pobox.com>
+References: <1257708657-1232-1-git-send-email-tfransosi@gmail.com>
+	 <4B0215E3.2020400@pobox.com>
+Date: Fri, 20 Nov 2009 17:15:29 -0200
+Message-ID: <a4c8a6d00911201115s276bb2a7i2a2c546356b71842@mail.gmail.com>
+Subject: Re: [PATCH] ata: Clean up hard coded array size calculation.
+From: Thiago Farina <tfransosi@gmail.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: mlord@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nAKJDq16021383
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 20 Nov 2009 06:24:21 -0800
+Hi Jeff,
 
-> On Fri, Nov 20, 2009 at 06:02, Jaswinder Singh Rajput
-> <jaswinder@kernel.org> wrote:
+On Tue, Nov 17, 2009 at 1:17 AM, Jeff Garzik <jgarzik@pobox.com> wrote:
+> On 11/08/2009 02:30 PM, Thiago Farina wrote:
 >>
->> tc is required by CONFIG_IXGBE_DCB.
->> This also fixes compilation warning:
+>> Use ARRAY_SIZE macro of kernel api instead.
 >>
->> Â drivers/net/ixgbe/ixgbe_main.c: In function â€˜ixgbe_tx_is_pausedâ€™:
->> Â drivers/net/ixgbe/ixgbe_main.c:245: warning: unused variable â€˜tcâ€™
+>> Signed-off-by: Thiago Farina<tfransosi@gmail.com>
+>> ---
+>> Â drivers/ata/sata_mv.c | Â  Â 2 +-
+>> Â 1 files changed, 1 insertions(+), 1 deletions(-)
 >>
->> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
- ...
-> I just submitted a patch to fix this.  So NAK.
+>> diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+>> index 6f5093b..a8a7be0 100644
+>> --- a/drivers/ata/sata_mv.c
+>> +++ b/drivers/ata/sata_mv.c
+>> @@ -2217,7 +2217,7 @@ static unsigned int mv_qc_issue_fis(struct
+>> ata_queued_cmd *qc)
+>> Â  Â  Â  Â int err = 0;
+>>
+>> Â  Â  Â  Â ata_tf_to_fis(&qc->tf, link->pmp, 1, (void *)fis);
+>> - Â  Â  Â  err = mv_send_fis(ap, fis, sizeof(fis) / sizeof(fis[0]));
+>> + Â  Â  Â  err = mv_send_fis(ap, fis, ARRAY_SIZE(fis));
+>> Â  Â  Â  Â if (err)
+>
+> applied
 
-But his is much cleaner that your's, less ifdefs.  I think we
-should therefore use Jasdinder's version.
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Was it applied to this tree
+http://git.kernel.org/?p=linux/kernel/git/jgarzik/libata-dev.git?
