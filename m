@@ -1,67 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZKTXvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbZKTXvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZKTXvX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 18:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZKTXvW
+	id S1753559AbZKTXvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 18:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZKTXvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 18:51:22 -0500
-Received: from lucidpixels.com ([75.144.35.66]:46663 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbZKTXvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 18:51:21 -0500
-Date: Fri, 20 Nov 2009 18:51:27 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Faidon Liambotis <paravoid@debian.org>
-cc: 557262@bugs.debian.org, Dave Chinner <david@fromorbit.com>,
-       submit@bugs.debian.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       linux-raid@vger.kernel.org, asterisk-users@lists.digium.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Bug#557262: 2.6.31+2.6.31.4: XFS - All I/O locks up to D-state
- after 24-48 hours (sysrq-t+w available) - root cause found = asterisk
-In-Reply-To: <4B0729D8.3000105@debian.org>
-Message-ID: <alpine.DEB.2.00.0911201850250.24321@p34.internal.lan>
-References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan> <alpine.DEB.2.00.0910181607040.27363@p34.internal.lan> <20091019030456.GS9464@discord.disaster> <alpine.DEB.2.00.0910190431180.23395@p34.internal.lan> <20091020003358.GW9464@discord.disaster>
- <alpine.DEB.2.00.0910200431290.21878@p34.internal.lan> <alpine.DEB.2.00.0910210618210.10288@p34.internal.lan> <alpine.DEB.2.00.0911201530500.10757@p34.internal.lan> <4B0729D8.3000105@debian.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 20 Nov 2009 18:51:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36561 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752476AbZKTXvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 18:51:50 -0500
+Date: Fri, 20 Nov 2009 15:51:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Jiri Slaby <jslaby@novell.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 1/1] Char: cyclades, fix compiler warning
+Message-Id: <20091120155152.1fe79030.akpm@linux-foundation.org>
+In-Reply-To: <20091120174328.GB14888@kroah.com>
+References: <20091114080505.7715b022.akpm@linux-foundation.org>
+	<1258546702-29591-1-git-send-email-jslaby@novell.com>
+	<20091120174328.GB14888@kroah.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Nov 2009 09:43:28 -0800
+Greg KH <greg@kroah.com> wrote:
 
+> > diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+> > index a188c05..e026f24 100644
+> > --- a/drivers/char/cyclades.c
+> > +++ b/drivers/char/cyclades.c
+> > @@ -595,14 +595,8 @@ static void cyy_chip_tx(struct cyclades_card *cinfo, unsigned int chip,
+> >  	channel = save_xir & CyIRChannel;
+> >  	save_car = readb(base_addr + (CyCAR << index));
+> >  	cy_writeb(base_addr + (CyCAR << index), save_xir);
+> > -	info = &cinfo->ports[channel + chip * 4];
+> >  
+> > -	/* validate the port# (as configured and open) */
+> > -	if (channel + chip * 4 >= cinfo->nports) {
+> > -		cy_writeb(base_addr + (CySRER << index),
+> > -			  readb(base_addr + (CySRER << index)) & ~CyTxRdy);
+> > -		goto end;
+> > -	}
+> > +	info = &cinfo->ports[channel + chip * 4];
+> 
+> Wierd, but this doesn't apply at all to my or Linus's tree.  Are there
+> some other cyclades patch floating around out there that is needed here
+> before this one?
 
-On Sat, 21 Nov 2009, Faidon Liambotis wrote:
+Jiri's patch is based on top of my initial half-assed fix.  Against
+mainline:
 
-> Justin Piszcz wrote:
-> > Found root cause-- root cause is asterisk PBX software.  I use an
-> SPA3102.
->> When someone called me, they accidentally dropped the connection, I called
->> them back in a short period.  It is during this time (and the last time)
->> this happened that the box froze under multiple(!) kernels, always when
->> someone was calling.
-> <snip>
->> I don't know what asterisk is doing but top did run before the crash
->> and asterisk was using 100% CPU and as I noted before all other processes
->> were in D-state.
->>
->> When this bug occurs, it freezes I/O to all devices and the only way to
->> recover
->> is to reboot the system.
-> That's obviously *not* the root cause.
->
-> It's not normal for an application that isn't even privileged to hang
-> all I/O and, subsequently everything on a system.
->
-> This is almost probably a kernel issue and asterisk just does something
-> that triggers this bug.
->
-> Regards,
-> Faidon
->
+From: Jiri Slaby <jslaby@novell.com>
 
-It is possible although I tried with several kernels (2.6.30.[0-9] & 
-2.6.31+ (never had a crash with earlier versions, I installed asterisk long
-ago) but it always used to be 1.4.x until recently..  Nasty bug :\
+With gcc 4.0.2:
+drivers/char/cyclades.c: In function 'cyy_interrupt':
+drivers/char/cyclades.c:581: warning: 'info' may be used uninitialized in this function
 
-Justin.
+introduced by
+
+: commit 3aeea5b92210083c7cffd4f08a0bb141d3f2d574
+: Author:     Jiri Slaby <jirislaby@gmail.com>
+: AuthorDate: Sat Sep 19 13:13:16 2009 -0700
+: Commit:     Live-CD User <linux@linux.site>
+: CommitDate: Sat Sep 19 13:13:16 2009 -0700
+:
+:    cyclades: introduce cyy_readb/writeb
+
+In fact the true branch which uses uninitialized 'info' can never
+happen because chip is always less than ->nchips and channel is
+always less than 4 which we alloc.
+
+So behave similar to rx handling and remove the test completely.
+
+I wonder why gcc 4.4.1 doesn't spit a word.
+
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Cox <alan@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jiri Slaby <jslaby@novell.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/cyclades.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+diff -puN drivers/char/cyclades.c~char-cyclades-fix-compiler-warning drivers/char/cyclades.c
+--- a/drivers/char/cyclades.c~char-cyclades-fix-compiler-warning
++++ a/drivers/char/cyclades.c
+@@ -598,12 +598,6 @@ static void cyy_chip_tx(struct cyclades_
+ 	save_car = readb(base_addr + (CyCAR << index));
+ 	cy_writeb(base_addr + (CyCAR << index), save_xir);
+ 
+-	/* validate the port# (as configured and open) */
+-	if (channel + chip * 4 >= cinfo->nports) {
+-		cy_writeb(base_addr + (CySRER << index),
+-			  readb(base_addr + (CySRER << index)) & ~CyTxRdy);
+-		goto end;
+-	}
+ 	info = &cinfo->ports[channel + chip * 4];
+ 	tty = tty_port_tty_get(&info->port);
+ 	if (tty == NULL) {
+_
+
