@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbZKTVyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZKTVzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbZKTVyz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZKTVyy
+	id S1755261AbZKTVzL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZKTVzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 20 Nov 2009 16:55:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45568
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755462AbZKTVyy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Nov 2009 16:54:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3698 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755863AbZKTVyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:54:53 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/3] FS-Cache: Provide nop fscache_stat_d() if
-	CONFIG_FSCACHE_STATS=n
-To: wilhelm.meier@fh-kl.de, linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Cc: dhowells@redhat.com, steved@redhat.com
-Date: Fri, 20 Nov 2009 21:54:52 +0000
-Message-ID: <20091120215452.15448.14310.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20091120215437.15448.26909.stgit@warthog.procyon.org.uk>
-References: <20091120215437.15448.26909.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Fri, 20 Nov 2009 13:55:12 -0800 (PST)
+Message-Id: <20091120.135512.230579850.davem@davemloft.net>
+To: David.Choi@Micrel.Com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, greg@kroah.com
+Subject: Re: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network
+ driver -resubmit
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <C43529A246480145B0A6D0234BDB0F0D02129B@MELANITE.micrel.com>
+References: <C43529A246480145B0A6D0234BDB0F0D02129B@MELANITE.micrel.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide nop fscache_stat_d() macro if CONFIG_FSCACHE_STATS=n lest errors like
-the following occur:
+From: "Choi, David" <David.Choi@Micrel.Com>
+Date: Thu, 19 Nov 2009 17:34:30 -0800
 
-	fs/fscache/cache.c: In function 'fscache_withdraw_cache':
-	fs/fscache/cache.c:386: error: implicit declaration of function 'fscache_stat_d'
-	fs/fscache/cache.c:386: error: 'fscache_n_cop_sync_cache' undeclared (first use in this function)
-	fs/fscache/cache.c:386: error: (Each undeclared identifier is reported only once
-	fs/fscache/cache.c:386: error: for each function it appears in.)
-	fs/fscache/cache.c:392: error: 'fscache_n_cop_dissociate_pages' undeclared (first use in this function)
+> This patch is for ks8851 16bit MLL Ethernet network device driver in order to 
+> fix bugs and to enhance functions. This resubmit removes a printk statement causing
+> the compile warning in 64bit processors.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Applied.
 
- fs/fscache/internal.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+>>From 	: David J. Choi <david.choi@micrel.com>
 
-diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
-index 0ca2566..edd7434 100644
---- a/fs/fscache/internal.h
-+++ b/fs/fscache/internal.h
-@@ -259,6 +259,7 @@ extern const struct file_operations fscache_stats_fops;
- 
- #define __fscache_stat(stat) (NULL)
- #define fscache_stat(stat) do {} while (0)
-+#define fscache_stat_d(stat) do {} while (0)
- #endif
- 
- /*
+Please fix how this is emiited in your emails.  GIT won't pick
+it up to use this as the author information unless it is
+formatted correctly.  That leading '>' character and the
+TAB between "From" and ":" need to go away.
 
+I edited it out by hand this time.
+
+Thanks.
