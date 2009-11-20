@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZKTVCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZKTVEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbZKTVCd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZKTVCd
+	id S1754497AbZKTVEo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZKTVEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:02:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25254 "EHLO mx1.redhat.com"
+	Fri, 20 Nov 2009 16:04:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333AbZKTVCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:02:32 -0500
-Date: Fri, 20 Nov 2009 16:02:38 -0500
+	id S1753002AbZKTVEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 16:04:43 -0500
+Date: Fri, 20 Nov 2009 16:04:48 -0500
 From: Mike Snitzer <snitzer@redhat.com>
 To: dm-devel@redhat.com
 Cc: Mikulas Patocka <mpatocka@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 06/13] dm snapshot: merge target should not allocate new
- exceptions
-Message-ID: <20091120210238.GC9458@redhat.com>
+Subject: [PATCH v4 07/13] dm snapshot: do not allow more than one merging
+ snapshot.
+Message-ID: <20091120210447.GD9458@redhat.com>
 References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
- <1258748873-24185-7-git-send-email-snitzer@redhat.com>
+ <1258748873-24185-8-git-send-email-snitzer@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1258748873-24185-7-git-send-email-snitzer@redhat.com>
+In-Reply-To: <1258748873-24185-8-git-send-email-snitzer@redhat.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,103 +29,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mikulas Patocka <mpatocka@redhat.com>
 
-The snapshot-merge target should not allocate new exceptions because the
-intent is to merge all of its exceptions as quickly and safely as
-possible.
-
-Introduce new method, snapshot_merge_map(), that won't allocate
-exceptions.  Modify __origin_write() so that it doesn't allocate
-exceptions in merging snapshots.
-
-If a write request to a merging snapshot device is to be dispatched
-directly to the origin (because the chunk is not remapped or was already
-merged), snapshot_merge_map() must make exceptions in other snapshots.
+Merging more than one snapshot is not supported.
+__find_merging_snapshot() will find the merging snapshot for a given
+origin device.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: Mike Snitzer <snitzer@redhat.com>
 ---
- drivers/md/dm-snap.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
+ drivers/md/dm-snap.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/drivers/md/dm-snap.c
 ===================================================================
 --- linux-2.6.orig/drivers/md/dm-snap.c
 +++ linux-2.6/drivers/md/dm-snap.c
-@@ -127,6 +127,11 @@ static int bdev_equal(struct block_devic
- 	return lhs == rhs;
+@@ -332,9 +332,29 @@ out:
+ 	return count;
  }
  
-+static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
-+			      union map_info *map_context);
-+
-+#define is_merge(ti) ((ti)->type->map == snapshot_merge_map)
-+
- struct dm_snap_pending_exception {
- 	struct dm_exception e;
- 
-@@ -1292,6 +1297,44 @@ static int snapshot_map(struct dm_target
- 	return r;
- }
- 
-+static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
-+			      union map_info *map_context)
++static struct dm_snapshot *__find_merging_snapshot(struct block_device *origin)
 +{
-+	struct dm_exception *e;
-+	struct dm_snapshot *s = ti->private;
-+	int r = DM_MAPIO_REMAPPED;
-+	chunk_t chunk;
++	struct dm_snapshot *s, *merging_snap;
++	struct origin *o;
 +
-+	chunk = sector_to_chunk(s->store, bio->bi_sector);
++	o = __lookup_origin(origin);
++	if (!o)
++		return NULL;
 +
-+	down_read(&s->lock);
-+
-+	/* Full snapshots are not usable */
-+	if (!s->valid) {
-+		r = -EIO;
-+		goto out_unlock;
++	list_for_each_entry(s, &o->snapshots, list) {
++		if (is_merge(s->ti)) {
++			merging_snap = s;
++			break;
++		}
 +	}
 +
-+	/* If the block is already remapped - use that */
-+	e = dm_lookup_exception(&s->complete, chunk);
-+	if (e) {
-+		remap_exception(s, e, bio, chunk);
-+		goto out_unlock;
-+	}
-+
-+	bio->bi_bdev = s->origin->bdev;
-+
-+	if (bio_rw(bio) == WRITE) {
-+		up_read(&s->lock);
-+		return do_origin(s->origin, bio);
-+	}
-+
-+ out_unlock:
-+	up_read(&s->lock);
-+
-+	return r;
++	return merging_snap;
 +}
 +
- static int snapshot_end_io(struct dm_target *ti, struct bio *bio,
- 			   int error, union map_info *map_context)
+ static int __validate_exception_handover(struct dm_snapshot *snap)
  {
-@@ -1442,6 +1485,10 @@ static int __origin_write(struct list_he
- 	/* Do all the snapshots on this origin */
- 	list_for_each_entry (snap, snapshots, list) {
+ 	struct dm_snapshot *snap_src = NULL, *snap_dest = NULL;
++	struct block_device *bdev = snap->origin->bdev;
+ 	int r = 0;
  
-+		/* Don't make new exceptions in a merging snapshot */
-+		if (is_merge(snap->ti))
-+			continue;
+ 	/* Does snapshot need exceptions handed over to it? */
+@@ -346,8 +366,19 @@ static int __validate_exception_handover
+ 		goto out;
+ 	}
+ 
+-	if (snap_src)
++	if (snap_src) {
++		if (is_merge(snap->ti)) {
++			/* Do not allow more than one merging snapshot */
++			if (__find_merging_snapshot(bdev)) {
++				snap->ti->error = "A snapshot is already "
++						  "merging.";
++				r = -EINVAL;
++				goto out;
++			}
++		}
 +
- 		down_write(&snap->lock);
+ 		r = 1;
++	}
  
- 		/* Only deal with valid and active snapshots */
-@@ -1670,7 +1717,7 @@ static struct target_type merge_target =
- 	.module  = THIS_MODULE,
- 	.ctr     = snapshot_ctr,
- 	.dtr     = snapshot_dtr,
--	.map     = snapshot_map,
-+	.map     = snapshot_merge_map,
- 	.end_io  = snapshot_end_io,
- 	.postsuspend = snapshot_postsuspend,
- 	.preresume  = snapshot_preresume,
-
+ out:
+ 	return r;
