@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZKTNur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZKTNwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZKTNur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 08:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbZKTNur
+	id S1753529AbZKTNwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 08:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZKTNwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 08:50:47 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:28887 "EHLO
+	Fri, 20 Nov 2009 08:52:49 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:28968 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861AbZKTNuq convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752748AbZKTNws convert rfc822-to-8bit (ORCPT
 	<rfc822;groupwise-JBeulich@novell.com;2:1>);
-	Fri, 20 Nov 2009 08:50:46 -0500
-Message-Id: <4B06ACCD02000078000211E0@vpn.id2.novell.com>
+	Fri, 20 Nov 2009 08:52:48 -0500
+Message-Id: <4B06AD4302000078000211E3@vpn.id2.novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 20 Nov 2009 13:50:53 +0000
+Date: Fri, 20 Nov 2009 13:52:51 +0000
 From: "Jan Beulich" <JBeulich@novell.com>
-To: <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <jason.wessel@windriver.com>
-Subject: [PATCH] fix section mismatch in early ehci dbgp
+To: <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] genksyms: properly consider
+	 EXPORT_UNUSED_SYMBOL{,_GPL}()
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -25,28 +26,294 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 917778267fbe67703ab7d5c6f0b7a05d4c3df485 removed __init from
-ehci_wait_for_port(), but left it in place on ehci_reset_port(), which
-is being called from the former function.
+Despite being unused these should also get a CRC calculated.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Jason Wessel <jason.wessel@windriver.com>
 
 ---
- drivers/usb/early/ehci-dbgp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/genksyms/keywords.c_shipped |  191 ++++++++++++++++++------------------
+ scripts/genksyms/keywords.gperf     |    2 
+ 2 files changed, 99 insertions(+), 94 deletions(-)
 
---- linux-2.6.32-rc8/drivers/usb/early/ehci-dbgp.c	2009-11-20 14:11:29.000000000 +0100
-+++ 2.6.32-rc8-ehci-dbgp-section-mismatch/drivers/usb/early/ehci-dbgp.c	2009-11-20 11:23:52.000000000 +0100
-@@ -613,7 +613,7 @@ err:
- }
- EXPORT_SYMBOL_GPL(dbgp_external_startup);
+--- linux-2.6.32-rc8/scripts/genksyms/keywords.c_shipped	2009-11-20 14:11:53.000000000 +0100
++++ 2.6.32-rc8-genksyms-export-unused/scripts/genksyms/keywords.c_shipped	2009-11-20 11:37:28.000000000 +0100
+@@ -1,4 +1,4 @@
+-/* ANSI-C code produced by gperf version 3.0.3 */
++/* ANSI-C code produced by gperf version 3.0.4 */
+ /* Command-line: gperf -L ANSI-C -a -C -E -g -H is_reserved_hash -k '1,3,$' -N is_reserved_word -p -t scripts/genksyms/keywords.gperf  */
  
--static int __init ehci_reset_port(int port)
-+static int ehci_reset_port(int port)
+ #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
+@@ -34,7 +34,7 @@ struct resword;
+ static const struct resword *is_reserved_word(register const char *str, register unsigned int len);
+ #line 5 "scripts/genksyms/keywords.gperf"
+ struct resword { const char *name; int token; };
+-/* maximum key range = 62, duplicates = 0 */
++/* maximum key range = 64, duplicates = 0 */
+ 
+ #ifdef __GNUC__
+ __inline
+@@ -48,39 +48,39 @@ is_reserved_hash (register const char *s
  {
- 	u32 portsc;
- 	u32 delay_time, delay;
-
+   static const unsigned char asso_values[] =
+     {
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65,  5,
+-      65, 65, 65, 65, 65, 65, 35, 65, 65, 65,
+-       0, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65,  0, 65,  0, 65,  5,
+-      20, 15, 10, 30, 65, 15, 65, 65, 20,  0,
+-      10, 35, 20, 65, 10,  5,  0, 10,  5, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65, 65, 65, 65, 65,
+-      65, 65, 65, 65, 65, 65
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67,  0,
++      67, 67, 67, 67, 67, 67, 15, 67, 67, 67,
++       0, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67,  0, 67,  0, 67,  5,
++      25, 20, 15, 30, 67, 15, 67, 67, 10,  0,
++      10, 40, 20, 67, 10,  5,  0, 10, 15, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67, 67, 67, 67, 67,
++      67, 67, 67, 67, 67, 67
+     };
+   return len + asso_values[(unsigned char)str[2]] + asso_values[(unsigned char)str[0]] + asso_values[(unsigned char)str[len - 1]];
+ }
+ 
+ #ifdef __GNUC__
+ __inline
+-#ifdef __GNUC_STDC_INLINE__
++#if defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__
+ __attribute__ ((__gnu_inline__))
+ #endif
+ #endif
+@@ -89,116 +89,119 @@ is_reserved_word (register const char *s
+ {
+   enum
+     {
+-      TOTAL_KEYWORDS = 43,
++      TOTAL_KEYWORDS = 45,
+       MIN_WORD_LENGTH = 3,
+       MAX_WORD_LENGTH = 24,
+       MIN_HASH_VALUE = 3,
+-      MAX_HASH_VALUE = 64
++      MAX_HASH_VALUE = 66
+     };
+ 
+   static const struct resword wordlist[] =
+     {
+       {""}, {""}, {""},
+-#line 28 "scripts/genksyms/keywords.gperf"
++#line 30 "scripts/genksyms/keywords.gperf"
+       {"asm", ASM_KEYW},
+       {""},
+-#line 10 "scripts/genksyms/keywords.gperf"
++#line 12 "scripts/genksyms/keywords.gperf"
+       {"__asm", ASM_KEYW},
+       {""},
+-#line 11 "scripts/genksyms/keywords.gperf"
++#line 13 "scripts/genksyms/keywords.gperf"
+       {"__asm__", ASM_KEYW},
+       {""}, {""},
+-#line 54 "scripts/genksyms/keywords.gperf"
++#line 56 "scripts/genksyms/keywords.gperf"
+       {"__typeof__", TYPEOF_KEYW},
+       {""},
+-#line 14 "scripts/genksyms/keywords.gperf"
++#line 16 "scripts/genksyms/keywords.gperf"
+       {"__const", CONST_KEYW},
+-#line 13 "scripts/genksyms/keywords.gperf"
+-      {"__attribute__", ATTRIBUTE_KEYW},
+ #line 15 "scripts/genksyms/keywords.gperf"
++      {"__attribute__", ATTRIBUTE_KEYW},
++#line 17 "scripts/genksyms/keywords.gperf"
+       {"__const__", CONST_KEYW},
+-#line 20 "scripts/genksyms/keywords.gperf"
++#line 22 "scripts/genksyms/keywords.gperf"
+       {"__signed__", SIGNED_KEYW},
+-#line 46 "scripts/genksyms/keywords.gperf"
++#line 48 "scripts/genksyms/keywords.gperf"
+       {"static", STATIC_KEYW},
+-#line 22 "scripts/genksyms/keywords.gperf"
+-      {"__volatile__", VOLATILE_KEYW},
+-#line 41 "scripts/genksyms/keywords.gperf"
++      {""},
++#line 43 "scripts/genksyms/keywords.gperf"
+       {"int", INT_KEYW},
+-#line 34 "scripts/genksyms/keywords.gperf"
++#line 36 "scripts/genksyms/keywords.gperf"
+       {"char", CHAR_KEYW},
+-#line 35 "scripts/genksyms/keywords.gperf"
++#line 37 "scripts/genksyms/keywords.gperf"
+       {"const", CONST_KEYW},
+-#line 47 "scripts/genksyms/keywords.gperf"
++#line 49 "scripts/genksyms/keywords.gperf"
+       {"struct", STRUCT_KEYW},
+-#line 26 "scripts/genksyms/keywords.gperf"
++#line 28 "scripts/genksyms/keywords.gperf"
+       {"__restrict__", RESTRICT_KEYW},
+-#line 27 "scripts/genksyms/keywords.gperf"
++#line 29 "scripts/genksyms/keywords.gperf"
+       {"restrict", RESTRICT_KEYW},
+-#line 25 "scripts/genksyms/keywords.gperf"
+-      {"_restrict", RESTRICT_KEYW},
+-#line 18 "scripts/genksyms/keywords.gperf"
++#line 9 "scripts/genksyms/keywords.gperf"
++      {"EXPORT_SYMBOL_GPL_FUTURE", EXPORT_SYMBOL_KEYW},
++#line 20 "scripts/genksyms/keywords.gperf"
+       {"__inline__", INLINE_KEYW},
+-#line 12 "scripts/genksyms/keywords.gperf"
+-      {"__attribute", ATTRIBUTE_KEYW},
+       {""},
+-#line 16 "scripts/genksyms/keywords.gperf"
++#line 24 "scripts/genksyms/keywords.gperf"
++      {"__volatile__", VOLATILE_KEYW},
++#line 7 "scripts/genksyms/keywords.gperf"
++      {"EXPORT_SYMBOL", EXPORT_SYMBOL_KEYW},
++#line 27 "scripts/genksyms/keywords.gperf"
++      {"_restrict", RESTRICT_KEYW},
++      {""},
++#line 14 "scripts/genksyms/keywords.gperf"
++      {"__attribute", ATTRIBUTE_KEYW},
++#line 8 "scripts/genksyms/keywords.gperf"
++      {"EXPORT_SYMBOL_GPL", EXPORT_SYMBOL_KEYW},
++#line 18 "scripts/genksyms/keywords.gperf"
+       {"__extension__", EXTENSION_KEYW},
+-#line 37 "scripts/genksyms/keywords.gperf"
++#line 39 "scripts/genksyms/keywords.gperf"
+       {"enum", ENUM_KEYW},
+-#line 21 "scripts/genksyms/keywords.gperf"
+-      {"__volatile", VOLATILE_KEYW},
+-#line 38 "scripts/genksyms/keywords.gperf"
++#line 10 "scripts/genksyms/keywords.gperf"
++      {"EXPORT_UNUSED_SYMBOL", EXPORT_SYMBOL_KEYW},
++#line 40 "scripts/genksyms/keywords.gperf"
+       {"extern", EXTERN_KEYW},
+       {""},
+-#line 19 "scripts/genksyms/keywords.gperf"
++#line 21 "scripts/genksyms/keywords.gperf"
+       {"__signed", SIGNED_KEYW},
+-#line 9 "scripts/genksyms/keywords.gperf"
+-      {"EXPORT_SYMBOL_GPL_FUTURE", EXPORT_SYMBOL_KEYW},
+-      {""},
+-#line 53 "scripts/genksyms/keywords.gperf"
++#line 11 "scripts/genksyms/keywords.gperf"
++      {"EXPORT_UNUSED_SYMBOL_GPL", EXPORT_SYMBOL_KEYW},
++#line 51 "scripts/genksyms/keywords.gperf"
++      {"union", UNION_KEYW},
++#line 55 "scripts/genksyms/keywords.gperf"
+       {"typeof", TYPEOF_KEYW},
+-#line 48 "scripts/genksyms/keywords.gperf"
++#line 50 "scripts/genksyms/keywords.gperf"
+       {"typedef", TYPEDEF_KEYW},
+-#line 17 "scripts/genksyms/keywords.gperf"
++#line 19 "scripts/genksyms/keywords.gperf"
+       {"__inline", INLINE_KEYW},
+-#line 33 "scripts/genksyms/keywords.gperf"
++#line 35 "scripts/genksyms/keywords.gperf"
+       {"auto", AUTO_KEYW},
+-#line 49 "scripts/genksyms/keywords.gperf"
+-      {"union", UNION_KEYW},
+-      {""}, {""},
+-#line 50 "scripts/genksyms/keywords.gperf"
+-      {"unsigned", UNSIGNED_KEYW},
+-#line 51 "scripts/genksyms/keywords.gperf"
+-      {"void", VOID_KEYW},
+-#line 44 "scripts/genksyms/keywords.gperf"
+-      {"short", SHORT_KEYW},
++#line 23 "scripts/genksyms/keywords.gperf"
++      {"__volatile", VOLATILE_KEYW},
+       {""}, {""},
+ #line 52 "scripts/genksyms/keywords.gperf"
+-      {"volatile", VOLATILE_KEYW},
+-      {""},
+-#line 39 "scripts/genksyms/keywords.gperf"
+-      {"float", FLOAT_KEYW},
+-#line 36 "scripts/genksyms/keywords.gperf"
+-      {"double", DOUBLE_KEYW},
++      {"unsigned", UNSIGNED_KEYW},
+       {""},
+-#line 7 "scripts/genksyms/keywords.gperf"
+-      {"EXPORT_SYMBOL", EXPORT_SYMBOL_KEYW},
+-      {""}, {""},
+-#line 40 "scripts/genksyms/keywords.gperf"
++#line 46 "scripts/genksyms/keywords.gperf"
++      {"short", SHORT_KEYW},
++#line 42 "scripts/genksyms/keywords.gperf"
+       {"inline", INLINE_KEYW},
+-#line 8 "scripts/genksyms/keywords.gperf"
+-      {"EXPORT_SYMBOL_GPL", EXPORT_SYMBOL_KEYW},
+-#line 43 "scripts/genksyms/keywords.gperf"
+-      {"register", REGISTER_KEYW},
+       {""},
+-#line 24 "scripts/genksyms/keywords.gperf"
++#line 54 "scripts/genksyms/keywords.gperf"
++      {"volatile", VOLATILE_KEYW},
++#line 44 "scripts/genksyms/keywords.gperf"
++      {"long", LONG_KEYW},
++#line 26 "scripts/genksyms/keywords.gperf"
+       {"_Bool", BOOL_KEYW},
+-#line 45 "scripts/genksyms/keywords.gperf"
+-      {"signed", SIGNED_KEYW},
+       {""}, {""},
+-#line 42 "scripts/genksyms/keywords.gperf"
+-      {"long", LONG_KEYW}
++#line 45 "scripts/genksyms/keywords.gperf"
++      {"register", REGISTER_KEYW},
++#line 53 "scripts/genksyms/keywords.gperf"
++      {"void", VOID_KEYW},
++#line 41 "scripts/genksyms/keywords.gperf"
++      {"float", FLOAT_KEYW},
++#line 38 "scripts/genksyms/keywords.gperf"
++      {"double", DOUBLE_KEYW},
++      {""}, {""}, {""}, {""},
++#line 47 "scripts/genksyms/keywords.gperf"
++      {"signed", SIGNED_KEYW}
+     };
+ 
+   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
+--- linux-2.6.32-rc8/scripts/genksyms/keywords.gperf	2009-11-20 14:11:53.000000000 +0100
++++ 2.6.32-rc8-genksyms-export-unused/scripts/genksyms/keywords.gperf	2009-11-20 11:25:30.000000000 +0100
+@@ -7,6 +7,8 @@ struct resword { const char *name; int t
+ EXPORT_SYMBOL, EXPORT_SYMBOL_KEYW
+ EXPORT_SYMBOL_GPL, EXPORT_SYMBOL_KEYW
+ EXPORT_SYMBOL_GPL_FUTURE, EXPORT_SYMBOL_KEYW
++EXPORT_UNUSED_SYMBOL, EXPORT_SYMBOL_KEYW
++EXPORT_UNUSED_SYMBOL_GPL, EXPORT_SYMBOL_KEYW
+ __asm, ASM_KEYW
+ __asm__, ASM_KEYW
+ __attribute, ATTRIBUTE_KEYW
 
 
