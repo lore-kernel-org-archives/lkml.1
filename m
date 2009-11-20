@@ -1,325 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZKTFcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZKTFkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbZKTFcc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 00:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZKTFcb
+	id S1754140AbZKTFkA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 00:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZKTFj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 00:32:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40561 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZKTFca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 00:32:30 -0500
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect
- GCC messing with mcount prologue
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+	Fri, 20 Nov 2009 00:39:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46693 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753496AbZKTFj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 00:39:57 -0500
+Date: Fri, 20 Nov 2009 06:36:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jeff Law <law@redhat.com>,
+       rostedt@goodmis.org, "H. Peter Anvin" <hpa@zytor.com>,
+       David Daney <ddaney@caviumnetworks.com>, Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>, Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
-       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <1258694593.22249.1012.camel@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
-	 <20091119072040.GA23579@elte.hu>
-	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-	 <1258694593.22249.1012.camel@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Fri, 20 Nov 2009 00:32:34 -0500
-Message-Id: <1258695154.22249.1014.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+Message-ID: <20091120053609.GA6821@elte.hu>
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>
+ <4B05B7AD.20500@redhat.com>
+ <1258670580.22249.1002.camel@gandalf.stny.rr.com>
+ <4B05DBBF.5000804@redhat.com>
+ <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain>
+ <alpine.LFD.2.00.0911191652430.2793@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911191652430.2793@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This touches the Makefile scripts. I forgot to CC kbuild and Sam.
 
--- Steve
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Fri, 2009-11-20 at 00:23 -0500, Steven Rostedt wrote:
-> Ingo,
-> 
-> Not sure if this is too much for this late in the -rc game, but it finds
-> the gcc bug at build time, and we don't need to disable function graph
-> tracer for all i386 builds.
-> 
-> This is built on my last urgent repo pull request.
-> 
-> Please pull the latest tip/tracing/urgent-2 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/urgent-2
-> 
-> 
-> Steven Rostedt (1):
->       tracing/x86: Add check to detect GCC messing with mcount prologue
-> 
-> ----
->  kernel/trace/Kconfig    |    1 -
->  scripts/Makefile.build  |   25 +++++++++++++++-
->  scripts/recordmcount.pl |   74 +++++++++++++++++++++++++++++++++++++++++++++--
->  3 files changed, 95 insertions(+), 5 deletions(-)
-> ---------------------------
-> commit c7715fb611c69ac4b7f722a891de08b206fb7686
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Thu Nov 19 23:41:02 2009 -0500
-> 
->     tracing/x86: Add check to detect GCC messing with mcount prologue
->     
->     Latest versions of GCC create a funny prologue for some functions.
->     Instead of the typical:
->     
->     		push   %ebp
->     		mov    %esp,%ebp
->     		and    $0xffffffe0,%esp
->     		[...]
->     		call   mcount
->     
->     GCC may try to align the stack before setting up the frame pointer
->     register:
->     
->     		push   %edi
->     		lea    0x8(%esp),%edi
->     		and    $0xffffffe0,%esp
->     		pushl  -0x4(%edi)
->     		push   %ebp
->     		mov    %esp,%ebp
->     		[...]
->     		call   mcount
->     
->     This crazy code places a copy of the return address into the
->     frame pointer. The function graph tracer uses this pointer to
->     save and replace the return address of the calling function to jump
->     to the function graph tracer's return handler, which will put back
->     the return address. But instead instead of the typical return:
->     
->     		mov    %ebp,%esp
->     		pop    %ebp
->     		ret
->     
->     The return of the function performs:
->     
->     		lea    -0x8(%edi),%esp
->     		pop    %edi
->     		ret
->     
->     The function graph tracer return handler will not be called at the exit
->     of the function, but the parent function will call it. Because we missed
->     the return of the child function, the handler will replace the parent's
->     return address with that of the child. Obviously this will cause a crash
->     (Note, there is code to detect this case and safely panic the kernel).
->     
->     The kicker is that this happens to just a handful of functions.
->     And only with certain gcc options.
->     
->     Compiling with: 	-march=pentium-mmx
->     will cause the problem to appear. But if you were to change
->     pentium-mmx to i686 or add -mtune=generic, then the problem goes away.
->     
->     I first saw this problem when compiling with optimize for size.
->     But it seems that various other options may cause this issue to arise.
->     
->     Instead of completely disabling the function graph tracer for i386 builds
->     this patch adds a check to recordmcount.pl to make sure that all
->     functions that contain a call to mcount start with "push %ebp".
->     If not, it will fail the compile and print out the nasty warning:
->     
->       CC      kernel/time/timer_stats.o
->     
->     ********************************************************
->       Your version of GCC breaks the function graph tracer
->       Please disable CONFIG_FUNCTION_GRAPH_TRACER
->       Failed function was "timer_stats_update_stats"
->     ********************************************************
->     
->     The script recordmcount.pl is given a new parameter "do_check". If
->     this is negative, the script will only perform this check without
->     creating the mcount caller section. This will be executed for x86_32
->     when CONFIG_FUNCTION_GRAPH_TRACER is enabled and CONFIG_DYNAMIC_FTRACE
->     is not.
->     
->     If the arch is x86_32 and $do_check is greater than 1, it will perform
->     the check while processing the mcount callers. If $do_check is 0, then
->     no check will be performed. This is for non x86_32 archs and when
->     compiling without CONFIG_FUNCTION_GRAPH_TRACER enabled, even on x86_32.
->     
->     Reported-by: Thomas Gleixner <tglx@linutronix.de>
->     LKML-Reference: <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
->     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index b416512..cd39064 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -143,7 +143,6 @@ config FUNCTION_GRAPH_TRACER
->  	bool "Kernel Function Graph Tracer"
->  	depends on HAVE_FUNCTION_GRAPH_TRACER
->  	depends on FUNCTION_TRACER
-> -	depends on !X86_32 || !CC_OPTIMIZE_FOR_SIZE
->  	default y
->  	help
->  	  Enable the kernel to trace a function at both its return
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 341b589..3b897f2 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -206,10 +206,33 @@ cmd_modversions =							\
->  endif
->  
->  ifdef CONFIG_FTRACE_MCOUNT_RECORD
-> +
-> + ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> +  ifdef CONFIG_X86_32
-> +   rm_do_check = 1
-> +  else
-> +   rm_do_check = 0
-> +  endif
-> + else
-> +  rm_do_check = 0
-> + endif
-> +
->  cmd_record_mcount = set -e ; perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
->  	"$(if $(CONFIG_64BIT),64,32)" \
->  	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
-> -	"$(if $(part-of-module),1,0)" "$(@)";
-> +	"$(if $(part-of-module),1,0)" "$(rm_do_check)" "$(@)";
-> +
-> +else
-> +
-> + ifdef CONFIG_X86_32
-> + ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> +   cmd_record_mcount = set -e ; perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
-> +	"$(if $(CONFIG_64BIT),64,32)" \
-> +	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
-> +	"$(if $(part-of-module),1,0)" "-1" "$(@)";
-> + endif
-> + endif
-> +
->  endif
->  
->  define rule_cc_o_c
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 090d300..164a9d5 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -99,14 +99,14 @@ $P =~ s@.*/@@g;
->  
->  my $V = '0.1';
->  
-> -if ($#ARGV < 7) {
-> -	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
-> +if ($#ARGV < 11) {
-> +	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module do_check inputfile\n";
->  	print "version: $V\n";
->  	exit(1);
->  }
->  
->  my ($arch, $bits, $objdump, $objcopy, $cc,
-> -    $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
-> +    $ld, $nm, $rm, $mv, $is_module, $do_check, $inputfile) = @ARGV;
->  
->  # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
->  if ($inputfile eq "kernel/trace/ftrace.o") {
-> @@ -129,6 +129,60 @@ $nm = "nm" if ((length $nm) == 0);
->  $rm = "rm" if ((length $rm) == 0);
->  $mv = "mv" if ((length $mv) == 0);
->  
-> +# gcc can do stupid things with the stack pointer on x86_32.
-> +# It may pass a copy of the return address to mcount, which will
-> +# break the function graph tracer. If this happens then we need
-> +# to flag it and break the build.
-> +#
-> +# For x86_32, the parameter do_check will be negative if we only
-> +# want to perform the check, and positive if we should od the check.
-> +# If function graph tracing is not enabled, do_check will be zero.
-> +#
-> +
-> +my $check_next_line = 0;
-> +my $line_failed = 0;
-> +my $last_function;
-> +
-> +sub test_x86_32_prologue
-> +{
-> +    if ($check_next_line) {
-> +	if (!/push\s*\%ebp/) {
-> +	    $line_failed = 1;
-> +	}
-> +    }
-> +
-> +    if ($line_failed && /mcount/) {
-> +	print STDERR "\n********************************************************\n";
-> +	print STDERR "  Your version of GCC breaks the function graph tracer\n";
-> +	print STDERR "  Please disable CONFIG_FUNCTION_GRAPH_TRACER\n";
-> +	print STDERR "  Failed function was \"$last_function\"\n";
-> +	print STDERR "********************************************************\n\n";
-> +	exit -1;
-> +    }
-> +    $check_next_line = 0;
-> +
-> +    # check the first line after a function starts for
-> +    #  push %ebp
-> +    if (/^[0-9a-fA-F]+\s+<([a-zA-Z_].*)>:$/) {
-> +	$last_function = $1;
-> +	$check_next_line = 1;
-> +	$line_failed = 0;
-> +    }
-> +}
-> +
-> +if ($do_check < 0) {
-> +    # Only perform the check and quit
-> +    open(IN, "$objdump -dr $inputfile|") || die "error running $objdump";
-> +
-> +    while (<IN>) {
-> +	test_x86_32_prologue;
-> +    }
-> +    close (IN);
-> +    exit 0;
-> +}
-> +
-> +my $check = 0;
-> +
->  #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
->  #    "'$nm' '$rm' '$mv' '$inputfile'\n";
->  
-> @@ -153,6 +207,12 @@ if ($arch eq "x86") {
->      }
->  }
->  
-> +if ($arch eq "i386") {
-> +    if ($do_check) {
-> +	$check = 1;
-> +    }
-> +}
-> +
->  #
->  # We base the defaults off of i386, the other archs may
->  # feel free to change them in the below if statements.
-> @@ -381,6 +441,14 @@ my $text;
->  my $read_headers = 1;
->  
->  while (<IN>) {
-> +
-> +    # x86_32 may need to test the start of every function to see
-> +    # if GCC did not mess up the mcount prologue. All functions must
-> +    # start with push %ebp, otherwise it is broken.
-> +    if ($check) {
-> +	test_x86_32_prologue;
-> +    }
-> +
->      # is it a section?
->      if (/$section_regex/) {
->  	$read_headers = 0;
-> 
+> [ Btw, looking at that, why are X86_L1_CACHE_BYTES and X86_L1_CACHE_SHIFT 
+>   totally unrelated numbers? Very confusing. ]
 
+incidentally (or maybe not so incidentally) that got fixed yesterday in 
+-tip - at around the time i triggered that crash:
+
+  350f8f5: x86: Eliminate redundant/contradicting cache line size config options
+
+See the full commit below. The config that triggered the crash for me 
+has:
+
+  CONFIG_X86_L1_CACHE_SHIFT=4
+
+so it's 16 bytes - and it's consistent now, which is a new angle. So i 
+think this explains why it stayed dormant for such a long time - it was 
+hidden by the cacheline-size config value inconsistencies.
+
+	Ingo
+
+----------------->
+>From 350f8f5631922c7848ec4b530c111cb8c2ff7caa Mon Sep 17 00:00:00 2001
+From: Jan Beulich <JBeulich@novell.com>
+Date: Fri, 13 Nov 2009 11:54:40 +0000
+Subject: [PATCH] x86: Eliminate redundant/contradicting cache line size config options
+
+Rather than having X86_L1_CACHE_BYTES and X86_L1_CACHE_SHIFT
+(with inconsistent defaults), just having the latter suffices as
+the former can be easily calculated from it.
+
+To be consistent, also change X86_INTERNODE_CACHE_BYTES to
+X86_INTERNODE_CACHE_SHIFT, and set it to 7 (128 bytes) for NUMA
+to account for last level cache line size (which here matters
+more than L1 cache line size).
+
+Finally, make sure the default value for X86_L1_CACHE_SHIFT,
+when X86_GENERIC is selected, is being seen before that for the
+individual CPU model options (other than on x86-64, where
+GENERIC_CPU is part of the choice construct, X86_GENERIC is a
+separate option on ix86).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Acked-by: Nick Piggin <npiggin@suse.de>
+LKML-Reference: <4AFD5710020000780001F8F0@vpn.id2.novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig.cpu                   |   14 +++++---------
+ arch/x86/boot/compressed/vmlinux.lds.S |    3 ++-
+ arch/x86/include/asm/cache.h           |    7 ++++---
+ arch/x86/kernel/vmlinux.lds.S          |   10 +++++-----
+ arch/x86/mm/tlb.c                      |    3 ++-
+ 5 files changed, 18 insertions(+), 19 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index f2824fb..621f2bd 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -301,15 +301,11 @@ config X86_CPU
+ 
+ #
+ # Define implied options from the CPU selection here
+-config X86_L1_CACHE_BYTES
++config X86_INTERNODE_CACHE_SHIFT
+ 	int
+-	default "128" if MPSC
+-	default "64" if GENERIC_CPU || MK8 || MCORE2 || MATOM || X86_32
+-
+-config X86_INTERNODE_CACHE_BYTES
+-	int
+-	default "4096" if X86_VSMP
+-	default X86_L1_CACHE_BYTES if !X86_VSMP
++	default "12" if X86_VSMP
++	default "7" if NUMA
++	default X86_L1_CACHE_SHIFT
+ 
+ config X86_CMPXCHG
+ 	def_bool X86_64 || (X86_32 && !M386)
+@@ -317,9 +313,9 @@ config X86_CMPXCHG
+ config X86_L1_CACHE_SHIFT
+ 	int
+ 	default "7" if MPENTIUM4 || MPSC
++	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
+ 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
+ 	default "5" if MWINCHIP3D || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
+-	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
+ 
+ config X86_XADD
+ 	def_bool y
+diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
+index f4193bb..a6f1a59 100644
+--- a/arch/x86/boot/compressed/vmlinux.lds.S
++++ b/arch/x86/boot/compressed/vmlinux.lds.S
+@@ -4,6 +4,7 @@ OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT, CONFIG_OUTPUT_FORMAT)
+ 
+ #undef i386
+ 
++#include <asm/cache.h>
+ #include <asm/page_types.h>
+ 
+ #ifdef CONFIG_X86_64
+@@ -46,7 +47,7 @@ SECTIONS
+ 		*(.data.*)
+ 		_edata = . ;
+ 	}
+-	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	. = ALIGN(L1_CACHE_BYTES);
+ 	.bss : {
+ 		_bss = . ;
+ 		*(.bss)
+diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
+index 549860d..2f9047c 100644
+--- a/arch/x86/include/asm/cache.h
++++ b/arch/x86/include/asm/cache.h
+@@ -9,12 +9,13 @@
+ 
+ #define __read_mostly __attribute__((__section__(".data.read_mostly")))
+ 
++#define INTERNODE_CACHE_SHIFT CONFIG_X86_INTERNODE_CACHE_SHIFT
++#define INTERNODE_CACHE_BYTES (1 << INTERNODE_CACHE_SHIFT)
++
+ #ifdef CONFIG_X86_VSMP
+-/* vSMP Internode cacheline shift */
+-#define INTERNODE_CACHE_SHIFT (12)
+ #ifdef CONFIG_SMP
+ #define __cacheline_aligned_in_smp					\
+-	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
++	__attribute__((__aligned__(INTERNODE_CACHE_BYTES)))		\
+ 	__page_aligned_data
+ #endif
+ #endif
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index fd2dabe..eeb4f5f 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -135,13 +135,13 @@ SECTIONS
+ 
+ 		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ 
+-		CACHELINE_ALIGNED_DATA(CONFIG_X86_L1_CACHE_BYTES)
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
+ 		/* rarely changed data like cpu maps */
+-		READ_MOSTLY_DATA(CONFIG_X86_INTERNODE_CACHE_BYTES)
++		READ_MOSTLY_DATA(INTERNODE_CACHE_BYTES)
+ 
+ 		/* End of data section */
+ 		_edata = .;
+@@ -165,12 +165,12 @@ SECTIONS
+ 		*(.vsyscall_0)
+ 	} :user
+ 
+-	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	. = ALIGN(L1_CACHE_BYTES);
+ 	.vsyscall_fn : AT(VLOAD(.vsyscall_fn)) {
+ 		*(.vsyscall_fn)
+ 	}
+ 
+-	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	. = ALIGN(L1_CACHE_BYTES);
+ 	.vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data)) {
+ 		*(.vsyscall_gtod_data)
+ 	}
+@@ -194,7 +194,7 @@ SECTIONS
+ 	}
+ 	vgetcpu_mode = VVIRT(.vgetcpu_mode);
+ 
+-	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++	. = ALIGN(L1_CACHE_BYTES);
+ 	.jiffies : AT(VLOAD(.jiffies)) {
+ 		*(.jiffies)
+ 	}
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 36fe08e..65b58e4 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -8,6 +8,7 @@
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
++#include <asm/cache.h>
+ #include <asm/apic.h>
+ #include <asm/uv/uv.h>
+ 
+@@ -43,7 +44,7 @@ union smp_flush_state {
+ 		spinlock_t tlbstate_lock;
+ 		DECLARE_BITMAP(flush_cpumask, NR_CPUS);
+ 	};
+-	char pad[CONFIG_X86_INTERNODE_CACHE_BYTES];
++	char pad[INTERNODE_CACHE_BYTES];
+ } ____cacheline_internodealigned_in_smp;
+ 
+ /* State is put into the per CPU data section, but padded
