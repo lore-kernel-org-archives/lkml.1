@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZKTSW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZKTSWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZKTSW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZKTSW5
+	id S1754779AbZKTSWs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZKTSWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:22:57 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34881 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbZKTSW4 (ORCPT
+	Fri, 20 Nov 2009 13:22:47 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47675 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbZKTSWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:22:56 -0500
-Date: Fri, 20 Nov 2009 19:22:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: dtor@mail.ru, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: ads7846 touchscreen: fix pressure
-Message-ID: <20091120182238.GA1344@ucw.cz>
+	Fri, 20 Nov 2009 13:22:46 -0500
+Date: Fri, 20 Nov 2009 19:22:49 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Stepping down as kbuild maintainer
+Message-ID: <20091120182249.GA28251@merkur.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,29 +27,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It has been fun to be kbuild maintainer but
+as things stand right now I do not have the
+time needed to be kbuild maintainer.
 
-On Zaurus, pressure is reported inverted -- the lighter the pressure,
-the bigger numerical value. This should fix it.
+I have done this solely on a hobbyist basis
+and family (3 kids etc) + job require me
+so the kbuild maintainer job was becoming
+a duty and not that fun suddenly.
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Any linux related job required either
+a move or too much working at home so
+I drpped this idea.
 
---- linux-rc/drivers/input.ofic/touchscreen/ads7846.c	2009-10-06 13:49:56.000000000 +0200
-+++ linux-rc/drivers/input/touchscreen/ads7846.c	2009-10-06 21:18:25.000000000 +0200
-@@ -608,12 +609,12 @@
- 
- 		input_report_abs(input, ABS_X, x);
- 		input_report_abs(input, ABS_Y, y);
--		input_report_abs(input, ABS_PRESSURE, Rt);
-+		input_report_abs(input, ABS_PRESSURE, ts->pressure_max-Rt);
- 
- 		input_sync(input);
- #ifdef VERBOSE
- 		dev_dbg(&ts->spi->dev, "%4d/%4d/%4d\n", x, y, Rt);
- #endif
- 	}
- 
- 	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
+So I decided to step down as maintainer
+and I hope someone else can pick up.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+What do I left "Orphan" as MAINTAINERS say?
+
+I do not get many complains about kbuild these
+days. All the basic stuff just works.
+
+The only major complains are:
+- no human can understand the kbuild files
+  [Makefile, scripts/Makefile.*]
+- select does not work (that kconfig btw)
+- how to do strange this when building an external module
+
+So I feel pretty confident that things does not blow
+up on you when I leave.
+
+I keep my mail address and will be reachable there.
+
+Good luck!
+
+	Sam
+
