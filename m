@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbZKTL4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbZKTMGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753020AbZKTL4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 06:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZKTL4t
+	id S1753102AbZKTMGb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:06:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZKTMGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 06:56:49 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:33362 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751594AbZKTL4s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 06:56:48 -0500
-X-Sasl-enc: Smxh0Ya3+rk2+uJGvHjDqbWM2hlPbPEM38GHt3eqih6k 1258718214
-Message-ID: <4B068402.7020606@ladisch.de>
-Date: Fri, 20 Nov 2009 12:56:50 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 20 Nov 2009 07:06:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43647 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbZKTMG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 07:06:29 -0500
+Message-ID: <4B0685B7.4060601@redhat.com>
+Date: Fri, 20 Nov 2009 12:04:07 +0000
+From: Andrew Haley <aph@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v2] k10temp: temperature sensor for AMD Family 10h/11h
- CPUs
-References: <4AF91F70.10106@ladisch.de>	<4B06501B.8080509@ladisch.de>	<87ws1l5wcl.fsf@depni.sinp.msu.ru>	<4B0673D7.5010006@ladisch.de> <20091120123016.19d98ab4@hyperion.delvare>
-In-Reply-To: <20091120123016.19d98ab4@hyperion.delvare>
-Content-Type: text/plain; charset=us-ascii
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Jeff Law <law@redhat.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>   <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com> <4B05DBBF.5000804@redhat.com> <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Fri, 20 Nov 2009 11:47:51 +0100, Clemens Ladisch wrote:
-> > v2: Erratum 319 now results in a warning, not an error, because it cannot
-> >     be reliably detected; Serge Belyshev reports that his CPU sensor works.
+Thomas Gleixner wrote:
+
+> While testing various kernel configs we found out that the problem
+> comes and goes. Finally I started to compare the gcc command line
+> options and after some fiddling it turned out that the following
+> minimal deltas change the code generator behaviour:
 > 
-> Nack. Unreliable sensors -> the default must be to NOT bind to these
-> CPUs. ... Otherwise your driver will _never_ make it into the
-> kernel tree.
+> Bad:  -march=pentium-mmx                -Wa,-mtune=generic32
+> Good: -march=i686        -mtune=generic -Wa,-mtune=generic32
+> Good: -march=pentium-mmx -mtune-generic -Wa,-mtune=generic32
+> 
+> I'm not supposed to understand the logic behind that, right ?
 
-Then how did the k8temp driver make it into the kernel tree?  :-)
+I don't either.  I'm seeing:
 
-> Feel free to provide a way to force the bind to happen (and still
-> print a big fat warning that this is a very bad idea), but do NOT make
-> it the default. 
+timer_stats_update_stats:                                       timer_stats_update_stats:
+        pushl   %edi                                          <
+        leal    8(%esp), %edi                                 <
+        andl    $-16, %esp                                    <
+        pushl   -4(%edi)                                      <
+        pushl   %ebp                                                    pushl   %ebp
+        movl    %esp, %ebp                                              movl    %esp, %ebp
+        pushl   %edi                                          |         andl    $-16, %esp
+        pushl   %esi                                          |         subl    $112, %esp
+        pushl   %ebx                                          |         movl    %ebx, 100(%esp)
+        subl    $108, %esp                                    |         movl    %esi, 104(%esp)
+                                                              >         movl    %edi, 108(%esp)
+        call    mcount                                                  call    mcount
 
-Okay, I'll add a force parameter.
-I'd guess k8temp should get the same?
+where the only difference is -mtune=generic.  I'm investigating.
 
+Andrew.
 
-Best regards,
-Clemens
