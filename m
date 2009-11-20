@@ -1,957 +1,667 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbZKTUWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZKTUWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755695AbZKTUWv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:22:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbZKTUWt
+	id S1755704AbZKTUWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZKTUWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:22:49 -0500
-Received: from lazybastard.de ([212.112.238.170]:48501 "EHLO
+	Fri, 20 Nov 2009 15:22:52 -0500
+Received: from lazybastard.de ([212.112.238.170]:48502 "EHLO
 	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755605AbZKTUWi (ORCPT
+	with ESMTP id S1755432AbZKTUWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:22:38 -0500
-X-Greylist: delayed 2664 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:37 EST
+	Fri, 20 Nov 2009 15:22:41 -0500
+X-Greylist: delayed 2660 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:40 EST
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
 From: Joern Engel <joern@logfs.org>
-Subject: [PATCH 13/17] [LogFS] segment.c
+Subject: [PATCH 14/17] [LogFS] super.c
 References: <20091120181113.GA2159@logfs.org>
-Message-Id: <E1NBZJ9-0003ha-OL@longford.logfs.org>
-Date: Fri, 20 Nov 2009 20:38:15 +0100
+Message-Id: <E1NBZJD-0003hk-Cb@longford.logfs.org>
+Date: Fri, 20 Nov 2009 20:38:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 ---
- fs/logfs/segment.c                  |  924 ++++++++++++++
+ fs/logfs/super.c                    |  634 ++++++++++
 
-diff --git a/fs/logfs/segment.c b/fs/logfs/segment.c
+diff --git a/fs/logfs/super.c b/fs/logfs/super.c
 new file mode 100644
-index 0000000..5f58b74
+index 0000000..d128a2c
 --- /dev/null
-+++ b/fs/logfs/segment.c
-@@ -0,0 +1,924 @@
++++ b/fs/logfs/super.c
+@@ -0,0 +1,634 @@
 +/*
-+ * fs/logfs/segment.c	- Handling the Object Store
++ * fs/logfs/super.c
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2008 Joern Engel <joern@logfs.org>
 + *
-+ * Object store or ostore makes up the complete device with exception of
-+ * the superblock and journal areas.  Apart from its own metadata it stores
-+ * three kinds of objects: inodes, dentries and blocks, both data and indirect.
++ * Generally contains mount/umount code and also serves as a dump area for
++ * any functions that don't fit elsewhere and neither justify a file of their
++ * own.
 + */
 +#include "logfs.h"
++#include <linux/bio.h>
++#include <linux/mtd/mtd.h>
++#include <linux/statfs.h>
++#include <linux/buffer_head.h>
 +
-+static int logfs_mark_segment_bad(struct super_block *sb, u32 segno)
++static DEFINE_MUTEX(emergency_mutex);
++static struct page *emergency_page;
++
++struct page *emergency_read_begin(struct address_space *mapping, pgoff_t index)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct btree_head32 *head = &super->s_reserved_segments;
-+	int err;
-+
-+	err = btree_insert32(head, segno, (void *)1, GFP_NOFS);
-+	if (err)
-+		return err;
-+	logfs_super(sb)->s_bad_segments++;
-+	/* FIXME: write to journal */
-+	return 0;
-+}
-+
-+int logfs_erase_segment(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	super->s_gec++;
-+
-+	return super->s_devops->erase(sb, (u64)segno << super->s_segshift,
-+			super->s_segsize);
-+}
-+
-+static s64 logfs_get_free_bytes(struct logfs_area *area, size_t bytes)
-+{
-+	s32 ofs;
-+
-+	logfs_open_area(area, bytes);
-+
-+	ofs = area->a_used_bytes;
-+	area->a_used_bytes += bytes;
-+	BUG_ON(area->a_used_bytes >= logfs_super(area->a_sb)->s_segsize);
-+
-+	return dev_ofs(area->a_sb, area->a_segno, ofs);
-+}
-+
-+static struct page *get_mapping_page(struct super_block *sb, pgoff_t index,
-+		int use_filler)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	filler_t *filler = super->s_devops->readpage;
++	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
 +	struct page *page;
-+
-+	BUG_ON(mapping_gfp_mask(mapping) & __GFP_FS);
-+	if (use_filler)
-+		page = read_cache_page(mapping, index, filler, sb);
-+	else {
-+		page = find_or_create_page(mapping, index, GFP_NOFS);
-+		unlock_page(page);
-+	}
-+	return page;
-+}
-+
-+void __logfs_buf_write(struct logfs_area *area, u64 ofs, void *buf, size_t len,
-+		int use_filler)
-+{
-+	pgoff_t index = ofs >> PAGE_SHIFT;
-+	struct page *page;
-+	long offset = ofs & (PAGE_SIZE-1);
-+	long copylen;
-+
-+	/* Only logfs_wbuf_recover may use len==0 */
-+	BUG_ON(!len && !use_filler);
-+	do {
-+		copylen = min((ulong)len, PAGE_SIZE - offset);
-+
-+		page = get_mapping_page(area->a_sb, index, use_filler);
-+		SetPageUptodate(page);
-+		BUG_ON(!page); /* FIXME: reserve a pool */
-+		memcpy(page_address(page) + offset, buf, copylen);
-+		SetPagePrivate(page);
-+		page_cache_release(page);
-+
-+		buf += copylen;
-+		len -= copylen;
-+		offset = 0;
-+		index++;
-+	} while (len);
-+}
-+
-+/*
-+ * bdev_writeseg will write full pages.  Memset the tail to prevent data leaks.
-+ */
-+static void pad_wbuf(struct logfs_area *area, int final)
-+{
-+	struct super_block *sb = area->a_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	struct page *page;
-+	u64 ofs = dev_ofs(sb, area->a_segno, area->a_used_bytes);
-+	pgoff_t index = ofs >> PAGE_SHIFT;
-+	long offset = ofs & (PAGE_SIZE-1);
-+	u32 len = PAGE_SIZE - offset;
-+
-+	if (len == PAGE_SIZE) {
-+		/* The math in this function can surely use some love */
-+		len = 0;
-+	}
-+	if (len) {
-+		BUG_ON(area->a_used_bytes >= super->s_segsize);
-+
-+		page = get_mapping_page(area->a_sb, index, 0);
-+		BUG_ON(!page); /* FIXME: reserve a pool */
-+		memset(page_address(page) + offset, 0xff, len);
-+		SetPagePrivate(page);
-+		page_cache_release(page);
-+	}
-+
-+	if (!final)
-+		return;
-+
-+	area->a_used_bytes += len;
-+	for ( ; area->a_used_bytes < super->s_segsize;
-+			area->a_used_bytes += PAGE_SIZE) {
-+		/* Memset another page */
-+		index++;
-+		page = get_mapping_page(area->a_sb, index, 0);
-+		BUG_ON(!page); /* FIXME: reserve a pool */
-+		memset(page_address(page), 0xff, PAGE_SIZE);
-+		SetPagePrivate(page);
-+		page_cache_release(page);
-+	}
-+}
-+
-+/*
-+ * We have to be careful with the alias tree.  Since lookup is done by bix,
-+ * it needs to be normalized, so 14, 15, 16, etc. all match when dealing with
-+ * indirect blocks.  So always use it through accessor functions.
-+ */
-+static void *alias_tree_lookup(struct super_block *sb, u64 ino, u64 bix,
-+		level_t level)
-+{
-+	struct btree_head128 *head = &logfs_super(sb)->s_object_alias_tree;
-+	pgoff_t index = logfs_pack_index(bix, level);
-+
-+	return btree_lookup128(head, ino, index);
-+}
-+
-+static int alias_tree_insert(struct super_block *sb, u64 ino, u64 bix,
-+		level_t level, void *val)
-+{
-+	struct btree_head128 *head = &logfs_super(sb)->s_object_alias_tree;
-+	pgoff_t index = logfs_pack_index(bix, level);
-+
-+	return btree_insert128(head, ino, index, val, GFP_NOFS);
-+}
-+
-+static int btree_write_alias(struct super_block *sb, struct logfs_block *block,
-+		write_alias_t *write_one_alias)
-+{
-+	struct object_alias_item *item;
 +	int err;
 +
-+	list_for_each_entry(item, &block->item_list, list) {
-+		err = write_alias_journal(sb, block->ino, block->bix,
-+				block->level, item->child_no, item->val);
-+		if (err)
-+			return err;
-+	}
-+	return 0;
-+}
-+
-+static gc_level_t btree_block_level(struct logfs_block *block)
-+{
-+	return expand_level(block->ino, block->level);
-+}
-+
-+static struct logfs_block_ops btree_block_ops = {
-+	.write_block	= btree_write_block,
-+	.block_level	= btree_block_level,
-+	.free_block	= __free_block,
-+	.write_alias	= btree_write_alias,
-+};
-+
-+int logfs_load_object_aliases(struct super_block *sb,
-+		struct logfs_obj_alias *oa, int count)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_block *block;
-+	struct object_alias_item *item;
-+	u64 ino, bix;
-+	level_t level;
-+	int i, err;
-+
-+	super->s_flags |= LOGFS_SB_FLAG_OBJ_ALIAS;
-+	count /= sizeof(*oa);
-+	for (i = 0; i < count; i++) {
-+		item = mempool_alloc(super->s_alias_pool, GFP_NOFS);
-+		if (!item)
-+			return -ENOMEM;
-+		memset(item, 0, sizeof(*item));
-+
-+		super->s_no_object_aliases++;
-+		item->val = oa[i].val;
-+		item->child_no = be16_to_cpu(oa[i].child_no);
-+
-+		ino = be64_to_cpu(oa[i].ino);
-+		bix = be64_to_cpu(oa[i].bix);
-+		level = LEVEL(oa[i].level);
-+
-+		log_aliases("logfs_load_object_aliases(%llx, %llx, %x, %x) %llx\n",
-+				ino, bix, level, item->child_no,
-+				be64_to_cpu(item->val));
-+		block = alias_tree_lookup(sb, ino, bix, level);
-+		if (!block) {
-+			block = __alloc_block(sb, ino, bix, level);
-+			block->ops = &btree_block_ops;
-+			err = alias_tree_insert(sb, ino, bix, level, block);
-+			BUG_ON(err); /* mempool empty */
-+		}
-+		if (test_and_set_bit(item->child_no, block->alias_map)) {
-+			printk(KERN_ERR"LogFS: Alias collision detected\n");
-+			return -EIO;
-+		}
-+		list_move_tail(&block->alias_list, &super->s_object_alias);
-+		list_add(&item->list, &block->item_list);
-+	}
-+	return 0;
-+}
-+
-+static void kill_alias(void *_block, unsigned long ignore0,
-+		u64 ignore1, u64 ignore2, size_t ignore3)
-+{
-+	struct logfs_block *block = _block;
-+	struct super_block *sb = block->sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	struct object_alias_item *item;
-+
-+	while (!list_empty(&block->item_list)) {
-+		item = list_entry(block->item_list.next, typeof(*item), list);
-+		list_del(&item->list);
-+		mempool_free(item, super->s_alias_pool);
-+	}
-+	block->ops->free_block(sb, block);
-+}
-+
-+static int obj_type(struct inode *inode, level_t level)
-+{
-+	if (level == 0) {
-+		if (S_ISDIR(inode->i_mode))
-+			return OBJ_DENTRY;
-+		if (inode->i_ino == LOGFS_INO_MASTER)
-+			return OBJ_INODE;
-+	}
-+	return OBJ_BLOCK;
-+}
-+
-+static int obj_len(struct super_block *sb, int obj_type)
-+{
-+	switch (obj_type) {
-+	case OBJ_DENTRY:
-+		return sizeof(struct logfs_disk_dentry);
-+	case OBJ_INODE:
-+		return sizeof(struct logfs_disk_inode);
-+	case OBJ_BLOCK:
-+		return sb->s_blocksize;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static int __logfs_segment_write(struct inode *inode, void *buf,
-+		struct logfs_shadow *shadow, int type, int len, int compr)
-+{
-+	struct logfs_area *area;
-+	struct super_block *sb = inode->i_sb;
-+	s64 ofs;
-+	struct logfs_object_header h;
-+	int acc_len;
-+
-+	if (shadow->gc_level == 0)
-+		acc_len = len;
-+	else
-+		acc_len = obj_len(sb, type);
-+
-+	area = get_area(sb, shadow->gc_level);
-+	ofs = logfs_get_free_bytes(area, len + LOGFS_OBJECT_HEADERSIZE);
-+	LOGFS_BUG_ON(ofs <= 0, sb);
-+	/*
-+	 * Order is important.  logfs_get_free_bytes(), by modifying the
-+	 * segment file, may modify the content of the very page we're about
-+	 * to write now.  Which is fine, as long as the calculated crc and
-+	 * written data still match.  So do the modifications _before_
-+	 * calculating the crc.
-+	 */
-+
-+	h.len	= cpu_to_be16(len);
-+	h.type	= type;
-+	h.compr	= compr;
-+	h.ino	= cpu_to_be64(inode->i_ino);
-+	h.bix	= cpu_to_be64(shadow->bix);
-+	h.crc	= logfs_crc32(&h, sizeof(h) - 4, 4);
-+	h.data_crc = logfs_crc32(buf, len, 0);
-+
-+	logfs_buf_write(area, ofs, &h, sizeof(h));
-+	logfs_buf_write(area, ofs + LOGFS_OBJECT_HEADERSIZE, buf, len);
-+
-+	shadow->new_ofs = ofs;
-+	shadow->new_len = acc_len + LOGFS_OBJECT_HEADERSIZE;
-+
-+	return 0;
-+}
-+
-+static s64 logfs_segment_write_compress(struct inode *inode, void *buf,
-+		struct logfs_shadow *shadow, int type, int len)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	void *compressor_buf = logfs_super(sb)->s_compressed_je;
-+	ssize_t compr_len;
-+	int ret;
-+
-+	mutex_lock(&logfs_super(sb)->s_journal_mutex);
-+	compr_len = logfs_compress(buf, compressor_buf, len, len);
-+
-+	if (compr_len >= 0) {
-+		ret = __logfs_segment_write(inode, compressor_buf, shadow,
-+				type, compr_len, COMPR_ZLIB);
-+	} else {
-+		ret = __logfs_segment_write(inode, buf, shadow, type, len,
-+				COMPR_NONE);
-+	}
-+	mutex_unlock(&logfs_super(sb)->s_journal_mutex);
-+	return ret;
-+}
-+
-+/**
-+ * logfs_segment_write - write data block to object store
-+ * @inode:		inode containing data
-+ *
-+ * Returns an errno or zero.
-+ */
-+int logfs_segment_write(struct inode *inode, struct page *page,
-+		struct logfs_shadow *shadow)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	int do_compress, type, len;
-+	int ret;
-+	void *buf;
-+
-+	BUG_ON(logfs_super(sb)->s_flags & LOGFS_SB_FLAG_SHUTDOWN);
-+	do_compress = logfs_inode(inode)->li_flags & LOGFS_IF_COMPRESSED;
-+	if (shadow->gc_level != 0) {
-+		/* temporarily disable compression for indirect blocks */
-+		do_compress = 0;
-+	}
-+
-+	type = obj_type(inode, shrink_level(shadow->gc_level));
-+	len = obj_len(sb, type);
-+	buf = kmap(page);
-+	if (do_compress)
-+		ret = logfs_segment_write_compress(inode, buf, shadow, type,
-+				len);
-+	else
-+		ret = __logfs_segment_write(inode, buf, shadow, type, len,
-+				COMPR_NONE);
-+	kunmap(page);
-+
-+	log_segment("logfs_segment_write(%llx, %llx, %x) %llx->%llx %x->%x\n",
-+			shadow->ino, shadow->bix, shadow->gc_level,
-+			shadow->old_ofs, shadow->new_ofs,
-+			shadow->old_len, shadow->new_len);
-+	/* this BUG_ON did catch a locking bug.  useful */
-+	BUG_ON(!(shadow->new_ofs & (super->s_segsize - 1)));
-+	return ret;
-+}
-+
-+int wbuf_read(struct super_block *sb, u64 ofs, size_t len, void *buf)
-+{
-+	pgoff_t index = ofs >> PAGE_SHIFT;
-+	struct page *page;
-+	long offset = ofs & (PAGE_SIZE-1);
-+	long copylen;
-+
-+	while (len) {
-+		copylen = min((ulong)len, PAGE_SIZE - offset);
-+
-+		page = get_mapping_page(sb, index, 1);
-+		if (IS_ERR(page))
-+			return PTR_ERR(page);
-+		memcpy(buf, page_address(page) + offset, copylen);
-+		page_cache_release(page);
-+
-+		buf += copylen;
-+		len -= copylen;
-+		offset = 0;
-+		index++;
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * The "position" of indirect blocks is ambiguous.  It can be the position
-+ * of any data block somewhere behind this indirect block.  So we need to
-+ * normalize the positions through logfs_block_mask() before comparing.
-+ */
-+static int check_pos(struct super_block *sb, u64 pos1, u64 pos2, level_t level)
-+{
-+	return	(pos1 & logfs_block_mask(sb, level)) !=
-+		(pos2 & logfs_block_mask(sb, level));
-+}
-+
-+#if 0
-+static int read_seg_header(struct super_block *sb, u64 ofs,
-+		struct logfs_segment_header *sh)
-+{
-+	__be32 crc;
-+	int err;
-+
-+	err = wbuf_read(sb, ofs, sizeof(*sh), sh);
-+	if (err)
-+		return err;
-+	crc = logfs_crc32(sh, sizeof(*sh), 4);
-+	if (crc != sh->crc) {
-+		printk(KERN_ERR"LOGFS: header crc error at %llx: expected %x, "
-+				"got %x\n", ofs, be32_to_cpu(sh->crc),
-+				be32_to_cpu(crc));
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+#endif
-+
-+static int read_obj_header(struct super_block *sb, u64 ofs,
-+		struct logfs_object_header *oh)
-+{
-+	__be32 crc;
-+	int err;
-+
-+	err = wbuf_read(sb, ofs, sizeof(*oh), oh);
-+	if (err)
-+		return err;
-+	crc = logfs_crc32(oh, sizeof(*oh) - 4, 4);
-+	if (crc != oh->crc) {
-+		printk(KERN_ERR"LOGFS: header crc error at %llx: expected %x, "
-+				"got %x\n", ofs, be32_to_cpu(oh->crc),
-+				be32_to_cpu(crc));
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+
-+static void move_btree_to_page(struct inode *inode, struct page *page,
-+		__be64 *data)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	struct btree_head128 *head = &super->s_object_alias_tree;
-+	struct logfs_block *block;
-+	struct object_alias_item *item, *next;
-+
-+	if (!(super->s_flags & LOGFS_SB_FLAG_OBJ_ALIAS))
-+		return;
-+
-+	block = btree_remove128(head, inode->i_ino, page->index);
-+	if (!block)
-+		return;
-+
-+	log_blockmove("move_btree_to_page(%llx, %llx, %x)\n",
-+			block->ino, block->bix, block->level);
-+	list_for_each_entry_safe(item, next, &block->item_list, list) {
-+		data[item->child_no] = item->val;
-+		list_del(&item->list);
-+		mempool_free(item, super->s_alias_pool);
-+	}
-+	block->page = page;
-+	SetPagePrivate(page);
-+	page->private = (unsigned long)block;
-+	block->ops = &indirect_block_ops;
-+	initialize_block_counters(page, block, data, 0);
-+}
-+
-+/*
-+ * This silences a false, yet annoying gcc warning.  I hate it when my editor
-+ * jumps into bitops.h each time I recompile this file.
-+ * TODO: Complain to gcc folks about this and upgrade compiler.
-+ */
-+static unsigned long fnb(const unsigned long *addr,
-+		unsigned long size, unsigned long offset)
-+{
-+	return find_next_bit(addr, size, offset);
-+}
-+
-+void move_page_to_btree(struct page *page)
-+{
-+	struct logfs_block *block = logfs_block(page);
-+	struct super_block *sb = block->sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	struct object_alias_item *item;
-+	unsigned long pos;
-+	__be64 *child;
-+	int err;
-+
-+	if (super->s_flags & LOGFS_SB_FLAG_SHUTDOWN) {
-+		block->ops->free_block(sb, block);
-+		return;
-+	}
-+	log_blockmove("move_page_to_btree(%llx, %llx, %x)\n",
-+			block->ino, block->bix, block->level);
-+	super->s_flags |= LOGFS_SB_FLAG_OBJ_ALIAS;
-+
-+	for (pos = 0; ; pos++) {
-+		pos = fnb(block->alias_map, LOGFS_BLOCK_FACTOR, pos);
-+		if (pos >= LOGFS_BLOCK_FACTOR)
-+			break;
-+
-+		item = mempool_alloc(super->s_alias_pool, GFP_NOFS);
-+		BUG_ON(!item); /* mempool empty */
-+		memset(item, 0, sizeof(*item));
-+
-+		child = kmap_atomic(page, KM_USER0);
-+		item->val = child[pos];
-+		kunmap_atomic(child, KM_USER0);
-+		item->child_no = pos;
-+		list_add(&item->list, &block->item_list);
-+	}
-+	block->page = NULL;
-+	ClearPagePrivate(page);
-+	page->private = 0;
-+	block->ops = &btree_block_ops;
-+	err = alias_tree_insert(block->sb, block->ino, block->bix, block->level,
-+			block);
-+	BUG_ON(err); /* mempool empty */
-+	ClearPageUptodate(page);
-+}
-+
-+static int __logfs_segment_read(struct inode *inode, void *buf,
-+		u64 ofs, u64 bix, level_t level)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	void *compressor_buf = logfs_super(sb)->s_compressed_je;
-+	struct logfs_object_header oh;
-+	__be32 crc;
-+	u16 len;
-+	int err, block_len;
-+
-+	block_len = obj_len(sb, obj_type(inode, level));
-+	err = read_obj_header(sb, ofs, &oh);
-+	if (err)
-+		goto out_err;
-+
-+	err = -EIO;
-+	if (be64_to_cpu(oh.ino) != inode->i_ino
-+			|| check_pos(sb, be64_to_cpu(oh.bix), bix, level)) {
-+		printk(KERN_ERR"LOGFS: (ino, bix) don't match at %llx: "
-+				"expected (%lx, %llx), got (%llx, %llx)\n",
-+				ofs, inode->i_ino, bix,
-+				be64_to_cpu(oh.ino), be64_to_cpu(oh.bix));
-+		goto out_err;
-+	}
-+
-+	len = be16_to_cpu(oh.len);
-+
-+	switch (oh.compr) {
-+	case COMPR_NONE:
-+		err = wbuf_read(sb, ofs + LOGFS_OBJECT_HEADERSIZE, len, buf);
-+		if (err)
-+			goto out_err;
-+		crc = logfs_crc32(buf, len, 0);
-+		if (crc != oh.data_crc) {
-+			printk(KERN_ERR"LOGFS: uncompressed data crc error at "
-+					"%llx: expected %x, got %x\n", ofs,
-+					be32_to_cpu(oh.data_crc),
-+					be32_to_cpu(crc));
-+			goto out_err;
-+		}
-+		break;
-+	case COMPR_ZLIB:
-+		mutex_lock(&logfs_super(sb)->s_journal_mutex);
-+		err = wbuf_read(sb, ofs + LOGFS_OBJECT_HEADERSIZE, len,
-+				compressor_buf);
-+		if (err) {
-+			mutex_unlock(&logfs_super(sb)->s_journal_mutex);
-+			goto out_err;
-+		}
-+		crc = logfs_crc32(compressor_buf, len, 0);
-+		if (crc != oh.data_crc) {
-+			printk(KERN_ERR"LOGFS: compressed data crc error at "
-+					"%llx: expected %x, got %x\n", ofs,
-+					be32_to_cpu(oh.data_crc),
-+					be32_to_cpu(crc));
-+			mutex_unlock(&logfs_super(sb)->s_journal_mutex);
-+			goto out_err;
-+		}
-+		err = logfs_uncompress(compressor_buf, buf, len, block_len);
-+		mutex_unlock(&logfs_super(sb)->s_journal_mutex);
-+		if (err) {
-+			printk(KERN_ERR"LOGFS: uncompress error at %llx\n", ofs);
-+			goto out_err;
-+		}
-+		break;
-+	default:
-+		LOGFS_BUG(sb);
-+		err = -EIO;
-+		goto out_err;
-+	}
-+	return 0;
-+
-+out_err:
-+	logfs_set_ro(sb);
-+	printk(KERN_ERR"LOGFS: device is read-only now\n");
-+	LOGFS_BUG(sb);
-+	return err;
-+}
-+
-+/**
-+ * logfs_segment_read - read data block from object store
-+ * @inode:		inode containing data
-+ * @buf:		data buffer
-+ * @ofs:		physical data offset
-+ * @bix:		block index
-+ * @level:		block level
-+ *
-+ * Returns 0 on success or a negative errno.
-+ */
-+int logfs_segment_read(struct inode *inode, struct page *page,
-+		u64 ofs, u64 bix, level_t level)
-+{
-+	int err;
-+	void *buf;
-+
-+	if (PageUptodate(page))
-+		return 0;
-+
-+	ofs &= ~LOGFS_FULLY_POPULATED;
-+
-+	buf = kmap(page);
-+	err = __logfs_segment_read(inode, buf, ofs, bix, level);
-+	if (!err) {
-+		move_btree_to_page(inode, page, buf);
-+		SetPageUptodate(page);
-+	}
-+	kunmap(page);
-+	log_segment("logfs_segment_read(%lx, %llx, %x) %llx (%d)\n",
-+			inode->i_ino, bix, level, ofs, err);
-+	return err;
-+}
-+
-+int logfs_segment_delete(struct inode *inode, struct logfs_shadow *shadow)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct logfs_object_header h;
-+	u16 len;
-+	int err;
-+
-+	BUG_ON(logfs_super(sb)->s_flags & LOGFS_SB_FLAG_SHUTDOWN);
-+	BUG_ON(shadow->old_ofs & LOGFS_FULLY_POPULATED);
-+	if (!shadow->old_ofs)
-+		return 0;
-+
-+	log_segment("logfs_segment_delete(%llx, %llx, %x) %llx->%llx %x->%x\n",
-+			shadow->ino, shadow->bix, shadow->gc_level,
-+			shadow->old_ofs, shadow->new_ofs,
-+			shadow->old_len, shadow->new_len);
-+	err = read_obj_header(sb, shadow->old_ofs, &h);
-+	LOGFS_BUG_ON(err, sb);
-+	LOGFS_BUG_ON(be64_to_cpu(h.ino) != inode->i_ino, sb);
-+	LOGFS_BUG_ON(check_pos(sb, shadow->bix, be64_to_cpu(h.bix),
-+				shrink_level(shadow->gc_level)), sb);
-+
-+	if (shadow->gc_level == 0)
-+		len = be16_to_cpu(h.len);
-+	else
-+		len = obj_len(sb, h.type);
-+	shadow->old_len = len + sizeof(h);
-+	return 0;
-+}
-+
-+static void freeseg(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	struct page *page;
-+	u64 ofs, start, end;
-+
-+	start = dev_ofs(sb, segno, 0);
-+	end = dev_ofs(sb, segno + 1, 0);
-+	for (ofs = start; ofs < end; ofs += PAGE_SIZE) {
-+		page = find_get_page(mapping, ofs >> PAGE_SHIFT);
-+		if (!page)
-+			continue;
-+		ClearPagePrivate(page);
-+		page_cache_release(page);
-+	}
-+}
-+
-+int logfs_open_area(struct logfs_area *area, size_t bytes)
-+{
-+	struct super_block *sb = area->a_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	int err, closed = 0;
-+
-+	if (area->a_is_open && area->a_used_bytes + bytes <= super->s_segsize)
-+		return 0;
-+
-+	if (area->a_is_open) {
-+		u64 ofs = dev_ofs(sb, area->a_segno, area->a_written_bytes);
-+		u32 len = super->s_segsize - area->a_written_bytes;
-+
-+		log_gc("logfs_close_area(%x)\n", area->a_segno);
-+		pad_wbuf(area, 1);
-+		super->s_devops->writeseg(area->a_sb, ofs, len);
-+		freeseg(sb, area->a_segno);
-+		closed = 1;
-+	}
-+
-+	area->a_used_bytes = 0;
-+	area->a_written_bytes = 0;
-+again:
-+	area->a_ops->get_free_segment(area);
-+	area->a_ops->get_erase_count(area);
-+
-+	log_gc("logfs_open_area(%x, %x)\n", area->a_segno, area->a_level);
-+	err = area->a_ops->erase_segment(area);
++	page = read_cache_page(mapping, index, filler, NULL);
++	if (page)
++		return page;
++
++	/* No more pages available, switch to emergency page */
++	printk(KERN_INFO"Logfs: Using emergency page\n");
++	mutex_lock(&emergency_mutex);
++	err = filler(NULL, emergency_page);
 +	if (err) {
-+		printk(KERN_WARNING "LogFS: Error erasing segment %x\n",
-+				area->a_segno);
-+		logfs_mark_segment_bad(sb, area->a_segno);
-+		goto again;
++		mutex_unlock(&emergency_mutex);
++		printk(KERN_EMERG"Logfs: Error reading emergency page\n");
++		return ERR_PTR(err);
 +	}
-+	area->a_is_open = 1;
-+	return closed;
++	return emergency_page;
 +}
 +
-+void logfs_sync_area(struct logfs_area *area)
++void emergency_read_end(struct page *page)
 +{
-+	struct super_block *sb = area->a_sb;
-+	struct logfs_super *super = logfs_super(sb);
-+	u64 ofs = dev_ofs(sb, area->a_segno, area->a_written_bytes);
-+	u32 len = (area->a_used_bytes - area->a_written_bytes);
-+
-+	if (super->s_writesize)
-+		len &= ~(super->s_writesize - 1);
-+	if (len == 0)
-+		return;
-+	pad_wbuf(area, 0);
-+	super->s_devops->writeseg(sb, ofs, len);
-+	area->a_written_bytes += len;
++	if (page == emergency_page)
++		mutex_unlock(&emergency_mutex);
++	else
++		page_cache_release(page);
 +}
 +
-+void logfs_sync_segments(struct super_block *sb)
++static void dump_segfile(struct super_block *sb)
 +{
 +	struct logfs_super *super = logfs_super(sb);
++	struct logfs_segment_entry se;
++	u32 segno;
++
++	for (segno = 0; segno < super->s_no_segs; segno++) {
++		logfs_get_segment_entry(sb, segno, &se);
++		printk("%3x: %6x %8x", segno, be32_to_cpu(se.ec_level),
++				be32_to_cpu(se.valid));
++		if (++segno < super->s_no_segs) {
++			logfs_get_segment_entry(sb, segno, &se);
++			printk(" %6x %8x", be32_to_cpu(se.ec_level),
++					be32_to_cpu(se.valid));
++		}
++		if (++segno < super->s_no_segs) {
++			logfs_get_segment_entry(sb, segno, &se);
++			printk(" %6x %8x", be32_to_cpu(se.ec_level),
++					be32_to_cpu(se.valid));
++		}
++		if (++segno < super->s_no_segs) {
++			logfs_get_segment_entry(sb, segno, &se);
++			printk(" %6x %8x", be32_to_cpu(se.ec_level),
++					be32_to_cpu(se.valid));
++		}
++		printk("\n");
++	}
++}
++
++/*
++ * logfs_crash_dump - dump debug information to device
++ *
++ * The LogFS superblock only occupies part of a segment.  This function will
++ * write as much debug information as it can gather into the spare space.
++ */
++void logfs_crash_dump(struct super_block *sb)
++{
++	dump_segfile(sb);
++}
++
++/*
++ * TODO: move to lib/string.c
++ */
++/**
++ * memchr_inv - Find a character in an area of memory.
++ * @s: The memory area
++ * @c: The byte to search for
++ * @n: The size of the area.
++ *
++ * returns the address of the first character other than @c, or %NULL
++ * if the whole buffer contains just @c.
++ */
++void *memchr_inv(const void *s, int c, size_t n)
++{
++	const unsigned char *p = s;
++	while (n-- != 0)
++		if ((unsigned char)c != *p++)
++			return (void *)(p - 1);
++
++	return NULL;
++}
++
++/*
++ * FIXME: There should be a reserve for root, similar to ext2.
++ */
++int logfs_statfs(struct dentry *dentry, struct kstatfs *stats)
++{
++	struct super_block *sb = dentry->d_sb;
++	struct logfs_super *super = logfs_super(sb);
++
++	stats->f_type		= LOGFS_MAGIC_U32;
++	stats->f_bsize		= sb->s_blocksize;
++	stats->f_blocks		= super->s_size >> LOGFS_BLOCK_BITS >> 3;
++	stats->f_bfree		= super->s_free_bytes >> sb->s_blocksize_bits;
++	stats->f_bavail		= super->s_free_bytes >> sb->s_blocksize_bits;
++	stats->f_files		= 0;
++	stats->f_ffree		= 0;
++	stats->f_namelen	= LOGFS_MAX_NAMELEN;
++	return 0;
++}
++
++static int logfs_sb_set(struct super_block *sb, void *_super)
++{
++	struct logfs_super *super = _super;
++
++	sb->s_fs_info = super;
++	sb->s_mtd = super->s_mtd;
++	sb->s_bdev = super->s_bdev;
++	return 0;
++}
++
++static int logfs_sb_test(struct super_block *sb, void *_super)
++{
++	struct logfs_super *super = _super;
++	struct mtd_info *mtd = super->s_mtd;
++
++	if (mtd && sb->s_mtd == mtd)
++		return 1;
++	if (super->s_bdev && sb->s_bdev == super->s_bdev)
++		return 1;
++	return 0;
++}
++
++static void set_segment_header(struct logfs_segment_header *sh, u8 type,
++		u8 level, u32 segno, u32 ec)
++{
++	sh->pad = 0;
++	sh->type = type;
++	sh->level = level;
++	sh->segno = cpu_to_be32(segno);
++	sh->ec = cpu_to_be32(ec);
++	sh->gec = cpu_to_be64(segno);
++	sh->crc = logfs_crc32(sh, LOGFS_SEGMENT_HEADERSIZE, 4);
++}
++
++static void logfs_write_ds(struct super_block *sb, struct logfs_disk_super *ds,
++		u32 segno, u32 ec)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_segment_header *sh = &ds->ds_sh;
 +	int i;
 +
-+	for_each_area(i)
-+		logfs_sync_area(super->s_area[i]);
++	memset(ds, 0, sizeof(*ds));
++	set_segment_header(sh, SEG_SUPER, 0, segno, ec);
++
++	ds->ds_ifile_levels	= super->s_ifile_levels;
++	ds->ds_iblock_levels	= super->s_iblock_levels;
++	ds->ds_data_levels	= super->s_data_levels; /* XXX: Remove */
++	ds->ds_segment_shift	= super->s_segshift;
++	ds->ds_block_shift	= sb->s_blocksize_bits;
++	ds->ds_write_shift	= super->s_writeshift;
++	ds->ds_filesystem_size	= cpu_to_be64(super->s_size);
++	ds->ds_segment_size	= cpu_to_be32(super->s_segsize);
++	ds->ds_bad_seg_reserve	= cpu_to_be32(super->s_bad_seg_reserve);
++	ds->ds_feature_incompat	= cpu_to_be64(super->s_feature_incompat);
++	ds->ds_feature_ro_compat= cpu_to_be64(super->s_feature_ro_compat);
++	ds->ds_feature_compat	= cpu_to_be64(super->s_feature_compat);
++	ds->ds_feature_flags	= cpu_to_be64(super->s_feature_flags);
++	ds->ds_root_reserve	= cpu_to_be64(super->s_root_reserve);
++	ds->ds_speed_reserve	= cpu_to_be64(super->s_speed_reserve);
++	journal_for_each(i)
++		ds->ds_journal_seg[i] = cpu_to_be32(super->s_journal_seg[i]);
++	ds->ds_magic		= cpu_to_be64(LOGFS_MAGIC);
++	ds->ds_crc = logfs_crc32(ds, sizeof(*ds),
++			LOGFS_SEGMENT_HEADERSIZE + 12);
 +}
 +
-+/*
-+ * Pick a free segment to be used for this area.  Effectively takes a
-+ * candidate from the free list (not really a candidate anymore).
-+ */
-+static void ostore_get_free_segment(struct logfs_area *area)
++static int write_one_sb(struct super_block *sb,
++		struct page *(*find_sb)(struct super_block *sb, u64 *ofs))
 +{
-+	struct super_block *sb = area->a_sb;
 +	struct logfs_super *super = logfs_super(sb);
-+
-+	if (super->s_free_list.count == 0) {
-+		printk(KERN_ERR"LOGFS: ran out of free segments\n");
-+		LOGFS_BUG(sb);
-+	}
-+
-+	area->a_segno = get_best_cand(sb, &super->s_free_list, NULL);
-+}
-+
-+static void ostore_get_erase_count(struct logfs_area *area)
-+{
++	struct logfs_disk_super *ds;
 +	struct logfs_segment_entry se;
-+	u32 ec_level;
-+
-+	logfs_get_segment_entry(area->a_sb, area->a_segno, &se);
-+	BUG_ON(se.ec_level == cpu_to_be32(BADSEG) ||
-+			se.valid == cpu_to_be32(RESERVED));
-+
-+	ec_level = be32_to_cpu(se.ec_level);
-+	area->a_erase_count = (ec_level >> 4) + 1;
-+}
-+
-+static int ostore_erase_segment(struct logfs_area *area)
-+{
-+	struct super_block *sb = area->a_sb;
-+	struct logfs_segment_header sh;
++	struct page *page;
 +	u64 ofs;
++	u32 ec, segno;
 +	int err;
 +
-+	err = logfs_erase_segment(sb, area->a_segno);
++	page = find_sb(sb, &ofs);
++	if (!page)
++		return -EIO;
++	ds = page_address(page);
++	segno = seg_no(sb, ofs);
++	logfs_get_segment_entry(sb, segno, &se);
++	ec = be32_to_cpu(se.ec_level) >> 4;
++	ec++;
++	logfs_set_segment_erased(sb, segno, ec, 0);
++	logfs_write_ds(sb, ds, segno, ec);
++	err = super->s_devops->write_sb(sb, page);
++	page_cache_release(page);
++	return err;
++}
++
++int logfs_write_sb(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	int err;
++
++	/* First superblock */
++	err = write_one_sb(sb, super->s_devops->find_first_sb);
 +	if (err)
 +		return err;
 +
-+	sh.pad = 0;
-+	sh.type = SEG_OSTORE;
-+	sh.level = (__force u8)area->a_level;
-+	sh.segno = cpu_to_be32(area->a_segno);
-+	sh.ec = cpu_to_be32(area->a_erase_count);
-+	sh.gec = cpu_to_be64(logfs_super(sb)->s_gec);
-+	sh.crc = logfs_crc32(&sh, sizeof(sh), 4);
-+
-+	logfs_set_segment_erased(sb, area->a_segno, area->a_erase_count,
-+			area->a_level);
-+
-+	ofs = dev_ofs(sb, area->a_segno, 0);
-+	area->a_used_bytes = sizeof(sh);
-+	logfs_buf_write(area, ofs, &sh, sizeof(sh));
++	/* Last superblock */
++	err = write_one_sb(sb, super->s_devops->find_last_sb);
++	if (err)
++		return err;
 +	return 0;
 +}
 +
-+static const struct logfs_area_ops ostore_area_ops = {
-+	.get_free_segment	= ostore_get_free_segment,
-+	.get_erase_count	= ostore_get_erase_count,
-+	.erase_segment		= ostore_erase_segment,
-+};
-+
-+static void free_area(struct logfs_area *area)
++static int ds_cmp(const void *ds0, const void *ds1)
 +{
-+	if (area)
-+		freeseg(area->a_sb, area->a_segno);
-+	kfree(area);
++	size_t len = sizeof(struct logfs_disk_super);
++
++	/* We know the segment headers differ, so ignore them */
++	len -= LOGFS_SEGMENT_HEADERSIZE;
++	ds0 += LOGFS_SEGMENT_HEADERSIZE;
++	ds1 += LOGFS_SEGMENT_HEADERSIZE;
++	return memcmp(ds0, ds1, len);
 +}
 +
-+static struct logfs_area *alloc_area(struct super_block *sb)
++static int logfs_recover_sb(struct super_block *sb)
 +{
-+	struct logfs_area *area;
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_disk_super _ds0, *ds0 = &_ds0;
++	struct logfs_disk_super _ds1, *ds1 = &_ds1;
++	int err, valid0, valid1;
 +
-+	area = kzalloc(sizeof(*area), GFP_KERNEL);
-+	if (!area)
++	/* read first superblock */
++	err = wbuf_read(sb, super->s_sb_ofs[0], sizeof(*ds0), ds0);
++	if (err)
++		return err;
++	/* read last superblock */
++	err = wbuf_read(sb, super->s_sb_ofs[1], sizeof(*ds1), ds1);
++	if (err)
++		return err;
++	valid0 = logfs_check_ds(ds0) == 0;
++	valid1 = logfs_check_ds(ds1) == 0;
++
++	if (!valid0 && valid1) {
++		printk(KERN_INFO"First superblock is invalid - fixing.\n");
++		return write_one_sb(sb, super->s_devops->find_first_sb);
++	}
++	if (valid0 && !valid1) {
++		printk(KERN_INFO"Last superblock is invalid - fixing.\n");
++		return write_one_sb(sb, super->s_devops->find_last_sb);
++	}
++	if (valid0 && valid1 && ds_cmp(ds0, ds1)) {
++		printk(KERN_INFO"Superblocks don't match - fixing.\n");
++		return write_one_sb(sb, super->s_devops->find_last_sb);
++	}
++	/* If neither is valid now, something's wrong.  Didn't we properly
++	 * check them before?!? */
++	BUG_ON(!valid0 && !valid1);
++	return 0;
++}
++
++static int logfs_make_writeable(struct super_block *sb)
++{
++	int err;
++
++	/* Repair any broken superblock copies */
++	err = logfs_recover_sb(sb);
++	if (err)
++		return err;
++
++	/* Check areas for trailing unaccounted data */
++	err = logfs_check_areas(sb);
++	if (err)
++		return err;
++
++	err = logfs_open_segfile(sb);
++	if (err)
++		return err;
++
++	/* Do one GC pass before any data gets dirtied */
++	logfs_gc_pass(sb);
++
++	/* after all initializations are done, replay the journal
++	 * for rw-mounts, if necessary */
++	err = logfs_replay_journal(sb);
++	if (err)
++		return err;
++
++	return 0;
++}
++
++static int logfs_get_sb_final(struct super_block *sb, struct vfsmount *mnt)
++{
++	struct inode *rootdir;
++	int err;
++
++	/* root dir */
++	rootdir = logfs_iget(sb, LOGFS_INO_ROOT);
++	if (IS_ERR(rootdir))
++		goto fail;
++
++	sb->s_root = d_alloc_root(rootdir);
++	if (!sb->s_root)
++		goto fail;
++
++	/* FIXME: check for read-only mounts */
++	err = logfs_make_writeable(sb);
++	if (err)
++		goto fail2;
++
++	log_super("LogFS: Finished mounting\n");
++	simple_set_mnt(mnt, sb);
++	return 0;
++
++fail2:
++	iput(rootdir);
++fail:
++	iput(logfs_super(sb)->s_master_inode);
++	return -EIO;
++}
++
++int logfs_check_ds(struct logfs_disk_super *ds)
++{
++	struct logfs_segment_header *sh = &ds->ds_sh;
++
++	if (ds->ds_magic != cpu_to_be64(LOGFS_MAGIC))
++		return -EINVAL;
++	if (sh->crc != logfs_crc32(sh, LOGFS_SEGMENT_HEADERSIZE, 4))
++		return -EINVAL;
++	if (ds->ds_crc != logfs_crc32(ds, sizeof(*ds),
++				LOGFS_SEGMENT_HEADERSIZE + 12))
++		return -EINVAL;
++	return 0;
++}
++
++static struct page *find_super_block(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct page *first, *last;
++
++	first = super->s_devops->find_first_sb(sb, &super->s_sb_ofs[0]);
++	if (!first || IS_ERR(first))
 +		return NULL;
++	last = super->s_devops->find_last_sb(sb, &super->s_sb_ofs[1]);
++	if (!last || IS_ERR(first)) {
++		page_cache_release(first);
++		return NULL;
++	}
 +
-+	area->a_sb = sb;
-+	return area;
++	if (!logfs_check_ds(page_address(first))) {
++		page_cache_release(last);
++		return first;
++	}
++
++	/* First one didn't work, try the second superblock */
++	if (!logfs_check_ds(page_address(last))) {
++		page_cache_release(first);
++		return last;
++	}
++
++	/* Neither worked, sorry folks */
++	page_cache_release(first);
++	page_cache_release(last);
++	return NULL;
 +}
 +
-+static void map_invalidatepage(struct page *page, unsigned long l)
++static int __logfs_read_sb(struct super_block *sb)
 +{
-+	BUG();
-+}
++	struct logfs_super *super = logfs_super(sb);
++	struct page *page;
++	struct logfs_disk_super *ds;
++	int i;
 +
-+static int map_releasepage(struct page *page, gfp_t g)
-+{
-+	/* Don't release these pages */
++	page = find_super_block(sb);
++	if (!page)
++		return -EIO;
++
++	ds = page_address(page);
++	super->s_size = be64_to_cpu(ds->ds_filesystem_size);
++	super->s_root_reserve = be64_to_cpu(ds->ds_root_reserve);
++	super->s_speed_reserve = be64_to_cpu(ds->ds_speed_reserve);
++	super->s_bad_seg_reserve = be32_to_cpu(ds->ds_bad_seg_reserve);
++	super->s_segsize = 1 << ds->ds_segment_shift;
++	super->s_segmask = (1 << ds->ds_segment_shift) - 1;
++	super->s_segshift = ds->ds_segment_shift;
++	sb->s_blocksize = 1 << ds->ds_block_shift;
++	sb->s_blocksize_bits = ds->ds_block_shift;
++	super->s_writesize = 1 << ds->ds_write_shift;
++	super->s_writeshift = ds->ds_write_shift;
++	super->s_no_segs = super->s_size >> super->s_segshift;
++	super->s_no_blocks = super->s_segsize >> sb->s_blocksize_bits;
++	super->s_feature_incompat = be64_to_cpu(ds->ds_feature_incompat);
++	super->s_feature_ro_compat = be64_to_cpu(ds->ds_feature_ro_compat);
++	super->s_feature_compat = be64_to_cpu(ds->ds_feature_compat);
++	super->s_feature_flags = be64_to_cpu(ds->ds_feature_flags);
++
++	journal_for_each(i)
++		super->s_journal_seg[i] = be32_to_cpu(ds->ds_journal_seg[i]);
++
++	super->s_ifile_levels = ds->ds_ifile_levels;
++	super->s_iblock_levels = ds->ds_iblock_levels;
++	super->s_data_levels = ds->ds_data_levels;
++	super->s_total_levels = super->s_ifile_levels + super->s_iblock_levels
++		+ super->s_data_levels;
++	page_cache_release(page);
 +	return 0;
 +}
 +
-+static const struct address_space_operations mapping_aops = {
-+	.invalidatepage = map_invalidatepage,
-+	.releasepage	= map_releasepage,
-+	.set_page_dirty = __set_page_dirty_nobuffers,
-+};
-+
-+int logfs_init_mapping(struct super_block *sb)
++static int logfs_read_sb(struct super_block *sb)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping;
-+	struct inode *inode;
++	int ret;
 +
-+	inode = logfs_new_meta_inode(sb, LOGFS_INO_MAPPING);
-+	if (IS_ERR(inode))
-+		return PTR_ERR(inode);
-+	super->s_mapping_inode = inode;
-+	mapping = inode->i_mapping;
-+	mapping->a_ops = &mapping_aops;
-+	/* Would it be possible to use __GFP_HIGHMEM as well? */
-+	mapping_set_gfp_mask(mapping, GFP_NOFS);
-+	return 0;
-+}
-+
-+int logfs_init_areas(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i = -1;
-+
-+	super->s_alias_pool = mempool_create_kmalloc_pool(600,
-+			sizeof(struct object_alias_item));
-+	if (!super->s_alias_pool)
++	super->s_btree_pool = mempool_create(32, btree_alloc, btree_free, NULL);
++	if (!super->s_btree_pool)
 +		return -ENOMEM;
 +
-+	super->s_journal_area = alloc_area(sb);
-+	if (!super->s_journal_area)
-+		goto err;
++	btree_init_mempool64(&super->s_shadow_tree.new, super->s_btree_pool);
++	btree_init_mempool64(&super->s_shadow_tree.old, super->s_btree_pool);
 +
-+	for_each_area(i) {
-+		super->s_area[i] = alloc_area(sb);
-+		if (!super->s_area[i])
-+			goto err;
-+		super->s_area[i]->a_level = GC_LEVEL(i);
-+		super->s_area[i]->a_ops = &ostore_area_ops;
-+	}
-+	btree_init_mempool128(&super->s_object_alias_tree,
-+			super->s_btree_pool);
++	ret = logfs_init_mapping(sb);
++	if (ret)
++		return ret;
++
++	ret = __logfs_read_sb(sb);
++	if (ret)
++		return ret;
++
++	mutex_init(&super->s_dirop_mutex);
++	mutex_init(&super->s_object_alias_mutex);
++	INIT_LIST_HEAD(&super->s_freeing_list);
++
++	ret = logfs_init_rw(sb);
++	if (ret)
++		return ret;
++
++	ret = logfs_init_areas(sb);
++	if (ret)
++		return ret;
++
++	ret = logfs_init_gc(sb);
++	if (ret)
++		return ret;
++
++	ret = logfs_init_journal(sb);
++	if (ret)
++		return ret;
++
 +	return 0;
-+
-+err:
-+	for (i--; i >= 0; i--)
-+		free_area(super->s_area[i]);
-+	free_area(super->s_journal_area);
-+	mempool_destroy(super->s_alias_pool);
-+	return -ENOMEM;
 +}
 +
-+void logfs_cleanup_areas(struct super_block *sb)
++static void logfs_kill_sb(struct super_block *sb)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	int i;
 +
-+	btree_grim_visitor128(&super->s_object_alias_tree, 0, kill_alias);
-+	for_each_area(i)
-+		free_area(super->s_area[i]);
-+	free_area(super->s_journal_area);
-+	destroy_meta_inode(super->s_mapping_inode);
++	log_super("LogFS: Start unmounting\n");
++	/* Alias entries slow down mount, so evict as many as possible */
++	sync_filesystem(sb);
++	logfs_write_anchor(super->s_master_inode);
++
++	/*
++	 * From this point on alias entries are simply dropped - and any
++	 * writes to the object store are considered bugs.
++	 */
++	super->s_flags |= LOGFS_SB_FLAG_SHUTDOWN;
++	log_super("LogFS: Now in shutdown\n");
++	generic_shutdown_super(sb);
++
++	BUG_ON(super->s_dirty_used_bytes || super->s_dirty_free_bytes);
++
++	logfs_cleanup_gc(sb);
++	logfs_cleanup_journal(sb);
++	logfs_cleanup_areas(sb);
++	logfs_cleanup_rw(sb);
++	super->s_devops->put_device(sb);
++	mempool_destroy(super->s_btree_pool);
++	mempool_destroy(super->s_alias_pool);
++	kfree(super);
++	log_super("LogFS: Finished unmounting\n");
 +}
++
++int logfs_get_sb_device(struct file_system_type *type, int flags,
++		struct mtd_info *mtd, struct block_device *bdev,
++		const struct logfs_device_ops *devops, struct vfsmount *mnt)
++{
++	struct logfs_super *super;
++	struct super_block *sb;
++	int err = -ENOMEM;
++	static int mount_count;
++
++	log_super("LogFS: Start mount %x\n", mount_count++);
++	super = kzalloc(sizeof(*super), GFP_KERNEL);
++	if (!super)
++		goto err0;
++
++	super->s_mtd	= mtd;
++	super->s_bdev	= bdev;
++	err = -EINVAL;
++	sb = sget(type, logfs_sb_test, logfs_sb_set, super);
++	if (IS_ERR(sb))
++		goto err0;
++
++	if (sb->s_root) {
++		/* Device is already in use */
++		err = 0;
++		simple_set_mnt(mnt, sb);
++		goto err0;
++	}
++
++	super->s_devops = devops;
++
++	/*
++	 * sb->s_maxbytes is limited to 8TB.  On 32bit systems, the page cache
++	 * only covers 16TB and the upper 8TB are used for indirect blocks.
++	 * On 64bit system we could bump up the limit, but that would make
++	 * the filesystem incompatible with 32bit systems.
++	 */
++	sb->s_maxbytes	= (1ull << 43) - 1;
++	sb->s_op	= &logfs_super_operations;
++	sb->s_flags	= flags | MS_NOATIME;
++
++	err = logfs_read_sb(sb);
++	if (err)
++		goto err1;
++
++	sb->s_flags |= MS_ACTIVE;
++	err = logfs_get_sb_final(sb, mnt);
++	if (err)
++		goto err1;
++	return 0;
++
++err1:
++	up_write(&sb->s_umount);
++	deactivate_super(sb);
++	return err;
++err0:
++	kfree(super);
++	//devops->put_device(sb);
++	return err;
++}
++
++static int logfs_get_sb(struct file_system_type *type, int flags,
++		const char *devname, void *data, struct vfsmount *mnt)
++{
++	ulong mtdnr;
++
++	if (!devname)
++		return logfs_get_sb_bdev(type, flags, devname, mnt);
++	if (strncmp(devname, "mtd", 3))
++		return logfs_get_sb_bdev(type, flags, devname, mnt);
++
++	{
++		char *garbage;
++		mtdnr = simple_strtoul(devname+3, &garbage, 0);
++		if (*garbage)
++			return -EINVAL;
++	}
++
++	return logfs_get_sb_mtd(type, flags, mtdnr, mnt);
++}
++
++static struct file_system_type logfs_fs_type = {
++	.owner		= THIS_MODULE,
++	.name		= "logfs",
++	.get_sb		= logfs_get_sb,
++	.kill_sb	= logfs_kill_sb,
++	.fs_flags	= FS_REQUIRES_DEV,
++
++};
++
++static int __init logfs_init(void)
++{
++	int ret;
++
++	emergency_page = alloc_pages(GFP_KERNEL, 0);
++	if (!emergency_page)
++		return -ENOMEM;
++
++	ret = logfs_compr_init();
++	if (ret)
++		goto out1;
++
++	ret = logfs_init_inode_cache();
++	if (ret)
++		goto out2;
++
++	return register_filesystem(&logfs_fs_type);
++out2:
++	logfs_compr_exit();
++out1:
++	__free_pages(emergency_page, 0);
++	return ret;
++}
++
++static void __exit logfs_exit(void)
++{
++	unregister_filesystem(&logfs_fs_type);
++	logfs_destroy_inode_cache();
++	logfs_compr_exit();
++	__free_pages(emergency_page, 0);
++}
++
++module_init(logfs_init);
++module_exit(logfs_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Joern Engel <joern@logfs.org>");
++MODULE_DESCRIPTION("scalable flash filesystem");
