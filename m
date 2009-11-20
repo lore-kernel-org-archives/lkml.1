@@ -1,106 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZKTFnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZKTFib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZKTFnp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 00:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbZKTFno
+	id S1754072AbZKTFib (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 00:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZKTFia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 00:43:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35676 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbZKTFnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 00:43:43 -0500
-Date: Fri, 20 Nov 2009 05:39:51 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, rdunlap@xenotime.net,
-       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mhiramat@redhat.com, mingo@elte.hu,
-       systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkenisto@us.ibm.com, rdunlap@xenotime.net,
-       dle-develop@lists.sourceforge.net, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mhiramat@redhat.com, systemtap@sources.redhat.com,
-       mingo@elte.hu
-In-Reply-To: <20091116230631.5250.41579.stgit@harusame>
-References: <20091116230631.5250.41579.stgit@harusame>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] x86: Instruction decoder test should generate build warning
-Message-ID: <tip-ce64c62074d945fe5f8a7f01bdc30125f994ea67@git.kernel.org>
-Git-Commit-ID: ce64c62074d945fe5f8a7f01bdc30125f994ea67
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Fri, 20 Nov 2009 00:38:30 -0500
+Received: from mga06.intel.com ([134.134.136.21]:10705 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753585AbZKTFi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 00:38:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,775,1249282800"; 
+   d="scan'208";a="468979357"
+Subject: Re: [Bug #14383] hackbench regression with kernel 2.6.32-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1258542581.3918.255.camel@laptop>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.65H.2TdALB@chimera>  <1258542581.3918.255.camel@laptop>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Fri, 20 Nov 2009 13:40:57 +0800
+Message-Id: <1258695658.29789.27.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ce64c62074d945fe5f8a7f01bdc30125f994ea67
-Gitweb:     http://git.kernel.org/tip/ce64c62074d945fe5f8a7f01bdc30125f994ea67
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Mon, 16 Nov 2009 18:06:31 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 19 Nov 2009 21:40:13 +0100
+On Wed, 2009-11-18 at 12:09 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-11-16 at 23:37 +0100, Rafael J. Wysocki wrote:
 
-x86: Instruction decoder test should generate build warning
+Sorry for replying late. There was a severe power failure in my Lab.
 
-Since some instructions are not decoded correctly by older
-versions of objdump, it may cause false positive error in insn
-decoder posttest.
+Below are updates against 2.6.32-rc7 kernel.
 
-This changes build error of insn decoder test to build warning.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14383
+> > Subject		: hackbench regression with kernel 2.6.32-rc1
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2009-10-09 9:19 (39 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=29cd8bae396583a2ee9a3340db8c5102acf9f6fd
+> > References	: http://marc.info/?l=linux-kernel&m=125508007510274&w=4
+> > Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+On core2 arch machines, hackbench regression disappears and there is much
+improvement instead of regression. 
+On Nehalem machine, no big change, comparing with 2.6.31.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-LKML-Reference: <20091116230631.5250.41579.stgit@harusame>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/tools/test_get_len.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+On Itanium machines (2 sockets or 4 sockets), the regression become
+about 20%. Originally it's 70%.
 
-diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
-index af75e07..d8214dc 100644
---- a/arch/x86/tools/test_get_len.c
-+++ b/arch/x86/tools/test_get_len.c
-@@ -114,6 +114,7 @@ int main(int argc, char **argv)
- 	unsigned char insn_buf[16];
- 	struct insn insn;
- 	int insns = 0, c;
-+	int warnings = 0;
- 
- 	parse_args(argc, argv);
- 
-@@ -151,18 +152,22 @@ int main(int argc, char **argv)
- 		insn_init(&insn, insn_buf, x86_64);
- 		insn_get_length(&insn);
- 		if (insn.length != nb) {
--			fprintf(stderr, "Error: %s found a difference at %s\n",
-+			warnings++;
-+			fprintf(stderr, "Warning: %s found difference at %s\n",
- 				prog, sym);
--			fprintf(stderr, "Error: %s", line);
--			fprintf(stderr, "Error: objdump says %d bytes, but "
-+			fprintf(stderr, "Warning: %s", line);
-+			fprintf(stderr, "Warning: objdump says %d bytes, but "
- 				"insn_get_length() says %d\n", nb,
- 				insn.length);
- 			if (verbose)
- 				dump_insn(stderr, &insn);
--			exit(2);
- 		}
- 	}
--	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
--		insns);
-+	if (warnings)
-+		fprintf(stderr, "Warning: decoded and checked %d"
-+			" instructions with %d warnings\n", insns, warnings);
-+	else
-+		fprintf(stderr, "Succeed: decoded and checked %d"
-+			" instructions\n", insns);
- 	return 0;
- }
+
+> 
+> 
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14384
+> > Subject         : tbench regression with 2.6.32-rc1
+> > Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date            : 2009-10-09 9:51 (39 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=59abf02644c45f1591e1374ee7bb45dc757fcb88
+> > References      : http://marc.info/?l=linux-kernel&m=125508216713138&w=4
+> > Handled-By      : Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+On core2 arch machines, tbench regression becomes about 4%. Originally, the
+regression is about 33%.
+
+On Nehalem, tbench regression is about 4%. Original is 7%.
+
+On Itanium, tbench regression is about 16%. Original is 26%
+
+
+> 
+> 
+> 
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14621
+> > Subject         : specjbb2005 and aim7 regression with 2.6.32-rc kernels
+> > Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date            : 2009-11-06 7:38 (11 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=125749310413174&w=4
+specjbb2005 and aim7 results almost have no variation.
+
+> 
+> 
+> Yanmin, could you please update me on the status of these regressions?
+> 
+> Mike seems to have done a lot to address issues while I was out, and
+> while I (hopefully) did read all resulting email, I must admit to
+> loosing track of where we stand.
+
+Mike's patch 1b9508f6831e10 could improve netperf loopback testing.
+The latest upstream doesn't merge it yet.
+
+
+
