@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZKTU14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZKTU3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZKTU14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZKTU1y
+	id S1756122AbZKTU3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZKTU3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:27:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13595 "EHLO mx1.redhat.com"
+	Fri, 20 Nov 2009 15:29:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32325 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754870AbZKTU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:27:51 -0500
+	id S1755928AbZKTU1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:27:53 -0500
 From: Mike Snitzer <snitzer@redhat.com>
 To: dm-devel@redhat.com
 Cc: linux-kernel@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH v4 05/13] dm snapshot: add snapshot-merge target
-Date: Fri, 20 Nov 2009 15:27:45 -0500
-Message-Id: <1258748873-24185-6-git-send-email-snitzer@redhat.com>
+Subject: [PATCH v4 06/13] dm snapshot: merge target should not allocate new exceptions
+Date: Fri, 20 Nov 2009 15:27:46 -0500
+Message-Id: <1258748873-24185-7-git-send-email-snitzer@redhat.com>
 In-Reply-To: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
 References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,222 +23,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mikulas Patocka <mpatocka@redhat.com>
 
-The snapshot-merge target allows a snapshot to be merged back into the
-snapshot's origin device.
+The snapshot-merge target should not allocate new exceptions because the
+intent is to merge all of its exceptions as quickly and safely as
+possible.
 
-One expected use of snapshot merging is the rollback of a root
-filesystem after system upgrades (e.g.: yum update).  snapshot-merge
-enables "system rollback" support for any filesystem that is using the
-associated DM devices.
+Introduce new method, snapshot_merge_map(), that won't allocate
+exceptions.  Modify __origin_write() so that it doesn't allocate
+exceptions in merging snapshots.
 
-Add snapshot-merge target management to both dm_snapshot_init() and
-dm_snapshot_exit().  As an initial place-holder, snapshot-merge is
-identical to the snapshot target.
-
-Add "snapshot-merge" to Documentation/device-mapper/snapshot.txt
+If a write request to a merging snapshot device is to be dispatched
+directly to the origin (because the chunk is not remapped or was already
+merged), snapshot_merge_map() must make exceptions in other snapshots.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: Mike Snitzer <snitzer@redhat.com>
 ---
- Documentation/device-mapper/snapshot.txt |   52 +++++++++++++++++++++++++++---
- drivers/md/dm-snap.c                     |   48 ++++++++++++++++++++-------
- 2 files changed, 83 insertions(+), 17 deletions(-)
+ drivers/md/dm-snap.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 48 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/device-mapper/snapshot.txt b/Documentation/device-mapper/snapshot.txt
-index a5009c8..ec6c883 100644
---- a/Documentation/device-mapper/snapshot.txt
-+++ b/Documentation/device-mapper/snapshot.txt
-@@ -8,13 +8,19 @@ the block device which are also writable without interfering with the
- original content;
- *) To create device "forks", i.e. multiple different versions of the
- same data stream.
-+*) To merge a snapshot of a block device back into the snapshot's origin
-+device.
- 
-+In the first two cases, dm copies only the chunks of data that get
-+changed and uses a separate copy-on-write (COW) block device for
-+storage.
- 
--In both cases, dm copies only the chunks of data that get changed and
--uses a separate copy-on-write (COW) block device for storage.
-+For snapshot merge the contents of the COW storage are merged back into
-+the origin device.
- 
- 
--There are two dm targets available: snapshot and snapshot-origin.
-+There are three dm targets available:
-+snapshot, snapshot-origin, and snapshot-merge.
- 
- *) snapshot-origin <origin>
- 
-@@ -40,8 +46,17 @@ The difference is that for transient snapshots less metadata must be
- saved on disk - they can be kept in memory by the kernel.
- 
- 
--How this is used by LVM2
--========================
-+* snapshot-merge <origin> <COW device> <persistent> <chunksize>
-+
-+takes the same table arguments as the snapshot target except it only
-+works with persistent snapshots.  Creates a merging snapshot that takes
-+control of the changed chunks stored in the <COW device> of an existing
-+snapshot, through a handover procedure, and merges these chunks back
-+into the <origin>.
-+
-+
-+How snapshot is used by LVM2
-+============================
- When you create the first LVM2 snapshot of a volume, four dm devices are used:
- 
- 1) a device containing the original mapping table of the source volume;
-@@ -72,3 +87,30 @@ brw-------  1 root root 254, 12 29 ago 18:15 /dev/mapper/volumeGroup-snap-cow
- brw-------  1 root root 254, 13 29 ago 18:15 /dev/mapper/volumeGroup-snap
- brw-------  1 root root 254, 10 29 ago 18:14 /dev/mapper/volumeGroup-base
- 
-+
-+How snapshot-merge is used by LVM2
-+==================================
-+A merging snapshot assumes the role of the "snapshot-origin" while
-+merging.  As such the "snapshot-origin" is replaced with
-+"snapshot-merge".  The "-real" device is not changed and the "-cow"
-+device is renamed to aid LVM2's cleanup of the merging snapshot after it
-+completes.  The "snapshot" that hands over its COW device to the
-+"snapshot-merge" is generally deactivated; but if it is left active it
-+will simply return I/O errors.
-+
-+A snapshot will merge into its origin with the following command:
-+
-+lvconvert --merge volumeGroup/snap
-+
-+we'll now have this situation:
-+
-+# dmsetup table|grep volumeGroup
-+
-+volumeGroup-base-real: 0 2097152 linear 8:19 384
-+volumeGroup-base-cow: 0 204800 linear 8:19 2097536
-+volumeGroup-base: 0 2097152 snapshot-merge 254:11 254:12 P 16
-+
-+# ls -lL /dev/mapper/volumeGroup-*
-+brw-------  1 root root 254, 11 29 ago 18:15 /dev/mapper/volumeGroup-base-real
-+brw-------  1 root root 254, 12 29 ago 18:16 /dev/mapper/volumeGroup-base-cow
-+brw-------  1 root root 254, 10 29 ago 18:16 /dev/mapper/volumeGroup-base
 diff --git a/drivers/md/dm-snap.c b/drivers/md/dm-snap.c
-index ad95039..e8a1107 100644
+index e8a1107..b8838e7 100644
 --- a/drivers/md/dm-snap.c
 +++ b/drivers/md/dm-snap.c
-@@ -1664,6 +1664,21 @@ static struct target_type snapshot_target = {
- 	.iterate_devices = snapshot_iterate_devices,
- };
+@@ -127,6 +127,11 @@ static int bdev_equal(struct block_device *lhs, struct block_device *rhs)
+ 	return lhs == rhs;
+ }
  
-+static struct target_type merge_target = {
-+	.name    = "snapshot-merge",
-+	.version = {1, 9, 0},
-+	.module  = THIS_MODULE,
-+	.ctr     = snapshot_ctr,
-+	.dtr     = snapshot_dtr,
-+	.map     = snapshot_map,
-+	.end_io  = snapshot_end_io,
-+	.postsuspend = snapshot_postsuspend,
-+	.preresume  = snapshot_preresume,
-+	.resume  = snapshot_resume,
-+	.status  = snapshot_status,
-+	.iterate_devices = snapshot_iterate_devices,
-+};
++static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
++			      union map_info *map_context);
 +
- static int __init dm_snapshot_init(void)
- {
- 	int r;
-@@ -1675,7 +1690,7 @@ static int __init dm_snapshot_init(void)
- 	}
- 
- 	r = dm_register_target(&snapshot_target);
--	if (r) {
-+	if (r < 0) {
- 		DMERR("snapshot target register failed %d", r);
- 		goto bad_register_snapshot_target;
- 	}
-@@ -1683,34 +1698,40 @@ static int __init dm_snapshot_init(void)
- 	r = dm_register_target(&origin_target);
- 	if (r < 0) {
- 		DMERR("Origin target register failed %d", r);
--		goto bad1;
-+		goto bad_register_origin_target;
-+	}
++#define is_merge(ti) ((ti)->type->map == snapshot_merge_map)
 +
-+	r = dm_register_target(&merge_target);
-+	if (r < 0) {
-+		DMERR("Merge target register failed %d", r);
-+		goto bad_register_merge_target;
- 	}
+ struct dm_snap_pending_exception {
+ 	struct dm_exception e;
  
- 	r = init_origin_hash();
- 	if (r) {
- 		DMERR("init_origin_hash failed.");
--		goto bad2;
-+		goto bad_origin_hash;
- 	}
- 
- 	exception_cache = KMEM_CACHE(dm_exception, 0);
- 	if (!exception_cache) {
- 		DMERR("Couldn't create exception cache.");
- 		r = -ENOMEM;
--		goto bad3;
-+		goto bad_exception_cache;
- 	}
- 
- 	pending_cache = KMEM_CACHE(dm_snap_pending_exception, 0);
- 	if (!pending_cache) {
- 		DMERR("Couldn't create pending cache.");
- 		r = -ENOMEM;
--		goto bad4;
-+		goto bad_pending_cache;
- 	}
- 
- 	tracked_chunk_cache = KMEM_CACHE(dm_snap_tracked_chunk, 0);
- 	if (!tracked_chunk_cache) {
- 		DMERR("Couldn't create cache to track chunks in use.");
- 		r = -ENOMEM;
--		goto bad5;
-+		goto bad_tracked_chunk_cache;
- 	}
- 
- 	ksnapd = create_singlethread_workqueue("ksnapd");
-@@ -1724,19 +1745,21 @@ static int __init dm_snapshot_init(void)
- 
- bad_pending_pool:
- 	kmem_cache_destroy(tracked_chunk_cache);
--bad5:
-+bad_tracked_chunk_cache:
- 	kmem_cache_destroy(pending_cache);
--bad4:
-+bad_pending_cache:
- 	kmem_cache_destroy(exception_cache);
--bad3:
-+bad_exception_cache:
- 	exit_origin_hash();
--bad2:
-+bad_origin_hash:
-+	dm_unregister_target(&merge_target);
-+bad_register_merge_target:
- 	dm_unregister_target(&origin_target);
--bad1:
-+bad_register_origin_target:
- 	dm_unregister_target(&snapshot_target);
--
- bad_register_snapshot_target:
- 	dm_exception_store_exit();
-+
+@@ -1292,6 +1297,44 @@ static int snapshot_map(struct dm_target *ti, struct bio *bio,
  	return r;
  }
  
-@@ -1746,6 +1769,7 @@ static void __exit dm_snapshot_exit(void)
++static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
++			      union map_info *map_context)
++{
++	struct dm_exception *e;
++	struct dm_snapshot *s = ti->private;
++	int r = DM_MAPIO_REMAPPED;
++	chunk_t chunk;
++
++	chunk = sector_to_chunk(s->store, bio->bi_sector);
++
++	down_read(&s->lock);
++
++	/* Full snapshots are not usable */
++	if (!s->valid) {
++		r = -EIO;
++		goto out_unlock;
++	}
++
++	/* If the block is already remapped - use that */
++	e = dm_lookup_exception(&s->complete, chunk);
++	if (e) {
++		remap_exception(s, e, bio, chunk);
++		goto out_unlock;
++	}
++
++	bio->bi_bdev = s->origin->bdev;
++
++	if (bio_rw(bio) == WRITE) {
++		up_write(&s->lock);
++		return do_origin(s->origin, bio);
++	}
++
++ out_unlock:
++	up_read(&s->lock);
++
++	return r;
++}
++
+ static int snapshot_end_io(struct dm_target *ti, struct bio *bio,
+ 			   int error, union map_info *map_context)
+ {
+@@ -1442,6 +1485,10 @@ static int __origin_write(struct list_head *snapshots,
+ 	/* Do all the snapshots on this origin */
+ 	list_for_each_entry (snap, snapshots, list) {
  
- 	dm_unregister_target(&snapshot_target);
- 	dm_unregister_target(&origin_target);
-+	dm_unregister_target(&merge_target);
++		/* Don't make new exceptions in a merging snapshot */
++		if (is_merge(snap->ti))
++			continue;
++
+ 		down_write(&snap->lock);
  
- 	exit_origin_hash();
- 	kmem_cache_destroy(pending_cache);
+ 		/* Only deal with valid and active snapshots */
+@@ -1670,7 +1717,7 @@ static struct target_type merge_target = {
+ 	.module  = THIS_MODULE,
+ 	.ctr     = snapshot_ctr,
+ 	.dtr     = snapshot_dtr,
+-	.map     = snapshot_map,
++	.map     = snapshot_merge_map,
+ 	.end_io  = snapshot_end_io,
+ 	.postsuspend = snapshot_postsuspend,
+ 	.preresume  = snapshot_preresume,
 -- 
 1.6.5.2
 
