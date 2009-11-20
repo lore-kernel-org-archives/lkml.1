@@ -1,47 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZKTJbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbZKTJcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZKTJbt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 04:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZKTJbs
+	id S1754339AbZKTJcO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 04:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZKTJcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 04:31:48 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48184 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZKTJbr (ORCPT
+	Fri, 20 Nov 2009 04:32:14 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:40757 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbZKTJcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 04:31:47 -0500
-To: Pavel Machek <pavel@ucw.cz>
-CC: jlayton@redhat.com, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <20091119213935.GA11212@elf.ucw.cz> (message from Pavel Machek on
-	Thu, 19 Nov 2009 22:39:35 +0100)
-Subject: Re: [PATCH] procfs: make /proc style symlinks behave like "normal"
- symlinks
-References: <1258638251-20034-1-git-send-email-jlayton@redhat.com>
- <m14ooq5tq3.fsf@fess.ebiederm.org>
- <20091119132833.30bc93a4@barsoom.rdu.redhat.com>
- <m1skca2vi3.fsf@fess.ebiederm.org>
- <20091119143555.7851953f@barsoom.rdu.redhat.com> <20091119213935.GA11212@elf.ucw.cz>
-Message-Id: <E1NBPq8-0001D7-F9@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 20 Nov 2009 10:31:40 +0100
+	Fri, 20 Nov 2009 04:32:12 -0500
+Date: Fri, 20 Nov 2009 10:32:13 +0100
+From: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>, Linux RDMA <linux-rdma@vger.kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Joachim Fenkes <fenkes@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>
+Subject: [PATCH resend] ib/ehca: rework destroy_eq()
+Message-ID: <20091120103213.13b7ba81@alex-laptop>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009, Pavel Machek wrote:
-> > Adding the missing revalidations is fine, but I don't believe that
-> > helps to fix Pavel's issue. I'll go back and take a more careful look
-> > at the suggestion that Miklos made and see whether it makes sense to
-> > implement a new FS_* flag for this, and see what it'll take to fix
-> > Pavel's issue.
+The ibmebus_free_irq() function, which might sleep, was called with
+interrupts disabled. To ship around this, make sure that no interrupts
+are running by killing the interrupt tasklet. Also lock the shca_list_lock to
+protect against the poll_eqs_timer running concurrently.
 
-What is this "Pavel's issue"?
+Signed-off-by: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+---
+Hi Roland,
 
-> One posibility would be to make open(/proc/XX/fd/XX) behave like
-> dup(). That should solve the NFS problems, too, no?
+seems like I used your old mail address and I forgot to add the linux-rdma
+list.
 
-You mean, reuse the old "struct file" for the new open?  Or what?
+Please apply this for your "next" tree, thanks.
 
-Thanks,
-Miklos
+ drivers/infiniband/hw/ehca/ehca_classes.h |    1 +
+ drivers/infiniband/hw/ehca/ehca_eq.c      |    9 ++++++---
+ drivers/infiniband/hw/ehca/ehca_main.c    |    2 +-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+--- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_eq.c
++++ linux-2.6/drivers/infiniband/hw/ehca/ehca_eq.c
+@@ -169,12 +169,15 @@ int ehca_destroy_eq(struct ehca_shca *sh
+ 	unsigned long flags;
+ 	u64 h_ret;
+
+-	spin_lock_irqsave(&eq->spinlock, flags);
+ 	ibmebus_free_irq(eq->ist, (void *)shca);
+
+-	h_ret = hipz_h_destroy_eq(shca->ipz_hca_handle, eq);
++	spin_lock_irqsave(&shca_list_lock, flags);
++	eq->is_initialized = 0;
++	spin_unlock_irqrestore(&shca_list_lock, flags);
++
++	tasklet_kill(&eq->interrupt_task);
+
+-	spin_unlock_irqrestore(&eq->spinlock, flags);
++	h_ret = hipz_h_destroy_eq(shca->ipz_hca_handle, eq);
+
+ 	if (h_ret != H_SUCCESS) {
+ 		ehca_err(&shca->ib_device, "Can't free EQ resources.");
+--- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_classes.h
++++ linux-2.6/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -375,6 +375,7 @@ extern rwlock_t ehca_qp_idr_lock;
+ extern rwlock_t ehca_cq_idr_lock;
+ extern struct idr ehca_qp_idr;
+ extern struct idr ehca_cq_idr;
++extern spinlock_t shca_list_lock;
+
+ extern int ehca_static_rate;
+ extern int ehca_port_act_time;
+--- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_main.c
++++ linux-2.6/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -123,7 +123,7 @@ DEFINE_IDR(ehca_qp_idr);
+ DEFINE_IDR(ehca_cq_idr);
+
+ static LIST_HEAD(shca_list); /* list of all registered ehcas */
+-static DEFINE_SPINLOCK(shca_list_lock);
++DEFINE_SPINLOCK(shca_list_lock);
+
+ static struct timer_list poll_eqs_timer;
