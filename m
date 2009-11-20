@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZKTGUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZKTGZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbZKTGUW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 01:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZKTGUV
+	id S1754892AbZKTGZI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 01:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZKTGZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 01:20:21 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:48429 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbZKTGUV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 01:20:21 -0500
-Message-ID: <4B063509.10006@gmail.com>
-Date: Fri, 20 Nov 2009 07:19:53 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 20 Nov 2009 01:25:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34941 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbZKTGZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 01:25:06 -0500
+Message-ID: <4B063614.5030105@kernel.org>
+Date: Fri, 20 Nov 2009 15:24:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Shirley Ma <mashirle@us.ibm.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers and
- big packets in virtio_net
-References: <1258697745.7416.20.camel@localhost.localdomain>
-In-Reply-To: <1258697745.7416.20.camel@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com, avi@redhat.com,
+       peterz@infradead.org, johannes@sipsolutions.net
+Subject: Re: [PATCH 07/19] acpi: use queue_work_on() instead of binding workqueue
+ worker to cpu0
+References: <1258692407-8985-1-git-send-email-tj@kernel.org>	<1258692407-8985-8-git-send-email-tj@kernel.org> <20091119210909.b112bc77.akpm@linux-foundation.org>
+In-Reply-To: <20091119210909.b112bc77.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 20 Nov 2009 07:19:54 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shirley Ma a écrit :
-> This patch is generated against 2.6 git tree. I didn't break up this
-> patch since it has one functionality. Please review it.
-> 
-> Thanks
-> Shirley
-> 
-> Signed-off-by: Shirley Ma <xma@us.ibm.com>
-> ------
->  
-> +void virtio_free_pages(void *buf)
-> +{
-> +	struct page *page = (struct page *)buf;
-> +
-> +	while (page) {
-> +		__free_pages(page, 0);
-> +		page = (struct page *)page->private;
-> +	}
-> +}
-> +
+Hello,
 
-Interesting use after free :)
+11/20/2009 02:09 PM, Andrew Morton wrote:
+>> -	kacpid_wq = create_singlethread_workqueue("kacpid");
+>> -	bind_workqueue(kacpid_wq);
+>> -	kacpi_notify_wq = create_singlethread_workqueue("kacpi_notify");
+>> -	bind_workqueue(kacpi_notify_wq);
+>> -	kacpi_hotplug_wq = create_singlethread_workqueue("kacpi_hotplug");
+>> -	bind_workqueue(kacpi_hotplug_wq);
+>> +	kacpid_wq = create_workqueue("kacpid");
+>> +	kacpi_notify_wq = create_workqueue("kacpi_notify");
+>> +	kacpi_hotplug_wq = create_workqueue("kacpi_hotplug");
+> 
+> Well that sucks.  We create an additional ((num_possible_cpus()-1)*3)
+> kernel threads just because the previous code was "unorthodox"?
+> 
+> I guess that problem goes away with concurrency-managed workqueues. 
+> But please let's not merge this patch without also merging
+> concurrency-managed workqueues!
+
+Yeah, it's just prepping the code for the conversion to concurrency
+managed workqueues.  I'll put this into linux-next for some time
+without full conversion but it will never go upstream without it.
+
+Thanks.
+
+-- 
+tejun
