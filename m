@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZKTAhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbZKTAnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbZKTAhU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 19:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbZKTAhU
+	id S1758020AbZKTAnF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 19:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZKTAnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 19:37:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30641 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757923AbZKTAhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 19:37:18 -0500
-Message-ID: <4B05E4A5.4000501@redhat.com>
-Date: Thu, 19 Nov 2009 19:36:53 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 19 Nov 2009 19:43:04 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:55132 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZKTAnC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 19:43:02 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKZ0BUurR7Hu/2dsb2JhbAC+BpdphDsE
+X-IronPort-AV: E=Sophos;i="4.44,774,1249257600"; 
+   d="scan'208";a="436389746"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Sean Hefty" <sean.hefty@intel.com>
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, <general@lists.openfabrics.org>,
+       <linux-next@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: infiniband tree build failure
+References: <20091120110342.5128b8f8.sfr@canb.auug.org.au>
+	<ada1vju6oa6.fsf@roland-alpha.cisco.com>
+	<6307584467EB4D168602C43E0B185157@amr.corp.intel.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 19 Nov 2009 16:43:07 -0800
+In-Reply-To: <6307584467EB4D168602C43E0B185157@amr.corp.intel.com> (Sean
+	Hefty's message of "Thu, 19 Nov 2009 16:30:55 -0800")
+Message-ID: <adaskca58mc.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip v2 0/3] tracepoint: Add signal events
-References: <20091118211609.20207.55487.stgit@dhcp-100-2-132.bos.redhat.com> <20091119193814.GB2625@redhat.com>
-In-Reply-To: <20091119193814.GB2625@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 20 Nov 2009 00:43:08.0010 (UTC) FILETIME=[6DA77CA0:01CA697A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
 
-Jason Baron wrote:
-> On Wed, Nov 18, 2009 at 04:16:09PM -0500, Masami Hiramatsu wrote:
->> Hi,
->>
->> These patches add signal related tracepoints including
->> signal generation, delivery, and loss. First patch also
->> moves signal-sending tracepoint from events/sched.h to
->> events/signal.h.
->>
->> Changes in v2
->> - Add siginfo arguments
->>
->
-> hi Masami,
->
-> It would be really great if you could add docbook style comments to
-> your tracepoints. Here's the initial path I posted for the irq chapter:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02651.html
->
-> So you could add a new chapter for signals.
+ > Off the top of my head, I'll guess that maybe we need to add something like
 
-Ah, that's a good suggestion. I'll add it next version.
+ > #if defined(CONFIG_IPv6) || defined(CONFIG_IPV6_MODULE)
 
-Thank you,
+Yes, makes sense, I'll throw that in.
 
->
-> The current tracepoint docbook can be viewed at:
->
-> http://www.kernel.org/doc/htmldocs/tracepoint/
->
-> thanks,
->
-> -Jason
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+ - R.
