@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZKTCR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZKTCQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbZKTCR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 21:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758201AbZKTCR5
+	id S1758228AbZKTCQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 21:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZKTCQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 21:17:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7816 "EHLO mx1.redhat.com"
+	Thu, 19 Nov 2009 21:16:49 -0500
+Received: from www.tglx.de ([62.245.132.106]:45600 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758193AbZKTCR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 21:17:56 -0500
-Date: Fri, 20 Nov 2009 03:11:02 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Neil Horman <nhorman@tuxdriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: acct_file_reopen() && do_acct_process() (Was: [PATCH 0/3] extend
-	get/setrlimit to support setting rlimits external to a process (v7))
-Message-ID: <20091120021102.GA5603@redhat.com>
-References: <20091106092600.GC22505@elte.hu> <4AF7D8C2.60807@gmail.com> <20091109090143.GB24020@elte.hu> <4AF83B9A.60702@gmail.com> <20091109164053.GB5160@redhat.com> <4AF84E2F.3010305@gmail.com> <20091109173654.GA8809@redhat.com> <4B040A03.2020508@gmail.com> <20091118231532.GA13039@redhat.com> <4B056791.5090002@gmail.com>
+	id S1757224AbZKTCQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 21:16:49 -0500
+Date: Fri, 20 Nov 2009 03:14:12 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Jeff Law <law@redhat.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       David Daney <ddaney@caviumnetworks.com>, Andrew Haley <aph@redhat.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+In-Reply-To: <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0911200307190.24119@localhost.localdomain>
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>   <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com> <4B05DBBF.5000804@redhat.com> <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain>
+ <alpine.LFD.2.00.0911191652430.2793@localhost.localdomain> <alpine.LFD.2.00.0911200206570.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B056791.5090002@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/19, Jiri Slaby wrote:
->
-> On 11/19/2009 12:15 AM, Oleg Nesterov wrote:
-> > On 11/18, Jiri Slaby wrote:
-> >>
-> >> kernel/acct.c:
-> >>         /*
-> >>          * Accounting records are not subject to resource limits.
-> >>          */
-> >>         flim = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-> >>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = RLIM_INFINITY;
-> >>         file->f_op->write(file, (char *)&ac,
-> >>                                sizeof(acct_t), &file->f_pos);
-> >>         current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
-> >>
-> >> It means that threads of the process with PACCT caps have unlimited file
-> >> size for a short while. If there is setrlimit in between, it gets wiped
-> >> out as well.
-> >
-> > This is called when the whole thread-group exits, there are no
-> > live threads except current.
->
-> Not really, it is called from umount, sys_acct and other paths.
+On Fri, 20 Nov 2009, Thomas Gleixner wrote:
 
-Hmm. you are right. Do you know why acct_file_reopen() does
+> On Thu, 19 Nov 2009, Linus Torvalds wrote:
+> > On Fri, 20 Nov 2009, Thomas Gleixner wrote:
+> > > 
+> > > While testing various kernel configs we found out that the problem
+> > > comes and goes. Finally I started to compare the gcc command line
+> > > options and after some fiddling it turned out that the following
+> > > minimal deltas change the code generator behaviour:
+> > > 
+> > > Bad:  -march=pentium-mmx                -Wa,-mtune=generic32
+> > > Good: -march=i686        -mtune=generic -Wa,-mtune=generic32
+> > > Good: -march=pentium-mmx -mtune-generic -Wa,-mtune=generic32
 
-	if (old_acct)
-		do_acct_process();
+Found some more:
 
-???
+Bad:  -march=k6                   -Wa,-mtune=generic32
+Bad:  -march=geode                -Wa,-mtune=generic32
+Bad:  -march=c3                   -Wa,-mtune=generic32
 
-This looks just strange. What is the point ? If the caller doesn't
-exit, we shouldn't account it?
+That seems every thing which has MMX support but no SSE and is somehow
+compatible to the pentium-mmx.
 
-And this is just wrong, no? Even if we forget about rlim, since
-do_acct_process() does override_creds() + revert_creds(), any
-__task_cred() in between is fooled?
+Looks like the code generator optimization for those was done after
+consuming the secret gcc-shrooms.
 
-Probably I greatly misread something in acct.c, otherwise I can't
-see why, say, mntput() should ever record the caller in acct file.
+Thanks,
 
-IOW: could someone explain why the patch below is wrong?
-
-Oleg.
-
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -206,7 +206,6 @@ static void acct_file_reopen(struct bsd_
- 	if (old_acct) {
- 		mnt_unpin(old_acct->f_path.mnt);
- 		spin_unlock(&acct_lock);
--		do_acct_process(acct, old_ns, old_acct);
- 		filp_close(old_acct, NULL);
- 		spin_lock(&acct_lock);
- 	}
-
+	tglx
