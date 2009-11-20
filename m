@@ -1,39 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZKTVrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZKTVsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489AbZKTVrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 16:47:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZKTVrY
+	id S1755563AbZKTVsW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 16:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZKTVsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 16:47:24 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42919
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754466AbZKTVrY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 16:47:24 -0500
-Date: Fri, 20 Nov 2009 13:47:40 -0800 (PST)
-Message-Id: <20091120.134740.255777264.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: jaswinder@kernel.org, yi.zou@intel.com, peter.p.waskiewicz.jr@intel.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ixgbe: move tc variable to CONFIG_IXGBE_DCB
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9929d2390911201116l562291cbh8e6a557b64fa7ef0@mail.gmail.com>
-References: <9929d2390911200624mf352c28u55a8b2aee8b52fa3@mail.gmail.com>
-	<20091120.111355.141716974.davem@davemloft.net>
-	<9929d2390911201116l562291cbh8e6a557b64fa7ef0@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 16:48:22 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:43198 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754841AbZKTVsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 16:48:21 -0500
+Date: Fri, 20 Nov 2009 15:48:26 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] x86: UV enable RTC clocksource
+Message-ID: <20091120214826.GA20016@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 20 Nov 2009 11:16:54 -0800
+Always enable the RTC clocksource on UV systems.
 
-> :) That is fine.  The end result is the same.
-> 
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Great, applied.
+---
+
+ arch/x86/kernel/uv_time.c |   17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
+
+Index: linux/arch/x86/kernel/uv_time.c
+===================================================================
+--- linux.orig/arch/x86/kernel/uv_time.c	2009-11-20 14:57:31.000000000 -0600
++++ linux/arch/x86/kernel/uv_time.c	2009-11-20 15:41:32.000000000 -0600
+@@ -74,7 +74,6 @@ struct uv_rtc_timer_head {
+  */
+ static struct uv_rtc_timer_head		**blade_info __read_mostly;
+ 
+-static int				uv_rtc_enable;
+ static int				uv_rtc_evt_enable;
+ 
+ /*
+@@ -335,14 +334,6 @@ static void uv_rtc_interrupt(void)
+ 	ced->event_handler(ced);
+ }
+ 
+-static int __init uv_enable_rtc(char *str)
+-{
+-	uv_rtc_enable = 1;
+-
+-	return 1;
+-}
+-__setup("uvrtc", uv_enable_rtc);
+-
+ static int __init uv_enable_evt_rtc(char *str)
+ {
+ 	uv_rtc_evt_enable = 1;
+@@ -364,12 +355,16 @@ static __init int uv_rtc_setup_clock(voi
+ {
+ 	int rc;
+ 
+-	if (!uv_rtc_enable || !is_uv_system() || x86_platform_ipi_callback)
++	if (!is_uv_system())
+ 		return -ENODEV;
+ 
+ 	clocksource_uv.mult = clocksource_hz2mult(sn_rtc_cycles_per_second,
+ 				clocksource_uv.shift);
+ 
++	/* If single blade, prefer tsc */
++	if (uv_num_possible_blades() == 1)
++		clocksource_uv.rating = 250;
++
+ 	rc = clocksource_register(&clocksource_uv);
+ 	if (rc)
+ 		printk(KERN_INFO "UV RTC clocksource failed rc %d\n", rc);
+@@ -377,7 +372,7 @@ static __init int uv_rtc_setup_clock(voi
+ 		printk(KERN_INFO "UV RTC clocksource registered freq %lu MHz\n",
+ 			sn_rtc_cycles_per_second/(unsigned long)1E6);
+ 
+-	if (rc || !uv_rtc_evt_enable)
++	if (rc || !uv_rtc_evt_enable || x86_platform_ipi_callback)
+ 		return rc;
+ 
+ 	/* Setup and register clockevents */
