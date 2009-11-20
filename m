@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZKTOUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZKTOYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753751AbZKTOUY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZKTOUX
+	id S1753678AbZKTOYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZKTOYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:20:23 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:58958 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347AbZKTOUU (ORCPT
+	Fri, 20 Nov 2009 09:24:16 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:37847 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752557AbZKTOYP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 09:20:20 -0500
-Date: Fri, 20 Nov 2009 15:19:59 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, feng.tang@intel.com
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/urgent] hrtimer: Fix /proc/timer_list regression
-Message-ID: <20091120141959.GA6781@osiris.boeblingen.de.ibm.com>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
- <tip-8629ea2eaba8ca0de2e38ce1b4a825e16255976e@git.kernel.org>
+	Fri, 20 Nov 2009 09:24:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=GPVEQ+WSeKQdjD4ObqL8jkuoH8eNrxi1zT3mfoqfd2xygxFYgDrpmlw1FLnJNyottD
+         WxgwKykD1CaBONcceTINB5wmVWRt2Eww7I1T8otGYMt3TrCEK6XVbh4VnhGgIbm4Sv51
+         X0enQ+CgNOA9l0sEyflJtDTkbwzwTfVPySUnM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-8629ea2eaba8ca0de2e38ce1b4a825e16255976e@git.kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1258725747.3562.5.camel@ht.satnam>
+References: <1258725747.3562.5.camel@ht.satnam>
+Date: Fri, 20 Nov 2009 06:24:21 -0800
+X-Google-Sender-Auth: 9a77a140e1dd05ad
+Message-ID: <9929d2390911200624mf352c28u55a8b2aee8b52fa3@mail.gmail.com>
+Subject: Re: [PATCH] ixgbe: move tc variable to CONFIG_IXGBE_DCB
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: David Miller <davem@davemloft.net>, Yi Zou <yi.zou@intel.com>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 10:30:39AM +0000, tip-bot for Feng Tang wrote:
-> Commit-ID:  8629ea2eaba8ca0de2e38ce1b4a825e16255976e
-> Gitweb:     http://git.kernel.org/tip/8629ea2eaba8ca0de2e38ce1b4a825e16255976e
-> Author:     Feng Tang <feng.tang@intel.com>
-> AuthorDate: Thu, 3 Sep 2009 16:32:53 +0800
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Fri, 20 Nov 2009 11:25:48 +0100
-> 
-> hrtimer: Fix /proc/timer_list regression
-> 
-> commit 507e1231 (timer stats: Optimize by adding quick check to avoid
-> function calls) introduced a regression in /proc/timer_list.
-> 
-> /proc/timer_list shows now
->  #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
-> instead of
->  #0: <c27d46b0>, tick_sched_timer, S:01, hrtimer_start, swapper/0
+On Fri, Nov 20, 2009 at 06:02, Jaswinder Singh Rajput
+<jaswinder@kernel.org> wrote:
+>
+> tc is required by CONFIG_IXGBE_DCB.
+> This also fixes compilation warning:
+>
+>  drivers/net/ixgbe/ixgbe_main.c: In function ‘ixgbe_tx_is_paused’:
+>  drivers/net/ixgbe/ixgbe_main.c:245: warning: unused variable ‘tc’
+>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  drivers/net/ixgbe/ixgbe_main.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+> index ebcec30..61a02ce 100644
+> --- a/drivers/net/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ixgbe/ixgbe_main.c
+> @@ -242,11 +242,11 @@ static void ixgbe_unmap_and_free_tx_resource(struct ixgbe_adapter *adapter,
+>  static inline bool ixgbe_tx_is_paused(struct ixgbe_adapter *adapter,
+>                                       struct ixgbe_ring *tx_ring)
+>  {
+> -       int tc;
+>        u32 txoff = IXGBE_TFCS_TXOFF;
+>
+>  #ifdef CONFIG_IXGBE_DCB
+>        if (adapter->flags & IXGBE_FLAG_DCB_ENABLED) {
+> +               int tc;
+>                int reg_idx = tx_ring->reg_idx;
+>                int dcb_i = adapter->ring_feature[RING_F_DCB].indices;
+>
+> --
+> 1.6.5.3
+>
+>
+> --
 
-For a 'real' fix I see three possible ways if timer_stats are disabled:
+I just submitted a patch to fix this.  So NAK.
 
-Print something like:
-
-#0: <c27d46b0>, tick_sched_timer, S:01, unknown, unknown/-1
-
-That way the format would be still the same and it should be quite obvious
-that timer_stats are disabled and should be enabled.
-
-Alternatively leave start_site, taskname and pid away if the correspending
-timer has a NULL start_site. That would be the same like for the !TIMER_STATS
-case:
-
-#0: <c27d46b0>, tick_sched_timer, S:01
-
-or (worst choice) revert the whole optimization and live with extra cpu cost.
+-- 
+Cheers,
+Jeff
