@@ -1,68 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZKTU23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZKTU2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbZKTU23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZKTU2Z
+	id S1756040AbZKTU2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbZKTU16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:28:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34850 "EHLO mx1.redhat.com"
+	Fri, 20 Nov 2009 15:27:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29471 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755993AbZKTU14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755481AbZKTU14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Nov 2009 15:27:56 -0500
 From: Mike Snitzer <snitzer@redhat.com>
 To: dm-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH v4 12/13] dm snapshot: redirect accesses to origin if merging snap invalidated
-Date: Fri, 20 Nov 2009 15:27:52 -0500
-Message-Id: <1258748873-24185-13-git-send-email-snitzer@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v4 13/13] dm snapshot: merge a linear region of chunks using one large IO
+Date: Fri, 20 Nov 2009 15:27:53 -0500
+Message-Id: <1258748873-24185-14-git-send-email-snitzer@redhat.com>
 In-Reply-To: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
 References: <1258748873-24185-1-git-send-email-snitzer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+s->store->type->prepare_merge returns the number of chunks that can be
+linearly copied starting from the returned chunk number backward (but
+the caller is allowed to copy less, and the caller passes the number of
+copied chunks to s->store->type->commit_merge).
 
-If we are merging an invalidated snapshot, redirect all accesses to the
-origin device.  This is safe because snapshot_merge_process() will
-stop_merge() if the merging snapshot becomes invalid.
+I.e. if returned chunk numbers are old_chunk == 10 and new_chunk == 20
+and returned value is 3, then chunk 20 can be copied to 10, chunk 19 to
+9 and 18 to 8.
 
-Allowing the origin device to remain functional is important because it
-may contain the root filesystem.
+s->merge_write_interlock_n has been increased up to the full range of
+chunks returned from s->store->type->prepare_merge.  Until now kcopyd
+was only ever allowed to copy one chunk at a time; as a result
+snapshot-merge performance was extremely slow.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Reviewed-by: Mike Snitzer <snitzer@redhat.com>
+Relative to the snapshot target, snapshot-merge's performance is now
+comparable.
+
+Also, snapshot_merge_process() needs to delay the merging of _all_
+chunks that have in-progress writes; not just the first chunk in the
+region that is to be merged.
+
+Signed-off-by: Mike Snitzer <snitzer@redhat.com>
 ---
- drivers/md/dm-snap.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/md/dm-snap.c |   35 +++++++++++++++++++++++------------
+ 1 files changed, 23 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/md/dm-snap.c b/drivers/md/dm-snap.c
-index 2b5b083..74f7f38 100644
+index 74f7f38..4d6387e 100644
 --- a/drivers/md/dm-snap.c
 +++ b/drivers/md/dm-snap.c
-@@ -1554,11 +1554,9 @@ static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
+@@ -752,11 +752,12 @@ static void merge_callback(int read_err, unsigned long write_err,
  
- 	down_write(&s->lock);
+ static void snapshot_merge_process(struct dm_snapshot *s)
+ {
+-	int r;
++	int r, i, linear_chunks;
+ 	chunk_t old_chunk, new_chunk, n;
+ 	struct origin *o;
+ 	int must_wait;
+ 	struct dm_io_region src, dest;
++	sector_t io_size;
  
--	/* Full snapshots are not usable */
--	if (!s->valid) {
--		r = -EIO;
--		goto out_unlock;
--	}
-+	/* Full merging snapshots are redirected to the origin */
-+	if (!s->valid)
-+		goto redirect_to_origin;
- 
- 	/* If the block is already remapped - use that */
- 	e = dm_lookup_exception(&s->complete, chunk);
-@@ -1581,6 +1579,7 @@ static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
- 		goto out_unlock;
+ 	BUG_ON(!s->merge_running);
+ 	if (s->merge_shutdown)
+@@ -767,27 +768,34 @@ static void snapshot_merge_process(struct dm_snapshot *s)
+ 		goto shut;
  	}
  
-+ redirect_to_origin:
- 	bio->bi_bdev = s->origin->bdev;
+-	r = s->store->type->prepare_merge(s->store, &old_chunk, &new_chunk);
+-	if (r <= 0) {
+-		if (r < 0)
++	linear_chunks = s->store->type->prepare_merge(s->store,
++						      &old_chunk, &new_chunk);
++	if (linear_chunks <= 0) {
++		if (linear_chunks < 0)
+ 			DMERR("Read error in exception store, "
+ 			      "shutting down merge");
+ 		goto shut;
+ 	}
++	/* Adjust old_chunk and new_chunk to reflect start of linear region */
++	old_chunk = old_chunk + 1 - linear_chunks;
++	new_chunk = new_chunk + 1 - linear_chunks;
  
- 	if (bio_rw(bio) == WRITE) {
+-	/* TODO: use larger I/O size once we verify that kcopyd handles it */
++	/*
++	 * Use one (potentially large) I/O to copy all 'linear_chunks'
++	 * from the exception store to the origin
++	 */
++	io_size = linear_chunks * s->store->chunk_size;
+ 
+ 	dest.bdev = s->origin->bdev;
+ 	dest.sector = chunk_to_sector(s->store, old_chunk);
+-	dest.count = min((sector_t)s->store->chunk_size,
+-			 get_dev_size(dest.bdev) - dest.sector);
++	dest.count = min(io_size, get_dev_size(dest.bdev) - dest.sector);
+ 
+ 	src.bdev = s->cow->bdev;
+ 	src.sector = chunk_to_sector(s->store, new_chunk);
+ 	src.count = dest.count;
+ 
+ test_again:
+-	/* Reallocate other snapshots */
++	/* Reallocate other snapshots; must account for all 'linear_chunks' */
+ 	must_wait = 0;
+ 	/*
+ 	 * Merging snapshot already has the origin's __minimum_chunk_size()
+@@ -796,7 +804,7 @@ test_again:
+ 	BUG_ON(!s->ti->split_io);
+ 	down_read(&_origins_lock);
+ 	o = __lookup_origin(s->origin->bdev);
+-	for (n = 0; n < s->store->chunk_size; n += s->ti->split_io) {
++	for (n = 0; n < io_size; n += s->ti->split_io) {
+ 		r = __origin_write(&o->snapshots, dest.sector + n, NULL);
+ 		if (r == DM_MAPIO_SUBMITTED)
+ 			must_wait = 1;
+@@ -809,11 +817,14 @@ test_again:
+ 
+ 	down_write(&s->lock);
+ 	s->merge_write_interlock = old_chunk;
+-	s->merge_write_interlock_n = 1;
++	s->merge_write_interlock_n = linear_chunks;
+ 	up_write(&s->lock);
+ 
+-	while (__chunk_is_tracked(s, old_chunk))
+-		msleep(1);
++	/* Wait until writes to all 'linear_chunks' drain */
++	for (i = 0; i < linear_chunks; i++) {
++		while (__chunk_is_tracked(s, old_chunk + i))
++			msleep(1);
++	}
+ 
+ 	dm_kcopyd_copy(s->kcopyd_client, &src, 1, &dest, 0, merge_callback, s);
+ 	return;
 -- 
 1.6.5.2
 
