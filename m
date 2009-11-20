@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZKTMVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZKTMYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbZKTMVo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZKTMVn
+	id S1753219AbZKTMYp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZKTMYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:21:43 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:63552 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbZKTMVn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:21:43 -0500
-Subject: Re: [PATCH 1/1] Add all TWL4030 regulators to Regulator framework
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
-	<ext-juha.1.keski-saari@nokia.com>,
-       "Peter 'p2' De Schrijver" <peter.de-schrijver@nokia.com>,
-       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-       "dtor@mail.ru" <dtor@mail.ru>,
-       "Kristo Tero (Nokia-D/Tampere)" <Tero.Kristo@nokia.com>
-In-Reply-To: <20091120112812.GC20236@rakim.wolfsonmicro.main>
-References: <4B03DE53.6010007@nokia.com> <4B03DE9B.40800@nokia.com>
-	 <20091118133938.GE6592@rakim.wolfsonmicro.main>
-	 <20091118143609.GD2832@esdhcp037198.research.nokia.com>
-	 <20091118144145.GA16852@rakim.wolfsonmicro.main>
-	 <4B04EDE8.1010906@nokia.com>
-	 <20091119092412.GA4696@codecarver.research.nokia.com>
-	 <20091119103054.GC9763@rakim.wolfsonmicro.main>
-	 <20091120100633.GE3733@sortiz.org> <1258713145.3640.11.camel@odin>
-	 <20091120112812.GC20236@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 20 Nov 2009 12:21:43 +0000
-Message-ID: <1258719703.3640.41.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 20 Nov 2009 07:24:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33962 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750907AbZKTMYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 07:24:44 -0500
+Message-ID: <4B068A10.2090608@redhat.com>
+Date: Fri, 20 Nov 2009 12:22:40 +0000
+From: Andrew Haley <aph@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Jeff Law <law@redhat.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
+       gcc@gcc.gnu.org
+Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
+References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>   <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com> <4B05DBBF.5000804@redhat.com> <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain> <4B0685B7.4060601@redhat.com>
+In-Reply-To: <4B0685B7.4060601@redhat.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 11:28 +0000, Mark Brown wrote:
-> On Fri, Nov 20, 2009 at 10:32:25AM +0000, Liam Girdwood wrote:
-> > On Fri, 2009-11-20 at 11:06 +0100, Samuel Ortiz wrote:
+Andrew Haley wrote:
+> Thomas Gleixner wrote:
 > 
-> > > Would you mind carrying this one with your twl4030-mfd branch ? It doesnt
-> > > apply cleanly to my tree due to the missing twl4030 patches from Peter.
+>> While testing various kernel configs we found out that the problem
+>> comes and goes. Finally I started to compare the gcc command line
+>> options and after some fiddling it turned out that the following
+>> minimal deltas change the code generator behaviour:
+>>
+>> Bad:  -march=pentium-mmx                -Wa,-mtune=generic32
+>> Good: -march=i686        -mtune=generic -Wa,-mtune=generic32
+>> Good: -march=pentium-mmx -mtune-generic -Wa,-mtune=generic32
+>>
+>> I'm not supposed to understand the logic behind that, right ?
 > 
-> > > Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+> I don't either.  I'm seeing:
 > 
-> > Juha, this doesn't apply to regulator for-next either. Is it possible to
-> > split it out into a patch for mfd and a patch for regulator (against
-> > their for-next branches) ?
+> timer_stats_update_stats:                                       timer_stats_update_stats:
+>         pushl   %edi                                          <
+>         leal    8(%esp), %edi                                 <
+>         andl    $-16, %esp                                    <
+>         pushl   -4(%edi)                                      <
+>         pushl   %ebp                                                    pushl   %ebp
+>         movl    %esp, %ebp                                              movl    %esp, %ebp
+>         pushl   %edi                                          |         andl    $-16, %esp
+>         pushl   %esi                                          |         subl    $112, %esp
+>         pushl   %ebx                                          |         movl    %ebx, 100(%esp)
+>         subl    $108, %esp                                    |         movl    %esi, 104(%esp)
+>                                                               >         movl    %edi, 108(%esp)
+>         call    mcount                                                  call    mcount
 > 
-> Either the existing twl4030-mfd branch or split patches work for me.
+> where the only difference is -mtune=generic.  I'm investigating.
 
-What's the upstream path for your twl4030-mfd ASoC branch ? 
+Forget that, I see from the gcc-bugs list that hj has tracked it down to
+the use of DRAP, and for some reason the mtune options affect that.  He's
+the best person to fix this.
 
-Regulator + mfd patches either go upstream via the regulator or mfd
-repositories.  
-
-Liam
-
+Andrew.
