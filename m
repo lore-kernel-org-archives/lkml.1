@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZKTPGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZKTPJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbZKTPGs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 10:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZKTPGr
+	id S1753757AbZKTPJU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 10:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZKTPJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 10:06:47 -0500
-Received: from THUNK.ORG ([69.25.196.29]:36342 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753887AbZKTPGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 10:06:46 -0500
-Date: Fri, 20 Nov 2009 10:06:48 -0500
-From: tytso@mit.edu
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Dmitry Monakhov <rjevskiy@gmail.com>, Sage Weil <sage@newdream.net>
-Subject: Re: [Bug #14619] ext3/jbd oops in journal_start
-Message-ID: <20091120150648.GB4921@thunk.org>
-Mail-Followup-To: tytso@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Chris Mason <chris.mason@oracle.com>,
-	Dmitry Monakhov <rjevskiy@gmail.com>, Sage Weil <sage@newdream.net>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
- <xXQGFmujPl.A.wQG.8SdALB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <xXQGFmujPl.A.wQG.8SdALB@chimera>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 20 Nov 2009 10:09:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46128 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753306AbZKTPJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 10:09:19 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: paulmck@linux.vnet.ibm.com, linux-mm@kvack.org, cl@linux-foundation.org,
+       mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <4B067816.6070304@cs.helsinki.fi>
+References: <20091118181202.GA12180@linux.vnet.ibm.com>
+	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop>  <4B067816.6070304@cs.helsinki.fi>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 16:09:08 +0100
+Message-ID: <1258729748.4104.223.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 11:37:46PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Fri, 2009-11-20 at 13:05 +0200, Pekka Enberg wrote:
+> Peter Zijlstra kirjoitti:
+> > On Fri, 2009-11-20 at 12:38 +0200, Pekka Enberg wrote:
+> >>
+> >> On Fri, Nov 20, 2009 at 11:25 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >>>  2) propagate the nesting information and user spin_lock_nested(), given
+> >>> that slab is already a rat's nest, this won't make it any less obvious.
+> >> spin_lock_nested() doesn't really help us here because there's a
+> >> _real_ possibility of a recursive spin lock here, right? 
+> > 
+> > Well, I was working under the assumption that your analysis of it being
+> > a false positive was right ;-)
+> > 
+> > I briefly tried to verify that, but got lost and gave up, at which point
+> > I started looking for ways to annotate.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.31.  Please verify if it still should be listed and let me know
-> (either way).
+> Uh, ok, so apparently I was right after all. There's a comment in 
+> free_block() above the slab_destroy() call that refers to the comment 
+> above alloc_slabmgmt() function definition which explains it all.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14619
-> Subject		: ext3/jbd oops in journal_start
-> Submitter	: Sage Weil <sage@newdream.net>
-> Date		: 2009-10-31 6:14 (17 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125696970418300&w=4
-> 
+> Long story short: ->slab_cachep never points to the same kmalloc cache 
+> we're allocating or freeing from. Where do we need to put the 
+> spin_lock_nested() annotation? Would it be enough to just use it in 
+> cache_free_alien() for alien->lock or do we need it in 
+> cache_flusharray() as well?
 
-Sage, any updates on this?  What was the last kernel version where you
-weren't having this problem?  Sounds like you can't mount any ext3
-file systems at all?
+You'd have to somehow push the nested state down from the
+kmem_cache_free() call in slab_destroy() to all nc->lock sites below.
 
-					- Ted
+
