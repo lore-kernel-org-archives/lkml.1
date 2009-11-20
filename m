@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZKTRTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZKTR7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbZKTRTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZKTRTm
+	id S1755054AbZKTR7q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 12:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZKTR7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:19:42 -0500
-Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:33336 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754281AbZKTRTm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:19:42 -0500
-Message-ID: <4B06CFB1.1090104@internode.on.net>
-Date: Sat, 21 Nov 2009 03:49:45 +1030
-From: indexer <indexer@internode.on.net>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 20 Nov 2009 12:59:44 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:59093 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754999AbZKTR7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 12:59:43 -0500
+X-Greylist: delayed 2212 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 12:58:46 EST
+Date: Fri, 20 Nov 2009 17:20:39 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: rostedt@goodmis.org, Nicholas Mc Guire <der.herr@hofr.at>,
+       zhangfx@lemote.com, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Wu Zhangjin <wuzj@lemote.com>
+Subject: Re: [PATCH v9 03/10] tracing: add an endian argument to
+	scripts/recordmcount.pl
+Message-ID: <20091120172039.GA6869@linux-mips.org>
+References: <cover.1258719323.git.wuzhangjin@gmail.com> <267c0824194b659b46fc038ba43492df30369fec.1258719323.git.wuzhangjin@gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Regression in efi.c 2.6.32-rc7
-References: <4B065C44.5000209@internode.on.net> <4B06CE9D.3030003@zytor.com>
-In-Reply-To: <4B06CE9D.3030003@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <267c0824194b659b46fc038ba43492df30369fec.1258719323.git.wuzhangjin@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 11/20/2009 01:07 AM, indexer wrote:
->   
->> Peter, Huang
->>
->> I have finally solved the issues i had with bisecting and have completed
->> successfully bisecting the efi issue. It exists between 2.6.30-rc7 and
->> 2.6.30-rc8.
->>
->> 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3 is the first bad commit
->> commit 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3
->> Author: Linus Torvalds <torvalds@linux-foundation.org>
->> Date:   Tue Jun 2 20:07:25 2009 -0700
->>
->>     Linux 2.6.30-rc8
->>
->> :100644 100644 739fd34a72a2422f14937ccd084f77d52edc0fc1
->> 610d1c332c45d1d8d2da3adc42e0fb0ad20c7123 M    Makefile
->>
->> Is the output of git bisect. I hope this helps to find the problem and
->> resolve it
->>
->> William
->>     
->
-> That can't be right.  That patch only changes the version number.
->
-> 	-hpa
->
->   
-This is what git bisect told me. I will redo it and expand my parameters.
+On Fri, Nov 20, 2009 at 08:34:31PM +0800, Wu Zhangjin wrote:
 
-William
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
+> 
+> MIPS and some other architectures need this argument to handle
+> big/little endian respectively.
+> 
+> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+
+This one is a bit problematic because you seem to have generated the
+patch against linux-next but I'm applying it on the MIPS -queue tree and
+some other changes on -next are now resulting in a conflict.  And
+Steven Rostedt is going to merge a few more changes which he says will
+conflict.
+
+So I put this patch on the queue tree but may not propagate it immediately
+to linux-next.
+
+Thanks!
+
+  Ralf
