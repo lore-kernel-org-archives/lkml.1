@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZKTSnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZKTSfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZKTSnk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZKTSnk
+	id S1755056AbZKTSfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZKTSfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:43:40 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:53633 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753760AbZKTSnj (ORCPT
+	Fri, 20 Nov 2009 13:35:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:48586 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754845AbZKTSfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:43:39 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: [PATCH v4] [RFC] NEXIO (or iNexio) support for usbtouchscreen
-Date: Fri, 20 Nov 2009 19:43:46 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux-kernel@vger.kernel.org
-References: <200911161515.00907.linux@rainbow-software.org> <200911191756.04615.oliver@neukum.org> <200911201021.45410.linux@rainbow-software.org>
-In-Reply-To: <200911201021.45410.linux@rainbow-software.org>
+	Fri, 20 Nov 2009 13:35:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=TUlsJ9fLh4SsHS8VoDWb8GaZH2amzYO0Fwj27Pwxa/WWIjQb9hFgFz9Pujdzp5lzrV
+         idjErhkwRisfz+sI3ieea47Kfyc3QaGJj8Z/1uabEA2jYgio+A/tkqZqE1nZqYBcH0bP
+         YZGkq4vdjCPqaa0zIDwBO0o9sfNat65aF2Tm4=
+Message-ID: <4B06E477.3000503@gmail.com>
+Date: Fri, 20 Nov 2009 19:48:23 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       ibm-acpi-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] thinkpad-acpi: should error return be nagative?
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911201943.46696.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 20. November 2009 10:21:43 schrieb Ondrej Zary:
-> On Thursday 19 November 2009, Oliver Neukum wrote:
-> > > +struct nexio_priv {
-> > > +	struct urb *ack;
-> > > +	char ack_buf[2];
-> > > +};
-> >
-> > No. Every buffer needs to have an exclusive cache line for DMA
-> > to work on the incoherent archotectures. Therefore you must allocate
-> > each buffer with its own kmalloc.
-> 
-> OK, thanks for your patience.
+The returned error should be negative
 
-No problem. I should have explained better.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/platform/x86/thinkpad_acpi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > > +	/* read replies */
-> > > +	for (i = 0; i < 3; i++) {
-> > > +		memset(buf, 0, NEXIO_BUFSIZE);
-> > > +		ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP),
-> > > +				   buf, NEXIO_BUFSIZE, &actual_len,
-> > > +				   NEXIO_TIMEOUT);
-> > > +		if (ret < 0 || actual_len < 1 || buf[1] != actual_len)
-> > > +			continue;
-> > > +		switch (buf[0]) {
-> > > +			case 0x83:	/* firmware version */
-> > > +				firmware_ver = kstrdup(&buf[2], GFP_KERNEL);
+Is this maybe required?
 
-On second thought this is not nice. If a device is broken enough to report
-a name or a firmware version twice, you produce a memory leak.
-Do you know very buggy devices to exist?
-
-> > > +				break;
-> > > +			case 0x84:	/* device name */
-> > > +				device_name = kstrdup(&buf[2], GFP_KERNEL);
-> > > +				break;
-> > > +		}
-> > > +	}
-> > > +	printk(KERN_INFO "Nexio device: %s, firmware version: %s\n",
-> > > +	       device_name, firmware_ver);
-> >
-> > How do you know device_name and firmware_ver are not NULL?
-> 
-> printk works fine with NULL, it prints <NULL>. Is it necessary to add more
-> code only to make the output nice?
-
-No, for niceness it is not necessary. The question is whether you want
-to treat this as an error or print a warning. That is a matter of taste.
+diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
+index d93108d..03c0a56 100644
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -6313,7 +6313,7 @@ static int brightness_write(char *buf)
+ 	 * Doing it this way makes the syscall restartable in case of EINTR
+ 	 */
+ 	rc = brightness_set(level);
+-	return (rc == -EINTR)? ERESTARTSYS : rc;
++	return (rc == -EINTR)? -ERESTARTSYS : rc;
+ }
  
-
- 
-> Looks like a bug in the original usbtouchscreen code. There's no locking.
-> Will a spinlock in usbtouch_open() and usbtouch_disconnect() fix it? Or
-> do you see more problems here?
-
-You must not call usb_kill_urb() with a spinlock held.
-I'll lokk at the usbtouchscreen code.
-The new version looks good to me.
-
-	Regards
-		Oliver
+ static struct ibm_struct brightness_driver_data = {
