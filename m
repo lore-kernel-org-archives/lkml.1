@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbZKTI7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbZKTJCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbZKTI7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 03:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZKTI7s
+	id S1753554AbZKTJCf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 04:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZKTJCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 03:59:48 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:47765 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbZKTI7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 03:59:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lNTj5BLFTCvnXcyjfswsJlt5pHp3kz6++QVSjcCxpJULS0ANPgWhZhiJC1xG6gxFeU
-         9FTMpalOdJhdJ7l/Yd6QLO8Jgl0xo8HbggMjJhvWnUKipy0ZZ2KAb66jamsK/qSDPU2b
-         h2cEGrNxkz6Irbikw/N1pm6BqcHlGtLNR9HX4=
-Date: Fri, 20 Nov 2009 00:58:58 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>,
-       linux-omap@vger.kernel.org, Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: linux-next: manual merge of the input tree with the omap tree
-Message-ID: <20091120085858.GE3009@core.coreip.homeip.net>
-References: <20091119131216.da16845c.sfr@canb.auug.org.au> <20091119025329.GV29266@atomide.com>
+	Fri, 20 Nov 2009 04:02:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48661 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbZKTJCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 04:02:32 -0500
+Date: Fri, 20 Nov 2009 10:01:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
+Message-ID: <20091120090134.GD19778@elte.hu>
+References: <4B064AF5.9060208@cn.fujitsu.com>
+ <20091120081440.GA19778@elte.hu>
+ <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com>
+ <20091120083053.GB19778@elte.hu>
+ <4B0657A4.2040606@cs.helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091119025329.GV29266@atomide.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B0657A4.2040606@cs.helsinki.fi>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 06:53:30PM -0800, Tony Lindgren wrote:
-> 
-> Dmitry, could you please drop 5018461a887d58f4601207deeebb7c352c2da20a from
-> your tree now?
-> 
 
-Done.
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
--- 
-Dmitry
+> Ingo Molnar kirjoitti:
+> >Regarding patch 2 - can we set some definitive benchmark threshold
+> >for that? I.e. a list of must-have features in 'perf kmem' before
+> >we can do it? 100% information and analysis equivalency with
+> >kmemtrace-user tool?
+> 
+> I'd be interested to hear Eduard's comment on that.
+> 
+> That said, I'll try to find some time to test "perf kmem" and
+> provide feedback on that. I can ACK the patch when I'm happy with
+> the output. :-)
+> 
+> I'm mostly interested in two scenarios: (1) getting a nice report on
+> worst fragmented call-sites (perf kmem needs symbol lookup) and (2)
+> doing "perf kmem record" on machine A (think embedded here) and then
+> "perf kmem report" on machine B. I haven't tried kmemtrace-user for
+> a while but it did support both of them quite nicely at some point.
+
+The perf.data can be copied over and to get off-side kernel symbol 
+resolution you can specify the kernel vmlinux via -k/--vmlinux to perf 
+report, then perf will look up the symbols from that vmlinux.
+
+Cross word-size data files should work fine - cross-endian probably 
+needs a few fixes.
+
+Plus off-site user-space symbols need more work, right now we dont 
+embedd them in the perf.data. It would need a symbol lookup + embedd-it 
+pass in perf record (perhaps available as a separate 'perf archive' 
+command as well), and some smarts on the reporting side to make use of 
+them. (Probably a copy of all relevant DSOs is what works best - that 
+enables off-site annotate as well.)
+
+But ... even without that, perf is really fast and is supposed to build 
+fine even in minimal (embedded) environments, so you can run it on the 
+embedded board too. That's useful to get live inspection features like 
+'perf top', 'perf stat' and 'perf probe' anyway.
+
+	Ingo
