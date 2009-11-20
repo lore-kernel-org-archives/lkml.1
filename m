@@ -1,55 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZKTTSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZKTTTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZKTTSG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 14:18:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbZKTTSF
+	id S1755410AbZKTTTI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 14:19:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZKTTTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 14:18:05 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51315 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755204AbZKTTSE (ORCPT
+	Fri, 20 Nov 2009 14:19:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:55110 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755204AbZKTTTG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 14:18:04 -0500
+	Fri, 20 Nov 2009 14:19:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=LfwA8V8/G0ML0O4zadFiFPySvlQspVqx/oR79ji+3nipS3sM+17KJXB7YAdzSm+93B
-         amYjHYC0wjlyzqT3oHFa+P/FlVS6yVfpYqry+Uz52SNSRhPTZ+zwGh25lo869UJYa3sW
-         fXX0iCG2uvBb+5PKs5X/e3DIQ9HcP+OWKS2p4=
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=t5BRbaI5ClOXA4hVJ5bo9KUEn0NlVqwRU7VmUAuIKgv/cxdCuwnDXK1wzIHA9PFviL
+         EUL/Mu9TMq+JWR8RA/Ot0EBlM+PnGkWaENZ1SACdCMelN4fvaUM6Axg1e0Gd8FLbAPqg
+         HLVJ17YLn8wnDSFWy55Zki+Tzek5XeT4z/7bs=
 MIME-Version: 1.0
-In-Reply-To: <20091119193447.GA29091@kroah.com>
-References: <1256861066-21954-1-git-send-email-tfransosi@gmail.com>
-	 <20091106224728.GA32205@kroah.com>
-	 <a4c8a6d00911061547x3d502de5i8a459385e1a5a9ff@mail.gmail.com>
-	 <20091107000749.GA26070@kroah.com>
-	 <a4c8a6d00911061723v6017ad7bqf96ba7c905922a45@mail.gmail.com>
-	 <a4c8a6d00911061745s4508d997v684683a1dbad821d@mail.gmail.com>
-	 <20091119193447.GA29091@kroah.com>
-Date: Fri, 20 Nov 2009 17:18:09 -0200
-Message-ID: <a4c8a6d00911201118n7607b0f8nf56f7af1e071afb6@mail.gmail.com>
-Subject: Re: [PATCH v2] staging/otus: trivial, fix sparse warnig.
-From: Thiago Farina <tfransosi@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       Luis.Rodriguez@atheros.com
+Date: Fri, 20 Nov 2009 20:19:10 +0100
+X-Google-Sender-Auth: 32aa3d0f0c20c28c
+Message-ID: <10f740e80911201119h6db1e2e1t2c6d40ef1e614094@mail.gmail.com>
+Subject: [PATCH] net: ETHOC should depend on HAS_DMA (was: Re: [PATCH] ETHOC: 
+	fix build breakage on s390)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Thierry Reding <thierry.reding@avionic-design.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
-
-On Thu, Nov 19, 2009 at 5:34 PM, Greg KH <greg@kroah.com> wrote:
-> On Fri, Nov 06, 2009 at 11:45:05PM -0200, Thiago Farina wrote:
->> *apdbg.c: use NULL pointer instead of 0 integer.
->>
->> Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+On Mon, Mar 30, 2009 at 10:30, Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 >
-> Still doesn't apply, I don't know what you are doing wrong here :(
+> Let driver depend on HAS_IOMEM to avoid build breakage on s390:
 >
-> odd.
+>  CC      drivers/net/ethoc.o
+> drivers/net/ethoc.c: In function 'ethoc_read':
+> drivers/net/ethoc.c:221: error: implicit declaration of function 'ioread32'
+> drivers/net/ethoc.c: In function 'ethoc_write':
+> drivers/net/ethoc.c:226: error: implicit declaration of function 'iowrite32'
+> drivers/net/ethoc.c: In function 'ethoc_rx':
+> drivers/net/ethoc.c:405: error: implicit declaration of function 'memcpy_fromio'
+> drivers/net/ethoc.c: In function 'ethoc_start_xmit':
+> drivers/net/ethoc.c:828: error: implicit declaration of function 'memcpy_toio'
+>
+> Cc: Thierry Reding <thierry.reding@avionic-design.de>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  drivers/net/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux-2.6/drivers/net/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/Kconfig
+> +++ linux-2.6/drivers/net/Kconfig
+> @@ -974,7 +974,7 @@ config ENC28J60_WRITEVERIFY
+>
+>  config ETHOC
+>        tristate "OpenCores 10/100 Mbps Ethernet MAC support"
+> -       depends on NET_ETHERNET
+> +       depends on NET_ETHERNET && HAS_IOMEM
 
-How are you applying it?
+This is not sufficient, it has to depend on HAS_DMA, too:
 
-I can try reproduce here and figure out what is wrong :/
+>From cdb6fc81662e9afd6019221acc7f56d2d7dcd161 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 20 Nov 2009 20:07:09 +0100
+Subject: [PATCH] net: ETHOC should depend on HAS_DMA
+
+When building for Sun 3:
+
+drivers/net/ethoc.c:1091: undefined reference to `dma_free_coherent'
+drivers/built-in.o: In function `ethoc_probe':
+drivers/net/ethoc.c:965: undefined reference to `dma_alloc_coherent'
+drivers/net/ethoc.c:1063: undefined reference to `dma_free_coherent'
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/net/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 8015ecc..9e7c76e 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -993,7 +993,7 @@ config ENC28J60_WRITEVERIFY
+
+ config ETHOC
+ 	tristate "OpenCores 10/100 Mbps Ethernet MAC support"
+-	depends on NET_ETHERNET && HAS_IOMEM
++	depends on NET_ETHERNET && HAS_IOMEM && HAS_DMA
+ 	select MII
+ 	select PHYLIB
+ 	select CRC32
+-- 
+1.6.0.4
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
