@@ -1,154 +1,441 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZKTO2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZKTOjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbZKTO2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 09:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZKTO2Y
+	id S1753741AbZKTOjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 09:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbZKTOjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 09:28:24 -0500
-Received: from mail-yw0-f202.google.com ([209.85.211.202]:60743 "EHLO
-	mail-yw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753379AbZKTO2X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 09:28:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=uvtaRedAtc4VZaIEokefNbEFuGN3yjyP6oh0q0UrraeOau/7vJAZWhxp+vJQYqyZ3f
-         qlg3C4fH04lmm+GDngjL4yhAblwCFxzr7//tB4KbGOtQi4yzJcMmo+1gjQ5ReBn79xzU
-         N/tXVqu+4V7TVxAy0nCFEj6TWk4A+/mrSt5Y8=
-MIME-Version: 1.0
-In-Reply-To: <20091120141840.GA5872@redhat.com>
-References: <1258404660.3533.150.camel@cail>
-	 <20091116221827.GL13235@redhat.com> <1258461527.2862.2.camel@cail>
-	 <20091118153227.GA5796@redhat.com>
-	 <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com>
-	 <20091118225626.GA2974@redhat.com>
-	 <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com>
-	 <20091120141840.GA5872@redhat.com>
-Date: Fri, 20 Nov 2009 15:28:27 +0100
-Message-ID: <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com>
-Subject: Re: [RFC] Block IO Controller V2 - some results
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Content-Type: multipart/mixed; boundary=0016e6d261d509798c0478ce4a7d
+	Fri, 20 Nov 2009 09:39:42 -0500
+Received: from nox.protox.org ([88.191.38.29]:57377 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbZKTOjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 09:39:42 -0500
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: [PATCH] drm/ttm: Add range validation function V2
+Date: Fri, 20 Nov 2009 15:39:42 +0100
+Message-Id: <1258727982-2545-1-git-send-email-jglisse@redhat.com>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d261d509798c0478ce4a7d
-Content-Type: text/plain; charset=UTF-8
+Add a function to validate buffer in a given range of
+memory. This is needed by some hw for some of their
+buffer (scanout buffer, cursor ...).
 
-Hi Vivek,
-On Fri, Nov 20, 2009 at 3:18 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> Hi Corrado,
->
-> I liked the idea of putting all the sync-noidle queues together in root
-> group to achieve better throughput and implemeted a small patch.
->
-> It works fine for random readers. But when I do multiple direct random writers
-> in one group vs a random reader in other group, I am getting strange
-> behavior. Random reader moves to root group as sync-noidle workload. But
-> random writers are largely sync queues in remain in other group. But many
-> a times also jump into root group and preempt random reader.
+V2: A fix were missing in the first version, only update
+node->private if we are actualy dealing with a node.
 
-can you try the attached patches?
-They fix the problems you identified about no-idle preemption, and
-deep seeky queues.
-With those, you should not see this jumping any more.
-I'll send them to Jens as soon has he comes back from vacation.
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+---
+ drivers/gpu/drm/ttm/ttm_bo.c    |  306 ++++++++++++++++++++++++++++++++++++++-
+ include/drm/ttm/ttm_bo_api.h    |    5 +
+ include/drm/ttm/ttm_bo_driver.h |    1 +
+ 3 files changed, 311 insertions(+), 1 deletions(-)
 
-Corrado
+diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
+index 87c0625..4d88397 100644
+--- a/drivers/gpu/drm/ttm/ttm_bo.c
++++ b/drivers/gpu/drm/ttm/ttm_bo.c
+@@ -247,7 +247,6 @@ EXPORT_SYMBOL(ttm_bo_unreserve);
+ /*
+  * Call bo->mutex locked.
+  */
+-
+ static int ttm_bo_add_ttm(struct ttm_buffer_object *bo, bool zero_alloc)
+ {
+ 	struct ttm_bo_device *bdev = bo->bdev;
+@@ -418,6 +417,7 @@ static int ttm_bo_cleanup_refs(struct ttm_buffer_object *bo, bool remove_all)
+ 			kref_put(&bo->list_kref, ttm_bo_ref_bug);
+ 		}
+ 		if (bo->mem.mm_node) {
++			bo->mem.mm_node->private = NULL;
+ 			drm_mm_put_block(bo->mem.mm_node);
+ 			bo->mem.mm_node = NULL;
+ 		}
+@@ -610,6 +610,7 @@ static int ttm_bo_evict(struct ttm_buffer_object *bo, unsigned mem_type,
+ 
+ 	spin_lock(&glob->lru_lock);
+ 	if (evict_mem.mm_node) {
++		evict_mem.mm_node->private = NULL;
+ 		drm_mm_put_block(evict_mem.mm_node);
+ 		evict_mem.mm_node = NULL;
+ 	}
+@@ -826,6 +827,8 @@ int ttm_bo_mem_space(struct ttm_buffer_object *bo,
+ 		mem->mm_node = node;
+ 		mem->mem_type = mem_type;
+ 		mem->placement = cur_flags;
++		if (node)
++			node->private = bo;
+ 		return 0;
+ 	}
+ 
+@@ -856,6 +859,7 @@ int ttm_bo_mem_space(struct ttm_buffer_object *bo,
+ 
+ 		if (ret == 0 && mem->mm_node) {
+ 			mem->placement = cur_flags;
++			mem->mm_node->private = bo;
+ 			return 0;
+ 		}
+ 
+@@ -868,6 +872,173 @@ int ttm_bo_mem_space(struct ttm_buffer_object *bo,
+ }
+ EXPORT_SYMBOL(ttm_bo_mem_space);
+ 
++static unsigned long ttm_bo_free_size_if_evicted(struct ttm_buffer_object *bo)
++{
++	struct ttm_mem_type_manager *man = &bo->bdev->man[bo->mem.mem_type];
++	struct drm_mm_node *node;
++	unsigned long size;
++
++	size = bo->mem.mm_node->size;
++	if (bo->mem.mm_node->ml_entry.prev != &man->manager.ml_entry) {
++		node = list_entry(bo->mem.mm_node->ml_entry.prev,
++					struct drm_mm_node, ml_entry);
++		if (node->free)
++			size += node->size;
++	}
++	if (bo->mem.mm_node->ml_entry.next != &man->manager.ml_entry) {
++		node = list_entry(bo->mem.mm_node->ml_entry.next,
++					struct drm_mm_node, ml_entry);
++		if (node->free)
++			size += node->size;
++	}
++	return size;
++}
++
++static void ttm_manager_evict_first(struct ttm_buffer_object *bo)
++{
++	struct ttm_mem_type_manager *man = &bo->bdev->man[bo->mem.mem_type];
++	unsigned long free_size_bo, free_size_bo_first;
++	struct ttm_buffer_object *bo_first;
++
++	/* BO is not on lru list, don't add it */
++	if (!list_empty(&bo->lru))
++		return;
++	bo_first = list_first_entry(&man->lru, struct ttm_buffer_object, lru);
++	free_size_bo = ttm_bo_free_size_if_evicted(bo);
++	free_size_bo_first = ttm_bo_free_size_if_evicted(bo_first);
++	if (free_size_bo > free_size_bo_first) {
++		list_del_init(&bo->lru);
++		list_add(&bo->lru, &man->lru);
++	}
++}
++
++static int ttm_manager_space_range(struct ttm_buffer_object *bo,
++					uint32_t mem_type,
++					struct ttm_mem_reg *mem,
++					unsigned long start, unsigned long end,
++					bool interruptible, bool no_wait)
++{
++	struct ttm_bo_global *glob = bo->glob;
++	struct drm_mm_node *entry;
++	struct ttm_mem_type_manager *man = &bo->bdev->man[mem_type];
++	struct drm_mm *mm = &man->manager;
++	unsigned size = end - start;
++	struct ttm_buffer_object *tbo;
++	unsigned wasted;
++	int ret;
++
++	mem->mm_node = NULL;
++	ret = drm_mm_pre_get(&man->manager);
++	if (unlikely(ret))
++		return ret;
++	spin_lock(&glob->lru_lock);
++	list_for_each_entry(entry, &mm->ml_entry, ml_entry) {
++		wasted = 0;
++		if (mem->page_alignment) {
++			unsigned tmp = entry->start % mem->page_alignment;
++			if (tmp)
++				wasted += mem->page_alignment - tmp;
++		}
++		if (entry->start < end && (entry->start+entry->size) > start) {
++			if (!entry->free) {
++				tbo = (struct ttm_buffer_object*)entry->private;
++				ttm_manager_evict_first(tbo);
++			} else {
++				if ((entry->size - wasted) <= size) {
++					/* Found a place */
++					entry = drm_mm_get_block_atomic(entry,
++							mem->num_pages,
++							mem->page_alignment);
++					mem->mm_node = entry;
++					mem->mem_type = mem_type;
++					entry->private = bo;
++					break;
++				}
++			}
++		}
++	}
++	spin_unlock(&glob->lru_lock);
++	return 0;
++}
++
++static int ttm_bo_mem_space_range(struct ttm_buffer_object *bo,
++				uint32_t proposed_placement,
++				struct ttm_mem_reg *mem,
++				unsigned long start, unsigned long end,
++				bool interruptible, bool no_wait)
++{
++	struct ttm_bo_device *bdev = bo->bdev;
++	struct ttm_bo_global *glob = bo->glob;
++	struct ttm_mem_type_manager *man;
++	uint32_t num_prios = bdev->driver->num_mem_type_prio;
++	const uint32_t *prios = bdev->driver->mem_type_prio;
++	uint32_t i;
++	uint32_t mem_type = TTM_PL_SYSTEM;
++	uint32_t cur_flags = 0;
++	bool type_found = false;
++	bool type_ok = false;
++	bool evicted;
++	int ret;
++
++	mem->mm_node = NULL;
++retry:
++	for (i = 0; i < num_prios; ++i) {
++		mem_type = prios[i];
++		man = &bdev->man[mem_type];
++		type_ok = ttm_bo_mt_compatible(man,
++						bo->type == ttm_bo_type_user,
++						mem_type, proposed_placement,
++						&cur_flags);
++		if (!type_ok)
++			continue;
++		if (start > (man->offset + man->size) || end < man->offset)
++			continue;
++		cur_flags = ttm_bo_select_caching(man, bo->mem.placement,
++							cur_flags);
++		if (mem_type == TTM_PL_SYSTEM)
++			break;
++		if (man->has_type && man->use_type) {
++			type_found = true;
++			mem->placement = cur_flags;
++			ret = ttm_manager_space_range(bo, mem_type, mem,
++							start, end,
++							interruptible, no_wait);
++			if (ret)
++				return ret;
++		}
++		if (mem->mm_node)
++			break;
++	}
++	if ((type_ok && (mem_type == TTM_PL_SYSTEM)) || mem->mm_node) {
++		mem->mem_type = mem_type;
++		mem->placement = cur_flags;
++		return 0;
++	}
++	for (i = 0, evicted = false; i < num_prios; ++i) {
++		struct ttm_buffer_object *tmp;
++
++		mem_type = prios[i];
++		man = &bdev->man[mem_type];
++		type_ok = ttm_bo_mt_compatible(man,
++						bo->type == ttm_bo_type_user,
++						mem_type, proposed_placement,
++						&cur_flags);
++		if (!type_ok)
++			continue;
++		if (start > (man->offset + man->size) || end < man->offset)
++			continue;
++		spin_lock(&glob->lru_lock);
++		tmp = list_first_entry(&man->lru, struct ttm_buffer_object, lru);
++		spin_unlock(&glob->lru_lock);
++		ret = ttm_bo_evict(tmp, mem_type, interruptible, no_wait);
++		if (unlikely(ret != 0))
++			return ret;
++	}
++	if (!evicted)
++		return -ENOMEM;
++	goto retry;
++}
++
+ int ttm_bo_wait_cpu(struct ttm_buffer_object *bo, bool no_wait)
+ {
+ 	int ret = 0;
+@@ -925,6 +1096,7 @@ int ttm_bo_move_buffer(struct ttm_buffer_object *bo,
+ out_unlock:
+ 	if (ret && mem.mm_node) {
+ 		spin_lock(&glob->lru_lock);
++		mem.mm_node->private = NULL;
+ 		drm_mm_put_block(mem.mm_node);
+ 		spin_unlock(&glob->lru_lock);
+ 	}
+@@ -998,6 +1170,137 @@ int ttm_buffer_object_validate(struct ttm_buffer_object *bo,
+ }
+ EXPORT_SYMBOL(ttm_buffer_object_validate);
+ 
++int ttm_bo_move_buffer_range(struct ttm_buffer_object *bo,
++				uint32_t proposed_placement,
++				unsigned long start, unsigned long end,
++				bool interruptible, bool no_wait)
++{
++	struct ttm_bo_global *glob = bo->glob;
++	int ret = 0;
++	struct ttm_mem_reg mem;
++
++	BUG_ON(!atomic_read(&bo->reserved));
++
++	/*
++	 * FIXME: It's possible to pipeline buffer moves.
++	 * Have the driver move function wait for idle when necessary,
++	 * instead of doing it here.
++	 */
++
++	spin_lock(&bo->lock);
++	ret = ttm_bo_wait(bo, false, interruptible, no_wait);
++	spin_unlock(&bo->lock);
++
++	if (ret)
++		return ret;
++
++	mem.num_pages = bo->num_pages;
++	mem.size = mem.num_pages << PAGE_SHIFT;
++	mem.page_alignment = bo->mem.page_alignment;
++
++	/*
++	 * Determine where to move the buffer.
++	 */
++
++	ret = ttm_bo_mem_space_range(bo, proposed_placement, &mem,
++					start, end, interruptible, no_wait);
++	if (ret)
++		goto out_unlock;
++
++	ret = ttm_bo_handle_move_mem(bo, &mem, false, interruptible, no_wait);
++
++out_unlock:
++	if (ret && mem.mm_node) {
++		spin_lock(&glob->lru_lock);
++		mem.mm_node->private = NULL;
++		drm_mm_put_block(mem.mm_node);
++		spin_unlock(&glob->lru_lock);
++	}
++	return ret;
++}
++
++static int ttm_bo_mem_compat_range(uint32_t proposed_placement,
++					struct ttm_mem_reg *mem,
++					unsigned long start, unsigned long end)
++{
++	if ((proposed_placement & mem->placement & TTM_PL_MASK_MEM) == 0)
++		return 0;
++	if ((proposed_placement & mem->placement & TTM_PL_MASK_CACHING) == 0)
++		return 0;
++	if (mem->mm_node) {
++		unsigned long eend = mem->mm_node->start + mem->mm_node->size;
++		if (mem->mm_node->start < start || eend > end)
++			return 0;
++	}
++
++	return 1;
++}
++
++int ttm_buffer_object_validate_range(struct ttm_buffer_object *bo,
++					uint32_t proposed_placement,
++					unsigned long start, unsigned long end,
++					bool interruptible, bool no_wait)
++{
++	int ret;
++
++	/* Convert to page */
++	start = start >> PAGE_SHIFT;
++	end = end >> PAGE_SHIFT;
++	/* Check that range is valid */
++	if (start > end || (end - start) < bo->num_pages)
++		return -EINVAL;
++
++	BUG_ON(!atomic_read(&bo->reserved));
++	bo->proposed_placement = proposed_placement;
++
++	TTM_DEBUG("Proposed placement 0x%08lx, Old flags 0x%08lx\n",
++		  (unsigned long)proposed_placement,
++		  (unsigned long)bo->mem.placement);
++
++	/*
++	 * Check whether we need to move buffer.
++	 */
++
++	if (!ttm_bo_mem_compat_range(bo->proposed_placement, &bo->mem,
++					start, end)) {
++		ret = ttm_bo_move_buffer_range(bo, bo->proposed_placement,
++						start, end,
++						interruptible, no_wait);
++		if (ret) {
++			if (ret != -ERESTART)
++				printk(KERN_ERR TTM_PFX
++					"Failed moving buffer. "
++					"Proposed placement 0x%08x\n",
++					bo->proposed_placement);
++			if (ret == -ENOMEM)
++				printk(KERN_ERR TTM_PFX
++					"Out of aperture space or "
++					"DRM memory quota.\n");
++			return ret;
++		}
++	}
++
++	/*
++	 * We might need to add a TTM.
++	 */
++	if (bo->mem.mem_type == TTM_PL_SYSTEM && bo->ttm == NULL) {
++		ret = ttm_bo_add_ttm(bo, true);
++		if (ret)
++			return ret;
++	}
++	/*
++	 * Validation has succeeded, move the access and other
++	 * non-mapping-related flag bits from the proposed flags to
++	 * the active flags
++	 */
++
++	ttm_flag_masked(&bo->mem.placement, bo->proposed_placement,
++			~TTM_PL_MASK_MEMTYPE);
++
++	return 0;
++}
++EXPORT_SYMBOL(ttm_buffer_object_validate_range);
++
+ int
+ ttm_bo_check_placement(struct ttm_buffer_object *bo,
+ 		       uint32_t set_flags, uint32_t clr_flags)
+@@ -1321,6 +1624,7 @@ int ttm_bo_init_mm(struct ttm_bo_device *bdev, unsigned type,
+ 	man->has_type = true;
+ 	man->use_type = true;
+ 	man->size = p_size;
++	man->offset = p_offset;
+ 
+ 	INIT_LIST_HEAD(&man->lru);
+ 
+diff --git a/include/drm/ttm/ttm_bo_api.h b/include/drm/ttm/ttm_bo_api.h
+index 4911461..3756970 100644
+--- a/include/drm/ttm/ttm_bo_api.h
++++ b/include/drm/ttm/ttm_bo_api.h
+@@ -308,6 +308,11 @@ extern int ttm_bo_wait(struct ttm_buffer_object *bo, bool lazy,
+ extern int ttm_buffer_object_validate(struct ttm_buffer_object *bo,
+ 				      uint32_t proposed_placement,
+ 				      bool interruptible, bool no_wait);
++extern int ttm_buffer_object_validate_range(struct ttm_buffer_object *bo,
++					uint32_t proposed_placement,
++					unsigned long start, unsigned long end,
++					bool interruptible, bool no_wait);
++
+ /**
+  * ttm_bo_unref
+  *
+diff --git a/include/drm/ttm/ttm_bo_driver.h b/include/drm/ttm/ttm_bo_driver.h
+index e8cd6d2..f00ba12 100644
+--- a/include/drm/ttm/ttm_bo_driver.h
++++ b/include/drm/ttm/ttm_bo_driver.h
+@@ -224,6 +224,7 @@ struct ttm_mem_type_manager {
+ 	unsigned long gpu_offset;
+ 	unsigned long io_offset;
+ 	unsigned long io_size;
++	unsigned long offset;
+ 	void *io_addr;
+ 	uint64_t size;
+ 	uint32_t available_caching;
+-- 
+1.6.5.2
 
-> Anyway, with 4 random writers and 1 random reader running for 30 seconds
-> in root group I get following.
->
-> rw: 59,963KB/s
-> rr: 66KB/s
->
-> But if these are put in seprate groups test1 and test2 then
->
-> rw: 30,587KB/s
-> rr: 23KB/s
->
-> I can understand the drop in rw throughput as it has been put under a
-> group of weight 500. But rr will run in root group with weight 1000 and
-> should have received much higher BW, instead it ends up loosing.
->
-> Staring hard at blktrace output to figure out what's happening. One thing
-> noticeable so far is that without cgroup stuff we seem to be interleaving
-> dispatch from random reader and random writer much better as compared to
-> with cgroup stuff.
->
-> Thanks
-> Vivek
->
-
---0016e6d261d509798c0478ce4a7d
-Content-Type: application/octet-stream; 
-	name="0001-cfq-iosched-fix-no-idle-preemption-logic.patch"
-Content-Disposition: attachment; 
-	filename="0001-cfq-iosched-fix-no-idle-preemption-logic.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g291ivix0
-
-RnJvbSAzY2UyYjY5N2I5ZGQxYmYwN2JhM2MxNjFlZWI0MjY0Y2MxYTIxYWEzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBDb3JyYWRvIFpvY2NvbG8gPGNvcnJhZG9AZXQyLihub25lKT4K
-RGF0ZTogRnJpLCAyMCBOb3YgMjAwOSAxNDo0MzowMiArMDEwMApTdWJqZWN0OiBbUEFUQ0ggMS8y
-XSBjZnEtaW9zY2hlZDogZml4IG5vLWlkbGUgcHJlZW1wdGlvbiBsb2dpYwoKQW4gaW5jb21pbmcg
-bm8taWRsZSBxdWV1ZSBzaG91bGQgcHJlZW1wdCB0aGUgYWN0aXZlIG5vLWlkbGUgcXVldWUKb25s
-eSBpZiB0aGUgYWN0aXZlIHF1ZXVlIGlzIGlkbGluZyBkdWUgdG8gc2VydmljZSB0cmVlIGVtcHR5
-LgpUaGlzIGNoYW5nZSBzaG91bGQgYWZmZWN0IG9ubHkgbm9uLU5DUSByb3RhdGlvbmFsIGRldmlj
-ZXMsIHNpbmNlCmZvciB0aG9zZSBvbmVzIHdlIGludHJvZHVjZSBhZGRpdGlvbmFsLCBzbWFsbCBp
-ZGxlcywgdGhhdCBzaG91bGRuJ3QKYmUgcHJlZW1wdGVkLgoKUmVwb3J0ZWQtYnk6IFZpdmVrIEdv
-eWFsIDx2Z295YWxAcmVkaGF0LmNvbT4KU2lnbmVkLW9mZi1ieTogQ29ycmFkbyBab2Njb2xvIDxj
-em9jY29sb0BnbWFpbC5jb20+Ci0tLQogYmxvY2svY2ZxLWlvc2NoZWQuYyB8ICAgIDUgKysrLS0K
-IDEgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAt
-LWdpdCBhL2Jsb2NrL2NmcS1pb3NjaGVkLmMgYi9ibG9jay9jZnEtaW9zY2hlZC5jCmluZGV4IDY5
-MjVhYjkuLmE4ZjdhMjYgMTAwNjQ0Ci0tLSBhL2Jsb2NrL2NmcS1pb3NjaGVkLmMKKysrIGIvYmxv
-Y2svY2ZxLWlvc2NoZWQuYwpAQCAtMjQwMSw4ICsyNDAxLDkgQEAgY2ZxX3Nob3VsZF9wcmVlbXB0
-KHN0cnVjdCBjZnFfZGF0YSAqY2ZxZCwgc3RydWN0IGNmcV9xdWV1ZSAqbmV3X2NmcXEsCiAJaWYg
-KGNmcV9jbGFzc19pZGxlKGNmcXEpKQogCQlyZXR1cm4gdHJ1ZTsKIAotCWlmIChjZnFkLT5zZXJ2
-aW5nX3R5cGUgPT0gU1lOQ19OT0lETEVfV09SS0xPQUQKLQkgICAgJiYgbmV3X2NmcXEtPnNlcnZp
-Y2VfdHJlZSA9PSBjZnFxLT5zZXJ2aWNlX3RyZWUpCisJaWYgKGNmcWQtPnNlcnZpbmdfdHlwZSA9
-PSBTWU5DX05PSURMRV9XT1JLTE9BRCAmJgorCSAgICBjZnFxX3R5cGUobmV3X2NmcXEpID09IFNZ
-TkNfTk9JRExFX1dPUktMT0FEICYmCisJICAgIG5ld19jZnFxLT5zZXJ2aWNlX3RyZWUtPiBjb3Vu
-dCA9PSAxKQogCQlyZXR1cm4gdHJ1ZTsKIAogCS8qCi0tIAoxLjYuMi41Cgo=
---0016e6d261d509798c0478ce4a7d
-Content-Type: application/octet-stream; 
-	name="0002-cfq-iosched-idling-on-deep-seeky-sync-queues.patch"
-Content-Disposition: attachment; 
-	filename="0002-cfq-iosched-idling-on-deep-seeky-sync-queues.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g291jaqv1
-
-RnJvbSA2NDNkZmQxOWUxMTQzNTIxZTI0YTc2ZDg2NzFjMWMwYjllMWY5MGEzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBDb3JyYWRvIFpvY2NvbG8gPGNvcnJhZG9AZXQyLihub25lKT4K
-RGF0ZTogRnJpLCAyMCBOb3YgMjAwOSAxNDo1NTo1NCArMDEwMApTdWJqZWN0OiBbUEFUQ0ggMi8y
-XSBjZnEtaW9zY2hlZDogaWRsaW5nIG9uIGRlZXAgc2Vla3kgc3luYyBxdWV1ZXMKClNlZWt5IHN5
-bmMgcXVldWVzIHdpdGggbGFyZ2UgZGVwdGggY2FuIGdhaW4gdW5mYWlybHkgYmlnIHNoYXJlIG9m
-IGRpc2sKdGltZSwgYXQgdGhlIGV4cGVuc2Ugb2Ygb3RoZXIgc2Vla3kgcXVldWVzLiBUaGlzIHBh
-dGNoIGVuc3VyZXMgdGhhdAppZGxpbmcgd2lsbCBiZSBlbmFibGVkIGZvciBxdWV1ZXMgd2l0aCBJ
-L08gZGVwdGggYXQgbGVhc3QgNC4KClRoZSByZWFzb25pbmcgYmVoaW5kIHRoZSBkZWNpc2lvbiBp
-cyB0aGF0LCBpZiBhbiBhcHBsaWNhdGlvbiBpcyB1c2luZwpsYXJnZSBJL08gZGVwdGgsIGl0IGlz
-IGFscmVhZHkgb3B0aW1pemVkIHRvIG1ha2UgZnVsbCB1dGlsaXphdGlvbiBvZgp0aGUgaGFyZHdh
-cmUsIGFuZCB0aGVyZWZvcmUgd2UgcmVzZXJ2ZSBhIHNsaWNlIG9mIGV4Y2x1c2l2ZSB1c2UgZm9y
-IGl0LgoKU2lnbmVkLW9mZi1ieTogQ29ycmFkbyBab2Njb2xvIDxjem9jY29sb0BnbWFpbC5jb20+
-Ci0tLQogYmxvY2svY2ZxLWlvc2NoZWQuYyB8ICAgIDYgKysrKy0tCiAxIGZpbGVzIGNoYW5nZWQs
-IDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9ibG9jay9jZnEt
-aW9zY2hlZC5jIGIvYmxvY2svY2ZxLWlvc2NoZWQuYwppbmRleCBhOGY3YTI2Li40ZjY3YmMyIDEw
-MDY0NAotLS0gYS9ibG9jay9jZnEtaW9zY2hlZC5jCisrKyBiL2Jsb2NrL2NmcS1pb3NjaGVkLmMK
-QEAgLTIzNTksOCArMjM1OSwxMCBAQCBjZnFfdXBkYXRlX2lkbGVfd2luZG93KHN0cnVjdCBjZnFf
-ZGF0YSAqY2ZxZCwgc3RydWN0IGNmcV9xdWV1ZSAqY2ZxcSwKIAogCWVuYWJsZV9pZGxlID0gb2xk
-X2lkbGUgPSBjZnFfY2ZxcV9pZGxlX3dpbmRvdyhjZnFxKTsKIAotCWlmICghYXRvbWljX3JlYWQo
-JmNpYy0+aW9jLT5ucl90YXNrcykgfHwgIWNmcWQtPmNmcV9zbGljZV9pZGxlIHx8Ci0JICAgIChz
-YW1wbGVfdmFsaWQoY2ZxcS0+c2Vla19zYW1wbGVzKSAmJiBDRlFRX1NFRUtZKGNmcXEpKSkKKwlp
-ZiAoY2ZxcS0+cXVldWVkWzBdICsgY2ZxcS0+cXVldWVkWzFdID49IDQpCisJCWVuYWJsZV9pZGxl
-ID0gMTsKKwllbHNlIGlmICghYXRvbWljX3JlYWQoJmNpYy0+aW9jLT5ucl90YXNrcykgfHwgIWNm
-cWQtPmNmcV9zbGljZV9pZGxlIHx8CisJCSAoc2FtcGxlX3ZhbGlkKGNmcXEtPnNlZWtfc2FtcGxl
-cykgJiYgQ0ZRUV9TRUVLWShjZnFxKSkpCiAJCWVuYWJsZV9pZGxlID0gMDsKIAllbHNlIGlmIChz
-YW1wbGVfdmFsaWQoY2ljLT50dGltZV9zYW1wbGVzKSkgewogCQlpZiAoY2ljLT50dGltZV9tZWFu
-ID4gY2ZxZC0+Y2ZxX3NsaWNlX2lkbGUpCi0tIAoxLjYuMi41Cgo=
---0016e6d261d509798c0478ce4a7d--
