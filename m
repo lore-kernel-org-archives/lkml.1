@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbZKTShO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbZKTSkD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbZKTShO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:37:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZKTShN
+	id S1754998AbZKTSkD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:40:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZKTSkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:37:13 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32900 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbZKTShM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:37:12 -0500
-Date: Fri, 20 Nov 2009 19:37:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Rientjes <rientjes@google.com>,
-       Andreas Herrmann <herrmann.der.user@googlemail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Roland Dreier <rdreier@cisco.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Tejun Heo <tj@kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jack Steiner <steiner@sgi.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: reduce srat verbosity in the kernel log
-Message-ID: <20091120183708.GA1434@ucw.cz>
-References: <20091112171934.584037000@alcatraz.americas.sgi.com> <alpine.DEB.2.00.0911121247420.9544@chino.kir.corp.google.com> <20091113095350.GC1364@elte.hu> <alpine.DEB.2.00.0911130158390.13911@chino.kir.corp.google.com> <20091113101326.GA17451@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091113101326.GA17451@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Nov 2009 13:40:02 -0500
+Received: from fifo99.com ([67.223.236.141]:53663 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbZKTSkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 13:40:01 -0500
+Subject: Re: Allow selecting MSM framebuffer in Kconfig
+From: Daniel Walker <dwalker@fifo99.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Arve Hj?nnev?g <arve@android.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>, San Mehat <san@google.com>,
+       Iliyan Malchev <malchev@google.com>, dwalker@codeaurora.org
+In-Reply-To: <20091120113915.GA5154@elf.ucw.cz>
+References: <20091120113915.GA5154@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 20 Nov 2009 10:40:07 -0800
+Message-ID: <1258742407.20541.15.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 2009-11-20 at 12:39 +0100, Pavel Machek wrote:
+> Allow user to select MSM framebuffer support in Kconfig.
+> 
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> 
 
-> There's two problems outlined in this discussion:
-> 
->  A) too verbose bootup that is annoying with 64 CPUs and a show-stopper
->     with 4096 CPUs.
-> 
->  B) the ad-hoc nature of our topology enumeration. Some of it is in
->     /sys, some of it is in printk logs. None really works well and 
->     there's no structure in it.
-> 
-> The simplest solution for (A) is what i suggested a few mails ago: dont 
-> print the information by default, but allow (for trouble-shooting) 
-> purposes for it to be printed when a boot option is passed.
+Ok, applied. All four patches should be in -next .. Also could you send
+patches to dwalker@codeaurora.org from now on?
 
-Well, yes, it is *simplest*, but is it best? Example printing 'cpus
-0-31 stepping 3, cpus 32-63 stepping 4' seem rather convincing --such
-info should be there by default and not after speciial option...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Daniel
+
