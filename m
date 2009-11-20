@@ -1,71 +1,320 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbZKTBeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZKTBtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757226AbZKTBeh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Nov 2009 20:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbZKTBeg
+	id S1757849AbZKTBtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Nov 2009 20:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbZKTBtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Nov 2009 20:34:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51667 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755611AbZKTBee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Nov 2009 20:34:34 -0500
-Date: Fri, 20 Nov 2009 02:29:30 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: Zombie process when ptracing
-Message-ID: <20091120012930.GA3985@redhat.com>
-References: <20091119102543.GB5602@wotan.suse.de>
+	Thu, 19 Nov 2009 20:49:42 -0500
+Received: from p01c11o142.mxlogic.net ([208.65.144.65]:40259 "EHLO
+	p01c11o142.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757506AbZKTBtl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Nov 2009 20:49:41 -0500
+X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Nov 2009 20:49:40 EST
+X-MXL-Hash: 4b05f5bb30dcac79-cf8ace9c827e56c723f8a07b604f20ab92ea3214
+X-MXL-Hash: 4b05f2283cebe9e9-e67e50b417f07c47279d37faa1fa81d233bf9b7d
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091119102543.GB5602@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network driver -resubmit
+Date: Thu, 19 Nov 2009 17:34:30 -0800
+Message-ID: <C43529A246480145B0A6D0234BDB0F0D02129B@MELANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.32-rc6] drivers/net: ks8851_mll ethernet network driver -resubmit
+Thread-Index: AcppgZq6qIAxAosQRD+IZ15wHbknEg==
+From: "Choi, David" <David.Choi@Micrel.Com>
+To: <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <shemminger@vyatta.com>, <greg@kroah.com>,
+       "Choi, David" <David.Choi@Micrel.Com>
+X-OriginalArrivalTime: 20 Nov 2009 01:34:30.0432 (UTC) FILETIME=[9AEBC200:01CA6981]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009110601)]
+X-MAIL-FROM: <david.choi@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=p2WGlStZiyoA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=DoS_7QlsMBOy1iQCR9cA:9 a=thPSOB2045qlvG]
+X-AnalysisOut: [HjWz0A:7 a=XCiw9JOeyPcWDwcuIOD6PAY9VjEA:4 a=yJsD6ztlz_8A:1]
+X-AnalysisOut: [0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello all,
 
-On 11/19, Nick Piggin wrote:
->
-> Running recent git kernel, I have a process stuck in Z state
->
-> bash          ? 0000000000000000     0  3188   3187 0x00000000
->  ffff88012e24fec8 0000000000000046 0000000000000000 0000000000000012
->  ffff88012e24fec8 ffff88012e24e000 ffff88012e24ffd8 ffff88012e24e000
->  000000000000efc8 ffff88012e24e000 ffff88012ea82090 ffff88012ff78640
-> Call Trace:
->  [<ffffffff8124baee>] ? proc_clear_tty+0x5e/0x70
->  [<ffffffff810587a8>] ? exit_ptrace+0xb8/0x140
->  [<ffffffff8105126a>] do_exit+0x58a/0x7c0
->  [<ffffffff810514dd>] do_group_exit+0x3d/0xb0
->  [<ffffffff81051562>] sys_exit_group+0x12/0x20
->  [<ffffffff8100b3eb>] system_call_fastpath+0x16/0x1b
->
-> This was after stracing a few test programs.
->
-> It also seems to have lost job control (^C) at the same time.
+This patch is for ks8851 16bit MLL Ethernet network device driver in order to 
+fix bugs and to enhance functions. This resubmit removes a printk statement causing
+the compile warning in 64bit processors.
 
-This can happen if the tracer (strace) itself hangs, zombies
-should go away once the tracer is killed. Or its ->real_parent
-is stopped or hangs...
+>From 	: David J. Choi <david.choi@micrel.com>
 
-(I assume you didn't strace /sbin/init)
+Summary of Changes:  
 
-But,
+	-Fix to receive multicast packets by setting the corresponding hardware 
+	 bit during initialization.
+	-Fix to re-enable the interface [by interface up command(ifup)] while the 
+	 interface is down.
+	-Fix to be able to down the interface by passing the last parameter 
+	 correctly to request_irq().
+	-Remove to read 4 extra bytes from the receiving queue after reading a 
+	 packet, even though it does not cause a predictable issue now.
+	-Remove occurrences of transmission done interrupt in order to tx 
+	 throughput enhancement.
+	-Enable IP checksum for packet receiving by setting the corresponding 
+	 hardware bit during initialization.
+	-Relocate ks_enable_int()/ks_disable_int() in order not to declare those 
+	 functions at the beginning of the file.
+	-Rename ks_enable()/_disable() to ks_enable_qmu()/ks_disable_qmu() in 
+	 order to give more meaningful names and relocate them not declaire 
+	 those functions at the beginning of the file.
 
-> Hmm, and the kernel just paniced with an nmi lockup while I was
-> trying to get more info.
+Signed-off-by: David J. Choi <david.choi@micrel.com>
 
-this probably means we have a kernel bug ;)
-
-If you see a zombie again, could you look at its /ptoc/pid/status?
-
-
-And of course, which programs did you trace and how? It would be
-great if we can reproduce the problem.
-
-Oleg.
-
+---
+--- linux-2.6.32-rc6/drivers/net/ks8851_mll.c.orig	2009-11-12 09:57:33.000000000 -0800
++++ linux-2.6.32-rc6/drivers/net/ks8851_mll.c	2009-11-19 17:04:33.000000000 -0800
+@@ -568,6 +568,16 @@ static inline void ks_outblk(struct ks_n
+ 		iowrite16(*wptr++, ks->hw_addr);
+ }
+ 
++static void ks_disable_int(struct ks_net *ks)
++{
++	ks_wrreg16(ks, KS_IER, 0x0000);
++}  /* ks_disable_int */
++
++static void ks_enable_int(struct ks_net *ks)
++{
++	ks_wrreg16(ks, KS_IER, ks->rc_ier);
++}  /* ks_enable_int */
++
+ /**
+  * ks_tx_fifo_space - return the available hardware buffer size.
+  * @ks: The chip information
+@@ -681,6 +691,47 @@ static void ks_soft_reset(struct ks_net 
+ }
+ 
+ 
++void ks_enable_qmu(struct ks_net *ks)
++{
++	u16 w;
++
++	w = ks_rdreg16(ks, KS_TXCR);
++	/* Enables QMU Transmit (TXCR). */
++	ks_wrreg16(ks, KS_TXCR, w | TXCR_TXE);
++
++	/*
++	 * RX Frame Count Threshold Enable and Auto-Dequeue RXQ Frame
++	 * Enable
++	 */
++
++	w = ks_rdreg16(ks, KS_RXQCR);
++	ks_wrreg16(ks, KS_RXQCR, w | RXQCR_RXFCTE);
++
++	/* Enables QMU Receive (RXCR1). */
++	w = ks_rdreg16(ks, KS_RXCR1);
++	ks_wrreg16(ks, KS_RXCR1, w | RXCR1_RXE);
++	ks->enabled = true;
++}  /* ks_enable_qmu */
++
++static void ks_disable_qmu(struct ks_net *ks)
++{
++	u16	w;
++
++	w = ks_rdreg16(ks, KS_TXCR);
++
++	/* Disables QMU Transmit (TXCR). */
++	w  &= ~TXCR_TXE;
++	ks_wrreg16(ks, KS_TXCR, w);
++
++	/* Disables QMU Receive (RXCR1). */
++	w = ks_rdreg16(ks, KS_RXCR1);
++	w &= ~RXCR1_RXE ;
++	ks_wrreg16(ks, KS_RXCR1, w);
++
++	ks->enabled = false;
++
++}  /* ks_disable_qmu */
++
+ /**
+  * ks_read_qmu - read 1 pkt data from the QMU.
+  * @ks: The chip information
+@@ -752,7 +803,7 @@ static void ks_rcv(struct ks_net *ks, st
+ 			(frame_hdr->len < RX_BUF_SIZE) && frame_hdr->len)) {
+ 			skb_reserve(skb, 2);
+ 			/* read data block including CRC 4 bytes */
+-			ks_read_qmu(ks, (u16 *)skb->data, frame_hdr->len + 4);
++			ks_read_qmu(ks, (u16 *)skb->data, frame_hdr->len);
+ 			skb_put(skb, frame_hdr->len);
+ 			skb->dev = netdev;
+ 			skb->protocol = eth_type_trans(skb, netdev);
+@@ -861,7 +912,7 @@ static int ks_net_open(struct net_device
+ 		ks_dbg(ks, "%s - entry\n", __func__);
+ 
+ 	/* reset the HW */
+-	err = request_irq(ks->irq, ks_irq, KS_INT_FLAGS, DRV_NAME, ks);
++	err = request_irq(ks->irq, ks_irq, KS_INT_FLAGS, DRV_NAME, netdev);
+ 
+ 	if (err) {
+ 		printk(KERN_ERR "Failed to request IRQ: %d: %d\n",
+@@ -869,6 +920,15 @@ static int ks_net_open(struct net_device
+ 		return err;
+ 	}
+ 
++	/* wake up powermode to normal mode */
++	ks_set_powermode(ks, PMECR_PM_NORMAL);
++	mdelay(1);	/* wait for normal mode to take effect */
++
++	ks_wrreg16(ks, KS_ISR, 0xffff);
++	ks_enable_int(ks);
++	ks_enable_qmu(ks);
++	netif_start_queue(ks->netdev);
++
+ 	if (netif_msg_ifup(ks))
+ 		ks_dbg(ks, "network device %s up\n", netdev->name);
+ 
+@@ -892,19 +952,14 @@ static int ks_net_stop(struct net_device
+ 
+ 	netif_stop_queue(netdev);
+ 
+-	kfree(ks->frame_head_info);
+-
+ 	mutex_lock(&ks->lock);
+ 
+ 	/* turn off the IRQs and ack any outstanding */
+ 	ks_wrreg16(ks, KS_IER, 0x0000);
+ 	ks_wrreg16(ks, KS_ISR, 0xffff);
+ 
+-	/* shutdown RX process */
+-	ks_wrreg16(ks, KS_RXCR1, 0x0000);
+-
+-	/* shutdown TX process */
+-	ks_wrreg16(ks, KS_TXCR, 0x0000);
++	/* shutdown RX/TX QMU */
++	ks_disable_qmu(ks);
+ 
+ 	/* set powermode to soft power down to save power */
+ 	ks_set_powermode(ks, PMECR_PM_SOFTDOWN);
+@@ -929,17 +984,8 @@ static int ks_net_stop(struct net_device
+  */
+ static void ks_write_qmu(struct ks_net *ks, u8 *pdata, u16 len)
+ {
+-	unsigned fid = ks->fid;
+-
+-	fid = ks->fid;
+-	ks->fid = (ks->fid + 1) & TXFR_TXFID_MASK;
+-
+-	/* reduce the tx interrupt occurrances. */
+-	if (!fid)
+-		fid |= TXFR_TXIC;       /* irq on completion */
+-
+ 	/* start header at txb[0] to align txw entries */
+-	ks->txh.txw[0] = cpu_to_le16(fid);
++	ks->txh.txw[0] = 0;
+ 	ks->txh.txw[1] = cpu_to_le16(len);
+ 
+ 	/* 1. set sudo-DMA mode */
+@@ -957,16 +1003,6 @@ static void ks_write_qmu(struct ks_net *
+ 		;
+ }
+ 
+-static void ks_disable_int(struct ks_net *ks)
+-{
+-	ks_wrreg16(ks, KS_IER, 0x0000);
+-}  /* ks_disable_int */
+-
+-static void ks_enable_int(struct ks_net *ks)
+-{
+-	ks_wrreg16(ks, KS_IER, ks->rc_ier);
+-}  /* ks_enable_int */
+-
+ /**
+  * ks_start_xmit - transmit packet
+  * @skb		: The buffer to transmit
+@@ -1410,25 +1446,6 @@ static int ks_read_selftest(struct ks_ne
+ 	return ret;
+ }
+ 
+-static void ks_disable(struct ks_net *ks)
+-{
+-	u16	w;
+-
+-	w = ks_rdreg16(ks, KS_TXCR);
+-
+-	/* Disables QMU Transmit (TXCR). */
+-	w  &= ~TXCR_TXE;
+-	ks_wrreg16(ks, KS_TXCR, w);
+-
+-	/* Disables QMU Receive (RXCR1). */
+-	w = ks_rdreg16(ks, KS_RXCR1);
+-	w &= ~RXCR1_RXE ;
+-	ks_wrreg16(ks, KS_RXCR1, w);
+-
+-	ks->enabled = false;
+-
+-}  /* ks_disable */
+-
+ static void ks_setup(struct ks_net *ks)
+ {
+ 	u16	w;
+@@ -1463,7 +1480,7 @@ static void ks_setup(struct ks_net *ks)
+ 	w = TXCR_TXFCE | TXCR_TXPE | TXCR_TXCRC | TXCR_TCGIP;
+ 	ks_wrreg16(ks, KS_TXCR, w);
+ 
+-	w = RXCR1_RXFCE | RXCR1_RXBE | RXCR1_RXUE;
++	w = RXCR1_RXFCE | RXCR1_RXBE | RXCR1_RXUE | RXCR1_RXME | RXCR1_RXIPFCC;
+ 
+ 	if (ks->promiscuous)         /* bPromiscuous */
+ 		w |= (RXCR1_RXAE | RXCR1_RXINVF);
+@@ -1486,28 +1503,6 @@ static void ks_setup_int(struct ks_net *
+ 	ks->rc_ier = (IRQ_LCI | IRQ_TXI | IRQ_RXI);
+ }  /* ks_setup_int */
+ 
+-void ks_enable(struct ks_net *ks)
+-{
+-	u16 w;
+-
+-	w = ks_rdreg16(ks, KS_TXCR);
+-	/* Enables QMU Transmit (TXCR). */
+-	ks_wrreg16(ks, KS_TXCR, w | TXCR_TXE);
+-
+-	/*
+-	 * RX Frame Count Threshold Enable and Auto-Dequeue RXQ Frame
+-	 * Enable
+-	 */
+-
+-	w = ks_rdreg16(ks, KS_RXQCR);
+-	ks_wrreg16(ks, KS_RXQCR, w | RXQCR_RXFCTE);
+-
+-	/* Enables QMU Receive (RXCR1). */
+-	w = ks_rdreg16(ks, KS_RXCR1);
+-	ks_wrreg16(ks, KS_RXCR1, w | RXCR1_RXE);
+-	ks->enabled = true;
+-}  /* ks_enable */
+-
+ static int ks_hw_init(struct ks_net *ks)
+ {
+ #define	MHEADER_SIZE	(sizeof(struct type_frame_head) * MAX_RECV_FRAMES)
+@@ -1612,11 +1607,9 @@ static int __devinit ks8851_probe(struct
+ 
+ 	ks_soft_reset(ks, GRR_GSR);
+ 	ks_hw_init(ks);
+-	ks_disable(ks);
++	ks_disable_qmu(ks);
+ 	ks_setup(ks);
+ 	ks_setup_int(ks);
+-	ks_enable_int(ks);
+-	ks_enable(ks);
+ 	memcpy(netdev->dev_addr, ks->mac_addr, 6);
+ 
+ 	data = ks_rdreg16(ks, KS_OBCR);
+@@ -1658,6 +1651,7 @@ static int __devexit ks8851_remove(struc
+ 	struct ks_net *ks = netdev_priv(netdev);
+ 	struct resource *iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 
++	kfree(ks->frame_head_info);
+ 	unregister_netdev(netdev);
+ 	iounmap(ks->hw_addr);
+ 	free_netdev(netdev);
+--
