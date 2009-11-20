@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZKTMYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZKTM2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZKTMYp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 07:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZKTMYo
+	id S1753234AbZKTM2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 07:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZKTM2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 07:24:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33962 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbZKTMYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 07:24:44 -0500
-Message-ID: <4B068A10.2090608@redhat.com>
-Date: Fri, 20 Nov 2009 12:22:40 +0000
-From: Andrew Haley <aph@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Jeff Law <law@redhat.com>, rostedt@goodmis.org,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jakub@redhat.com,
-       gcc@gcc.gnu.org
-Subject: Re: BUG: GCC-4.4.x changes the function frame on some functions
-References: <viy9pk4xossnb6m2v041qu00.1258665258503@email.android.com>   <4B05B7AD.20500@redhat.com> <1258670580.22249.1002.camel@gandalf.stny.rr.com> <4B05DBBF.5000804@redhat.com> <alpine.LFD.2.00.0911200122190.24119@localhost.localdomain> <4B0685B7.4060601@redhat.com>
-In-Reply-To: <4B0685B7.4060601@redhat.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 07:28:51 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:59641 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbZKTM2u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 07:28:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=v+5EsV4HXvV8cIloZJFfVDQutbvgyUpNii0f/9Hb3Vzp2hJ8dk2ZeUtuFKWJMZani2
+         yOCTDnne5N2KRwyojOKIS16/1gcpkmpViidiMUIg9K5Gc7HDXsRMfHgFPQz121a+tEjf
+         ygQYQm8ZcFaXy+lpMTKDRzMQrA2DOigKH1YBg=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>, rostedt@goodmis.org
+Cc: Nicholas Mc Guire <der.herr@hofr.at>, zhangfx@lemote.com,
+       Wu Zhangjin <wuzhangjin@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: [PATCH v9 00/10] ftrace for MIPS
+Date: Fri, 20 Nov 2009 20:28:28 +0800
+Message-Id: <cover.1258719323.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Haley wrote:
-> Thomas Gleixner wrote:
-> 
->> While testing various kernel configs we found out that the problem
->> comes and goes. Finally I started to compare the gcc command line
->> options and after some fiddling it turned out that the following
->> minimal deltas change the code generator behaviour:
->>
->> Bad:  -march=pentium-mmx                -Wa,-mtune=generic32
->> Good: -march=i686        -mtune=generic -Wa,-mtune=generic32
->> Good: -march=pentium-mmx -mtune-generic -Wa,-mtune=generic32
->>
->> I'm not supposed to understand the logic behind that, right ?
-> 
-> I don't either.  I'm seeing:
-> 
-> timer_stats_update_stats:                                       timer_stats_update_stats:
->         pushl   %edi                                          <
->         leal    8(%esp), %edi                                 <
->         andl    $-16, %esp                                    <
->         pushl   -4(%edi)                                      <
->         pushl   %ebp                                                    pushl   %ebp
->         movl    %esp, %ebp                                              movl    %esp, %ebp
->         pushl   %edi                                          |         andl    $-16, %esp
->         pushl   %esi                                          |         subl    $112, %esp
->         pushl   %ebx                                          |         movl    %ebx, 100(%esp)
->         subl    $108, %esp                                    |         movl    %esi, 104(%esp)
->                                                               >         movl    %edi, 108(%esp)
->         call    mcount                                                  call    mcount
-> 
-> where the only difference is -mtune=generic.  I'm investigating.
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-Forget that, I see from the gcc-bugs list that hj has tracked it down to
-the use of DRAP, and for some reason the mtune options affect that.  He's
-the best person to fix this.
+After getting the feedback of v8 revision from Thomas, I have written a
+cnt3_to_63() based sched_clock() for MIPS and send it out as a standalone
+patch("MIPS: Add a high precision sched_clock() via cnt32_to_63()").
 
-Andrew.
+This v9 revision only reserve the Ftrace parts. So, Steven or Ralf, Is it time
+to apply it? Thanks!
+
+Best Regards,
+     Wu Zhangjin
+
+Wu Zhangjin (10):
+  tracing: add static function tracer support for MIPS
+  tracing: enable HAVE_FUNCTION_TRACE_MCOUNT_TEST for MIPS
+  tracing: add an endian argument to scripts/recordmcount.pl
+  tracing: add dynamic function tracer support for MIPS
+  tracing: add IRQENTRY_EXIT section for MIPS
+  tracing: add function graph tracer support for MIPS
+  tracing: add dynamic function graph tracer for MIPS
+  tracing: make ftrace for MIPS work without -fno-omit-frame-pointer
+  tracing: reserve $12(t0) for mcount-ra-address of gcc 4.5
+  tracing: make function graph tracer work with -mmcount-ra-address
+
+ arch/mips/Kconfig              |    5 +
+ arch/mips/Makefile             |    9 ++
+ arch/mips/include/asm/ftrace.h |   91 +++++++++++++-
+ arch/mips/include/asm/irq.h    |   29 +----
+ arch/mips/kernel/Makefile      |    7 +
+ arch/mips/kernel/ftrace.c      |  275 ++++++++++++++++++++++++++++++++++++++++
+ arch/mips/kernel/irq.c         |   30 +++++
+ arch/mips/kernel/mcount.S      |  189 +++++++++++++++++++++++++++
+ arch/mips/kernel/mips_ksyms.c  |    5 +
+ arch/mips/kernel/smp.c         |    3 +-
+ arch/mips/kernel/smtc.c        |   21 ++-
+ arch/mips/kernel/vmlinux.lds.S |    1 +
+ arch/mips/sgi-ip22/ip22-int.c  |    3 +-
+ arch/mips/sgi-ip22/ip22-time.c |    3 +-
+ scripts/Makefile.build         |    1 +
+ scripts/recordmcount.pl        |   60 ++++++++-
+ 16 files changed, 691 insertions(+), 41 deletions(-)
+ create mode 100644 arch/mips/kernel/ftrace.c
+ create mode 100644 arch/mips/kernel/mcount.S
+
