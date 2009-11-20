@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZKTRRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZKTRTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZKTRRA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZKTRRA
+	id S1754580AbZKTRTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 12:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZKTRTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:17:00 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:57705 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbZKTRQ7 (ORCPT
+	Fri, 20 Nov 2009 12:19:42 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:33336 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754281AbZKTRTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:16:59 -0500
-Date: Fri, 20 Nov 2009 17:16:56 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, jkacur@redhat.com,
-       Arnd Bergmann <arnd@arndb.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Willem Riede <osst@riede.org>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>
-Subject: Re: [PATCH 03/15] osst: Update ppos instead of using file->f_pos
-Message-ID: <20091120171656.GI20634@shareable.org>
-References: <1258735245-25826-1-git-send-email-jblunck@suse.de> <1258735245-25826-4-git-send-email-jblunck@suse.de> <20091120171317.GH20634@shareable.org>
+	Fri, 20 Nov 2009 12:19:42 -0500
+Message-ID: <4B06CFB1.1090104@internode.on.net>
+Date: Sat, 21 Nov 2009 03:49:45 +1030
+From: indexer <indexer@internode.on.net>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120171317.GH20634@shareable.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Regression in efi.c 2.6.32-rc7
+References: <4B065C44.5000209@internode.on.net> <4B06CE9D.3030003@zytor.com>
+In-Reply-To: <4B06CE9D.3030003@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier wrote:
-> Jan Blunck wrote:
-> > osst_read()/osst_write() modify file->f_pos directly instead of the ppos
-> > given to them. The VFS later updates the file->f_pos and overwrites it
-> > with the value of ppos.
-> 
-> I notice st.c doesn't use or update file->f_pos (or *ppos), so
-> userspace probably won't be caring about f_pos from osst.c (they're
-> both SCSI tape drivers).  And osst.c doesn't use the value, it just
-> increases it with each transfer.  It doesn't even reset the value to
-> zero when rewinding the tape, so it's not that meaningful.
-> 
-> So how about just removing those modifications to file->f_pos from osst.c?
+H. Peter Anvin wrote:
+> On 11/20/2009 01:07 AM, indexer wrote:
+>   
+>> Peter, Huang
+>>
+>> I have finally solved the issues i had with bisecting and have completed
+>> successfully bisecting the efi issue. It exists between 2.6.30-rc7 and
+>> 2.6.30-rc8.
+>>
+>> 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3 is the first bad commit
+>> commit 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9a3d3
+>> Author: Linus Torvalds <torvalds@linux-foundation.org>
+>> Date:   Tue Jun 2 20:07:25 2009 -0700
+>>
+>>     Linux 2.6.30-rc8
+>>
+>> :100644 100644 739fd34a72a2422f14937ccd084f77d52edc0fc1
+>> 610d1c332c45d1d8d2da3adc42e0fb0ad20c7123 M    Makefile
+>>
+>> Is the output of git bisect. I hope this helps to find the problem and
+>> resolve it
+>>
+>> William
+>>     
+>
+> That can't be right.  That patch only changes the version number.
+>
+> 	-hpa
+>
+>   
+This is what git bisect told me. I will redo it and expand my parameters.
 
-Or alternatively, perhaps they are missing from st.c.  I don't know,
-but userspace can't have been all that dependent on the value :-)
-
--- Jamie
+William
