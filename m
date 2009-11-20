@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZKTSCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZKTSHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZKTSCD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:02:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZKTSCD
+	id S1754864AbZKTSHZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZKTSHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:02:03 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:39559 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754254AbZKTSCC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:02:02 -0500
+	Fri, 20 Nov 2009 13:07:25 -0500
+Received: from nox.protox.org ([88.191.38.29]:60285 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753214AbZKTSHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 13:07:24 -0500
+Date: Fri, 20 Nov 2009 19:04:45 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Jerome Glisse <jglisse@redhat.com>, airlied@gmail.com,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [PATCH 3/3] drm/radeon/kms: Add range pinning to crtc/cursor bo
+Message-ID: <20091120180445.GB3467@localhost.localdomain>
+References: <1258723764-4399-1-git-send-email-jglisse@redhat.com>
+ <1258723764-4399-2-git-send-email-jglisse@redhat.com>
+ <1258723764-4399-3-git-send-email-jglisse@redhat.com>
+ <1258723764-4399-4-git-send-email-jglisse@redhat.com>
+ <a728f9f90911200847g68311ddbx4a5fa652588504ab@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20091114001001.5343.99566.stgit@angua>
-References: <20091114001001.5343.99566.stgit@angua>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 20 Nov 2009 11:01:40 -0700
-X-Google-Sender-Auth: 23e2edec98a1aa48
-Message-ID: <fa686aa40911201001m1ce0959dg21bcc2174653cd8a@mail.gmail.com>
-Subject: Re: [RFC] MAINTAINERS: add SPI co-maintainer.
-To: akpm@linux-foundation.org, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a728f9f90911200847g68311ddbx4a5fa652588504ab@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ping?  Any comments on this?
+On Fri, Nov 20, 2009 at 11:47:22AM -0500, Alex Deucher wrote:
+> On Fri, Nov 20, 2009 at 8:29 AM, Jerome Glisse <jglisse@redhat.com> wrote:
+> > We force the crtc & cursor bo to be in the first 64M, this
+> > will help on legacy modesetting hw where the offset of
+> > scanout buffer and cursor are relative to a base address.
+> 
+> This limitation only applies to pre-avivo (r1xx-r4xx) chips, there's
+> no need on newer hardware.  Also the cursor and crtc have to be within
+> 128 MB of each other, so you could bump the limits to 128 MB.  Another
+> thing to consider down the road might be to treat memory over 128 MB
+> as "invisible" on these pre-avivo chips (once we support that in
+> general) then we no longer need this limit.
+> 
+> Alex
+> 
 
-If I don't hear anything, then I think I'm going to go ahead and push
-out a tree with all the SPI changes I've signed off on and ask sfr to
-add it to his list, just so that I'm sure that they get some
-linux-next exposure before Linus opens the merge window.  I won't
-necessarily ask LInus to pull it, I just want the testing.
+I choosed 64M in hope to disminish VRAM fragmentation a little,
+this is also why i did not bother to make this conditional for
+legacy modesetting hw. For supporting non visible vram see my
+other ttm thread. I am working on adding this knowledge to ttm.
 
-Cheers.
-g.
-
-On Fri, Nov 13, 2009 at 5:25 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
-> Hi David, Andrew.
->
-> David, I know that you haven't had enough time lately to keep on top
-> of the pending SPI patches, so I was wondering if you would like some
-> help?  If you are interested, I'm willing to act as co-maintainer of
-> for the SPI subsystem.
->
-> Here's what I'm thinking.  Right now all SPI patches are going through
-> the -mm tree and just adding to akpm's burden.  I'd be more than happy
-> to take over the task of actually collecting the acked patches into a
-> git tree, getting them some exposure on linux-next, and asking Linus
-> to pull it during the merge window.  If you ack them, then I'll merge
-> them.
->
-> I'm also be willing to take responsibility for all powerpc-specific
-> SPI patches so that you don't need to look at them.
->
-> How does this sound to you?
->
-> Cheers,
-> g.
->
->  MAINTAINERS |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a1a2ace..2b697cb 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4937,6 +4937,7 @@ F:        drivers/char/specialix*
->
->  SPI SUBSYSTEM
->  M:     David Brownell <dbrownell@users.sourceforge.net>
-> +M:     Grant Likely <grant.likely@secretlab.ca>
->  L:     spi-devel-general@lists.sourceforge.net
->  S:     Maintained
->  F:     Documentation/spi/
->
->
-
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Jerome
