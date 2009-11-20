@@ -1,88 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZKTUW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZKTUWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbZKTUW0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZKTUWX
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:22:23 -0500
-Received: from lazybastard.de ([212.112.238.170]:48495 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753760AbZKTUWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1755472AbZKTUWU (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 20 Nov 2009 15:22:20 -0500
-X-Greylist: delayed 2701 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:20 EST
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbZKTUWT
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 20 Nov 2009 15:22:19 -0500
+Received: from lazybastard.de ([212.112.238.170]:48492 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755408AbZKTUWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 15:22:12 -0500
+X-Greylist: delayed 2688 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:11 EST
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
 From: Joern Engel <joern@logfs.org>
-Subject: [PATCH 3/17] [LogFS] dev_bdev.c
+Subject: [PATCH 4/17] [LogFS] dev_mtd.c
 References: <20091120181113.GA2159@logfs.org>
-Message-Id: <E1NBZIH-0003fi-Eq@longford.logfs.org>
-Date: Fri, 20 Nov 2009 20:37:21 +0100
+Message-Id: <E1NBZIL-0003fs-1w@longford.logfs.org>
+Date: Fri, 20 Nov 2009 20:37:25 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 ---
- fs/logfs/dev_bdev.c                 |  263 ++++
+ fs/logfs/dev_mtd.c                  |  253 ++++
 
-diff --git a/fs/logfs/dev_bdev.c b/fs/logfs/dev_bdev.c
+diff --git a/fs/logfs/dev_mtd.c b/fs/logfs/dev_mtd.c
 new file mode 100644
-index 0000000..58a057b
+index 0000000..68e99d0
 --- /dev/null
-+++ b/fs/logfs/dev_bdev.c
-@@ -0,0 +1,263 @@
++++ b/fs/logfs/dev_mtd.c
+@@ -0,0 +1,253 @@
 +/*
-+ * fs/logfs/dev_bdev.c	- Device access methods for block devices
++ * fs/logfs/dev_mtd.c	- Device access methods for MTD
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2008 Joern Engel <joern@logfs.org>
 + */
 +#include "logfs.h"
-+#include <linux/bio.h>
-+#include <linux/blkdev.h>
-+#include <linux/buffer_head.h>
++#include <linux/completion.h>
++#include <linux/mount.h>
++#include <linux/sched.h>
 +
 +#define PAGE_OFS(ofs) ((ofs) & (PAGE_SIZE-1))
 +
-+static void request_complete(struct bio *bio, int err)
++static int mtd_read(struct super_block *sb, loff_t ofs, size_t len, void *buf)
 +{
-+	complete((struct completion *)bio->bi_private);
++	struct mtd_info *mtd = logfs_super(sb)->s_mtd;
++	size_t retlen;
++	int ret;
++
++	ret = mtd->read(mtd, ofs, len, &retlen, buf);
++	BUG_ON(ret == -EINVAL);
++	if (ret)
++		return ret;
++
++	/* Not sure if we should loop instead. */
++	if (retlen != len)
++		return -EIO;
++
++	return 0;
 +}
 +
-+static int sync_request(struct page *page, struct block_device *bdev, int rw)
++static int mtd_write(struct super_block *sb, loff_t ofs, size_t len, void *buf)
 +{
-+	struct bio bio;
-+	struct bio_vec bio_vec;
-+	struct completion complete;
++	struct logfs_super *super = logfs_super(sb);
++	struct mtd_info *mtd = super->s_mtd;
++	size_t retlen;
++	loff_t page_start, page_end;
++	int ret;
 +
-+	bio_init(&bio);
-+	bio.bi_io_vec = &bio_vec;
-+	bio_vec.bv_page = page;
-+	bio_vec.bv_len = PAGE_SIZE;
-+	bio_vec.bv_offset = 0;
-+	bio.bi_vcnt = 1;
-+	bio.bi_idx = 0;
-+	bio.bi_size = PAGE_SIZE;
-+	bio.bi_bdev = bdev;
-+	bio.bi_sector = page->index * (PAGE_SIZE >> 9);
-+	init_completion(&complete);
-+	bio.bi_private = &complete;
-+	bio.bi_end_io = request_complete;
++	if (super->s_flags & LOGFS_SB_FLAG_RO)
++		return -EROFS;
 +
-+	submit_bio(rw, &bio);
-+	generic_unplug_device(bdev_get_queue(bdev));
++	BUG_ON((ofs >= mtd->size) || (len > mtd->size - ofs));
++	BUG_ON(ofs != (ofs >> super->s_writeshift) << super->s_writeshift);
++	BUG_ON(len > PAGE_CACHE_SIZE);
++	page_start = ofs & PAGE_CACHE_MASK;
++	page_end = PAGE_CACHE_ALIGN(ofs + len) - 1;
++	ret = mtd->write(mtd, ofs, len, &retlen, buf);
++	if (ret || (retlen != len))
++		return -EIO;
++
++	return 0;
++}
++
++/*
++ * For as long as I can remember (since about 2001) mtd->erase has been an
++ * asynchronous interface lacking the first driver to actually use the
++ * asynchronous properties.  So just to prevent the first implementor of such
++ * a thing from breaking logfs in 2350, we do the usual pointless dance to
++ * declare a completion variable and wait for completion before returning
++ * from mtd_erase().  What an excercise in futility!
++ */
++static void logfs_erase_callback(struct erase_info *ei)
++{
++	complete((struct completion *)ei->priv);
++}
++
++static int mtd_erase_mapping(struct super_block *sb, loff_t ofs, size_t len)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct address_space *mapping = super->s_mapping_inode->i_mapping;
++	struct page *page;
++	pgoff_t index = ofs >> PAGE_SHIFT;
++
++	for (index = ofs >> PAGE_SHIFT; index < (ofs + len) >> PAGE_SHIFT; index++) {
++		page = find_get_page(mapping, index);
++		if (!page)
++			continue;
++		memset(page_address(page), 0xFF, PAGE_SIZE);
++		page_cache_release(page);
++	}
++	return 0;
++}
++
++static int mtd_erase(struct super_block *sb, loff_t ofs, size_t len)
++{
++	struct mtd_info *mtd = logfs_super(sb)->s_mtd;
++	struct erase_info ei;
++	DECLARE_COMPLETION_ONSTACK(complete);
++	int ret;
++
++	BUG_ON(len % mtd->erasesize);
++	if (logfs_super(sb)->s_flags & LOGFS_SB_FLAG_RO)
++		return -EROFS;
++
++	memset(&ei, 0, sizeof(ei));
++	ei.mtd = mtd;
++	ei.addr = ofs;
++	ei.len = len;
++	ei.callback = logfs_erase_callback;
++	ei.priv = (long)&complete;
++	ret = mtd->erase(mtd, &ei);
++	if (ret)
++		return -EIO;
++
 +	wait_for_completion(&complete);
-+	return test_bit(BIO_UPTODATE, &bio.bi_flags) ? 0 : -EIO;
++	if (ei.state != MTD_ERASE_DONE)
++		return -EIO;
++	return mtd_erase_mapping(sb, ofs, len);
 +}
 +
-+static int bdev_readpage(void *_sb, struct page *page)
++static void mtd_sync(struct super_block *sb)
++{
++	struct mtd_info *mtd = logfs_super(sb)->s_mtd;
++
++	if (mtd->sync)
++		mtd->sync(mtd);
++}
++
++static int mtd_readpage(void *_sb, struct page *page)
 +{
 +	struct super_block *sb = _sb;
-+	struct block_device *bdev = logfs_super(sb)->s_bdev;
 +	int err;
 +
-+	err = sync_request(page, bdev, READ);
++	err = mtd_read(sb, page->index << PAGE_SHIFT, PAGE_SIZE,
++			page_address(page));
++	if (err == -EUCLEAN) {
++		err = 0;
++		/* FIXME: force GC this segment */
++	}
 +	if (err) {
 +		ClearPageUptodate(page);
 +		SetPageError(page);
@@ -94,94 +173,76 @@ index 0000000..58a057b
 +	return err;
 +}
 +
-+static DECLARE_WAIT_QUEUE_HEAD(wq);
-+
-+static void writeseg_end_io(struct bio *bio, int err)
++static struct page *mtd_find_first_sb(struct super_block *sb, u64 *ofs)
 +{
-+	const int uptodate = test_bit(BIO_UPTODATE, &bio->bi_flags);
-+	struct bio_vec *bvec = bio->bi_io_vec + bio->bi_vcnt - 1;
-+	struct super_block *sb = bio->bi_private;
 +	struct logfs_super *super = logfs_super(sb);
-+	struct page *page;
++	struct address_space *mapping = super->s_mapping_inode->i_mapping;
++	filler_t *filler = mtd_readpage;
++	struct mtd_info *mtd = super->s_mtd;
 +
-+	BUG_ON(!uptodate); /* FIXME: Retry io or write elsewhere */
-+	BUG_ON(err);
-+	BUG_ON(bio->bi_vcnt == 0);
-+	do {
-+		page = bvec->bv_page;
-+		if (--bvec >= bio->bi_io_vec)
-+			prefetchw(&bvec->bv_page->flags);
++	if (!mtd->block_isbad)
++		return NULL;
 +
-+		end_page_writeback(page);
-+	} while (bvec >= bio->bi_io_vec);
-+	bio_put(bio);
-+	if (atomic_dec_and_test(&super->s_pending_writes))
-+		wake_up(&wq);
++	*ofs = 0;
++	while (mtd->block_isbad(mtd, *ofs)) {
++		*ofs += mtd->erasesize;
++		if (*ofs >= mtd->size)
++			return NULL;
++	}
++	BUG_ON(*ofs & ~PAGE_MASK);
++	return read_cache_page(mapping, *ofs >> PAGE_SHIFT, filler, sb);
 +}
 +
-+static int __bdev_writeseg(struct super_block *sb, u64 ofs, pgoff_t index,
++static struct page *mtd_find_last_sb(struct super_block *sb, u64 *ofs)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct address_space *mapping = super->s_mapping_inode->i_mapping;
++	filler_t *filler = mtd_readpage;
++	struct mtd_info *mtd = super->s_mtd;
++
++	if (!mtd->block_isbad)
++		return NULL;
++
++	*ofs = mtd->size - mtd->erasesize;
++	while (mtd->block_isbad(mtd, *ofs)) {
++		*ofs -= mtd->erasesize;
++		if (*ofs <= 0)
++			return NULL;
++	}
++	*ofs = *ofs + mtd->erasesize - 0x1000;
++	BUG_ON(*ofs & ~PAGE_MASK);
++	return read_cache_page(mapping, *ofs >> PAGE_SHIFT, filler, sb);
++}
++
++static int __mtd_writeseg(struct super_block *sb, u64 ofs, pgoff_t index,
 +		size_t nr_pages)
 +{
 +	struct logfs_super *super = logfs_super(sb);
 +	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	struct bio *bio;
 +	struct page *page;
-+	struct request_queue *q = bdev_get_queue(sb->s_bdev);
-+	unsigned int max_pages = queue_max_hw_sectors(q) >> (PAGE_SHIFT - 9);
-+	int i;
-+
-+	bio = bio_alloc(GFP_NOFS, max_pages);
-+	BUG_ON(!bio); /* FIXME: handle this */
++	int i, err;
 +
 +	for (i = 0; i < nr_pages; i++) {
-+		if (i >= max_pages) {
-+			/* Block layer cannot split bios :( */
-+			bio->bi_vcnt = i;
-+			bio->bi_idx = 0;
-+			bio->bi_size = i * PAGE_SIZE;
-+			bio->bi_bdev = super->s_bdev;
-+			bio->bi_sector = ofs >> 9;
-+			bio->bi_private = sb;
-+			bio->bi_end_io = writeseg_end_io;
-+			atomic_inc(&super->s_pending_writes);
-+			submit_bio(WRITE, bio);
-+
-+			ofs += i * PAGE_SIZE;
-+			index += i;
-+			nr_pages -= i;
-+			i = 0;
-+
-+			bio = bio_alloc(GFP_NOFS, max_pages);
-+			BUG_ON(!bio);
-+		}
 +		page = find_lock_page(mapping, index + i);
 +		BUG_ON(!page);
-+		bio->bi_io_vec[i].bv_page = page;
-+		bio->bi_io_vec[i].bv_len = PAGE_SIZE;
-+		bio->bi_io_vec[i].bv_offset = 0;
 +
-+		BUG_ON(PageWriteback(page));
-+		set_page_writeback(page);
++		err = mtd_write(sb, page->index << PAGE_SHIFT, PAGE_SIZE,
++				page_address(page));
 +		unlock_page(page);
++		page_cache_release(page);
++		if (err)
++			return err;
 +	}
-+	bio->bi_vcnt = nr_pages;
-+	bio->bi_idx = 0;
-+	bio->bi_size = nr_pages * PAGE_SIZE;
-+	bio->bi_bdev = super->s_bdev;
-+	bio->bi_sector = ofs >> 9;
-+	bio->bi_private = sb;
-+	bio->bi_end_io = writeseg_end_io;
-+	atomic_inc(&super->s_pending_writes);
-+	submit_bio(WRITE, bio);
 +	return 0;
 +}
 +
-+static void bdev_writeseg(struct super_block *sb, u64 ofs, size_t len)
++static void mtd_writeseg(struct super_block *sb, u64 ofs, size_t len)
 +{
 +	struct logfs_super *super = logfs_super(sb);
 +	int head;
 +
-+	BUG_ON(super->s_flags & LOGFS_SB_FLAG_RO);
++	if (super->s_flags & LOGFS_SB_FLAG_RO)
++		return;
 +
 +	if (len == 0) {
 +		/* This can happen when the object fit perfectly into a
@@ -196,101 +257,30 @@ index 0000000..58a057b
 +		len += head;
 +	}
 +	len = PAGE_ALIGN(len);
-+	__bdev_writeseg(sb, ofs, ofs >> PAGE_SHIFT, len >> PAGE_SHIFT);
-+	generic_unplug_device(bdev_get_queue(logfs_super(sb)->s_bdev));
++	__mtd_writeseg(sb, ofs, ofs >> PAGE_SHIFT, len >> PAGE_SHIFT);
 +}
 +
-+static int bdev_erase(struct super_block *sb, loff_t to, size_t len)
++static void mtd_put_device(struct super_block *sb)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	struct page *page;
-+	pgoff_t index = to >> PAGE_SHIFT;
-+	int i, nr_pages = len >> PAGE_SHIFT;
-+
-+	BUG_ON(to & (PAGE_SIZE - 1));
-+	BUG_ON(len & (PAGE_SIZE - 1));
-+
-+	if (logfs_super(sb)->s_flags & LOGFS_SB_FLAG_RO)
-+		return -EROFS;
-+
-+	for (i = 0; i < nr_pages; i++) {
-+		page = find_get_page(mapping, index + i);
-+		if (page) {
-+			memset(page_address(page), 0xFF, PAGE_SIZE);
-+			page_cache_release(page);
-+		}
-+	}
-+	return 0;
++	put_mtd_device(logfs_super(sb)->s_mtd);
 +}
 +
-+static void bdev_sync(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	wait_event(wq, atomic_read(&super->s_pending_writes) == 0);
-+}
-+
-+static struct page *bdev_find_first_sb(struct super_block *sb, u64 *ofs)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	filler_t *filler = bdev_readpage;
-+
-+	*ofs = 0;
-+	return read_cache_page(mapping, 0, filler, sb);
-+}
-+
-+static struct page *bdev_find_last_sb(struct super_block *sb, u64 *ofs)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct address_space *mapping = super->s_mapping_inode->i_mapping;
-+	filler_t *filler = bdev_readpage;
-+	u64 pos = (super->s_bdev->bd_inode->i_size & ~0xfffULL) - 0x1000;
-+	pgoff_t index = pos >> PAGE_SHIFT;
-+
-+	*ofs = pos;
-+	return read_cache_page(mapping, index, filler, sb);
-+}
-+
-+static int bdev_write_sb(struct super_block *sb, struct page *page)
-+{
-+	struct block_device *bdev = logfs_super(sb)->s_bdev;
-+
-+	/* Nothing special to do for block devices. */
-+	return sync_request(page, bdev, WRITE);
-+}
-+
-+static void bdev_put_device(struct super_block *sb)
-+{
-+	close_bdev_exclusive(logfs_super(sb)->s_bdev, FMODE_READ|FMODE_WRITE);
-+}
-+
-+static const struct logfs_device_ops bd_devops = {
-+	.find_first_sb	= bdev_find_first_sb,
-+	.find_last_sb	= bdev_find_last_sb,
-+	.write_sb	= bdev_write_sb,
-+	.readpage	= bdev_readpage,
-+	.writeseg	= bdev_writeseg,
-+	.erase		= bdev_erase,
-+	.sync		= bdev_sync,
-+	.put_device	= bdev_put_device,
++static const struct logfs_device_ops mtd_devops = {
++	.find_first_sb	= mtd_find_first_sb,
++	.find_last_sb	= mtd_find_last_sb,
++	.readpage	= mtd_readpage,
++	.writeseg	= mtd_writeseg,
++	.erase		= mtd_erase,
++	.sync		= mtd_sync,
++	.put_device	= mtd_put_device,
 +};
 +
-+int logfs_get_sb_bdev(struct file_system_type *type, int flags,
-+		const char *devname, struct vfsmount *mnt)
++int logfs_get_sb_mtd(struct file_system_type *type, int flags,
++		int mtdnr, struct vfsmount *mnt)
 +{
-+	struct block_device *bdev;
++	struct mtd_info *mtd;
++	const struct logfs_device_ops *devops = &mtd_devops;
 +
-+	bdev = open_bdev_exclusive(devname, FMODE_READ|FMODE_WRITE, type);
-+	if (IS_ERR(bdev))
-+		return PTR_ERR(bdev);
-+
-+	if (MAJOR(bdev->bd_dev) == MTD_BLOCK_MAJOR) {
-+		int mtdnr = MINOR(bdev->bd_dev);
-+		close_bdev_exclusive(bdev, FMODE_READ|FMODE_WRITE);
-+		return logfs_get_sb_mtd(type, flags, mtdnr, mnt);
-+	}
-+
-+	return logfs_get_sb_device(type, flags, NULL, bdev, &bd_devops, mnt);
++	mtd = get_mtd_device(NULL, mtdnr);
++	return logfs_get_sb_device(type, flags, mtd, NULL, devops, mnt);
 +}
