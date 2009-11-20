@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZKTRLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZKTRKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZKTRLG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 12:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZKTRLF
+	id S1754200AbZKTRKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 12:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZKTRKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 12:11:05 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40580 "EHLO mx2.suse.de"
+	Fri, 20 Nov 2009 12:10:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62642 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754290AbZKTRLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 12:11:01 -0500
-Date: Fri, 20 Nov 2009 18:11:07 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, jkacur@redhat.com,
-       Arnd Bergmann <arnd@arndb.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 01/15] Introduce noop_llseek()
-Message-ID: <20091120171107.GZ21750@bolzano.suse.de>
-References: <1258735245-25826-1-git-send-email-jblunck@suse.de> <1258735245-25826-2-git-send-email-jblunck@suse.de> <20091120170547.GF20634@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120170547.GF20634@shareable.org>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.9i
+	id S1751527AbZKTRKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 12:10:52 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 0/2] x86 insn decoder test checking objdump version
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Randy Dunlap <rdunlap@xenotime.net>, Jim Keniston <jkenisto@us.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Fri, 20 Nov 2009 12:13:01 -0500
+Message-ID: <20091120171301.6715.24229.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20091117061352.GE30852@elte.hu>
+References: <20091117061352.GE30852@elte.hu>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, Jamie Lokier wrote:
 
-> Jan Blunck wrote:
-> > The noop_llseek() is a llseek() operation that filesystems can use that
-> > don't want to support seeking (leave the file->f_pos untouched) but still
-> > want to let the syscall itself to succeed.
-> 
-> This is weird behaviour: if you want to allow llseek() to succeed but
-> don't really support seeking, why does the device even care about the
-> value of file->f_pos?
+Hi Ingo,
 
-The device itself does not care about it but it is userspace that is expecting
-the seek to succeed. There is a comment in osst that at least there seems to
-be a borken version of tar that wants to seek on the device even it that does
-not have any effect.
+Ingo Molnar wrote:
+> We dont want to remove the build error: it helped us fix a number of
+> real bugs in the decoder - instead please try to create a make based
+> workaround based on binutils, to not run the test with binutils older
+> than 2.19 or so.
 
-Regards,
-	Jan
+Agreed, this patch checks objdump version and skip the test if it is older
+than 2.19.
+
+Thank you,
+
+---
+
+Masami Hiramatsu (2):
+      x86: insn decoder test checks objdump version
+      [BUGFIX] x86: Fix insn decoder test typos
+
+
+ arch/x86/tools/Makefile       |   15 ++++++++++++---
+ arch/x86/tools/chkobjdump.awk |   23 +++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
+ create mode 100644 arch/x86/tools/chkobjdump.awk
 
 -- 
-Jan Blunck <jblunck@suse.de>
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+e-mail: mhiramat@redhat.com
