@@ -1,755 +1,660 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZKTUWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZKTUWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZKTUWE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 15:22:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbZKTUWC
+	id S1755609AbZKTUWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 15:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZKTUWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 15:22:02 -0500
-Received: from lazybastard.de ([212.112.238.170]:48488 "EHLO
+	Fri, 20 Nov 2009 15:22:37 -0500
+Received: from lazybastard.de ([212.112.238.170]:48499 "EHLO
 	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbZKTUV6 (ORCPT
+	with ESMTP id S1755432AbZKTUWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 15:21:58 -0500
-X-Greylist: delayed 2635 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:21:57 EST
+	Fri, 20 Nov 2009 15:22:32 -0500
+X-Greylist: delayed 2665 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 15:22:32 EST
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-mtd@lists.infradead.org
 From: Joern Engel <joern@logfs.org>
-Subject: [PATCH 10/17] [LogFS] logfs.h
+Subject: [PATCH 11/17] [LogFS] logfs_abi.h
 References: <20091120181113.GA2159@logfs.org>
-Message-Id: <E1NBZIm-0003h3-Bv@longford.logfs.org>
-Date: Fri, 20 Nov 2009 20:37:52 +0100
+Message-Id: <E1NBZIw-0003hF-PV@longford.logfs.org>
+Date: Fri, 20 Nov 2009 20:38:02 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 ---
- fs/logfs/logfs.h                    |  722 +++++++++++
+ fs/logfs/logfs_abi.h                |  627 ++++++++++
 
-diff --git a/fs/logfs/logfs.h b/fs/logfs/logfs.h
+diff --git a/fs/logfs/logfs_abi.h b/fs/logfs/logfs_abi.h
 new file mode 100644
-index 0000000..e3082ab
+index 0000000..5d3782d
 --- /dev/null
-+++ b/fs/logfs/logfs.h
-@@ -0,0 +1,722 @@
++++ b/fs/logfs/logfs_abi.h
+@@ -0,0 +1,627 @@
 +/*
-+ * fs/logfs/logfs.h
++ * fs/logfs/logfs_abi.h
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2008 Joern Engel <joern@logfs.org>
 + *
-+ * Private header for logfs.
++ * Public header for logfs.
 + */
-+#ifndef FS_LOGFS_LOGFS_H
-+#define FS_LOGFS_LOGFS_H
++#ifndef FS_LOGFS_LOGFS_ABI_H
++#define FS_LOGFS_LOGFS_ABI_H
 +
-+#undef __CHECK_ENDIAN__
-+#define __CHECK_ENDIAN__
-+
-+#include <linux/btree.h>
-+#include <linux/crc32.h>
-+#include <linux/fs.h>
-+#include <linux/kernel.h>
-+#include <linux/mempool.h>
-+#include <linux/pagemap.h>
-+#include <linux/mtd/mtd.h>
-+#include "logfs_abi.h"
-+
-+#define LOGFS_DEBUG_SUPER	(0x0001)
-+#define LOGFS_DEBUG_SEGMENT	(0x0002)
-+#define LOGFS_DEBUG_JOURNAL	(0x0004)
-+#define LOGFS_DEBUG_DIR		(0x0008)
-+#define LOGFS_DEBUG_FILE	(0x0010)
-+#define LOGFS_DEBUG_INODE	(0x0020)
-+#define LOGFS_DEBUG_READWRITE	(0x0040)
-+#define LOGFS_DEBUG_GC		(0x0080)
-+#define LOGFS_DEBUG_GC_NOISY	(0x0100)
-+#define LOGFS_DEBUG_ALIASES	(0x0200)
-+#define LOGFS_DEBUG_BLOCKMOVE	(0x0400)
-+#define LOGFS_DEBUG_ALL		(0xffffffff)
-+
-+#define LOGFS_DEBUG		(0x01)
-+/*
-+ * To enable specific log messages, simply define LOGFS_DEBUG to match any
-+ * or all of the above.
-+ */
-+#ifndef LOGFS_DEBUG
-+#define LOGFS_DEBUG		(0)
++/* For out-of-kernel compiles */
++#ifndef BUILD_BUG_ON
++#define BUILD_BUG_ON(condition) /**/
 +#endif
 +
-+#define log_cond(cond, fmt, arg...) do {	\
-+	if (cond)				\
-+		printk(KERN_DEBUG fmt, ##arg);	\
-+} while (0)
++#define SIZE_CHECK(type, size)					\
++static inline void check_##type(void)				\
++{								\
++	BUILD_BUG_ON(sizeof(struct type) != (size));		\
++}
 +
-+#define log_super(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_SUPER, fmt, ##arg)
-+#define log_segment(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_SEGMENT, fmt, ##arg)
-+#define log_journal(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_JOURNAL, fmt, ##arg)
-+#define log_dir(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_DIR, fmt, ##arg)
-+#define log_file(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_FILE, fmt, ##arg)
-+#define log_inode(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_INODE, fmt, ##arg)
-+#define log_readwrite(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_READWRITE, fmt, ##arg)
-+#define log_gc(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_GC, fmt, ##arg)
-+#define log_gc_noisy(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_GC_NOISY, fmt, ##arg)
-+#define log_aliases(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_ALIASES, fmt, ##arg)
-+#define log_blockmove(fmt, arg...) \
-+	log_cond(LOGFS_DEBUG & LOGFS_DEBUG_BLOCKMOVE, fmt, ##arg)
-+
-+#define PG_pre_locked		PG_owner_priv_1
-+#define PagePreLocked(page)	test_bit(PG_pre_locked, &(page)->flags)
-+#define SetPagePreLocked(page)	set_bit(PG_pre_locked, &(page)->flags)
-+#define ClearPagePreLocked(page) clear_bit(PG_pre_locked, &(page)->flags)
-+
-+/* FIXME: This should really be somewhere in the 64bit area. */
-+#define LOGFS_LINK_MAX		(1<<30)
-+
-+/* Read-only filesystem */
-+#define LOGFS_SB_FLAG_RO	0x0001
-+#define LOGFS_SB_FLAG_SEG_ALIAS	0x0002
-+#define LOGFS_SB_FLAG_OBJ_ALIAS	0x0004
-+#define LOGFS_SB_FLAG_SHUTDOWN	0x0008
-+
-+/* Write Control Flags */
-+#define WF_LOCK			0x01 /* take write lock */
-+#define WF_WRITE		0x02 /* write block */
-+#define WF_DELETE		0x04 /* delete old block */
-+
-+typedef u8 __bitwise level_t;
-+typedef u8 __bitwise gc_level_t;
-+
-+#define LEVEL(level) ((__force level_t)(level))
-+#define GC_LEVEL(gc_level) ((__force gc_level_t)(gc_level))
-+
-+#define SUBLEVEL(level) ( (void)((level) == LEVEL(1)),	\
-+		(__force level_t)((__force u8)(level) - 1) )
-+
-+/**
-+ * struct logfs_area - area management information
++/*
++ * Throughout the logfs code, we're constantly dealing with blocks at
++ * various positions or offsets.  To remove confusion, we stricly
++ * distinguish between a "position" - the logical position within a
++ * file and an "offset" - the physical location within the device.
 + *
-+ * @a_sb:			the superblock this area belongs to
-+ * @a_is_open:			1 if the area is currently open, else 0
-+ * @a_segno:			segment number of area
-+ * @a_written_bytes:		number of bytes already written back
-+ * @a_used_bytes:		number of used bytes
-+ * @a_ops:			area operations (either journal or ostore)
-+ * @a_erase_count:		erase count
-+ * @a_level:			GC level
++ * Any usage of the term offset for a logical location or position for
++ * a physical one is a bug and should get fixed.
 + */
-+struct logfs_area { /* a segment open for writing */
-+	struct super_block *a_sb;
-+	int	a_is_open;
-+	u32	a_segno;
-+	u32	a_written_bytes;
-+	u32	a_used_bytes;
-+	const struct logfs_area_ops *a_ops;
-+	u32	a_erase_count;
-+	gc_level_t a_level;
++
++/*
++ * Block are allocated in one of several segments depending on their
++ * level.  The following levels are used:
++ *  0	- regular data block
++ *  1	- i1 indirect blocks
++ *  2	- i2 indirect blocks
++ *  3	- i3 indirect blocks
++ *  4	- i4 indirect blocks
++ *  5	- i5 indirect blocks
++ *  6	- ifile data blocks
++ *  7	- ifile i1 indirect blocks
++ *  8	- ifile i2 indirect blocks
++ *  9	- ifile i3 indirect blocks
++ * 10	- ifile i4 indirect blocks
++ * 11	- ifile i5 indirect blocks
++ * Potential levels to be used in the future:
++ * 12	- gc recycled blocks, long-lived data
++ * 13	- replacement blocks, short-lived data
++ *
++ * Levels 1-11 are necessary for robust gc operations and help seperate
++ * short-lived metadata from longer-lived file data.  In the future,
++ * file data should get seperated into several segments based on simple
++ * heuristics.  Old data recycled during gc operation is expected to be
++ * long-lived.  New data is of uncertain life expectancy.  New data
++ * used to replace older blocks in existing files is expected to be
++ * short-lived.
++ */
++
++
++/* Magic numbers.  64bit for superblock, 32bit for statfs f_type */
++#define LOGFS_MAGIC		0xb21f205ac97e8168ull
++#define LOGFS_MAGIC_U32		0xc97e8168u
++
++/*
++ * Various blocksize related macros.  Blocksize is currently fixed at 4KiB.
++ * Sooner or later that should become configurable and the macros replaced
++ * by something superblock-dependent.  Pointers in indirect blocks are and
++ * will remain 64bit.
++ *
++ * LOGFS_BLOCKSIZE	- self-explaining
++ * LOGFS_BLOCK_FACTOR	- number of pointers per indirect block
++ * LOGFS_BLOCK_BITS	- log2 of LOGFS_BLOCK_FACTOR, used for shifts
++ */
++#define LOGFS_BLOCKSIZE		(4096ull)
++#define LOGFS_BLOCK_FACTOR	(LOGFS_BLOCKSIZE / sizeof(u64))
++#define LOGFS_BLOCK_BITS	(9)
++
++/*
++ * Number of blocks at various levels of indirection.  There are 16 direct
++ * block pointers plus a single indirect pointer.
++ */
++#define I0_BLOCKS		(16)
++#define I1_BLOCKS		LOGFS_BLOCK_FACTOR
++#define I2_BLOCKS		(LOGFS_BLOCK_FACTOR * I1_BLOCKS)
++#define I3_BLOCKS		(LOGFS_BLOCK_FACTOR * I2_BLOCKS)
++#define I4_BLOCKS		(LOGFS_BLOCK_FACTOR * I3_BLOCKS)
++#define I5_BLOCKS		(LOGFS_BLOCK_FACTOR * I4_BLOCKS)
++
++#define INDIRECT_INDEX		I0_BLOCKS
++#define LOGFS_EMBEDDED_FIELDS	(I0_BLOCKS + 1)
++
++/*
++ * Sizes at which files require another level of indirection.  Files smaller
++ * than LOGFS_EMBEDDED_SIZE can be completely stored in the inode itself,
++ * similar like ext2 fast symlinks.
++ *
++ * Data at a position smaller than LOGFS_I0_SIZE is accessed through the
++ * direct pointers, else through the 1x indirect pointer and so forth.
++ */
++#define LOGFS_EMBEDDED_SIZE	(LOGFS_EMBEDDED_FIELDS * sizeof(u64))
++#define LOGFS_I0_SIZE		(I0_BLOCKS * LOGFS_BLOCKSIZE)
++#define LOGFS_I1_SIZE		(I1_BLOCKS * LOGFS_BLOCKSIZE)
++#define LOGFS_I2_SIZE		(I2_BLOCKS * LOGFS_BLOCKSIZE)
++#define LOGFS_I3_SIZE		(I3_BLOCKS * LOGFS_BLOCKSIZE)
++#define LOGFS_I4_SIZE		(I4_BLOCKS * LOGFS_BLOCKSIZE)
++#define LOGFS_I5_SIZE		(I5_BLOCKS * LOGFS_BLOCKSIZE)
++
++/*
++ * Each indirect block pointer must have this flag set, if all block pointers
++ * behind it are set, i.e. there is no hole hidden in the shadow of this
++ * indirect block pointer.
++ */
++#define LOGFS_FULLY_POPULATED (1ULL << 63)
++#define pure_ofs(ofs) (ofs & ~LOGFS_FULLY_POPULATED)
++
++/*
++ * LogFS needs to seperate data into levels.  Each level is defined as the
++ * maximal possible distance from the master inode (inode of the inode file).
++ * Data blocks reside on level 0, 1x indirect block on level 1, etc.
++ * Inodes reside on level 6, indirect blocks for the inode file on levels 7-11.
++ * This effort is necessary to guarantee garbage collection to always make
++ * progress.
++ *
++ * LOGFS_MAX_INDIRECT is the maximal indirection through indirect blocks,
++ * LOGFS_MAX_LEVELS is one more for the actual data level of a file.  It is
++ * the maximal number of levels for one file.
++ * LOGFS_NO_AREAS is twice that, as the inode file and regular files are
++ * effectively stacked on top of each other.
++ */
++#define LOGFS_MAX_INDIRECT	(5)
++#define LOGFS_MAX_LEVELS	(LOGFS_MAX_INDIRECT + 1)
++#define LOGFS_NO_AREAS		(2 * LOGFS_MAX_LEVELS)
++
++/* Maximum size of filenames */
++#define LOGFS_MAX_NAMELEN	(255)
++
++/* Number of segments in the primary journal. */
++#define LOGFS_JOURNAL_SEGS	(16)
++
++/* Maximum number of free/erased/etc. segments in journal entries */
++#define MAX_CACHED_SEGS		(64)
++
++
++/*
++ * LOGFS_OBJECT_HEADERSIZE is the size of a single header in the object store,
++ * LOGFS_MAX_OBJECTSIZE the size of the largest possible object, including
++ * its header,
++ * LOGFS_SEGMENT_RESERVE is the amount of space reserved for each segment for
++ * its segment header and the padded space at the end when no further objects
++ * fit.
++ */
++#define LOGFS_OBJECT_HEADERSIZE	(0x1c)
++#define LOGFS_SEGMENT_HEADERSIZE (0x18)
++#define LOGFS_MAX_OBJECTSIZE	(LOGFS_OBJECT_HEADERSIZE + LOGFS_BLOCKSIZE)
++#define LOGFS_SEGMENT_RESERVE	\
++	(LOGFS_SEGMENT_HEADERSIZE + LOGFS_MAX_OBJECTSIZE - 1)
++
++/*
++ * Segment types:
++ * SEG_SUPER	- Data or indirect block
++ * SEG_JOURNAL	- Inode
++ * SEG_OSTORE	- Dentry
++ */
++enum {
++	SEG_SUPER	= 0x01,
++	SEG_JOURNAL	= 0x02,
++	SEG_OSTORE	= 0x03,
 +};
 +
 +/**
-+ * struct logfs_area_ops - area operations
++ * struct logfs_segment_header - per-segment header in the ostore
 + *
-+ * @get_free_segment:		fill area->ofs with the offset of a free segment
-+ * @get_erase_count:		fill area->erase_count (needs area->ofs)
-+ * @erase_segment:		erase and setup segment
-+ */
-+struct logfs_area_ops {
-+	void	(*get_free_segment)(struct logfs_area *area);
-+	void	(*get_erase_count)(struct logfs_area *area);
-+	int	(*erase_segment)(struct logfs_area *area);
-+};
-+
-+/**
-+ * struct logfs_device_ops - device access operations
-+ *
-+ * @readpage:			read one page (mm page)
-+ * @writeseg:			write one segment.  may be a partial segment
-+ * @erase:			erase one segment
-+ * @read:			read from the device
-+ * @erase:			erase part of the device
-+ */
-+struct logfs_device_ops {
-+	struct page *(*find_first_sb)(struct super_block *sb, u64 *ofs);
-+	struct page *(*find_last_sb)(struct super_block *sb, u64 *ofs);
-+	int (*write_sb)(struct super_block *sb, struct page *page);
-+	int (*readpage)(void *_sb, struct page *page);
-+	void (*writeseg)(struct super_block *sb, u64 ofs, size_t len);
-+	int (*erase)(struct super_block *sb, loff_t ofs, size_t len);
-+	void (*sync)(struct super_block *sb);
-+	void (*put_device)(struct super_block *sb);
-+};
-+
-+/**
-+ * struct candidate_list - list of similar candidates
-+ */
-+struct candidate_list {
-+	struct rb_root rb_tree;
-+	int count;
-+	int maxcount;
-+	int sort_by_ec;
-+};
-+
-+/**
-+ * struct gc_candidate - "candidate" segment to be garbage collected next
-+ *
-+ * @list:			list (either free of low)
++ * @crc:			crc32 of header (there is no data)
++ * @pad:			unused, must be 0
++ * @type:			segment type, see above
++ * @level:			GC level for all objects in this segment
 + * @segno:			segment number
-+ * @valid:			number of valid bytes
-+ * @erase_count:		erase count of segment
-+ * @dist:			distance from tree root
-+ *
-+ * Candidates can be on two lists.  The free list contains electees rather
-+ * than candidates - segments that no longer contain any valid data.  The
-+ * low list contains candidates to be picked for GC.  It should be kept
-+ * short.  It is not required to always pick a perfect candidate.  In the
-+ * worst case GC will have to move more data than absolutely necessary.
++ * @ec:				erase count for this segment
++ * @gec:			global erase count at time of writing
 + */
-+struct gc_candidate {
-+	struct rb_node rb_node;
-+	struct candidate_list *list;
-+	u32	segno;
-+	u32	valid;
-+	u32	erase_count;
-+	u8	dist;
++struct logfs_segment_header {
++	__be32	crc;
++	__be16	pad;
++	__u8	type;
++	__u8	level;
++	__be32	segno;
++	__be32	ec;
++	__be64	gec;
++};
++
++SIZE_CHECK(logfs_segment_header, LOGFS_SEGMENT_HEADERSIZE);
++
++/**
++ * struct logfs_disk_super - on-medium superblock
++ *
++ * @ds_magic:			magic number, must equal LOGFS_MAGIC
++ * @ds_crc:			crc32 of structure starting with the next field
++ * @ds_ifile_levels:		maximum number of levels for ifile
++ * @ds_iblock_levels:		maximum number of levels for regular files
++ * @ds_data_levels:		number of seperate levels for data
++ * @pad0:			reserved, must be 0
++ * @ds_feature_incompat:	incompatible filesystem features
++ * @ds_feature_ro_compat:	read-only compatible filesystem features
++ * @ds_feature_compat:		compatible filesystem features
++ * @ds_flags:			flags
++ * @ds_segment_shift:		log2 of segment size
++ * @ds_block_shift:		log2 of block size
++ * @ds_write_shift:		log2 of write size
++ * @pad1:			reserved, must be 0
++ * @ds_journal_seg:		segments used by primary journal
++ * @ds_root_reserve:		bytes reserved for the superuser
++ * @ds_speed_reserve:		bytes reserved to speed up GC
++ * @ds_bad_seg_reserve:		number of segments reserved to handle bad blocks
++ * @pad2:			reserved, must be 0
++ * @pad3:			reserved, must be 0
++ *
++ * Contains only read-only fields.  Read-write fields like the amount of used
++ * space is tracked in the dynamic superblock, which is stored in the journal.
++ */
++struct logfs_disk_super {
++	struct logfs_segment_header ds_sh;
++	__be64	ds_magic;
++
++	__be32	ds_crc;
++	__u8	ds_ifile_levels;
++	__u8	ds_iblock_levels;
++	__u8	ds_data_levels;
++	__u8	ds_segment_shift;
++	__u8	ds_block_shift;
++	__u8	ds_write_shift;
++	__u8	pad0[6];
++
++	__be64	ds_filesystem_size;
++	__be32	ds_segment_size;
++	__be32  ds_bad_seg_reserve;
++
++	__be64	ds_feature_incompat;
++	__be64	ds_feature_ro_compat;
++
++	__be64	ds_feature_compat;
++	__be64	ds_feature_flags;
++
++	__be64	ds_root_reserve;
++	__be64  ds_speed_reserve;
++
++	__be32	ds_journal_seg[LOGFS_JOURNAL_SEGS];
++
++	__be64	ds_super_ofs[2];
++	__be64	pad3[8];
++};
++
++SIZE_CHECK(logfs_disk_super, 256);
++
++/*
++ * Object types:
++ * OBJ_BLOCK	- Data or indirect block
++ * OBJ_INODE	- Inode
++ * OBJ_DENTRY	- Dentry
++ */
++enum {
++	OBJ_BLOCK	= 0x04,
++	OBJ_INODE	= 0x05,
++	OBJ_DENTRY	= 0x06,
 +};
 +
 +/**
-+ * struct logfs_journal_entry - temporary structure used during journal scan
++ * struct logfs_object_header - per-object header in the ostore
 + *
-+ * @used:
-+ * @version:			normalized version
-+ * @len:			length
-+ * @offset:			offset
-+ */
-+struct logfs_journal_entry {
-+	int used;
-+	s16 version;
-+	u16 len;
-+	u16 datalen;
-+	u64 offset;
-+};
-+
-+enum transaction_state {
-+	CREATE_1 = 1,
-+	CREATE_2,
-+	UNLINK_1,
-+	UNLINK_2,
-+	CROSS_RENAME_1,
-+	CROSS_RENAME_2,
-+	TARGET_RENAME_1,
-+	TARGET_RENAME_2,
-+	TARGET_RENAME_3
-+};
-+
-+/**
-+ * struct logfs_transaction - essential fields to support atomic dirops
-+ *
-+ * @ino:			target inode
-+ * @dir:			inode of directory containing dentry
-+ * @pos:			pos of dentry in directory
-+ */
-+struct logfs_transaction {
-+	enum transaction_state state;
-+	u64	 ino;
-+	u64	 dir;
-+	u64	 pos;
-+};
-+
-+/**
-+ * struct logfs_shadow - old block in the shadow of a not-yet-committed new one
-+ * @old_ofs:			offset of old block on medium
-+ * @new_ofs:			offset of new block on medium
++ * @crc:			crc32 of header, excluding data_crc
++ * @len:			length of data
++ * @type:			object type, see above
++ * @compr:			compression type
 + * @ino:			inode number
 + * @bix:			block index
-+ * @old_len:			size of old block, including header
-+ * @new_len:			size of new block, including header
-+ * @level:			block level
++ * @data_crc:			crc32 of payload
 + */
-+struct logfs_shadow {
-+	u64 old_ofs;
-+	u64 new_ofs;
-+	u64 ino;
-+	u64 bix;
-+	int old_len;
-+	int new_len;
-+	gc_level_t gc_level;
-+};
++struct logfs_object_header {
++	__be32	crc;
++	__be16	len;
++	__u8	type;
++	__u8	compr;
++	__be64	ino;
++	__be64	bix;
++	__be32	data_crc;
++} __attribute__((packed));
 +
-+/**
-+ * struct shadow_tree
-+ * @new:			shadows where old_ofs==0, indexed by new_ofs
-+ * @old:			shadows where old_ofs!=0, indexed by old_ofs
++SIZE_CHECK(logfs_object_header, LOGFS_OBJECT_HEADERSIZE);
++
++/*
++ * Reserved inode numbers:
++ * LOGFS_INO_MASTER	- master inode (for inode file)
++ * LOGFS_INO_ROOT	- root directory
++ * LOGFS_INO_SEGFILE	- per-segment used bytes and erase count
 + */
-+struct shadow_tree {
-+	struct btree_head64 new;
-+	struct btree_head64 old;
++enum {
++	LOGFS_INO_MAPPING	= 0x00,
++	LOGFS_INO_MASTER	= 0x01,
++	LOGFS_INO_ROOT		= 0x02,
++	LOGFS_INO_SEGFILE	= 0x03,
++	LOGFS_RESERVED_INOS	= 0x10,
 +};
 +
-+struct object_alias_item {
-+	struct list_head list;
-+	__be64 val;
-+	int child_no;
-+};
-+
-+/**
-+ * struct logfs_block - contains any block state
-+ * @type:			indirect block or inode
-+ * @full:			number of fully populated children
-+ * @partial:			number of partially populated children
++/*
++ * Inode flags.  High bits should never be written to the medium.  They are
++ * reserved for in-memory usage.
++ * Low bits should either remain in sync with the corresponding FS_*_FL or
++ * reuse slots that obviously don't make sense for logfs.
 + *
-+ * Most blocks are directly represented by page cache pages.  But when a block
-+ * becomes dirty, is part of a transaction, contains aliases or is otherwise
-+ * special, a struct logfs_block is allocated to track the additional state.
-+ * Inodes are very similar to indirect blocks, so they can also get one of
-+ * these structures added when appropriate.
++ * LOGFS_IF_DIRTY	Inode must be written back
++ * LOGFS_IF_ZOMBIE	Inode has been deleted
++ * LOGFS_IF_STILLBORN	-ENOSPC happened when creating inode
 + */
-+#define BLOCK_INDIRECT	1	/* Indirect block */
-+#define BLOCK_INODE	2	/* Inode */
-+struct logfs_block_ops;
-+struct logfs_block {
-+	struct list_head alias_list;
-+	struct list_head item_list;
-+	struct super_block *sb;
-+	u64 ino;
-+	u64 bix;
-+	level_t level;
-+	struct page *page;
-+	struct inode *inode;
-+	struct logfs_transaction *ta;
-+	unsigned long alias_map[LOGFS_BLOCK_FACTOR / BITS_PER_LONG];
-+	struct logfs_block_ops *ops;
-+	int full;
-+	int partial;
-+	int reserved_bytes;
++#define LOGFS_IF_COMPRESSED	0x00000004 /* == FS_COMPR_FL */
++#define LOGFS_IF_DIRTY		0x20000000
++#define LOGFS_IF_ZOMBIE		0x40000000
++#define LOGFS_IF_STILLBORN	0x80000000
++
++/* Flags available to chattr */
++#define LOGFS_FL_USER_VISIBLE	(LOGFS_IF_COMPRESSED)
++#define LOGFS_FL_USER_MODIFIABLE (LOGFS_IF_COMPRESSED)
++/* Flags inherited from parent directory on file/directory creation */
++#define LOGFS_FL_INHERITED	(LOGFS_IF_COMPRESSED)
++
++/**
++ * struct logfs_disk_inode - on-medium inode
++ *
++ * @di_mode:			file mode
++ * @di_pad:			reserved, must be 0
++ * @di_flags:			inode flags, see above
++ * @di_uid:			user id
++ * @di_gid:			group id
++ * @di_ctime:			change time
++ * @di_mtime:			modify time
++ * @di_refcount:		reference count (aka nlink or link count)
++ * @di_generation:		inode generation, for nfs
++ * @di_used_bytes:		number of bytes used
++ * @di_size:			file size
++ * @di_data:			data pointers
++ */
++struct logfs_disk_inode {
++	__be16	di_mode;
++	__u8	di_height;
++	__u8	di_pad;
++	__be32	di_flags;
++	__be32	di_uid;
++	__be32	di_gid;
++
++	__be64	di_ctime;
++	__be64	di_mtime;
++
++	__be64	di_atime;
++	__be32	di_refcount;
++	__be32	di_generation;
++
++	__be64	di_used_bytes;
++	__be64	di_size;
++
++	__be64	di_data[LOGFS_EMBEDDED_FIELDS];
 +};
 +
-+typedef int write_alias_t(struct super_block *sb, u64 ino, u64 bix,
-+		level_t level, int child_no, __be64 val);
-+struct logfs_block_ops {
-+	void	(*write_block)(struct logfs_block *block);
-+	gc_level_t	(*block_level)(struct logfs_block *block);
-+	void	(*free_block)(struct super_block *sb, struct logfs_block*block);
-+	int	(*write_alias)(struct super_block *sb,
-+			struct logfs_block *block,
-+			write_alias_t *write_one_alias);
++SIZE_CHECK(logfs_disk_inode, 200);
++
++#define INODE_POINTER_OFS \
++	(offsetof(struct logfs_disk_inode, di_data) / sizeof(__be64))
++#define INODE_USED_OFS \
++	(offsetof(struct logfs_disk_inode, di_used_bytes) / sizeof(__be64))
++#define INODE_SIZE_OFS \
++	(offsetof(struct logfs_disk_inode, di_size) / sizeof(__be64))
++#define INODE_HEIGHT_OFS	(0)
++
++/**
++ * struct logfs_disk_dentry - on-medium dentry structure
++ *
++ * @ino:			inode number
++ * @namelen:			length of file name
++ * @type:			file type, identical to bits 12..15 of mode
++ * @name:			file name
++ */
++/* FIXME: add 6 bytes of padding to remove the __packed */
++struct logfs_disk_dentry {
++	__be64	ino;
++	__be16	namelen;
++	__u8	type;
++	__u8	name[LOGFS_MAX_NAMELEN];
++} __attribute__((packed));
++
++SIZE_CHECK(logfs_disk_dentry, 266);
++
++#define RESERVED		0xffffffff
++#define BADSEG			0xffffffff
++/**
++ * struct logfs_segment_entry - segment file entry
++ *
++ * @ec_level:			erase count and level
++ * @valid:			number of valid bytes
++ *
++ * Segment file contains one entry for every segment.  ec_level contains the
++ * erasecount in the upper 28 bits and the level in the lower 4 bits.  An
++ * ec_level of BADSEG (-1) identifies bad segments.  valid contains the number
++ * of valid bytes or RESERVED (-1 again) if the segment is used for either the
++ * superblock or the journal, or when the segment is bad.
++ */
++struct logfs_segment_entry {
++	__be32	ec_level;
++	__be32	valid;
 +};
 +
-+struct logfs_super {
-+	struct mtd_info *s_mtd;			/* underlying device */
-+	struct block_device *s_bdev;		/* underlying device */
-+	const struct logfs_device_ops *s_devops;/* device access */
-+	struct inode	*s_master_inode;	/* inode file */
-+	struct inode	*s_segfile_inode;	/* segment file */
-+	struct inode *s_mapping_inode;		/* device mapping */
-+	atomic_t s_pending_writes;		/* outstanting bios */
-+	long	 s_flags;
-+	mempool_t *s_btree_pool;		/* for btree nodes */
-+	mempool_t *s_alias_pool;		/* aliases in segment.c */
-+	u64	 s_feature_incompat;
-+	u64	 s_feature_ro_compat;
-+	u64	 s_feature_compat;
-+	u64	 s_feature_flags;
-+	u64	 s_sb_ofs[2];
-+	/* alias.c fields */
-+	struct btree_head32 s_segment_alias;	/* remapped segments */
-+	int	 s_no_object_aliases;
-+	struct list_head s_object_alias;	/* remapped objects */
-+	struct btree_head128 s_object_alias_tree; /* remapped objects */
-+	struct mutex s_object_alias_mutex;
-+	/* dir.c fields */
-+	struct mutex s_dirop_mutex;		/* for creat/unlink/rename */
-+	u64	 s_victim_ino;			/* used for atomic dir-ops */
-+	u64	 s_rename_dir;			/* source directory ino */
-+	u64	 s_rename_pos;			/* position of source dd */
-+	/* gc.c fields */
-+	long	 s_segsize;			/* size of a segment */
-+	int	 s_segshift;			/* log2 of segment size */
-+	long	 s_segmask;			/* 1 << s_segshift - 1 */
-+	long	 s_no_segs;			/* segments on device */
-+	long	 s_no_journal_segs;		/* segments used for journal */
-+	long	 s_no_blocks;			/* blocks per segment */
-+	long	 s_writesize;			/* minimum write size */
-+	int	 s_writeshift;			/* log2 of write size */
-+	u64	 s_size;			/* filesystem size */
-+	struct logfs_area *s_area[LOGFS_NO_AREAS];	/* open segment array */
-+	u64	 s_gec;				/* global erase count */
-+	u64	 s_wl_gec_ostore;		/* time of last wl event */
-+	u64	 s_wl_gec_journal;		/* time of last wl event */
-+	u64	 s_sweeper;			/* current sweeper pos */
-+	u8	 s_ifile_levels;		/* max level of ifile */
-+	u8	 s_iblock_levels;		/* max level of regular files */
-+	u8	 s_data_levels;			/* # of segments to leaf block*/
-+	u8	 s_total_levels;		/* sum of above three */
-+	struct btree_head32 s_cand_tree;	/* all candidates */
-+	struct candidate_list s_free_list;	/* 100% free segments */
-+	struct candidate_list s_reserve_list;	/* Bad segment reserve */
-+	struct candidate_list s_low_list[LOGFS_NO_AREAS];/* good candidates */
-+	struct candidate_list s_ec_list;	/* wear level candidates */
-+	struct btree_head32 s_reserved_segments;/* sb, journal, bad, etc. */
-+	/* inode.c fields */
-+	u64	 s_last_ino;			/* highest ino used */
-+	long	 s_inos_till_wrap;
-+	u32	 s_generation;			/* i_generation for new files */
-+	struct list_head s_freeing_list;	/* inodes being freed */
-+	/* journal.c fields */
-+	struct mutex s_journal_mutex;
-+	void	*s_je;				/* journal entry to compress */
-+	void	*s_compressed_je;		/* block to write to journal */
-+	u32	 s_journal_seg[LOGFS_JOURNAL_SEGS]; /* journal segments */
-+	u32	 s_journal_ec[LOGFS_JOURNAL_SEGS]; /* journal erasecounts */
-+	u64	 s_last_version;
-+	struct logfs_area *s_journal_area;	/* open journal segment */
-+	__be64	s_je_array[64];
-+	int	s_no_je;
++SIZE_CHECK(logfs_segment_entry, 8);
 +
-+	int	 s_sum_index;			/* for the 12 summaries */
-+	struct shadow_tree s_shadow_tree;
-+	int	 s_je_fill;			/* index of current je */
-+	/* readwrite.c fields */
-+	struct mutex s_write_mutex;
-+	int	 s_lock_count;
-+	mempool_t *s_block_pool;		/* struct logfs_block pool */
-+	mempool_t *s_shadow_pool;		/* struct logfs_shadow pool */
-+	/*
-+	 * Space accounting:
-+	 * - s_used_bytes specifies space used to store valid data objects.
-+	 * - s_dirty_used_bytes is space used to store non-committed data
-+	 *   objects.  Those objects have already been written themselves,
-+	 *   but they don't become valid until all indirect blocks up to the
-+	 *   journal have been written as well.
-+	 * - s_dirty_free_bytes is space used to store the old copy of a
-+	 *   replaced object, as long as the replacement is non-committed.
-+	 *   In other words, it is the amount of space freed when all dirty
-+	 *   blocks are written back.
-+	 * - s_free_bytes is the amount of free space available for any
-+	 *   purpose.
-+	 * - s_root_reserve is the amount of free space available only to
-+	 *   the root user.  Non-privileged users can no longer write once
-+	 *   this watermark has been reached.
-+	 * - s_speed_reserve is space which remains unused to speed up
-+	 *   garbage collection performance.
-+	 * - s_dirty_pages is the space reserved for currently dirty pages.
-+	 *   It is a pessimistic estimate, so some/most will get freed on
-+	 *   page writeback.
-+	 *
-+	 * s_used_bytes + s_free_bytes + s_speed_reserve = total usable size
-+	 */
-+	u64	 s_free_bytes;
-+	u64	 s_used_bytes;
-+	u64	 s_dirty_free_bytes;
-+	u64	 s_dirty_used_bytes;
-+	u64	 s_root_reserve;
-+	u64	 s_speed_reserve;
-+	u64	 s_dirty_pages;
-+	/* Bad block handling:
-+	 * - s_bad_seg_reserve is a number of segments usually kept
-+	 *   free.  When encountering bad blocks, the affected segment's data
-+	 *   is _temporarily_ moved to a reserved segment.
-+	 * - s_bad_segments is the number of known bad segments.
-+	 */
-+	u32	 s_bad_seg_reserve;
-+	u32	 s_bad_segments;
++/**
++ * struct logfs_journal_header - header for journal entries (JEs)
++ *
++ * @h_crc:			crc32 of journal entry
++ * @h_len:			length of compressed journal entry,
++ *				not including header
++ * @h_datalen:			length of uncompressed data
++ * @h_type:			JE type
++ * @h_version:			unnormalized version of journal entry
++ * @h_compr:			compression type
++ * @h_pad:			reserved
++ */
++struct logfs_journal_header {
++	__be32	h_crc;
++	__be16	h_len;
++	__be16	h_datalen;
++	__be16	h_type;
++	__be16	h_version;
++	__u8	h_compr;
++	__u8	h_pad[3];
++};
++
++SIZE_CHECK(logfs_journal_header, 16);
++
++/*
++ * Life expectency of data.
++ * VIM_DEFAULT		- default vim
++ * VIM_SEGFILE		- for segment file only - very short-living
++ * VIM_GC		- GC'd data - likely long-living
++ */
++enum logfs_vim {
++	VIM_DEFAULT	= 0,
++	VIM_SEGFILE	= 1,
 +};
 +
 +/**
-+ * struct logfs_inode - in-memory inode
++ * struct logfs_je_area - wbuf header
 + *
-+ * @vfs_inode:			struct inode
-+ * @li_data:			data pointers
-+ * @li_used_bytes:		number of used bytes
-+ * @li_freeing_list:		used to track inodes currently being freed
-+ * @li_flags:			inode flags
-+ * @li_refcount:		number of internal (GC-induced) references
++ * @segno:			segment number of area
++ * @used_bytes:			number of bytes already used
++ * @gc_level:			GC level
++ * @vim:			life expectancy of data
++ *
++ * "Areas" are segments currently being used for writing.  There is at least
++ * one area per GC level.  Several may be used to seperate long-living from
++ * short-living data.  If an area with unknown vim is encountered, it can
++ * simply be closed.
++ * The write buffer immediately follow this header.
 + */
-+struct logfs_inode {
-+	struct inode vfs_inode;
-+	u64	li_data[LOGFS_EMBEDDED_FIELDS];
-+	u64	li_used_bytes;
-+	struct list_head li_freeing_list;
-+	struct logfs_block *li_block;
-+	u32	li_flags;
-+	u8	li_height;
-+	int	li_refcount;
++struct logfs_je_area {
++	__be32	segno;
++	__be32	used_bytes;
++	__u8	gc_level;
++	__u8	vim;
++} __attribute__((packed));
++
++SIZE_CHECK(logfs_je_area, 10);
++
++#define MAX_JOURNAL_HEADER \
++	(sizeof(struct logfs_journal_header) + sizeof(struct logfs_je_area))
++
++/**
++ * struct logfs_je_dynsb - dynamic superblock
++ *
++ * @ds_gec:			global erase count
++ * @ds_sweeper:			current position of GC "sweeper"
++ * @ds_rename_dir:		source directory ino (see dir.c documentation)
++ * @ds_rename_pos:		position of source dd (see dir.c documentation)
++ * @ds_victim_ino:		victims of incomplete dir operation (see dir.c)
++ * @ds_victim_ino:		parent inode of victim (see dir.c)
++ * @ds_used_bytes:		number of used bytes
++ */
++struct logfs_je_dynsb {
++	__be64	ds_gec;
++	__be64	ds_sweeper;
++
++	__be64	ds_rename_dir;
++	__be64	ds_rename_pos;
++
++	__be64	ds_victim_ino;
++	__be64	ds_victim_parent; /* XXX */
++
++	__be64	ds_used_bytes;
++	__be32	ds_generation;
++	__be32	pad;
 +};
 +
-+#define journal_for_each(__i) for (__i = 0; __i < LOGFS_JOURNAL_SEGS; __i++)
-+#define for_each_area(__i) for (__i = 0; __i < LOGFS_NO_AREAS; __i++)
-+#define for_each_area_down(__i) for (__i = LOGFS_NO_AREAS - 1; __i >= 0; __i--)
++SIZE_CHECK(logfs_je_dynsb, 64);
 +
-+/* compr.c */
-+int logfs_compress(void *in, void *out, size_t inlen, size_t outlen);
-+int logfs_uncompress(void *in, void *out, size_t inlen, size_t outlen);
-+int __init logfs_compr_init(void);
-+void logfs_compr_exit(void);
++/**
++ * struct logfs_je_anchor - anchor of filesystem tree, aka master inode
++ *
++ * @da_size:			size of inode file
++ * @da_last_ino:		last created inode
++ * @da_used_bytes:		number of bytes used
++ * @da_data:			data pointers
++ */
++struct logfs_je_anchor {
++	__be64	da_size;
++	__be64	da_last_ino;
 +
-+/* dev_bdev.c */
-+#ifdef CONFIG_BLOCK
-+int logfs_get_sb_bdev(struct file_system_type *type, int flags,
-+		const char *devname, struct vfsmount *mnt);
-+#else
-+static inline int logfs_get_sb_bdev(struct file_system_type *type, int flags,
-+		const char *devname, struct vfsmount *mnt)
-+{
-+	return -ENODEV;
-+}
-+#endif
++	__be64	da_used_bytes;
++	u8	da_height;
++	u8	pad[7];
 +
-+/* dev_mtd.c */
-+#ifdef CONFIG_MTD
-+int logfs_get_sb_mtd(struct file_system_type *type, int flags,
-+		int mtdnr, struct vfsmount *mnt);
-+#else
-+static inline int logfs_get_sb_mtd(struct file_system_type *type, int flags,
-+		int mtdnr, struct vfsmount *mnt)
-+{
-+	return -ENODEV;
-+}
-+#endif
++	__be64	da_data[LOGFS_EMBEDDED_FIELDS];
++};
 +
-+/* dir.c */
-+extern const struct inode_operations logfs_symlink_iops;
-+extern const struct inode_operations logfs_dir_iops;
-+extern const struct file_operations logfs_dir_fops;
-+int logfs_replay_journal(struct super_block *sb);
++SIZE_CHECK(logfs_je_anchor, 168);
 +
-+/* file.c */
-+extern const struct inode_operations logfs_reg_iops;
-+extern const struct file_operations logfs_reg_fops;
-+extern const struct address_space_operations logfs_reg_aops;
-+int logfs_readpage(struct file *file, struct page *page);
-+int logfs_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+		unsigned long arg);
-+int logfs_fsync(struct file *file, struct dentry *dentry, int datasync);
++/**
++ * struct logfs_je_spillout - spillout entry (from 1st to 2nd journal)
++ *
++ * @so_segment:			segments used for 2nd journal
++ *
++ * Length of the array is given by h_len field in the header.
++ */
++struct logfs_je_spillout {
++	__be64	so_segment[0];
++};
 +
-+/* gc.c */
-+u32 get_best_cand(struct super_block *sb, struct candidate_list *list, u32 *ec);
-+void logfs_gc_pass(struct super_block *sb);
-+int logfs_check_areas(struct super_block *sb);
-+int logfs_init_gc(struct super_block *sb);
-+void logfs_cleanup_gc(struct super_block *sb);
++SIZE_CHECK(logfs_je_spillout, 0);
 +
-+/* inode.c */
-+extern const struct super_operations logfs_super_operations;
-+struct inode *logfs_iget(struct super_block *sb, ino_t ino);
-+struct inode *logfs_safe_iget(struct super_block *sb, ino_t ino, int *cookie);
-+void logfs_safe_iput(struct inode *inode, int cookie);
-+struct inode *logfs_new_inode(struct inode *dir, int mode);
-+struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino);
-+struct inode *logfs_read_meta_inode(struct super_block *sb, u64 ino);
-+int logfs_init_inode_cache(void);
-+void logfs_destroy_inode_cache(void);
-+void destroy_meta_inode(struct inode *inode);
-+void logfs_set_blocks(struct inode *inode, u64 no);
-+/* these logically belong into inode.c but actually reside in readwrite.c */
-+int logfs_read_inode(struct inode *inode);
-+int __logfs_write_inode(struct inode *inode, long flags);
-+void logfs_delete_inode(struct inode *inode);
-+void logfs_clear_inode(struct inode *inode);
++/**
++ * struct logfs_je_journal_ec - erase counts for all journal segments
++ *
++ * @ec:				erase count
++ *
++ * Length of the array is given by h_len field in the header.
++ */
++struct logfs_je_journal_ec {
++	__be32	ec[0];
++};
 +
-+/* journal.c */
-+void logfs_write_anchor(struct inode *inode);
-+int logfs_init_journal(struct super_block *sb);
-+void logfs_cleanup_journal(struct super_block *sb);
-+int write_alias_journal(struct super_block *sb, u64 ino, u64 bix,
-+		level_t level, int child_no, __be64 val);
-+void do_logfs_journal_wl_pass(struct super_block *sb);
++SIZE_CHECK(logfs_je_journal_ec, 0);
 +
-+/* readwrite.c */
-+pgoff_t logfs_pack_index(u64 bix, level_t level);
-+void logfs_unpack_index(pgoff_t index, u64 *bix, level_t *level);
-+int logfs_inode_write(struct inode *inode, const void *buf, size_t count,
-+		loff_t bix, long flags, struct shadow_tree *shadow_tree);
-+int logfs_readpage_nolock(struct page *page);
-+int logfs_write_buf(struct inode *inode, struct page *page, long flags);
-+int logfs_delete(struct inode *inode, pgoff_t index,
-+		struct shadow_tree *shadow_tree);
-+int logfs_rewrite_block(struct inode *inode, u64 bix, u64 ofs,
-+		gc_level_t gc_level, long flags);
-+int logfs_is_valid_block(struct super_block *sb, u64 ofs, u64 ino, u64 bix,
-+		gc_level_t gc_level);
-+int logfs_truncate(struct inode *inode, u64 size);
-+u64 logfs_seek_hole(struct inode *inode, u64 bix);
-+u64 logfs_seek_data(struct inode *inode, u64 bix);
-+int logfs_open_segfile(struct super_block *sb);
-+int logfs_init_rw(struct super_block *sb);
-+void logfs_cleanup_rw(struct super_block *sb);
-+void logfs_add_transaction(struct inode *inode, struct logfs_transaction *ta);
-+void logfs_del_transaction(struct inode *inode, struct logfs_transaction *ta);
-+void logfs_write_block(struct logfs_block *block, long flags);
-+int logfs_write_obj_aliases_pagecache(struct super_block *sb);
-+void logfs_get_segment_entry(struct super_block *sb, u32 segno,
-+		struct logfs_segment_entry *se);
-+void logfs_set_segment_used(struct super_block *sb, u64 ofs, int increment);
-+void logfs_set_segment_erased(struct super_block *sb, u32 segno, u32 ec,
-+		gc_level_t gc_level);
-+void logfs_set_segment_reserved(struct super_block *sb, u32 segno);
-+void logfs_set_segment_unreserved(struct super_block *sb, u32 segno, u32 ec);
-+struct logfs_block *__alloc_block(struct super_block *sb,
-+		u64 ino, u64 bix, level_t level);
-+void __free_block(struct super_block *sb, struct logfs_block *block);
-+void btree_write_block(struct logfs_block *block);
-+void initialize_block_counters(struct page *page, struct logfs_block *block,
-+		__be64 *array, int page_is_empty);
-+int logfs_exist_block(struct inode *inode, u64 bix);
-+int get_page_reserve(struct inode *inode, struct page *page);
-+extern struct logfs_block_ops indirect_block_ops;
++/**
++ * struct logfs_je_free_segments - list of free segmetns with erase count
++ */
++struct logfs_je_free_segments {
++	__be32	segno;
++	__be32	ec;
++};
 +
-+/* segment.c */
-+int logfs_erase_segment(struct super_block *sb, u32 ofs);
-+int wbuf_read(struct super_block *sb, u64 ofs, size_t len, void *buf);
-+int logfs_segment_read(struct inode *inode, struct page *page, u64 ofs, u64 bix,
-+		level_t level);
-+int logfs_segment_write(struct inode *inode, struct page *page,
-+		struct logfs_shadow *shadow);
-+int logfs_segment_delete(struct inode *inode, struct logfs_shadow *shadow);
-+int logfs_load_object_aliases(struct super_block *sb,
-+		struct logfs_obj_alias *oa, int count);
-+void move_page_to_btree(struct page *page);
-+int logfs_init_mapping(struct super_block *sb);
-+void logfs_sync_area(struct logfs_area *area);
-+void logfs_sync_segments(struct super_block *sb);
++SIZE_CHECK(logfs_je_free_segments, 8);
 +
-+/* area handling */
-+int logfs_init_areas(struct super_block *sb);
-+void logfs_cleanup_areas(struct super_block *sb);
-+int logfs_open_area(struct logfs_area *area, size_t bytes);
-+void __logfs_buf_write(struct logfs_area *area, u64 ofs, void *buf, size_t len,
-+		int use_filler);
++/**
++ * struct logfs_seg_alias - list of segment aliases
++ */
++struct logfs_seg_alias {
++	__be32	old_segno;
++	__be32	new_segno;
++};
 +
-+static inline void logfs_buf_write(struct logfs_area *area, u64 ofs,
-+		void *buf, size_t len)
-+{
-+	__logfs_buf_write(area, ofs, buf, len, 0);
-+}
++SIZE_CHECK(logfs_seg_alias, 8);
 +
-+static inline void logfs_buf_recover(struct logfs_area *area, u64 ofs,
-+		void *buf, size_t len)
-+{
-+	__logfs_buf_write(area, ofs, buf, len, 1);
-+}
++/**
++ * struct logfs_obj_alias - list of object aliases
++ */
++struct logfs_obj_alias {
++	__be64	ino;
++	__be64	bix;
++	__be64	val;
++	u8	level;
++	u8	pad[5];
++	__be16	child_no;
++};
 +
-+/* super.c */
-+struct page *emergency_read_begin(struct address_space *mapping, pgoff_t index);
-+void emergency_read_end(struct page *page);
-+void logfs_crash_dump(struct super_block *sb);
-+void *memchr_inv(const void *s, int c, size_t n);
-+int logfs_statfs(struct dentry *dentry, struct kstatfs *stats);
-+int logfs_get_sb_device(struct file_system_type *type, int flags,
-+		struct mtd_info *mtd, struct block_device *bdev,
-+		const struct logfs_device_ops *devops, struct vfsmount *mnt);
-+int logfs_check_ds(struct logfs_disk_super *ds);
-+int logfs_write_sb(struct super_block *sb);
++SIZE_CHECK(logfs_obj_alias, 32);
 +
-+static inline struct logfs_super *logfs_super(struct super_block *sb)
-+{
-+	return sb->s_fs_info;
-+}
++/**
++ * Compression types.
++ *
++ * COMPR_NONE	- uncompressed
++ * COMPR_ZLIB	- compressed with zlib
++ */
++enum {
++	COMPR_NONE	= 0,
++	COMPR_ZLIB	= 1,
++};
 +
-+static inline struct logfs_inode *logfs_inode(struct inode *inode)
-+{
-+	return container_of(inode, struct logfs_inode, vfs_inode);
-+}
++/*
++ * Journal entries come in groups of 16.  First group contains unique
++ * entries, next groups contain one entry per level
++ *
++ * JE_FIRST	- smallest possible journal entry number
++ *
++ * JEG_BASE	- base group, containing unique entries
++ * JE_COMMIT	- commit entry, validates all previous entries
++ * JE_DYNSB	- dynamic superblock, anything that ought to be in the
++ *		  superblock but cannot because it is read-write data
++ * JE_ANCHOR	- anchor aka master inode aka inode file's inode
++ * JE_ERASECOUNT  erasecounts for all journal segments
++ * JE_SPILLOUT	- unused
++ * JE_SEG_ALIAS	- aliases segments
++ * JE_AREA	- area description
++ *
++ * JE_LAST	- largest possible journal entry number
++ */
++enum {
++	JE_FIRST	= 0x01,
 +
-+static inline void logfs_set_ro(struct super_block *sb)
-+{
-+	logfs_super(sb)->s_flags |= LOGFS_SB_FLAG_RO;
-+}
++	JEG_BASE	= 0x00,
++	JE_COMMIT	= 0x02,
++	JE_DYNSB	= 0x03,
++	JE_ANCHOR	= 0x04,
++	JE_ERASECOUNT	= 0x05,
++	JE_SPILLOUT	= 0x06,
++	JE_OBJ_ALIAS	= 0x0d,
++	JE_AREA		= 0x0e,
 +
-+#define LOGFS_BUG(sb) do {					\
-+	struct super_block *__sb = sb;				\
-+	logfs_crash_dump(__sb);					\
-+	logfs_super(__sb)->s_flags |= LOGFS_SB_FLAG_RO;		\
-+	BUG();							\
-+} while (0)
-+
-+#define LOGFS_BUG_ON(condition, sb) \
-+	do { if (unlikely(condition)) LOGFS_BUG((sb)); } while (0)
-+
-+static inline __be32 logfs_crc32(void *data, size_t len, size_t skip)
-+{
-+	return cpu_to_be32(crc32(~0, data+skip, len-skip));
-+}
-+
-+static inline u8 logfs_type(struct inode *inode)
-+{
-+	return (inode->i_mode >> 12) & 15;
-+}
-+
-+static inline pgoff_t logfs_index(struct super_block *sb, u64 pos)
-+{
-+	return pos >> sb->s_blocksize_bits;
-+}
-+
-+static inline u64 dev_ofs(struct super_block *sb, u32 segno, u32 ofs)
-+{
-+	return ((u64)segno << logfs_super(sb)->s_segshift) + ofs;
-+}
-+
-+static inline u32 seg_no(struct super_block *sb, u64 ofs)
-+{
-+	return ofs >> logfs_super(sb)->s_segshift;
-+}
-+
-+static inline u32 seg_ofs(struct super_block *sb, u64 ofs)
-+{
-+	return ofs & logfs_super(sb)->s_segmask;
-+}
-+
-+static inline u64 seg_align(struct super_block *sb, u64 ofs)
-+{
-+	return ofs & ~logfs_super(sb)->s_segmask;
-+}
-+
-+static inline struct logfs_block *logfs_block(struct page *page)
-+{
-+	return (void *)page->private;
-+}
-+
-+static inline level_t shrink_level(gc_level_t __level)
-+{
-+	u8 level = (__force u8)__level;
-+
-+	if (level >= LOGFS_MAX_LEVELS)
-+		level -= LOGFS_MAX_LEVELS;
-+	return (__force level_t)level;
-+}
-+
-+static inline gc_level_t expand_level(u64 ino, level_t __level)
-+{
-+	u8 level = (__force u8)__level;
-+
-+	if (ino == LOGFS_INO_MASTER) {
-+		/* ifile has seperate areas */
-+		level += LOGFS_MAX_LEVELS;
-+	}
-+	return (__force gc_level_t)level;
-+}
-+
-+static inline int logfs_block_shift(struct super_block *sb, level_t level)
-+{
-+	level = shrink_level((__force gc_level_t)level);
-+	return (__force int)level * (sb->s_blocksize_bits - 3);
-+}
-+
-+static inline u64 logfs_block_mask(struct super_block *sb, level_t level)
-+{
-+	return ~0ull << logfs_block_shift(sb, level);
-+}
-+
-+static inline struct logfs_area *get_area(struct super_block *sb,
-+		gc_level_t gc_level)
-+{
-+	return logfs_super(sb)->s_area[(__force u8)gc_level];
-+}
++	JE_LAST		= 0x0e,
++};
 +
 +#endif
