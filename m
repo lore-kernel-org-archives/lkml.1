@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZKTSUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZKTSW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbZKTSUH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZKTSUG
+	id S1754904AbZKTSW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZKTSW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:20:06 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:47305 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1753908AbZKTSUF (ORCPT
+	Fri, 20 Nov 2009 13:22:57 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34881 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbZKTSW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:20:05 -0500
-Message-ID: <4B06DE02.2070607@ru.mvista.com>
-Date: Fri, 20 Nov 2009 21:20:50 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 20 Nov 2009 13:22:56 -0500
+Date: Fri, 20 Nov 2009 19:22:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: dtor@mail.ru, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: ads7846 touchscreen: fix pressure
+Message-ID: <20091120182238.GA1344@ucw.cz>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 4/5] pata: Update experimental tags
-References: <20091117144450.15430.83450.stgit@localhost.localdomain>	<200911191838.11791.bzolnier@gmail.com>	<20091119175051.6a91d160@lxorguk.ukuu.org.uk>	<200911191852.23061.bzolnier@gmail.com>	<20091119182132.5155f819@lxorguk.ukuu.org.uk>	<4B0590A2.9050306@ru.mvista.com> <20091119194008.2c97edcd@lxorguk.ukuu.org.uk> <4B05B6E3.6080604@ru.mvista.com>
-In-Reply-To: <4B05B6E3.6080604@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
 
->> I agree entirely with that and I'll push the udelay(10) into all three
+On Zaurus, pressure is reported inverted -- the lighter the pressure,
+the bigger numerical value. This should fix it.
 
->   I can't say anything about pata_hpt36x, I don't think I have HPT 
-> drivers that old...
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-    No, actually I can. On HPT36x cable detection bit simply isn't 
-multiplexed, so there's no point in debouncing.
+--- linux-rc/drivers/input.ofic/touchscreen/ads7846.c	2009-10-06 13:49:56.000000000 +0200
++++ linux-rc/drivers/input/touchscreen/ads7846.c	2009-10-06 21:18:25.000000000 +0200
+@@ -608,12 +609,12 @@
+ 
+ 		input_report_abs(input, ABS_X, x);
+ 		input_report_abs(input, ABS_Y, y);
+-		input_report_abs(input, ABS_PRESSURE, Rt);
++		input_report_abs(input, ABS_PRESSURE, ts->pressure_max-Rt);
+ 
+ 		input_sync(input);
+ #ifdef VERBOSE
+ 		dev_dbg(&ts->spi->dev, "%4d/%4d/%4d\n", x, y, Rt);
+ #endif
+ 	}
+ 
+ 	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
 
->> plus the drivers/ide one unless Bart beats me to it.
-
->   I could beat you to it as well. :-)
-
-    Working in it right now...
-
->> Alan
-
-WBR, Sergei
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
