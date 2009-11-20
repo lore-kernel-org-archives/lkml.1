@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZKTSfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZKTSzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755056AbZKTSfd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 13:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZKTSfc
+	id S1754898AbZKTSzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 13:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbZKTSzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 13:35:32 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:48586 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754845AbZKTSfb (ORCPT
+	Fri, 20 Nov 2009 13:55:42 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:5470 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753392AbZKTSzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 13:35:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=TUlsJ9fLh4SsHS8VoDWb8GaZH2amzYO0Fwj27Pwxa/WWIjQb9hFgFz9Pujdzp5lzrV
-         idjErhkwRisfz+sI3ieea47Kfyc3QaGJj8Z/1uabEA2jYgio+A/tkqZqE1nZqYBcH0bP
-         YZGkq4vdjCPqaa0zIDwBO0o9sfNat65aF2Tm4=
-Message-ID: <4B06E477.3000503@gmail.com>
-Date: Fri, 20 Nov 2009 19:48:23 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-       ibm-acpi-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] thinkpad-acpi: should error return be nagative?
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Nov 2009 13:55:42 -0500
+X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 13:55:42 EST
+X-Spam-Processed: digidescorp.com, Fri, 20 Nov 2009 12:49:17 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=1575b24108=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RESEND] microblaze: Fix level interrupt ACKing
+From: "Steven J. Magnani" <steve@digidescorp.com>
+Reply-To: steve@digidescorp.com
+To: monstr@monstr.eu
+Cc: microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org
+In-Reply-To: <4B067868.9070902@monstr.eu>
+References: <1258469019-3863-1-git-send-email-steve@digidescorp.com>
+	 <4B067868.9070902@monstr.eu>
+Content-Type: text/plain
+Organization: Digital Design Corporation
+Date: Fri, 20 Nov 2009 12:49:16 -0600
+Message-Id: <1258742956.2881.3.camel@iscandar.digidescorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The returned error should be negative
+On Fri, 2009-11-20 at 12:07 +0100, Michal Simek wrote:
+> Hi Steve,
+> 
+> steve@digidescorp.com wrote:
+> > Level interrupts need to be ack'd in the unmask handler, as in powerpc. 
+> > Among other issues, this bug causes the system clock to appear to run at 
+> > double-speed.
+> 
+> Can you send me any step-by-step manual how to demonstrate me this 
+> fault? If system clock runs at double-speed, then I should be able able 
+> to see that time is two times faster. Or do you mean different behavior?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/platform/x86/thinkpad_acpi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Unless there's a way to read jiffies_64 in userspace, the easiest way I
+know of is to use the debugger. Stop the kernel soon after you boot it,
+and read jiffies_64. Continue execution for some known amount of
+wall-clock time, then stop the kernel again and recheck jiffies_64.
+Without the patch, the number of elapsed jiffies is twice what you'd
+expect based on HZ.
 
-Is this maybe required?
+> 
+> Thanks,
+> Michal
 
-diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
-index d93108d..03c0a56 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -6313,7 +6313,7 @@ static int brightness_write(char *buf)
- 	 * Doing it this way makes the syscall restartable in case of EINTR
- 	 */
- 	rc = brightness_set(level);
--	return (rc == -EINTR)? ERESTARTSYS : rc;
-+	return (rc == -EINTR)? -ERESTARTSYS : rc;
- }
- 
- static struct ibm_struct brightness_driver_data = {
+Regards,
+------------------------------------------------------------------------
+ Steven J. Magnani               "I claim this network for MARS!
+ www.digidescorp.com              Earthling, return my space modulator!"
+
+ #include <standard.disclaimer>
+
+
+
