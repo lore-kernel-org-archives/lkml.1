@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbZKTWT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZKTWlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbZKTWT5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 17:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZKTWT4
+	id S1754911AbZKTWlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 17:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZKTWle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 17:19:56 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:58731 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818AbZKTWTz (ORCPT
+	Fri, 20 Nov 2009 17:41:34 -0500
+Received: from mail1-out1.atlantis.sk ([80.94.52.55]:37333 "EHLO
+	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754752AbZKTWld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 17:19:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ZjmeSqycnqXcwFi9zNb4zogQy+O+drYCHZXJ3ypQe3w8gLcN+NjdZBgzcJ4U1Pf61V
-         +qpkBlCd39noW+sRUW6zROvMbJ8B3CV70pGPV8m4yyLYhRiTwyg4wKQp0O1Kt+nCiDZq
-         tYGjBVCA575V+ZhdR60Ody0NTgOHq0v780yl8=
+	Fri, 20 Nov 2009 17:41:33 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [PATCH v4] [RFC] NEXIO (or iNexio) support for usbtouchscreen
+Date: Fri, 20 Nov 2009 23:41:29 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
+       linux-kernel@vger.kernel.org
+References: <200911161515.00907.linux@rainbow-software.org> <200911201021.45410.linux@rainbow-software.org> <200911201943.46696.oliver@neukum.org>
+In-Reply-To: <200911201943.46696.oliver@neukum.org>
 MIME-Version: 1.0
-In-Reply-To: <200911091347.57286.rusty@rustcorp.com.au>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>
-	 <20091104171916.GA6323@merkur.ravnborg.org>
-	 <4AF2E00A.3010107@tuffmail.co.uk>
-	 <200911091347.57286.rusty@rustcorp.com.au>
-Date: Fri, 20 Nov 2009 14:20:01 -0800
-Message-ID: <12c511ca0911201420i5f2d4751m25ae5288b69dbabb@mail.gmail.com>
-Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the 
-	kernel (__ksymtab)
-From: Tony Luck <tony.luck@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       greg@kroah.com, linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, achiang@hp.com, kyle@mcmartin.ca,
-       deller@gmx.de, jejb@parisc-linux.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911202341.31496.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sorted ksymtab breaks ia64 (and possibly ppc64 and
-parisc too).
+On Friday 20 November 2009 19:43:46 Oliver Neukum wrote:
+> Am Freitag, 20. November 2009 10:21:43 schrieb Ondrej Zary:
+> > On Thursday 19 November 2009, Oliver Neukum wrote:
+> > > > +struct nexio_priv {
+> > > > +	struct urb *ack;
+> > > > +	char ack_buf[2];
+> > > > +};
+> > >
+> > > No. Every buffer needs to have an exclusive cache line for DMA
+> > > to work on the incoherent archotectures. Therefore you must allocate
+> > > each buffer with its own kmalloc.
+> >
+> > OK, thanks for your patience.
+>
+> No problem. I should have explained better.
+>
+> > > > +	/* read replies */
+> > > > +	for (i = 0; i < 3; i++) {
+> > > > +		memset(buf, 0, NEXIO_BUFSIZE);
+> > > > +		ret = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, NEXIO_INPUT_EP),
+> > > > +				   buf, NEXIO_BUFSIZE, &actual_len,
+> > > > +				   NEXIO_TIMEOUT);
+> > > > +		if (ret < 0 || actual_len < 1 || buf[1] != actual_len)
+> > > > +			continue;
+> > > > +		switch (buf[0]) {
+> > > > +			case 0x83:	/* firmware version */
+> > > > +				firmware_ver = kstrdup(&buf[2], GFP_KERNEL);
+>
+> On second thought this is not nice. If a device is broken enough to report
+> a name or a firmware version twice, you produce a memory leak.
+> Do you know very buggy devices to exist?
 
-Alex Chiang did the bisect to find this change as
-the cause of the breakage.  The problem is that ia64
-expects that the first item in each ksymtab entry to be
-a function pointer.  The code in modpost that creates
-.tmp_exports-asm.S doesn't know about types of exported
-objects, so it uses __EXPORT_SYMBOL from linux/mod_export.h
-for everything. This results in
+Oh yes, that might be a problem - I'll add a NULL check before kstrdup. And 
+maybe it should not be hardcoded to 3 reads - had to check this.
 
-        PTR SYM(sym);
-        PTR SYM(__kstrtab_##sym);
+> > > > +				break;
+> > > > +			case 0x84:	/* device name */
+> > > > +				device_name = kstrdup(&buf[2], GFP_KERNEL);
+> > > > +				break;
+> > > > +		}
+> > > > +	}
+> > > > +	printk(KERN_INFO "Nexio device: %s, firmware version: %s\n",
+> > > > +	       device_name, firmware_ver);
+> > >
+> > > How do you know device_name and firmware_ver are not NULL?
+> >
+> > printk works fine with NULL, it prints <NULL>. Is it necessary to add
+> > more code only to make the output nice?
+>
+> No, for niceness it is not necessary. The question is whether you want
+> to treat this as an error or print a warning. That is a matter of taste.
 
-which the preprocessor expands to entries like:
+As there's no datasheet and I have only one device (with one firmware 
+version), ignoring it looks like the best "solution".
 
-        .long ____pagevec_lru_add
-        .long __kstrtab____pagevec_lru_add
+I'll also want to remove NEXIO_INPUT_EP and NEXIO_OUTPUT_EP constants - the 
+endpoint addresses can be found at runtine (there's only one input and one 
+output endpoint). I think that to do this in nexio_init(), it needs to 
+know "struct usb_interface *" instead of "struct usb_device *". I have a 
+patch ready (but forgot to take it so it needs to wait until next week) that 
+replaces "struct usb_device *udev" in struct usbtouch_usb with "struct 
+usb_interface *interface" - is it a good idea?
 
-which puts the address of the first instruction of the
-function into the table, rather than the address of a
-function pointer (which on ia64 is a two element data
-object containing the code address and the global data
-pointer).
+>
+> > Looks like a bug in the original usbtouchscreen code. There's no locking.
+> > Will a spinlock in usbtouch_open() and usbtouch_disconnect() fix it? Or
+> > do you see more problems here?
+>
+> You must not call usb_kill_urb() with a spinlock held.
+> I'll lokk at the usbtouchscreen code.
+> The new version looks good to me.
+>
+> 	Regards
+> 		Oliver
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-The syntax you need for this* is:
 
-        .long @fptr(____pagevec_lru_add)
-        .long __kstrtab____pagevec_lru_add
 
-Note that you must only use the @fptr(name) syntax for
-function exports. Exported data items just need an address.
-
--Tony
-
-* On ia64 ... powerpc and parisc might need something else.
+-- 
+Ondrej Zary
