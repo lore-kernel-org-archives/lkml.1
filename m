@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZKTPCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZKTPGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbZKTPCI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 10:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZKTPCH
+	id S1753928AbZKTPGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 10:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZKTPGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 10:02:07 -0500
-Received: from mail.free-electrons.com ([88.191.76.200]:49323 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbZKTPCG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 10:02:06 -0500
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: akpm@linux-foundation.org
-Cc: rmk+lkml@arm.linux.org.uk, tbm@cyrius.com, linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: [PATCH] ARM: Add support for LZMA-compressed kernel images
-Date: Fri, 20 Nov 2009 16:02:03 +0100
-Message-Id: <1258729323-16318-1-git-send-email-albin.tonnerre@free-electrons.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 20 Nov 2009 10:06:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbZKTPGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 10:06:16 -0500
+Date: Fri, 20 Nov 2009 10:04:21 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [RFC] Block IO Controller V2 - some results
+Message-ID: <20091120150421.GC5872@redhat.com>
+References: <1258404660.3533.150.camel@cail> <20091116221827.GL13235@redhat.com> <1258461527.2862.2.camel@cail> <20091118153227.GA5796@redhat.com> <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com> <20091118225626.GA2974@redhat.com> <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com> <20091120141840.GA5872@redhat.com> <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows using a kernel image compressed with LZMA on ARM,
-using the support for multiple decompressors introduced in the LZO
-support patch.
-Extracting the image is fairly slow, but it might be useful on machines
-with a very limited amount of storage.
+On Fri, Nov 20, 2009 at 03:28:27PM +0100, Corrado Zoccolo wrote:
+> Hi Vivek,
+> On Fri, Nov 20, 2009 at 3:18 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > Hi Corrado,
+> >
+> > I liked the idea of putting all the sync-noidle queues together in root
+> > group to achieve better throughput and implemeted a small patch.
+> >
+> > It works fine for random readers. But when I do multiple direct random writers
+> > in one group vs a random reader in other group, I am getting strange
+> > behavior. Random reader moves to root group as sync-noidle workload. But
+> > random writers are largely sync queues in remain in other group. But many
+> > a times also jump into root group and preempt random reader.
+> 
+> can you try the attached patches?
+> They fix the problems you identified about no-idle preemption, and
+> deep seeky queues.
+> With those, you should not see this jumping any more.
+> I'll send them to Jens as soon has he comes back from vacation.
+> 
+> Corrado
+> 
+> > Anyway, with 4 random writers and 1 random reader running for 30 seconds
+> > in root group I get following.
+> >
+> > rw: 59,963KB/s
+> > rr: 66KB/s
+> >
+> > But if these are put in seprate groups test1 and test2 then
+> >
+> > rw: 30,587KB/s
+> > rr: 23KB/s
+> >
 
-Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Tested-by: Martin Michlmayr <tbm@cyrius.com>
----
- arch/arm/Kconfig                      |    1 +
- arch/arm/boot/compressed/Makefile     |    1 +
- arch/arm/boot/compressed/misc.c       |    4 ++++
- arch/arm/boot/compressed/piggy.lzma.S |    6 ++++++
- 4 files changed, 12 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/boot/compressed/piggy.lzma.S
+I quickly tried your new patches to try to keep idling enabled on deep
+seeky sync queues so that it does not jump around too much and consume
+share both in sync workload and sync-noidle workload.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 350921d..34163da 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -20,6 +20,7 @@ config ARM
- 	select HAVE_GENERIC_DMA_COHERENT
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KERNEL_LZO
-+	select HAVE_KERNEL_LZMA
- 	help
- 	  The ARM series is a line of low-power-consumption RISC chip designs
- 	  licensed by ARM Ltd and targeted at embedded applications and
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index 2d4d88b..3906432 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -65,6 +65,7 @@ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
- 
- suffix_$(CONFIG_KERNEL_GZIP) = gzip
- suffix_$(CONFIG_KERNEL_LZO)  = lzo
-+suffix_$(CONFIG_KERNEL_LZMA)  = lzma
- 
- targets       := vmlinux vmlinux.lds \
- 		 piggy.$(suffix_y) piggy.$(suffix_y).o \
-diff --git a/arch/arm/boot/compressed/misc.c b/arch/arm/boot/compressed/misc.c
-index 7e0fe4d..4e35a10 100644
---- a/arch/arm/boot/compressed/misc.c
-+++ b/arch/arm/boot/compressed/misc.c
-@@ -237,6 +237,10 @@ static unsigned long free_mem_end_ptr;
- #include "../../../../lib/decompress_inflate.c"
- #endif
- 
-+#ifdef CONFIG_KERNEL_LZMA
-+#include "../../../../lib/decompress_unlzma.c"
-+#endif
-+
- #ifdef CONFIG_KERNEL_LZO
- #include "../../../../lib/decompress_unlzo.c"
- #endif
-diff --git a/arch/arm/boot/compressed/piggy.lzma.S b/arch/arm/boot/compressed/piggy.lzma.S
-new file mode 100644
-index 0000000..d7e69cf
---- /dev/null
-+++ b/arch/arm/boot/compressed/piggy.lzma.S
-@@ -0,0 +1,6 @@
-+	.section .piggydata,#alloc
-+	.globl	input_data
-+input_data:
-+	.incbin	"arch/arm/boot/compressed/piggy.lzma"
-+	.globl	input_data_end
-+input_data_end:
--- 
-1.6.3.3
+Here are new results.
 
+Without cgroup.
+
+rw: 58,571KB/s
+rr: 83KB/s
+
+With cgroup:
+
+rw: 32,525KB/s
+rr: 25KB/s
+
+So without cgroup it looks like that random reader gained a bit and that's 
+a good thing.
+
+With cgroup, problem still persists. I am wondering why both are loosing.
+Looks like I am idling somewhere otherwise at least one person should have
+gained.
+
+Thanks
+Vivek
