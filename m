@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZKULwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZKULxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZKULwl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 06:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbZKULwk
+	id S1754124AbZKULxG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 06:53:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbZKULxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 06:52:40 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:42587 "EHLO mgw1.diku.dk"
+	Sat, 21 Nov 2009 06:53:05 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:42598 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753998AbZKULwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 06:52:39 -0500
-Date: Sat, 21 Nov 2009 12:52:44 +0100 (CET)
+	id S1753918AbZKULxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 06:53:03 -0500
+Date: Sat, 21 Nov 2009 12:53:08 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: maciej.sosnowski@intel.com, Dan Williams <dan.j.williams@intel.com>,
+To: sage@newdream.net, ceph-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/8] drivers/dma: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0911211252180.23681@ask.diku.dk>
+Subject: [PATCH 8/8] fs/ceph: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0911211252440.23681@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following a kzalloc should free the allocated data.
+Error handling code following a kmalloc should free the allocated data.
 
 The semantic match that finds this problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -67,27 +67,23 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/dma/shdma.c                 |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ fs/ceph/xattr.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
-index b3b065c..0cd0d58 100644
---- a/drivers/dma/shdma.c
-+++ b/drivers/dma/shdma.c
-@@ -649,7 +649,7 @@ static int __init sh_dmae_probe(struct platform_device *pdev)
- 
- 	/* get platform data */
- 	if (!pdev->dev.platform_data)
--		goto shdev_err;
-+		goto platform_err;
- 
- 	/* platform data */
- 	memcpy(&shdev->pdata, pdev->dev.platform_data,
-@@ -720,6 +720,7 @@ eirq_err:
- 		free_irq(eirq[ecnt], shdev);
- 
- rst_err:
-+platform_err:
- 	kfree(shdev);
- 
- shdev_err:
+diff --git a/fs/ceph/xattr.c b/fs/ceph/xattr.c
+index 1a48a55..04769a3 100644
+--- a/fs/ceph/xattr.c
++++ b/fs/ceph/xattr.c
+@@ -655,8 +655,10 @@ static int ceph_sync_setxattr(struct dentry *dentry, const char *name,
+ 	/* do request */
+ 	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SETXATTR,
+ 				       USE_AUTH_MDS);
+-	if (IS_ERR(req))
+-		return PTR_ERR(req);
++	if (IS_ERR(req)) {
++		err = PTR_ERR(req);
++		goto out;
++	}
+ 	req->r_inode = igrab(inode);
+ 	req->r_inode_drop = CEPH_CAP_XATTR_SHARED;
+ 	req->r_num_caps = 1;
