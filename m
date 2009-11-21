@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZKUASt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZKUAUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZKUASt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 19:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZKUASs
+	id S1753704AbZKUAUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 19:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZKUAUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 19:18:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58099 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbZKUASs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 19:18:48 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1258745522.2916.3.camel@dhcp231-106.rdu.redhat.com>
-References: <1258745522.2916.3.camel@dhcp231-106.rdu.redhat.com> <20091120094217.b94d99bb.akpm@linux-foundation.org> <20091117141314.0238a49b.akpm@linux-foundation.org> <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <6207.1255706090@redhat.com> <23382.1255707790@redhat.com> <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> <16299.1258729209@redhat.com> <18122.1258739664@redhat.com> 
-To: Eric Paris <eparis@redhat.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       graff.yang@gmail.com, linux-kernel@vger.kernel.org,
-       gyang@blackfin.uclinux.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Graff Yang <graf.yang@analog.com>,
-       linux-security-module@vger.kernel.org, john.johansen@canonical.com
-Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
-Date: Sat, 21 Nov 2009 00:16:48 +0000
-Message-ID: <20163.1258762608@redhat.com>
+	Fri, 20 Nov 2009 19:20:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60837 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbZKUAUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 19:20:34 -0500
+Message-ID: <4B073224.5050908@zytor.com>
+Date: Fri, 20 Nov 2009 16:19:48 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
+       rth@redhat.com
+Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump patching
+ without stop_machine
+References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <4B071000.9080408@zytor.com> <4B072EF5.2090402@redhat.com>
+In-Reply-To: <4B072EF5.2090402@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@redhat.com> wrote:
+On 11/20/2009 04:06 PM, Masami Hiramatsu wrote:
+> 
+> If we don't care about NMI, we can use stop_machine() (for
+> this reason, kprobe-jump-optimization can use stop_machine(),
+> because kprobes can't probe NMI code), but tracepoint has
+> to support NMI.
+> 
 
-> +/* sec_flags for security_file_mmap */
-> +#define SECURITY_MMAP_ADDR_ONLY	0x01
-> +#define SECURITY_MMAP_NOT_ADDR	0x02
+Ingo pointed out that the NMI issue can be dealt with by having the NMI
+handler check a flag if code modification is in progress on the entry to
+the NMI handler.  So yes, NMI can trap out of the IPI hold, but it will
+not go any further.
 
-Please add comments to these to indicate what they're intended to convey.
-Would ADDR_ONLY be better as EXACT_ADDR?
-
-David
+	-hpa
