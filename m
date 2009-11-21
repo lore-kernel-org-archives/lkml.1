@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZKUJRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZKUJ3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752045AbZKUJRx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 04:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbZKUJRw
+	id S1753132AbZKUJ3h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 04:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZKUJ3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 04:17:52 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:48059 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZKUJRv (ORCPT
+	Sat, 21 Nov 2009 04:29:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33743 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbZKUJ3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 04:17:51 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: [PATCH v4] [RFC] NEXIO (or iNexio) support for usbtouchscreen
-Date: Sat, 21 Nov 2009 10:17:58 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux-kernel@vger.kernel.org
-References: <200911161515.00907.linux@rainbow-software.org> <200911201943.46696.oliver@neukum.org> <200911202341.31496.linux@rainbow-software.org>
-In-Reply-To: <200911202341.31496.linux@rainbow-software.org>
+	Sat, 21 Nov 2009 04:29:34 -0500
+Date: Sat, 21 Nov 2009 10:29:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Miller <davem@davemloft.net>
+Cc: william.allen.simpson@gmail.com, huananhu@huawei.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
+Message-ID: <20091121092933.GB1932@ucw.cz>
+References: <faf197be196ee.196eefaf197be@huawei.com> <20091117.012248.86306050.davem@davemloft.net> <4B0278D9.6030806@gmail.com> <20091117.034959.159359822.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911211017.58399.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117.034959.159359822.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 20. November 2009 23:41:29 schrieb Ondrej Zary:
-> I'll also want to remove NEXIO_INPUT_EP and NEXIO_OUTPUT_EP constants -
->  the  endpoint addresses can be found at runtine (there's only one input
->  and one output endpoint). I think that to do this in nexio_init(), it
->  needs to know "struct usb_interface *" instead of "struct usb_device *". I
->  have a patch ready (but forgot to take it so it needs to wait until next
->  week) that replaces "struct usb_device *udev" in struct usbtouch_usb with
->  "struct usb_interface *interface" - is it a good idea?
+On Tue 2009-11-17 03:49:59, David Miller wrote:
+> From: William Allen Simpson <william.allen.simpson@gmail.com>
+> Date: Tue, 17 Nov 2009 05:20:09 -0500
+> 
+> > What David may have meant, had he followed
+> > Documentation/ManagementStyle or had any project management skills
+> > what-so-ever, is that you need to follow
+> > Documentation/SubmittingPatches more carefully.
+> 
+> Are personal attacks on me really necessary?
+> 
+> Do you want me to look closely at your patches with a high priority
+> when you submit them for inclusion?  If so, then you may want to
+> think twice about saying things like this.
 
-Yes, it is a good idea. Everything else also looks good.
+Was this kind of threats really neccessary?
 
-	Regards
-		Oliver
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
