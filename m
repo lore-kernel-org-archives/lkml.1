@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZKUWKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZKUWKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZKUWKD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 17:10:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZKUWKC
+	id S1756905AbZKUWKb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 17:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbZKUWKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 17:10:02 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:56262 "EHLO
+	Sat, 21 Nov 2009 17:10:30 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:56287 "EHLO
 	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756840AbZKUWKB (ORCPT
+	with ESMTP id S1756842AbZKUWKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 17:10:01 -0500
-Message-ID: <4B086536.7080402@freemail.hu>
-Date: Sat, 21 Nov 2009 23:09:58 +0100
+	Sat, 21 Nov 2009 17:10:07 -0500
+Message-ID: <4B08653F.1010405@freemail.hu>
+Date: Sat, 21 Nov 2009 23:10:07 +0100
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-To: Dave Boutcher <boutcher@us.ibm.com>, Santiago Leon <santil@us.ibm.com>,
-       Linda Xie <lxie@us.ibm.com>, FUJITA Tomonori <tomof@acm.org>,
-       linux-scsi@vger.kernel.org
+To: Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org
 CC: cocci@diku.dk, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] ibmvscsi: remove redundant zero fill
+Subject: [PATCH 2/4] binfmt_elf: remove redundant zero fill
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=7 Fuz1=7
-	Fuz2=7
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -90,28 +88,27 @@ On strncpy() vs strlcpy() see http://www.gratisoft.us/todd/papers/strlcpy.html .
 
 Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
-diff -u -p a/drivers/scsi/ibmvscsi/ibmvstgt.c b/drivers/scsi/ibmvscsi/ibmvstgt.c
---- a/drivers/scsi/ibmvscsi/ibmvstgt.c 2009-09-10 00:13:59.000000000 +0200
-+++ b/drivers/scsi/ibmvscsi/ibmvstgt.c 2009-11-21 22:10:13.000000000 +0100
-@@ -339,7 +339,7 @@ int send_adapter_info(struct iu_entry *i
- 	memset(info, 0, sizeof(*info));
+diff -u -p a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+--- a/fs/binfmt_elf.c 2009-11-14 07:06:49.000000000 +0100
++++ b/fs/binfmt_elf.c 2009-11-21 22:12:15.000000000 +0100
+@@ -1399,7 +1399,7 @@ static int fill_psinfo(struct elf_prpsin
+ 	SET_UID(psinfo->pr_uid, cred->uid);
+ 	SET_GID(psinfo->pr_gid, cred->gid);
+ 	rcu_read_unlock();
+-	strncpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
++	strlcpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
+ 	
+ 	return 0;
+ }
+diff -u -p a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+--- a/fs/binfmt_elf_fdpic.c 2009-11-14 07:06:49.000000000 +0100
++++ b/fs/binfmt_elf_fdpic.c 2009-11-21 22:14:43.000000000 +0100
+@@ -1452,7 +1452,7 @@ static int fill_psinfo(struct elf_prpsin
+ 	SET_UID(psinfo->pr_uid, cred->uid);
+ 	SET_GID(psinfo->pr_gid, cred->gid);
+ 	rcu_read_unlock();
+-	strncpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
++	strlcpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
 
- 	strcpy(info->srp_version, "16.a");
--	strncpy(info->partition_name, partition_name,
-+	strlcpy(info->partition_name, partition_name,
- 		sizeof(info->partition_name));
- 	info->partition_number = partition_number;
- 	info->mad_version = 1;
-diff -u -p a/drivers/scsi/ibmvscsi/rpa_vscsi.c b/drivers/scsi/ibmvscsi/rpa_vscsi.c
---- a/drivers/scsi/ibmvscsi/rpa_vscsi.c 2009-09-10 00:13:59.000000000 +0200
-+++ b/drivers/scsi/ibmvscsi/rpa_vscsi.c 2009-11-21 22:10:15.000000000 +0100
-@@ -181,7 +181,7 @@ static void set_adapter_info(struct ibmv
- 	dev_info(hostdata->dev, "SRP_VERSION: %s\n", SRP_VERSION);
- 	strcpy(hostdata->madapter_info.srp_version, SRP_VERSION);
-
--	strncpy(hostdata->madapter_info.partition_name, partition_name,
-+	strlcpy(hostdata->madapter_info.partition_name, partition_name,
- 			sizeof(hostdata->madapter_info.partition_name));
-
- 	hostdata->madapter_info.partition_number = partition_number;
-
+ 	return 0;
+ }
