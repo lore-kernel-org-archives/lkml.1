@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbZKUNfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZKUNgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbZKUNfu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 08:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZKUNft
+	id S1754769AbZKUNgs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZKUNgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 08:35:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41674 "EHLO hera.kernel.org"
+	Sat, 21 Nov 2009 08:36:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36244 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbZKUNfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 08:35:48 -0500
-Date: Sat, 21 Nov 2009 13:35:09 GMT
+	id S1754026AbZKUNgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 08:36:42 -0500
+Date: Sat, 21 Nov 2009 13:35:21 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
@@ -19,12 +19,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
        rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
        prasad@linux.vnet.ibm.com
-In-Reply-To: <4A52E328.8010200@cn.fujitsu.com>
-References: <4A52E328.8010200@cn.fujitsu.com>
+In-Reply-To: <4A52E346.5050608@cn.fujitsu.com>
+References: <4A52E346.5050608@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] ksym_tracer: Fix memory leak
-Message-ID: <tip-558df6c8f74ac4a0b9026ef85b0028280f364d96@git.kernel.org>
-Git-Commit-ID: 558df6c8f74ac4a0b9026ef85b0028280f364d96
+Subject: [tip:perf/core] ksym_tracer: Fix the output of stat tracing
+Message-ID: <tip-9d7e934408b52cd53dd85270eb36941a6a318cc5@git.kernel.org>
+Git-Commit-ID: 9d7e934408b52cd53dd85270eb36941a6a318cc5
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,155 +33,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  558df6c8f74ac4a0b9026ef85b0028280f364d96
-Gitweb:     http://git.kernel.org/tip/558df6c8f74ac4a0b9026ef85b0028280f364d96
+Commit-ID:  9d7e934408b52cd53dd85270eb36941a6a318cc5
+Gitweb:     http://git.kernel.org/tip/9d7e934408b52cd53dd85270eb36941a6a318cc5
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 7 Jul 2009 13:54:48 +0800
+AuthorDate: Tue, 7 Jul 2009 13:55:18 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 11:59:43 +0200
+CommitDate: Fri, 10 Jul 2009 11:59:44 +0200
 
-ksym_tracer: Fix memory leak
+ksym_tracer: Fix the output of stat tracing
 
-- When remove a filter, we leak entry->ksym_hbp->info.name.
+- make ksym_tracer_stat_start() return head->first instead of
+  &head->first
+- make the output properly aligned
 
-- With CONFIG_FTRAC_SELFTEST enabled, we leak ->info.name:
-    # echo ksym_tracer > current_tracer
-    # echo 'ksym_selftest_dummy:rw-' > ksym_trace_filter
-    # echo nop > current_tracer
+Before:
+
+   Access type                Symbol                     Counter
+     NA                   <NA>                              0
+     RW                   pid_max                               0
+
+After:
+
+  Access Type   Symbol                                       Counter
+  -----------   ------                                       -------
+  RW            pid_max                                            0
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Cc: Alan Stern <stern@rowland.harvard.edu>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A52E328.8010200@cn.fujitsu.com>
+LKML-Reference: <4A52E346.5050608@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/trace_ksym.c |   61 ++++++++++++++++++++-------------------------
- 1 files changed, 27 insertions(+), 34 deletions(-)
+ kernel/trace/trace_ksym.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index 891e3b8..7d349d3 100644
+index 7d349d3..1256a6e 100644
 --- a/kernel/trace/trace_ksym.c
 +++ b/kernel/trace/trace_ksym.c
-@@ -179,7 +179,7 @@ static int parse_ksym_trace_str(char *input_string, char **ksymname,
- int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
+@@ -453,8 +453,10 @@ device_initcall(init_ksym_trace);
+ #ifdef CONFIG_PROFILE_KSYM_TRACER
+ static int ksym_tracer_stat_headers(struct seq_file *m)
  {
- 	struct trace_ksym *entry;
--	int ret;
-+	int ret = -ENOMEM;
- 
- 	if (ksym_filter_entry_count >= KSYM_TRACER_MAX) {
- 		printk(KERN_ERR "ksym_tracer: Maximum limit:(%d) reached. No"
-@@ -193,12 +193,13 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
- 		return -ENOMEM;
- 
- 	entry->ksym_hbp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
--	if (!entry->ksym_hbp) {
--		kfree(entry);
--		return -ENOMEM;
--	}
-+	if (!entry->ksym_hbp)
-+		goto err;
-+
-+	entry->ksym_hbp->info.name = kstrdup(ksymname, GFP_KERNEL);
-+	if (!entry->ksym_hbp->info.name)
-+		goto err;
- 
--	entry->ksym_hbp->info.name = ksymname;
- 	entry->ksym_hbp->info.type = op;
- 	entry->ksym_addr = entry->ksym_hbp->info.address = addr;
- #ifdef CONFIG_X86
-@@ -210,14 +211,18 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
- 	if (ret < 0) {
- 		printk(KERN_INFO "ksym_tracer request failed. Try again"
- 					" later!!\n");
--		kfree(entry->ksym_hbp);
--		kfree(entry);
--		return -EAGAIN;
-+		ret = -EAGAIN;
-+		goto err;
- 	}
- 	hlist_add_head_rcu(&(entry->ksym_hlist), &ksym_filter_head);
- 	ksym_filter_entry_count++;
--
+-	seq_printf(m, "   Access type    ");
+-	seq_printf(m, "            Symbol                     Counter     \n");
++	seq_puts(m, "  Access Type ");
++	seq_puts(m, "  Symbol                                       Counter\n");
++	seq_puts(m, "  ----------- ");
++	seq_puts(m, "  ------                                       -------\n");
  	return 0;
-+err:
-+	if (entry->ksym_hbp)
-+		kfree(entry->ksym_hbp->info.name);
-+	kfree(entry->ksym_hbp);
-+	kfree(entry);
-+	return ret;
  }
  
- static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
-@@ -289,7 +294,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 			if (entry->ksym_hbp->info.type != op)
- 				changed = 1;
- 			else
--				goto err_ret;
-+				goto out;
- 			break;
- 		}
- 	}
-@@ -298,34 +303,29 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 		entry->ksym_hbp->info.type = op;
- 		if (op > 0) {
- 			ret = register_kernel_hw_breakpoint(entry->ksym_hbp);
--			if (ret == 0) {
--				ret = count;
--				goto unlock_ret_path;
--			}
--		} else
--			ret = count;
-+			if (ret == 0)
-+				goto out;
-+		}
- 		ksym_filter_entry_count--;
- 		hlist_del_rcu(&(entry->ksym_hlist));
- 		synchronize_rcu();
-+		kfree(entry->ksym_hbp->info.name);
- 		kfree(entry->ksym_hbp);
- 		kfree(entry);
--		goto err_ret;
-+		goto out;
- 	} else {
- 		/* Check for malformed request: (4) */
- 		if (op == 0)
--			goto err_ret;
-+			goto out;
- 		ret = process_new_ksym_entry(ksymname, op, ksym_addr);
--		if (ret)
--			goto err_ret;
- 	}
--	ret = count;
--	goto unlock_ret_path;
-+out:
-+	mutex_unlock(&ksym_tracer_mutex);
+@@ -472,27 +474,27 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
  
--err_ret:
- 	kfree(input_string);
+ 	switch (access_type) {
+ 	case HW_BREAKPOINT_WRITE:
+-		seq_printf(m, "     W     ");
++		seq_puts(m, "  W           ");
+ 		break;
+ 	case HW_BREAKPOINT_RW:
+-		seq_printf(m, "     RW    ");
++		seq_puts(m, "  RW          ");
+ 		break;
+ 	default:
+-		seq_printf(m, "     NA    ");
++		seq_puts(m, "  NA          ");
+ 	}
  
--unlock_ret_path:
--	mutex_unlock(&ksym_tracer_mutex);
-+	if (!ret)
-+		ret = count;
- 	return ret;
+ 	if (lookup_symbol_name(entry->ksym_addr, fn_name) >= 0)
+-		seq_printf(m, "               %s                 ", fn_name);
++		seq_printf(m, "  %-36s", fn_name);
+ 	else
+-		seq_printf(m, "               <NA>                ");
++		seq_printf(m, "  %-36s", "<NA>");
++	seq_printf(m, " %15lu\n", entry->counter);
+ 
+-	seq_printf(m, "%15lu\n", entry->counter);
+ 	return 0;
  }
  
-@@ -349,14 +349,7 @@ static void ksym_trace_reset(struct trace_array *tr)
- 		ksym_filter_entry_count--;
- 		hlist_del_rcu(&(entry->ksym_hlist));
- 		synchronize_rcu();
--		/* Free the 'input_string' only if reset
--		 * after startup self-test
--		 */
--#ifdef CONFIG_FTRACE_SELFTEST
--		if (strncmp(entry->ksym_hbp->info.name, KSYM_SELFTEST_ENTRY,
--					strlen(KSYM_SELFTEST_ENTRY)) != 0)
--#endif /* CONFIG_FTRACE_SELFTEST*/
--			kfree(entry->ksym_hbp->info.name);
-+		kfree(entry->ksym_hbp->info.name);
- 		kfree(entry->ksym_hbp);
- 		kfree(entry);
- 	}
+ static void *ksym_tracer_stat_start(struct tracer_stat *trace)
+ {
+-	return &(ksym_filter_head.first);
++	return ksym_filter_head.first;
+ }
+ 
+ static void *
