@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZKUSA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZKUSCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbZKUSA7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 13:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZKUSA7
+	id S1756669AbZKUSCX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 13:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbZKUSCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 13:00:59 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:49934 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756217AbZKUSA6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 13:00:58 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sat, 21 Nov 2009 18:01:00 +0000
-Message-ID: <1258826460.3627.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH 2/2] DocBook/media: create links for included sources
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Sat, 21 Nov 2009 13:02:23 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:47545 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279AbZKUSCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 13:02:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=NthBLIxXouIRdGHbse9iddU0z9CWHGC9YeYI9qpLoSunHoqghWhgwNTyexbuoKen0b
+         vCDtTlolEzoDgkf+OB+PzwxLo8P1+c2AePQ4mYip5PLY4y6Es2QjwPFy7/bzo9VBhoCo
+         RcRZHZNCNLc6zSqkxW03bS40rzwJIlvBKYk7c=
+MIME-Version: 1.0
+In-Reply-To: <12a0d5b0-698a-40c5-8097-58a145acda12@x31g2000yqx.googlegroups.com>
+References: <12a0d5b0-698a-40c5-8097-58a145acda12@x31g2000yqx.googlegroups.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Sat, 21 Nov 2009 13:02:05 -0500
+Message-ID: <3e8340490911211002r3e0646aaqaa971b5ef7b6fdb4@mail.gmail.com>
+Subject: Re: Hibernating under Linux ...
+To: Albretch Mueller <lbrtchx@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If docs are being built in a separate directory, xmlto and xsltproc
-can't find included sources.  Make links back to the source directory.
+On Sat, Nov 21, 2009 at 7:49 AM, Albretch Mueller <lbrtchx@gmail.com> wrote:
+>
+> One of the few things I think Windows does well (well, definitely
+> better than "us") is hibernating. You can actually notice how the hard
+> drives don't seem to be powered and even the fans stop spipping
+>
+> I have tried hibernating under both, knoppix 6.2 and Ubuntu 9.10 and
+> none of them get it right. Is there any Linux distro that does?
+>
+> Why is that?
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
-I would much prefer to have xmlto and xsltproc look in the source
-directory for included entities but couldn't see how to do that.  This
-needs to be solved in some way for 2.6.32, even if this patch isn't the
-right way to do it.
+Both suspend-to-ram and suspend-to-disk result in fan and hard drive
+poweroff on my hardware (dell inspiron 1420 laptop running ubuntu
+9.10). It would be easier to help you if you gave details on your
+hardware, and how you're triggering the suspend.
 
-Ben.
-
- Documentation/DocBook/Makefile |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index 22bbf7e..50075df 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -32,10 +32,10 @@ PS_METHOD	= $(prefer-db2x)
- 
- ###
- # The targets that may be used.
--PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
-+PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs xmldoclinks
- 
- BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
--xmldocs: $(BOOKS)
-+xmldocs: $(BOOKS) xmldoclinks
- sgmldocs: xmldocs
- 
- PS := $(patsubst %.xml, %.ps, $(BOOKS))
-@@ -55,6 +55,15 @@ mandocs: $(MAN)
- build_images = mkdir -p $(objtree)/Documentation/DocBook/media/ && \
- 	       cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(objtree)/Documentation/DocBook/media/
- 
-+xmldoclinks:
-+ifneq ($(objtree),$(srctree))
-+	for dep in dvb media-entities.tmpl media-indices.tmpl v4l; do \
-+		rm -f $(objtree)/Documentation/DocBook/$$dep \
-+		&& ln -s $(srctree)/Documentation/DocBook/$$dep $(objtree)/Documentation/DocBook/ \
-+		|| exit; \
-+	done
-+endif
-+
- installmandocs: mandocs
- 	mkdir -p /usr/local/man/man9/
- 	install Documentation/DocBook/man/*.9.gz /usr/local/man/man9/
--- 
-1.6.5.2
-
-
+I should note that knoppix (or any other livecd distro) won't be
+capable of suspend-to-disk (hibernation as windows calls it);
+hibernation involves saving all state to disk and doing a full power
+off, and when the whole point of the distro is to _not_ use the disk,
+you clearly can't do this. Suspend-to-ram should work however, and on
+most hardware should power down the hdd and fans.
