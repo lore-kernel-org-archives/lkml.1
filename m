@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZKUPJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZKUPLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZKUPJS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZKUPJO
+	id S1755833AbZKUPLc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbZKUPKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:09:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58727 "EHLO ogre.sisk.pl"
+	Sat, 21 Nov 2009 10:10:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58687 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755538AbZKUPJL convert rfc822-to-8bit (ORCPT
+	id S1755281AbZKUPIe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 10:09:11 -0500
+	Sat, 21 Nov 2009 10:08:34 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Peter Teoh" <htmldeveloper@gmail.com>
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Peter Zijlstra" <peterz@infradead.org>
 References: <pohDdrcORVG.A.U2B.-6_BLB@chimera>
 In-Reply-To: <pohDdrcORVG.A.U2B.-6_BLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <l2_yP_tdgYK.A.dHC.F7_BLB@chimera>
-Subject: [Bug #14655] swapper generated call trace in 2.6.32-rc7
+Message-ID: <l2_yP_tdgYK.A.POC.G7_BLB@chimera>
+Subject: [Bug #14630] sched_rt_periodic_timer vs cpu hotplug
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 21 Nov 2009 15:51:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +36,12 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14655
-Subject		: swapper generated call trace in 2.6.32-rc7
-Submitter	: Peter Teoh <htmldeveloper@gmail.com>
-Date		: 2009-11-18 8:09 (4 days old)
-References	: http://marc.info/?l=linux-kernel&m=125853179413679&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14630
+Subject		: sched_rt_periodic_timer vs cpu hotplug
+Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
+Date		: 2009-11-11 10:18 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=125793470309588&w=4
+Handled-By	: Peter Zijlstra <peterz@infradead.org>
+Patch		: http://patchwork.kernel.org/patch/60250/
 
 
