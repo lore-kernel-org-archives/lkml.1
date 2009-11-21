@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZKUStu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZKUSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751712AbZKUStu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 13:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbZKUStu
+	id S1756751AbZKUSiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 13:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbZKUSiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 13:49:50 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:53614 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbZKUStt (ORCPT
+	Sat, 21 Nov 2009 13:38:18 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:57330 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756727AbZKUSiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 13:49:49 -0500
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-References: <20091120211139.GB19106@sgi.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 21 Nov 2009 10:49:50 -0800
-In-Reply-To: <20091120211139.GB19106@sgi.com> (Dimitri Sivanich's message of "Fri\, 20 Nov 2009 15\:11\:39 -0600")
-Message-ID: <m1r5rrr9v5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sat, 21 Nov 2009 13:38:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=atNugandi8MxS/l+iLkWx0EVKsjJcXdxHPOTjL2UlxXQhmZbgbr9UBsdfOIxOK7X8B
+         okgbJU1d8lpsyHhuGZcIsSsJq46AicELumOXqEgmV53+YI7DE/8wPkAWfXjtAsWE6J2c
+         h8yNRaQ1UZxA4+0hB2csDXWc6+cWZGZK1X340=
+Message-ID: <4B0836A2.1000805@gmail.com>
+Date: Sat, 21 Nov 2009 19:51:14 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] wusb: Use sizeof struct rather than pointer
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Sivanich <sivanich@sgi.com> writes:
+The sizeof the struct should be used rather than sizeof the pointer
 
-> This patch allows for hard numa restrictions to irq affinity on x86 systems.
->
-> Affinity is masked to allow only those cpus which the subarchitecture
-> deems accessible by the given irq.
->
-> On some UV systems, this domain will be limited to the nodes accessible
-> to the irq's node.  Initially other X86 systems will not mask off any cpus
-> so non-UV systems will remain unaffected.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/usb/wusbcore/security.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Is this a hardware restriction you are trying to model?
-If not this seems wrong.
+Unless I am mistaken?
 
-Eric
+diff --git a/drivers/usb/wusbcore/security.c b/drivers/usb/wusbcore/security.c
+index 4516c36..857f6e9 100644
+--- a/drivers/usb/wusbcore/security.c
++++ b/drivers/usb/wusbcore/security.c
+@@ -213,7 +213,7 @@ int wusb_dev_sec_add(struct wusbhc *wusbhc,
+ 
+ 	result = usb_get_descriptor(usb_dev, USB_DT_SECURITY,
+ 				    0, secd, sizeof(struct usb_security_descriptor));
+-	if (result < sizeof(secd)) {
++	if (result < sizeof(*secd)) {
+ 		dev_err(dev, "Can't read security descriptor or "
+ 			"not enough data: %d\n", result);
+ 		goto out;
