@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZKUSCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbZKUSED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZKUSCX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 13:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbZKUSCX
+	id S1756688AbZKUSED (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 13:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbZKUSEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 13:02:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:47545 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756279AbZKUSCW (ORCPT
+	Sat, 21 Nov 2009 13:04:02 -0500
+Received: from de01.mail.all-tld.net ([195.140.232.8]:55407 "EHLO
+	de01.mail.all-tld.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756582AbZKUSEA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 13:02:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=NthBLIxXouIRdGHbse9iddU0z9CWHGC9YeYI9qpLoSunHoqghWhgwNTyexbuoKen0b
-         vCDtTlolEzoDgkf+OB+PzwxLo8P1+c2AePQ4mYip5PLY4y6Es2QjwPFy7/bzo9VBhoCo
-         RcRZHZNCNLc6zSqkxW03bS40rzwJIlvBKYk7c=
+	Sat, 21 Nov 2009 13:04:00 -0500
+Date: Sat, 21 Nov 2009 19:03:54 +0100
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: [PATCH 13/15] Do not fallback to default_llseek() when
+ readdir() uses BKL
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1258735245-25826-1-git-send-email-jblunck@suse.de>
+	<1258735245-25826-14-git-send-email-jblunck@suse.de>
+In-Reply-To: <1258735245-25826-14-git-send-email-jblunck@suse.de> (from
+	jblunck@suse.de on Fri Nov 20 17:40:43 2009)
+X-Mailer: Balsa 2.3.21
+Message-Id: <1258826634l.13034l.0l@oscar.alarsen.net>
 MIME-Version: 1.0
-In-Reply-To: <12a0d5b0-698a-40c5-8097-58a145acda12@x31g2000yqx.googlegroups.com>
-References: <12a0d5b0-698a-40c5-8097-58a145acda12@x31g2000yqx.googlegroups.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Sat, 21 Nov 2009 13:02:05 -0500
-Message-ID: <3e8340490911211002r3e0646aaqaa971b5ef7b6fdb4@mail.gmail.com>
-Subject: Re: Hibernating under Linux ...
-To: Albretch Mueller <lbrtchx@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+X-ALL-TLD-GmbH-Information: AEV Virus and Spam Secure Mail System
+X-ALL-TLD-GmbH-VirusScanner: Found to be clean
+X-ALL-TLD-GmbH-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 7:49 AM, Albretch Mueller <lbrtchx@gmail.com> wrote:
->
-> One of the few things I think Windows does well (well, definitely
-> better than "us") is hibernating. You can actually notice how the hard
-> drives don't seem to be powered and even the fans stop spipping
->
-> I have tried hibernating under both, knoppix 6.2 and Ubuntu 9.10 and
-> none of them get it right. Is there any Linux distro that does?
->
-> Why is that?
+On 2009-11-20 17:40:43, Jan Blunck wrote:
+> Do not use the fallback default_llseek() if the readdir operation of  
+> the
+> filesystem still uses the big kernel lock. Since llseek() modifies
+> file->f_pos of the directory directly it may need locking to not  
+> confuse
+> readdir which usually uses file->f_pos directly as well. Since the  
+> special
+> characteristics of the BKL (unlocked on schedule) are not necessary  
+> in this
+> case, the inode mutex can be used for locking as provided by
+> generic_file_llseek(). This is only possible since all filesystems,  
+> except
+> reiserfs, either use a directory as a flat file or with disk address
+> offsets. Reiserfs on the other hand uses a 32bit hash off the  
+> filename as
+> the offset so generic_file_llseek() can get used as well since the  
+> hash is
+> always smaller than sb->s_maxbytes (= (512 << 32) - blocksize).
+> 
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> ---
 
-Both suspend-to-ram and suspend-to-disk result in fan and hard drive
-poweroff on my hardware (dell inspiron 1420 laptop running ubuntu
-9.10). It would be easier to help you if you gave details on your
-hardware, and how you're triggering the suspend.
-
-I should note that knoppix (or any other livecd distro) won't be
-capable of suspend-to-disk (hibernation as windows calls it);
-hibernation involves saving all state to disk and doing a full power
-off, and when the whole point of the distro is to _not_ use the disk,
-you clearly can't do this. Suspend-to-ram should work however, and on
-most hardware should power down the hdd and fans.
+wrt fs/qnx4:
+Acked-by: Anders Larsen <al@alarsen.net>
