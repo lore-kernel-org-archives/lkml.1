@@ -1,118 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZKUAGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZKUAHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZKUAGs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 19:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZKUAGr
+	id S1753998AbZKUAHU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 19:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZKUAHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 19:06:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22262 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbZKUAGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 19:06:45 -0500
-Message-ID: <4B072EF5.2090402@redhat.com>
-Date: Fri, 20 Nov 2009 19:06:13 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 20 Nov 2009 19:07:19 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:50121 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbZKUAHS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 19:07:18 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out sysfs_sd_setattr
+References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
+	<1257665233-12468-6-git-send-email-ebiederm@xmission.com>
+	<20091120201355.GA30590@kroah.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 20 Nov 2009 16:07:11 -0800
+In-Reply-To: <20091120201355.GA30590@kroah.com> (Greg KH's message of "Fri\, 20 Nov 2009 12\:13\:55 -0800")
+Message-ID: <m1aayg7nbk.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
-       rth@redhat.com
-Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump patching
- without stop_machine
-References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <4B071000.9080408@zytor.com>
-In-Reply-To: <4B071000.9080408@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Greg KH <greg@kroah.com> writes:
 
-H. Peter Anvin wrote:
-> On 11/18/2009 02:43 PM, Jason Baron wrote:
->> Add text_poke_fixup() which takes a fixup address to where a processor
->> jumps if it hits the modifying address while code modifying.
->> text_poke_fixup() does following steps for this purpose.
->>
->>   1. Setup int3 handler for fixup.
->>   2. Put a breakpoint (int3) on the first byte of modifying region,
->>      and synchronize code on all CPUs.
->>   3. Modify other bytes of modifying region, and synchronize code on all CPUs.
->>   4. Modify the first byte of modifying region, and synchronize code
->>      on all CPUs.
->>   5. Clear int3 handler.
->>
->> Thus, if some other processor execute modifying address when step2 to step4,
->> it will be jumped to fixup code.
->>
->> This still has many limitations for modifying multi-instructions at once.
->> However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
->> because;
->>   - Replaced instruction is just one instruction, which is executed atomically.
->>   - Replacing instruction is a jump, so we can set fixup address where the jump
->>     goes to.
->>
+> On Sat, Nov 07, 2009 at 11:27:04PM -0800, Eric W. Biederman wrote:
+>> From: Eric W. Biederman <ebiederm@xmission.com>
+>> 
+>> Cleanly separate the work that is specific to setting the
+>> attributes of a sysfs_dirent from what is needed to update
+>> the attributes of a vfs inode.
+>> 
+>> Additionally grab the sysfs_mutex to keep any nasties from
+>> surprising us when updating the sysfs_dirent.
+>> 
+>> Acked-by: Tejun Heo <tj@kernel.org>
+>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 >
-> I just had a thought about this... regardless of if this is safe or not
-> (which still remains to be determined)... I have a bit more of a
-> fundamental question about it:
->
-> This code ends up taking *two* global IPIs for each instruction
-> modification.  Each of those requires whole-system synchronization.
+> Due to the extended attr work for sysfs that went into Linus's tree
+> recently, this patch doesn't apply at all anymore.
 
-As Mathieu and I talked, first IPI is for synchronizing code, and
-second is for waiting for all int3 handling is done.
+It looks like the issue is the a trivial context conflict  with 
+sysfs-mark-a-locally-only-used-function-static.patch
 
->  How
-> is this better than taking one IPI and having the other CPUs wait until
-> the modification is complete before returning?
+Which marks one of those new functions as static.
 
-Would you mean using stop_machine()? :-)
+Here come the patches 6-15 rebased on top of that.
 
-If we don't care about NMI, we can use stop_machine() (for
-this reason, kprobe-jump-optimization can use stop_machine(),
-because kprobes can't probe NMI code), but tracepoint has
-to support NMI.
-
-Actually, it might be possible, even it will be complicated.
-If one-byte modifying(int3 injection/removing) is always
-synchronized, I assume below timechart can work
-(and it can support NMI/SMI too).
-
-----
-        <CPU0>                  <CPU1>
-flag = 0
-setup int3 handler
-int3 injection[sync]
-other-bytes modifying
-smp_call_function(func)    func()
-wait_until(flag==1)        irq_disable()
-                            sync_core() for other-bytes modifying
-                            flag = 1
-first-byte modifying[sync] wait_until(flag==2)
-flag = 2
-wait_until(flag==3)        irq_enable()
-                            flag = 3
-cleanup int3 handler       return
-return
-----
-
-I'm not so sure that this flag-based step-by-step code can
-work faster than 2 IPIs :-(
-
-Any comments are welcome! :-)
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Eric
