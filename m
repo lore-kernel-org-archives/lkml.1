@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZKUWXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZKUWL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZKUWXV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 17:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbZKUWXU
+	id S1756900AbZKUWL4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 17:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbZKUWLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 17:23:20 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:48099 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756857AbZKUWXT (ORCPT
+	Sat, 21 Nov 2009 17:11:55 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:49808 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756699AbZKUWLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 17:23:19 -0500
+	Sat, 21 Nov 2009 17:11:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:reply-to:mime-version:content-type
-         :content-disposition:user-agent;
-        b=nB+JqGvmv9ekjN+WR/low20T75/sQB8mjGYrte43kAwqNyd0FhCVhAzU3kkZpATj/y
-         8WF2ov29KujiZa2+AQtc/5Y5+6/pj4Ml0g/3DfanQpJfu8kYhM3sa9U/2K5dzhoAKB6d
-         CX4DCSoBdfq/gCrBkvZkTWs0Ke+uXhWPt9yTo=
-Date: Sun, 22 Nov 2009 09:23:19 +1100
-From: Robert Swan <swan.r.l@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [bisected] pty performance problem
-Message-ID: <20091121222319.GA3905@swanrl.gmail.com>
-Reply-To: swan.r.l@gmail.com
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Sh5qXuTnoq6+y+rAujQ+kN7jsndXQCExOyevx7B7oTCToDoRRqrgQMbmuS2kLmoNle
+         GkfKvGfChrLYlM8WhrdN+mqgUja5rMZbLxprhC3aYnfstQ7qamplhm7JCmiHrtMkiRAL
+         kPlacv6IJYV1ZyRYdftuKV5YNdmhUV/PFpi1o=
+Message-ID: <4B0868B4.6000605@gmail.com>
+Date: Sat, 21 Nov 2009 23:24:52 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, paul@pwsan.com
+Subject: [PATCH] OMAP: return PTR_ERR rather than IS_ERR
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I posted this to the kernel-newbies list, but have graduated to the
-adults forum:
+IS_ERR returns only 1 or 0, and the functions return a negative
+error in other cases anyways.
 
-! Two C programs are having a query-response conversation through a
-! pseudo terminal:
-! 
-! A (client) -- forever { send query; read response }
-! B (server) -- forever { read query; send response }
-! 
-! Neither has any I/O apart from the pty conversation, so I'd expect to
-! see CPU usage at 100%. When I ran it, the CPU was pretty well idle.
-! After a fair bit of fiddling, it turned out that both sides were
-! taking about 8ms for their read() calls. At that point it seemed
-! pretty clear that this was a delay in the kernel, not the code.
-! 
-[snip]
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ arch/arm/mach-omap2/powerdomain.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-2.6.31-rc2-00205-gb4b21ca good
-2.6.31-rc2-00206-gd945cb9 bad
+Inspired by a patch from Julia Lawall
+Can be found with `git grep -n -E "return IS_ERR\([^?]*$"'
 
-and still bad with the latest: 2.6.32-rc8-00011-ga8a8a66
-
-the git log says:
-! commit d945cb9cce20ac7143c2de8d88b187f62db99bdc
-! Author: Alan Cox <alan@linux.intel.com>
-! Date:   Tue Jul 7 16:39:41 2009 +0100
-! 
-!     pty: Rework the pty layer to use the normal buffering logic
-!     
-!     This fixes the ppp problems and various other issues with call locking
-!     caused by one side of a pty called in one locking context trying to match
-!     another with differing rules on the other side. We also get a big slack
-!     space to work with that means we can bury the flow control deadlock case
-!     for any conceivable real world situation.
-!     
-!     Signed-off-by: Alan Cox <alan@linux.intel.com>
-!     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-I can provide reasonably stripped down code which demonstrates the
-problem.  It has been reproduced by one other person, though his delay
-was about 2ms.
-
-Have fun,
-
-Rob.
+diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+index f00289a..a5a2811 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -480,7 +480,7 @@ int pwrdm_add_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 	if (IS_ERR(p)) {
+ 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
+ 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	pr_debug("powerdomain: hardware will wake up %s when %s wakes up\n",
+@@ -513,7 +513,7 @@ int pwrdm_del_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 	if (IS_ERR(p)) {
+ 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
+ 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	pr_debug("powerdomain: hardware will no longer wake up %s after %s "
+@@ -550,7 +550,7 @@ int pwrdm_read_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 	if (IS_ERR(p)) {
+ 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
+ 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	return prm_read_mod_bits_shift(pwrdm1->prcm_offs, PM_WKDEP,
+@@ -584,7 +584,7 @@ int pwrdm_add_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 		pr_debug("powerdomain: hardware cannot set/clear sleep "
+ 			 "dependency affecting %s from %s\n", pwrdm1->name,
+ 			 pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	pr_debug("powerdomain: will prevent %s from sleeping if %s is active\n",
+@@ -623,7 +623,7 @@ int pwrdm_del_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 		pr_debug("powerdomain: hardware cannot set/clear sleep "
+ 			 "dependency affecting %s from %s\n", pwrdm1->name,
+ 			 pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	pr_debug("powerdomain: will no longer prevent %s from sleeping if "
+@@ -666,7 +666,7 @@ int pwrdm_read_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
+ 		pr_debug("powerdomain: hardware cannot set/clear sleep "
+ 			 "dependency affecting %s from %s\n", pwrdm1->name,
+ 			 pwrdm2->name);
+-		return IS_ERR(p);
++		return PTR_ERR(p);
+ 	}
+ 
+ 	return prm_read_mod_bits_shift(pwrdm1->prcm_offs, OMAP3430_CM_SLEEPDEP,
