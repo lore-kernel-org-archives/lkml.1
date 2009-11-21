@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZKUHKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbZKUIEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751712AbZKUHKm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 02:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZKUHKl
+	id S1751336AbZKUIEy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 03:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZKUIEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 02:10:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33113 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbZKUHKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 02:10:37 -0500
-Date: Sat, 21 Nov 2009 07:10:06 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, rdunlap@xenotime.net, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkenisto@us.ibm.com, sfr@canb.auug.org.au, tglx@linutronix.de,
-       rdunlap@xenotime.net, mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <20091120171314.6715.30390.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091120171314.6715.30390.stgit@dhcp-100-2-132.bos.redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/probes] x86: insn decoder test checks objdump version
-Message-ID: <tip-6f5f67267dc4faecd9cba63894de92ca92a608b8@git.kernel.org>
-Git-Commit-ID: 6f5f67267dc4faecd9cba63894de92ca92a608b8
-X-Mailer: tip-git-log-daemon
+	Sat, 21 Nov 2009 03:04:53 -0500
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:61952 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbZKUIEx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 03:04:53 -0500
+X-Greylist: delayed 571 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Nov 2009 03:04:53 EST
+Message-ID: <4B079CE0.60604@freemail.hu>
+Date: Sat, 21 Nov 2009 08:55:12 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] do not overwrite the first part of phys string
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=3 Fuz1=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6f5f67267dc4faecd9cba63894de92ca92a608b8
-Gitweb:     http://git.kernel.org/tip/6f5f67267dc4faecd9cba63894de92ca92a608b8
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Fri, 20 Nov 2009 12:13:14 -0500
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 20 Nov 2009 23:01:04 -0800
+From: Márton Németh <nm127@freemail.hu>
 
-x86: insn decoder test checks objdump version
+Use strlcat() to append a string to the previously created first part.
 
-Check objdump version before using it for insn decoder build test,
-because some older objdump can't decode AVX code correctly.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-LKML-Reference: <20091120171314.6715.30390.stgit@dhcp-100-2-132.bos.redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
- arch/x86/tools/Makefile       |    5 ++++-
- arch/x86/tools/chkobjdump.awk |   23 +++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 1 deletions(-)
+diff -upr linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c
+--- linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c	2009-09-10 00:13:59.000000000 +0200
++++ linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c	2009-11-21 08:48:32.000000000 +0100
+@@ -266,7 +266,7 @@ static int usb_kbd_probe(struct usb_inte
+ 			 le16_to_cpu(dev->descriptor.idProduct));
 
-diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
-index c80b079..f820826 100644
---- a/arch/x86/tools/Makefile
-+++ b/arch/x86/tools/Makefile
-@@ -12,8 +12,11 @@ else
-   posttest_64bit = -n
- endif
- 
-+distill_awk = $(srctree)/arch/x86/tools/distill.awk
-+chkobjdump = $(srctree)/arch/x86/tools/chkobjdump.awk
-+
- quiet_cmd_posttest = TEST    $@
--      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | $(AWK) -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len $(posttest_64bit) $(posttest_verbose)
-+      cmd_posttest = ($(OBJDUMP) -v | $(AWK) -f $(chkobjdump)) || $(OBJDUMP) -d -j .text $(objtree)/vmlinux | $(AWK) -f $(distill_awk) | $(obj)/test_get_len $(posttest_64bit) $(posttest_verbose)
- 
- posttest: $(obj)/test_get_len vmlinux
- 	$(call cmd,posttest)
-diff --git a/arch/x86/tools/chkobjdump.awk b/arch/x86/tools/chkobjdump.awk
-new file mode 100644
-index 0000000..0d13cd9
---- /dev/null
-+++ b/arch/x86/tools/chkobjdump.awk
-@@ -0,0 +1,23 @@
-+# GNU objdump version checker
-+#
-+# Usage:
-+# objdump -v | awk -f chkobjdump.awk
-+BEGIN {
-+	# objdump version 2.19 or later is OK for the test.
-+	od_ver = 2;
-+	od_sver = 19;
-+}
-+
-+/^GNU/ {
-+	split($4, ver, ".");
-+	if (ver[1] > od_ver ||
-+	    (ver[1] == od_ver && ver[2] >= od_sver)) {
-+		exit 1;
-+	} else {
-+		printf("Warning: objdump version %s is older than %d.%d\n",
-+		       $4, od_ver, od_sver);
-+		print("Warning: Skipping posttest.");
-+		# Logic is inverted, because we just skip test without error.
-+		exit 0;
-+	}
-+}
+ 	usb_make_path(dev, kbd->phys, sizeof(kbd->phys));
+-	strlcpy(kbd->phys, "/input0", sizeof(kbd->phys));
++	strlcat(kbd->phys, "/input0", sizeof(kbd->phys));
+
+ 	input_dev->name = kbd->name;
+ 	input_dev->phys = kbd->phys;
+diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c linux-2.6.32-rc7/drivers/input/misc/ati_remote.c
+--- linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c	2009-09-10 00:13:59.000000000 +0200
++++ linux-2.6.32-rc7/drivers/input/misc/ati_remote.c	2009-11-21 08:48:50.000000000 +0100
+@@ -766,7 +766,7 @@ static int ati_remote_probe(struct usb_i
+ 	ati_remote->interface = interface;
+
+ 	usb_make_path(udev, ati_remote->phys, sizeof(ati_remote->phys));
+-	strlcpy(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
++	strlcat(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
+
+ 	if (udev->manufacturer)
+ 		strlcpy(ati_remote->name, udev->manufacturer, sizeof(ati_remote->name));
+diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c linux-2.6.32-rc7/drivers/input/misc/powermate.c
+--- linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c	2009-09-10 00:13:59.000000000 +0200
++++ linux-2.6.32-rc7/drivers/input/misc/powermate.c	2009-11-21 08:48:44.000000000 +0100
+@@ -338,7 +338,7 @@ static int powermate_probe(struct usb_in
+ 	pm->input = input_dev;
+
+ 	usb_make_path(udev, pm->phys, sizeof(pm->phys));
+-	strlcpy(pm->phys, "/input0", sizeof(pm->phys));
++	strlcat(pm->phys, "/input0", sizeof(pm->phys));
+
+ 	spin_lock_init(&pm->lock);
+
