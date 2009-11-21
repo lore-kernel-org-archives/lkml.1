@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZKUAHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZKUASt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbZKUAHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 19:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZKUAHT
+	id S1753709AbZKUASt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 19:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZKUASs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 19:07:19 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:50121 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbZKUAHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 19:07:18 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out sysfs_sd_setattr
-References: <m1pr7tmqb4.fsf@fess.ebiederm.org>
-	<1257665233-12468-6-git-send-email-ebiederm@xmission.com>
-	<20091120201355.GA30590@kroah.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 20 Nov 2009 16:07:11 -0800
-In-Reply-To: <20091120201355.GA30590@kroah.com> (Greg KH's message of "Fri\, 20 Nov 2009 12\:13\:55 -0800")
-Message-ID: <m1aayg7nbk.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+	Fri, 20 Nov 2009 19:18:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58099 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZKUASs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 19:18:48 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1258745522.2916.3.camel@dhcp231-106.rdu.redhat.com>
+References: <1258745522.2916.3.camel@dhcp231-106.rdu.redhat.com> <20091120094217.b94d99bb.akpm@linux-foundation.org> <20091117141314.0238a49b.akpm@linux-foundation.org> <1255706463.15182.84.camel@dhcp231-106.rdu.redhat.com> <7e0fb38c0910160801o50346a5cm763d79cab98272a5@mail.gmail.com> <1255516134-4838-1-git-send-email-graff.yang@gmail.com> <18475.1255529305@redhat.com> <6207.1255706090@redhat.com> <23382.1255707790@redhat.com> <1255708529.15182.95.camel@dhcp231-106.rdu.redhat.com> <16299.1258729209@redhat.com> <18122.1258739664@redhat.com> 
+To: Eric Paris <eparis@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       graff.yang@gmail.com, linux-kernel@vger.kernel.org,
+       gyang@blackfin.uclinux.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Graff Yang <graf.yang@analog.com>,
+       linux-security-module@vger.kernel.org, john.johansen@canonical.com
+Subject: Re: [PATCH] mm/nommu.c: Fix improperly call of security API in mmap
+Date: Sat, 21 Nov 2009 00:16:48 +0000
+Message-ID: <20163.1258762608@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+Eric Paris <eparis@redhat.com> wrote:
 
-> On Sat, Nov 07, 2009 at 11:27:04PM -0800, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->> 
->> Cleanly separate the work that is specific to setting the
->> attributes of a sysfs_dirent from what is needed to update
->> the attributes of a vfs inode.
->> 
->> Additionally grab the sysfs_mutex to keep any nasties from
->> surprising us when updating the sysfs_dirent.
->> 
->> Acked-by: Tejun Heo <tj@kernel.org>
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
->
-> Due to the extended attr work for sysfs that went into Linus's tree
-> recently, this patch doesn't apply at all anymore.
+> +/* sec_flags for security_file_mmap */
+> +#define SECURITY_MMAP_ADDR_ONLY	0x01
+> +#define SECURITY_MMAP_NOT_ADDR	0x02
 
-It looks like the issue is the a trivial context conflict  with 
-sysfs-mark-a-locally-only-used-function-static.patch
+Please add comments to these to indicate what they're intended to convey.
+Would ADDR_ONLY be better as EXACT_ADDR?
 
-Which marks one of those new functions as static.
-
-Here come the patches 6-15 rebased on top of that.
-
-Eric
+David
