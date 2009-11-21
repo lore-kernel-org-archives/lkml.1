@@ -1,104 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZKUWL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZKUWo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZKUWL4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 17:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbZKUWLz
+	id S1753946AbZKUWo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 17:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZKUWoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 17:11:55 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49808 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756699AbZKUWLy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 17:11:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Sh5qXuTnoq6+y+rAujQ+kN7jsndXQCExOyevx7B7oTCToDoRRqrgQMbmuS2kLmoNle
-         GkfKvGfChrLYlM8WhrdN+mqgUja5rMZbLxprhC3aYnfstQ7qamplhm7JCmiHrtMkiRAL
-         kPlacv6IJYV1ZyRYdftuKV5YNdmhUV/PFpi1o=
-Message-ID: <4B0868B4.6000605@gmail.com>
-Date: Sat, 21 Nov 2009 23:24:52 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sat, 21 Nov 2009 17:44:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59981 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752875AbZKUWoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 17:44:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ath5k-devel@venema.h4ckr.net
+Subject: [Resend][PATCH] Wireless / ath5k: Simplify suspend and resume callbacks
+Date: Sat, 21 Nov 2009 23:44:24 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, Bob Copeland <me@bobcopeland.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
 MIME-Version: 1.0
-To: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, paul@pwsan.com
-Subject: [PATCH] OMAP: return PTR_ERR rather than IS_ERR
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911212344.24170.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IS_ERR returns only 1 or 0, and the functions return a negative
-error in other cases anyways.
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Wireless / ath5k: Simplify suspend and resume callbacks
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Simplify the suspend and resume callbacks of ath5k by converting the
+driver to struct dev_pm_ops and allowing the PCI PM core to do the
+PCI-specific suspend/resume handling.
+
+Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
+D-Link CardBus.adapter.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/mach-omap2/powerdomain.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/wireless/ath/ath5k/base.c |   35 ++++++++++------------------------
+ 1 file changed, 11 insertions(+), 24 deletions(-)
 
-Inspired by a patch from Julia Lawall
-Can be found with `git grep -n -E "return IS_ERR\([^?]*$"'
-
-diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
-index f00289a..a5a2811 100644
---- a/arch/arm/mach-omap2/powerdomain.c
-+++ b/arch/arm/mach-omap2/powerdomain.c
-@@ -480,7 +480,7 @@ int pwrdm_add_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 	if (IS_ERR(p)) {
- 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
- 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
+Index: linux-2.6/drivers/net/wireless/ath/ath5k/base.c
+===================================================================
+--- linux-2.6.orig/drivers/net/wireless/ath/ath5k/base.c
++++ linux-2.6/drivers/net/wireless/ath/ath5k/base.c
+@@ -195,12 +195,13 @@ static int __devinit	ath5k_pci_probe(str
+ 				const struct pci_device_id *id);
+ static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
+ #ifdef CONFIG_PM
+-static int		ath5k_pci_suspend(struct pci_dev *pdev,
+-					pm_message_t state);
+-static int		ath5k_pci_resume(struct pci_dev *pdev);
++static int		ath5k_pci_suspend(struct device *dev);
++static int		ath5k_pci_resume(struct device *dev);
++
++SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
++#define ATH5K_PM_OPS	(&ath5k_pm_ops)
+ #else
+-#define ath5k_pci_suspend NULL
+-#define ath5k_pci_resume NULL
++#define ATH5K_PM_OPS	NULL
+ #endif /* CONFIG_PM */
  
- 	pr_debug("powerdomain: hardware will wake up %s when %s wakes up\n",
-@@ -513,7 +513,7 @@ int pwrdm_del_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 	if (IS_ERR(p)) {
- 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
- 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
+ static struct pci_driver ath5k_pci_driver = {
+@@ -208,8 +209,7 @@ static struct pci_driver ath5k_pci_drive
+ 	.id_table	= ath5k_pci_id_table,
+ 	.probe		= ath5k_pci_probe,
+ 	.remove		= __devexit_p(ath5k_pci_remove),
+-	.suspend	= ath5k_pci_suspend,
+-	.resume		= ath5k_pci_resume,
++	.driver.pm	= ATH5K_PM_OPS,
+ };
  
- 	pr_debug("powerdomain: hardware will no longer wake up %s after %s "
-@@ -550,7 +550,7 @@ int pwrdm_read_wkdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 	if (IS_ERR(p)) {
- 		pr_debug("powerdomain: hardware cannot set/clear wake up of "
- 			 "%s when %s wakes up\n", pwrdm1->name, pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
  
- 	return prm_read_mod_bits_shift(pwrdm1->prcm_offs, PM_WKDEP,
-@@ -584,7 +584,7 @@ int pwrdm_add_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 		pr_debug("powerdomain: hardware cannot set/clear sleep "
- 			 "dependency affecting %s from %s\n", pwrdm1->name,
- 			 pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
+@@ -669,33 +669,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
+ }
  
- 	pr_debug("powerdomain: will prevent %s from sleeping if %s is active\n",
-@@ -623,7 +623,7 @@ int pwrdm_del_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 		pr_debug("powerdomain: hardware cannot set/clear sleep "
- 			 "dependency affecting %s from %s\n", pwrdm1->name,
- 			 pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
+ #ifdef CONFIG_PM
+-static int
+-ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int ath5k_pci_suspend(struct device *dev)
+ {
+-	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
++	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
+ 	struct ath5k_softc *sc = hw->priv;
  
- 	pr_debug("powerdomain: will no longer prevent %s from sleeping if "
-@@ -666,7 +666,7 @@ int pwrdm_read_sleepdep(struct powerdomain *pwrdm1, struct powerdomain *pwrdm2)
- 		pr_debug("powerdomain: hardware cannot set/clear sleep "
- 			 "dependency affecting %s from %s\n", pwrdm1->name,
- 			 pwrdm2->name);
--		return IS_ERR(p);
-+		return PTR_ERR(p);
- 	}
+ 	ath5k_led_off(sc);
+-
+-	pci_save_state(pdev);
+-	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
+-
+ 	return 0;
+ }
  
- 	return prm_read_mod_bits_shift(pwrdm1->prcm_offs, OMAP3430_CM_SLEEPDEP,
+-static int
+-ath5k_pci_resume(struct pci_dev *pdev)
++static int ath5k_pci_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+ 	struct ath5k_softc *sc = hw->priv;
+-	int err;
+-
+-	pci_restore_state(pdev);
+-
+-	err = pci_enable_device(pdev);
+-	if (err)
+-		return err;
+ 
+ 	/*
+ 	 * Suspend/Resume resets the PCI configuration space, so we have to
