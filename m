@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZKUNgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZKUNf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZKUNgs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 08:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZKUNgq
+	id S1754624AbZKUNf7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZKUNf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 08:36:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36244 "EHLO hera.kernel.org"
+	Sat, 21 Nov 2009 08:35:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41688 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbZKUNgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 08:36:42 -0500
-Date: Sat, 21 Nov 2009 13:35:21 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+	id S1754444AbZKUNf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 08:35:56 -0500
+Date: Sat, 21 Nov 2009 13:35:33 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
-       prasad@linux.vnet.ibm.com
+       rostedt@goodmis.org, xiaoguangrong@cn.fujitsu.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
-       prasad@linux.vnet.ibm.com
-In-Reply-To: <4A52E346.5050608@cn.fujitsu.com>
-References: <4A52E346.5050608@cn.fujitsu.com>
+       rostedt@goodmis.org, tglx@linutronix.de, xiaoguangrong@cn.fujitsu.com
+In-Reply-To: <4A6685BB.2090809@cn.fujitsu.com>
+References: <4A6685BB.2090809@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] ksym_tracer: Fix the output of stat tracing
-Message-ID: <tip-9d7e934408b52cd53dd85270eb36941a6a318cc5@git.kernel.org>
-Git-Commit-ID: 9d7e934408b52cd53dd85270eb36941a6a318cc5
+Subject: [tip:perf/core] tracing/ksym_tracer: fix the output of ksym tracer
+Message-ID: <tip-d857ace143df3884954887e1899a65831ca72ece@git.kernel.org>
+Git-Commit-ID: d857ace143df3884954887e1899a65831ca72ece
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,91 +29,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9d7e934408b52cd53dd85270eb36941a6a318cc5
-Gitweb:     http://git.kernel.org/tip/9d7e934408b52cd53dd85270eb36941a6a318cc5
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 7 Jul 2009 13:55:18 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 11:59:44 +0200
+Commit-ID:  d857ace143df3884954887e1899a65831ca72ece
+Gitweb:     http://git.kernel.org/tip/d857ace143df3884954887e1899a65831ca72ece
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Wed, 22 Jul 2009 11:21:31 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Thu, 23 Jul 2009 20:51:35 -0400
 
-ksym_tracer: Fix the output of stat tracing
+tracing/ksym_tracer: fix the output of ksym tracer
 
-- make ksym_tracer_stat_start() return head->first instead of
-  &head->first
-- make the output properly aligned
+Fix the output format of ksym tracer, make it properly aligned
 
-Before:
+Befor patch:
+# tracer: ksym_tracer
+#
+#       TASK-PID      CPU#      Symbol         Type    Function
+#          |           |          |              |         |
+bash            1378  1   ksym_tracer_mutex     W  mutex_lock+0x11/0x27
+bash            1378  1   ksym_filter_head      W  process_new_ksym_entry+0xd2/0x10c
+bash            1378  1   ksym_tracer_mutex     W  mutex_unlock+0x12/0x1b
+cat             1429  0   ksym_tracer_mutex     W  mutex_lock+0x11/0x27
 
-   Access type                Symbol                     Counter
-     NA                   <NA>                              0
-     RW                   pid_max                               0
+After patch:
+# tracer: ksym_tracer
+#
+#       TASK-PID   CPU#      Symbol                    Type    Function
+#          |        |          |                        |         |
+        cat-1423  [000] ksym_tracer_mutex               RW mutex_lock+0x11/0x27
+        cat-1423  [000] ksym_filter_head                RW ksym_trace_filter_read+0x6e/0x10d
+        cat-1423  [000] ksym_tracer_mutex               RW mutex_unlock+0x12/0x1b
+        cat-1423  [000] ksym_tracer_mutex               RW mutex_lock+0x11/0x27
+        cat-1423  [000] ksym_filter_head                RW ksym_trace_filter_read+0x6e/0x10d
+        cat-1423  [000] ksym_tracer_mutex               RW mutex_unlock+0x12/0x1b
 
-After:
-
-  Access Type   Symbol                                       Counter
-  -----------   ------                                       -------
-  RW            pid_max                                            0
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A52E346.5050608@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+LKML-Reference: <4A6685BB.2090809@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace_ksym.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+ kernel/trace/trace_ksym.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index 7d349d3..1256a6e 100644
+index 1256a6e..fbf3a8e 100644
 --- a/kernel/trace/trace_ksym.c
 +++ b/kernel/trace/trace_ksym.c
-@@ -453,8 +453,10 @@ device_initcall(init_ksym_trace);
- #ifdef CONFIG_PROFILE_KSYM_TRACER
- static int ksym_tracer_stat_headers(struct seq_file *m)
+@@ -370,13 +370,12 @@ static int ksym_trace_init(struct trace_array *tr)
+ 
+ static void ksym_trace_print_header(struct seq_file *m)
  {
--	seq_printf(m, "   Access type    ");
--	seq_printf(m, "            Symbol                     Counter     \n");
-+	seq_puts(m, "  Access Type ");
-+	seq_puts(m, "  Symbol                                       Counter\n");
-+	seq_puts(m, "  ----------- ");
-+	seq_puts(m, "  ------                                       -------\n");
- 	return 0;
+-
+ 	seq_puts(m,
+-		 "#       TASK-PID      CPU#      Symbol         Type    "
+-		 "Function         \n");
++		 "#       TASK-PID   CPU#      Symbol                    "
++		 "Type    Function\n");
+ 	seq_puts(m,
+-		 "#          |           |          |              |         "
+-		 "|            \n");
++		 "#          |        |          |                       "
++		 " |         |\n");
  }
  
-@@ -472,27 +474,27 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
+ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
+@@ -392,7 +391,7 @@ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
  
- 	switch (access_type) {
- 	case HW_BREAKPOINT_WRITE:
--		seq_printf(m, "     W     ");
-+		seq_puts(m, "  W           ");
- 		break;
- 	case HW_BREAKPOINT_RW:
--		seq_printf(m, "     RW    ");
-+		seq_puts(m, "  RW          ");
- 		break;
- 	default:
--		seq_printf(m, "     NA    ");
-+		seq_puts(m, "  NA          ");
- 	}
+ 	trace_assign_type(field, entry);
  
- 	if (lookup_symbol_name(entry->ksym_addr, fn_name) >= 0)
--		seq_printf(m, "               %s                 ", fn_name);
-+		seq_printf(m, "  %-36s", fn_name);
- 	else
--		seq_printf(m, "               <NA>                ");
-+		seq_printf(m, "  %-36s", "<NA>");
-+	seq_printf(m, " %15lu\n", entry->counter);
+-	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->cmd,
++	ret = trace_seq_printf(s, "%11s-%-5d [%03d] %-30s ", field->cmd,
+ 				entry->pid, iter->cpu, field->ksym_name);
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
+@@ -412,7 +411,7 @@ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
--	seq_printf(m, "%15lu\n", entry->counter);
- 	return 0;
- }
+ 	sprint_symbol(str, field->ip);
+-	ret = trace_seq_printf(s, "%-20s\n", str);
++	ret = trace_seq_printf(s, "%s\n", str);
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
- static void *ksym_tracer_stat_start(struct tracer_stat *trace)
- {
--	return &(ksym_filter_head.first);
-+	return ksym_filter_head.first;
- }
- 
- static void *
