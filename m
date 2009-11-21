@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZKUNnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbZKUNlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbZKUNnL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 08:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZKUNnJ
+	id S1755164AbZKUNlh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbZKUNkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 08:43:09 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41031 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbZKUNj7 (ORCPT
+	Sat, 21 Nov 2009 08:40:06 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:24671 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754640AbZKUNkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 08:39:59 -0500
+	Sat, 21 Nov 2009 08:40:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:cc:date:message-id:in-reply-to:references
          :user-agent:mime-version:content-type:content-transfer-encoding;
-        b=TIhymfmX7YkIzjNCT4yIYEuzuPmZ3KDwUQmhJa54JG0yxs0BlIDyCJ9klTP41uK84S
-         4tB6DOcIkleHLFk7n3s8q0QVEOdfzW//39bbL3iEe40Bq10v6DDHMHj8XLuKCS7UtNrt
-         Nqy67hbW28lnioVWvFhfdC/YSrdsZBAusHAlo=
+        b=lENdixCEyuUnSCRckaNfOlyCRNs+xJVKSunidUM1C7WNm4bzNUkDewL1neprKgoK94
+         OVFgtL1mXzA0S5bXfP27jBtTtYwfOBplhNzCoMW7w8PS0NJqI44sygXa8ZGi3EoC3Gkh
+         TY2Gb/gte8AVjg3X5PMKBLOZvcU6dtMlgCe/w=
 From: Martin Fuzzey <mfuzzey@gmail.com>
-Subject: [RFC PATCH 3/9] Serial: sc26xx - use interrupt trigger flags from
-	resources.
+Subject: [RFC PATCH 4/9] Serial: sc26xx - add accessor function for driver
+	data.
 To: tsbogend@alpha.franken.de, linux-serial@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Date: Sat, 21 Nov 2009 14:40:03 +0100
-Message-ID: <20091121134003.16090.79502.stgit@srv002.fuzzey.net>
+Date: Sat, 21 Nov 2009 14:40:07 +0100
+Message-ID: <20091121134007.16090.92417.stgit@srv002.fuzzey.net>
 In-Reply-To: <20091121133951.16090.74411.stgit@srv002.fuzzey.net>
 References: <20091121133951.16090.74411.stgit@srv002.fuzzey.net>
 User-Agent: StGIT/0.14.2
@@ -34,56 +34,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows platform resources to specify interrupt flags.
+Extract container_of and port -= line to a helper function
+to avoid slightly opaque modification of port pointer.
 
 Signed-off-by: Martin Fuzzey <mfuzzey@gmail.com>
 
 ---
 
- drivers/serial/sc26xx.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/serial/sc26xx.c |   31 ++++++++++++-------------------
+ 1 files changed, 12 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/serial/sc26xx.c b/drivers/serial/sc26xx.c
-index dc09682..ca74bf6 100644
+index ca74bf6..dc47d4f 100644
 --- a/drivers/serial/sc26xx.c
 +++ b/drivers/serial/sc26xx.c
-@@ -631,7 +631,7 @@ static void __devinit sc26xx_init_masks(struct uart_sc26xx_port *up,
+@@ -95,6 +95,12 @@ struct uart_sc26xx_port {
+ #define IMR_RXRDY   (1 << 1)
+ #define IMR_TXRDY   (1 << 0)
  
- static int __devinit sc26xx_probe(struct platform_device *dev)
- {
--	struct resource *res;
-+	struct resource *res, *irq_res;
- 	struct uart_sc26xx_port *up;
- 	unsigned int *sc26xx_data = dev->dev.platform_data;
- 	int err;
-@@ -640,6 +640,10 @@ static int __devinit sc26xx_probe(struct platform_device *dev)
- 	if (!res)
- 		return -ENODEV;
- 
-+	irq_res = platform_get_resource(dev, IORESOURCE_IRQ, 0);
-+	if (!irq_res)
-+		return -ENXIO;
++static struct uart_sc26xx_port *driver_info(struct uart_port *port)
++{
++	port -= port->line;
++	return container_of(port, struct uart_sc26xx_port, port[0]);
++}
 +
- 	up = kzalloc(sizeof *up, GFP_KERNEL);
- 	if (unlikely(!up))
- 		return -ENOMEM;
-@@ -652,7 +656,7 @@ static int __devinit sc26xx_probe(struct platform_device *dev)
- 	up->port[0].mapbase = res->start;
- 	up->port[0].membase = ioremap_nocache(up->port[0].mapbase, 0x40);
- 	up->port[0].iotype = UPIO_MEM;
--	up->port[0].irq = platform_get_irq(dev, 0);
-+	up->port[0].irq = irq_res->start;
+ /* access port register */
+ static inline u8 read_sc_port(struct uart_port *p, u8 reg)
+ {
+@@ -111,25 +117,17 @@ static inline void write_sc_port(struct uart_port *p, u8 reg, u8 val)
  
- 	up->port[0].dev = &dev->dev;
+ static void sc26xx_enable_irq(struct uart_port *port, int mask)
+ {
+-	struct uart_sc26xx_port *up;
+-	int line = port->line;
+-
+-	port -= line;
+-	up = container_of(port, struct uart_sc26xx_port, port[0]);
++	struct uart_sc26xx_port *up = driver_info(port);
  
-@@ -688,7 +692,8 @@ static int __devinit sc26xx_probe(struct platform_device *dev)
- 	if (err)
- 		goto out_remove_port0;
+-	up->imr |= mask << (line * 4);
++	up->imr |= mask << (port->line * 4);
+ 	WRITE_SC(port, IMR, up->imr);
+ }
  
--	err = request_irq(up->port[0].irq, sc26xx_interrupt, 0, "sc26xx", up);
-+	err = request_irq(up->port[0].irq, sc26xx_interrupt,
-+		irq_res->flags & IRQF_TRIGGER_MASK, "sc26xx", up);
- 	if (err)
- 		goto out_remove_ports;
+ static void sc26xx_disable_irq(struct uart_port *port, int mask)
+ {
+-	struct uart_sc26xx_port *up;
+-	int line = port->line;
+-
+-	port -= line;
+-	up = container_of(port, struct uart_sc26xx_port, port[0]);
++	struct uart_sc26xx_port *up = driver_info(port);
  
+-	up->imr &= ~(mask << (line * 4));
++	up->imr &= ~(mask << (port->line * 4));
+ 	WRITE_SC(port, IMR, up->imr);
+ }
+ 
+@@ -257,12 +255,9 @@ static unsigned int sc26xx_tx_empty(struct uart_port *port)
+ /* port->lock held by caller.  */
+ static void sc26xx_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ {
+-	struct uart_sc26xx_port *up;
++	struct uart_sc26xx_port *up = driver_info(port);
+ 	int line = port->line;
+ 
+-	port -= line;
+-	up = container_of(port, struct uart_sc26xx_port, port[0]);
+-
+ 	if (up->dtr_mask[line]) {
+ 		if (mctrl & TIOCM_DTR)
+ 			WRITE_SC(port, OPR_SET, up->dtr_mask[line]);
+@@ -280,13 +275,11 @@ static void sc26xx_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ /* port->lock is held by caller and interrupts are disabled.  */
+ static unsigned int sc26xx_get_mctrl(struct uart_port *port)
+ {
+-	struct uart_sc26xx_port *up;
++	struct uart_sc26xx_port *up = driver_info(port);
+ 	int line = port->line;
+ 	unsigned int mctrl = TIOCM_DSR | TIOCM_CTS | TIOCM_CAR;
+ 	u8 ipr;
+ 
+-	port -= line;
+-	up = container_of(port, struct uart_sc26xx_port, port[0]);
+ 	ipr = READ_SC(port, IPR) ^ 0xff;
+ 
+ 	if (up->dsr_mask[line]) {
 
