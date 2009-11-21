@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbZKULvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbZKULvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753942AbZKULvA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 06:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZKULu7
+	id S1754037AbZKULvp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 06:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZKULvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 06:50:59 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:38434 "EHLO mgw2.diku.dk"
+	Sat, 21 Nov 2009 06:51:44 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:42582 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752860AbZKULu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 06:50:58 -0500
-Date: Sat, 21 Nov 2009 12:51:02 +0100 (CET)
+	id S1753153AbZKULvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 06:51:43 -0500
+Date: Sat, 21 Nov 2009 12:51:47 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/8] drivers/edac: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0911211250370.23681@ask.diku.dk>
+To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/8] drivers/usb/host/xhci-mem.c: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0911211251210.23681@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -67,22 +67,29 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/edac/i7core_edac.c          |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/usb/host/xhci-mem.c         |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/edac/i7core_edac.c b/drivers/edac/i7core_edac.c
-index e944b63..4de5a18 100644
---- a/drivers/edac/i7core_edac.c
-+++ b/drivers/edac/i7core_edac.c
-@@ -1215,8 +1215,10 @@ int i7core_get_onedevice(struct pci_dev **prev, int devno,
- 			return -ENOMEM;
- 		i7core_dev->pdev = kzalloc(sizeof(*i7core_dev->pdev) * n_devs,
- 					   GFP_KERNEL);
--		if (!i7core_dev->pdev)
-+		if (!i7core_dev->pdev) {
-+			kfree(i7core_dev);
- 			return -ENOMEM;
-+		}
- 		i7core_dev->socket = socket;
- 		i7core_dev->n_devs = n_devs;
- 		list_add_tail(&i7core_dev->list, &i7core_edac_list);
+diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
+index fd05247..33f8157 100644
+--- a/drivers/usb/host/xhci-mem.c
++++ b/drivers/usb/host/xhci-mem.c
+@@ -779,14 +779,17 @@ struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
+ 
+ 	command->in_ctx =
+ 		xhci_alloc_container_ctx(xhci, XHCI_CTX_TYPE_INPUT, mem_flags);
+-	if (!command->in_ctx)
++	if (!command->in_ctx) {
++		kfree(command);
+ 		return NULL;
++	}
+ 
+ 	if (allocate_completion) {
+ 		command->completion =
+ 			kzalloc(sizeof(struct completion), mem_flags);
+ 		if (!command->completion) {
+ 			xhci_free_container_ctx(xhci, command->in_ctx);
++			kfree(command);
+ 			return NULL;
+ 		}
+ 		init_completion(command->completion);
