@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZKUTFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZKUTFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbZKUTFa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 14:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZKUTF2
+	id S1755843AbZKUTFX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 14:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZKUTFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 14:05:28 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:32978 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048AbZKUTFZ (ORCPT
+	Sat, 21 Nov 2009 14:05:22 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33846 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbZKUTFV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 14:05:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=U5DnR6b6ASOYK6dYmLAWOd7equHcpu0pDBSnVG39TGVi6AjBjUh8+GHMOwz+E5Uu+w
-         WJaMEC8GGq+VwAO2RrXj9fYYNrNrVjirpGOKdedPWxKdCOacdaM+jrACTufZYpILDNSG
-         LgH19v8779ItoaM26eFFKbZ+0wLdS5LSjDwUo=
-Date: Sat, 21 Nov 2009 20:04:42 +0100
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Bug #14267] Disassociating atheros wlan
-Message-Id: <20091121200442.61740f37.kristoffer.ericson@gmail.com>
-In-Reply-To: <4B08258E.9050607@gmail.com>
-References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
-	<mYW9sxtWd2G.A.EnF.gDACLB@chimera>
-	<4B08258E.9050607@gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Nov 2009 14:05:21 -0500
+Date: Sat, 21 Nov 2009 20:05:20 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-thinkpad@linux-thinkpad.org
+Subject: Re: High power consumption after suspend/resume cycle
+Message-ID: <20091121190520.GB2444@ucw.cz>
+References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Nov 2009 09:38:22 -0800
-"Justin P. Mattock" <justinmattock@gmail.com> wrote:
+Hi!
 
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
-> > Subject		: Disassociating atheros wlan
-> > Submitter	: Kristoffer Ericson<kristoffer.ericson@gmail.com>
-> > Date		: 2009-09-24 10:16 (59 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
-> >
-> >
-> >
-> >    
-> I did a bisect yesterday on this, and the results
-> seemed to have worked over here by reverting:
+> I'm running a git kernel that's slightly newer than 2.6.32-rc1.
 > 
-> 75e6c3b72b3ab01c47629f3fbd0fed4e6550bf3a
-> cfg80211: lower dynamic PS timeout to 100ms
+> First, thanks for all the great work everywhere on laptop power
+> consumption -- on my Lenovo X200s, it looks like Linux is getting
+> close to Windows (Windows wins by about 0.7W, except that its power
+> usage frequently spikes since Windows apparently still doesn't know
+> how to sit still and do nothing, whereas Linux's seems more stable.).
+> Windows after a reboot, even running KDE with compositing enabled and
+> while connected to wifi, at least after some tweaking.
 > 
-> if Kristoffer can try reverting this one
-> to see, then we can go from there.
+> There's a catch, though: after a suspend/resume cycle, power
+> consumption goes up by over well over a watt.  (On a system that draws
+> about 7 watts before suspending, that's a big deal.)  I've tried
+> turning off X, suspending with 'echo mem > /sys/power/state' to avoid
+> any distro scripts running, and manually restoring SATA power saving
+> settings, but it still happens.  I even tried unbinding e1000e and
+> both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
+> iwlcore, and it still happens.  This is 100% reproducible, and I'd be
+> happy to test things.
+> 
+> This could be a BIOS bug I suppose (although I'm running the latest
+> BIOS), but Windows 7 does not have this problem at all.
+> 
+> Any ideas about what to try or what subsystem to blame?
 
-In the process of doing that as we speak.
+Well, on thinkpad x60 power consumption is .3W *lower*.
 
-> 
-> Justin P. Mattock
-> 
-> 
-> 
-
+You could try comparing lspci -vvv before and after... but this is
+deep magic and hard to debug. 
 
 -- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
