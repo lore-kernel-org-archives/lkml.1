@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbZKVOSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZKUX7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbZKVOSs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 09:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbZKVOSs
+	id S1753956AbZKUX7H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 18:59:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZKUX7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 09:18:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56773 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754867AbZKVOSr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 09:18:47 -0500
-Date: Sun, 22 Nov 2009 00:46:11 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc7: compile regression on spitz
-Message-ID: <20091121234611.GG1411@ucw.cz>
-References: <20091118090100.GA1399@ucw.cz>
+	Sat, 21 Nov 2009 18:59:06 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33073 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753531AbZKUX7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 18:59:05 -0500
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1+780MphRe72zPfGDRM9MD/ziI+PnYPFdzeHy9IFd
+	NXqNFJdCADMh3a
+Message-ID: <4B087ECA.1070109@gmx.de>
+Date: Sun, 22 Nov 2009 00:59:06 +0100
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118090100.GA1399@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: Joseph Chan <JosephChan@via.com.tw>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Scott Fang <ScottFang@viatech.com.cn>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] viafb: Use sizeof struct rather	than
+ pointer
+References: <4B0838F1.4090202@gmail.com> <4B083957.3040500@gmail.com>
+In-Reply-To: <4B083957.3040500@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-11-18 10:01:00, Pavel Machek wrote:
-> 
-> If CONFIG_AKITA is not set, spitz fails to compile. It worked ok in
-> rc5. Fix is one more ifdef...
-> 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Hi,
 
-Eric, this being after-rc5 regression... it would be nice to actually
-fix it for final...
-								Pavel
+Roel Kluin schrieb:
+> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+> index 56ec696..7b181e7 100644
+> --- a/drivers/video/via/viafbdev.c
+> +++ b/drivers/video/via/viafbdev.c
+> @@ -680,7 +680,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+>  		if (!viafb_gamma_table)
+>  			return -ENOMEM;
+>  		if (copy_from_user(viafb_gamma_table, argp,
+> -				sizeof(viafb_gamma_table))) {
+> +				sizeof(*viafb_gamma_table))) {
+>  			kfree(viafb_gamma_table);
+>  			return -EFAULT;
+>  		}
+> @@ -694,7 +694,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+>  			return -ENOMEM;
+>  		viafb_get_gamma_table(viafb_gamma_table);
+>  		if (copy_to_user(argp, viafb_gamma_table,
+> -			sizeof(viafb_gamma_table))) {
+> +			sizeof(*viafb_gamma_table))) {
+>  			kfree(viafb_gamma_table);
+>  			return -EFAULT;
+>  		}
 
-> --- a/arch/arm/mach-pxa/spitz.c	2009-11-17 17:10:21.000000000 +0100
-> +++ b/arch/arm/mach-pxa/spitz.c	2009-11-18 05:55:21.000000000 +0100
-> @@ -802,10 +802,12 @@
->  {
->  	spitz_ficp_platform_data.gpio_pwdown = SPITZ_GPIO_IR_ON;
->  
-> +#ifdef CONFIG_MACH_BORZOI
->  	if (machine_is_borzoi()) {
->  		sharpsl_nand_platform_data.badblock_pattern = &sharpsl_akita_bbt;
->  		sharpsl_nand_platform_data.ecc_layout = &akita_oobinfo;
->  	}
-> +#endif
->  
->  	platform_scoop_config = &spitz_pcmcia_config;
->  
-> 
-> 
-> 
-> 
-> 
+I'm sorry but I fear your fix isn't correct. The reason is a few lines 
+above:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+u32 *viafb_gamma_table;
+...
+viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+
+so probably the right solution would look like this:
+
+copy_from_user(viafb_gamma_table, argp, 256 * sizeof(u32))
+copy_to_user(argp, viafb_gamma_table, 256 * sizeof(u32))
+
+However viafb has way too many private ioctls. I would be curious 
+whether there exists any program that uses any of them so that they 
+could be tested. As this ioctl didn't work very well I vote to remove it 
+at least temporarily.
+
+Thanks for highlighting this problem,
+
+
+Florian Tobias Schandinat
