@@ -1,111 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZKUMpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbZKUNcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292AbZKUMpJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 07:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZKUMpJ
+	id S1754383AbZKUNcS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZKUNcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 07:45:09 -0500
-Received: from mx.sz.bfs.de ([194.94.69.70]:48765 "EHLO mx.sz.bfs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbZKUMpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 07:45:07 -0500
-Message-ID: <4B07E0CB.6000508@bfs.de>
-Date: Sat, 21 Nov 2009 13:44:59 +0100
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 21 Nov 2009 08:32:17 -0500
+Received: from mail-yx0-f153.google.com ([209.85.210.153]:49766 "EHLO
+	mail-yx0-f153.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754354AbZKUNcR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 08:32:17 -0500
+X-Greylist: delayed 2566 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Nov 2009 08:32:17 EST
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/8] drivers/pcmcia: remove unnecessary kzalloc
-References: <Pine.LNX.4.64.0911211250090.23681@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0911211250090.23681@ask.diku.dk>
+Path: x31g2000yqx.googlegroups.com!not-for-mail
+Newsgroups: comp.os.linux.hardware,comp.os.linux.advocacy
+Date: Sat, 21 Nov 2009 04:49:37 -0800 (PST)
+Followup-To: comp.os.linux.hardware
+Complaints-To: groups-abuse@google.com
+Injection-Info: x31g2000yqx.googlegroups.com; posting-host=66.114.70.44; 
+	posting-account=hEsTJAoAAABBB9neOo9d5YFd2CC8eBZx
+NNTP-Posting-Host: 66.114.70.44
+User-Agent: G2/1.0
+X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) 
+	Gecko/20091112 Iceweasel/3.5.5 (like Firefox/3.5.5; Debian-3.5.5-1),gzip(gfe),gzip(gfe)
+Message-ID: <12a0d5b0-698a-40c5-8097-58a145acda12@x31g2000yqx.googlegroups.com>
+Subject: Hibernating under Linux ...
+From: Albretch Mueller <lbrtchx@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+One of the few things I think Windows does well (well, definitely
+better than "us") is hibernating. You can actually notice how the hard
+drives don't seem to be powered and even the fans stop spipping
 
-Julia Lawall schrieb:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The result of calling kzalloc is never used or freed.
-> 
-> The semantic match that finds this problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,f1,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> <... when != x
->      when != if (...) { <+...x...+> }
-> (
-> x->f1 = E
-> |
->  (x->f1 == NULL || ...)
-> |
->  f(...,x->f1,...)
-> )
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> |
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  drivers/pcmcia/sa1111_generic.c     |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
-> index deb5036..de6bc33 100644
-> --- a/drivers/pcmcia/sa1111_generic.c
-> +++ b/drivers/pcmcia/sa1111_generic.c
-> @@ -127,10 +127,6 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
->  	ops->socket_state = sa1111_pcmcia_socket_state;
->  	ops->socket_suspend = sa1111_pcmcia_socket_suspend;
->  
-> -	s = kzalloc(sizeof(*s) * ops->nr, GFP_KERNEL);
-> -	if (!s)
-> -		return -ENODEV;
-> -
->  	for (i = 0; i < ops->nr; i++) {
->  		s = kzalloc(sizeof(*s), GFP_KERNEL);
->  		if (!s)
+I have tried hibernating under both, knoppix 6.2 and Ubuntu 9.10 and
+none of them get it right. Is there any Linux distro that does?
 
+Why is that?
 
-
-mmmh, perhaps the original idea was to have an array
-and then he moved to a linked list ?
-
-I thing the array idea is better (1. it fails on low mem propperly, 2. no need free()
-3. less zmalloc stuff) but requieres that pcmcia_remove()
-will release that array propperly
-
-the bug is strange,
-
-just my 2 cents,
-       re,
- 	wh
+Thanks
+lbrtchx
