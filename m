@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZKUNoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZKUNoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbZKUNoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 08:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZKUNoU
+	id S1755342AbZKUNoe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZKUNoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 08:44:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32769 "EHLO hera.kernel.org"
+	Sat, 21 Nov 2009 08:44:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:32780 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbZKUNoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 08:44:15 -0500
-Date: Sat, 21 Nov 2009 13:43:46 GMT
+	id S1755205AbZKUNo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 08:44:28 -0500
+Date: Sat, 21 Nov 2009 13:44:00 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
        mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091120212509.153379276@chello.nl>
-References: <20091120212509.153379276@chello.nl>
+In-Reply-To: <20091120212509.251030114@chello.nl>
+References: <20091120212509.251030114@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf: Fix event scaling for inherited counters
-Message-ID: <tip-59ed446f792cc07d37b1536b9c4664d14e25e425@git.kernel.org>
-Git-Commit-ID: 59ed446f792cc07d37b1536b9c4664d14e25e425
+Subject: [tip:perf/core] perf: Fix locking for PERF_FORMAT_GROUP
+Message-ID: <tip-6f10581aeaa5543a3b7a8c7a87a064375ec357f8@git.kernel.org>
+Git-Commit-ID: 6f10581aeaa5543a3b7a8c7a87a064375ec357f8
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,130 +31,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  59ed446f792cc07d37b1536b9c4664d14e25e425
-Gitweb:     http://git.kernel.org/tip/59ed446f792cc07d37b1536b9c4664d14e25e425
+Commit-ID:  6f10581aeaa5543a3b7a8c7a87a064375ec357f8
+Gitweb:     http://git.kernel.org/tip/6f10581aeaa5543a3b7a8c7a87a064375ec357f8
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 20 Nov 2009 22:19:55 +0100
+AuthorDate: Fri, 20 Nov 2009 22:19:56 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sat, 21 Nov 2009 14:11:40 +0100
 
-perf: Fix event scaling for inherited counters
+perf: Fix locking for PERF_FORMAT_GROUP
 
-Properly account the full hierarchy of counters for both the
-count (we already did so) and the scale times (new).
+We should hold event->child_mutex when iterating the inherited
+counters, we should hold ctx->mutex when iterating siblings.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20091120212509.153379276@chello.nl>
+LKML-Reference: <20091120212509.251030114@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/perf_event.h |    3 +-
- kernel/perf_event.c        |   48 +++++++++++++++++++++++--------------------
- 2 files changed, 28 insertions(+), 23 deletions(-)
+ kernel/perf_event.c |   20 +++++++++++++-------
+ 1 files changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index a430ac3..36fe89f 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -782,7 +782,8 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr,
- 				int cpu,
- 				pid_t pid,
- 				perf_callback_t callback);
--extern u64 perf_event_read_value(struct perf_event *event);
-+extern u64 perf_event_read_value(struct perf_event *event,
-+				 u64 *enabled, u64 *running);
- 
- struct perf_sample_data {
- 	u64				type;
 diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index fdfae88..80f40da 100644
+index 80f40da..3ede098 100644
 --- a/kernel/perf_event.c
 +++ b/kernel/perf_event.c
-@@ -1774,14 +1774,25 @@ static int perf_event_read_size(struct perf_event *event)
- 	return size;
- }
+@@ -1782,6 +1782,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+ 	*enabled = 0;
+ 	*running = 0;
  
--u64 perf_event_read_value(struct perf_event *event)
-+u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- {
- 	struct perf_event *child;
- 	u64 total = 0;
- 
-+	*enabled = 0;
-+	*running = 0;
-+
++	mutex_lock(&event->child_mutex);
  	total += perf_event_read(event);
--	list_for_each_entry(child, &event->child_list, child_list)
-+	*enabled += event->total_time_enabled +
-+			atomic64_read(&event->child_total_time_enabled);
-+	*running += event->total_time_running +
-+			atomic64_read(&event->child_total_time_running);
-+
-+	list_for_each_entry(child, &event->child_list, child_list) {
- 		total += perf_event_read(child);
-+		*enabled += child->total_time_enabled;
-+		*running += child->total_time_running;
-+	}
+ 	*enabled += event->total_time_enabled +
+ 			atomic64_read(&event->child_total_time_enabled);
+@@ -1793,6 +1794,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+ 		*enabled += child->total_time_enabled;
+ 		*running += child->total_time_running;
+ 	}
++	mutex_unlock(&event->child_mutex);
  
  	return total;
  }
-@@ -1793,19 +1804,15 @@ static int perf_event_read_group(struct perf_event *event,
+@@ -1802,10 +1804,12 @@ static int perf_event_read_group(struct perf_event *event,
+ 				   u64 read_format, char __user *buf)
+ {
  	struct perf_event *leader = event->group_leader, *sub;
- 	int n = 0, size = 0, ret = 0;
+-	int n = 0, size = 0, ret = 0;
++	int n = 0, size = 0, ret = -EFAULT;
++	struct perf_event_context *ctx = leader->ctx;
  	u64 values[5];
--	u64 count;
-+	u64 count, enabled, running;
+ 	u64 count, enabled, running;
  
--	count = perf_event_read_value(leader);
-+	count = perf_event_read_value(leader, &enabled, &running);
++	mutex_lock(&ctx->mutex);
+ 	count = perf_event_read_value(leader, &enabled, &running);
  
  	values[n++] = 1 + leader->nr_siblings;
--	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED) {
--		values[n++] = leader->total_time_enabled +
--			atomic64_read(&leader->child_total_time_enabled);
--	}
--	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING) {
--		values[n++] = leader->total_time_running +
--			atomic64_read(&leader->child_total_time_running);
--	}
-+	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
-+		values[n++] = enabled;
-+	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
-+		values[n++] = running;
- 	values[n++] = count;
- 	if (read_format & PERF_FORMAT_ID)
- 		values[n++] = primary_event_id(leader);
-@@ -1820,7 +1827,7 @@ static int perf_event_read_group(struct perf_event *event,
+@@ -1820,9 +1824,9 @@ static int perf_event_read_group(struct perf_event *event,
+ 	size = n * sizeof(u64);
+ 
+ 	if (copy_to_user(buf, values, size))
+-		return -EFAULT;
++		goto unlock;
+ 
+-	ret += size;
++	ret = size;
+ 
  	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
  		n = 0;
+@@ -1833,11 +1837,15 @@ static int perf_event_read_group(struct perf_event *event,
  
--		values[n++] = perf_event_read_value(sub);
-+		values[n++] = perf_event_read_value(sub, &enabled, &running);
- 		if (read_format & PERF_FORMAT_ID)
- 			values[n++] = primary_event_id(sub);
+ 		size = n * sizeof(u64);
  
-@@ -1838,18 +1845,15 @@ static int perf_event_read_group(struct perf_event *event,
- static int perf_event_read_one(struct perf_event *event,
- 				 u64 read_format, char __user *buf)
- {
-+	u64 enabled, running;
- 	u64 values[4];
- 	int n = 0;
+-		if (copy_to_user(buf + size, values, size))
+-			return -EFAULT;
++		if (copy_to_user(buf + size, values, size)) {
++			ret = -EFAULT;
++			goto unlock;
++		}
  
--	values[n++] = perf_event_read_value(event);
--	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED) {
--		values[n++] = event->total_time_enabled +
--			atomic64_read(&event->child_total_time_enabled);
--	}
--	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING) {
--		values[n++] = event->total_time_running +
--			atomic64_read(&event->child_total_time_running);
--	}
-+	values[n++] = perf_event_read_value(event, &enabled, &running);
-+	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
-+		values[n++] = enabled;
-+	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
-+		values[n++] = running;
- 	if (read_format & PERF_FORMAT_ID)
- 		values[n++] = primary_event_id(event);
+ 		ret += size;
+ 	}
++unlock:
++	mutex_unlock(&ctx->mutex);
  
+ 	return ret;
+ }
+@@ -1884,12 +1892,10 @@ perf_read_hw(struct perf_event *event, char __user *buf, size_t count)
+ 		return -ENOSPC;
+ 
+ 	WARN_ON_ONCE(event->ctx->parent_ctx);
+-	mutex_lock(&event->child_mutex);
+ 	if (read_format & PERF_FORMAT_GROUP)
+ 		ret = perf_event_read_group(event, read_format, buf);
+ 	else
+ 		ret = perf_event_read_one(event, read_format, buf);
+-	mutex_unlock(&event->child_mutex);
+ 
+ 	return ret;
+ }
