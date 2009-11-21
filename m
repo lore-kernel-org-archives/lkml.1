@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbZKUVVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbZKUVdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756462AbZKUVVJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 16:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZKUVVI
+	id S1756813AbZKUVdN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 16:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbZKUVdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 16:21:08 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:54607 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbZKUVVH convert rfc822-to-8bit (ORCPT
+	Sat, 21 Nov 2009 16:33:13 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46034 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754806AbZKUVdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 16:21:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=LxezbRNyOyG4gQ9ZKWRLSX9XrpJcdR8jI39L6EKoPM9Lutk8R/dthuHxR5ed7RMw7J
-         YRHgQzkuf+IzlUtexVlvwmVMFjloy+N85GmKD32sQJCYZUPi8VsWpMwQ3iqXAZ4gu5Y+
-         mMUQE3v8WP4RW7UavO7lGLpn216U3BR69QB4Y=
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0911211252180.23681@ask.diku.dk>
-References: <Pine.LNX.4.64.0911211252180.23681@ask.diku.dk>
-Date: Sat, 21 Nov 2009 14:21:12 -0700
-X-Google-Sender-Auth: 541fe61987796e84
-Message-ID: <e9c3a7c20911211321x4f87f616ya6bf7561ff5748f@mail.gmail.com>
-Subject: Re: [PATCH 7/8] drivers/dma: introduce missing kfree
-From: Dan Williams <dan.j.williams@intel.com>
+	Sat, 21 Nov 2009 16:33:12 -0500
+References: <Pine.LNX.4.64.0911212218210.28848@ask.diku.dk> (sfid-20091121_211852_064475_1FE64446)
+Message-Id: <542581F2-4F09-4771-B8C6-D81DC890ABC9@opensource.wolfsonmicro.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Julia Lawall <julia@diku.dk>
-Cc: maciej.sosnowski@intel.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org,
-       Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <Pine.LNX.4.64.0911212218210.28848@ask.diku.dk> (sfid-20091121_211852_064475_1FE64446)
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (7D11)
+Mime-Version: 1.0 (iPhone Mail 7D11)
+Subject: Re: [PATCH] drivers/regulator: use PTR_ERR to get error code
+Date: Sat, 21 Nov 2009 21:33:25 +0000
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 4:52 AM, Julia Lawall <julia@diku.dk> wrote:
+On 21 Nov 2009, at 21:18, Julia Lawall <julia@diku.dk> wrote:
+
 > From: Julia Lawall <julia@diku.dk>
 >
-> Error handling code following a kzalloc should free the allocated data.
+> IS_ERR returns only 1 or 0.  The callsite of setup_regulators  
+> expects a
+> negative integer in an error case.  Thus, PTR_ERR has to be used to  
+> extract
+> it.
 >
+> The semantic match that finds this problem is as follows:
+> (http://coccinelle.lip6.fr/)
+>
+> // <smpl>
+> @@
+> expression E,E1;
+> @@
+>
+> *E = IS_ERR(...)
+> ... when != E = E1
+> *return E;
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Yes, but there is another buglet here:
+Acked-by: <broonie@opensource.wolfsonmicro.com>
 
->        /* get platform data */
->        if (!pdev->dev.platform_data)
-> -               goto shdev_err;
-> +               goto platform_err;
-
-"err" is still zero at this point so the probe does not fail.
-
-How about the following instead?
-
-diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
-index b3b065c..034ecf0 100644
---- a/drivers/dma/shdma.c
-+++ b/drivers/dma/shdma.c
-@@ -640,17 +640,16 @@ static int __init sh_dmae_probe(struct
-platform_device *pdev)
- #endif
-        struct sh_dmae_device *shdev;
-
-+       /* get platform data */
-+       if (!pdev->dev.platform_data)
-+               return -ENODEV;
-+
-        shdev = kzalloc(sizeof(struct sh_dmae_device), GFP_KERNEL);
-        if (!shdev) {
-                dev_err(&pdev->dev, "No enough memory\n");
--               err = -ENOMEM;
--               goto shdev_err;
-+               return -ENOMEM;
-        }
-
--       /* get platform data */
--       if (!pdev->dev.platform_data)
--               goto shdev_err;
--
-        /* platform data */
-        memcpy(&shdev->pdata, pdev->dev.platform_data,
-                        sizeof(struct sh_dmae_pdata));
-@@ -722,7 +721,6 @@ eirq_err:
- rst_err:
-        kfree(shdev);
-
--shdev_err:
-        return err;
- }
+>
+> ---
+> drivers/regulator/lp3971.c          |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/regulator/lp3971.c b/drivers/regulator/lp3971.c
+> index 7803a32..76d08c2 100644
+> --- a/drivers/regulator/lp3971.c
+> +++ b/drivers/regulator/lp3971.c
+> @@ -446,8 +446,8 @@ static int setup_regulators(struct lp3971 *lp3971,
+>        lp3971->rdev[i] = regulator_register(&regulators[id],
+>            lp3971->dev, pdata->regulators[i].initdata, lp3971);
+>
+> -        err = IS_ERR(lp3971->rdev[i]);
+> -        if (err) {
+> +        if (IS_ERR(lp3971->rdev[i])) {
+> +            err = PTR_ERR(lp3971->rdev[i]);
+>            dev_err(lp3971->dev, "regulator init failed: %d\n",
+>                err);
+>            goto error;
