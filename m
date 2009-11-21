@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZKUPIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZKUPJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbZKUPIo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbZKUPIn
+	id S1755616AbZKUPJB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:09:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZKUPIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:08:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58709 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755438AbZKUPIl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 21 Nov 2009 10:08:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58707 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755537AbZKUPIj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 10:08:39 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Gautham R Shenoy" <ego@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
 References: <pohDdrcORVG.A.U2B.-6_BLB@chimera>
 In-Reply-To: <pohDdrcORVG.A.U2B.-6_BLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <l2_yP_tdgYK.A.GlC.P7_BLB@chimera>
-Subject: [Bug #14621] specjbb2005 and aim7 regression with 2.6.32-rc kernels
+Message-ID: <l2_yP_tdgYK.A.OpC.W7_BLB@chimera>
+Subject: [Bug #14597] thinkpad-acpi: driver fails to load on old BIOS for the A31, T23-T30, X30-X31
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 21 Nov 2009 15:51:30 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,10 +35,11 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14621
-Subject		: specjbb2005 and aim7 regression with 2.6.32-rc kernels
-Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Date		: 2009-11-06 7:38 (16 days old)
-References	: http://marc.info/?l=linux-kernel&m=125749310413174&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14597
+Subject		: thinkpad-acpi: driver fails to load on old BIOS for the A31, T23-T30, X30-X31
+Submitter	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Date		: 2009-11-13 20:45 (9 days old)
+Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=23770
 
 
