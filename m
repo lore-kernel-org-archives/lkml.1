@@ -1,151 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZKUPnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZKUPvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbZKUPnh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZKUPng
+	id S1755710AbZKUPvo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZKUPvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:43:36 -0500
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:53491 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754369AbZKUPng (ORCPT
+	Sat, 21 Nov 2009 10:51:43 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57392 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754366AbZKUPvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 10:43:36 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAJOVB0tGGN1W/2dsb2JhbACBTdIPhDwEgXA
-Date: Sat, 21 Nov 2009 10:38:40 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
-       rth@redhat.com
-Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump
-	patching without stop_machine
-Message-ID: <20091121153840.GB12100@Krystal>
-References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <20091119002826.GB28962@Krystal> <4B073E59.2000808@redhat.com>
-Mime-Version: 1.0
+	Sat, 21 Nov 2009 10:51:42 -0500
+Date: Sat, 21 Nov 2009 15:51:35 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Julia Lawall <julia@diku.dk>
+Cc: walter harms <wharms@bfs.de>, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/8] drivers/pcmcia: remove unnecessary kzalloc
+Message-ID: <20091121155135.GB13956@n2100.arm.linux.org.uk>
+References: <Pine.LNX.4.64.0911211250090.23681@ask.diku.dk> <4B07E0CB.6000508@bfs.de> <Pine.LNX.4.64.0911211611510.26930@ask.diku.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4B073E59.2000808@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:37:37 up 95 days,  2:27,  3 users,  load average: 0.31, 0.30,
-	0.20
+In-Reply-To: <Pine.LNX.4.64.0911211611510.26930@ask.diku.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
->> * Jason Baron (jbaron@redhat.com) wrote:
->>> Add text_poke_fixup() which takes a fixup address to where a processor
->>> jumps if it hits the modifying address while code modifying.
->>> text_poke_fixup() does following steps for this purpose.
->>>
->>>   1. Setup int3 handler for fixup.
->>>   2. Put a breakpoint (int3) on the first byte of modifying region,
->>>      and synchronize code on all CPUs.
->>>   3. Modify other bytes of modifying region, and synchronize code on all CPUs.
->>>   4. Modify the first byte of modifying region, and synchronize code
->>>      on all CPUs.
->>>   5. Clear int3 handler.
->>>
->>
->> Hi Masami,
->>
->> I like the approach and the API is clean. I have intersped comments
->> below.
->>
->> Ingo: I raise a question about text_mutex vs on_each_cpu hangs I
->> experienced recently in the message below. Might be worth having a look,
->> I suspect this might have caused the hangs Paul McKenney had with his
->> past TREE RCU callback migration. I think he did take a mutex in the cpu
->> hotplug callbacks and might have used IPIs within that same lock.
->
-> Hi Mathieu,
->
-> I guess that the hang might happen as below;
->
-> ----
-> lock text_mutex
-> modify code
-> on_each_cpu(do_something)
->                               cpu-hotplug (down)
->                               lock cpu-hotplug mutex
->                               online_cpus is changed
->                               native_cpu_die()
->                               ->alternatives_smp_switch(0)
->                                 ->lock text_mutex -> sleep
-> (wait for offlined cpu...)
-> ----
->
-> If this is correct, I think we can fix it as below.
->
-> ----
-> lock cpu-hotplug mutex
+On Sat, Nov 21, 2009 at 04:12:59PM +0100, Julia Lawall wrote:
+> On Sat, 21 Nov 2009, walter harms wrote:
+> 
+> > 
+> > 
+> > Julia Lawall schrieb:
+> > > From: Julia Lawall <julia@diku.dk>
+> > > 
+> > > The result of calling kzalloc is never used or freed.
+> > > 
+> > > The semantic match that finds this problem is as follows:
+> > > (http://www.emn.fr/x-info/coccinelle/)
+> > > 
+> > > // <smpl>
+> > > @r exists@
+> > > local idexpression x;
+> > > statement S;
+> > > expression E;
+> > > identifier f,f1,l;
+> > > position p1,p2;
+> > > expression *ptr != NULL;
+> > > @@
+> > > 
+> > > x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> > > ...
+> > > if (x == NULL) S
+> > > <... when != x
+> > >      when != if (...) { <+...x...+> }
+> > > (
+> > > x->f1 = E
+> > > |
+> > >  (x->f1 == NULL || ...)
+> > > |
+> > >  f(...,x->f1,...)
+> > > )
+> > > ...>
+> > > (
+> > >  return \(0\|<+...x...+>\|ptr\);
+> > > |
+> > >  return@p2 ...;
+> > > )
+> > > 
+> > > @script:python@
+> > > p1 << r.p1;
+> > > p2 << r.p2;
+> > > @@
+> > > 
+> > > print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+> > > // </smpl>
+> > > 
+> > > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > > ---
+> > >  drivers/pcmcia/sa1111_generic.c     |    4 ----
+> > >  1 files changed, 0 insertions(+), 4 deletions(-)
+> > > 
+> > > diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
+> > > index deb5036..de6bc33 100644
+> > > --- a/drivers/pcmcia/sa1111_generic.c
+> > > +++ b/drivers/pcmcia/sa1111_generic.c
+> > > @@ -127,10 +127,6 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
+> > >  	ops->socket_state = sa1111_pcmcia_socket_state;
+> > >  	ops->socket_suspend = sa1111_pcmcia_socket_suspend;
+> > >  
+> > > -	s = kzalloc(sizeof(*s) * ops->nr, GFP_KERNEL);
+> > > -	if (!s)
+> > > -		return -ENODEV;
+> > > -
+> > >  	for (i = 0; i < ops->nr; i++) {
+> > >  		s = kzalloc(sizeof(*s), GFP_KERNEL);
+> > >  		if (!s)
+> > 
+> > 
+> > 
+> > mmmh, perhaps the original idea was to have an array
+> > and then he moved to a linked list ?
+> > 
+> > I thing the array idea is better (1. it fails on low mem propperly, 2. no need free()
+> > 3. less zmalloc stuff) but requieres that pcmcia_remove()
+> > will release that array propperly
+> > 
+> > the bug is strange,
+> 
+> Both kzallocs were added at the same time, when the function was added in 
+> commit 701a5dc05ad99a06958b3f97cb69d99b47cebee3.  I have added the author 
+> to the CC list.
 
-Yes, this is the solution I used in my own immediate values code too.
+Thanks for the additional info which allows me to track which patch it
+corresponds with.  As an aside, it's really not nice to git pull and
+then edit the commits afterwards - that's much worse than rebasing.
+When trees are pulled, the act of merging it conveys sufficent "sign-off".
 
-> lock text_mutex
-> modify code
-> on_each_cpu(do_something)
-> unlock text_mutex
-> unlock cpu-hotplug mutex
->                               cpu-hotplug (down)
->                               lock cpu-hotplug mutex
->                               online_cpus is changed
->                               native_cpu_die()
->                               ->alternatives_smp_switch(0)
->                                 ->lock text_mutex
->                                   modify code
->                                   unlock text_mutex
->                               ...
->                               unlock cpu-hotplug mutex
-> ----
-> Or,
-> ----
-> lock text_mutex
-> modify code
-> unlock text_mutex
-> on_each_cpu(do_something)
->                               cpu-hotplug (down)
->                               lock cpu-hotplug mutex
->                               online_cpus is changed
->                               native_cpu_die()
->                               ->alternatives_smp_switch(0)
->                                 ->lock text_mutex
->                                   modify code
->                                   unlock text_mutex
->                               ...
->                               unlock cpu-hotplug mutex
-> ----
-> The latter needs another mutex for int3 handler and
-> frequently mutex_lock/unlock in this patch.
->
-> Hmm?
+Just remove the first kzalloc and don't convert it to an array; that's the
+safest option.  I don't remember if there's a reason why I switched to a
+linked list - however, what I will say is that the way all the sa11xx
+and pxa stuff interact is not plainly obvious.
 
-The simplest solution seems to be the best one IMHO. But have you been
-able to reproduce the lockup ?
-
-Mathieu
-
->
-> Thank you,
->
-> -- 
-> Masami Hiramatsu
->
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
->
-> e-mail: mhiramat@redhat.com
->
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+There may be a corner case I found with the original patches which meant
+a linked list was better than an array.
