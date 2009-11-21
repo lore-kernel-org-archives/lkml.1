@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZKUPRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZKUPRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZKUPRo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZKUPRc
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755660AbZKUPRc (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 21 Nov 2009 10:17:32 -0500
-Received: from proxima.lp0.eu ([81.2.80.65]:39196 "EHLO proxima.lp0.eu"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZKUPRa
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 21 Nov 2009 10:17:30 -0500
+Received: from proxima.lp0.eu ([81.2.80.65]:39198 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754910AbZKUPR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755015AbZKUPR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 21 Nov 2009 10:17:26 -0500
-Message-ID: <4B0803B9.2070700@simon.arlott.org.uk>
-Date: Sat, 21 Nov 2009 15:14:01 +0000
+Message-ID: <4B080423.2080803@simon.arlott.org.uk>
+Date: Sat, 21 Nov 2009 15:15:47 +0000
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 6/8] cxacru: add write-only sysfs attribute for modem configuration
+Subject: [PATCH 7/8] cxacru: remove cxacru-cf.bin loader
 References: <4B08013B.90403@simon.arlott.org.uk>
 In-Reply-To: <4B08013B.90403@simon.arlott.org.uk>
 Content-Type: text/plain; charset=UTF-8
@@ -25,164 +25,180 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The modem can be configured using CM_REQUEST_CARD_DATA_SET,
-although CM_REQUEST_CARD_DATA_GET does not return any data.
+This has never worked properly because wsize passed to
+cxacru_cm() is incorrectly set to the number of values
+instead of the data bytes. The maximum number of values
+that can be set at once is 7 which means the device will
+not get enough data to work with and none of the
+configuration values will be used.
 
-Tested by setting the modulation (0x0a) option.
+At least one existing cxacru-cf.bin file contains invalid
+data which will prevent the modem from syncing properly.
 
-There is a list of parameters in the following archive,
-but the meaning of many of them is not well documented:
-  http://sourceforge.net/project/shownotes.php?release_id=301825
-
-This source also indicates that the highest parameter set
-is 0x4a but this varies by model so an arbitrary limit of
-0x7f has been used (the index is a 32-bit integer).
+Fixing it is likely to break existing systems, and the
+new sysfs interface for setting configuration parameters
+can provide the same functionality. A script is provided
+to convert from the original format.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- Documentation/networking/cxacru.txt |    9 ++++
- drivers/usb/atm/cxacru.c            |   76 ++++++++++++++++++++++++++++++++++-
- 2 files changed, 84 insertions(+), 1 deletions(-)
+ Documentation/networking/00-INDEX     |    2 +
+ Documentation/networking/cxacru-cf.py |   48 +++++++++++++++++++++++++++++++++
+ Documentation/networking/cxacru.txt   |    6 ++++
+ drivers/usb/atm/cxacru.c              |   31 ++-------------------
+ 4 files changed, 59 insertions(+), 28 deletions(-)
+ create mode 100644 Documentation/networking/cxacru-cf.py
 
+diff --git a/Documentation/networking/00-INDEX b/Documentation/networking/00-INDEX
+index 50189bf..fe5c099 100644
+--- a/Documentation/networking/00-INDEX
++++ b/Documentation/networking/00-INDEX
+@@ -32,6 +32,8 @@ cs89x0.txt
+ 	- the Crystal LAN (CS8900/20-based) Ethernet ISA adapter driver
+ cxacru.txt
+ 	- Conexant AccessRunner USB ADSL Modem
++cxacru-cf.py
++	- Conexant AccessRunner USB ADSL Modem configuration file parser
+ de4x5.txt
+ 	- the Digital EtherWORKS DE4?? and DE5?? PCI Ethernet driver
+ decnet.txt
+diff --git a/Documentation/networking/cxacru-cf.py b/Documentation/networking/cxacru-cf.py
+new file mode 100644
+index 0000000..b41d298
+--- /dev/null
++++ b/Documentation/networking/cxacru-cf.py
+@@ -0,0 +1,48 @@
++#!/usr/bin/env python
++# Copyright 2009 Simon Arlott
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License as published by the Free
++# Software Foundation; either version 2 of the License, or (at your option)
++# any later version.
++#
++# This program is distributed in the hope that it will be useful, but WITHOUT
++# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++# more details.
++#
++# You should have received a copy of the GNU General Public License along with
++# this program; if not, write to the Free Software Foundation, Inc., 59
++# Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++#
++# Usage: cxacru-cf.py < cxacru-cf.bin
++# Output: values string suitable for the sysfs adsl_config attribute
++#
++# Warning: cxacru-cf.bin with MD5 hash cdbac2689969d5ed5d4850f117702110
++# contains mis-aligned values which will stop the modem from being able
++# to make a connection. If the first and last two bytes are removed then
++# the values become valid, but the modulation will be forced to ANSI
++# T1.413 only which may not be appropriate.
++#
++# The original binary format is a packed list of le32 values.
++
++import sys
++import struct
++
++i = 0
++while True:
++	buf = sys.stdin.read(4)
++
++	if len(buf) == 0:
++		break
++	elif len(buf) != 4:
++		sys.stdout.write("\n")
++		sys.stderr.write("Error: read {0} not 4 bytes\n".format(len(buf)))
++		sys.exit(1)
++
++	if i > 0:
++		sys.stdout.write(" ")
++	sys.stdout.write("{0:x}={1}".format(i, struct.unpack("<I", buf)[0]))
++	i += 1
++
++sys.stdout.write("\n")
 diff --git a/Documentation/networking/cxacru.txt b/Documentation/networking/cxacru.txt
-index 3532cee..f4fbf4c 100644
+index f4fbf4c..2cce044 100644
 --- a/Documentation/networking/cxacru.txt
 +++ b/Documentation/networking/cxacru.txt
-@@ -15,6 +15,15 @@ several sysfs attribute files for retrieving device statistics:
- * adsl_headend_environment
- 	Information about the remote headend.
+@@ -4,6 +4,12 @@ While it is capable of managing/maintaining the ADSL connection without the
+ module loaded, the device will sometimes stop responding after unloading the
+ driver and it is necessary to unplug/remove power to the device to fix this.
  
-+* adsl_config
-+	Configuration writing interface.
-+	Write parameters in hexadecimal format <index>=<value>,
-+	separated by whitespace, e.g.:
-+		"1=0 a=5"
-+	Up to 7 parameters at a time will be sent and the modem will restart
-+	the ADSL connection when any value is set. These are logged for future
-+	reference.
++Note: support for cxacru-cf.bin has been removed. It was not loaded correctly
++so it had no effect on the device configuration. Fixing it could have stopped
++existing devices working when an invalid configuration is supplied.
 +
- * downstream_attenuation (dB)
- * downstream_bits_per_frame
- * downstream_rate (kbps)
++There is a script cxacru-cf.py to convert an existing file to the sysfs form.
++
+ Detected devices will appear as ATM devices named "cxacru". In /sys/class/atm/
+ these are directories named cxacruN where N is the device number. A symlink
+ named device points to the USB interface device's directory which contains
 diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index c6ec10e..4168574 100644
+index 4168574..7bd7d39 100644
 --- a/drivers/usb/atm/cxacru.c
 +++ b/drivers/usb/atm/cxacru.c
-@@ -52,6 +52,7 @@ static const char cxacru_driver_name[] = "cxacru";
- #define CXACRU_EP_DATA		0x02	/* Bulk in/out */
+@@ -977,11 +977,9 @@ cleanup:
  
- #define CMD_PACKET_SIZE		64	/* Should be maxpacket(ep)? */
-+#define CMD_MAX_CONFIG		((CMD_PACKET_SIZE / 4 - 1) / 2)
- 
- /* Addresses */
- #define PLLFCLK_ADDR	0x00350068
-@@ -216,6 +217,10 @@ static DEVICE_ATTR(_name, S_IRUGO, cxacru_sysfs_show_##_name, NULL)
- static DEVICE_ATTR(_name, S_IWUSR | S_IRUGO, \
- 	cxacru_sysfs_show_##_name, cxacru_sysfs_store_##_name)
- 
-+#define CXACRU_SET_INIT(_name) \
-+static DEVICE_ATTR(_name, S_IWUSR, \
-+	NULL, cxacru_sysfs_store_##_name)
-+
- #define CXACRU_ATTR_INIT(_value, _type, _name) \
- static ssize_t cxacru_sysfs_show_##_name(struct device *dev, \
- 	struct device_attribute *attr, char *buf) \
-@@ -232,10 +237,12 @@ CXACRU__ATTR_INIT(_name)
- 
- #define CXACRU_ATTR_CREATE(_v, _t, _name) CXACRU_DEVICE_CREATE_FILE(_name)
- #define CXACRU_CMD_CREATE(_name)          CXACRU_DEVICE_CREATE_FILE(_name)
-+#define CXACRU_SET_CREATE(_name)          CXACRU_DEVICE_CREATE_FILE(_name)
- #define CXACRU__ATTR_CREATE(_name)        CXACRU_DEVICE_CREATE_FILE(_name)
- 
- #define CXACRU_ATTR_REMOVE(_v, _t, _name) CXACRU_DEVICE_REMOVE_FILE(_name)
- #define CXACRU_CMD_REMOVE(_name)          CXACRU_DEVICE_REMOVE_FILE(_name)
-+#define CXACRU_SET_REMOVE(_name)          CXACRU_DEVICE_REMOVE_FILE(_name)
- #define CXACRU__ATTR_REMOVE(_name)        CXACRU_DEVICE_REMOVE_FILE(_name)
- 
- static ssize_t cxacru_sysfs_showattr_u32(u32 value, char *buf)
-@@ -437,6 +444,72 @@ static ssize_t cxacru_sysfs_store_adsl_state(struct device *dev,
- 	return ret;
+ static void cxacru_upload_firmware(struct cxacru_data *instance,
+ 				   const struct firmware *fw,
+-				   const struct firmware *bp,
+-				   const struct firmware *cf)
++				   const struct firmware *bp)
+ {
+ 	int ret;
+-	int off;
+ 	struct usbatm_data *usbatm = instance->usbatm;
+ 	struct usb_device *usb_dev = usbatm->usb_dev;
+ 	__le16 signature[] = { usb_dev->descriptor.idVendor,
+@@ -1065,24 +1063,6 @@ static void cxacru_upload_firmware(struct cxacru_data *instance,
+ 		usb_err(usbatm, "modem failed to initialize: %d\n", ret);
+ 		return;
+ 	}
+-
+-	/* Load config data (le32), doing one packet at a time */
+-	if (cf)
+-		for (off = 0; off < cf->size / 4; ) {
+-			__le32 buf[CMD_PACKET_SIZE / 4 - 1];
+-			int i, len = min_t(int, cf->size / 4 - off, CMD_PACKET_SIZE / 4 / 2 - 1);
+-			buf[0] = cpu_to_le32(len);
+-			for (i = 0; i < len; i++, off++) {
+-				buf[i * 2 + 1] = cpu_to_le32(off);
+-				memcpy(buf + i * 2 + 2, cf->data + off * 4, 4);
+-			}
+-			ret = cxacru_cm(instance, CM_REQUEST_CARD_DATA_SET,
+-					(u8 *) buf, len, NULL, 0);
+-			if (ret < 0) {
+-				usb_err(usbatm, "load config data failed: %d\n", ret);
+-				return;
+-			}
+-		}
  }
  
-+/* CM_REQUEST_CARD_DATA_GET times out, so no show attribute */
-+
-+static ssize_t cxacru_sysfs_store_adsl_config(struct device *dev,
-+	struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	struct cxacru_data *instance = to_usbatm_driver_data(
-+			to_usb_interface(dev));
-+	int len = strlen(buf);
-+	int ret, pos, num;
-+	__le32 data[CMD_PACKET_SIZE / 4];
-+
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EACCES;
-+
-+	if (instance == NULL)
-+		return -ENODEV;
-+
-+	pos = 0;
-+	num = 0;
-+	while (pos < len) {
-+		int tmp;
-+		u32 index;
-+		u32 value;
-+
-+		ret = sscanf(buf + pos, "%x=%x%n", &index, &value, &tmp);
-+		if (ret < 2)
-+			return -EINVAL;
-+		if (index < 0 || index > 0x7f)
-+			return -EINVAL;
-+		pos += tmp;
-+
-+		/* skip trailing newline */
-+		if (buf[pos] == '\n' && pos == len-1)
-+			pos++;
-+
-+		data[num * 2 + 1] = cpu_to_le32(index);
-+		data[num * 2 + 2] = cpu_to_le32(value);
-+		num++;
-+
-+		/* send config values when data buffer is full
-+		 * or no more data
-+		 */
-+		if (pos >= len || num >= CMD_MAX_CONFIG) {
-+			char log[CMD_MAX_CONFIG * 12 + 1]; /* %02x=%08x */
-+
-+			data[0] = cpu_to_le32(num);
-+			ret = cxacru_cm(instance, CM_REQUEST_CARD_DATA_SET,
-+				(u8 *) data, 4 + num * 8, NULL, 0);
-+			if (ret < 0) {
-+				atm_err(instance->usbatm,
-+					"set card data returned %d\n", ret);
-+				return -EIO;
-+			}
-+
-+			for (tmp = 0; tmp < num; tmp++)
-+				snprintf(log + tmp*12, 13, " %02x=%08x",
-+					le32_to_cpu(data[tmp * 2 + 1]),
-+					le32_to_cpu(data[tmp * 2 + 2]));
-+			atm_info(instance->usbatm, "config%s\n", log);
-+			num = 0;
-+		}
-+	}
-+
-+	return len;
-+}
-+
- /*
-  * All device attributes are included in CXACRU_ALL_FILES
-  * so that the same list can be used multiple times:
-@@ -472,7 +545,8 @@ CXACRU_ATTR_##_action(CXINF_MODULATION,                MODU, modulation); \
- CXACRU_ATTR_##_action(CXINF_ADSL_HEADEND,              u32,  adsl_headend); \
- CXACRU_ATTR_##_action(CXINF_ADSL_HEADEND_ENVIRONMENT,  u32,  adsl_headend_environment); \
- CXACRU_ATTR_##_action(CXINF_CONTROLLER_VERSION,        u32,  adsl_controller_version); \
--CXACRU_CMD_##_action(                                        adsl_state);
-+CXACRU_CMD_##_action(                                        adsl_state); \
-+CXACRU_SET_##_action(                                        adsl_config);
+ static int cxacru_find_firmware(struct cxacru_data *instance,
+@@ -1108,7 +1088,7 @@ static int cxacru_find_firmware(struct cxacru_data *instance,
+ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
+ 			     struct usb_interface *usb_intf)
+ {
+-	const struct firmware *fw, *bp, *cf;
++	const struct firmware *fw, *bp;
+ 	struct cxacru_data *instance = usbatm_instance->driver_data;
  
- CXACRU_ALL_FILES(INIT);
+ 	int ret = cxacru_find_firmware(instance, "fw", &fw);
+@@ -1126,13 +1106,8 @@ static int cxacru_heavy_init(struct usbatm_data *usbatm_instance,
+ 		}
+ 	}
  
+-	if (cxacru_find_firmware(instance, "cf", &cf))		/* optional */
+-		cf = NULL;
+-
+-	cxacru_upload_firmware(instance, fw, bp, cf);
++	cxacru_upload_firmware(instance, fw, bp);
+ 
+-	if (cf)
+-		release_firmware(cf);
+ 	if (instance->modem_type->boot_rom_patch)
+ 		release_firmware(bp);
+ 	release_firmware(fw);
 -- 
 1.6.3.3
 
