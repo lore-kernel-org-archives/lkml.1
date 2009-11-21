@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZKUQfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZKUQqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539AbZKUQfI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 11:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZKUQfH
+	id S1755733AbZKUQqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 11:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZKUQqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 11:35:07 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45006 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753019AbZKUQfG (ORCPT
+	Sat, 21 Nov 2009 11:46:19 -0500
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:51624 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbZKUQqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 11:35:06 -0500
-Date: Sat, 21 Nov 2009 14:35:04 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/3] perf symbols: fixup kernel_maps__fixup_end end map
-Message-ID: <20091121163504.GI18283@ghostprotocols.net>
-References: <1258821086-11521-1-git-send-email-acme@infradead.org>
+	Sat, 21 Nov 2009 11:46:18 -0500
+Message-ID: <4B081954.5020907@freemail.hu>
+Date: Sat, 21 Nov 2009 17:46:12 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258821086-11521-1-git-send-email-acme@infradead.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4L Mailing List <linux-media@vger.kernel.org>
+CC: cocci@diku.dk, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] dvb ttusb-dec: do not overwrite the first part of phys string
+References: <4B079CE0.60604@freemail.hu>
+In-Reply-To: <4B079CE0.60604@freemail.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32711; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sat, Nov 21, 2009 at 02:31:24PM -0200, Arnaldo Carvalho de Melo escreveu:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> We better call this routine after both the kernel and modules are
-> loaded, because as it was if there weren't modules it would be called,
+From: Márton Németh <nm127@freemail.hu>
 
-s/would/would not/g
+Use strlcat() to append a string to the previously created first part.
 
-Ingo, if you see this before merging, please ammend the above comment
-line :)
+The semantic match that finds this kind of problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-> resulting in kernel_map->end remaining at zero, so no map would be found
-> and consequently the kernel symtab wouldn't get loaded, i.e. no kernel
-> symbols would be resolved.
-> 
-> Also this fixes another case, that is when we _have_ modules, but the
-> last map would have its ->end address not set before we loaded its
-> symbols, which would never happen because ->end was not set.
+// <smpl>
+@@
+expression dev;
+expression phys;
+expression str;
+expression size;
+@@
+ 	usb_make_path(dev, phys, size);
+-	strlcpy(phys, str, size);
++	strlcat(phys, str, size);
+// </smpl>
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -u -p a/drivers/media/dvb/ttusb-dec/ttusb_dec.c b/drivers/media/dvb/ttusb-dec/ttusb_dec.c
+--- a/drivers/media/dvb/ttusb-dec/ttusb_dec.c 2009-09-10 00:13:59.000000000 +0200
++++ b/drivers/media/dvb/ttusb-dec/ttusb_dec.c 2009-11-21 17:30:10.000000000 +0100
+@@ -1198,7 +1198,7 @@ static int ttusb_init_rc( struct ttusb_d
+ 	int err;
+
+ 	usb_make_path(dec->udev, dec->rc_phys, sizeof(dec->rc_phys));
+-	strlcpy(dec->rc_phys, "/input0", sizeof(dec->rc_phys));
++	strlcat(dec->rc_phys, "/input0", sizeof(dec->rc_phys));
+
+ 	input_dev = input_allocate_device();
+ 	if (!input_dev)
+
