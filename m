@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZKUQ4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZKURJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZKUQ4e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 11:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZKUQ4d
+	id S1756383AbZKURJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 12:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbZKURJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 11:56:33 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:52492 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755680AbZKUQ4c (ORCPT
+	Sat, 21 Nov 2009 12:09:26 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:54225 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756068AbZKURJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 11:56:32 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH 01/15] Introduce noop_llseek()
-Date: Sat, 21 Nov 2009 17:56:27 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Linux-Kernel Mailinglist" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, jkacur@redhat.com,
-       =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Matthew Wilcox <matthew@wil.cx>
-References: <1258735245-25826-1-git-send-email-jblunck@suse.de> <20091120170547.GF20634@shareable.org> <20091120171107.GZ21750@bolzano.suse.de>
-In-Reply-To: <20091120171107.GZ21750@bolzano.suse.de>
+	Sat, 21 Nov 2009 12:09:26 -0500
+X-Greylist: delayed 388 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Nov 2009 12:09:25 EST
+Message-ID: <4B081D40.9030607@freemail.hu>
+Date: Sat, 21 Nov 2009 18:02:56 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911211756.27596.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18R6QcGGFPthhKKxuFAwjCLk3In/8IQsnXVj57
- xhKGUx/8emoRD7CW/kg33IBGd3/7Bv7F/rqpKGE3XeGpt3YHwB
- 7uhJOCsRfb2R9wt5bvSqg==
+To: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       V4L Mailing List <linux-media@vger.kernel.org>
+CC: cocci@diku.dk, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] usbvideo: limit the length of string creation
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 November 2009, Jan Blunck wrote:
-> On Fri, Nov 20, Jamie Lokier wrote:
-> 
-> > Jan Blunck wrote:
-> > > The noop_llseek() is a llseek() operation that filesystems can use that
-> > > don't want to support seeking (leave the file->f_pos untouched) but still
-> > > want to let the syscall itself to succeed.
-> > 
-> > This is weird behaviour: if you want to allow llseek() to succeed but
-> > don't really support seeking, why does the device even care about the
-> > value of file->f_pos?
-> 
-> The device itself does not care about it but it is userspace that is expecting
-> the seek to succeed. There is a comment in osst that at least there seems to
-> be a borken version of tar that wants to seek on the device even it that does
-> not have any effect.
+From: Márton Németh <nm127@freemail.hu>
 
-Looking at the question from the other side -- if the device and the user
-don't care about file->f_pos, what's wrong with calling generic_file_llseek
-instead of noop_llseek?
+Use strlcat() to append a string to the previously created first part.
+The strlcat() function limits the size of the string to the whole
+destination buffer.
 
-	Arnd <><
+The semantic match that finds this kind of problem is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression dev;
+expression phys;
+expression str;
+expression size;
+@@
+ 	usb_make_path(dev, phys, size);
+-	strncat(phys, str, size);
++	strlcat(phys, str, size);
+// </smpl>
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -u -p a/drivers/media/video/usbvideo/konicawc.c b/drivers/media/video/usbvideo/konicawc.c
+--- a/drivers/media/video/usbvideo/konicawc.c 2009-09-10 00:13:59.000000000 +0200
++++ b/drivers/media/video/usbvideo/konicawc.c 2009-11-21 17:48:52.000000000 +0100
+@@ -225,7 +225,7 @@ static void konicawc_register_input(stru
+ 	int error;
+
+ 	usb_make_path(dev, cam->input_physname, sizeof(cam->input_physname));
+-	strncat(cam->input_physname, "/input0", sizeof(cam->input_physname));
++	strlcat(cam->input_physname, "/input0", sizeof(cam->input_physname));
+
+ 	cam->input = input_dev = input_allocate_device();
+ 	if (!input_dev) {
+diff -u -p a/drivers/media/video/usbvideo/quickcam_messenger.c b/drivers/media/video/usbvideo/quickcam_messenger.c
+--- a/drivers/media/video/usbvideo/quickcam_messenger.c 2009-09-10 00:13:59.000000000 +0200
++++ b/drivers/media/video/usbvideo/quickcam_messenger.c 2009-11-21 17:48:53.000000000 +0100
+@@ -89,7 +89,7 @@ static void qcm_register_input(struct qc
+ 	int error;
+
+ 	usb_make_path(dev, cam->input_physname, sizeof(cam->input_physname));
+-	strncat(cam->input_physname, "/input0", sizeof(cam->input_physname));
++	strlcat(cam->input_physname, "/input0", sizeof(cam->input_physname));
+
+ 	cam->input = input_dev = input_allocate_device();
+ 	if (!input_dev) {
