@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZKUAZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZKUA2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZKUAZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 19:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZKUAZp
+	id S1753934AbZKUA2P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 19:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZKUA2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 19:25:45 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:40255 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753336AbZKUAZo (ORCPT
+	Fri, 20 Nov 2009 19:28:15 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53284 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbZKUA2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 19:25:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=GhDktAJM5MrTIXS+fubP+SaOq44wh5Kh3wRnj+OXHO7yS3NHPB8p8cW7AhSNG/FfNj
-         5VcsYfCzKJGIvYdzqVoYCCmI6ImQu9HOiXzfoU+aIrJC/6gYEVWUM0dQEvF6hwA3IBsd
-         eh4o+icrdRJ0bmapR5Ob9MBoj3tZG/1xKJnHg=
-Subject: XD/smartmedia - how to implement it right?
-From: Maxim Levitsky <slevmax@t2.technion.ac.il>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alex Dubov <oakad@yahoo.com>, arnd@arndb.de, joern@logfs.org,
-       tglx@linutonix.de
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 21 Nov 2009 02:25:44 +0200
-Message-ID: <1258763144.4997.12.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Nov 2009 19:28:14 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 21 Nov 2009 01:26:56 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 0/6] DVB: firedtv: simplifications and a portability fix
+To: linux-media@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
+Message-ID: <tkrat.b94d6be3d9a0bad9@s5r6.in-berlin.de>
+References: <tkrat.7dc1f889fd1b69ad@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 18 Nov, Stefan Richter wrote:
+> The following three patches are applicable after "firedtv: port to new
+> firewire core" from 2009-11-08:
+...
+> The rest of this patch set additionally requires the latest firedtv as
+> of 2.6.32-rc7:
+...
 
-This thread is meant to continue discussion about XD/smartmedia support
-in linux.
+I updated the "firedtv" branch at
 
-I CC'd few peoples that participated in original discussion.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git firedtv
 
-Alex Dubov attempted to write a driver for jmicron device (I have it
-btw), but this was rejected due to code duplication.
+now (based on v2.6.31 but having a merge from v2.6.32-rc8 in it due to
+above mentioned requirement).
 
-I successfully reverse engineered (in my free time) the XD card reader
-found on my laptop (ricoh based one)
+Mauro, please harvest the posted 4 + 6 patches from the mailing list, or
+pull or cherry-pick them from linux1394-2.6.git firedtv.  Thanks.
 
-I would like to know how you think to implement the subsystem support
-right.
+Stefan Richter (11):
+      firedtv: move remote control workqueue handling into rc source file
+      firedtv: reform lock transaction backend call
+      firedtv: add missing include, rename a constant
+      firedtv: port to new firewire core
+      firedtv: shrink buffer pointer table
+      firedtv: packet requeuing is likely to succeed
+      firedtv: remove an unnecessary function argument
+      Merge tag 'v2.6.32-rc8' into firedtv
+      firedtv: do not DMA-map stack addresses
+      firedtv: remove check for interrupting signal
+      firedtv: reduce memset()s
 
-I would go with mmc subsystem + FTL, but according to original thread,
-there are numerous problems with this approach.
-
-Any advice is appreciated.
-
-Best regards,
-Maxim Levitsky
+ drivers/media/dvb/firewire/Kconfig        |    7 +-
+ drivers/media/dvb/firewire/Makefile       |    1 +
+ drivers/media/dvb/firewire/firedtv-1394.c |   42 +-
+ drivers/media/dvb/firewire/firedtv-avc.c  |  566 +++++++++++----------
+ drivers/media/dvb/firewire/firedtv-dvb.c  |   16 +-
+ drivers/media/dvb/firewire/firedtv-fw.c   |  376 ++++++++++++++
+ drivers/media/dvb/firewire/firedtv-rc.c   |    2 +
+ drivers/media/dvb/firewire/firedtv.h      |   23 +-
+ 8 files changed, 746 insertions(+), 287 deletions(-)
+-- 
+Stefan Richter
+-=====-==--= =-== =-=-=
+http://arcgraph.de/sr/
 
