@@ -1,110 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbZKUWKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZKUWXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbZKUWKe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 17:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZKUWKd
+	id S1756943AbZKUWXV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 17:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbZKUWXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 17:10:33 -0500
-Received: from mail02d.mail.t-online.hu ([84.2.42.7]:64188 "EHLO
-	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756875AbZKUWKX (ORCPT
+	Sat, 21 Nov 2009 17:23:20 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:48099 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756857AbZKUWXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 17:10:23 -0500
-X-Authuid: nmarci
-Message-ID: <4B08654E.1050609@freemail.hu>
-Date: Sat, 21 Nov 2009 23:10:22 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 21 Nov 2009 17:23:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:reply-to:mime-version:content-type
+         :content-disposition:user-agent;
+        b=nB+JqGvmv9ekjN+WR/low20T75/sQB8mjGYrte43kAwqNyd0FhCVhAzU3kkZpATj/y
+         8WF2ov29KujiZa2+AQtc/5Y5+6/pj4Ml0g/3DfanQpJfu8kYhM3sa9U/2K5dzhoAKB6d
+         CX4DCSoBdfq/gCrBkvZkTWs0Ke+uXhWPt9yTo=
+Date: Sun, 22 Nov 2009 09:23:19 +1100
+From: Robert Swan <swan.r.l@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [bisected] pty performance problem
+Message-ID: <20091121222319.GA3905@swanrl.gmail.com>
+Reply-To: swan.r.l@gmail.com
 MIME-Version: 1.0
-To: Jaya Kumar <jayakumar.alsa@gmail.com>
-CC: cocci@diku.dk, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] cs5535audio: remove redundant zero fill
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02d.mail.t-online.hu 32711; Body=3 Fuz1=3
-	Fuz2=3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+I posted this to the kernel-newbies list, but have graduated to the
+adults forum:
 
-The buffer is first zeroed out by memset(). Then strncpy() is used to
-fill the content. The strncpy() function also pads the string till the
-end of the specified length, which is redundant. The strncpy() does not
-ensures that the string will be properly closed with 0. Use strlcpy()
-instead.
+! Two C programs are having a query-response conversation through a
+! pseudo terminal:
+! 
+! A (client) -- forever { send query; read response }
+! B (server) -- forever { read query; send response }
+! 
+! Neither has any I/O apart from the pty conversation, so I'd expect to
+! see CPU usage at 100%. When I ran it, the CPU was pretty well idle.
+! After a fair bit of fiddling, it turned out that both sides were
+! taking about 8ms for their read() calls. At that point it seemed
+! pretty clear that this was a delay in the kernel, not the code.
+! 
+[snip]
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
+2.6.31-rc2-00205-gb4b21ca good
+2.6.31-rc2-00206-gd945cb9 bad
 
-// <smpl>
-@@
-expression buffer;
-expression size;
-expression str;
-@@
-	memset(buffer, 0, size);
-	...
--	strncpy(
-+	strlcpy(
-	buffer, str, sizeof(buffer)
-	);
-@@
-expression buffer;
-expression size;
-expression str;
-@@
-	memset(&buffer, 0, size);
-	...
--	strncpy(
-+	strlcpy(
-	&buffer, str, sizeof(buffer));
-@@
-expression buffer;
-identifier field;
-expression size;
-expression str;
-@@
-	memset(buffer, 0, size);
-	...
--	strncpy(
-+	strlcpy(
-	buffer->field, str, sizeof(buffer->field)
-	);
-@@
-expression buffer;
-identifier field;
-expression size;
-expression str;
-@@
-	memset(&buffer, 0, size);
-	...
--	strncpy(
-+	strlcpy(
-	buffer.field, str, sizeof(buffer.field));
-// </smpl>
+and still bad with the latest: 2.6.32-rc8-00011-ga8a8a66
 
-On strncpy() vs strlcpy() see http://www.gratisoft.us/todd/papers/strlcpy.html .
+the git log says:
+! commit d945cb9cce20ac7143c2de8d88b187f62db99bdc
+! Author: Alan Cox <alan@linux.intel.com>
+! Date:   Tue Jul 7 16:39:41 2009 +0100
+! 
+!     pty: Rework the pty layer to use the normal buffering logic
+!     
+!     This fixes the ppp problems and various other issues with call locking
+!     caused by one side of a pty called in one locking context trying to match
+!     another with differing rules on the other side. We also get a big slack
+!     space to work with that means we can bury the flow control deadlock case
+!     for any conceivable real world situation.
+!     
+!     Signed-off-by: Alan Cox <alan@linux.intel.com>
+!     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -u -p a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
---- a/sound/pci/cs5535audio/cs5535audio_olpc.c 2009-09-10 00:13:59.000000000 +0200
-+++ b/sound/pci/cs5535audio/cs5535audio_olpc.c 2009-11-21 22:18:57.000000000 +0100
-@@ -156,13 +156,13 @@ int __devinit olpc_quirks(struct snd_car
- 	/* drop the original AD1888 HPF control */
- 	memset(&elem, 0, sizeof(elem));
- 	elem.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
--	strncpy(elem.name, "High Pass Filter Enable", sizeof(elem.name));
-+	strlcpy(elem.name, "High Pass Filter Enable", sizeof(elem.name));
- 	snd_ctl_remove_id(card, &elem);
+I can provide reasonably stripped down code which demonstrates the
+problem.  It has been reproduced by one other person, though his delay
+was about 2ms.
 
- 	/* drop the original V_REFOUT control */
- 	memset(&elem, 0, sizeof(elem));
- 	elem.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
--	strncpy(elem.name, "V_REFOUT Enable", sizeof(elem.name));
-+	strlcpy(elem.name, "V_REFOUT Enable", sizeof(elem.name));
- 	snd_ctl_remove_id(card, &elem);
+Have fun,
 
- 	/* add the OLPC-specific controls */
+Rob.
