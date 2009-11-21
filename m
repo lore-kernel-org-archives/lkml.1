@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbZKUUrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbZKUU6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbZKUUrb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 15:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZKUUra
+	id S1753533AbZKUU6k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 15:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZKUU6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 15:47:30 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:59512 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbZKUUr3 (ORCPT
+	Sat, 21 Nov 2009 15:58:39 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:55078 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752508AbZKUU6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 15:47:29 -0500
+	Sat, 21 Nov 2009 15:58:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Hy6STpMZsod43d0+orR1DbSVSMFytaxqtr8juJgvJK4CNzfCf/gCYLqMcvtyx83WVF
-         CcP1BVjj7Vzr0sBZu4oWoIbOcKU2eXhERogk9pyHW2nEBHX7HgqCkkeLh69Vc6QM6PZ+
-         LT5O52+g7zQLyt0IsJjDEmmjg3woJ2dYYG17U=
-Message-ID: <4B085218.7080907@gmail.com>
-Date: Sat, 21 Nov 2009 12:48:24 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=MH6oC5xdw783qM7hXCz2E2Ukv/ADXZ20wuht76vslbASYE8fjmHclStY3ovk0Kj7WC
+         BQMz6/rGOGcrWwGyZz+WPsjyvpazc/8vij8yEFlyJf2NCUUHKPdbmYSW67PJezRXm3ww
+         kuYtZcTxAXCppHSX7uDBcHZTSM+p8J+Ez+qMA=
 MIME-Version: 1.0
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Bug #14267] Disassociating atheros wlan
-References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>	<mYW9sxtWd2G.A.EnF.gDACLB@chimera>	<4B08258E.9050607@gmail.com> <20091121200442.61740f37.kristoffer.ericson@gmail.com>
-In-Reply-To: <20091121200442.61740f37.kristoffer.ericson@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091121203645.60d68d11@mjolnir.ossman.eu>
+References: <20091008163952.679572b5@mjolnir.ossman.eu>
+	 <20091121170355.7540d169@mjolnir.ossman.eu>
+	 <e9c3a7c20911211121l517837f9s17283dd37e0dd865@mail.gmail.com>
+	 <20091121203645.60d68d11@mjolnir.ossman.eu>
+Date: Sat, 21 Nov 2009 13:58:41 -0700
+X-Google-Sender-Auth: b68f9143b9009f36
+Message-ID: <e9c3a7c20911211258r756e044cpad5ae9d613284f8b@mail.gmail.com>
+Subject: Re: Raid not shutting down when disks are lost?
+From: Dan Williams <dan.j.williams@intel.com>
+To: Pierre Ossman <pierre-list@ossman.eu>
+Cc: neilb@suse.de, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristoffer Ericson wrote:
-> On Sat, 21 Nov 2009 09:38:22 -0800
-> "Justin P. Mattock"<justinmattock@gmail.com>  wrote:
->
->    
->> Rafael J. Wysocki wrote:
->>      
->>> This message has been generated automatically as a part of a report
->>> of regressions introduced between 2.6.30 and 2.6.31.
->>>
->>> The following bug entry is on the current list of known regressions
->>> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
->>> be listed and let me know (either way).
->>>
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
->>> Subject		: Disassociating atheros wlan
->>> Submitter	: Kristoffer Ericson<kristoffer.ericson@gmail.com>
->>> Date		: 2009-09-24 10:16 (59 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
->>>
->>>
->>>
->>>
->>>        
->> I did a bisect yesterday on this, and the results
->> seemed to have worked over here by reverting:
->>
->> 75e6c3b72b3ab01c47629f3fbd0fed4e6550bf3a
->> cfg80211: lower dynamic PS timeout to 100ms
->>
->> if Kristoffer can try reverting this one
->> to see, then we can go from there.
->>      
->
-> In the process of doing that as we speak.
->
->    
->> Justin P. Mattock
->>
->>
->>
->>      
->
->
->    
-cool..
+On Sat, Nov 21, 2009 at 12:36 PM, Pierre Ossman <pierre-list@ossman.eu> wrote:
+> Or is there perhaps some magic mdadm command to add a lost disk and get
+> it up to speed without a complete sync?
 
-Justin P. Mattock
+If you care about resync speed then look into adding a write intent
+bitmap to your configuration; otherwise, look into the --assume-clean
+option to recreate the array.
+
+Quoting from the man page:
+--assume-clean
+     Tell mdadm that the array pre-existed and is known to be clean.
+It can be useful when trying to recover from a major failure as you
+can be sure that no data will be affected unless you actually write to
+the array.  It can also be used when creating a RAID1 or RAID10 if you
+want to avoid the initial resync, however this practice, while
+normally safe, is not recommended.  Use this only if you really know
+what you are doing.
+
+--
+Dan
