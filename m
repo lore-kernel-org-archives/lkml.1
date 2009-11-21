@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbZKVMSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZKUMVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbZKVMSg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbZKVMSf
+	id S1754212AbZKUMVc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 07:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZKUMVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:18:35 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57514 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753980AbZKVMSW (ORCPT
+	Sat, 21 Nov 2009 07:21:32 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:33272 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754009AbZKUMVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:18:22 -0500
+	Sat, 21 Nov 2009 07:21:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=INwnaQZvI9QQwpEd3iUkQ7/6eGhFMoYbJVpATnQB5JINvFcTPFVSKRmDg1jEgJgaKa
-         PvKYzzcl42sCIimc1+fxsqiBlqrhwmw3qlh4TKM072SzOyjIp76SwNUwjHkmv9g2HwPo
-         w5fUVWtIzMV6m/8m1sS5ucVWv52KBciVd0fQ0=
-From: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>
-Subject: [PATCH 2/2] pid: reduce code size by using a pointer to iterate over array
-Date: Sat, 21 Nov 2009 10:16:20 -0200
-Message-Id: <5aa52119c3a7c541e2d488478d6d7da920e7cdb6.1258805412.git.andre.goddard@gmail.com>
-X-Mailer: git-send-email 1.6.5.3.298.g39add
-In-Reply-To: <cover.1258805412.git.andre.goddard@gmail.com>
-References: <cover.1258805412.git.andre.goddard@gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=COdMWA1EBeNvlDCNyLqgM4XaD3GGhk6ItOcW94lq6OYGslhlmhX2H+bCpUpGAy0Clv
+         Jeld5ACX8+tq6uppa1MrB5TAAAVJ3mQbgX6EimGBe9bvC3hbHMgj3ZjwSJl7IkYFo7qn
+         MK6iEva6rVom9imqXEAWKn7n/ONt51J0E3wQ0=
+Message-ID: <4B07DB40.4020909@gmail.com>
+Date: Sat, 21 Nov 2009 13:21:20 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Pavel Machek <pavel@ucw.cz>
+CC: David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       huananhu@huawei.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
+References: <faf197be196ee.196eefaf197be@huawei.com> <20091117.012248.86306050.davem@davemloft.net> <4B0278D9.6030806@gmail.com> <20091117.034959.159359822.davem@davemloft.net> <20091121092933.GB1932@ucw.cz>
+In-Reply-To: <20091121092933.GB1932@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It decreases code size by 16 bytes on my gcc 4.4.1 on Core 2:
-  text    data     bss     dec     hex filename
-  4314    2216       8    6538    198a kernel/pid.o-BEFORE
-  4298    2216       8    6522    197a kernel/pid.o-AFTER
+Pavel Machek wrote, On 11/21/2009 10:29 AM:
 
-Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
----
- kernel/pid.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> On Tue 2009-11-17 03:49:59, David Miller wrote:
+>> From: William Allen Simpson <william.allen.simpson@gmail.com>
+>> Date: Tue, 17 Nov 2009 05:20:09 -0500
+>>
+>>> What David may have meant, had he followed
+>>> Documentation/ManagementStyle or had any project management skills
+>>> what-so-ever, is that you need to follow
+>>> Documentation/SubmittingPatches more carefully.
+>> Are personal attacks on me really necessary?
+>>
+>> Do you want me to look closely at your patches with a high priority
+>> when you submit them for inclusion?  If so, then you may want to
+>> think twice about saying things like this.
+> 
+> Was this kind of threats really neccessary?
 
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 55fd590..2e17c9c 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -269,12 +269,11 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 	for (type = 0; type < PIDTYPE_MAX; ++type)
- 		INIT_HLIST_HEAD(&pid->tasks[type]);
- 
-+	upid = pid->numbers + ns->level;
- 	spin_lock_irq(&pidmap_lock);
--	for (i = ns->level; i >= 0; i--) {
--		upid = &pid->numbers[i];
-+	for ( ; upid >= pid->numbers; --upid)
- 		hlist_add_head_rcu(&upid->pid_chain,
- 				&pid_hash[pid_hashfn(upid->nr, upid->ns)]);
--	}
- 	spin_unlock_irq(&pidmap_lock);
- 
- out:
--- 
-1.6.5.3.298.g39add
+What kind of threats do you recommend?
 
+(And why at all do you call a threat doing something William misses,
+and David asked for confirmation?)
+
+Jarek P.
