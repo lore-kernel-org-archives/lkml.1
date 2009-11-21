@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbZKUIJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZKUINQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751606AbZKUIJm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 03:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZKUIJl
+	id S1751854AbZKUINQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 03:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbZKUINP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 03:09:41 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:53886 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZKUIJk convert rfc822-to-8bit (ORCPT
+	Sat, 21 Nov 2009 03:13:15 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:54966 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZKUINO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 03:09:40 -0500
+	Sat, 21 Nov 2009 03:13:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=KWMdFO42q4cmma8vmIbOxOoCe4OsbFw6YFgoRmMcfp/OvA8+Rs5OkjXRi/cJshoXr7
+         wj7LKqZkNWLgdiywhJK3FKcrlnLiQj4Uhh6QT0uPjxlRqzjq+BNqUscoatLAfXQzeLrC
+         WjJdVVyl8nAp/yJlS85T+wHnkXjuRVNlr/HX8=
+Date: Sat, 21 Nov 2009 10:13:01 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Dan Carpenter <error27.lkml@gmail.com>
+Cc: Rakesh Ranjan <rakesh@chelsio.com>, David Miller <davem@davemloft.net>,
+       michaelc@cs.wisc.edu, open-iscsi@googlegroups.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@suse.de, kxie@chelsio.com
+Subject: Re: [RFC-PATCH] libiscsi dhcp handler
+Message-ID: <20091121081301.GA17766@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Dan Carpenter <error27.lkml@gmail.com>,
+	Rakesh Ranjan <rakesh@chelsio.com>,
+	David Miller <davem@davemloft.net>, michaelc@cs.wisc.edu,
+	open-iscsi@googlegroups.com, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, James.Bottomley@suse.de,
+	kxie@chelsio.com
+References: <4B014F95.8000906@chelsio.com> <20091116.051835.125328285.davem@davemloft.net> <4B01577E.2020003@chelsio.com> <b263e5900911200529n1c002097q48a625d1bcda4db6@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
-References: <20091117224852.846805939@linutronix.de> <20091117224916.566205413@linutronix.de> 
-	<20091118175523.GA12857@b07421-ec1.am.freescale.net> <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 21 Nov 2009 01:01:41 -0700
-X-Google-Sender-Auth: 4c53110d82234d84
-Message-ID: <fa686aa40911210001u699031a0h2b3818b68c212d69@mail.gmail.com>
-Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Scott Wood <scottwood@freescale.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b263e5900911200529n1c002097q48a625d1bcda4db6@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 18, 2009 at 1:41 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 18 Nov 2009, Scott Wood wrote:
->> On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
->> > Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
->> > ===================================================================
->> > --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
->> > +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
->> > @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
->> >  }
->> >
->> >  static struct irq_chip pq2ads_pci_ic = {
->> > -   .typename = "PQ2 ADS PCI",
->> > +   .name = "PQ2 ADS PCI",
->> >     .name = "PQ2 ADS PCI",
->> >     .end = pq2ads_pci_unmask_irq,
->> >     .mask = pq2ads_pci_mask_irq,
->>
->> Duplicate ".name"...
->
-> Darn.
+On Fri, Nov 20, 2009 at 03:29:24PM +0200, Dan Carpenter wrote:
+> On 11/16/09, Rakesh Ranjan <rakesh@chelsio.com> wrote:
+> > David Miller wrote:
+> >> From: Rakesh Ranjan <rakesh@chelsio.com>
+> >> Date: Mon, 16 Nov 2009 18:41:49 +0530
+> >>
+> >>> Herein attached patches to support dhcp based provisioning for iSCSI
+> >>> offload capable cards. I have made dhcp code as generic as possible,
+> >>> please go through the code. Based on the feedback I will submit final
+> >>> version of these patches.
+> >>
+> >> You can't really add objects to the build before the patch that
+> >> adds the source for that object.
+> >>
+> >
+> > Hi david,
+> >
+> > Fixed patch attached.
 
-Other than that, looks good to me.
++       spin_unlock(&rcv_lock);                                                                                              
++                                                                                                                            
++drop:                                                                                                                       
++       kfree(pskb);                                                                                                         
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+This should be kfree_skb(pskb)
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
++out:                                                                                                                        
++       return rc;                                                                                                           
++}                                                                                                                           
++EXPORT_SYMBOL(libiscsi_ipconfig_recv);                                                                                      
+
+regards,
+dan carpenter
