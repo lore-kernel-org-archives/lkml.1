@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbZKULvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZKULwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbZKULvp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 06:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZKULvo
+	id S1754080AbZKULwP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 06:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZKULwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 06:51:44 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:42582 "EHLO mgw1.diku.dk"
+	Sat, 21 Nov 2009 06:52:14 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:38453 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbZKULvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 06:51:43 -0500
-Date: Sat, 21 Nov 2009 12:51:47 +0100 (CET)
+	id S1753793AbZKULwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 06:52:12 -0500
+Date: Sat, 21 Nov 2009 12:52:17 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: dbrownell@users.sourceforge.net, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/8] drivers/usb/host/xhci-mem.c: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0911211251210.23681@ask.diku.dk>
+Subject: [PATCH 6/8] drivers/usb/host/ehci-omap.c: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0911211251480.23681@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -67,29 +68,27 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/usb/host/xhci-mem.c         |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/usb/host/ehci-omap.c        |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
-index fd05247..33f8157 100644
---- a/drivers/usb/host/xhci-mem.c
-+++ b/drivers/usb/host/xhci-mem.c
-@@ -779,14 +779,17 @@ struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
+diff --git a/drivers/usb/host/ehci-omap.c b/drivers/usb/host/ehci-omap.c
+index 7ba8df3..12f1ad2 100644
+--- a/drivers/usb/host/ehci-omap.c
++++ b/drivers/usb/host/ehci-omap.c
+@@ -558,7 +558,7 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
+ 	omap = kzalloc(sizeof(*omap), GFP_KERNEL);
+ 	if (!omap) {
+ 		ret = -ENOMEM;
+-		goto err_create_hcd;
++		goto err_disabled;
+ 	}
  
- 	command->in_ctx =
- 		xhci_alloc_container_ctx(xhci, XHCI_CTX_TYPE_INPUT, mem_flags);
--	if (!command->in_ctx)
-+	if (!command->in_ctx) {
-+		kfree(command);
- 		return NULL;
-+	}
+ 	hcd = usb_create_hcd(&ehci_omap_hc_driver, &pdev->dev,
+@@ -653,6 +653,7 @@ err_ioremap:
+ 	usb_put_hcd(hcd);
  
- 	if (allocate_completion) {
- 		command->completion =
- 			kzalloc(sizeof(struct completion), mem_flags);
- 		if (!command->completion) {
- 			xhci_free_container_ctx(xhci, command->in_ctx);
-+			kfree(command);
- 			return NULL;
- 		}
- 		init_completion(command->completion);
+ err_create_hcd:
++	kfree(omap);
+ err_disabled:
+ err_pdata:
+ 	return ret;
