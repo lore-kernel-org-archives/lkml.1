@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZKUPSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZKUPYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZKUPSi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZKUPSg
+	id S1756453AbZKUPYU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZKUPS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:18:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58862 "EHLO ogre.sisk.pl"
+	Sat, 21 Nov 2009 10:18:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58854 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755981AbZKUPSd convert rfc822-to-8bit (ORCPT
+	id S1755672AbZKUPSX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 10:18:33 -0500
+	Sat, 21 Nov 2009 10:18:23 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Jason Wessel" <jason.wessel@windriver.com>
+       "Tsvety Petrov" <Tsvetoslav.Petrov@itron.com>
 References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
 In-Reply-To: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <mYW9sxtWd2G.A.5bG.LEACLB@chimera>
-Subject: [Bug #14137] usb console regressions
+Message-ID: <mYW9sxtWd2G.A.HeG.VEACLB@chimera>
+Subject: [Bug #14114] Tuning a saa7134 based card is broken in kernel 2.6.31-rc7
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 21 Nov 2009 16:02:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,13 +35,9 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14137
-Subject		: usb console regressions
-Submitter	: Jason Wessel <jason.wessel@windriver.com>
-Date		: 2009-09-05 21:08 (78 days old)
-References	: http://marc.info/?l=linux-kernel&m=125218501310512&w=4
-Handled-By	: Jason Wessel <jason.wessel@windriver.com>
-Patch		: http://patchwork.kernel.org/patch/45953/
-		  http://patchwork.kernel.org/patch/45952/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14114
+Subject		: Tuning a saa7134 based card is broken in kernel 2.6.31-rc7
+Submitter	: Tsvety Petrov <Tsvetoslav.Petrov@itron.com>
+Date		: 2009-09-03 21:06 (80 days old)
 
 
