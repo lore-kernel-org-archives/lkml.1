@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbZKUIEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbZKUIJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751336AbZKUIEy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 03:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZKUIEx
+	id S1751606AbZKUIJm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 03:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZKUIJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 03:04:53 -0500
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:61952 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZKUIEx (ORCPT
+	Sat, 21 Nov 2009 03:09:41 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:53886 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbZKUIJk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 03:04:53 -0500
-X-Greylist: delayed 571 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Nov 2009 03:04:53 EST
-Message-ID: <4B079CE0.60604@freemail.hu>
-Date: Sat, 21 Nov 2009 08:55:12 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 21 Nov 2009 03:09:40 -0500
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] do not overwrite the first part of phys string
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=3 Fuz1=3
+In-Reply-To: <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
+References: <20091117224852.846805939@linutronix.de> <20091117224916.566205413@linutronix.de> 
+	<20091118175523.GA12857@b07421-ec1.am.freescale.net> <alpine.LFD.2.00.0911182141060.24119@localhost.localdomain>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 21 Nov 2009 01:01:41 -0700
+X-Google-Sender-Auth: 4c53110d82234d84
+Message-ID: <fa686aa40911210001u699031a0h2b3818b68c212d69@mail.gmail.com>
+Subject: Re: [patch 06/13] powerpc: Fixup last users of irq_chip->typename
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Scott Wood <scottwood@freescale.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: MÃ¡rton NÃ©meth <nm127@freemail.hu>
+On Wed, Nov 18, 2009 at 1:41 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 18 Nov 2009, Scott Wood wrote:
+>> On Tue, Nov 17, 2009 at 10:50:53PM +0000, Thomas Gleixner wrote:
+>> > Index: linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > ===================================================================
+>> > --- linux-2.6.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > +++ linux-2.6/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+>> > @@ -69,7 +69,7 @@ static void pq2ads_pci_unmask_irq(unsign
+>> >  }
+>> >
+>> >  static struct irq_chip pq2ads_pci_ic = {
+>> > -   .typename = "PQ2 ADS PCI",
+>> > +   .name = "PQ2 ADS PCI",
+>> >     .name = "PQ2 ADS PCI",
+>> >     .end = pq2ads_pci_unmask_irq,
+>> >     .mask = pq2ads_pci_mask_irq,
+>>
+>> Duplicate ".name"...
+>
+> Darn.
 
-Use strlcat() to append a string to the previously created first part.
+Other than that, looks good to me.
 
-Signed-off-by: MÃ¡rton NÃ©meth <nm127@freemail.hu>
----
-diff -upr linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c
---- linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c	2009-11-21 08:48:32.000000000 +0100
-@@ -266,7 +266,7 @@ static int usb_kbd_probe(struct usb_inte
- 			 le16_to_cpu(dev->descriptor.idProduct));
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
- 	usb_make_path(dev, kbd->phys, sizeof(kbd->phys));
--	strlcpy(kbd->phys, "/input0", sizeof(kbd->phys));
-+	strlcat(kbd->phys, "/input0", sizeof(kbd->phys));
-
- 	input_dev->name = kbd->name;
- 	input_dev->phys = kbd->phys;
-diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c linux-2.6.32-rc7/drivers/input/misc/ati_remote.c
---- linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.32-rc7/drivers/input/misc/ati_remote.c	2009-11-21 08:48:50.000000000 +0100
-@@ -766,7 +766,7 @@ static int ati_remote_probe(struct usb_i
- 	ati_remote->interface = interface;
-
- 	usb_make_path(udev, ati_remote->phys, sizeof(ati_remote->phys));
--	strlcpy(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
-+	strlcat(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
-
- 	if (udev->manufacturer)
- 		strlcpy(ati_remote->name, udev->manufacturer, sizeof(ati_remote->name));
-diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c linux-2.6.32-rc7/drivers/input/misc/powermate.c
---- linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.32-rc7/drivers/input/misc/powermate.c	2009-11-21 08:48:44.000000000 +0100
-@@ -338,7 +338,7 @@ static int powermate_probe(struct usb_in
- 	pm->input = input_dev;
-
- 	usb_make_path(udev, pm->phys, sizeof(pm->phys));
--	strlcpy(pm->phys, "/input0", sizeof(pm->phys));
-+	strlcat(pm->phys, "/input0", sizeof(pm->phys));
-
- 	spin_lock_init(&pm->lock);
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
