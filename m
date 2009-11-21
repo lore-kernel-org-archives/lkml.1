@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZKULtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZKULuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbZKULtj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 06:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbZKULtj
+	id S1753934AbZKULuH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 06:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZKULuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 06:49:39 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:36495 "EHLO mgw2.diku.dk"
+	Sat, 21 Nov 2009 06:50:06 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:42563 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbZKULth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 06:49:37 -0500
-Date: Sat, 21 Nov 2009 12:49:41 +0100 (CET)
+	id S1751070AbZKULuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 06:50:04 -0500
+Date: Sat, 21 Nov 2009 12:50:08 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+To: Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/8] drivers/media/video: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0911211249090.23681@ask.diku.dk>
+Subject: [PATCH 2/8] drivers/rtc: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0911211249420.23681@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,9 +25,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Julia Lawall <julia@diku.dk>
 
 Error handling code following a kzalloc should free the allocated data.
-Similarly for usb-alloc urb.
 
-The semantic match that finds the first problem is as follows:
+The semantic match that finds this problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -68,39 +68,23 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/media/video/hdpvr/hdpvr-video.c        |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/rtc/rtc-mxc.c               |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/media/video/hdpvr/hdpvr-video.c b/drivers/media/video/hdpvr/hdpvr-video.c
-index 2eb9dc2..b5439ca 100644
---- a/drivers/media/video/hdpvr/hdpvr-video.c
-+++ b/drivers/media/video/hdpvr/hdpvr-video.c
-@@ -139,7 +139,7 @@ int hdpvr_alloc_buffers(struct hdpvr_device *dev, uint count)
- 		urb = usb_alloc_urb(0, GFP_KERNEL);
- 		if (!urb) {
- 			v4l2_err(&dev->v4l2_dev, "cannot allocate urb\n");
--			goto exit;
-+			goto exit_urb;
- 		}
- 		buf->urb = urb;
+diff --git a/drivers/rtc/rtc-mxc.c b/drivers/rtc/rtc-mxc.c
+index 6bd5072..2642e6b 100644
+--- a/drivers/rtc/rtc-mxc.c
++++ b/drivers/rtc/rtc-mxc.c
+@@ -396,8 +396,10 @@ static int __init mxc_rtc_probe(struct platform_device *pdev)
+ 	pdata->ioaddr = ioremap(res->start, resource_size(res));
  
-@@ -148,7 +148,7 @@ int hdpvr_alloc_buffers(struct hdpvr_device *dev, uint count)
- 		if (!mem) {
- 			v4l2_err(&dev->v4l2_dev,
- 				 "cannot allocate usb transfer buffer\n");
--			goto exit;
-+			goto exit_urb_buffer;
- 		}
+ 	clk = clk_get(&pdev->dev, "ckil");
+-	if (IS_ERR(clk))
+-		return PTR_ERR(clk);
++	if (IS_ERR(clk)) {
++		ret = PTR_ERR(clk);
++		goto exit_free_pdata;
++	}
  
- 		usb_fill_bulk_urb(buf->urb, dev->udev,
-@@ -161,6 +161,10 @@ int hdpvr_alloc_buffers(struct hdpvr_device *dev, uint count)
- 		list_add_tail(&buf->buff_list, &dev->free_buff_list);
- 	}
- 	return 0;
-+exit_urb_buffer:
-+	usb_free_urb(urb);
-+exit_urb:
-+	kfree(buf);
- exit:
- 	hdpvr_free_buffers(dev);
- 	return retval;
+ 	rate = clk_get_rate(clk);
+ 	clk_put(clk);
