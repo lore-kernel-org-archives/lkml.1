@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZKURlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZKURqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbZKURlz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 12:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZKURlz
+	id S1756605AbZKURqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 12:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbZKURqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 12:41:55 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:47636 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756547AbZKURly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 12:41:54 -0500
-Message-ID: <4B082663.2010905@w1an.in>
-Date: Sat, 21 Nov 2009 09:41:55 -0800
-From: Balaji Ravindran <b@w1an.in>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Kernel compilation Question
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 21 Nov 2009 12:46:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46942 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756552AbZKURqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 12:46:15 -0500
+Subject: [PATCH] mm: includecheck fix slqb
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 21 Nov 2009 23:14:43 +0530
+Message-Id: <1258825483.5364.15.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I tried compiling the wireless 2.6 kernel on my debian machine using
-make-kpkg and being lazy, i just did make defconfig, and saw that my
-compilation went fine without any issues, but i noticed that there was
-no ramdisk image that was generated when i installed the linux-image*.deb.
+fix the following 'make includecheck' warnings:
 
-i did use --initrd option,
+  include/linux/slqb_def.h: linux/kobject.h is included more than once.
+  mm/slqb.c: linux/seq_file.h is included more than once.
 
-Was it because, using make defconfig compiles everything on the kernel
-itself? Aren't there any 'm' option in defaults?(dunno just asking if
-this is the case)
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ include/linux/slqb_def.h |    1 -
+ mm/slqb.c                |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-or did i miss something out
+diff --git a/include/linux/slqb_def.h b/include/linux/slqb_def.h
+index 1243dda..1cb68cc 100644
+--- a/include/linux/slqb_def.h
++++ b/include/linux/slqb_def.h
+@@ -13,7 +13,6 @@
+ #include <linux/rcu_types.h>
+ #include <linux/mm_types.h>
+ #include <linux/kernel.h>
+-#include <linux/kobject.h>
+ 
+ #define SLAB_NUMA		0x00000001UL    /* shortcut */
+ 
+diff --git a/mm/slqb.c b/mm/slqb.c
+index e4bb53f..e84a588 100644
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -3302,7 +3302,6 @@ static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
+  */
+ #ifdef CONFIG_SLABINFO
+ #include <linux/proc_fs.h>
+-#include <linux/seq_file.h>
+ ssize_t slabinfo_write(struct file *file, const char __user * buffer,
+ 		       size_t count, loff_t *ppos)
+ {
+-- 
+1.6.0.6
 
-Please see if i missed some step
 
-Summary of steps performed.
 
-extracted wireless 2.6 source onto /usr/src
-
-created symbolic link
-
-make defconfig (i did not copy my existing config file to .config, i
-just wanted to try out make defconfig option)
-
-make-kpkg --initrd --append-to-version=foo --revision=bar kernel_image
-modules_image kernel_headers
-
-this created 2 files linux-image* and linux-headers*, i was missing the
-modules image also(but that was a second question)
-
-did dpkg -i linux-image*
-
-updated grub and placed files in /boot, but did not create initrd image.
-Why is that?
-
-Thanks
-
-Balaji R
