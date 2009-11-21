@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZKUAUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZKUAZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbZKUAUf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 19:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZKUAUe
+	id S1753787AbZKUAZp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 19:25:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZKUAZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 19:20:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60837 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbZKUAUe (ORCPT
+	Fri, 20 Nov 2009 19:25:45 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:40255 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbZKUAZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 19:20:34 -0500
-Message-ID: <4B073224.5050908@zytor.com>
-Date: Fri, 20 Nov 2009 16:19:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
-       rth@redhat.com
-Subject: Re: [RFC PATCH 2/6] jump label v3 - x86: Introduce generic jump patching
- without stop_machine
-References: <cover.1258580048.git.jbaron@redhat.com> <37e397b27509c378f93b9a30f1158791d1b99be7.1258580048.git.jbaron@redhat.com> <4B071000.9080408@zytor.com> <4B072EF5.2090402@redhat.com>
-In-Reply-To: <4B072EF5.2090402@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Nov 2009 19:25:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=GhDktAJM5MrTIXS+fubP+SaOq44wh5Kh3wRnj+OXHO7yS3NHPB8p8cW7AhSNG/FfNj
+         5VcsYfCzKJGIvYdzqVoYCCmI6ImQu9HOiXzfoU+aIrJC/6gYEVWUM0dQEvF6hwA3IBsd
+         eh4o+icrdRJ0bmapR5Ob9MBoj3tZG/1xKJnHg=
+Subject: XD/smartmedia - how to implement it right?
+From: Maxim Levitsky <slevmax@t2.technion.ac.il>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Alex Dubov <oakad@yahoo.com>, arnd@arndb.de, joern@logfs.org,
+       tglx@linutonix.de
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 21 Nov 2009 02:25:44 +0200
+Message-ID: <1258763144.4997.12.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/20/2009 04:06 PM, Masami Hiramatsu wrote:
-> 
-> If we don't care about NMI, we can use stop_machine() (for
-> this reason, kprobe-jump-optimization can use stop_machine(),
-> because kprobes can't probe NMI code), but tracepoint has
-> to support NMI.
-> 
+Hi,
 
-Ingo pointed out that the NMI issue can be dealt with by having the NMI
-handler check a flag if code modification is in progress on the entry to
-the NMI handler.  So yes, NMI can trap out of the IPI hold, but it will
-not go any further.
+This thread is meant to continue discussion about XD/smartmedia support
+in linux.
 
-	-hpa
+I CC'd few peoples that participated in original discussion.
+
+Alex Dubov attempted to write a driver for jmicron device (I have it
+btw), but this was rejected due to code duplication.
+
+I successfully reverse engineered (in my free time) the XD card reader
+found on my laptop (ricoh based one)
+
+I would like to know how you think to implement the subsystem support
+right.
+
+I would go with mmc subsystem + FTL, but according to original thread,
+there are numerous problems with this approach.
+
+Any advice is appreciated.
+
+Best regards,
+Maxim Levitsky
+
