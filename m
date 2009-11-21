@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZKUPTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZKUPTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZKUPTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbZKUPTS
+	id S1756137AbZKUPTQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbZKUPTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:19:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58902 "EHLO ogre.sisk.pl"
+	Sat, 21 Nov 2009 10:19:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58904 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756117AbZKUPTM convert rfc822-to-8bit (ORCPT
+	id S1755680AbZKUPTN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 10:19:12 -0500
+	Sat, 21 Nov 2009 10:19:13 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michal Schmidt" <mschmidt@redhat.com>,
-       "Naga Chumbalkar" <nagananda.chumbalkar@hp.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
+       "Aleksei Lukin" <lukin@stu.cn.ua>
 References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
 In-Reply-To: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <mYW9sxtWd2G.A.rFF.MDACLB@chimera>
-Subject: [Bug #14391] use after free of struct powernow_k8_data
+Message-ID: <mYW9sxtWd2G.A.A8E.-CACLB@chimera>
+Subject: [Bug #14448] PAT cpu feature is absent but detected by Xorg and others, cuses video driver problems
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 21 Nov 2009 16:02:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,10 +35,9 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14391
-Subject		: use after free of struct powernow_k8_data
-Submitter	: Michal Schmidt <mschmidt@redhat.com>
-Date		: 2009-09-24 14:51 (59 days old)
-References	: http://marc.info/?l=linux-kernel&m=125380383515615&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14448
+Subject		: PAT cpu feature is absent but detected by Xorg and others, cuses video driver problems
+Submitter	: Aleksei Lukin <lukin@stu.cn.ua>
+Date		: 2009-10-20 17:54 (33 days old)
 
 
