@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750838AbZKUFOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750932AbZKUFoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750838AbZKUFOw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 00:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZKUFOv
+	id S1750932AbZKUFoK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 00:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbZKUFoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 00:14:51 -0500
-Received: from kroah.org ([198.145.64.141]:32953 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750710AbZKUFOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 00:14:51 -0500
-Date: Fri, 20 Nov 2009 21:12:26 -0800
-From: Greg KH <greg@kroah.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 06/15] sysfs: Fix locking and factor out
-	sysfs_sd_setattr
-Message-ID: <20091121051226.GA24399@kroah.com>
-References: <m1pr7tmqb4.fsf@fess.ebiederm.org> <1257665233-12468-6-git-send-email-ebiederm@xmission.com> <20091120201355.GA30590@kroah.com> <m1aayg7nbk.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
+	Sat, 21 Nov 2009 00:44:10 -0500
+Received: from ns.ariel-networks.com ([122.216.114.210]:42377 "EHLO
+	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbZKUFoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 00:44:09 -0500
+X-Greylist: delayed 1684 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Nov 2009 00:44:09 EST
+Date: Sat, 21 Nov 2009 14:16:11 +0900
+From: Hiroyasu OHYAMA <ohyama_sec@ariel-networks.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] (Documentation) append more detail explanation to the I/O scheduler API.
+Message-ID: <20091121051611.GA12131@ns.ariel-networksc.om>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1aayg7nbk.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 04:07:11PM -0800, Eric W. Biederman wrote:
-> Greg KH <greg@kroah.com> writes:
-> 
-> > On Sat, Nov 07, 2009 at 11:27:04PM -0800, Eric W. Biederman wrote:
-> >> From: Eric W. Biederman <ebiederm@xmission.com>
-> >> 
-> >> Cleanly separate the work that is specific to setting the
-> >> attributes of a sysfs_dirent from what is needed to update
-> >> the attributes of a vfs inode.
-> >> 
-> >> Additionally grab the sysfs_mutex to keep any nasties from
-> >> surprising us when updating the sysfs_dirent.
-> >> 
-> >> Acked-by: Tejun Heo <tj@kernel.org>
-> >> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> >
-> > Due to the extended attr work for sysfs that went into Linus's tree
-> > recently, this patch doesn't apply at all anymore.
-> 
-> It looks like the issue is the a trivial context conflict  with 
-> sysfs-mark-a-locally-only-used-function-static.patch
+ This patch append more detail explanation to the Documentation of API of I/O scheduler.
 
-Ah, sorry about that, I should have noticed that, I was looking for a
-much harder problem :(
+ Thank you for reading.
 
-I'll go queue these up in a bit.
+---
+diff --git a/Documentation/block/biodoc.txt b/Documentation/block/biodoc.txt
+index 8d2158a..7c04f54 100644
+--- a/Documentation/block/biodoc.txt
++++ b/Documentation/block/biodoc.txt
+@@ -935,7 +935,12 @@ keeping work.
+ 4.1. I/O scheduler API
 
-thanks,
+  The functions an elevator may implement are: (* are mandatory)
+-elevator_merge_fn    called to query requests for merge with a bio
++elevator_merge_fn    called to query requests for merge with a bio. This method
++       have two following works. One is to indicate how to merge request
++       with bio from head or tail. This function doesn't merge them actually,
++       but just indicate direction for merging from head or tail, or that
++       there is no request with that bio can merge. Another work is to get
++       the request object which is merged, if the bio can do.
 
-greg k-h
+ elevator_merge_req_fn    called when two requests get merged. the one
+         which gets merged into the other one will be
