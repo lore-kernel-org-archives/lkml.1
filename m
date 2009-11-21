@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZKUTFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbZKUTK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZKUTFX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 14:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZKUTFW
+	id S1756778AbZKUTK3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 14:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZKUTK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 14:05:22 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33846 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbZKUTFV (ORCPT
+	Sat, 21 Nov 2009 14:10:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45545
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754071AbZKUTK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 14:05:21 -0500
-Date: Sat, 21 Nov 2009 20:05:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Lutomirski <luto@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-thinkpad@linux-thinkpad.org
-Subject: Re: High power consumption after suspend/resume cycle
-Message-ID: <20091121190520.GB2444@ucw.cz>
-References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 21 Nov 2009 14:10:28 -0500
+Date: Sat, 21 Nov 2009 11:10:45 -0800 (PST)
+Message-Id: <20091121.111045.170330916.davem@davemloft.net>
+To: phdm@macqel.be
+Cc: grundler@parisc-linux.org, kyle@mcmartin.ca, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: tulip : kernel BUG in tulip_up/tulip_resume
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091108223305.GA21072@frolo.macqel>
+References: <20090127165727.GA25748@frolo.macqel>
+	<20090129210701.GA8092@frolo.macqel>
+	<20091108223305.GA21072@frolo.macqel>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Philippe De Muyter <phdm@macqel.be>
+Date: Sun, 8 Nov 2009 23:33:05 +0100
 
-> I'm running a git kernel that's slightly newer than 2.6.32-rc1.
-> 
-> First, thanks for all the great work everywhere on laptop power
-> consumption -- on my Lenovo X200s, it looks like Linux is getting
-> close to Windows (Windows wins by about 0.7W, except that its power
-> usage frequently spikes since Windows apparently still doesn't know
-> how to sit still and do nothing, whereas Linux's seems more stable.).
-> Windows after a reboot, even running KDE with compositing enabled and
-> while connected to wifi, at least after some tweaking.
-> 
-> There's a catch, though: after a suspend/resume cycle, power
-> consumption goes up by over well over a watt.  (On a system that draws
-> about 7 watts before suspending, that's a big deal.)  I've tried
-> turning off X, suspending with 'echo mem > /sys/power/state' to avoid
-> any distro scripts running, and manually restoring SATA power saving
-> settings, but it still happens.  I even tried unbinding e1000e and
-> both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
-> iwlcore, and it still happens.  This is 100% reproducible, and I'd be
-> happy to test things.
-> 
-> This could be a BIOS bug I suppose (although I'm running the latest
-> BIOS), but Windows 7 does not have this problem at all.
-> 
-> Any ideas about what to try or what subsystem to blame?
+> I have just installed 2.6.31 (from opensuse 11.2) one a tulip-equipped
+> computer and I get the following error message from the kernel :
 
-Well, on thinkpad x60 power consumption is .3W *lower*.
+I took some looks at this bug.
 
-You could try comparing lspci -vvv before and after... but this is
-deep magic and hard to debug. 
+I simply can't figure out how this is possible.  As both suspend
+and resume make sure to make the necessary napi_disable() and
+napi_enable() calls, and therefore they should match up and not
+trigger this BUG().
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll try to study the code some more when I get a chance.
