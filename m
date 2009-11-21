@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZKUMVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZKUMcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbZKUMVc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 07:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZKUMVc
+	id S1754066AbZKUMcV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 07:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbZKUMcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 07:21:32 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:33272 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbZKUMVb (ORCPT
+	Sat, 21 Nov 2009 07:32:20 -0500
+Received: from mail-px0-f204.google.com ([209.85.216.204]:47893 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbZKUMcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 07:21:31 -0500
+	Sat, 21 Nov 2009 07:32:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=COdMWA1EBeNvlDCNyLqgM4XaD3GGhk6ItOcW94lq6OYGslhlmhX2H+bCpUpGAy0Clv
-         Jeld5ACX8+tq6uppa1MrB5TAAAVJ3mQbgX6EimGBe9bvC3hbHMgj3ZjwSJl7IkYFo7qn
-         MK6iEva6rVom9imqXEAWKn7n/ONt51J0E3wQ0=
-Message-ID: <4B07DB40.4020909@gmail.com>
-Date: Sat, 21 Nov 2009 13:21:20 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
-       huananhu@huawei.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 17/11]Optimize the upload speed for PPP connection.
-References: <faf197be196ee.196eefaf197be@huawei.com> <20091117.012248.86306050.davem@davemloft.net> <4B0278D9.6030806@gmail.com> <20091117.034959.159359822.davem@davemloft.net> <20091121092933.GB1932@ucw.cz>
-In-Reply-To: <20091121092933.GB1932@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=V8l4yNCJVIKS9hgivwI9admt5//uIT7vPLHQm/ugvaAXTwrv46Y3iVznwabZCQH3t6
+         bqIQFaNmB534Ig8+m793LEJQZHxyGun4alYnxgK5QklXwwNLDDIaRNRuBco/24GAoQjr
+         JtbyXPce8QkV6RROR5H0QgpOK+JH9GH9TSU2o=
+Subject: Re: [PATCH] MIPS: Fixups of ALSA memory maps
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+In-Reply-To: <s5hskcbbu80.wl%tiwai@suse.de>
+References: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com>
+	 <s5hd43iiebt.wl%tiwai@suse.de> <20091116174324.GA17748@linux-mips.org>
+	 <s5hhbst4hzt.wl%tiwai@suse.de> <20091118142056.GB6615@linux-mips.org>
+	 <s5hskcbbu80.wl%tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Sat, 21 Nov 2009 20:31:41 +0800
+Message-ID: <1258806701.5752.8.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote, On 11/21/2009 10:29 AM:
-
-> On Tue 2009-11-17 03:49:59, David Miller wrote:
->> From: William Allen Simpson <william.allen.simpson@gmail.com>
->> Date: Tue, 17 Nov 2009 05:20:09 -0500
->>
->>> What David may have meant, had he followed
->>> Documentation/ManagementStyle or had any project management skills
->>> what-so-ever, is that you need to follow
->>> Documentation/SubmittingPatches more carefully.
->> Are personal attacks on me really necessary?
->>
->> Do you want me to look closely at your patches with a high priority
->> when you submit them for inclusion?  If so, then you may want to
->> think twice about saying things like this.
+On Wed, 2009-11-18 at 18:47 +0100, Takashi Iwai wrote:
+[...]
 > 
-> Was this kind of threats really neccessary?
+> Well, we haven't reached the consensus.  The discussion faded away
+> somehow mainly because I had too little time to update and ping people
+> again.
+> 
+> In Tokyo, I talked with some guys regarding this.  Ben agreed to take
+> this approach for ppc, and David said that he doesn't mind for sparc
+> part.   Fujita-san mentioned it's no big problem to add one op from
+> the generic dma_ops.
+> 
+> So, maybe somehow need to convince James in the end (and ask Paul to
+> check SH part, too), then it'll be all up... theoretically :)
+> 
+> Anyway, I'm going to raise the discussion again on linux-arch.
+> I'm afraid it's a bit too late game for 2.6.33, but starting now is
+> better than too late again.
 
-What kind of threats do you recommend?
+Hi, Takashi Iwai
 
-(And why at all do you call a threat doing something William misses,
-and David asked for confirmation?)
+Before the API stuff going into the mainline(2.6.33), can we apply this
+"[PATCH] MIPS: Fixups of ALSA memory maps"(This is the minimal
+necessares) as a current fixup. and then we will not get a broken sound
+support for MIPS, and also the support to the latest Loongson2F family
+machines will benefit from it.
 
-Jarek P.
+and Ralf, what about your suggestion?
+
+Thanks & Best wishes,
+	Wu Zhangjin
+
