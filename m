@@ -1,95 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZKUP0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZKUPM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbZKUP0A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 10:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479AbZKUPZ7
+	id S1755894AbZKUPM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 10:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZKUPM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 10:25:59 -0500
-Received: from proxima.lp0.eu ([81.2.80.65]:39194 "EHLO proxima.lp0.eu"
+	Sat, 21 Nov 2009 10:12:57 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:39968 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbZKUPRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 10:17:25 -0500
-Message-ID: <4B080378.20903@simon.arlott.org.uk>
-Date: Sat, 21 Nov 2009 15:12:56 +0000
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
+	id S1755277AbZKUPMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 10:12:55 -0500
+Date: Sat, 21 Nov 2009 16:12:59 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: walter harms <wharms@bfs.de>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, rmk+kernel@arm.linux.org.uk,
+       linux@arm.linux.org.uk
+Subject: Re: [PATCH 3/8] drivers/pcmcia: remove unnecessary kzalloc
+In-Reply-To: <4B07E0CB.6000508@bfs.de>
+Message-ID: <Pine.LNX.4.64.0911211611510.26930@ask.diku.dk>
+References: <Pine.LNX.4.64.0911211250090.23681@ask.diku.dk> <4B07E0CB.6000508@bfs.de>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 5/8] cxacru: firmware writes on OHCI are slow, log progress
-References: <4B08013B.90403@simon.arlott.org.uk>
-In-Reply-To: <4B08013B.90403@simon.arlott.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Firmware writing takes 256ms per 4KB with OHCI, which
-is very slow compared to 7ms per 4KB with UHCI.
+On Sat, 21 Nov 2009, walter harms wrote:
 
-Until I have access to a hardware USB analyser it may
-not be possible to determine why this happens.
+> 
+> 
+> Julia Lawall schrieb:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > The result of calling kzalloc is never used or freed.
+> > 
+> > The semantic match that finds this problem is as follows:
+> > (http://www.emn.fr/x-info/coccinelle/)
+> > 
+> > // <smpl>
+> > @r exists@
+> > local idexpression x;
+> > statement S;
+> > expression E;
+> > identifier f,f1,l;
+> > position p1,p2;
+> > expression *ptr != NULL;
+> > @@
+> > 
+> > x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> > ...
+> > if (x == NULL) S
+> > <... when != x
+> >      when != if (...) { <+...x...+> }
+> > (
+> > x->f1 = E
+> > |
+> >  (x->f1 == NULL || ...)
+> > |
+> >  f(...,x->f1,...)
+> > )
+> > ...>
+> > (
+> >  return \(0\|<+...x...+>\|ptr\);
+> > |
+> >  return@p2 ...;
+> > )
+> > 
+> > @script:python@
+> > p1 << r.p1;
+> > p2 << r.p2;
+> > @@
+> > 
+> > print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+> > // </smpl>
+> > 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > ---
+> >  drivers/pcmcia/sa1111_generic.c     |    4 ----
+> >  1 files changed, 0 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/pcmcia/sa1111_generic.c b/drivers/pcmcia/sa1111_generic.c
+> > index deb5036..de6bc33 100644
+> > --- a/drivers/pcmcia/sa1111_generic.c
+> > +++ b/drivers/pcmcia/sa1111_generic.c
+> > @@ -127,10 +127,6 @@ int sa1111_pcmcia_add(struct sa1111_dev *dev, struct pcmcia_low_level *ops,
+> >  	ops->socket_state = sa1111_pcmcia_socket_state;
+> >  	ops->socket_suspend = sa1111_pcmcia_socket_suspend;
+> >  
+> > -	s = kzalloc(sizeof(*s) * ops->nr, GFP_KERNEL);
+> > -	if (!s)
+> > -		return -ENODEV;
+> > -
+> >  	for (i = 0; i < ops->nr; i++) {
+> >  		s = kzalloc(sizeof(*s), GFP_KERNEL);
+> >  		if (!s)
+> 
+> 
+> 
+> mmmh, perhaps the original idea was to have an array
+> and then he moved to a linked list ?
+> 
+> I thing the array idea is better (1. it fails on low mem propperly, 2. no need free()
+> 3. less zmalloc stuff) but requieres that pcmcia_remove()
+> will release that array propperly
+> 
+> the bug is strange,
 
-Instead of appearing to do nothing, log progress when
-writing firmware and then log the ATM device information
-when finished. Remove an unnecessary 4 second delay.
+Both kzallocs were added at the same time, when the function was added in 
+commit 701a5dc05ad99a06958b3f97cb69d99b47cebee3.  I have added the author 
+to the CC list.
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
----
- drivers/usb/atm/cxacru.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 41568b1..c6ec10e 100644
---- a/drivers/usb/atm/cxacru.c
-+++ b/drivers/usb/atm/cxacru.c
-@@ -724,6 +724,9 @@ static int cxacru_atm_start(struct usbatm_data *usbatm_instance,
- 	mutex_unlock(&instance->poll_state_serialize);
- 	mutex_unlock(&instance->adsl_state_serialize);
- 
-+	printk(KERN_INFO "%s%d: %s %pM\n", atm_dev->type, atm_dev->number,
-+			usbatm_instance->description, atm_dev->esi);
-+
- 	if (start_polling)
- 		cxacru_poll_status(&instance->poll_work.work);
- 	return 0;
-@@ -938,6 +941,7 @@ static void cxacru_upload_firmware(struct cxacru_data *instance,
- 	}
- 
- 	/* Firmware */
-+	usb_info(usbatm, "loading firmware\n");
- 	ret = cxacru_fw(usb_dev, FW_WRITE_MEM, 0x2, 0x0, FW_ADDR, fw->data, fw->size);
- 	if (ret) {
- 		usb_err(usbatm, "Firmware upload failed: %d\n", ret);
-@@ -946,6 +950,7 @@ static void cxacru_upload_firmware(struct cxacru_data *instance,
- 
- 	/* Boot ROM patch */
- 	if (instance->modem_type->boot_rom_patch) {
-+		usb_info(usbatm, "loading boot ROM patch\n");
- 		ret = cxacru_fw(usb_dev, FW_WRITE_MEM, 0x2, 0x0, BR_ADDR, bp->data, bp->size);
- 		if (ret) {
- 			usb_err(usbatm, "Boot ROM patching failed: %d\n", ret);
-@@ -960,6 +965,7 @@ static void cxacru_upload_firmware(struct cxacru_data *instance,
- 		return;
- 	}
- 
-+	usb_info(usbatm, "starting device\n");
- 	if (instance->modem_type->boot_rom_patch) {
- 		val = cpu_to_le32(BR_ADDR);
- 		ret = cxacru_fw(usb_dev, FW_WRITE_MEM, 0x2, 0x0, BR_STACK_ADDR, (u8 *) &val, 4);
-@@ -1003,8 +1009,6 @@ static void cxacru_upload_firmware(struct cxacru_data *instance,
- 				return;
- 			}
- 		}
--
--	msleep_interruptible(4000);
- }
- 
- static int cxacru_find_firmware(struct cxacru_data *instance,
--- 
-1.6.3.3
-
--- 
-Simon Arlott
-
+julia
