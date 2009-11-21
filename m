@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZKUEnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbZKUEnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbZKUEnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Nov 2009 23:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZKUEnY
+	id S1752916AbZKUEnh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Nov 2009 23:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZKUEnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Nov 2009 23:43:24 -0500
-Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:45974
-	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752479AbZKUEnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Nov 2009 23:43:24 -0500
-X-Greylist: delayed 561 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2009 23:43:23 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAA/8BkvL1mFu/2dsb2JhbADHFI5ChDwE
-X-IronPort-AV: E=Sophos;i="4.47,262,1257091200"; 
-   d="scan'208";a="71387637"
-Date: Sat, 21 Nov 2009 14:34:03 +1000
-From: muradaikan <muradaikan@momonga-linux.org>
+	Fri, 20 Nov 2009 23:43:37 -0500
+Received: from lo.gmane.org ([80.91.229.12]:47338 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752548AbZKUEn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Nov 2009 23:43:28 -0500
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Subject: /usr/include/linux/netlink.h should have #include <sys/socket.h> ?
-Message-Id: <20091121143403.36a16221.muradaikan@momonga-linux.org>
-Organization: Momonga Linux Project
-X-Mailer: Sylpheed 3.0.0beta2 (GTK+ 2.18.3; x86_64-momonga-linux-gnu)
+From: Ben Pfaff <blp@cs.stanford.edu>
+Subject: Re: Easier way to generate stuff like asm-offsets.
+Date: Fri, 20 Nov 2009 20:43:16 -0800
+Message-ID: <87aaygfpy3.fsf@blp.benpfaff.org>
+References: <3f43f78b0911201656o6d222e6fkf5ef8533c8ee6e16@mail.gmail.com>
+Reply-To: blp@cs.stanford.edu
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: c-67-180-165-166.hsd1.ca.comcast.net
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+Cancel-Lock: sha1:/VVlqHEUrCkAKHvoyp/2/wHKGCs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently /usr/include/linux/netlink.h has 
+Kaz Kylheku <kkylheku@gmail.com> writes:
 
- #include <linux/socket.h> /* for sa_family_t */
+> Then we can use the ``nm'' tool (the toolchain should have binutils in it):
+>
+> $ /path/to/toolchain/bin/arch-prefix-nm -t d -P foo.c   # decimal
+> output, posix format
+> offsetof_foo_member C 00000044 00000044
 
-and <linux/socket.h> contains ss_family but <sys/socket.h> has sa_family.
+If those numbers are in decimal...
 
-So should the line be
+> There we go, 44 bytes.  Simple.  This is almost an #include file;
+> we just have to do some simple filtering, such as:
+>
+> $ /path/to/toolchain/bin/arch-prefix-nm -t d -P test.o | awk '{ print
+> "#define", $1, $4 }'
+> #define offsetof_foo_member 00000044
 
- #include <sys/socket.h> /* for sa_family_t */
+...then the #define is wrong because it's interpreted as octal
+there.
 
-in /usr/include/linux/netlink.h ?
+Cool trick!
+-- 
+Ben Pfaff 
+http://benpfaff.org
 
-Thanks,
-muradaikan
