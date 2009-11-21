@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZKURqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZKURrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbZKURqQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 12:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbZKURqQ
+	id S1756614AbZKURrg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 12:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbZKURrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 12:46:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46942 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756552AbZKURqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 12:46:15 -0500
-Subject: [PATCH] mm: includecheck fix slqb
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 21 Nov 2009 23:14:43 +0530
-Message-Id: <1258825483.5364.15.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Nov 2009 12:47:35 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:40975 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756573AbZKURre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 12:47:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=LI/RxhjHst/TyyqHwkx+I5+5Z+RKg4Tef/N2nGONtgmGuSBXJXgLLoFDC3dXQaEomF
+         fVGPitc1uTUyV+mZwb+ANSAGjXYKt9267q2iw7gRAytBv2Jrrwf+ZJ6eF8GpowRZ7mgK
+         tCg4Bmza1jV26OKAEOQs0ZCX/KxQY6tzwrf6k=
+MIME-Version: 1.0
+Reply-To: q-funk@iki.fi
+In-Reply-To: <mYW9sxtWd2G.A.D7G.GFACLB@chimera>
+References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
+	 <mYW9sxtWd2G.A.D7G.GFACLB@chimera>
+Date: Sat, 21 Nov 2009 19:47:39 +0200
+X-Google-Sender-Auth: 38c758387d2613bd
+Message-ID: <11fae7c70911210947t6b9e0bbdx2c7f5c252977f4f9@mail.gmail.com>
+Subject: Re: [Bug #13941] x86 Geode issue
+From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No, it is not resolved.
 
-fix the following 'make includecheck' warnings:
-
-  include/linux/slqb_def.h: linux/kobject.h is included more than once.
-  mm/slqb.c: linux/seq_file.h is included more than once.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- include/linux/slqb_def.h |    1 -
- mm/slqb.c                |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/slqb_def.h b/include/linux/slqb_def.h
-index 1243dda..1cb68cc 100644
---- a/include/linux/slqb_def.h
-+++ b/include/linux/slqb_def.h
-@@ -13,7 +13,6 @@
- #include <linux/rcu_types.h>
- #include <linux/mm_types.h>
- #include <linux/kernel.h>
--#include <linux/kobject.h>
- 
- #define SLAB_NUMA		0x00000001UL    /* shortcut */
- 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index e4bb53f..e84a588 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -3302,7 +3302,6 @@ static void gather_stats(struct kmem_cache *s, struct stats_gather *stats)
-  */
- #ifdef CONFIG_SLABINFO
- #include <linux/proc_fs.h>
--#include <linux/seq_file.h>
- ssize_t slabinfo_write(struct file *file, const char __user * buffer,
- 		       size_t count, loff_t *ppos)
- {
--- 
-1.6.0.6
-
-
-
+Attachments have been recently added to the bug and it would be highly
+desirable for whoever introduced those regressions in 2.6.31 to
+examine them and participate in resolving the issue. Alternately,
+reverting those ACL caching changes to 2.6.30 status would be equally
+acceptable as a solution.
