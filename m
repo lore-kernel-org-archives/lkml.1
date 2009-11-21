@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZKUNey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZKUNgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbZKUNey (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 08:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZKUNex
+	id S1754745AbZKUNgj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 08:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZKUNgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 08:34:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41587 "EHLO hera.kernel.org"
+	Sat, 21 Nov 2009 08:36:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36227 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754377AbZKUNew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 08:34:52 -0500
-Date: Sat, 21 Nov 2009 13:34:20 GMT
+	id S1754578AbZKUNga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 08:36:30 -0500
+Date: Sat, 21 Nov 2009 13:34:33 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
@@ -19,12 +19,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        stern@rowland.harvard.edu, lizf@cn.fujitsu.com, fweisbec@gmail.com,
        rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
        prasad@linux.vnet.ibm.com
-In-Reply-To: <4A52E2CE.6080409@cn.fujitsu.com>
-References: <4A52E2CE.6080409@cn.fujitsu.com>
+In-Reply-To: <4A52E2EB.9070503@cn.fujitsu.com>
+References: <4A52E2EB.9070503@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] ksym_tracer: Fix validation of access type
-Message-ID: <tip-f088e5471297cc78d7465e1fd997cb1a91a48019@git.kernel.org>
-Git-Commit-ID: f088e5471297cc78d7465e1fd997cb1a91a48019
+Subject: [tip:perf/core] ksym_tracer: Fix validation of length of access type
+Message-ID: <tip-92cf9f8f7e89c6bdbb1a724f879b8b18fc0dfe0f@git.kernel.org>
+Git-Commit-ID: 92cf9f8f7e89c6bdbb1a724f879b8b18fc0dfe0f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,83 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f088e5471297cc78d7465e1fd997cb1a91a48019
-Gitweb:     http://git.kernel.org/tip/f088e5471297cc78d7465e1fd997cb1a91a48019
+Commit-ID:  92cf9f8f7e89c6bdbb1a724f879b8b18fc0dfe0f
+Gitweb:     http://git.kernel.org/tip/92cf9f8f7e89c6bdbb1a724f879b8b18fc0dfe0f
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 7 Jul 2009 13:53:18 +0800
+AuthorDate: Tue, 7 Jul 2009 13:53:47 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 11:59:41 +0200
+CommitDate: Fri, 10 Jul 2009 11:59:42 +0200
 
-ksym_tracer: Fix validation of access type
+ksym_tracer: Fix validation of length of access type
 
-# echo 'pid_max:rw-' > ksym_trace_filter
- # cat ksym_trace_filter
- pid_max:rw-
- # echo 'pid_max:ww-' > ksym_trace_filter
- (should return -EINVAL)
- # cat ksym_trace_filter
- (but it ended up removing filter entry)
+Don't take newline into account, otherwise:
+
+ # echo 'pid_max:-w-' > ksym_trace_filter
+ # echo -n 'pid_max:rw-' > ksym_trace_filter
+ bash: echo: write error: Invalid argument
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Cc: Alan Stern <stern@rowland.harvard.edu>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A52E2CE.6080409@cn.fujitsu.com>
+LKML-Reference: <4A52E2EB.9070503@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/trace_ksym.c |   32 ++++++++++++++------------------
- 1 files changed, 14 insertions(+), 18 deletions(-)
+ kernel/trace/trace_ksym.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index b6710d3..9556009 100644
+index 9556009..72fcb46 100644
 --- a/kernel/trace/trace_ksym.c
 +++ b/kernel/trace/trace_ksym.c
-@@ -114,24 +114,22 @@ void ksym_hbp_handler(struct hw_breakpoint *hbp, struct pt_regs *regs)
-  * --x : Set Execution Break points (Not available yet)
-  *
-  */
--static int ksym_trace_get_access_type(char *access_str)
-+static int ksym_trace_get_access_type(char *str)
+@@ -158,21 +158,21 @@ static int ksym_trace_get_access_type(char *str)
+ static int parse_ksym_trace_str(char *input_string, char **ksymname,
+ 							unsigned long *addr)
  {
--	int pos, access = 0;
-+	int access = 0;
+-	char *delimiter = ":";
+ 	int ret;
  
--	for (pos = 0; pos < KSYM_TRACER_OP_LEN; pos++) {
--		switch (access_str[pos]) {
--		case 'r':
--			access += (pos == 0) ? 4 : -1;
--			break;
--		case 'w':
--			access += (pos == 1) ? 2 : -1;
--			break;
--		case '-':
--			break;
--		default:
--			return -EINVAL;
--		}
--	}
-+	if (str[0] == 'r')
-+		access += 4;
-+	else if (str[0] != '-')
-+		return -EINVAL;
+-	ret = -EINVAL;
+-	*ksymname = strsep(&input_string, delimiter);
++	strstrip(input_string);
 +
-+	if (str[1] == 'w')
-+		access += 2;
-+	else if (str[1] != '-')
-+		return -EINVAL;
++	*ksymname = strsep(&input_string, ":");
+ 	*addr = kallsyms_lookup_name(*ksymname);
+ 
+ 	/* Check for malformed request: (2), (1) and (5) */
+ 	if ((!input_string) ||
+-		(strlen(input_string) != (KSYM_TRACER_OP_LEN + 1)) ||
+-			(*addr == 0))
+-		goto return_code;
++	    (strlen(input_string) != KSYM_TRACER_OP_LEN) ||
++	    (*addr == 0))
++		return -EINVAL;;
 +
-+	if (str[2] != '-')
-+		return -EINVAL;
+ 	ret = ksym_trace_get_access_type(input_string);
  
- 	switch (access) {
- 	case 6:
-@@ -140,8 +138,6 @@ static int ksym_trace_get_access_type(char *access_str)
- 	case 2:
- 		access = HW_BREAKPOINT_WRITE;
- 		break;
--	case 0:
--		access = 0;
- 	}
+-return_code:
+ 	return ret;
+ }
  
- 	return access;
