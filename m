@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbZKVFaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751654AbZKVGTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751277AbZKVFaf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 00:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZKVFaf
+	id S1751654AbZKVGTy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 01:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZKVGTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 00:30:35 -0500
-Received: from mail-px0-f204.google.com ([209.85.216.204]:34002 "EHLO
-	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbZKVFae (ORCPT
+	Sun, 22 Nov 2009 01:19:54 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:62064 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbZKVGTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 00:30:34 -0500
+	Sun, 22 Nov 2009 01:19:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
          :organization:date:message-id:mime-version:x-mailer
          :content-transfer-encoding;
-        b=R/VgGHTCJiua7/HzItLmJtWV9tlgDHzBefeAkjp14jkkkZrvrEaz2ZEa6+G07PpwrM
-         mAUMiotBBKgGdtpuPIyznqsP6Fgyt2Kab3P7g3eIMJdM2+HijOVBaZXPJfrtzZJ65hp/
-         824L87BIcUQhrAOCbH+QR3ToYaQo5Or4BDMl4=
-Subject: Re: [PATCH v1] MIPS: Add a high precision sched_clock() via
- cnt32_to_63().
+        b=vel+NNd38R8RcQa6aKhR0hD+6we9vlqHJBrdpoZRmZlvl3KdS1zIL19jNWKyPVRz0x
+         lQar2sN8h6n7P16otf1iWHhiGDIPQBtEQZemS0u473PI5tCsPO1qvdy3fSj+aZPvEqO1
+         c0YtasRrRI7wO09ViXpWNAT/v4AfVQBD6Vow4=
+Subject: Re: [PATCH v9 07/10] tracing: add dynamic function graph tracer
+ for MIPS
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 Reply-To: wuzhangjin@gmail.com
 To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, rostedt@goodmis.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Nicholas Mc Guire <der.herr@hofr.at>,
-       David Daney <ddaney@caviumnetworks.com>, linux-mips@linux-mips.org,
-       Michal Simek <monstr@monstr.eu>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <0d92a3c45f7ffff2b0df815c4345d6e9a01cb00c.1258814214.git.wuzhangjin@gmail.com>
-References: <0d92a3c45f7ffff2b0df815c4345d6e9a01cb00c.1258814214.git.wuzhangjin@gmail.com>
+Cc: rostedt@goodmis.org, Nicholas Mc Guire <der.herr@hofr.at>,
+       zhangfx@lemote.com, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+In-Reply-To: <20091120172438.GG6869@linux-mips.org>
+References: <cover.1258719323.git.wuzhangjin@gmail.com>
+	 <c08257b0ef370f6e04ff9719bf7499bae28c70f4.1258719323.git.wuzhangjin@gmail.com>
+	 <20091120172438.GG6869@linux-mips.org>
 Content-Type: text/plain; charset="UTF-8"
 Organization: DSLab, Lanzhou University, China
-Date: Sun, 22 Nov 2009 13:30:26 +0800
-Message-ID: <1258867826.1864.2.camel@falcon.domain.org>
+Date: Sun, 22 Nov 2009 14:19:37 +0800
+Message-ID: <1258870777.2833.2.camel@falcon.domain.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -42,60 +43,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-11-21 at 22:49 +0800, Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
+On Fri, 2009-11-20 at 17:24 +0000, Ralf Baechle wrote:
+> On Fri, Nov 20, 2009 at 08:34:35PM +0800, Wu Zhangjin wrote:
 > 
-> This patch adds a cnt32_to_63() and MIPS c0 count based sched_clock(),
-> which can provide high resolution. and also, two new kernel options are
-> added. the HR_SCHED_CLOCK is used to enable/disable this sched_clock(),
-> and the HT_SCHED_CLOCK_UPDATE is used to allow whether update the
-> sched_clock() automatically or not.
-> 
-> Without it, the Ftrace for MIPS will give useless timestamp information.
-> 
-> (Because cnt32_to_63() needs to be called at least once per half period
-> to work properly, Differ from the old version, this v1 revision set up a
-> kernel timer to ensure the requirement of some MIPSs which have short c0
-> count period.)
-[...]
->  
-> diff --git a/arch/mips/kernel/csrc-r4k.c b/arch/mips/kernel/csrc-r4k.c
-> index e95a3cd..5048989 100644
-> --- a/arch/mips/kernel/csrc-r4k.c
-> +++ b/arch/mips/kernel/csrc-r4k.c
-> @@ -6,10 +6,62 @@
->   * Copyright (C) 2007 by Ralf Baechle
->   */
->  #include <linux/clocksource.h>
-> +#include <linux/cnt32_to_63.h>
-> +#include <linux/timer.h>
->  #include <linux/init.h>
->  
->  #include <asm/time.h>
->  
-> +/*
-> + * MIPS' sched_clock implementation.
-> + *
-> + * because cnt32_to_63() needs to be called at least once per half period to
-> + * work properly, and some of the MIPS' frequency is very low, perhaps a kernel
-> + * timer is needed to be set up to ensure this requirement is always met.
-> + * please refer to  arch/arm/plat-orion/time.c and include/linux/cnt32_to_63.h
-> + */
-> +static unsigned long __maybe_unused tclk2ns_scale;
-> +static unsigned long __maybe_unused tclk2ns_scale_factor;
-> +
+> > From: Wu Zhangjin <wuzhangjin@gmail.com>
+> > 
+> > This patch make function graph tracer work with dynamic function tracer.
+> > 
+> > To share the source code of dynamic function tracer(MCOUNT_SAVE_REGS),
+> > and avoid restoring the whole saved registers, we need to restore the ra
+> > register from the stack.
+> > 
+> > (NOTE: This not work with 32bit! need to ensure why!)
+> > 
 
-need to be:
+Hi, Ralf, Could you please remove the above "NOTE", just test your
+-queue repository with the latest sched_clock() in 32bit, it works well.
+so, that NOTE is out-of-date.
 
-#ifdef CONFIG_HR_SCHED_CLOCK
-> +unsigned long long notrace sched_clock(void)
-> +{
-> +	unsigned long long v = cnt32_to_63(read_c0_count());
-> +	return (v * tclk2ns_scale) >> tclk2ns_scale_factor;
-> +}
-> +
-#endif
-
-Regards,
+Thanks & Best Regards,
 	Wu Zhangjin
 
