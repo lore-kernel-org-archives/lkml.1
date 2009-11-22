@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZKVRQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZKVRVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbZKVRQc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 12:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZKVRQb
+	id S1755555AbZKVRVw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 12:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZKVRVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 12:16:31 -0500
-Received: from proxima.lp0.eu ([81.2.80.65]:40289 "EHLO proxima.lp0.eu"
+	Sun, 22 Nov 2009 12:21:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36582 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755352AbZKVRQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 12:16:30 -0500
-Message-ID: <4B0971F2.8020702@simon.arlott.org.uk>
-Date: Sun, 22 Nov 2009 17:16:34 +0000
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090927)
+	id S1755407AbZKVRVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 12:21:51 -0500
+Message-ID: <4B0972C9.302@redhat.com>
+Date: Sun, 22 Nov 2009 17:20:09 +0000
+From: Andrew Haley <aph@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
- UHCI
-References: <Pine.LNX.4.44L0.0911221108150.27423-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911221108150.27423-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=UTF-8
+To: "H.J. Lu" <hjl.tools@gmail.com>
+CC: rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
+       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
+ 	messing with mcount prologue
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>	 <20091119072040.GA23579@elte.hu>	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>	 <1258694593.22249.1012.camel@gandalf.stny.rr.com>	 <1258736456.22249.1032.camel@gandalf.stny.rr.com>	 <4B06EF6F.2050507@redhat.com> <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+In-Reply-To: <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/11/09 16:14, Alan Stern wrote:
-> On Sun, 22 Nov 2009, Simon Arlott wrote:
->> On 18/11/09 22:25, Alan Stern wrote:
->> > On Wed, 18 Nov 2009, Simon Arlott wrote:
->> >> > What happens with other sorts of devices, such as a USB flash drive?
->> >>  
->> >> I can write a 10MB file to an USB flash drive over OHCI, and umount+sync
->> >> takes around 13 seconds.
->> > 
->> > Yes, that's about right.  It leads me to wonder if something funny is
->> > going on with the device, or least with the firmware-loading part of
->> > it.  Odd that it works differently with UHCI and OHCI, though.  There
->> > shouldn't be any differences visible to the device.  You don't have
->> > anything else attached to the same bus, do you?
->> 
->> Yes, but not in use and I could disconnect everything to test it.
->> 
->> core/hcd.c has an interesting comment in usb_hcd_check_unlink_urb():
+H.J. Lu wrote:
+> On Fri, Nov 20, 2009 at 11:35 AM, Andrew Haley <aph@redhat.com> wrote:
+>> Steven Rostedt wrote:
+>>> Ingo, Thomas and Linus,
+>>>
+>>> I know Thomas did a patch to force the -mtune=generic, but just in case
+>>> gcc decides to do something crazy again, this patch will catch it.
+>>>
+>>> Should we try to get this in now?
+>> I'm sure this makes sense, but a gcc test case would be even better.
+>> If this can be detected in the gcc test suite it'll be found and
+>> fixed long before y'all in kernel land get to see it.  That's the
+>> only way to guarantee this never bothers you again.
+>>
+>> H.J., who wrote the code in question, is hopefully looking at why
+>> this odd code is being generated.  Once he's done I can put a
+>> suitable test case in the gcc test suite.
+>>
 > 
-> You mean usb_hcd_poll_rh_status().
-
-Yes... misplaced paste from my other email.
-
->>         /* The USB 2.0 spec says 256 ms.  This is close enough and won't
->>          * exceed that limit if HZ is 100. The math is more clunky than
->>          * maybe expected, this is to make sure that all timers for USB devices
->>          * fire at the same time to give the CPU a break inbetween */
->> 
->> I'll try increasing the frequency of this timer too.
+> See:
 > 
-> It shouldn't make any difference; that timer is used with OHCI only in 
-> exceptional circumstances (like immediately after a device is plugged 
-> in or unplugged), not during normal operation.  But maybe something 
-> strange is going on.  You could add a printk in ohci_hub_status_data(), 
-> which is the routine that timer ends up calling.
+> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109#c7
 
-I've tried sending 64 and 2048 bytes at a time, with the same speed
-(4ms and 128ms), so that time is just a coincidence.
+I saw that, but does it mean you're going to investigate?  There is
+no obvious reason why -mtune=generic should affect code generation
+in this way, but it does.
 
-Submitting it all as multiple asynchronous URBs in one go doesn't help
-either. I've been trying to get EHCI working too (via two different
-high speed hubs) but that's not working even if I add long delays.
-
--- 
-Simon Arlott
+Andrew.
