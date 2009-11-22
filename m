@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbZKVM6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZKVM7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbZKVM6h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZKVM6g
+	id S1754614AbZKVM7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZKVM7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:58:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:43680 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbZKVM6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:58:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=MwPB5wDzKJbDYWDlKJAvuVJ6m0rEAy4npnDwRFx4NkaCi85tJHX+dF6iiuoyae/waK
-         UgD3i+jObQqOyu4i2WEqtBU5mkK/q4iLDPuIZepw/Faq6GCSALkdw1l6FqmUsJTOGdWD
-         WsNVDB+FrIIRekuMC7Qndr8ILito5jPSwCB84=
-Subject: Re: XD/smartmedia - how to implement it right?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alex Dubov <oakad@yahoo.com>,
-       arnd@arndb.de, tglx@linutronix.de
-In-Reply-To: <20091121102542.GA21136@logfs.org>
-References: <1258763144.4997.12.camel@maxim-laptop>
-	 <20091121102542.GA21136@logfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 22 Nov 2009 14:58:33 +0200
-Message-ID: <1258894713.4127.4.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Nov 2009 07:59:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60201 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752382AbZKVM7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:59:19 -0500
+Date: Sun, 22 Nov 2009 13:59:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf: use default compiler mode by default
+Message-ID: <20091122125917.GA3366@elte.hu>
+References: <20091122121335.GA24254@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091122121335.GA24254@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-11-21 at 11:25 +0100, Jörn Engel wrote: 
-> On Sat, 21 November 2009 02:25:44 +0200, Maxim Levitsky wrote:
-> > 
-> > This thread is meant to continue discussion about XD/smartmedia support
-> > in linux.
-> > 
-> > I CC'd few peoples that participated in original discussion.
-> > 
-> > Alex Dubov attempted to write a driver for jmicron device (I have it
-> > btw), but this was rejected due to code duplication.
-> > 
-> > I successfully reverse engineered (in my free time) the XD card reader
-> > found on my laptop (ricoh based one)
-> > 
-> > I would like to know how you think to implement the subsystem support
-> > right.
-> > 
-> > I would go with mmc subsystem + FTL, but according to original thread,
-> > there are numerous problems with this approach.
-> > 
-> > Any advice is appreciated.
-> 
-> A novel approach might be to just send the code as a patch.  Last time
-> around noone seemed to have had a real look.
-> 
-> The "mtd uses blocking calls" argument I can help with.  For some other
-> project I've added non-blocking calls to mtd[1].
-> 
-> Biggest problems I see are a) the userspace interface and b) allowing
-> both raw flash access through MTD and block device access with an FTL.
-> 
-> [1] http://lists.infradead.org/pipermail/linux-mtd/2009-November/028065.html
-> 
-> Jörn
 
+* Michael S. Tsirkin <mst@redhat.com> wrote:
 
-I don't have much to say right now, I will study the sources for a
-while, and then continue the effort.
+> gcc with no flags typically is a sane default for systems to use, and
+> looking at the running kernel is probably broken for cross-builds
+> anyway, so let's not do this.  Add EXTRA_CFLAGS so that users can
+> override default gcc mode if they want to.
+> 
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+>  tools/perf/Makefile |   20 +++-----------------
+>  1 files changed, 3 insertions(+), 17 deletions(-)
+> 
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index d0bdaf2..ab35b0f 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -148,6 +148,8 @@ all::
+>  # broken, or spawning external process is slower than built-in grep perf has).
+>  #
+>  # Define LDFLAGS=-static to build a static binary.
+> +#
+> +# Define EXTRA_CFLAGS=-m64 or EXTRA_CFLAGS=-m32 as appropriate for cross-builds.
+>  
+>  PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
+>  	@$(SHELL_PATH) util/PERF-VERSION-GEN
+> @@ -160,22 +162,6 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+>  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+>  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+>  
+> -#
+> -# Add -m32 for cross-builds:
+> -#
+> -ifdef NO_64BIT
+> -  MBITS := -m32
+> -else
+> -  #
+> -  # If we're on a 64-bit kernel (except ia64), use -m64:
+> -  #
+> -  ifneq ($(uname_M),ia64)
+> -    ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+> -      MBITS := -m64
+> -    endif
+> -  endif
+> -endif
 
+iirc PowerPC had some trouble in this area. Paulus?
 
-Best regards,
-Maxim Levitsky
-
+	Ingo
