@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755797AbZKVV1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZKVVho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797AbZKVV1r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 16:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZKVV1r
+	id S1755814AbZKVVho (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 16:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZKVVho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 16:27:47 -0500
-Received: from smtprelay01.ispgateway.de ([80.67.18.13]:51512 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755777AbZKVV1q (ORCPT
+	Sun, 22 Nov 2009 16:37:44 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:44998 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbZKVVhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 16:27:46 -0500
-References: <200911200823.58897@fortytwo.ch>
-Message-ID: <cone.1258925270.277361.2967.1000@deskpiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Adrian von Bidder <avbidder@fortytwo.ch>
+	Sun, 22 Nov 2009 16:37:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W8IYaowTqvmFYZgBS7osaAH9heF3dLThBm6Wv4hHGBHVZMu7PWD+/4dUrEhgA3UweL
+         Ds4dZwBWN1GenzM4uOoeOE7pcTBcd8azlPIkoEF9gzkkCU+HJzg/n7SFOnqxXIzeoaOl
+         46m4GP8GeRa74rOb84Z73zaPO8q6xJbV1y6mw=
+Date: Mon, 23 Nov 2009 08:37:42 +1100
+From: Robert Swan <swan.r.l@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: acerhdf: stilll fighting between kernel and BIOS?
-Date: Sun, 22 Nov 2009 22:27:50 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091122213742.GA3948@swanrl.gmail.com>
+Reply-To: swan.r.l@gmail.com
+References: <20091121222319.GA3905@swanrl.gmail.com> <20091121232320.3262636c@lxorguk.ukuu.org.uk> <20091122002748.GA6605@swanrl.gmail.com> <20091122122942.644006fb@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+In-Reply-To: <20091122122942.644006fb@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Adrian,
+On Sun, Nov 22, 2009 at 12:29:42PM +0000, Alan Cox wrote:
+> not when the CPU is idle. That wants changing and it strikes me as utterly
+> dumb in general to be deferring work when the CPU is idle.
 
-issues with AOA 150 netbooks should be solved with current 2.6.32-git tree. 
-You can also try to use latest acerhdf of http://piie.net
+That's how it struck me.
 
-kind regards,
---peter
-
-Adrian von Bidder writes:
-
-> Heyho!
-> 
-> With 2.6.31 (as packaged by Debian), kernel and BIOS are still fighting over 
-> who controls the fan on my Acer AOA-150.
-> 
-> If the system is idle, I see repeated 
-> 
-> Nov 20 08:07:12 laeggerli kernel: [100246.224141] acerhdf: temp 51      
-> Nov 20 08:07:12 laeggerli kernel: [100246.272136] acerhdf: fan OFF      
-> Nov 20 08:07:22 laeggerli kernel: [100256.328145] acerhdf: temp 51      
-> Nov 20 08:07:22 laeggerli kernel: [100256.376072] acerhdf: fan OFF      
-> 
-> (and the fan is turned on and off accordingly, using a rather noisy speed 
-> for ca. .5s every time.)
-> 
-> As soon as the system gets a bit warmer, fan is running on low speed and the 
-> system is much quieter.
-> 
-> ISTR reading that this should have been fixed in 2.6.31, or was that wrong?  
-> Did anything change in current kernels or the separate releases of the 
-> acerhdf driver?  I might be able to run newer driver releases, or at least I 
-> can provide more info if desired (and if you're patient to deal with quite 
-> slow round trip times from my side.  It's not an urgent problem either.)
-> 
-> 
-> cheers
-> -- vbi
-> 
-> -- 
-> featured product: ClamAV Antivirus - http://www.clamav.net/
+Rob.
