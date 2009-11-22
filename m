@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZKVEV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZKVE0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZKVEV4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Nov 2009 23:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZKVEVh
+	id S1754643AbZKVE0i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Nov 2009 23:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbZKVE0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Nov 2009 23:21:37 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42536 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754556AbZKVEVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Nov 2009 23:21:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=BUZwTBD6WFLs3He+yfLaVVSxt+k9qNQ+MOzEo0DapHdO4/FdEzvC6yP5N/8uPRKAwt
-         sgHH9o7ghrVEj0P+fwUm6wLJ0zlthUXIj3E0vYHFdJopVKD8wH2SdsbAgGFhhLsGLdRm
-         ZscoLTM23TXQRF3ZCPofHhV1ULPniXntW8vUI=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Prasad <prasad@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] hw-breakpoints: Separate the kernel part from breakpoint headers
-Date: Sun, 22 Nov 2009 05:21:35 +0100
-Message-Id: <1258863695-10464-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1258863695-10464-1-git-send-email-fweisbec@gmail.com>
-References: <1258863695-10464-1-git-send-email-fweisbec@gmail.com>
+	Sat, 21 Nov 2009 23:26:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46671 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754542AbZKVE0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Nov 2009 23:26:37 -0500
+Message-ID: <4B08BD14.9060102@kernel.org>
+Date: Sat, 21 Nov 2009 20:24:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: fix gart iommu using for amd 64 bit system
+References: <1257849980-22640-10-git-send-email-fujita.tomonori@lab.ntt.co.jp> <tip-75f1cdf1dda92cae037ec848ae63690d91913eac@git.kernel.org>
+In-Reply-To: <tip-75f1cdf1dda92cae037ec848ae63690d91913eac@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So that we can include this header from userspace tools, like
-perf tools, to get the breakpoint types and len definitions.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
+after
+|commit 75f1cdf1dda92cae037ec848ae63690d91913eac
+|Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+|Date:   Tue Nov 10 19:46:20 2009 +0900
+|
+|    x86: Handle HW IOMMU initialization failure gracefully
+|    
+|    If HW IOMMU initialization fails (Intel VT-d often does this,
+|    typically due to BIOS bugs), we fall back to nommu. It doesn't
+|    work for the majority since nowadays we have more than 4GB
+|    memory so we must use swiotlb instead of nommu.
+...
+
+amd 64 systems that
+1. do not have  AGP
+2. do not have IOMMU
+3. mem > 4g
+4. BIOS do not allocate  correct gart in NB.
+will leave them to use SWIOTLB forcely.
+
+also in pci_iommu_alloc()
+pci_swiotlb_init is stealing the preallocate range that is for
+gart_iommu_hole workaround.
+
+so restore the sequence...
+
+will get back
+[    0.000000] Your BIOS doesn't leave a aperture memory hole
+[    0.000000] Please enable the IOMMU option in the BIOS setup
+[    0.000000] This costs you 64 MB of RAM
+[    0.000000] Mapping aperture over 65536 KB of RAM @ 20000000
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
- include/linux/hw_breakpoint.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/x86/kernel/aperture_64.c |    2 +-
+ arch/x86/kernel/pci-dma.c     |    5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index 0b98cbf..4659e0c 100644
---- a/include/linux/hw_breakpoint.h
-+++ b/include/linux/hw_breakpoint.h
-@@ -16,6 +16,7 @@ enum {
- 	HW_BREAKPOINT_X = 4,
- };
+Index: linux-2.6/arch/x86/kernel/aperture_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/aperture_64.c
++++ linux-2.6/arch/x86/kernel/aperture_64.c
+@@ -458,7 +458,7 @@ out:
  
-+#ifdef __KERNEL__
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
+ 	if (aper_alloc) {
+ 		/* Got the aperture from the AGP bridge */
+-	} else if (!valid_agp) {
++	} else if (swiotlb && !valid_agp) {
+ 		/* Do nothing */
+ 	} else if ((!no_iommu && max_pfn > MAX_DMA32_PFN) ||
+ 		   force_iommu ||
+Index: linux-2.6/arch/x86/kernel/pci-dma.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/pci-dma.c
++++ linux-2.6/arch/x86/kernel/pci-dma.c
+@@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
+ 	/* free the range so iommu could get some range less than 4G */
+ 	dma32_free_bootmem();
+ #endif
++	if (!swiotlb_force)
++		gart_iommu_hole_init();
++
+ 	if (pci_swiotlb_init())
+ 		return;
  
- static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
-@@ -133,5 +134,6 @@ static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
- }
+-	gart_iommu_hole_init();
+-
+ 	detect_calgary();
  
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
-+#endif /* __KERNEL__ */
- 
- #endif /* _LINUX_HW_BREAKPOINT_H */
--- 
-1.6.2.3
-
+ 	detect_intel_iommu();
