@@ -1,144 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZKVQhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZKVQuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZKVQhP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 11:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbZKVQhO
+	id S1755412AbZKVQuj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 11:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZKVQui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 11:37:14 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:6003 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755275AbZKVQhN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 11:37:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e82Ei9LGQt96nWseTxgaRnfJd73UILS6pnbGQDCwTY0+aUPZZ7PI8ffJ6mBDUQ+4kV
-         rZSDh06N/wXuW0zOy+l5ATiJ9O3PcPvvQTdsP8T920vsoGzMHkNF8vXfDASJtga1UWyc
-         BsDc9xPSfsz6RfKbUDeqTjBEF695hi+fm6vyU=
-Date: Sun, 22 Nov 2009 17:37:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
+	Sun, 22 Nov 2009 11:50:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45905 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755025AbZKVQui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 11:50:38 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/DAHAu9KnDzHr9Q8eVf0spsj8Af8IIp2XboWdS/q
+	vai0nllUCYCDJD
+Subject: Re: [patch] sched: improve tick time missed wakeup preempt
+ protection
+From: Mike Galbraith <efault@gmx.de>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH 1/4] tracing: Use the perf recursion protection from
-	trace event
-Message-ID: <20091122163714.GD5049@nowhere>
-References: <1258863695-10464-1-git-send-email-fweisbec@gmail.com> <1258887614.28730.353.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258887614.28730.353.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1258895767.28730.527.camel@laptop>
+References: <1258891682.14325.31.camel@marge.simson.net>
+	 <1258895767.28730.527.camel@laptop>
+Content-Type: text/plain
+Date: Sun, 22 Nov 2009 17:50:40 +0100
+Message-Id: <1258908640.6043.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 22, 2009 at 12:00:14PM +0100, Peter Zijlstra wrote:
-> On Sun, 2009-11-22 at 05:21 +0100, Frederic Weisbecker wrote:
-> > diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-> > index 718fa93..aba8227 100644
-> > --- a/kernel/perf_event.c
-> > +++ b/kernel/perf_event.c
-> > @@ -3880,34 +3880,42 @@ static void perf_swevent_ctx_event(struct perf_event_context *ctx,
-> >         }
-> >  }
-> >  
-> > -static int *perf_swevent_recursion_context(struct perf_cpu_context *cpuctx)
-> > +/*
-> > + * Must be called with preemption disabled
-> > + */
-> > +int perf_swevent_get_recursion_context(int **recursion)
-> >  {
-> > +       struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
-> > +
-> >         if (in_nmi())
-> > -               return &cpuctx->recursion[3];
-> > +               *recursion = &cpuctx->recursion[3];
-> > +       else if (in_irq())
-> > +               *recursion = &cpuctx->recursion[2];
-> > +       else if (in_softirq())
-> > +               *recursion = &cpuctx->recursion[1];
-> > +       else
-> > +               *recursion = &cpuctx->recursion[0];
-> >  
-> > -       if (in_irq())
-> > -               return &cpuctx->recursion[2];
-> > +       if (**recursion)
-> > +               return -1;
-> >  
-> > -       if (in_softirq())
-> > -               return &cpuctx->recursion[1];
-> > +       (**recursion)++;
-> >  
-> > -       return &cpuctx->recursion[0];
-> > +       return 0;
-> >  }
-> 
-> You lost the barrier();
+On Sun, 2009-11-22 at 14:16 +0100, Peter Zijlstra wrote:
 
+> You can loose the else, the if branch does an unconditional return,
+> there's no other way to get below there than 'else' ;-)
 
+Ok.  Can't plug tail into a function, doesn't fit on a line, so..
 
-I thought that putting that into a function would already do
-the trick but that is notwithstanding the fact it could be inlined
-as you said in another message.
+sched: improve tick time missed wakeup preempt protection
 
-Ok, I'll add them back.
+f685ceac provides protection from tasks just missing wakeup preemption, and then
+having to wait a full slice.  However, it offers this protection to tasks which
+have no business receiving the benefit, namely SCHED_BATCH and SCHED_IDLE.  It
+also treats all tasks equally, which obviously isn't true.  Exclude tasks of
+other than SCHED_NORMAL class, and scale minimum runtime before a tick time
+preemption by the difference in task weights, after which, we can just use the
+standard wakeup preempt vruntime delta test, sysctl_sched_wakeup_granularity.
 
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
 
+---
+ kernel/sched_fair.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -811,7 +811,10 @@ dequeue_entity(struct cfs_rq *cfs_rq, st
+ static void
+ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
+ {
++	struct sched_entity *next;
+ 	unsigned long ideal_runtime, delta_exec;
++	unsigned long min = sysctl_sched_min_granularity;
++	s64 delta;
  
-> > -static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
-> > -                                   u64 nr, int nmi,
-> > -                                   struct perf_sample_data *data,
-> > -                                   struct pt_regs *regs)
-> > +void perf_swevent_put_recursion_context(int *recursion)
-> >  {
-> > -       struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
-> > -       int *recursion = perf_swevent_recursion_context(cpuctx);
-> > -       struct perf_event_context *ctx;
-> > -
-> > -       if (*recursion)
-> > -               goto out;
-> > +       (*recursion)--;
-> > +}
-> 
-> And here as well.
-> 
-> Furthermore, its much cleaner if you simply use
-> get_cpu_var(perf_cpu_context) in get_recursion_context, and
-> put_cpu_var() in put_recursion_context.
-> 
-> That way you put the preempt_disable where it belongs, instead of:
-> 
-> > +static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
-> > +                                   u64 nr, int nmi,
-> > +                                   struct perf_sample_data *data,
-> > +                                   struct pt_regs *regs)
-> > +{
-> > +       int *recursion;
-> > +
-> > +       preempt_disable();
-> > +
-> > +       if (perf_swevent_get_recursion_context(&recursion))
-> > +               goto out;
-> > +
-> > +       __do_perf_sw_event(type, event_id, nr, nmi, data, regs);
-> >  
-> > +       perf_swevent_put_recursion_context(recursion);
-> >  out:
-> > -       put_cpu_var(perf_cpu_context);
-> > +       preempt_enable();
-> >  } 
-> 
-> mucking about like here, also it cleans up the code in that you don't
-> have to drag that recursion variable around like so.
-> 
+ 	ideal_runtime = sched_slice(cfs_rq, curr);
+ 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
+@@ -825,24 +828,28 @@ check_preempt_tick(struct cfs_rq *cfs_rq
+ 		return;
+ 	}
+ 
++	if (!sched_feat(WAKEUP_PREEMPT) || cfs_rq->nr_running < 2)
++		return;
++
+ 	/*
+ 	 * Ensure that a task that missed wakeup preemption by a
+ 	 * narrow margin doesn't have to wait for a full slice.
+ 	 * This also mitigates buddy induced latencies under load.
+ 	 */
+-	if (!sched_feat(WAKEUP_PREEMPT))
+-		return;
++	next = __pick_next_entity(cfs_rq);
++	delta = curr->vruntime - next->vruntime;
+ 
+-	if (delta_exec < sysctl_sched_min_granularity)
++	if (task_of(next)->policy != SCHED_NORMAL)
++		return;
++	if (delta < 0)
++		return;
++	if (curr->load.weight != next->load.weight)
++		min = calc_delta_mine(min, curr->load.weight, &next->load);
++	if (delta_exec < min)
+ 		return;
+ 
+-	if (cfs_rq->nr_running > 1) {
+-		struct sched_entity *se = __pick_next_entity(cfs_rq);
+-		s64 delta = curr->vruntime - se->vruntime;
+-
+-		if (delta > ideal_runtime)
+-			resched_task(rq_of(cfs_rq)->curr);
+-	}
++	if (delta > sysctl_sched_wakeup_granularity)
++		resched_task(rq_of(cfs_rq)->curr);
+ }
+ 
+ static void
 
-
-That's cleaner but adds an unnecessary overhead in the trace event
-path. We already disable the interrupts there. That's why I preferred
-to let the caller decide.
 
