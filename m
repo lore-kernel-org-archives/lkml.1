@@ -1,96 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZKVNDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZKVNKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZKVNDo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 08:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZKVNDo
+	id S1754829AbZKVNKz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 08:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZKVNKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 08:03:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52672 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZKVNDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 08:03:43 -0500
-Date: Sun, 22 Nov 2009 14:02:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: support static build
-Message-ID: <20091122130201.GB3366@elte.hu>
-References: <20091029152002.GA5406@redhat.com>
- <20091104110604.GE13194@elte.hu>
- <20091117092331.GA23585@elte.hu>
- <20091122112726.GC13644@redhat.com>
- <20091122113942.GD13644@redhat.com>
- <20091122120243.GA6217@elte.hu>
- <20091122121144.GA21562@redhat.com>
+	Sun, 22 Nov 2009 08:10:54 -0500
+Received: from n15a.bullet.mail.mud.yahoo.com ([68.142.207.125]:35606 "HELO
+	n15a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752889AbZKVNKx convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 08:10:53 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 495479.54021.bm@omp119.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=bellsouth.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=EmlstWWgU6w/lZb8vsn2KT3zbSH3cNCCucCgKQo/sFFikImyNhhmtwJNaTBCaT4HGarRBZorPfjI8Cr0NPlOj8V0ZF0cGmaVzM2IKLDt7mKDzC0XZYihRHMo0S4RWup581hXrXhqUYhxR1aKuP7qN0yioOw+juG4NSqO6sTsKVw=;
+Message-ID: <239062.34745.qm@web180213.mail.gq1.yahoo.com>
+X-YMail-OSG: Ynd9V6gVM1mrKXzMxdw81yPzksCsnluqSpDdhWTtcHuwTAXZp5NyYXgEp42NM2zxPXt_C9K74LTp9R14JVE9sSeGeIZ5yc_p2.u3PWHePJ.kSW1Rb_h0REe.hXYQVWglDb4gyUZrNgnmErSwn1Bjz3fw8DVuyv8kQ2BqSBp_4O7BARvnbrIj41HHi4LbF9cXBUOsaIc1PporYRvlCZIL1viE3ZAlIYYLuuKeWOIGrhtLCYx2LUfKGi6yVKPKs4Zp4hbuz0UMpNJImuoNMslbAZnWB5MyVwNTPsrge051Awq0LWNqYwQfVKEfau92d8jyw3V75ayY4k7i8qW4kGqeKlVEw09dHsg2.bk33cGDTRl.GNOVBNPadeDKnIm6WobLpVMdIBBy9jFLvhhj_BbRJEvuINNqn2N3bCsRXZT6D8G6EToY_gW00XAmokZTOlrF8X.cgVA.9VlZwQZ3LRd26QVAufHNKaoNXLHMKlo7.5lobi88Hkf343WBY5iKAhkosWg.l524g7jDbHzdEuqKsxGjH0T0nd5SoU82E3WY7shh6mFUZ59ExSIqCPQKTgqtjbPiVR2soRqCMIMRhGeCQSdbRfa6PysG9LwuG6lCRrP4z.X4iFtMoEWA2altVPEpPAxILRNr80yFcKYSbvZUHAbpYy9LjTjXqSuhvd1LOyNNHgn3F0AkVpOzF6ocbB2zQQ9PkUo2i7umTqTa9LU9feyoxJzePp63lORO7_TiVt0gU_80kQZcJk7JGAM283uokXxn3QaZEVgauFpM6wdeedoCKcb8W99E7UCBs.U1nop4yJimKRrhSvoVTH049ckZW89uSkupd7FqtUdpEt_4f4cCvXmtSX0jwScjxEoGoE9Moo_ZjZRG0CI4GteUiHM18O98kiu5dvjh0pMcJPHzZ1EKC0ifjmSZAgkzWNAvpxeJ5AgC2eCAL5j66u92Lrlq3lunyAj1DawLjnN9LcEUNXYKgLQhpYnwr9tJE4b7Bm_nIz6eVI8DIuPfjwaqJBgucAC.wcYBnVsyPFbODmt1O3w9tW.lvX6AxerSac0.wuMcL6mwSXT8CBX5s8rjAp2RnIZ35uxntbd1
+X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
+Date: Sun, 22 Nov 2009 05:10:48 -0800 (PST)
+From: Irish Online News <rudpt.irs@bellsouth.net>
+Reply-To: irs1926@live.com
+Subject: Confirm Your Winning Amount
+To: undisclosed recipients:;
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091122121144.GA21562@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+You are a proud winner of £750,000 .00
 
-* Michael S. Tsirkin <mst@redhat.com> wrote:
+Please acknowledge the receipt of this mail with the details below to Mr
+Derek White,
+Email:irs1926@live.com
 
-> On Sun, Nov 22, 2009 at 01:02:43PM +0100, Ingo Molnar wrote:
-> > 
-> > * Michael S. Tsirkin <mst@redhat.com> wrote:
-> > 
-> > > Seems to work fine here on a 32 bit Fedora,
-> > > provided that I supply NO_64BIT (my kernel
-> > > is 64 bit with 32 bit userspace).
-> > > 
-> > > So this worked for me:
-> > > [perf]$ $make -s -j LDFLAGS=-static NO_64BIT=yes 
-> > > Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-> > > PERF_VERSION = 0.0.2.PERF
-> > > Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-> > >     * new build flags or prefix
-> > > /usr/lib/gcc/i586-redhat-linux/4.4.1/../../../libpthread.a(libpthread.o): In function `sem_open':
-> > > (.text+0x69ea): warning: the use of `mktemp' is dangerous, better use `mkstemp'
-> > > [perf]$ ldd perf
-> > >         not a dynamic executable
-> > >
-> > > Ingo, could you please apply my debugging patch and then run with V=2?
-> > 
-> > Still doesnt work here (on a 32-bit/32-bit system, F11) - i've applied 
-> > your debug patch and added V=2:
-> > 
-> >  earth4:~/tip/tools/perf> make -s -j LDFLAGS=-static NO_64BIT=yes V=2
-> >  /usr/bin/ld: cannot find -lpthread
-> >  collect2: ld returned 1 exit status
-> >  Makefile:493: *** No libelf.h/libelf found, please install 
-> >  libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
-> 
-> Aha, you need to install glibc-static in fedora.
-> That will provide libpthread.a. Maybe add a comment
-> about that?
-> 
-> You also need zlib-static if you want libbfd to work.
+Name
+Address
+Age
+Occupation
+Tel
+Country
 
-I suspect it would be nice if the Makefile printed out this info, 
-instead of a somewhat cryptic error message.
-
-> Fedora does not package a static version of libdwarf,
-> so users will need to build that from source if they want
-> dwarf support in a static binary.
-> Fedora guidelines say:
-> 	In general, packagers are strongly encouraged not to ship static libs
-> 	unless a compelling reason exists. 
-> Do you think the ability to create a portable perf binary that
-> I can copy around linux systems qualify as a compelling reason?
-
-To me it certainly does qualify ;-)
-
-	Ingo
