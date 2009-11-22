@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZKVK3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZKVKjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797AbZKVK3k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 05:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZKVK3j
+	id S1753588AbZKVKjs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 05:39:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbZKVKjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 05:29:39 -0500
-Received: from smtp6.welho.com ([213.243.153.40]:35626 "EHLO smtp6.welho.com"
+	Sun, 22 Nov 2009 05:39:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7710 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbZKVK3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 05:29:39 -0500
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] perf kmem: Fix ELF header errors during "perf kmem record"
-Date: Sun, 22 Nov 2009 12:29:44 +0200
-Message-Id: <1258885784-11709-1-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.6.0.4
+	id S1751037AbZKVKjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 05:39:44 -0500
+Date: Sun, 22 Nov 2009 12:35:11 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "s.hetze@linux-ag.com" <s.hetze@linux-ag.com>,
+       Daniel Walker <dwalker@fifo99.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, mashirle@us.ibm.com
+Subject: Re: [PATCHv9 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20091122103511.GB13644@redhat.com>
+References: <cover.1257786516.git.mst@redhat.com> <20091109172230.GD4724@redhat.com> <C85CEDA13AB1CF4D9D597824A86D2B901925446AB4@PDSMSX501.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <C85CEDA13AB1CF4D9D597824A86D2B901925446AB4@PDSMSX501.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The write_event() function in builtin-record.c writes out all mmap()'d DSOs
-including non-ELF files like GNOME resource files and such. Therefore, check
-for ELF_K_ELF in filename__read_build_id() before attempting to read the ELF
-header with gelf_getehdr().
+On Wed, Nov 18, 2009 at 01:42:43PM +0800, Xin, Xiaohui wrote:
+> Michael,
+> >From the http://www.linux-kvm.org/page/VhostNet, we can see netperf with TCP_STREAM can get more than 4GMb/s for the receive side, and more than 5GMb/s for the send side.
+> Is it the result from the raw socket or through tap?
+> I want to duplicate such performance with vhost on my side. I can only get more than 1GMb/s with following conditions:
+> 1) disabled the GRO feature in the host 10G NIC driver
+> 2) vi->big_packet in guest is false
+> 3) MTU is 1500.
+> 4) raw socket, not the tap
+> 5) using your vhost git tree
+> 
+> Is that the reasonable result with such conditions or maybe I have made some silly mistakes somewhere I don't know yet?
+> May you kindly describe your test environment/conditions in detail to have much better performance in your website (I really need the performance)?
+> 
+> Thanks
+> Xiaohui
 
-Fixes the following error messages when running "perf kmem record":
+These results where sent by Shirley Ma (Cc'd).
+I think they were with tap, host-to-guest/guest-to-host
 
-  penberg@penberg-laptop:~/src/linux/tools/perf$ perf kmem record
-  ^C[ perf record: Woken up 2 times to write data ]
-  [ perf record: Captured and wrote 0.753 MB perf.data (~32885 samples) ]
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
-  filename__read_build_id: cannot get elf header.
+> And I have tested the tun support with vhost now, and may you share your /home/mst/ifup script here?
+> 
 
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- tools/perf/util/symbol.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+These are usually pretty simple, mine looks like this:
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 86ec6c7..f56158f 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -921,6 +921,7 @@ int filename__read_build_id(const char *filename, void *bf, size_t size)
- 	GElf_Shdr shdr;
- 	Elf_Data *data;
- 	Elf_Scn *sec;
-+	Elf_Kind ek;
- 	void *ptr;
- 	Elf *elf;
- 
-@@ -937,6 +938,10 @@ int filename__read_build_id(const char *filename, void *bf, size_t size)
- 		goto out_close;
- 	}
- 
-+	ek = elf_kind(elf);
-+	if (ek != ELF_K_ELF)
-+		goto out_elf_end;
-+
- 	if (gelf_getehdr(elf, &ehdr) == NULL) {
- 		pr_err("%s: cannot get elf header.\n", __func__);
- 		goto out_elf_end;
+#!/bin/sh -x
+/sbin/ifconfig tap0 0.0.0.0 up
+brctl addif br0 tap0
+
 -- 
-1.6.0.4
-
+MST
