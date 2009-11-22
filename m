@@ -1,102 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752331AbZKVKZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZKVKa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331AbZKVKZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 05:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZKVKZ5
+	id S1753323AbZKVKa5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 05:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZKVKa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 05:25:57 -0500
-Received: from mail-px0-f204.google.com ([209.85.216.204]:40027 "EHLO
-	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZKVKZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 05:25:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=XVcVvUACr9L1ZCR9Aloz5iRn6hwoTjl2+tmFiUlF+AC+bJfS6dXMWsSaU+lVqWAQMw
-         15LmIhxGrsn3xECSn4jh5fq/rnEzEXGBkhSjoi2i3qkZ+n8PbmKCl924CYMXqH4++Qpb
-         yA/56EU4EwxJPN38Oalg3qw+a8ZLWR3hLCq9w=
+	Sun, 22 Nov 2009 05:30:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbZKVKaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 05:30:55 -0500
+Date: Sun, 22 Nov 2009 12:28:01 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Alan Cox <alan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vhost: Fix warnings and bad type handling
+Message-ID: <20091122102801.GA13644@redhat.com>
+References: <20091117154213.3683.94554.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Date: Sun, 22 Nov 2009 02:26:03 -0800
-Message-ID: <86802c440911220226g21cc42bbmdc3ebe21d0f61943@mail.gmail.com>
-Subject: [PATCH] x86: crash kernel reserve with reserve_early
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org
-Content-Type: multipart/mixed; boundary=00504502aca5cfc8360478f322a4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091117154213.3683.94554.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00504502aca5cfc8360478f322a4
-Content-Type: text/plain; charset=ISO-8859-1
 
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] vhost: fix warnings on 32 bit systems
 
+Fix compiler warning about discarding top 32 bit
+of data on 32 bit systems, and document that
+dicarded bits must be 0.
 
---00504502aca5cfc8360478f322a4
-Content-Type: text/x-diff; charset=US-ASCII; name="crashkernel_early.patch"
-Content-Disposition: attachment; filename="crashkernel_early.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g2bnvbtk0
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
 
-W1BBVENIXSB4ODY6IGNyYXNoIGtlcm5lbCByZXNlcnZlIHdpdGggcmVzZXJ2ZV9lYXJseQoKdXNl
-IGZpbmRfZTgyMF9hcmVhL3Jlc2VydmVfZWFybHkgaW5zdGVhZC4Kd2lsbCBnZXQgbmV4dCBnb29k
-IG9uZSBhdXRvbWF0aWNhbGx5IHdpdGggYWxpZ25tZW50CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFp
-IEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+Ci0tLQogYXJjaC94ODYva2VybmVsL3NldHVwLmMgfCAg
-IDYwICsrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogMSBm
-aWxlIGNoYW5nZWQsIDEzIGluc2VydGlvbnMoKyksIDQ3IGRlbGV0aW9ucygtKQoKSW5kZXg6IGxp
-bnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYwo9PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYu
-b3JpZy9hcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
-bC9zZXR1cC5jCkBAIC00ODgsNDIgKzQ4OCwxMSBAQCBzdGF0aWMgdm9pZCBfX2luaXQgcmVzZXJ2
-ZV9lYXJseV9zZXR1cF9kCiAKICNpZmRlZiBDT05GSUdfS0VYRUMKIAotLyoqCi0gKiBSZXNlcnZl
-IEBzaXplIGJ5dGVzIG9mIGNyYXNoa2VybmVsIG1lbW9yeSBhdCBhbnkgc3VpdGFibGUgb2Zmc2V0
-LgotICoKLSAqIEBzaXplOiBTaXplIG9mIHRoZSBjcmFzaGtlcm5lbCBtZW1vcnkgdG8gcmVzZXJ2
-ZS4KLSAqIFJldHVybnMgdGhlIGJhc2UgYWRkcmVzcyBvbiBzdWNjZXNzLCBhbmQgLTFVTEwgb24g
-ZmFpbHVyZS4KLSAqLwotc3RhdGljCi11bnNpZ25lZCBsb25nIGxvbmcgX19pbml0IGZpbmRfYW5k
-X3Jlc2VydmVfY3Jhc2hrZXJuZWwodW5zaWduZWQgbG9uZyBsb25nIHNpemUpCi17Ci0JY29uc3Qg
-dW5zaWduZWQgbG9uZyBsb25nIGFsaWdubWVudCA9IDE2PDwyMDsgCS8qIDE2TSAqLwotCXVuc2ln
-bmVkIGxvbmcgbG9uZyBzdGFydCA9IDBMTDsKLQotCXdoaWxlICgxKSB7Ci0JCWludCByZXQ7Ci0K
-LQkJc3RhcnQgPSBmaW5kX2U4MjBfYXJlYShzdGFydCwgVUxPTkdfTUFYLCBzaXplLCBhbGlnbm1l
-bnQpOwotCQlpZiAoc3RhcnQgPT0gLTFVTEwpCi0JCQlyZXR1cm4gc3RhcnQ7Ci0KLQkJLyogdHJ5
-IHRvIHJlc2VydmUgaXQgKi8KLQkJcmV0ID0gcmVzZXJ2ZV9ib290bWVtX2dlbmVyaWMoc3RhcnQs
-IHNpemUsIEJPT1RNRU1fRVhDTFVTSVZFKTsKLQkJaWYgKHJldCA+PSAwKQotCQkJcmV0dXJuIHN0
-YXJ0OwotCi0JCXN0YXJ0ICs9IGFsaWdubWVudDsKLQl9Ci19Ci0KIHN0YXRpYyBpbmxpbmUgdW5z
-aWduZWQgbG9uZyBsb25nIGdldF90b3RhbF9tZW0odm9pZCkKIHsKIAl1bnNpZ25lZCBsb25nIGxv
-bmcgdG90YWw7CiAKLQl0b3RhbCA9IG1heF9sb3dfcGZuIC0gbWluX2xvd19wZm47Ci0jaWZkZWYg
-Q09ORklHX0hJR0hNRU0KLQl0b3RhbCArPSBoaWdoZW5kX3BmbiAtIGhpZ2hzdGFydF9wZm47Ci0j
-ZW5kaWYKKwl0b3RhbCA9IG1heF9wZm4gLSBtaW5fbG93X3BmbjsKIAogCXJldHVybiB0b3RhbCA8
-PCBQQUdFX1NISUZUOwogfQpAQCAtNTMyLDYgKzUwMSw4IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBy
-ZXNlcnZlX2NyYXNoa2VybmVsKHYKIHsKIAl1bnNpZ25lZCBsb25nIGxvbmcgdG90YWxfbWVtOwog
-CXVuc2lnbmVkIGxvbmcgbG9uZyBjcmFzaF9zaXplLCBjcmFzaF9iYXNlOworCWNvbnN0IHVuc2ln
-bmVkIGxvbmcgbG9uZyBhbGlnbm1lbnQgPSAxNjw8MjA7CS8qIDE2TSAqLworCXVuc2lnbmVkIGxv
-bmcgbG9uZyBzdGFydDsKIAlpbnQgcmV0OwogCiAJdG90YWxfbWVtID0gZ2V0X3RvdGFsX21lbSgp
-OwpAQCAtNTQzLDIxICs1MTQsMTYgQEAgc3RhdGljIHZvaWQgX19pbml0IHJlc2VydmVfY3Jhc2hr
-ZXJuZWwodgogCiAJLyogMCBtZWFuczogZmluZCB0aGUgYWRkcmVzcyBhdXRvbWF0aWNhbGx5ICov
-CiAJaWYgKGNyYXNoX2Jhc2UgPD0gMCkgewotCQljcmFzaF9iYXNlID0gZmluZF9hbmRfcmVzZXJ2
-ZV9jcmFzaGtlcm5lbChjcmFzaF9zaXplKTsKLQkJaWYgKGNyYXNoX2Jhc2UgPT0gLTFVTEwpIHsK
-LQkJCXByX2luZm8oImNyYXNoa2VybmVsIHJlc2VydmF0aW9uIGZhaWxlZC4gIgotCQkJCSJObyBz
-dWl0YWJsZSBhcmVhIGZvdW5kLlxuIik7Ci0JCQlyZXR1cm47Ci0JCX0KKwkJc3RhcnQgPSBhbGln
-bm1lbnQ7CiAJfSBlbHNlIHsKLQkJcmV0ID0gcmVzZXJ2ZV9ib290bWVtX2dlbmVyaWMoY3Jhc2hf
-YmFzZSwgY3Jhc2hfc2l6ZSwKLQkJCQkJQk9PVE1FTV9FWENMVVNJVkUpOwotCQlpZiAocmV0IDwg
-MCkgewotCQkJcHJfaW5mbygiY3Jhc2hrZXJuZWwgcmVzZXJ2YXRpb24gZmFpbGVkIC0gIgotCQkJ
-CSJtZW1vcnkgaXMgaW4gdXNlXG4iKTsKLQkJCXJldHVybjsKLQkJfQorCQlzdGFydCA9IGNyYXNo
-X2Jhc2U7CisJfQorCWNyYXNoX2Jhc2UgPSBmaW5kX2U4MjBfYXJlYShzdGFydCwgVUxPTkdfTUFY
-LCBjcmFzaF9zaXplLCBhbGlnbm1lbnQpOworCWlmIChjcmFzaF9iYXNlID09IC0xVUxMKSB7CisJ
-CXByX2luZm8oImNyYXNoa2VybmVsIHJlc2VydmF0aW9uIGZhaWxlZCAtIE5vIHN1aXRhYmxlIGFy
-ZWEgZm91bmQuXG4iKTsKKwkJcmV0dXJuOwogCX0KKwlyZXNlcnZlX2Vhcmx5KGNyYXNoX2Jhc2Us
-IGNyYXNoX2Jhc2UgKyBjcmFzaF9zaXplLCAiQ1JBU0ggS0VSTkVMIik7CiAKIAlwcmludGsoS0VS
-Tl9JTkZPICJSZXNlcnZpbmcgJWxkTUIgb2YgbWVtb3J5IGF0ICVsZE1CICIKIAkJCSJmb3IgY3Jh
-c2hrZXJuZWwgKFN5c3RlbSBSQU06ICVsZE1CKVxuIiwKQEAgLTkzNSw2ICs5MDEsOCBAQCB2b2lk
-IF9faW5pdCBzZXR1cF9hcmNoKGNoYXIgKipjbWRsaW5lX3ApCiAKIAlyZXNlcnZlX2luaXRyZCgp
-OwogCisJcmVzZXJ2ZV9jcmFzaGtlcm5lbCgpOworCiAJdnNtcF9pbml0KCk7CiAKIAlpb19kZWxh
-eV9pbml0KCk7CkBAIC05NjUsOCArOTMzLDYgQEAgdm9pZCBfX2luaXQgc2V0dXBfYXJjaChjaGFy
-ICoqY21kbGluZV9wKQogCiAJaW5pdG1lbV9pbml0KDAsIG1heF9wZm4sIGFjcGksIGs4KTsKIAot
-CXJlc2VydmVfY3Jhc2hrZXJuZWwoKTsKLQogI2lmZGVmIENPTkZJR19YODZfNjQKIAkvKgogCSAq
-IGRtYTMyX3Jlc2VydmVfYm9vdG1lbSgpIGFsbG9jYXRlcyBib290bWVtIHdoaWNoIG1heSBjb25m
-bGljdAo=
---00504502aca5cfc8360478f322a4--
+So I think the below slightly tweaked version of
+Alan's patch is a bit better. OK?
+
+ drivers/vhost/vhost.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 97233d5..e7b4dea 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -322,6 +322,8 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 			r = -EOPNOTSUPP;
+ 			break;
+ 		}
++		/* For 32bit, verify that the top 32bits of the user
++		   data are set to zero. */
+ 		if ((u64)(unsigned long)a.desc_user_addr != a.desc_user_addr ||
+ 		    (u64)(unsigned long)a.used_user_addr != a.used_user_addr ||
+ 		    (u64)(unsigned long)a.avail_user_addr != a.avail_user_addr) {
+@@ -334,7 +336,8 @@ static long vhost_set_vring(struct vhost_dev *d, int ioctl, void __user *argp)
+ 			r = -EINVAL;
+ 			break;
+ 		}
+-		r = init_used(vq, (struct vring_used __user *)a.used_user_addr);
++		r = init_used(vq, (struct vring_used __user *)(unsigned long)
++			      a.used_user_addr);
+ 		if (r)
+ 			break;
+ 		vq->log_used = !!(a.flags & (0x1 << VHOST_VRING_F_LOG));
+-- 
+1.6.5.2.143.g8cc62
+
