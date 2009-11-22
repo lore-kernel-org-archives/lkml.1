@@ -1,134 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZKVLIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZKVLXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbZKVLIU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 06:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZKVLIT
+	id S1752614AbZKVLXK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 06:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZKVLXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 06:08:19 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40061 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbZKVLIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 06:08:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=RX7jogcjyjVQp9AHEaNnzfD8u0TYEbhGDuUb1VkmWDnAv3gWLFX7cCU63xRXY8c1U5
-         ee5kbZHMn8Wp1srPHMM5F9jdpQRqGMQx4d6mrW0jG3Jf/y9vPLCBf4l3SP14hfNvZwI3
-         k4dsc1NJCCtYV1RKAo7eR7MjUXGBix4DMEdMk=
-Subject: Re: [PATCH v2] MIPS: Add a high resolution sched_clock() via
- cnt32_to_63().
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>, Michal Simek <monstr@monstr.eu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091122081328.GB24558@elte.hu>
-References: <dae45f23b5d34f64fc60a445015e7dfe05aa0d07.1258875717.git.wuzhangjin@gmail.com>
-	 <20091122081328.GB24558@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Sun, 22 Nov 2009 19:08:05 +0800
-Message-ID: <1258888086.4548.52.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Nov 2009 06:23:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36089 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbZKVLXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 06:23:08 -0500
+Date: Sun, 22 Nov 2009 12:22:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH 1/4] tracing: Use the perf recursion protection from
+ trace event
+Message-ID: <20091122112259.GA24741@elte.hu>
+References: <1258863695-10464-1-git-send-email-fweisbec@gmail.com>
+ <1258887614.28730.353.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258887614.28730.353.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[...]
-> > +
-> > +	  If unsure, disable it.
-> > +
-> > +config HR_SCHED_CLOCK_UPDATE
-> > +	bool "Update sched_clock() automatically"
-> > +	depends on HR_SCHED_CLOCK
-> > +	default y
-> > +	help
-> > +	  Because Some of the MIPS c0 count period is quite short and because
-> > +	  cnt32_to_63() needs to be called at least once per half period to
-> > +	  work properly, a kernel timer is needed to set up to ensure this
-> > +	  requirement is always met.
-> 
-> s/Some/some
-> 
 
-Will apply all of the above feedbacks and the later relative ones,
-thanks!
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Why is this a config option? I suspect that hardware that _needs_ this 
-> keep-warm periodic tick we should enable it unconditionally and 
-> automatically - otherwise the user can misconfigure the kernel with a 
-> bad clock.
-> 
-
-It will be really hard to let the users make decision, so I tell them to
-enable it if not sure. perhaps it's better to remove this option.
-
-but one issue I have found here, if enabled this keep-warm by default, I
-can not always get the result of function graph tracer, not sure what
-the exact reason is. and even if get the result, lots of them are the
-results about timer(that mod_timer() and sched_clock() is called
-frequently?).
-
-and as we can see from arch/arm/mach-pxa/time.c, there is also no
-keep_warm there, which means that if the frequency of that MIPS is very
-low, it will need enough seconds to make that 32bit long c0 count
-overrall. so, they will not need this keep-warm. perhaps we can use that
-mips_hpt_frequency variable to determine setup that keep-warm or not.
-but it's hard to design the number of frequency.
-
-[...]
+> On Sun, 2009-11-22 at 05:21 +0100, Frederic Weisbecker wrote:
+> > diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> > index 718fa93..aba8227 100644
+> > --- a/kernel/perf_event.c
+> > +++ b/kernel/perf_event.c
+> > @@ -3880,34 +3880,42 @@ static void perf_swevent_ctx_event(struct perf_event_context *ctx,
+> >         }
+> >  }
+> >  
+> > -static int *perf_swevent_recursion_context(struct perf_cpu_context *cpuctx)
+> > +/*
+> > + * Must be called with preemption disabled
 > > + */
-> > +static unsigned long __maybe_unused tclk2ns_scale;
-> > +static unsigned long __maybe_unused tclk2ns_scale_factor;
-> 
-> 
-> __read_mostly?
-> 
-
-Yes.
-
-[...]
-> > +static void __maybe_unused setup_sched_clock_update(unsigned long tclk)
-> > +{
-> > +	unsigned long data;
+> > +int perf_swevent_get_recursion_context(int **recursion)
+> >  {
+> > +       struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
 > > +
-> > +	data = (0xffffffffUL / tclk / 2 - 2) * HZ;
-
-Because the MIPS c0 count's frequency is half of the cpu frequency(Hi,
-Ralf, does every MIPS c0 count meet this feature?), so, the above line
-should be:
-
-data = (0xffffffffUL / tclk - 2) * HZ;
-
-> > +	setup_timer(&cnt32_to_63_keepwarm_timer, cnt32_to_63_keepwarm, data);
-> > +	mod_timer(&cnt32_to_63_keepwarm_timer, round_jiffies(jiffies + data));
+> >         if (in_nmi())
+> > -               return &cpuctx->recursion[3];
+> > +               *recursion = &cpuctx->recursion[3];
+> > +       else if (in_irq())
+> > +               *recursion = &cpuctx->recursion[2];
+> > +       else if (in_softirq())
+> > +               *recursion = &cpuctx->recursion[1];
+> > +       else
+> > +               *recursion = &cpuctx->recursion[0];
+> >  
+> > -       if (in_irq())
+> > -               return &cpuctx->recursion[2];
+> > +       if (**recursion)
+> > +               return -1;
+> >  
+> > -       if (in_softirq())
+> > -               return &cpuctx->recursion[1];
+> > +       (**recursion)++;
+> >  
+> > -       return &cpuctx->recursion[0];
+> > +       return 0;
+> >  }
+> 
+> You lost the barrier();
+> 
+> > -static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
+> > -                                   u64 nr, int nmi,
+> > -                                   struct perf_sample_data *data,
+> > -                                   struct pt_regs *regs)
+> > +void perf_swevent_put_recursion_context(int *recursion)
+> >  {
+> > -       struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
+> > -       int *recursion = perf_swevent_recursion_context(cpuctx);
+> > -       struct perf_event_context *ctx;
+> > -
+> > -       if (*recursion)
+> > -               goto out;
+> > +       (*recursion)--;
 > > +}
-[...]
-> >  
-> > +#ifdef CONFIG_HR_SCHED_CLOCK
-> > +	setup_sched_clock(&clocksource_mips);
-> > +#endif
-> >  	clocksource_register(&clocksource_mips);
-> >  
-> > +#ifdef CONFIG_HR_SCHED_CLOCK_UPDATE
-> > +	setup_sched_clock_update(mips_hpt_frequency);
-> > +#endif
-> >  	return 0;
 > 
-> You could make the functions inline and move the #ifdef into those 
-> functions.
-> 
-> That wold also remove those __maybe_unused tags.
-> 
+> And here as well.
 
-will apply it, thanks ;)
+Global functions are in essence a barrier() to GCC but yeah.
 
-Regards,
-	Wu Zhangjin
-
+	Ingo
