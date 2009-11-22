@@ -1,137 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZKVMHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZKVMHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbZKVMHf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZKVMHe
+	id S1754634AbZKVMHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZKVMHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:07:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48787 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZKVMHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:07:33 -0500
-Date: Sun, 22 Nov 2009 12:06:46 GMT
-From: "tip-bot for Michael S. Tsirkin" <mst@redhat.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, mst@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, mst@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091122112726.GC13644@redhat.com>
-References: <20091122112726.GC13644@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Add V=2 option to help debug config issues
-Message-ID: <tip-7baed9af4bf0d7850045e36d19a43a2c76872b62@git.kernel.org>
-Git-Commit-ID: 7baed9af4bf0d7850045e36d19a43a2c76872b62
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Sun, 22 Nov 2009 07:07:39 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:5697 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZKVMHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:07:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZU+AVD+bDQiYLYNMHLzDeAhhnfEEgQySHfPA2JH2b8q0DMb/fcgwrb4wJ/sqLHUmuj
+         uBjdQJY/NLecPb82q2P/VXAvXL70WMVHHzKHrU8gE7MF3eL6NY2qGDeaznWE/5Ck4100
+         Fv6JGOT2vygAyfSl60yCXuGlenQYK4KUMR+Ug=
+Subject: Re: RFC: Put printk buffer in video ram
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091122023237.GA6572@nowhere>
+References: <1258855506.3153.1.camel@maxim-laptop>
+	 <20091122023237.GA6572@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 22 Nov 2009 14:07:37 +0200
+Message-ID: <1258891657.3231.12.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7baed9af4bf0d7850045e36d19a43a2c76872b62
-Gitweb:     http://git.kernel.org/tip/7baed9af4bf0d7850045e36d19a43a2c76872b62
-Author:     Michael S. Tsirkin <mst@redhat.com>
-AuthorDate: Sun, 22 Nov 2009 13:27:27 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 22 Nov 2009 13:05:12 +0100
+On Sun, 2009-11-22 at 03:32 +0100, Frederic Weisbecker wrote: 
+> On Sun, Nov 22, 2009 at 04:05:06AM +0200, Maxim Levitsky wrote:
+> > After doing some successful debugging by placing printk buffer in video
+> > ram, here I publish cleaned version of it.
+> > 
+> > I discovered that on my system video ram isn't cleared on reboot, and I
+> > took advantage of that by placing printk buffer directly there.
+> > This allows to capture oopses/panicks almost from everywhere.
+> > It is also very simple to setup.
+> > 
+> > 
+> > Best regards,
+> > Maxim Levitsky
+> > 
+> > ---
+> > 
+> > >From 77e0f4ffc531417d54ce928ade8481d82192b012 Mon Sep 17 00:00:00 2001
+> > From: Maxim Levitsky <maximlevitsky@gmail.com>
+> > Date: Sun, 22 Nov 2009 03:49:04 +0200
+> > Subject: [PATCH] printk: Allow to store log buffer into video memory
+> > 
+> > This patch adds new kernel parameter printk_address=
+> > that will allow it to store the printk buffer in arbitary
+> > (I/O) memory address.
+> > 
+> > If you own a system that has discrete video ram, and it
+> > isn't cleared automatically by BIOS on reboot, you
+> > can use this as a black box recorder of crashes.
+> > 
+> > If debugfs is enabled, log of last boot is copied into
+> > system ram, and can be accessed via debugfs, for example
+> > cat /sys/kernel/debug/printk/crash_dmesg
+> > 
+> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> > ---
+> >  kernel/printk.c   |  102 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  lib/Kconfig.debug |   31 ++++++++++++++++
+> >  2 files changed, 133 insertions(+), 0 deletions(-)
+> 
+> 
+> 
+> kernel/printk.c does not seem to be the right place to do that
+> but rather in a specific console driver.
+I more or less agree that printk.c isn't right place for that, but
+the way I did it ensures that as soon as messages are printed, they are
+in the log buffer. Doing that using early console driver might not
+capture all messages. For example, for suspend/resume cycle unless 
+no_console_suspend is passed, it would block output to all consoles.
+Also, isn't early console only enabled before regular console kicks in?
+I think there is a kconfig option to keep it, but I would like to make
+this feature permanent independently.
 
-perf tools: Add V=2 option to help debug config issues
+> I would rather see it as an early console (for early printk), beside ttyS,
+> vga and usb debug ports.
 
-Make standard error show up on console when V=2 is set.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <20091122112726.GC13644@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Makefile |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index d7198c5..31da6be 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -2,6 +2,7 @@
- all::
- 
- # Define V=1 to have a more verbose compile.
-+# Define V=2 to have an even more verbose compile.
- #
- # Define SNPRINTF_RETURNS_BOGUS if your are on a system which snprintf()
- # or vsnprintf() return -1 instead of number of characters which would
-@@ -263,7 +264,7 @@ PTHREAD_LIBS = -lpthread
- # explicitly what architecture to check for. Fix this up for yours..
- SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
- 
--ifeq ($(shell sh -c "echo 'int foo(void) {char X[2]; return 3;}' | $(CC) -x c -c -Werror -fstack-protector-all - -o /dev/null >/dev/null 2>&1 && echo y"), y)
-+ifeq ($(shell sh -c "echo 'int foo(void) {char X[2]; return 3;}' | $(CC) -x c -c -Werror -fstack-protector-all - -o /dev/null "$(QUIET_STDERR)" && echo y"), y)
-   CFLAGS := $(CFLAGS) -fstack-protector-all
- endif
- 
-@@ -448,6 +449,11 @@ BUILTIN_OBJS += builtin-kmem.o
- 
- PERFLIBS = $(LIB_FILE)
- 
-+ifeq ($(V), 2)
-+	QUIET_STDERR = ">/dev/null"
-+else
-+	QUIET_STDERR = ">/dev/null 2>&1"
-+endif
- #
- # Platform specific tweaks
- #
-@@ -475,19 +481,19 @@ ifeq ($(uname_S),Darwin)
- 	PTHREAD_LIBS =
- endif
- 
--ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
--ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
-+ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
-+ifneq ($(shell sh -c "(echo '\#include <gnu/libc-version.h>'; echo 'int main(void) { const char * version = gnu_get_libc_version(); return (long)version; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
- 	msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]);
- endif
- 
--	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
-+	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
- 		BASIC_CFLAGS += -DLIBELF_NO_MMAP
- 	endif
- else
- 	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel and glibc-dev[el]);
- endif
- 
--ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; Dwarf_Ranges *rng; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); dwarf_get_ranges(dbg, 0, &rng, 0, 0, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) > /dev/null 2>&1 && echo y"), y)
-+ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; Dwarf_Ranges *rng; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); dwarf_get_ranges(dbg, 0, &rng, 0, 0, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
- 	msg := $(warning No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231);
- 	BASIC_CFLAGS += -DNO_LIBDWARF
- else
-@@ -499,20 +505,20 @@ endif
- ifdef NO_DEMANGLE
- 	BASIC_CFLAGS += -DNO_DEMANGLE
- else
--	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd > /dev/null 2>&1 && echo y")
-+	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd "$(QUIET_STDERR)" && echo y")
- 
- 	ifeq ($(has_bfd),y)
- 		EXTLIBS += -lbfd
- 	else
--		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty > /dev/null 2>&1 && echo y")
-+		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty "$(QUIET_STDERR)" && echo y")
- 		ifeq ($(has_bfd_iberty),y)
- 			EXTLIBS += -lbfd -liberty
- 		else
--			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
-+			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -lbfd -liberty -lz "$(QUIET_STDERR)" && echo y")
- 			ifeq ($(has_bfd_iberty_z),y)
- 				EXTLIBS += -lbfd -liberty -lz
- 			else
--				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -liberty > /dev/null 2>&1 && echo y")
-+				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) $(EXTLIBS) -liberty "$(QUIET_STDERR)" && echo y")
- 				ifeq ($(has_cplus_demangle),y)
- 					EXTLIBS += -liberty
- 					BASIC_CFLAGS += -DHAVE_CPLUS_DEMANGLE
+> 
+> Also, instead of creating another debugfs entry, you could just
+> trigger the trace to the ftrace ring buffer, using trace_printk()
+> for example.
+It isn't a bad idea, but this adds yet another requirement, this is user
+will need to enable the ftrace, and know how to read this log buffer.
+simple 'cat' is easier, but I am not against implementing both.
+
+
+> 
+> Hm?
+> 
+> I personally would like to see such feature as I have no serial line
+> in my laptop, although I'm not sure my graphical card would be happy
+> with that...
+You can always use 'vesa' Xorg driver. It will only access the
+framebuffer. anything beyond that is very likely to be available.
+
+I own an nvidia device, and I patched the 'nv' driver for fixed amount
+of memory.
+
+> 
+> Thanks.
+> 
+
+Best regards,
+Maxim Levitsky
+
