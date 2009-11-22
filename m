@@ -1,189 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZKVRzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZKVR67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZKVRzX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 12:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZKVRzX
+	id S1753280AbZKVR67 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 12:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZKVR67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 12:55:23 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:64861 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755316AbZKVRzV (ORCPT
+	Sun, 22 Nov 2009 12:58:59 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:61523 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZKVR65 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 12:55:21 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+G4yIiHcTY4aDzLum15rfd
-Date: Sun, 22 Nov 2009 09:55:24 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Chris Banker <cbanker@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org
-Subject: Re: NULL pointer dereference with 2.6.31 on OMAP243
-Message-ID: <20091122175523.GA4860@atomide.com>
-References: <65dfecfd0911191234s585182c3sf88aaebcbd1ccd56@mail.gmail.com>
+	Sun, 22 Nov 2009 12:58:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=n6AJuLdbub04uzAywcBknVERz4NHMgAALeUqazkUo+ylStCVRSLSEhArnTg5Ycqex/
+         Tf969FonOZLi/fn6ndzXWYC0/Iqy7wfFwcC7UYEjkrv2lHldCIR+exHYG6560NpWA8ll
+         FshMPKworxLRW4SOCpEcxxJRkV5DSwq4taSYY=
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="UugvWAfsgieZRqgk"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <65dfecfd0911191234s585182c3sf88aaebcbd1ccd56@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B0932C8.90208@gmail.com>
+References: <30353c3d0911201730n4682ff7dy8225d475599eb9bb@mail.gmail.com>
+	 <4B0806EC.3050201@gmail.com>
+	 <30353c3d0911212309i20c9b9d3y821b508d8f1c81a4@mail.gmail.com>
+	 <4B0932C8.90208@gmail.com>
+Date: Sun, 22 Nov 2009 12:59:02 -0500
+X-Google-Sender-Auth: 554dc745ef0b2b1e
+Message-ID: <30353c3d0911220959l68cde41cpfd8c02c290497c30@mail.gmail.com>
+Subject: Re: [rt2x00-users] ieee80211_tx_status: headroom too small
+From: David Ellingsworth <david@identd.dyndns.org>
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Cc: rt2x00 Users List <users@host1.serialmonkey.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 22, 2009 at 7:47 AM, Gertjan van Wingerde
+<gwingerde@gmail.com> wrote:
+> On 11/22/09 08:09, David Ellingsworth wrote:
+>> On Sat, Nov 21, 2009 at 10:27 AM, Gertjan van Wingerde
+>> <gwingerde@gmail.com> wrote:
+>>> On 11/21/09 02:30, David Ellingsworth wrote:
+>>>> Wasn't sure where to send this, but with the latest 2.6.32-rc8-wl
+>>>> kernel built from the wireless-testing repository I'm getting a number
+>>>> of "ieee80211_tx_status: headroom too small" errors in my syslog. I'm
+>>>> using the rt61pci driver in conjunction with hostap as a wpa2 secured
+>>>> access point. The relevant information about my card from lspci is:
+>>>>
+>>>> 01:08.0 0280: 1814:0301
+>>>>         Subsystem: 1458:e934
+>>>>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
+>>>> ParErr- Stepping- SERR+ FastB2B- DisINTx-
+>>>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=slow >TAbort-
+>>>> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>>>>         Latency: 64, Cache Line Size: 128 bytes
+>>>>         Interrupt: pin A routed to IRQ 18
+>>>>         Region 0: Memory at fe6f0000 (32-bit, non-prefetchable) [size=32K]
+>>>>         Capabilities: [40] Power Management version 2
+>>>>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+>>>> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>>>>                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+>>>>         Kernel driver in use: rt61pci
+>>>>
+>>>> If you need any other information, I'll be happy to provide it.
+>>>>
+>>>
+>>> Hi David,
+>>>
+>>> This seems to be caused by the rt2x00 driver not properly declaring its alignment
+>>> maneuvring space properly, and thus it doesn't leave enough headroom left for
+>>> copying to the monitor interface.
+>>>
+>>> Can you check whether the attached patch fixes the issue for you?
+>>> Note: patch looks a bit bigger than it actually is due to indenting cleanups.
+>>>
+>>
+>> Gertjan,
+>>
+>> I haven't really been able to test this. The kernel version I was
+>> using at the time was 2.6.32-rc7-wl and not 2.6.32-rc8-wl. I'm rather
+>> certain the patch will resolve the issue, but I've been unable to get
+>> my wireless card to function properly with the latest 2.6.32-rc8-wl
+>> master branch. I'm not entirely sure what changed since two days ago,
+>> but I know the following:
+>>
+>> 1. 2.6.32-rc8 from Linus' master branch works fine but still exhibits
+>> this issue. However, this patch will not apply on top of 2.6.32-rc8.
+>>
+>> 2. 2.6.32-rc7-wl(11/19/2009) worked fine with the exception of the
+>> above mentioned error. Unable to test patch since I pulled all the
+>> recent modifications down.
+>> 3. 2.6.32-rc8-wl does not work at all for me, but patch does apply.
+>>
+>> I'm not entirely sure what the differences are between Linus' master
+>> branch of 2.6.32-rc8 and the current 2.6.32-rc8-wl tree are or what
+>> changes have been made on the wireless-testing master branch in the
+>> last couple of days that are preventing me from fully testing this
+>> patch.
+>>
+>> With the current wireless-testing master branch, 2.6.32-rc8-wl, with
+>> and without the patch I can associate and authenticate with my AP but
+>> am unable to do anything else. Any attempt to establish a wireless
+>> connection thus dies while trying to obtain an ip address via DHCP.
+>> Sadly, no errors are logged indicating what the cause of this problem
+>> might be. Given that I've only seen these errors after establishing a
+>> wireless connection, it's a little difficult for me to test without
+>> being able to transmit any data.
+>>
+>> I don't know if it's worth the effort or not, but if this patch were
+>> re-based against Linus' master branch I might be able to test it since
+>> my AP at least works with 2.6.32-rc8.
+>
+> David,
+>
+> OK. Find attached the patch ported to Linus' tree. It should apply to
+> any version of Linus' tree after 2.6.32-rc8.
+> I think it is good to get real confirmation that the patch behaves
+> as expected.
+>
+> ---
+> Gertjan.
+>
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+Gertjan,
 
-Hi,
-
-Added linux-omap list and Paul to Cc.
-
-* Chris Banker <cbanker@gmail.com> [091119 12:34]:
-> I'm having trouble with the 2.6.31 kernel running on an OMAP2430
-> board.  I was able to get the board to boot using 2.6.31rc1, but am
-> having some issue with 2.6.31.
-> 
-> With low-level debugging enabled, I get the output below.  It appears
-> to be an issue with the new hwmod system, which didn't exist in
-> 2.6.31rc1.  It seems to die during the initialization of mpu_hwmod.
-> 
-> Anyone have any suggestions as to how to fix this or what to try?
-
-Good to hear somebody is playing with a 2430 :) What's the board
-you're using? I guess it is not an SDP based on the crystal rate at
-19.2MHz?
-
-We had a similar issue with 2420, that got fixed by
-a7f20b2695eb6a00a5464089bacf75b8ed64725e.
-
-Maybe give it a try and see if it helps? I've attached Paul's patch
-too for reference.
+The patch applies but doesn't quite fix the issue with the rt61pci
+driver. With the patch applied, I still occasionally receive the error
+message. I added a printk after the error to see how much was missing.
+It indicates that skb_headroom is 12 and sizeof(*rthdr) is 13 when it
+fails.
 
 Regards,
 
-Tony
-
- 
-> Thanks,
-> Chris
-> 
-> ------------------------------------------------------------------------------------------------------------------------------------------------------
-> 
-> Starting kernel ...
-> 
-> Uncompressing Linux.....................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
-> done, booting the kernel.
-> <5>Linux version 2.6.31-omap1 (cbanker@vcaeng05) (gcc version 4.3.3
-> (GCC) ) #27 Wed Nov 18 17:23:18 PST 2009
-> CPU: ARMv6-compatible processor [4107b366] revision 6 (ARMv6TEJ), cr=00c5387f
-> CPU: VIPT aliasing data cache, VIPT aliasing instruction cache
-> Machine: BFT Digital Modem
-> Memory policy: ECC disabled, Data cache writeback
-> <7>On node 0 totalpages: 32768
-> <7>free_area_init_node: node 0, pgdat c0f10848, node_mem_map c0f35000
-> <7>  Normal zone: 256 pages used for memmap
-> <7>  Normal zone: 0 pages reserved
-> <7>  Normal zone: 32512 pages, LIFO batch:7
-> <6>OMAP2430<6>
-> <6>SRAM: Mapped pa 0x40200000 to va 0xe3000000 size: 0x100000
-> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
-> <5>Kernel command line: root=/dev/ram0 rw console=ttys2,115200n8
-> PID hash table entries: 512 (order: 9, 2048 bytes)
-> <6>Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-> <6>Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
-> <6>Memory: 128MB = 128MB total
-> <5>Memory: 114232KB available (3084K code, 327K data, 12124K init, 0K highmem)
-> <6>NR_IRQS:384
-> <6>Clocking rate (Crystal/DPLL/MPU): 19.2/660/330 MHz
-> <1>Unable to handle kernel NULL pointer dereference at virtual address 00000004
-> <1>pgd = c0004000
-> <1>[00000004] *pgd=00000000
-> Internal error: Oops: 5 [#1]
-> <d>Modules linked in:
-> CPU: 0    Not tainted  (2.6.31-omap1 #27)
-> PC is at _enable+0x78/0x208
-> LR is at release_console_sem+0x1a8/0x204
-> pc : [<c0be9098>]    lr : [<c0bff998>]    psr: a00001d3
-> sp : c0ee3f38  ip : c0ee3e80  fp : c0ee3f4c
-> r10: 80022140  r9 : 4107b366  r8 : 80022174
-> r7 : c0ee86b4  r6 : c0be95cc  r5 : c0ee6154  r4 : c0ee6154
-> r3 : 00000000  r2 : 00000000  r1 : 000005b2  r0 : 0000001f
-> Flags: NzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment kernel
-> Control: 00c5387f  Table: 80004000  DAC: 00000017
-> Process swapper (pid: 0, stack limit = 0xc0ee2260)
-> Stack: (0xc0ee3f38 to 0xc0ee4000)
-> 3f20:                                                       c0ee6634 c0ee6154
-> 3f40: c0ee3f68 c0ee3f50 c0be9648 c0be902c 00000000 c0ee6154 c0be95cc c0ee3f88
-> 3f60: c0ee3f6c c0be8a6c c0be95d8 c0eece48 c0eece48 c0bdbe08 c0ee5b34 c0ee3f98
-> 3f80: c0ee3f8c c0be98f4 c0be8a44 c0ee3fb0 c0ee3f9c c000dfc4 c0be98a0 c0f11190
-> 3fa0: c0f11184 c0ee3fc0 c0ee3fb4 c000ef0c c000df50 c0ee3fd0 c0ee3fc4 c000b878
-> 3fc0: c000eee8 c0ee3ff4 c0ee3fd4 c0008a2c c000b84c c0008658 c0bdbe08 00c5387d
-> 3fe0: c0f11440 c0bdc20c 00000000 c0ee3ff8 80008034 c00088fc 00000000 00000000
-> Backtrace:
-> [<c0be9020>] (_enable+0x0/0x208) from [<c0be9648>] (_setup+0x7c/0xb0)
->  r4:c0ee6154
-> [<c0be95cc>] (_setup+0x0/0xb0) from [<c0be8a6c>] (omap_hwmod_for_each+0x34/0x78)
->  r6:c0be95cc r5:c0ee6154 r4:00000000
-> [<c0be8a38>] (omap_hwmod_for_each+0x0/0x78) from [<c0be98f4>]
-> (omap_hwmod_late_init+0x60/0x8c)
->  r7:c0ee5b34 r6:c0bdbe08 r5:c0eece48 r4:c0eece48
-> [<c0be9894>] (omap_hwmod_late_init+0x0/0x8c) from [<c000dfc4>]
-> (omap2_init_common_hw+0x80/0xbc)
-> [<c000df44>] (omap2_init_common_hw+0x0/0xbc) from [<c000ef0c>]
-> (omap2430bft_init_irq+0x30/0x1c4)
->  r5:c0f11184 r4:c0f11190
-> [<c000eedc>] (omap2430bft_init_irq+0x0/0x1c4) from [<c000b878>]
-> (init_IRQ+0x38/0x44)
-> [<c000b840>] (init_IRQ+0x0/0x44) from [<c0008a2c>] (start_kernel+0x13c/0x2ac)
-> [<c00088f0>] (start_kernel+0x0/0x2ac) from [<80008034>] (0x80008034)
->  r6:c0bdc20c r5:c0f11440 r4:00c5387d
-> Code: 0a000005 e5933020 e592205c e593305c (e5920004)
-> <4>---[ end trace 1b75b31a2719ed1c ]---
-> <0>Kernel panic - not syncing: Attempted to kill the idle task!
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
---UugvWAfsgieZRqgk
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="24xx-clock-pointer.patch"
-
-commit a7f20b2695eb6a00a5464089bacf75b8ed64725e
-Author: Paul Walmsley <paul@pwsan.com>
-Date:   Wed Oct 14 16:40:37 2009 -0600
-
-    OMAP2xxx clock: set up clockdomain pointer in struct clk
-    
-    clock24xx.c is missing a omap2_init_clk_clkdm() in its
-    omap2_clk_init() function.  Among other bad effects, this causes the
-    OMAP hwmod layer to oops on boot.
-    
-    Thanks to Carlos Aguiar <carlos.aguiar@indt.org.br> and Stefano
-    Panella <Stefano.Panella@csr.com> for reporting this bug.  Thanks to Tony
-    Lindgren <tony@atomide.com> for N800 booting advice.
-    
-    Signed-off-by: Paul Walmsley <paul@pwsan.com>
-    Cc: Carlos Aguiar <carlos.aguiar@indt.org.br>
-    Cc: Stefano Panella <Stefano.Panella@csr.com>
-    Cc: Tony Lindgren <tony@atomide.com>
-
-diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
-index bc5d3ac..e2dbedd 100644
---- a/arch/arm/mach-omap2/clock24xx.c
-+++ b/arch/arm/mach-omap2/clock24xx.c
-@@ -769,6 +769,7 @@ int __init omap2_clk_init(void)
- 		if (c->cpu & cpu_mask) {
- 			clkdev_add(&c->lk);
- 			clk_register(c->lk.clk);
-+			omap2_init_clk_clkdm(c->lk.clk);
- 		}
- 
- 	/* Check the MPU rate set by bootloader */
-
---UugvWAfsgieZRqgk--
+David Ellingsworth
