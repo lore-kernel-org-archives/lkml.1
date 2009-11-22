@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZKVOSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZKVPW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbZKVOSg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 09:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZKVOSf
+	id S1755227AbZKVPW2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 10:22:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZKVPW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 09:18:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:50949 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753582AbZKVOSe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 09:18:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=DnUoQwWY+WNniJF+T1YuUBsYgY1YiP7bOnLFVvLX3zjhO587CjJ4nbdNorZkYyXaOh
-         l2V59kJHjArzY8hPs5uGMOqbAqOnfBGdpi8RK4HmDWO4T1w0fB15sudgI9/qlIdhWXvF
-         TmF+DhyqvXw5/SIGoWe+1nn2SvxTZEUNdnN9k=
-Message-ID: <4B094B46.8070901@gmail.com>
-Date: Sun, 22 Nov 2009 15:31:34 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sun, 22 Nov 2009 10:22:28 -0500
+Received: from mx.treblig.org ([80.68.94.177]:53861 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753884AbZKVPW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 10:22:27 -0500
+X-Greylist: delayed 1628 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Nov 2009 10:22:27 EST
+Date: Sun, 22 Nov 2009 14:53:15 +0000
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: lg@opensource.wolfsonmicro.com
+Cc: trivial@kernel.org, rdunlap@xenotime.net, linux-kernel@vger.kernel.org
+Subject: [Patch] Trivial, Regulator docs cut-and-pasteism
+Message-ID: <20091122145314.GA24475@gallifrey>
 MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] e1000e: Use sizeof struct rather than pointer in e1000_get_eeprom()
-References: <4B083EE2.9040301@gmail.com>
-In-Reply-To: <4B083EE2.9040301@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.31.5-kvm-i386-2009-10-30 (i686)
+X-Uptime: 14:42:17 up 6 days, 21:52,  1 user,  load average: 0.00, 0.01,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't use the sizeof the pointer to clear the result
+Minor copy-and-pasteism in the regulator docs (against
+git from today):
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/net/e1000e/ethtool.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+  Signed-off-by: Dave Gilbert <linux@treblig.org>
 
-> -		memset(eeprom_buff, 0xff, sizeof(eeprom_buff));
-> +		memset(eeprom_buff, 0xff, sizeof(*eeprom_buff));
-
-No it's probably still not correct, eeprom_buff was kmalloc'd with:
-
-eeprom_buff = kmalloc(sizeof(u16) *
-                        (last_word - first_word + 1), GFP_KERNEL);
-
-How about:
-
-diff --git a/drivers/net/e1000e/ethtool.c b/drivers/net/e1000e/ethtool.c
-index 1bf4d2a..5b276c0 100644
---- a/drivers/net/e1000e/ethtool.c
-+++ b/drivers/net/e1000e/ethtool.c
-@@ -508,7 +508,8 @@ static int e1000_get_eeprom(struct net_device *netdev,
+diff --git a/Documentation/power/regulator/consumer.txt b/Documentation/power/regulator/consumer.txt
+index 5f83fd2..cdebb51 100644
+--- a/Documentation/power/regulator/consumer.txt
++++ b/Documentation/power/regulator/consumer.txt
+@@ -104,7 +104,7 @@ to set the limit to 500mA when supplying power.
  
- 	if (ret_val) {
- 		/* a read error occurred, throw away the result */
--		memset(eeprom_buff, 0xff, sizeof(eeprom_buff));
-+		memset(eeprom_buff, 0xff, sizeof(u16) *
-+				(last_word - first_word + 1));
- 	} else {
- 		/* Device's eeprom is always little-endian, word addressable */
- 		for (i = 0; i < last_word - first_word + 1; i++)
+ Consumers can control their supply current limit by calling :-
+ 
+-int regulator_set_current_limit(regulator, min_uV, max_uV);
++int regulator_set_current_limit(regulator, min_uA, max_uA);
+ 
+ Where min_uA and max_uA are the minimum and maximum acceptable current limit in
+ microamps.
+
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
