@@ -1,85 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZKVNSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZKVN3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbZKVNSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 08:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbZKVNSv
+	id S1754887AbZKVN3f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 08:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZKVN3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 08:18:51 -0500
-Received: from mail-px0-f204.google.com ([209.85.216.204]:56707 "EHLO
-	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754791AbZKVNSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 08:18:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Neg4wKoHUSvR4JtrI/F0tOIEWJGwjvfkfoh7AXOheryemDut3qV0QemVXxv5E1PZsd
-         wDCCauXeuEqaRTjZqRcvWN5dlL4d2bLsmtZDwC5HkIuaL7qhkel8R8V3X446ax2m/f1T
-         axZ6NlqjDBi+u096rRnZAThfY6HyfXGJeuyYA=
-Subject: Re: [PATCH v2] MIPS: Add a high resolution sched_clock() via
- cnt32_to_63().
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mips@linux-mips.org,
-       Thomas Gleixner <tglx@linutronix.de>, Michal Simek <monstr@monstr.eu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091122123509.GA1941@linux-mips.org>
-References: <dae45f23b5d34f64fc60a445015e7dfe05aa0d07.1258875717.git.wuzhangjin@gmail.com>
-	 <20091122081328.GB24558@elte.hu>
-	 <1258888086.4548.52.camel@falcon.domain.org>
-	 <20091122123509.GA1941@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Sun, 22 Nov 2009 21:18:34 +0800
-Message-ID: <1258895914.6913.13.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Nov 2009 08:29:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58413 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753538AbZKVN3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 08:29:34 -0500
+Date: Sun, 22 Nov 2009 14:29:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ilya Loginov <isloginov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Peter Horton <phorton@bitbox.co.uk>,
+       "Ed L. Cashin" <ecashin@coraid.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] mtd: fix mtd_blkdevs problem with caches on some
+ architectures (2.6.31)
+Message-ID: <20091122132915.GA3046@elte.hu>
+References: <20091118170810.2bb9cd54.isloginov@gmail.com>
+ <20091120163751.731781e8.akpm@linux-foundation.org>
+ <20091121170437.0839daef.isloginov@gmail.com>
+ <20091121095429.1378828c.akpm@linux-foundation.org>
+ <20091122021128.db47e202.isloginov@gmail.com>
+ <20091121152633.8c79e341.akpm@linux-foundation.org>
+ <20091122124631.908a32c4.isloginov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091122124631.908a32c4.isloginov@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-22 at 12:35 +0000, Ralf Baechle wrote:
-> On Sun, Nov 22, 2009 at 07:08:05PM +0800, Wu Zhangjin wrote:
-> 
-> > > > +	data = (0xffffffffUL / tclk / 2 - 2) * HZ;
-> > 
-> > Because the MIPS c0 count's frequency is half of the cpu frequency(Hi,
-> > Ralf, does every MIPS c0 count meet this feature?), so, the above line
-> > should be:
-> 
-> There are processors which have no cp0 counter at all; these are mostly
-> very old pre-R4000 era 32-bit MIPS I and MIPS II cores.
-> 
-> Of those which have a cp0 counter most will clock it at "half the maximum
-> instruction issue rate" and a few at the full rate.  Finally for a few
-> such as the RM52xx either half or the full count the rate is selectable by
-> the reset initialization bitstream fed into the processor.  Too make this
-> feature suck nicely there is no way for software to find out which rate
-> was selected so software must know that or calibrate against a timer of
-> known frequency.
-> 
-> Platform-specific code does this by setting mips_hpt_frequency to the
-> count rate before calling init_r4k_clocksource; it's also the value being
-> passed into setup_sched_clock_update() so you don't need to count for the
-> half / full clock rate thing there.
-> 
-> I don't see why you need the -2 in your formula so the whole thing can
-> be simplified to:
-> 
-> 	data = 0x80000000 / tclk * HZ;
-> 
 
-Sorry, I have mixed the mips_hpt_frequency with the cpu frequency,
-mips_hpt_frequency is exactly the frequency of the timer. so, there is
-no need to consider the relation between it and the cpu frequency here.
-therefore, my old formula should be okay, that -2 is used to ensure data
-is smaller than half of the period of the timer. 
+* Ilya Loginov <isloginov@gmail.com> wrote:
 
-Best Regards,
-	Wu Zhangjin
+> What do you think about this version of patch?
+> Is it good enought?
+> 
+> Signed-off-by: Ilya Loginov <isloginov@gmail.com>
+> ---
+>  arch/alpha/include/asm/cacheflush.h         |    1 +
+>  arch/arm/include/asm/cacheflush.h           |    1 +
+>  arch/avr32/include/asm/cacheflush.h         |    1 +
+>  arch/blackfin/include/asm/cacheflush.h      |    2 ++
+>  arch/cris/include/asm/cacheflush.h          |    1 +
+>  arch/frv/include/asm/cacheflush.h           |    1 +
+>  arch/h8300/include/asm/cacheflush.h         |    1 +
+>  arch/ia64/include/asm/cacheflush.h          |    1 +
+>  arch/m32r/include/asm/cacheflush.h          |    3 +++
+>  arch/m68k/include/asm/cacheflush_mm.h       |    1 +
+>  arch/m68k/include/asm/cacheflush_no.h       |    1 +
+>  arch/microblaze/include/asm/cacheflush.h    |    1 +
+>  arch/mips/include/asm/cacheflush.h          |    1 +
+>  arch/mn10300/include/asm/cacheflush.h       |    1 +
+>  arch/parisc/include/asm/cacheflush.h        |    1 +
+>  arch/powerpc/include/asm/cacheflush.h       |    1 +
+>  arch/s390/include/asm/cacheflush.h          |    1 +
+>  arch/sh/include/asm/cacheflush.h            |    1 +
+>  arch/sh/include/cpu-common/cpu/cacheflush.h |    1 +
+>  arch/sh/include/cpu-sh2a/cpu/cacheflush.h   |    1 +
+>  arch/sh/include/cpu-sh3/cpu/cacheflush.h    |    1 +
+>  arch/sh/include/cpu-sh4/cpu/cacheflush.h    |    1 +
+>  arch/sh/include/cpu-sh5/cpu/cacheflush.h    |    1 +
+>  arch/sparc/include/asm/cacheflush_32.h      |    1 +
+>  arch/sparc/include/asm/cacheflush_64.h      |    1 +
+>  arch/x86/include/asm/cacheflush.h           |    1 +
+>  arch/xtensa/include/asm/cacheflush.h        |    2 ++
+>  drivers/mtd/mtd_blkdevs.c                   |    2 ++
+>  include/linux/bio.h                         |   19 +++++++++++++++++++
+>  include/linux/blkdev.h                      |   18 ++++++++++++++++++
+>  30 files changed, 70 insertions(+)
 
+patch looks mangled in the middle:
 
+> --- a/arch/x86/include/asm/cacheflush.h
+> +++ b/arch/x86/include/asm/cacheflush.h
+> @@ -12,6 +12,7 @@ static inline void flush_cache_range(struct
+> vm_area_struct *vma, unsigned long start, unsigned long end) { }
+>  static inline void flush_cache_page(struct vm_area_struct *vma,
+>  				    unsigned long vmaddr, unsigned
+> long pfn) { } +#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+>  static inline void flush_dcache_page(struct page *page) { }
+>  static inline void flush_dcache_mmap_lock(struct address_space
+> *mapping) { } static inline void flush_dcache_mmap_unlock(struct
+> address_space *mapping) { } diff --git
+
+	Ingo
