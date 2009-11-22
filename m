@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZKVMRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZKVMNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZKVMRc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZKVMRb
+	id S1754697AbZKVMNi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZKVMNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:17:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16119 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbZKVMRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:17:31 -0500
-Date: Sun, 22 Nov 2009 14:13:35 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] perf: use default compiler mode by default
-Message-ID: <20091122121335.GA24254@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 22 Nov 2009 07:13:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42815 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752382AbZKVMNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:13:37 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18qiihkzS8qamAq9+xtv0FSK7FNmcAiFd1IvjXsnl
+	pfmECghJaa2E3R
+Subject: [patch] sched: finish fixing kthread_bind()
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 22 Nov 2009 13:13:40 +0100
+Message-Id: <1258892020.14325.39.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gcc with no flags typically is a sane default for systems to use, and
-looking at the running kernel is probably broken for cross-builds
-anyway, so let's not do this.  Add EXTRA_CFLAGS so that users can
-override default gcc mode if they want to.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+sched: finish fixing kthread_bind()
+
+kthread_bind() diddles task state without the task's runqueue locked,
+which is against the rules.  Lock the task's runqueue, and update both
+runqueue clocks in the event that the task is being bound to a remote cpu.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
 ---
- tools/perf/Makefile |   20 +++-----------------
- 1 files changed, 3 insertions(+), 17 deletions(-)
+ kernel/sched.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index d0bdaf2..ab35b0f 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -148,6 +148,8 @@ all::
- # broken, or spawning external process is slower than built-in grep perf has).
- #
- # Define LDFLAGS=-static to build a static binary.
-+#
-+# Define EXTRA_CFLAGS=-m64 or EXTRA_CFLAGS=-m32 as appropriate for cross-builds.
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -2007,7 +2007,7 @@ static inline void check_class_changed(s
+  */
+ void kthread_bind(struct task_struct *p, unsigned int cpu)
+ {
+-	struct rq *rq = cpu_rq(cpu);
++	struct rq *rq, *dest_rq = cpu_rq(cpu);
+ 	unsigned long flags;
  
- PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
- 	@$(SHELL_PATH) util/PERF-VERSION-GEN
-@@ -160,22 +162,6 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
- uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
- uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 	/* Must have done schedule() in kthread() before we set_task_cpu */
+@@ -2016,13 +2016,15 @@ void kthread_bind(struct task_struct *p,
+ 		return;
+ 	}
  
--#
--# Add -m32 for cross-builds:
--#
--ifdef NO_64BIT
--  MBITS := -m32
--else
--  #
--  # If we're on a 64-bit kernel (except ia64), use -m64:
--  #
--  ifneq ($(uname_M),ia64)
--    ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
--      MBITS := -m64
--    endif
--  endif
--endif
--
- # CFLAGS and LDFLAGS are for the users to override from the command line.
+-	spin_lock_irqsave(&rq->lock, flags);
++	rq = task_rq_lock(p, &flags);
+ 	update_rq_clock(rq);
++	if (rq != dest_rq)
++		update_rq_clock(dest_rq);
+ 	set_task_cpu(p, cpu);
+ 	p->cpus_allowed = cpumask_of_cpu(cpu);
+ 	p->rt.nr_cpus_allowed = 1;
+ 	p->flags |= PF_THREAD_BOUND;
+-	spin_unlock_irqrestore(&rq->lock, flags);
++	task_rq_unlock(rq, &flags);
+ }
+ EXPORT_SYMBOL(kthread_bind);
  
- #
-@@ -212,7 +198,7 @@ ifndef PERF_DEBUG
-   CFLAGS_OPTIMIZE = -O6
- endif
- 
--CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-+CFLAGS = -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS) $(EXTRA_CFLAGS)
- EXTLIBS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
--- 
-1.6.5.2.143.g8cc62
+
+
