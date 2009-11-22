@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZKVIoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZKVIoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZKVIoI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 03:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZKVIoE
+	id S1754686AbZKVIoH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 03:44:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZKVIoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 03:44:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44519 "EHLO hera.kernel.org"
+	Sun, 22 Nov 2009 03:44:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44521 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754610AbZKVIny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754614AbZKVIny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 22 Nov 2009 03:43:54 -0500
-Date: Sun, 22 Nov 2009 08:43:20 GMT
+Date: Sun, 22 Nov 2009 08:43:34 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org,
        fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
        prasad@linux.vnet.ibm.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, prasad@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <1258863695-10464-3-git-send-email-fweisbec@gmail.com>
-References: <1258863695-10464-3-git-send-email-fweisbec@gmail.com>
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu, prasad@linux.vnet.ibm.com
+In-Reply-To: <1258863695-10464-4-git-send-email-fweisbec@gmail.com>
+References: <1258863695-10464-4-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] hw-breakpoints: Remove x86 specific headers from core file
-Message-ID: <tip-b3a75542d329ce4e1c66b293cefeb4429a2af043@git.kernel.org>
-Git-Commit-ID: b3a75542d329ce4e1c66b293cefeb4429a2af043
+Subject: [tip:perf/core] hw-breakpoints: Separate the kernel part from breakpoint headers
+Message-ID: <tip-5093ebad5f2348076fdc3dac7d2358b1ad7f85f7@git.kernel.org>
+Git-Commit-ID: 5093ebad5f2348076fdc3dac7d2358b1ad7f85f7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,40 +32,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b3a75542d329ce4e1c66b293cefeb4429a2af043
-Gitweb:     http://git.kernel.org/tip/b3a75542d329ce4e1c66b293cefeb4429a2af043
+Commit-ID:  5093ebad5f2348076fdc3dac7d2358b1ad7f85f7
+Gitweb:     http://git.kernel.org/tip/5093ebad5f2348076fdc3dac7d2358b1ad7f85f7
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 22 Nov 2009 05:21:34 +0100
+AuthorDate: Sun, 22 Nov 2009 05:21:35 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sun, 22 Nov 2009 09:03:43 +0100
 
-hw-breakpoints: Remove x86 specific headers from core file
+hw-breakpoints: Separate the kernel part from breakpoint headers
 
-Remove asm/processor.h and asm/debugreg.h as these headers are
-not used anymore in the hw-breakpoints core file.
+So that we can include this header from userspace tools, like
+perf tools, to get the breakpoint types and len definitions.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <1258863695-10464-3-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1258863695-10464-4-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/hw_breakpoint.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ include/linux/hw_breakpoint.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 9ea9414..b6d6fa2 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -40,12 +40,6 @@
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 0b98cbf..4659e0c 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -16,6 +16,7 @@ enum {
+ 	HW_BREAKPOINT_X = 4,
+ };
  
- #include <linux/hw_breakpoint.h>
++#ifdef __KERNEL__
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
  
--#include <asm/processor.h>
--
--#ifdef CONFIG_X86
--#include <asm/debugreg.h>
--#endif
--
- /*
-  * Constraints data
-  */
+ static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
+@@ -133,5 +134,6 @@ static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
+ }
+ 
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
++#endif /* __KERNEL__ */
+ 
+ #endif /* _LINUX_HW_BREAKPOINT_H */
