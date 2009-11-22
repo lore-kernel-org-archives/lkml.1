@@ -1,265 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZKVJPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbZKVJRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbZKVJPj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 04:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZKVJPi
+	id S1754469AbZKVJRm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 04:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZKVJRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 04:15:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55699 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbZKVJPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 04:15:36 -0500
-Message-ID: <4B0900D8.80606@kernel.org>
-Date: Sun, 22 Nov 2009 01:14:00 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 22 Nov 2009 04:17:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:24349 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbZKVJRk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 04:17:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=UVznwCP9Gbn/UvxWXQI6W/V+ntGBwGJ0A4fnrlogVDiPmIlBmEI5jSId8DavGFIsgz
+         Z0uafyKZBmtbS6Gf81/t+LxXwILdBLGcB+MF0k2C9lbZJo0JVFjLG0mrk3usyy0WgZUp
+         Kk9dO7/u5kBeYYeuyV3RTi6IN7BkRiQwsNKBY=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: move find_smp_config early
+In-Reply-To: <80d3c5c680300de7ebd41aba89723a5cf45396ed.1258783305.git.andre.goddard@gmail.com>
+References: <80d3c5c680300de7ebd41aba89723a5cf45396ed.1258783305.git.andre.goddard@gmail.com>
+Date: Sun, 22 Nov 2009 11:17:45 +0200
+X-Google-Sender-Auth: e3834a49c9e5bb69
+Message-ID: <84144f020911220117p5c4720e0g58587b97efdbb46b@mail.gmail.com>
+Subject: Re: [PATCH] pid: tighten pidmap_lock critical section
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andre,
 
-move find_smp_config calling before bootmem initialized.
-use reserve_early instead of reserve_bootmem in it.
+On Sat, Nov 21, 2009 at 8:04 AM, André Goddard Rosa
+<andre.goddard@gmail.com> wrote:
+> Avoid calling kfree() under pidmap_lock and doing unnecessary work.
+> It doesn't change behavior.
+>
+> It decreases code size by 16 bytes on my gcc 4.4.1 on Core 2:
+>   text    data     bss     dec     hex filename
+>   4314    2216       8    6538    198a kernel/pid.o-BEFORE
+>   4298    2216       8    6522    197a kernel/pid.o-AFTER
+>
+> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
 
-so could only call find_smp_config one time and remove unneeded reserve parameter
+This patch is doing a lot more than the changelog above says it does.
+What exactly is the purpose of this patch? What's the upside?
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> ---
+>  kernel/pid.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/kernel/pid.c b/kernel/pid.c
+> index d3f722d..ec06912 100644
+> --- a/kernel/pid.c
+> +++ b/kernel/pid.c
+> @@ -141,11 +141,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+>                         * installing it:
+>                         */
+>                        spin_lock_irq(&pidmap_lock);
+> -                       if (map->page)
+> -                               kfree(page);
+> -                       else
+> +                       if (!map->page) {
+>                                map->page = page;
+> +                               page = NULL;
+> +                       }
+>                        spin_unlock_irq(&pidmap_lock);
+> +                       kfree(page);
 
----
- arch/x86/include/asm/mpspec.h   |   11 ++--------
- arch/x86/include/asm/x86_init.h |    2 -
- arch/x86/kernel/apic/numaq_32.c |    5 ----
- arch/x86/kernel/mpparse.c       |   44 ++++++++++------------------------------
- arch/x86/kernel/setup.c         |   10 ++++-----
- arch/x86/kernel/visws_quirks.c  |    2 -
- arch/x86/mm/k8topology_64.c     |   12 ----------
- 7 files changed, 22 insertions(+), 64 deletions(-)
+OK, maybe. The upside seem rather small and the resulting code is IMHO
+slightly less readable.
 
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -71,12 +71,7 @@ static inline void early_get_smp_config(
- 
- static inline void find_smp_config(void)
- {
--	x86_init.mpparse.find_smp_config(1);
--}
--
--static inline void early_find_smp_config(void)
--{
--	x86_init.mpparse.find_smp_config(0);
-+	x86_init.mpparse.find_smp_config();
- }
- 
- #ifdef CONFIG_X86_MPPARSE
-@@ -89,7 +84,7 @@ extern void default_mpc_oem_bus_info(str
- # else
- #  define default_mpc_oem_bus_info NULL
- # endif
--extern void default_find_smp_config(unsigned int reserve);
-+extern void default_find_smp_config(void);
- extern void default_get_smp_config(unsigned int early);
- #else
- static inline void early_reserve_e820_mpc_new(void) { }
-@@ -97,7 +92,7 @@ static inline void early_reserve_e820_mp
- #define default_mpc_apic_id NULL
- #define default_smp_read_mpc_oem NULL
- #define default_mpc_oem_bus_info NULL
--#define default_find_smp_config x86_init_uint_noop
-+#define default_find_smp_config x86_init_noop
- #define default_get_smp_config x86_init_uint_noop
- #endif
- 
-Index: linux-2.6/arch/x86/include/asm/x86_init.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/x86_init.h
-+++ linux-2.6/arch/x86/include/asm/x86_init.h
-@@ -26,7 +26,7 @@ struct x86_init_mpparse {
- 	void (*smp_read_mpc_oem)(struct mpc_table *mpc);
- 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
- 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
--	void (*find_smp_config)(unsigned int reserve);
-+	void (*find_smp_config)(void);
- 	void (*get_smp_config)(unsigned int early);
- };
- 
-Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
-+++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
-@@ -264,11 +264,6 @@ static void __init smp_read_mpc_oem(stru
- static __init void early_check_numaq(void)
- {
- 	/*
--	 * Find possible boot-time SMP configuration:
--	 */
--	early_find_smp_config();
--
--	/*
- 	 * get boot-time SMP configuration:
- 	 */
- 	if (smp_found_config)
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -667,36 +667,18 @@ void __init default_get_smp_config(unsig
- 	 */
- }
- 
--static void __init smp_reserve_bootmem(struct mpf_intel *mpf)
-+static void __init smp_reserve_memory(struct mpf_intel *mpf)
- {
- 	unsigned long size = get_mpc_size(mpf->physptr);
--#ifdef CONFIG_X86_32
--	/*
--	 * We cannot access to MPC table to compute table size yet,
--	 * as only few megabytes from the bottom is mapped now.
--	 * PC-9800's MPC table places on the very last of physical
--	 * memory; so that simply reserving PAGE_SIZE from mpf->physptr
--	 * yields BUG() in reserve_bootmem.
--	 * also need to make sure physptr is below than max_low_pfn
--	 * we don't need reserve the area above max_low_pfn
--	 */
--	unsigned long end = max_low_pfn * PAGE_SIZE;
- 
--	if (mpf->physptr < end) {
--		if (mpf->physptr + size > end)
--			size = end - mpf->physptr;
--		reserve_bootmem_generic(mpf->physptr, size, BOOTMEM_DEFAULT);
--	}
--#else
--	reserve_bootmem_generic(mpf->physptr, size, BOOTMEM_DEFAULT);
--#endif
-+	reserve_early(mpf->physptr, mpf->physptr+size, "MP-table mpc");
- }
- 
--static int __init smp_scan_config(unsigned long base, unsigned long length,
--				  unsigned reserve)
-+static int __init smp_scan_config(unsigned long base, unsigned long length)
- {
- 	unsigned int *bp = phys_to_virt(base);
- 	struct mpf_intel *mpf;
-+	unsigned long mem;
- 
- 	apic_printk(APIC_VERBOSE, "Scan SMP from %p for %ld bytes.\n",
- 			bp, length);
-@@ -717,12 +699,10 @@ static int __init smp_scan_config(unsign
- 			printk(KERN_INFO "found SMP MP-table at [%p] %llx\n",
- 			       mpf, (u64)virt_to_phys(mpf));
- 
--			if (!reserve)
--				return 1;
--			reserve_bootmem_generic(virt_to_phys(mpf), sizeof(*mpf),
--						BOOTMEM_DEFAULT);
-+			mem = virt_to_phys(mpf);
-+			reserve_early(mem, mem + sizeof(*mpf), "MP-table mpf");
- 			if (mpf->physptr)
--				smp_reserve_bootmem(mpf);
-+				smp_reserve_memory(mpf);
- 
- 			return 1;
- 		}
-@@ -732,7 +712,7 @@ static int __init smp_scan_config(unsign
- 	return 0;
- }
- 
--void __init default_find_smp_config(unsigned int reserve)
-+void __init default_find_smp_config(void)
- {
- 	unsigned int address;
- 
-@@ -744,9 +724,9 @@ void __init default_find_smp_config(unsi
- 	 * 2) Scan the top 1K of base RAM
- 	 * 3) Scan the 64K of bios
- 	 */
--	if (smp_scan_config(0x0, 0x400, reserve) ||
--	    smp_scan_config(639 * 0x400, 0x400, reserve) ||
--	    smp_scan_config(0xF0000, 0x10000, reserve))
-+	if (smp_scan_config(0x0, 0x400) ||
-+	    smp_scan_config(639 * 0x400, 0x400) ||
-+	    smp_scan_config(0xF0000, 0x10000))
- 		return;
- 	/*
- 	 * If it is an SMP machine we should know now, unless the
-@@ -767,7 +747,7 @@ void __init default_find_smp_config(unsi
- 
- 	address = get_bios_ebda();
- 	if (address)
--		smp_scan_config(address, 0x400, reserve);
-+		smp_scan_config(address, 0x400);
- }
- 
- #ifdef CONFIG_X86_IO_APIC
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -946,6 +946,11 @@ void __init setup_arch(char **cmdline_p)
- 
- 	early_acpi_boot_init();
- 
-+	/*
-+	 * Find and reserve possible boot-time SMP configuration:
-+	 */
-+	find_smp_config();
-+
- #ifdef CONFIG_ACPI_NUMA
- 	/*
- 	 * Parse SRAT to discover nodes.
-@@ -960,11 +965,6 @@ void __init setup_arch(char **cmdline_p)
- 
- 	initmem_init(0, max_pfn, acpi, k8);
- 
--	/*
--	 * Find and reserve possible boot-time SMP configuration:
--	 */
--	find_smp_config();
--
- 	reserve_crashkernel();
- 
- #ifdef CONFIG_X86_64
-Index: linux-2.6/arch/x86/kernel/visws_quirks.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/visws_quirks.c
-+++ linux-2.6/arch/x86/kernel/visws_quirks.c
-@@ -197,7 +197,7 @@ static void __init MP_processor_info(str
- 	apic_version[m->apicid] = ver;
- }
- 
--static void __init visws_find_smp_config(unsigned int reserve)
-+static void __init visws_find_smp_config(void)
- {
- 	struct mpc_cpu *mp = phys_to_virt(CO_CPU_TAB_PHYS);
- 	unsigned short ncpus = readw(phys_to_virt(CO_CPU_NUM_PHYS));
-Index: linux-2.6/arch/x86/mm/k8topology_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/k8topology_64.c
-+++ linux-2.6/arch/x86/mm/k8topology_64.c
-@@ -57,18 +57,6 @@ static __init void early_get_boot_cpu_id
- 	 * need to get boot_cpu_id so can use that to create apicid_to_node
- 	 * in k8_scan_nodes()
- 	 */
--	/*
--	 * Find possible boot-time SMP configuration:
--	 */
--#ifdef CONFIG_X86_MPPARSE
--	early_find_smp_config();
--#endif
--#ifdef CONFIG_ACPI
--	/*
--	 * Read APIC information from ACPI tables.
--	 */
--	early_acpi_boot_init();
--#endif
- #ifdef CONFIG_X86_MPPARSE
- 	/*
- 	 * get boot-time SMP configuration:
+>                        if (unlikely(!map->page))
+>                                break;
+>                }
+> @@ -225,11 +226,11 @@ static void delayed_put_pid(struct rcu_head *rhp)
+>  void free_pid(struct pid *pid)
+>  {
+>        /* We can be called with write_lock_irq(&tasklist_lock) held */
+> -       int i;
+> +       int i = 0;
+>        unsigned long flags;
+>
+>        spin_lock_irqsave(&pidmap_lock, flags);
+> -       for (i = 0; i <= pid->level; i++)
+> +       for ( ; i <= pid->level; i++)
+>                hlist_del_rcu(&pid->numbers[i].pid_chain);
+>        spin_unlock_irqrestore(&pidmap_lock, flags);
+
+This has nothing to do with kfree(). AFAICT, it just obfuscates the
+code as the initial assignment to zero is lost in the noise anyway.
+
+> @@ -268,12 +269,11 @@ struct pid *alloc_pid(struct pid_namespace *ns)
+>        for (type = 0; type < PIDTYPE_MAX; ++type)
+>                INIT_HLIST_HEAD(&pid->tasks[type]);
+>
+> +       upid = pid->numbers + ns->level;
+>        spin_lock_irq(&pidmap_lock);
+> -       for (i = ns->level; i >= 0; i--) {
+> -               upid = &pid->numbers[i];
+> +       for ( ; upid >= pid->numbers; --upid)
+>                hlist_add_head_rcu(&upid->pid_chain,
+>                                &pid_hash[pid_hashfn(upid->nr, upid->ns)]);
+> -       }
+>        spin_unlock_irq(&pidmap_lock);
+
+Again, this has nothing to do with kfree(). I suspect this is where
+most of the 16 byte text savings come from. I'm not convinced it's
+worth the hit in readability, though.
+
+                        Pekka
