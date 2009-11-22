@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbZKVXal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZKWOMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbZKVXal (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 18:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZKVXak
+	id S1753529AbZKWOMH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZKWOMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 18:30:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:37781 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbZKVXaj convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 09:12:06 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42700 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753967AbZKWOMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 18:30:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tJWOhdZeXV3H49xAEz1VJrSNXQijAyxJkXtxoREmQuuG2Lcet1SKXAtOl1P9Em9noi
-         +9FyCjJ+rCzB8fh9/7NUAqSjSbDfb9h1lkxq/BmPo5LoL/dsreFTZx2KaDP/yZFBTH+e
-         QuZ84MQoD+S5VIuTAP/4xgfWLRaS9yN0mHFWE=
+	Mon, 23 Nov 2009 09:12:03 -0500
+Date: Mon, 23 Nov 2009 00:37:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, David Zeuthen <david@fubar.dk>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091122233749.GA9699@ucw.cz>
+References: <1258468659-5446-1-git-send-email-mjg@redhat.com> <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> <1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <4B0972C9.302@redhat.com>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
-	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
-	 <20091119072040.GA23579@elte.hu>
-	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
-	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
-	 <1258694593.22249.1012.camel@gandalf.stny.rr.com>
-	 <1258736456.22249.1032.camel@gandalf.stny.rr.com>
-	 <4B06EF6F.2050507@redhat.com>
-	 <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
-	 <4B0972C9.302@redhat.com>
-Date: Sun, 22 Nov 2009 15:30:44 -0800
-Message-ID: <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC 
-	messing with mcount prologue
-From: "H.J. Lu" <hjl.tools@gmail.com>
-To: Andrew Haley <aph@redhat.com>
-Cc: rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
-       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091118200712.GA14026@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 22, 2009 at 9:20 AM, Andrew Haley <aph@redhat.com> wrote:
-> H.J. Lu wrote:
->> On Fri, Nov 20, 2009 at 11:35 AM, Andrew Haley <aph@redhat.com> wrote:
->>> Steven Rostedt wrote:
->>>> Ingo, Thomas and Linus,
->>>>
->>>> I know Thomas did a patch to force the -mtune=generic, but just in case
->>>> gcc decides to do something crazy again, this patch will catch it.
->>>>
->>>> Should we try to get this in now?
->>> I'm sure this makes sense, but a gcc test case would be even better.
->>> If this can be detected in the gcc test suite it'll be found and
->>> fixed long before y'all in kernel land get to see it.  That's the
->>> only way to guarantee this never bothers you again.
->>>
->>> H.J., who wrote the code in question, is hopefully looking at why
->>> this odd code is being generated.  Once he's done I can put a
->>> suitable test case in the gcc test suite.
->>>
->>
->> See:
->>
->> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109#c7
->
-> I saw that, but does it mean you're going to investigate?  There is
-> no obvious reason why -mtune=generic should affect code generation
-> in this way, but it does.
->
+On Wed 2009-11-18 20:07:12, Matthew Garrett wrote:
+> On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
+> 
+> > Sure, but what's wrong with reading that file every 50 seconds? Almost
+> > all boxes poll for media changes of optical drives and usb card
+> > readers anyway, so it's not that we are not doing stuff like this
+> > already.
+> 
+> We poll for media because there's no event-based way of avoiding it - in 
+> this case there is.
 
-Why not, there is
-
-static const unsigned int x86_accumulate_outgoing_args
-  = m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
-    | m_GENERIC;
-
--mtune=generic turns on -maccumulate-outgoing-args.
-
-
+...when you add overhead to every disk operation. I'd say that polling
+once in 50 seconds is preferable to that.
 -- 
-H.J.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
