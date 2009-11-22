@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZKVMOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZKVMRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbZKVMOc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZKVMOb
+	id S1754825AbZKVMRc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZKVMRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:14:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8847 "EHLO mx1.redhat.com"
+	Sun, 22 Nov 2009 07:17:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16119 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbZKVMOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:14:31 -0500
-Date: Sun, 22 Nov 2009 14:11:45 +0200
+	id S1752965AbZKVMRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:17:31 -0500
+Date: Sun, 22 Nov 2009 14:13:35 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: support static build
-Message-ID: <20091122121144.GA21562@redhat.com>
-References: <20091029152002.GA5406@redhat.com> <20091104110604.GE13194@elte.hu> <20091117092331.GA23585@elte.hu> <20091122112726.GC13644@redhat.com> <20091122113942.GD13644@redhat.com> <20091122120243.GA6217@elte.hu>
+Subject: [PATCH] perf: use default compiler mode by default
+Message-ID: <20091122121335.GA24254@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091122120243.GA6217@elte.hu>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 22, 2009 at 01:02:43PM +0100, Ingo Molnar wrote:
-> 
-> * Michael S. Tsirkin <mst@redhat.com> wrote:
-> 
-> > Seems to work fine here on a 32 bit Fedora,
-> > provided that I supply NO_64BIT (my kernel
-> > is 64 bit with 32 bit userspace).
-> > 
-> > So this worked for me:
-> > [perf]$ $make -s -j LDFLAGS=-static NO_64BIT=yes 
-> > Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-> > PERF_VERSION = 0.0.2.PERF
-> > Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-> >     * new build flags or prefix
-> > /usr/lib/gcc/i586-redhat-linux/4.4.1/../../../libpthread.a(libpthread.o): In function `sem_open':
-> > (.text+0x69ea): warning: the use of `mktemp' is dangerous, better use `mkstemp'
-> > [perf]$ ldd perf
-> >         not a dynamic executable
-> >
-> > Ingo, could you please apply my debugging patch and then run with V=2?
-> 
-> Still doesnt work here (on a 32-bit/32-bit system, F11) - i've applied 
-> your debug patch and added V=2:
-> 
->  earth4:~/tip/tools/perf> make -s -j LDFLAGS=-static NO_64BIT=yes V=2
->  /usr/bin/ld: cannot find -lpthread
->  collect2: ld returned 1 exit status
->  Makefile:493: *** No libelf.h/libelf found, please install 
->  libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
+gcc with no flags typically is a sane default for systems to use, and
+looking at the running kernel is probably broken for cross-builds
+anyway, so let's not do this.  Add EXTRA_CFLAGS so that users can
+override default gcc mode if they want to.
 
-Aha, you need to install glibc-static in fedora.
-That will provide libpthread.a. Maybe add a comment
-about that?
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ tools/perf/Makefile |   20 +++-----------------
+ 1 files changed, 3 insertions(+), 17 deletions(-)
 
-You also need zlib-static if you want libbfd to work.
-
-Fedora does not package a static version of libdwarf,
-so users will need to build that from source if they want
-dwarf support in a static binary.
-Fedora guidelines say:
-	In general, packagers are strongly encouraged not to ship static libs
-	unless a compelling reason exists. 
-Do you think the ability to create a portable perf binary that
-I can copy around linux systems qualify as a compelling reason?
-
-> > Btw, why is it a good idea to force 64/32 bit mode?
-> > Why not use the default gcc mode?
-> 
-> Sure, we could do that - mind sending a patch for that?
-> 
-> 	Ingo
-
-In a minute.
-
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index d0bdaf2..ab35b0f 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -148,6 +148,8 @@ all::
+ # broken, or spawning external process is slower than built-in grep perf has).
+ #
+ # Define LDFLAGS=-static to build a static binary.
++#
++# Define EXTRA_CFLAGS=-m64 or EXTRA_CFLAGS=-m32 as appropriate for cross-builds.
+ 
+ PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
+ 	@$(SHELL_PATH) util/PERF-VERSION-GEN
+@@ -160,22 +162,6 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+ uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 
+-#
+-# Add -m32 for cross-builds:
+-#
+-ifdef NO_64BIT
+-  MBITS := -m32
+-else
+-  #
+-  # If we're on a 64-bit kernel (except ia64), use -m64:
+-  #
+-  ifneq ($(uname_M),ia64)
+-    ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-      MBITS := -m64
+-    endif
+-  endif
+-endif
+-
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
+ 
+ #
+@@ -212,7 +198,7 @@ ifndef PERF_DEBUG
+   CFLAGS_OPTIMIZE = -O6
+ endif
+ 
+-CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = -ggdb3 -Wall -Wextra -std=gnu99 -Werror $(CFLAGS_OPTIMIZE) -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS) $(EXTRA_CFLAGS)
+ EXTLIBS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+-- 
+1.6.5.2.143.g8cc62
