@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZKVLmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZKVMW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754243AbZKVLmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 06:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZKVLmZ
+	id S1754937AbZKVMW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZKVMW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 06:42:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28149 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbZKVLmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 06:42:24 -0500
-Date: Sun, 22 Nov 2009 13:39:42 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: support static build
-Message-ID: <20091122113942.GD13644@redhat.com>
-References: <20091029152002.GA5406@redhat.com> <20091104110604.GE13194@elte.hu> <20091117092331.GA23585@elte.hu> <20091122112726.GC13644@redhat.com>
+	Sun, 22 Nov 2009 07:22:28 -0500
+Received: from cust.7.157.adsl.cistron.nl ([62.216.7.157]:39666 "EHLO
+	larstiq.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbZKVMW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:22:28 -0500
+X-Greylist: delayed 2379 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Nov 2009 07:22:27 EST
+Date: Sun, 22 Nov 2009 12:42:35 +0100
+From: Wouter van Heyst <larstiq@larstiq.dyndns.org>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, 504391@bugs.debian.org,
+       Pierre Ossman <pierre@ossman.eu>
+Subject: Re: [PATCH] mmc: add module parameter to set whether cards are
+	assumed removable
+Message-ID: <20091122114234.GA28590@one.lan>
+References: <1257914676.2237.57.camel@localhost> <20091116122329.847916b6.akpm@linux-foundation.org> <1258410709.2792.9.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20091122112726.GC13644@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1258410709.2792.9.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 22, 2009 at 01:27:27PM +0200, Michael S. Tsirkin wrote:
-> On Tue, Nov 17, 2009 at 10:23:31AM +0100, Ingo Molnar wrote:
+On Mon, Nov 16, 2009 at 10:31:49PM +0000, Ben Hutchings wrote:
+> On Mon, 2009-11-16 at 12:23 -0800, Andrew Morton wrote:
+> > On Wed, 11 Nov 2009 04:44:36 +0000
+> > Ben Hutchings <ben@decadent.org.uk> wrote:
 > > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > * Michael S. Tsirkin <mst@redhat.com> wrote:
+> > > Some people run general-purpose distribution kernels on netbooks with
+> > > a card that is physically non-removable or logically non-removable
+> > > (e.g. used for /home) and cannot be cleanly unmounted during suspend.
+> > > Add a module parameter to set whether cards are assumed removable or
+> > > non-removable, with the default set by CONFIG_MMC_UNSAFE_RESUME.
 > > > 
-> > > > This makes it possible to build perf statically, by performing make 
-> > > > LDFLAGS=-static
-> > > >
-> > > > Since static libraries are only searched in the order they are 
-> > > > specified, move library list from LDFLAGS to EXTLIBS, so that they are 
-> > > > put at the end of linker command line.
-> > > > 
-> > > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > > > ---
-> > > > 
-> > > > Changes in v2: updated to latest tip.
-> > > 
-> > > The Makefile changed again so your v2 patch is conflicting too - mind 
-> > > updating it to latest -tip?
 > > 
-> > i've applied your patch to latest -tip and resolved the conflicts 
-> > manually. Normal build works, but static one does not yet:
-> > 
-> >   aldebaran:~/linux/linux/tools/perf> make -j LDFLAGS=-static
-> >   Makefile:484: *** No libelf.h/libelf found, please install 
-> >   libelf-dev/elfutils-libelf-devel and glibc-dev[el].  Stop.
-> > 
-> > mind double checking my changes in
-> > 
-> >   http://people.redhat.com/mingo/tip.git/README
-> > 
-> > Thanks,
-> > 
-> > 	Ingo
+> > The description really doesn't give me enough info to work out what's
+> > happening here and why this is being proposed.  But it smells nasty.
 > 
-> Looking at it.
-> For now, here's a patch that shows what went
-> wrong with configure.
+> In general, it is not possible to tell whether a card present in an MMC
+> slot after resume is the same that was there before suspend.  So there
+> are two possible behaviours, each of which will cause data loss in some
+> cases:
+> 
+> CONFIG_MMC_UNSAFE_RESUME=n (default): Cards are assumed to be removed
+> during suspend.  Any filesystem on them must be unmounted before
+> suspend; otherwise, buffered writes will be lost.
+> 
+> CONFIG_MMC_UNSAFE_RESUME=y: Cards are assumed to remain present during
+> suspend.  They must not be swapped during suspend; otherwise, buffered
+> writes will be flushed to the wrong card.
+> 
+> Currently the choice is made at compile time and this allows that to be
+> overridden at module load time.
 
-Seems to work fine here on a 32 bit Fedora,
-provided that I supply NO_64BIT (my kernel
-is 64 bit with 32 bit userspace).
+I'm running 2.6.32-rc7 with this patch applied and CONFIG_MMC_UNSAFE_RESUME=y
+That works as desired for my non-removable case. Is it desired that I
+test if 'removable=1' will thrash my filesystem?
 
-So this worked for me:
-[perf]$ $make -s -j LDFLAGS=-static NO_64BIT=yes 
-Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-PERF_VERSION = 0.0.2.PERF
-Makefile:498: No libdwarf.h found or old libdwarf.h found, disables dwarf support. Please install libdwarf-dev/libdwarf-devel >= 20081231
-    * new build flags or prefix
-/usr/lib/gcc/i586-redhat-linux/4.4.1/../../../libpthread.a(libpthread.o): In function `sem_open':
-(.text+0x69ea): warning: the use of `mktemp' is dangerous, better use `mkstemp'
-[perf]$ ldd perf
-        not a dynamic executable
-
-Ingo, could you please apply my debugging patch and then run with V=2?
-
-Btw, why is it a good idea to force 64/32 bit mode?
-Why not use the default gcc mode?
-
--- 
-MST
+Wouter van Heyst
