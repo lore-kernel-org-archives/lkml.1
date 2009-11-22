@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZKVMes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbZKVMfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZKVMes (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 07:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZKVMes
+	id S1755029AbZKVMfq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 07:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZKVMfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 07:34:48 -0500
-Received: from mga03.intel.com ([143.182.124.21]:48828 "EHLO mga03.intel.com"
+	Sun, 22 Nov 2009 07:35:45 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:46760 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbZKVMer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 07:34:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,266,1257148800"; 
-   d="scan'208";a="214413760"
-Date: Sun, 22 Nov 2009 20:33:47 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] writeback: Fix missing kernel-doc notation
-Message-ID: <20091122123347.GA19022@localhost>
-References: <1258877769.4495.48.camel@ht.satnam>
+	id S1753538AbZKVMfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 07:35:45 -0500
+Date: Sun, 22 Nov 2009 12:35:09 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mips@linux-mips.org,
+       Thomas Gleixner <tglx@linutronix.de>, Michal Simek <monstr@monstr.eu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] MIPS: Add a high resolution sched_clock() via
+	cnt32_to_63().
+Message-ID: <20091122123509.GA1941@linux-mips.org>
+References: <dae45f23b5d34f64fc60a445015e7dfe05aa0d07.1258875717.git.wuzhangjin@gmail.com> <20091122081328.GB24558@elte.hu> <1258888086.4548.52.camel@falcon.domain.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1258877769.4495.48.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1258888086.4548.52.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 22, 2009 at 07:08:05PM +0800, Wu Zhangjin wrote:
 
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > +	data = (0xffffffffUL / tclk / 2 - 2) * HZ;
+> 
+> Because the MIPS c0 count's frequency is half of the cpu frequency(Hi,
+> Ralf, does every MIPS c0 count meet this feature?), so, the above line
+> should be:
 
-Thanks!
+There are processors which have no cp0 counter at all; these are mostly
+very old pre-R4000 era 32-bit MIPS I and MIPS II cores.
 
-On Sun, Nov 22, 2009 at 04:16:09PM +0800, Jaswinder Singh Rajput wrote:
-> 
-> Fix the following htmldocs warning:
-> 
->   Warning(fs/fs-writeback.c:255): No description found for parameter 'sb'
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Jan Kara <jack@suse.cz>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  fs/fs-writeback.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index 9d5360c..b15c97f 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -242,6 +242,7 @@ static void bdi_sync_writeback(struct backing_dev_info *bdi,
->  /**
->   * bdi_start_writeback - start writeback
->   * @bdi: the backing device to write from
-> + * @sb: write inodes from this super_block
->   * @nr_pages: the number of pages to write
->   *
->   * Description:
-> -- 
-> 1.6.5.3
-> 
+Of those which have a cp0 counter most will clock it at "half the maximum
+instruction issue rate" and a few at the full rate.  Finally for a few
+such as the RM52xx either half or the full count the rate is selectable by
+the reset initialization bitstream fed into the processor.  Too make this
+feature suck nicely there is no way for software to find out which rate
+was selected so software must know that or calibrate against a timer of
+known frequency.
+
+Platform-specific code does this by setting mips_hpt_frequency to the
+count rate before calling init_r4k_clocksource; it's also the value being
+passed into setup_sched_clock_update() so you don't need to count for the
+half / full clock rate thing there.
+
+I don't see why you need the -2 in your formula so the whole thing can
+be simplified to:
+
+	data = 0x80000000 / tclk * HZ;
+
+  Ralf
