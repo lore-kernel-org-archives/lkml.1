@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZKVQOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZKVQZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbZKVQOY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 11:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZKVQOX
+	id S1755393AbZKVQZN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 11:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbZKVQZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 11:14:23 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:37018 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755025AbZKVQOX (ORCPT
+	Sun, 22 Nov 2009 11:25:12 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61997 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755201AbZKVQZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 11:14:23 -0500
-Date: Sun, 22 Nov 2009 11:14:28 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Simon Arlott <simon@fire.lp0.eu>
-cc: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: cxacru usb_bulk_msg() firmware upload 36x slower with OHCI vs.
- UHCI
-In-Reply-To: <4B09196D.7040107@simon.arlott.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0911221108150.27423-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Nov 2009 11:25:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=nzs1iXj2fWBeCDVRTM3lD0qikxOo417kThTyWsLIOGH2lsYQ4yMADv3cb97hFUtQyy
+         LQjjz6VpwZcgNdCapfvUY0KwoXvDLupAh92HLQv+umR18E+WnS8GeKtpSom07wg6KgXR
+         7C4ofwG1oMd8zbZ+p5o9jFZeW+0K47SXvC3P4=
+From: Johan Hovold <jhovold@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Subject: [PATCH] USB: ftdi_sio: remove obsolete comment
+Date: Sun, 22 Nov 2009 17:25:08 +0100
+Message-Id: <1258907108-11949-1-git-send-email-jhovold@gmail.com>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Nov 2009, Simon Arlott wrote:
+We always push characters to ldisc immediately regardless of
+ASYNC_LOW_LATENCY.
 
-> On 18/11/09 22:25, Alan Stern wrote:
-> > On Wed, 18 Nov 2009, Simon Arlott wrote:
-> >> > What happens with other sorts of devices, such as a USB flash drive?
-> >>  
-> >> I can write a 10MB file to an USB flash drive over OHCI, and umount+sync
-> >> takes around 13 seconds.
-> > 
-> > Yes, that's about right.  It leads me to wonder if something funny is
-> > going on with the device, or least with the firmware-loading part of
-> > it.  Odd that it works differently with UHCI and OHCI, though.  There
-> > shouldn't be any differences visible to the device.  You don't have
-> > anything else attached to the same bus, do you?
-> 
-> Yes, but not in use and I could disconnect everything to test it.
-> 
-> core/hcd.c has an interesting comment in usb_hcd_check_unlink_urb():
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/usb/serial/ftdi_sio.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-You mean usb_hcd_poll_rh_status().
-
->         /* The USB 2.0 spec says 256 ms.  This is close enough and won't
->          * exceed that limit if HZ is 100. The math is more clunky than
->          * maybe expected, this is to make sure that all timers for USB devices
->          * fire at the same time to give the CPU a break inbetween */
-> 
-> I'll try increasing the frequency of this timer too.
-
-It shouldn't make any difference; that timer is used with OHCI only in 
-exceptional circumstances (like immediately after a device is plugged 
-in or unplugged), not during normal operation.  But maybe something 
-strange is going on.  You could add a printk in ohci_hub_status_data(), 
-which is the routine that timer ends up calling.
-
-Alan Stern
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 9c60d6d..73441a7 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -1518,8 +1518,7 @@ static int ftdi_sio_port_probe(struct usb_serial_port *port)
+ 	kref_init(&priv->kref);
+ 	spin_lock_init(&priv->tx_lock);
+ 	init_waitqueue_head(&priv->delta_msr_wait);
+-	/* This will push the characters through immediately rather
+-	   than queue a task to deliver them */
++
+ 	priv->flags = ASYNC_LOW_LATENCY;
+ 
+ 	if (quirk && quirk->port_probe)
+-- 
+1.6.5.3
 
