@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZKVStv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZKVTAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZKVStv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 13:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZKVStu
+	id S1753496AbZKVTAY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 14:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZKVTAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 13:49:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:44869 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753096AbZKVStt (ORCPT
+	Sun, 22 Nov 2009 14:00:23 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:49960 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZKVTAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 13:49:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=qJyTTtbpn3EF2EAFVoPdEyWRZeEVDEYQbdEsr8pt4eoZnJFiZfbwgB6xgRYVrFaN+T
-         3mVmp9YTIzR+HoVjc9ODe/JbHQ6iFVK7XARWZLuu+TiZnxu78/uy2t1cmDaRsa/YAOe2
-         ltSDi6LJOKBpflIGxe6oqrGjWbqZX+hh/Lty0=
-Date: Sun, 22 Nov 2009 21:49:49 +0300
-From: Ilya Loginov <isloginov@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Horton <phorton@bitbox.co.uk>,
-       "Ed L. Cashin" <ecashin@coraid.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] mtd: fix mtd_blkdevs problem with caches on some
- architectures (2.6.31)
-Message-Id: <20091122214949.e1ffa058.isloginov@gmail.com>
-In-Reply-To: <1258883630.1127.45.camel@macbook.infradead.org>
-References: <20091118170810.2bb9cd54.isloginov@gmail.com>
-	<20091120163751.731781e8.akpm@linux-foundation.org>
-	<20091121170437.0839daef.isloginov@gmail.com>
-	<20091121095429.1378828c.akpm@linux-foundation.org>
-	<20091122021128.db47e202.isloginov@gmail.com>
-	<20091121152633.8c79e341.akpm@linux-foundation.org>
-	<20091122124631.908a32c4.isloginov@gmail.com>
-	<1258883630.1127.45.camel@macbook.infradead.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.12; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Nov 2009 14:00:23 -0500
+Date: Sun, 22 Nov 2009 21:00:16 +0200
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Staging: IIO: Add tsl2560-2 support to tsl2563 driver
+ + 	drop tsl2561, driver.
+Message-ID: <20091122190016.GE16444@smtp.gmail.com>
+Mail-Followup-To: Jonathan Cameron <jic23@cam.ac.uk>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <4B06EA3B.10500@cam.ac.uk>
+ <37786d4b0911201214g65ea0f8fke1ac29b326fffe47@mail.gmail.com>
+ <4B095CA4.9080406@cam.ac.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4B095CA4.9080406@cam.ac.uk>
+X-URL: http://www.verdurent.com/
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Nov 2009 09:53:50 +0000
-David Woodhouse <dwmw2@infradead.org> wrote:
+On 09 Nov 22, Jonathan Cameron wrote:
+> Amit Kucheria wrote:
+> > On Fri, Nov 20, 2009 at 9:12 PM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+> >> These parts (tsl2560-tsl2563) are identical in interface.
+> >> The tsl2563 driver is more advanced so makes sense to drop
+> >> the tsl2561 driver.
+> >>
+> >> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+> >> ---
+> >> Greg, I've done the changes and driver removal as a single patch.
+> >> Can separate into two if you would prefer?
+> >>
+> >> Amit, as promised I have tested against the tsl2561 on an imote2
+> >> sensor board (for which the original driver was written). All seems
+> >> to work as intended.  Only changes are addition of devices to the
+> >> device table and Kconfig comment changes to reflect new support.
+> >> Hope you don't mind, but I dropped the N900 reference.  These things
+> >> are pretty common (including the new parts) and we don't really
+> >> want to encourage people to start listing where they found. I
+> >> haven't done any of the other changes I suggested, but can do
+> >> those as a follow up patch if you don't mind?
+> >>
+> >> There are a few more similar chips with slightly different conversion
+> >> functions.
+> >>
+> >> Thanks,
+> >>
+> >> Jonathan
+> > 
+> > Jonathan,
+> > 
+> > Changes looks good. I'll send my acks on the split up patches.
+> Cool, I'll do them in a few mins.
+> > 
+> > I'm working on moving this driver to the input subsystem as agreed.
+> Input?  Ambient Light sensors subsystem makes sense. Input certainly 
+> does not (and will get copious NAKs). I was beginning to doubt that ALS
+> will get sorted out in time for the next merge window (or that the
+> various drivers would get moved across in time), hence this patch to
+> clear up a bit of a mess and a lot of pointless code in IIO as Greg has
+> already taken your driver into the staging tree.
 
-> The thing is, having a function called flush_dcache_page() which doesn't
-> actually flush a page of the dcache is just blatantly stupid.
+Err.. sorry, distracted reply. I meant the ALS subsystem that Rui is sheparding. 
 
-Unfortunately, it's well-established that all architectures have these 
-functions. Many kernel systems, for example file systems drivers (ext2,
-ext3, ntfs), use them.
+> > I
+> > was planning to address your review comments in that rework. I can
+> > defer that work if you want.
+> Sure, that's fine with me, though given the wonders of staging, you may
+> well find a 3rd party submits patches for your driver in the meantime ;)
+> 
 
-In letter to Andrew Morton I wrote that among 20 architectures this call
-is not empty only for 8 of them. And it is the problem.
+Less work for me :)
 
-But some architectures really need this call. And kernel has to work
-reasonably with them too. Therefore it is required often to call for
-empty functions.
- 
-> It's misnamed -- it should probably be called something like
-> 'flush_valiased_dcache_page()' or 'unalias_dcache_page()' instead, since
-> I believe it's only supposed to cope with aliasing issues with virtually
-> indexed caches.
-
-I don't think so. For example I had this bug on the processor, which 
-icache don't finds for data in dcache. There was no dcache aliases.
- 
-> If you're talking about _extending_ the existing silly name to a new
-> ARCH_IMPLEMENTS_FOO macro or Kconfig option, perhaps this would be a
-> good time to fix the nomenclature, rather than propagating the error?
-
-Andrew has showed me in his first letter another topic in this mailing.
-It is said there that there is no reasonable infrastructure in kernel to
-correct such things. The first patch can fix bug in the mtd but the 
-problem of useless cycle on many architectures is arising. 
-
-It is because there is nothing associated with the flush_dcache_page()
-function. 
-
-This way enable us to solve and this problem too. But I agree that it
-is not elegant. Have you any idea how to make it better?
-
-Thanks!
 
 -- 
-Ilya Loginov <isloginov@gmail.com>
+------------------------------------------------------------
+Amit Kucheria, Finland
+------------------------------------------------------------
