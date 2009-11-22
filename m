@@ -1,75 +1,521 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbZKVNtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZKVNzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755031AbZKVNtL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 08:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZKVNtL
+	id S1755090AbZKVNzW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 08:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZKVNzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 08:49:11 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:51535 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbZKVNtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 08:49:10 -0500
-To: nhorman@tuxdriver.com, davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6.32-rc8] set_all_monitor_traces() sleeping bug.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200911022100.EAC21893.OMFFJVOSOQHLtF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200911022100.EAC21893.OMFFJVOSOQHLtF@I-love.SAKURA.ne.jp>
-Message-Id: <200911222249.EEG95313.OSLJQVFFOHFtOM@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sun, 22 Nov 2009 22:49:14 +0900
+	Sun, 22 Nov 2009 08:55:21 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:55698 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382AbZKVNzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 08:55:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=RgWqSs90DCXi/yoQIZBNtUO/Qe9OcmPE/p8qaWNWxInAxcbuh4MgK+T6W6nhmwIDgA
+         oU0K7+JtfR21xb733h5Ih7CmI7Q++Sn25WH4t+z94QtHxmLDFtoutRlCgoXdR4tcKok3
+         GTCtXtxmP7OxEylTY2WbeD/RX0iRCWpQbVNFE=
+Date: Sun, 22 Nov 2009 16:55:21 +0300
+From: Ilya Loginov <isloginov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Peter Horton <phorton@bitbox.co.uk>,
+       "Ed L. Cashin" <ecashin@coraid.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] mtd: fix mtd_blkdevs problem with caches on some
+ architectures (2.6.31)
+Message-Id: <20091122165521.0b488e05.isloginov@gmail.com>
+In-Reply-To: <20091122132915.GA3046@elte.hu>
+References: <20091118170810.2bb9cd54.isloginov@gmail.com>
+	<20091120163751.731781e8.akpm@linux-foundation.org>
+	<20091121170437.0839daef.isloginov@gmail.com>
+	<20091121095429.1378828c.akpm@linux-foundation.org>
+	<20091122021128.db47e202.isloginov@gmail.com>
+	<20091121152633.8c79e341.akpm@linux-foundation.org>
+	<20091122124631.908a32c4.isloginov@gmail.com>
+	<20091122132915.GA3046@elte.hu>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.12; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit: 4ea7e38696c7e798c47ebbecadfd392f23f814f9
+> patch looks mangled in the middle:
 
-set_all_monitor_traces() calls tracepoint_synchronize_unregister()
-with a spinlock held, but tracepoint_synchronize_unregister() may sleep.
+Oh, yeah. Thank you! I've changed my e-mail client preferences yesturday.
+This was bad idea...
 
-static int set_all_monitor_traces(int state)
-{
-	int rc = 0;
-	struct dm_hw_stat_delta *new_stat = NULL;
-	struct dm_hw_stat_delta *temp;
+This is right version.
 
-	spin_lock(&trace_state_lock);
+Signed-off-by: Ilya Loginov <isloginov@gmail.com>
+---
+ arch/alpha/include/asm/cacheflush.h         |    1 +
+ arch/arm/include/asm/cacheflush.h           |    1 +
+ arch/avr32/include/asm/cacheflush.h         |    1 +
+ arch/blackfin/include/asm/cacheflush.h      |    2 ++
+ arch/cris/include/asm/cacheflush.h          |    1 +
+ arch/frv/include/asm/cacheflush.h           |    1 +
+ arch/h8300/include/asm/cacheflush.h         |    1 +
+ arch/ia64/include/asm/cacheflush.h          |    1 +
+ arch/m32r/include/asm/cacheflush.h          |    3 +++
+ arch/m68k/include/asm/cacheflush_mm.h       |    1 +
+ arch/m68k/include/asm/cacheflush_no.h       |    1 +
+ arch/microblaze/include/asm/cacheflush.h    |    1 +
+ arch/mips/include/asm/cacheflush.h          |    1 +
+ arch/mn10300/include/asm/cacheflush.h       |    1 +
+ arch/parisc/include/asm/cacheflush.h        |    1 +
+ arch/powerpc/include/asm/cacheflush.h       |    1 +
+ arch/s390/include/asm/cacheflush.h          |    1 +
+ arch/sh/include/asm/cacheflush.h            |    1 +
+ arch/sh/include/cpu-common/cpu/cacheflush.h |    1 +
+ arch/sh/include/cpu-sh2a/cpu/cacheflush.h   |    1 +
+ arch/sh/include/cpu-sh3/cpu/cacheflush.h    |    1 +
+ arch/sh/include/cpu-sh4/cpu/cacheflush.h    |    1 +
+ arch/sh/include/cpu-sh5/cpu/cacheflush.h    |    1 +
+ arch/sparc/include/asm/cacheflush_32.h      |    1 +
+ arch/sparc/include/asm/cacheflush_64.h      |    1 +
+ arch/x86/include/asm/cacheflush.h           |    1 +
+ arch/xtensa/include/asm/cacheflush.h        |    2 ++
+ drivers/mtd/mtd_blkdevs.c                   |    2 ++
+ include/linux/bio.h                         |   19 +++++++++++++++++++
+ include/linux/blkdev.h                      |   18 ++++++++++++++++++
+ 30 files changed, 70 insertions(+)
 
-	switch (state) {
-	case TRACE_ON:
-		rc |= register_trace_kfree_skb(trace_kfree_skb_hit);
-		rc |= register_trace_napi_poll(trace_napi_poll_hit);
-		break;
-	case TRACE_OFF:
-		rc |= unregister_trace_kfree_skb(trace_kfree_skb_hit);
-		rc |= unregister_trace_napi_poll(trace_napi_poll_hit);
+diff --git a/arch/alpha/include/asm/cacheflush.h b/arch/alpha/include/asm/cacheflush.h
+index b686cc7..01d71e1 100644
+--- a/arch/alpha/include/asm/cacheflush.h
++++ b/arch/alpha/include/asm/cacheflush.h
+@@ -9,6 +9,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/arm/include/asm/cacheflush.h b/arch/arm/include/asm/cacheflush.h
+index 1a711ea..2420f91 100644
+--- a/arch/arm/include/asm/cacheflush.h
++++ b/arch/arm/include/asm/cacheflush.h
+@@ -408,6 +408,7 @@ extern void flush_ptrace_access(struct vm_area_struct *vma, struct page *page,
+  * about to change to user space.  This is the same method as used on SPARC64.
+  * See update_mmu_cache for the user space part.
+  */
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *);
+ 
+ extern void __flush_dcache_page(struct address_space *mapping, struct page *page);
+diff --git a/arch/avr32/include/asm/cacheflush.h b/arch/avr32/include/asm/cacheflush.h
+index 6706747..96e5382 100644
+--- a/arch/avr32/include/asm/cacheflush.h
++++ b/arch/avr32/include/asm/cacheflush.h
+@@ -107,6 +107,7 @@ extern void flush_icache_page(struct vm_area_struct *vma, struct page *page);
+  * do something here, but only for certain configurations.  No such
+  * configurations exist at this time.
+  */
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(page)		do { } while (0)
+ #define flush_dcache_mmap_unlock(page)		do { } while (0)
+diff --git a/arch/blackfin/include/asm/cacheflush.h b/arch/blackfin/include/asm/cacheflush.h
+index 7e55549..0a7d14b 100644
+--- a/arch/blackfin/include/asm/cacheflush.h
++++ b/arch/blackfin/include/asm/cacheflush.h
+@@ -89,9 +89,11 @@ do { memcpy(dst, src, len);						\
+ #endif
+ #if defined(CONFIG_BFIN_EXTMEM_WRITEBACK) || defined(CONFIG_BFIN_L2_WRITEBACK)
+ # define flush_dcache_range(start,end)		blackfin_dcache_flush_range((start), (end))
++# define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ # define flush_dcache_page(page)		blackfin_dflush_page(page_address(page))
+ #else
+ # define flush_dcache_range(start,end)		do { } while (0)
++# define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ # define flush_dcache_page(page)		do { } while (0)
+ #endif
+ 
+diff --git a/arch/cris/include/asm/cacheflush.h b/arch/cris/include/asm/cacheflush.h
+index cf60e3f..36795bc 100644
+--- a/arch/cris/include/asm/cacheflush.h
++++ b/arch/cris/include/asm/cacheflush.h
+@@ -12,6 +12,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/frv/include/asm/cacheflush.h b/arch/frv/include/asm/cacheflush.h
+index 432a69e..edbac54 100644
+--- a/arch/frv/include/asm/cacheflush.h
++++ b/arch/frv/include/asm/cacheflush.h
+@@ -47,6 +47,7 @@ static inline void __flush_cache_all(void)
+ }
+ 
+ /* dcache/icache coherency... */
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ #ifdef CONFIG_MMU
+ extern void flush_dcache_page(struct page *page);
+ #else
+diff --git a/arch/h8300/include/asm/cacheflush.h b/arch/h8300/include/asm/cacheflush.h
+index 5ffdca2..4cf2df2 100644
+--- a/arch/h8300/include/asm/cacheflush.h
++++ b/arch/h8300/include/asm/cacheflush.h
+@@ -15,6 +15,7 @@
+ #define	flush_cache_dup_mm(mm)		do { } while (0)
+ #define	flush_cache_range(vma,a,b)
+ #define	flush_cache_page(vma,p,pfn)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define	flush_dcache_page(page)
+ #define	flush_dcache_mmap_lock(mapping)
+ #define	flush_dcache_mmap_unlock(mapping)
+diff --git a/arch/ia64/include/asm/cacheflush.h b/arch/ia64/include/asm/cacheflush.h
+index c8ce271..429eefc 100644
+--- a/arch/ia64/include/asm/cacheflush.h
++++ b/arch/ia64/include/asm/cacheflush.h
+@@ -25,6 +25,7 @@
+ #define flush_cache_vmap(start, end)		do { } while (0)
+ #define flush_cache_vunmap(start, end)		do { } while (0)
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ #define flush_dcache_page(page)			\
+ do {						\
+ 	clear_bit(PG_arch_1, &(page)->flags);	\
+diff --git a/arch/m32r/include/asm/cacheflush.h b/arch/m32r/include/asm/cacheflush.h
+index 78587c9..8e8e045 100644
+--- a/arch/m32r/include/asm/cacheflush.h
++++ b/arch/m32r/include/asm/cacheflush.h
+@@ -12,6 +12,7 @@ extern void _flush_cache_copyback_all(void);
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+@@ -33,6 +34,7 @@ extern void smp_flush_cache_all(void);
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+@@ -46,6 +48,7 @@ extern void smp_flush_cache_all(void);
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/m68k/include/asm/cacheflush_mm.h b/arch/m68k/include/asm/cacheflush_mm.h
+index 16bf375..73de7c8 100644
+--- a/arch/m68k/include/asm/cacheflush_mm.h
++++ b/arch/m68k/include/asm/cacheflush_mm.h
+@@ -128,6 +128,7 @@ static inline void __flush_page_to_ram(void *vaddr)
+ 	}
+ }
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ #define flush_dcache_page(page)		__flush_page_to_ram(page_address(page))
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/m68k/include/asm/cacheflush_no.h b/arch/m68k/include/asm/cacheflush_no.h
+index c65f00a..89f1956 100644
+--- a/arch/m68k/include/asm/cacheflush_no.h
++++ b/arch/m68k/include/asm/cacheflush_no.h
+@@ -12,6 +12,7 @@
+ #define flush_cache_range(vma, start, end)	__flush_cache_all()
+ #define flush_cache_page(vma, vmaddr)		do { } while (0)
+ #define flush_dcache_range(start,len)		__flush_cache_all()
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/microblaze/include/asm/cacheflush.h b/arch/microblaze/include/asm/cacheflush.h
+index f989d6a..088076e 100644
+--- a/arch/microblaze/include/asm/cacheflush.h
++++ b/arch/microblaze/include/asm/cacheflush.h
+@@ -37,6 +37,7 @@
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
+ 
+ #define flush_dcache_range(start, end)	__invalidate_dcache_range(start, end)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/mips/include/asm/cacheflush.h b/arch/mips/include/asm/cacheflush.h
+index 03b1d69..40bb9fd 100644
+--- a/arch/mips/include/asm/cacheflush.h
++++ b/arch/mips/include/asm/cacheflush.h
+@@ -38,6 +38,7 @@ extern void (*flush_cache_range)(struct vm_area_struct *vma,
+ extern void (*flush_cache_page)(struct vm_area_struct *vma, unsigned long page, unsigned long pfn);
+ extern void __flush_dcache_page(struct page *page);
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ static inline void flush_dcache_page(struct page *page)
+ {
+ 	if (cpu_has_dc_aliases || !cpu_has_ic_fills_f_dc)
+diff --git a/arch/mn10300/include/asm/cacheflush.h b/arch/mn10300/include/asm/cacheflush.h
+index 2db746a..4a15067 100644
+--- a/arch/mn10300/include/asm/cacheflush.h
++++ b/arch/mn10300/include/asm/cacheflush.h
+@@ -26,6 +26,7 @@
+ #define flush_cache_page(vma, vmaddr, pfn)	do {} while (0)
+ #define flush_cache_vmap(start, end)		do {} while (0)
+ #define flush_cache_vunmap(start, end)		do {} while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do {} while (0)
+ #define flush_dcache_mmap_lock(mapping)		do {} while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do {} while (0)
+diff --git a/arch/parisc/include/asm/cacheflush.h b/arch/parisc/include/asm/cacheflush.h
+index 7243951..7a73b61 100644
+--- a/arch/parisc/include/asm/cacheflush.h
++++ b/arch/parisc/include/asm/cacheflush.h
+@@ -42,6 +42,7 @@ void flush_cache_mm(struct mm_struct *mm);
+ #define flush_cache_vmap(start, end)		flush_cache_all()
+ #define flush_cache_vunmap(start, end)		flush_cache_all()
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *page);
+ 
+ #define flush_dcache_mmap_lock(mapping) \
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index ba667a3..ab9e402 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -25,6 +25,7 @@
+ #define flush_cache_vmap(start, end)		do { } while (0)
+ #define flush_cache_vunmap(start, end)		do { } while (0)
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *page);
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/s390/include/asm/cacheflush.h b/arch/s390/include/asm/cacheflush.h
+index 49d5af9..405cc97 100644
+--- a/arch/s390/include/asm/cacheflush.h
++++ b/arch/s390/include/asm/cacheflush.h
+@@ -10,6 +10,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/sh/include/asm/cacheflush.h b/arch/sh/include/asm/cacheflush.h
+index 4c5462d..46ba64c 100644
+--- a/arch/sh/include/asm/cacheflush.h
++++ b/arch/sh/include/asm/cacheflush.h
+@@ -16,6 +16,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_icache_range(start, end)		do { } while (0)
+ #define flush_icache_page(vma,pg)		do { } while (0)
+diff --git a/arch/sh/include/cpu-common/cpu/cacheflush.h b/arch/sh/include/cpu-common/cpu/cacheflush.h
+index c3db00b..bd508bd 100644
+--- a/arch/sh/include/cpu-common/cpu/cacheflush.h
++++ b/arch/sh/include/cpu-common/cpu/cacheflush.h
+@@ -31,6 +31,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/sh/include/cpu-sh2a/cpu/cacheflush.h b/arch/sh/include/cpu-sh2a/cpu/cacheflush.h
+index 3d3b920..56c8c88 100644
+--- a/arch/sh/include/cpu-sh2a/cpu/cacheflush.h
++++ b/arch/sh/include/cpu-sh2a/cpu/cacheflush.h
+@@ -22,6 +22,7 @@
+ #define flush_cache_dup_mm(mm)			do { } while (0)
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)			do { } while (0)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/sh/include/cpu-sh3/cpu/cacheflush.h b/arch/sh/include/cpu-sh3/cpu/cacheflush.h
+index 1ac27aa..e03e964 100644
+--- a/arch/sh/include/cpu-sh3/cpu/cacheflush.h
++++ b/arch/sh/include/cpu-sh3/cpu/cacheflush.h
+@@ -26,6 +26,7 @@ void flush_cache_mm(struct mm_struct *mm);
+ void flush_cache_range(struct vm_area_struct *vma, unsigned long start,
+                               unsigned long end);
+ void flush_cache_page(struct vm_area_struct *vma, unsigned long addr, unsigned long pfn);
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ void flush_dcache_page(struct page *pg);
+ void flush_icache_range(unsigned long start, unsigned long end);
+ void flush_icache_page(struct vm_area_struct *vma, struct page *page);
+diff --git a/arch/sh/include/cpu-sh4/cpu/cacheflush.h b/arch/sh/include/cpu-sh4/cpu/cacheflush.h
+index 065306d..1789e3e 100644
+--- a/arch/sh/include/cpu-sh4/cpu/cacheflush.h
++++ b/arch/sh/include/cpu-sh4/cpu/cacheflush.h
+@@ -24,6 +24,7 @@ void flush_cache_range(struct vm_area_struct *vma, unsigned long start,
+ 		       unsigned long end);
+ void flush_cache_page(struct vm_area_struct *vma, unsigned long addr,
+ 		      unsigned long pfn);
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ void flush_dcache_page(struct page *pg);
+ 
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+diff --git a/arch/sh/include/cpu-sh5/cpu/cacheflush.h b/arch/sh/include/cpu-sh5/cpu/cacheflush.h
+index 5a11f0b..cd098a3 100644
+--- a/arch/sh/include/cpu-sh5/cpu/cacheflush.h
++++ b/arch/sh/include/cpu-sh5/cpu/cacheflush.h
+@@ -13,6 +13,7 @@ extern void flush_cache_sigtramp(unsigned long vaddr);
+ extern void flush_cache_range(struct vm_area_struct *vma, unsigned long start,
+ 			      unsigned long end);
+ extern void flush_cache_page(struct vm_area_struct *vma, unsigned long addr, unsigned long pfn);
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *pg);
+ extern void flush_icache_range(unsigned long start, unsigned long end);
+ extern void flush_icache_user_range(struct vm_area_struct *vma,
+diff --git a/arch/sparc/include/asm/cacheflush_32.h b/arch/sparc/include/asm/cacheflush_32.h
+index 68ac109..2e46877 100644
+--- a/arch/sparc/include/asm/cacheflush_32.h
++++ b/arch/sparc/include/asm/cacheflush_32.h
+@@ -75,6 +75,7 @@ BTFIXUPDEF_CALL(void, flush_sig_insns, struct mm_struct *, unsigned long)
+ 
+ extern void sparc_flush_page_to_ram(struct page *page);
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ #define flush_dcache_page(page)			sparc_flush_page_to_ram(page)
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/sparc/include/asm/cacheflush_64.h b/arch/sparc/include/asm/cacheflush_64.h
+index c433217..b953840 100644
+--- a/arch/sparc/include/asm/cacheflush_64.h
++++ b/arch/sparc/include/asm/cacheflush_64.h
+@@ -37,6 +37,7 @@ extern void flush_dcache_page_all(struct mm_struct *mm, struct page *page);
+ #endif
+ 
+ extern void __flush_dcache_range(unsigned long start, unsigned long end);
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *page);
+ 
+ #define flush_icache_page(vma, pg)	do { } while(0)
+diff --git a/arch/x86/include/asm/cacheflush.h b/arch/x86/include/asm/cacheflush.h
+index e55dfc1..7631500 100644
+--- a/arch/x86/include/asm/cacheflush.h
++++ b/arch/x86/include/asm/cacheflush.h
+@@ -12,6 +12,7 @@ static inline void flush_cache_range(struct vm_area_struct *vma,
+ 				     unsigned long start, unsigned long end) { }
+ static inline void flush_cache_page(struct vm_area_struct *vma,
+ 				    unsigned long vmaddr, unsigned long pfn) { }
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ static inline void flush_dcache_page(struct page *page) { }
+ static inline void flush_dcache_mmap_lock(struct address_space *mapping) { }
+ static inline void flush_dcache_mmap_unlock(struct address_space *mapping) { }
+diff --git a/arch/xtensa/include/asm/cacheflush.h b/arch/xtensa/include/asm/cacheflush.h
+index b7b8fbe..376cd9d 100644
+--- a/arch/xtensa/include/asm/cacheflush.h
++++ b/arch/xtensa/include/asm/cacheflush.h
+@@ -101,6 +101,7 @@ static inline void __invalidate_icache_page_alias(unsigned long virt,
+ #define flush_cache_vmap(start,end)	flush_cache_all()
+ #define flush_cache_vunmap(start,end)	flush_cache_all()
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page*);
+ extern void flush_cache_range(struct vm_area_struct*, ulong, ulong);
+ extern void flush_cache_page(struct vm_area_struct*, unsigned long, unsigned long);
+@@ -114,6 +115,7 @@ extern void flush_cache_page(struct vm_area_struct*, unsigned long, unsigned lon
+ #define flush_cache_vmap(start,end)			do { } while (0)
+ #define flush_cache_vunmap(start,end)			do { } while (0)
+ 
++#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+ #define flush_dcache_page(page)				do { } while (0)
+ 
+ #define flush_cache_page(vma,addr,pfn)			do { } while (0)
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 7baba40..abddc60 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -68,12 +68,14 @@ static int do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+ 			if (tr->readsect(dev, block, buf))
+ 				return -EIO;
++		rq_flush_dcache_pages(req);
+ 		return 0;
+ 
+ 	case WRITE:
+ 		if (!tr->writesect)
+ 			return -EIO;
+ 
++		rq_flush_dcache_pages(req);
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+ 			if (tr->writesect(dev, block, buf))
+ 				return -EIO;
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 2892b71..ecafedc 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -396,6 +396,25 @@ extern struct bio *bio_copy_kern(struct request_queue *, void *, unsigned int,
+ 				 gfp_t, int);
+ extern void bio_set_pages_dirty(struct bio *bio);
+ extern void bio_check_pages_dirty(struct bio *bio);
++
++#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
++# error	"You should to define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE for your platform."
++#endif
++#if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
++static inline void bio_flush_dcache_pages(struct bio *bi)
++{
++	int i;
++	struct bio_vec* bvec;
++
++	bio_for_each_segment(bvec, bi, i)
++		flush_dcache_page(bvec->bv_page);
++}
++#else
++static inline void bio_flush_dcache_pages(struct bio *bi)
++{
++}
++#endif
++
+ extern struct bio *bio_copy_user(struct request_queue *, struct rq_map_data *,
+ 				 unsigned long, unsigned int, int, gfp_t);
+ extern struct bio *bio_copy_user_iov(struct request_queue *,
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 69103e0..9b5214c 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -740,6 +740,24 @@ struct req_iterator {
+ #define rq_iter_last(rq, _iter)					\
+ 		(_iter.bio->bi_next == NULL && _iter.i == _iter.bio->bi_vcnt-1)
+ 
++#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
++# error	"You should to define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE for your platform."
++#endif
++#if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
++static inline void rq_flush_dcache_pages(struct request *rq)
++{
++	struct req_iterator iter;
++	struct bio_vec* bvec;
++
++	rq_for_each_segment(bvec, rq, iter)
++		flush_dcache_page(bvec->bv_page);
++}
++#else
++static inline void rq_flush_dcache_pages(struct request *rq)
++{
++}
++#endif
++
+ extern int blk_register_queue(struct gendisk *disk);
+ extern void blk_unregister_queue(struct gendisk *disk);
+ extern void register_disk(struct gendisk *dev);
 
-		tracepoint_synchronize_unregister();
 
-		/*
-		 * Clean the device list
-		 */
-		list_for_each_entry_safe(new_stat, temp, &hw_stats_list, list) {
-			if (new_stat->dev == NULL) {
-				list_del_rcu(&new_stat->list);
-				call_rcu(&new_stat->rcu, free_dm_hw_stat);
-			}
-		}
-		break;
-	default:
-		rc = 1;
-		break;
-	}
-
-	if (!rc)
-		trace_state = state;
-
-	spin_unlock(&trace_state_lock);
-
-	if (rc)
-		return -EINPROGRESS;
-	return rc;
-}
+-- 
+Ilya Loginov <isloginov@gmail.com>
