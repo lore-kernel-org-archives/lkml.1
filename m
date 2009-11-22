@@ -1,109 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZKVXIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbZKVXal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZKVXIY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 18:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZKVXIX
+	id S1755828AbZKVXal (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 18:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZKVXak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 18:08:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50517 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbZKVXIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 18:08:22 -0500
-Date: Mon, 23 Nov 2009 10:08:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michal Simek <monstr@monstr.eu>, Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: linux-next: manual merge of the mips tree with the microblaze tree
-Message-Id: <20091123100825.ecd759ff.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Nov 2009 18:30:40 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37781 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753918AbZKVXaj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 18:30:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tJWOhdZeXV3H49xAEz1VJrSNXQijAyxJkXtxoREmQuuG2Lcet1SKXAtOl1P9Em9noi
+         +9FyCjJ+rCzB8fh9/7NUAqSjSbDfb9h1lkxq/BmPo5LoL/dsreFTZx2KaDP/yZFBTH+e
+         QuZ84MQoD+S5VIuTAP/4xgfWLRaS9yN0mHFWE=
+MIME-Version: 1.0
+In-Reply-To: <4B0972C9.302@redhat.com>
+References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
+	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
+	 <20091119072040.GA23579@elte.hu>
+	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
+	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
+	 <1258694593.22249.1012.camel@gandalf.stny.rr.com>
+	 <1258736456.22249.1032.camel@gandalf.stny.rr.com>
+	 <4B06EF6F.2050507@redhat.com>
+	 <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+	 <4B0972C9.302@redhat.com>
+Date: Sun, 22 Nov 2009 15:30:44 -0800
+Message-ID: <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC 
+	messing with mcount prologue
+From: "H.J. Lu" <hjl.tools@gmail.com>
+To: Andrew Haley <aph@redhat.com>
+Cc: rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
+       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ralf,
+On Sun, Nov 22, 2009 at 9:20 AM, Andrew Haley <aph@redhat.com> wrote:
+> H.J. Lu wrote:
+>> On Fri, Nov 20, 2009 at 11:35 AM, Andrew Haley <aph@redhat.com> wrote:
+>>> Steven Rostedt wrote:
+>>>> Ingo, Thomas and Linus,
+>>>>
+>>>> I know Thomas did a patch to force the -mtune=generic, but just in case
+>>>> gcc decides to do something crazy again, this patch will catch it.
+>>>>
+>>>> Should we try to get this in now?
+>>> I'm sure this makes sense, but a gcc test case would be even better.
+>>> If this can be detected in the gcc test suite it'll be found and
+>>> fixed long before y'all in kernel land get to see it.  That's the
+>>> only way to guarantee this never bothers you again.
+>>>
+>>> H.J., who wrote the code in question, is hopefully looking at why
+>>> this odd code is being generated.  Once he's done I can put a
+>>> suitable test case in the gcc test suite.
+>>>
+>>
+>> See:
+>>
+>> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109#c7
+>
+> I saw that, but does it mean you're going to investigate?  There is
+> no obvious reason why -mtune=generic should affect code generation
+> in this way, but it does.
+>
 
-Today's linux-next merge of the mips tree got a conflict in
-scripts/recordmcount.pl between commit
-3e3bc9dd3155ae0fdccdbdfb26d97e15c7acc499 ("microblaze: ftrace: Add
-dynamic trace support") from the microblaze tree and commit
-421e89b8ce7594cf5df27d801c433dbb69184486 ("MIPS: Tracing: Add dynamic
-function tracer support") from the mips tree.
+Why not, there is
 
-Just overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.  Thanks for the heads up, Ralf.
+static const unsigned int x86_accumulate_outgoing_args
+  = m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
+    | m_GENERIC;
+
+-mtune=generic turns on -maccumulate-outgoing-args.
+
+
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc scripts/recordmcount.pl
-index b30dabd,d016c71..0000000
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@@ -245,9 -245,60 +245,63 @@@ if ($arch eq "x86_64") 
-      $ld .= " -m elf64_sparc";
-      $cc .= " -m64";
-      $objcopy .= " -O elf64-sparc";
- +} elsif ($arch eq "microblaze") {
- +    # Microblaze calls '_mcount' instead of plain 'mcount'.
- +    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
-+ 
-+ } elsif ($arch eq "mips") {
-+     # To enable module support, we need to enable the -mlong-calls option
-+     # of gcc for module, after using this option, we can not get the real
-+     # offset of the calling to _mcount, but the offset of the lui
-+     # instruction or the addiu one. herein, we record the address of the
-+     # first one, and then we can replace this instruction by a branch
-+     # instruction to jump over the profiling function to filter the
-+     # indicated functions, or swith back to the lui instruction to trace
-+     # them, which means dynamic tracing.
-+     #
-+     #       c:	3c030000 	lui	v1,0x0
-+     #			c: R_MIPS_HI16	_mcount
-+     #			c: R_MIPS_NONE	*ABS*
-+     #			c: R_MIPS_NONE	*ABS*
-+     #      10:	64630000 	daddiu	v1,v1,0
-+     #			10: R_MIPS_LO16	_mcount
-+     #			10: R_MIPS_NONE	*ABS*
-+     #			10: R_MIPS_NONE	*ABS*
-+     #      14:	03e0082d 	move	at,ra
-+     #      18:	0060f809 	jalr	v1
-+     #
-+     # for the kernel:
-+     #
-+     #     10:   03e0082d        move    at,ra
-+     #	  14:   0c000000        jal     0 <loongson_halt>
-+     #                    14: R_MIPS_26   _mcount
-+     #                    14: R_MIPS_NONE *ABS*
-+     #                    14: R_MIPS_NONE *ABS*
-+     #	 18:   00020021        nop
-+     if ($is_module eq "0") {
-+ 	    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
-+     } else {
-+ 	    $mcount_regex = "^\\s*([0-9a-fA-F]+): R_MIPS_HI16\\s+_mcount\$";
-+     }
-+     $objdump .= " -Melf-trad".$endian."mips ";
-+ 
-+     if ($endian eq "big") {
-+ 	    $endian = " -EB ";
-+ 	    $ld .= " -melf".$bits."btsmip";
-+     } else {
-+ 	    $endian = " -EL ";
-+ 	    $ld .= " -melf".$bits."ltsmip";
-+     }
-+ 
-+     $cc .= " -mno-abicalls -fno-pic -mabi=" . $bits . $endian;
-+     $ld .= $endian;
-+ 
-+     if ($bits == 64) {
-+ 	    $function_regex =
-+ 		"^([0-9a-fA-F]+)\\s+<(.|[^\$]L.*?|\$[^L].*?|[^\$][^L].*?)>:";
-+ 	    $type = ".dword";
-+     }
-+ 
-  } else {
-      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
-  }
+H.J.
