@@ -1,47 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZKWOMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbZKVXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZKWOMH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZKWOMG
+	id S1755847AbZKVXjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 18:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZKVXjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:12:06 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42700 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbZKWOMD (ORCPT
+	Sun, 22 Nov 2009 18:39:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40278 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755732AbZKVXjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:12:03 -0500
-Date: Mon, 23 Nov 2009 00:37:49 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, David Zeuthen <david@fubar.dk>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091122233749.GA9699@ucw.cz>
-References: <1258468659-5446-1-git-send-email-mjg@redhat.com> <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> <1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091118200712.GA14026@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Nov 2009 18:39:18 -0500
+Date: Sun, 22 Nov 2009 15:41:11 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, alan@linux.intel.com
+Subject: [patch] timer: Add a mod_timer_msec() API function
+Message-ID: <20091122154111.197e1a8a@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-11-18 20:07:12, Matthew Garrett wrote:
-> On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
-> 
-> > Sure, but what's wrong with reading that file every 50 seconds? Almost
-> > all boxes poll for media changes of optical drives and usb card
-> > readers anyway, so it's not that we are not doing stuff like this
-> > already.
-> 
-> We poll for media because there's no event-based way of avoiding it - in 
-> this case there is.
+Subject: timer: add a mod_timer_msec() API function
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-...when you add overhead to every disk operation. I'd say that polling
-once in 50 seconds is preferable to that.
+There is a common pattern in the kernel, where the caller wants
+to set a timer a specified number of milliseconds into the future.
+
+The typical solution then ends up
+
+mod_timer(&timer, jiffies + msecs_to_jiffies(msec_amount));
+
+or
+
+mod_timer(&timer, jiffies + HZ/some_value);
+
+This patch aims to simplify this pattern for the caller, and at
+the same time, make for a more power-friendly API.
+
+The new pattern for identical behavior will be
+
+mod_timer_msec(&timer, msec_amount, 0);
+
+while
+
+mod_timer_msec(&time, msec_amount, 100);
+
+would give the kernel 100 milliseconds of slack to find a power
+friendly time to group timers into one CPU wakeup.
+
+A patch to convert a number of users, to show how the API is used,
+will be sent as reply to this email.
+
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index a2d1eb6..006d4da 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -162,6 +162,7 @@ static inline int timer_pending(const struct timer_list * timer)
+ extern void add_timer_on(struct timer_list *timer, int cpu);
+ extern int del_timer(struct timer_list * timer);
+ extern int mod_timer(struct timer_list *timer, unsigned long expires);
++extern int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms, unsigned long slack_ms);
+ extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
+ extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+ 
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 5db5a8d..c9d5cbf 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -751,6 +751,47 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
+ EXPORT_SYMBOL(mod_timer);
+ 
+ /**
++ * mod_timer_msec - modify a timer's timeout, using relative milliseconds
++ * @timer: the timer to be modified
++ * @delay_ms: the desired minimum delay in milliseconds
++ * @slack_ms: the amount of slack is ok in firing the timer
++ *
++ * Changes the timeout of a timer similar to mod_timer().
++ *
++ * mod_timer_msec() takes relative milliseconds rather than absolute
++ * jiffies as argument and also takes a "slack" amount, which is
++ * an explicit permission to treat the time of the timer as less
++ * precise in order to allow grouping of timers.
++ *
++ * The function returns whether it has modified a pending timer or not.
++ * (ie. mod_timer() of an inactive timer returns 0, mod_timer() of an
++ * active timer returns 1.)
++ */
++int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms, unsigned long slack_ms)
++{
++	unsigned long next_jiffies, max_jiffies;
++	unsigned long rounded_jiffies;
++
++	next_jiffies = jiffies + msecs_to_jiffies(delay_ms);
++	max_jiffies = jiffies + msecs_to_jiffies(delay_ms + slack_ms);
++	rounded_jiffies = round_jiffies(next_jiffies);
++
++	/* check if rounding up next_jiffies is within the max */
++	if (rounded_jiffies <= max_jiffies && rounded_jiffies >= next_jiffies) {
++		next_jiffies = rounded_jiffies;
++	} else {
++		/* regular rounding failed; try a rounding to multiple-of-16 */
++		rounded_jiffies = (next_jiffies + 15) & ~0xF;
++		if (rounded_jiffies <= max_jiffies)
++			next_jiffies = rounded_jiffies;
++	}
++
++	return mod_timer(timer, next_jiffies);
++}
++EXPORT_SYMBOL_GPL(mod_timer_msec);
++
++
++/**
+  * mod_timer_pinned - modify a timer's timeout
+  * @timer: the timer to be modified
+  * @expires: new timeout in jiffies
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
