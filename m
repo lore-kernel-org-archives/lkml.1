@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbZKVTSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZKVTfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbZKVTSg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 14:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZKVTSf
+	id S1753906AbZKVTfH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 14:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZKVTfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 14:18:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39077 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbZKVTSf (ORCPT
+	Sun, 22 Nov 2009 14:35:06 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:38255 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZKVTfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 14:18:35 -0500
+	Sun, 22 Nov 2009 14:35:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=mg8U9bYEUl3LvbVaenMhHgb/FKiK+tfe91tvKrtL7nTkjXrI5FwUQkXB0IjklCQMGC
-         NPXmDqNeax7LB+Dj4KKaHt+21yexga/ISG/JCTrCh3yq/nJJItqy7WjT/4p11ZbCJd50
-         NlI1NLpmd6EXFPbCaFWHqnuqOGPFx7/U0NGbU=
-Date: Sun, 22 Nov 2009 22:18:36 +0300
-From: Ilya Loginov <isloginov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org, Peter Horton <phorton@bitbox.co.uk>,
-       "Ed L. Cashin" <ecashin@coraid.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] mtd: fix mtd_blkdevs problem with caches on some
- architectures (2.6.31)
-Message-Id: <20091122221836.d2d7535d.isloginov@gmail.com>
-In-Reply-To: <20091122104816.b6920ede.akpm@linux-foundation.org>
-References: <20091118170810.2bb9cd54.isloginov@gmail.com>
-	<20091120163751.731781e8.akpm@linux-foundation.org>
-	<20091121170437.0839daef.isloginov@gmail.com>
-	<20091121095429.1378828c.akpm@linux-foundation.org>
-	<20091122021128.db47e202.isloginov@gmail.com>
-	<20091121152633.8c79e341.akpm@linux-foundation.org>
-	<20091122124631.908a32c4.isloginov@gmail.com>
-	<20091122132915.GA3046@elte.hu>
-	<20091122165521.0b488e05.isloginov@gmail.com>
-	<20091122104816.b6920ede.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.12; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=qgx36EOAdvKYpgh4ftrGvnnxpLvq5t5Mba0vmjZdG7fMf2n4Z/eDXk/p5Q3PWLETIy
+         q4V+epJhKDirZJbzeOfz0PI7atFG1MdOMqsnLw7vp1lHrqKZ/wAUTe4RS6Dq8ycEqXQp
+         Xm0DXHwC2unYf+vAhpm84ZLf/jj7mRvLj/Zog=
+MIME-Version: 1.0
+In-Reply-To: <20091118223851.GA5191@ami.dom.local>
+References: <81bfc67a0911111448q2e7938fcq18adf2454d6bc8f1@mail.gmail.com>
+	 <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com>
+	 <4AFC5C58.9030207@gmail.com>
+	 <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
+	 <20091113211640.GA2540@ami.dom.local>
+	 <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
+	 <20091118135136.GA9224@ff.dom.local>
+	 <81bfc67a0911181021n1b969565y4a39b181360b5e92@mail.gmail.com>
+	 <20091118201034.GA3060@ami.dom.local>
+	 <20091118223851.GA5191@ami.dom.local>
+Date: Sun, 22 Nov 2009 14:35:10 -0500
+Message-ID: <81bfc67a0911221135y300841f2i8e78417600528cd5@mail.gmail.com>
+Subject: Re: large packet loss take2 2.6.31.x
+From: Caleb Cushing <xenoterracide@gmail.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Nov 2009 10:48:16 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+haven't had time to do a test yet. but would it be of any use for you
+all for me to throw another nic (it'd be a different driver for sure)
+in this box and test that on a problematic kernel? I have some but not
+with me.
 
-> I don't think the non-stub versions of these should be inlined.  They
-> will generate quite a lot of code and they're pretty heavyweight.
-> Better to implement them in block/ somewhere, and EXPORT_SYMBOL().
+On Wed, Nov 18, 2009 at 5:38 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On Wed, Nov 18, 2009 at 09:10:34PM +0100, Jarek Poplawski wrote:
+>> On Wed, Nov 18, 2009 at 01:21:19PM -0500, Caleb Cushing wrote:
+>> > yeah testing it under my known working config first. I'll get back w/ you later.
+>>
+>> Btw, since dropping at hardware (NIC) level seems more likely to me,
+>> could you send 'ethtool eth0', and 'ethtool -S eth0' after such tests
+>> (both sides).
+>
+> Hmm... and 'netstat -s' before and after the test (both sides).
+>
+> Jarek P.
+>
 
-I tried this way from the beginning, and to avoid redefinitions I enclose
-everything in #if #endif in *.c files. I think it is not very good.
-So there are two possibilities.
 
-1. To keep it like it is now and in this way there will be quite a lot of code.
-But in previous letters I gave statistics on the flush_dcache_page call in a
-kernel. And our case is particular. There will not be generated a lot of code.
-Or just take away inline.
-
-2. Or it is better to carry over normal realization to *.c file and enclose
-everything by one more #if #endif.
-
-What do you consier to be better?
 
 -- 
-Ilya Loginov <isloginov@gmail.com>
+Caleb Cushing
+
+http://xenoterracide.blogspot.com
