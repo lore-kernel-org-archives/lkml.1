@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZKVPVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZKVP3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZKVPVu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 10:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZKVPVt
+	id S1755244AbZKVP3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 10:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZKVP33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 10:21:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35363 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755182AbZKVPVt (ORCPT
+	Sun, 22 Nov 2009 10:29:29 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:42881 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580AbZKVP32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 10:21:49 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf symbols: Show messages about module loading only if verbose >= 1
-Date: Sun, 22 Nov 2009 13:21:41 -0200
-Message-Id: <1258903301-20584-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 22 Nov 2009 10:29:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Fqf8MHW8sAoVbXIAcOrK1RiLPZhfM7/FXt+pFY03Zx2MkllIkGmw4HUbQ4BFccCeQt
+         HzE9Kzk92IK18uv6FEZiP5eybEpglHE9h5wNKWFfLJbHZbTOpvHfW/4CBdtfUzeJ4n9N
+         5b0tfoLGqFayFQR/zdLxJNFFI9kKg8PAiWHcQ=
+Date: Sun, 22 Nov 2009 16:29:36 +0100
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+Message-Id: <20091122162936.ac603ad1.kristoffer.ericson@gmail.com>
+In-Reply-To: <1258886823.7094.101.camel@johannes.local>
+References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
+	<mYW9sxtWd2G.A.EnF.gDACLB@chimera>
+	<4B08258E.9050607@gmail.com>
+	<1258886823.7094.101.camel@johannes.local>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Sun, 22 Nov 2009 11:47:03 +0100
+Johannes Berg <johannes@sipsolutions.net> wrote:
 
-Suggested-by: Ingo Molnar <mingo@elte.hu>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/symbol.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> On Sat, 2009-11-21 at 09:38 -0800, Justin P. Mattock wrote:
+> 
+> > I did a bisect yesterday on this, and the results
+> > seemed to have worked over here by reverting:
+> > 
+> > 75e6c3b72b3ab01c47629f3fbd0fed4e6550bf3a
+> > cfg80211: lower dynamic PS timeout to 100ms
+> > 
+> > if Kristoffer can try reverting this one
+> > to see, then we can go from there.
+> 
+> So that just means the driver is broken. Please run
+> 
+> 	iwconfig wlan0 power off
+> 
+> to fix it then. And the patch below will disable it by default since
+> it's broken.
+> 
+> johannes
+> 
+> --- wireless-testing.orig/drivers/net/wireless/ath/ath9k/main.c	2009-11-22 11:44:41.000000000 +0100
+> +++ wireless-testing/drivers/net/wireless/ath/ath9k/main.c	2009-11-22 11:45:26.000000000 +0100
+> @@ -1893,6 +1893,8 @@ void ath_set_hw_capab(struct ath_softc *
+>  		BIT(NL80211_IFTYPE_ADHOC) |
+>  		BIT(NL80211_IFTYPE_MESH_POINT);
+>  
+> +	hw->wiphy->ps_default = false;
+> +
+>  	hw->queues = 4;
+>  	hw->max_rates = 4;
+>  	hw->channel_change_time = 5000;
+> 
+> 
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index f56158f..74b5b8a 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -1189,7 +1189,7 @@ static int dsos__set_modules_path_dir(char *dirname)
- 	DIR *dir = opendir(dirname);
- 
- 	if (!dir) {
--		pr_err("%s: cannot open %s dir\n", __func__, dirname);
-+		pr_debug("%s: cannot open %s dir\n", __func__, dirname);
- 		return -1;
- 	}
- 
-@@ -1500,8 +1500,8 @@ int kernel_maps__init(bool use_modules)
- 		return -1;
- 
- 	if (use_modules && kernel_maps__create_module_maps() < 0)
--		pr_warning("Failed to load list of modules in use, "
--			   "continuing...\n");
-+		pr_debug("Failed to load list of modules in use, "
-+			 "continuing...\n");
- 	/*
- 	 * Now that we have all the maps created, just set the ->end of them:
- 	 */
+Johannes, am I correct in thinking that this also solves the decreased signal strength
+issue in bug http://bugzilla.kernel.org/show_bug.cgi?id=13807 ?
+
+
 -- 
-1.6.2.5
-
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
