@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZKVQ7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZKVRFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZKVQ7a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 11:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZKVQ73
+	id S1755473AbZKVRFk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 12:05:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZKVRFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 11:59:29 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58622 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755425AbZKVQ72 (ORCPT
+	Sun, 22 Nov 2009 12:05:40 -0500
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:55114 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755202AbZKVRFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 11:59:28 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/1] perf report: Do map lookups in resolve_callchain
-Date: Sun, 22 Nov 2009 14:59:22 -0200
-Message-Id: <1258909162-28496-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 22 Nov 2009 12:05:39 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEACr8CEtGGN1W/2dsb2JhbACBTNEghDwE
+Date: Sun, 22 Nov 2009 12:05:42 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org, josh@joshtriplett.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/3] rcu: resend of grace-period stall and
+	cleanup patches
+Message-ID: <20091122170542.GA12827@Krystal>
+References: <20091122165321.GA19922@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091122165321.GA19922@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 11:57:55 up 96 days,  3:47,  3 users,  load average: 0.52, 0.52,
+	0.55
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> Hello!
+> 
+> This patch series is a resend of the three RCU patches that are candidates
+> for the upcoming 2.6.33 merge window, but that are not yet in -tip.
+> These are:
+> 
+> 1.	A fix for a grace-period-stall bug that occurs on large
+> 	machines.
+[...]
 
-Bug introduced in 439d473b4777de510e1322168ac6f2f377ecd5bc, making the
-initial map be used for all IPs, so that symbols outside this initial
-map would either be erroneously resolved or not resolve at all.
+Hi Paul,
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-report.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+I was thinking about the last bugs you discovered. Some caracteristics
+they had in common were that they occur only on large marchines (32+ or
+64+ CPUs). This is caused by the fact that some of your code is only
+covered by tests when the number of CPUs go over the architecture size
+(in bits).
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 0d39e80..7e690f7 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -467,7 +467,7 @@ static int call__match(struct symbol *sym)
- 	return 0;
- }
- 
--static struct symbol **resolve_callchain(struct thread *thread, struct map *map,
-+static struct symbol **resolve_callchain(struct thread *thread,
- 					 struct ip_callchain *chain,
- 					 struct symbol **parent)
- {
-@@ -496,10 +496,10 @@ static struct symbol **resolve_callchain(struct thread *thread, struct map *map,
- 		case PERF_CONTEXT_HV:
- 			break;
- 		case PERF_CONTEXT_KERNEL:
--			sym = kernel_maps__find_symbol(ip, &map, NULL);
-+			sym = kernel_maps__find_symbol(ip, NULL, NULL);
- 			break;
- 		default:
--			sym = resolve_symbol(thread, &map, &ip);
-+			sym = resolve_symbol(thread, NULL, &ip);
- 			break;
- 		}
- 
-@@ -529,7 +529,7 @@ hist_entry__add(struct thread *thread, struct map *map,
- 	struct hist_entry *he;
- 
- 	if ((sort__has_parent || callchain) && chain)
--		syms = resolve_callchain(thread, map, chain, &parent);
-+		syms = resolve_callchain(thread, chain, &parent);
- 
- 	he = __hist_entry__add(thread, map, sym, parent,
- 			       ip, count, level, &hit);
+I managed to cover this kind of scenario with smaller state-space in the
+LTTng formal models (but it also applies to kernel code) by tweaking the
+code, with bitmasks, to ensure that the number of bits the code uses is,
+e.g., no more than the minimum amount of required bits. Therefore, you
+are ensured to run into overflow scenarios either more quickly or, as in
+this case, on decently-sized hardware.
+
+Hope this helps,
+
+Thanks,
+
+Mathieu
+
 -- 
-1.6.2.5
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
