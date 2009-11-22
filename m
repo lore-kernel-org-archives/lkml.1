@@ -1,12 +1,12 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZKVQxp (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 22 Nov 2009 11:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbZKVQxo
+	id S1755526AbZKVQxq (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 22 Nov 2009 11:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZKVQxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 11:53:44 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:52085 "EHLO e9.ny.us.ibm.com"
+	Sun, 22 Nov 2009 11:53:46 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46178 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbZKVQxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755402AbZKVQxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 22 Nov 2009 11:53:42 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/3] rcu: eliminate unneeded function wrapping
-Date: Sun, 22 Nov 2009 08:53:49 -0800
-Message-Id: <12589088302320-git-send-email->
+Subject: [PATCH tip/core/rcu 3/3] rcu: re-arrange code to reduce #ifdef pain
+Date: Sun, 22 Nov 2009 08:53:50 -0800
+Message-Id: <1258908830885-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20091122165321.GA19922@linux.vnet.ibm.com>
 References: <20091122165321.GA19922@linux.vnet.ibm.com>
@@ -28,168 +28,388 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The functions rcu_init() is a wrapper for __rcu_init(), and also sets
-up the CPU-hotplug notifier for rcu_barrier_cpu_hotplug().  But TINY_RCU
-doesn't need CPU-hotplug notification, and the rcu_barrier_cpu_hotplug()
-is a simple wrapper for rcu_cpu_notify().  So push rcu_init() out to
-kernel/rcutree.c and kernel/rcutiny.c and get rid of the wrapper function
-rcu_barrier_cpu_hotplug().
+Remove #ifdefs from kernel/rcupdate.c and include/linux/rcupdate.h
+by moving code to include/linux/rcutiny.h, include/linux/rcutree.h,
+and kernel/rcutree.c.  Also remove some definitions that are no longer
+used.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcutiny.h |    2 --
- include/linux/rcutree.h |    3 ---
- kernel/rcupdate.c       |   22 ----------------------
- kernel/rcutiny.c        |   11 +----------
- kernel/rcutree.c        |   17 ++++++++++++++---
- 5 files changed, 15 insertions(+), 40 deletions(-)
+ include/linux/rcupdate.h |   12 -----
+ include/linux/rcutiny.h  |   11 +++++
+ include/linux/rcutree.h  |    4 +-
+ kernel/rcupdate.c        |  104 ----------------------------------------------
+ kernel/rcutree.c         |   80 +++++++++++++++++++++++++++++++++++
+ kernel/rcutree_plugin.h  |   24 +++++++++++
+ 6 files changed, 118 insertions(+), 117 deletions(-)
 
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 2f1bc42..24440f4 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -52,11 +52,6 @@ struct rcu_head {
+ };
+ 
+ /* Exported common interfaces */
+-#ifdef CONFIG_TREE_PREEMPT_RCU
+-extern void synchronize_rcu(void);
+-#else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+-#define synchronize_rcu synchronize_sched
+-#endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
+ extern void synchronize_rcu_bh(void);
+ extern void synchronize_sched(void);
+ extern void rcu_barrier(void);
+@@ -67,13 +62,6 @@ extern int sched_expedited_torture_stats(char *page);
+ 
+ /* Internal to kernel */
+ extern void rcu_init(void);
+-extern void rcu_scheduler_starting(void);
+-#ifndef CONFIG_TINY_RCU
+-extern int rcu_needs_cpu(int cpu);
+-#else
+-static inline int rcu_needs_cpu(int cpu) { return 0; }
+-#endif
+-extern int rcu_scheduler_active;
+ 
+ #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
+ #include <linux/rcutree.h>
 diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
-index 2c1fe83..a3b6272 100644
+index a3b6272..c4ba9a7 100644
 --- a/include/linux/rcutiny.h
 +++ b/include/linux/rcutiny.h
-@@ -38,7 +38,6 @@ void rcu_bh_qs(int cpu);
- 
+@@ -39,6 +39,11 @@ void rcu_bh_qs(int cpu);
  #define rcu_init_sched()	do { } while (0)
  extern void rcu_check_callbacks(int cpu, int user);
--extern void __rcu_init(void);
  
++static inline int rcu_needs_cpu(int cpu)
++{
++	return 0;
++}
++
  /*
   * Return the number of grace periods.
-@@ -69,7 +68,6 @@ static inline void synchronize_rcu_bh_expedited(void)
- }
+  */
+@@ -57,6 +62,8 @@ static inline long rcu_batches_completed_bh(void)
  
- struct notifier_block;
--extern int rcu_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu);
- 
- #ifdef CONFIG_NO_HZ
- 
-diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index 9642c6b..111a652 100644
---- a/include/linux/rcutree.h
-+++ b/include/linux/rcutree.h
-@@ -34,8 +34,6 @@ struct notifier_block;
- 
- extern void rcu_sched_qs(int cpu);
- extern void rcu_bh_qs(int cpu);
--extern int rcu_cpu_notify(struct notifier_block *self,
--			  unsigned long action, void *hcpu);
- extern int rcu_needs_cpu(int cpu);
  extern int rcu_expedited_torture_stats(char *page);
  
-@@ -83,7 +81,6 @@ static inline void synchronize_rcu_bh_expedited(void)
- 	synchronize_sched_expedited();
++#define synchronize_rcu synchronize_sched
++
+ static inline void synchronize_rcu_expedited(void)
+ {
+ 	synchronize_sched();
+@@ -86,6 +93,10 @@ static inline void rcu_exit_nohz(void)
+ 
+ #endif /* #else #ifdef CONFIG_NO_HZ */
+ 
++static inline void rcu_scheduler_starting(void)
++{
++}
++
+ static inline void exit_rcu(void)
+ {
+ }
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index 111a652..c93eee5 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -35,12 +35,14 @@ struct notifier_block;
+ extern void rcu_sched_qs(int cpu);
+ extern void rcu_bh_qs(int cpu);
+ extern int rcu_needs_cpu(int cpu);
++extern void rcu_scheduler_starting(void);
+ extern int rcu_expedited_torture_stats(char *page);
+ 
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 
+ extern void __rcu_read_lock(void);
+ extern void __rcu_read_unlock(void);
++extern void synchronize_rcu(void);
+ extern void exit_rcu(void);
+ 
+ #else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+@@ -55,7 +57,7 @@ static inline void __rcu_read_unlock(void)
+ 	preempt_enable();
  }
  
--extern void __rcu_init(void);
- extern void rcu_check_callbacks(int cpu, int user);
+-#define __synchronize_sched() synchronize_rcu()
++#define synchronize_rcu synchronize_sched
  
- extern long rcu_batches_completed(void);
+ static inline void exit_rcu(void)
+ {
 diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index 7625f20..eb6b534 100644
+index eb6b534..9b7fd47 100644
 --- a/kernel/rcupdate.c
 +++ b/kernel/rcupdate.c
-@@ -161,28 +161,6 @@ EXPORT_SYMBOL_GPL(synchronize_rcu_bh);
+@@ -44,7 +44,6 @@
+ #include <linux/cpu.h>
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+-#include <linux/kernel_stat.h>
  
- #endif /* #ifndef CONFIG_TINY_RCU */
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ static struct lock_class_key rcu_lock_key;
+@@ -53,8 +52,6 @@ struct lockdep_map rcu_lock_map =
+ EXPORT_SYMBOL_GPL(rcu_lock_map);
+ #endif
  
--static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
--		unsigned long action, void *hcpu)
--{
--	return rcu_cpu_notify(self, action, hcpu);
--}
+-int rcu_scheduler_active __read_mostly;
 -
--void __init rcu_init(void)
--{
--	int i;
--
--	__rcu_init();
--	cpu_notifier(rcu_barrier_cpu_hotplug, 0);
--
--	/*
--	 * We don't need protection against CPU-hotplug here because
--	 * this is called early in boot, before either interrupts
--	 * or the scheduler are operational.
--	 */
--	for_each_online_cpu(i)
--		rcu_barrier_cpu_hotplug(NULL, CPU_UP_PREPARE, (void *)(long)i);
--}
--
- void rcu_scheduler_starting(void)
- {
- 	WARN_ON(num_online_cpus() != 1);
-diff --git a/kernel/rcutiny.c b/kernel/rcutiny.c
-index b33ec3a..9f6d9ff 100644
---- a/kernel/rcutiny.c
-+++ b/kernel/rcutiny.c
-@@ -178,15 +178,6 @@ static void rcu_process_callbacks(struct softirq_action *unused)
- }
- 
  /*
-- * Null function to handle CPU being onlined.  Longer term, we want to
-- * make TINY_RCU avoid using rcupdate.c, but later...
-- */
--int rcu_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
--{
--	return NOTIFY_OK;
--}
+  * Awaken the corresponding synchronize_rcu() instance now that a
+  * grace period has elapsed.
+@@ -66,104 +63,3 @@ void wakeme_after_rcu(struct rcu_head  *head)
+ 	rcu = container_of(head, struct rcu_synchronize, head);
+ 	complete(&rcu->completion);
+ }
 -
--/*
-  * Wait for a grace period to elapse.  But it is illegal to invoke
-  * synchronize_sched() from within an RCU read-side critical section.
-  * Therefore, any legal call to synchronize_sched() is a quiescent
-@@ -285,7 +276,7 @@ void rcu_barrier_sched(void)
- }
- EXPORT_SYMBOL_GPL(rcu_barrier_sched);
- 
--void __rcu_init(void)
-+void __init rcu_init(void)
- {
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
- }
+-#ifndef CONFIG_TINY_RCU
+-
+-#ifdef CONFIG_TREE_PREEMPT_RCU
+-
+-/**
+- * synchronize_rcu - wait until a grace period has elapsed.
+- *
+- * Control will return to the caller some time after a full grace
+- * period has elapsed, in other words after all currently executing RCU
+- * read-side critical sections have completed.  RCU read-side critical
+- * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
+- * and may be nested.
+- */
+-void synchronize_rcu(void)
+-{
+-	struct rcu_synchronize rcu;
+-
+-	if (!rcu_scheduler_active)
+-		return;
+-
+-	init_completion(&rcu.completion);
+-	/* Will wake me after RCU finished. */
+-	call_rcu(&rcu.head, wakeme_after_rcu);
+-	/* Wait for it. */
+-	wait_for_completion(&rcu.completion);
+-}
+-EXPORT_SYMBOL_GPL(synchronize_rcu);
+-
+-#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+-
+-/**
+- * synchronize_sched - wait until an rcu-sched grace period has elapsed.
+- *
+- * Control will return to the caller some time after a full rcu-sched
+- * grace period has elapsed, in other words after all currently executing
+- * rcu-sched read-side critical sections have completed.   These read-side
+- * critical sections are delimited by rcu_read_lock_sched() and
+- * rcu_read_unlock_sched(), and may be nested.  Note that preempt_disable(),
+- * local_irq_disable(), and so on may be used in place of
+- * rcu_read_lock_sched().
+- *
+- * This means that all preempt_disable code sequences, including NMI and
+- * hardware-interrupt handlers, in progress on entry will have completed
+- * before this primitive returns.  However, this does not guarantee that
+- * softirq handlers will have completed, since in some kernels, these
+- * handlers can run in process context, and can block.
+- *
+- * This primitive provides the guarantees made by the (now removed)
+- * synchronize_kernel() API.  In contrast, synchronize_rcu() only
+- * guarantees that rcu_read_lock() sections will have completed.
+- * In "classic RCU", these two guarantees happen to be one and
+- * the same, but can differ in realtime RCU implementations.
+- */
+-void synchronize_sched(void)
+-{
+-	struct rcu_synchronize rcu;
+-
+-	if (rcu_blocking_is_gp())
+-		return;
+-
+-	init_completion(&rcu.completion);
+-	/* Will wake me after RCU finished. */
+-	call_rcu_sched(&rcu.head, wakeme_after_rcu);
+-	/* Wait for it. */
+-	wait_for_completion(&rcu.completion);
+-}
+-EXPORT_SYMBOL_GPL(synchronize_sched);
+-
+-/**
+- * synchronize_rcu_bh - wait until an rcu_bh grace period has elapsed.
+- *
+- * Control will return to the caller some time after a full rcu_bh grace
+- * period has elapsed, in other words after all currently executing rcu_bh
+- * read-side critical sections have completed.  RCU read-side critical
+- * sections are delimited by rcu_read_lock_bh() and rcu_read_unlock_bh(),
+- * and may be nested.
+- */
+-void synchronize_rcu_bh(void)
+-{
+-	struct rcu_synchronize rcu;
+-
+-	if (rcu_blocking_is_gp())
+-		return;
+-
+-	init_completion(&rcu.completion);
+-	/* Will wake me after RCU finished. */
+-	call_rcu_bh(&rcu.head, wakeme_after_rcu);
+-	/* Wait for it. */
+-	wait_for_completion(&rcu.completion);
+-}
+-EXPORT_SYMBOL_GPL(synchronize_rcu_bh);
+-
+-#endif /* #ifndef CONFIG_TINY_RCU */
+-
+-void rcu_scheduler_starting(void)
+-{
+-	WARN_ON(num_online_cpus() != 1);
+-	WARN_ON(nr_context_switches() > 0);
+-	rcu_scheduler_active = 1;
+-}
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index b79bfcd..e3d3bbd 100644
+index e3d3bbd..4ca7e02 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1644,8 +1644,8 @@ static void __cpuinit rcu_online_cpu(int cpu)
+@@ -46,6 +46,7 @@
+ #include <linux/cpu.h>
+ #include <linux/mutex.h>
+ #include <linux/time.h>
++#include <linux/kernel_stat.h>
+ 
+ #include "rcutree.h"
+ 
+@@ -79,6 +80,8 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
+ struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
+ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+ 
++static int rcu_scheduler_active __read_mostly;
++
+ 
  /*
-  * Handle CPU online/offline notification events.
-  */
--int __cpuinit rcu_cpu_notify(struct notifier_block *self,
--			     unsigned long action, void *hcpu)
-+static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-+				    unsigned long action, void *hcpu)
- {
- 	long cpu = (long)hcpu;
+  * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
+@@ -1396,6 +1399,68 @@ void call_rcu_bh(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+ }
+ EXPORT_SYMBOL_GPL(call_rcu_bh);
  
-@@ -1781,8 +1781,10 @@ do { \
- 	} \
- } while (0)
- 
--void __init __rcu_init(void)
-+void __init rcu_init(void)
- {
-+	int i;
++/**
++ * synchronize_sched - wait until an rcu-sched grace period has elapsed.
++ *
++ * Control will return to the caller some time after a full rcu-sched
++ * grace period has elapsed, in other words after all currently executing
++ * rcu-sched read-side critical sections have completed.   These read-side
++ * critical sections are delimited by rcu_read_lock_sched() and
++ * rcu_read_unlock_sched(), and may be nested.  Note that preempt_disable(),
++ * local_irq_disable(), and so on may be used in place of
++ * rcu_read_lock_sched().
++ *
++ * This means that all preempt_disable code sequences, including NMI and
++ * hardware-interrupt handlers, in progress on entry will have completed
++ * before this primitive returns.  However, this does not guarantee that
++ * softirq handlers will have completed, since in some kernels, these
++ * handlers can run in process context, and can block.
++ *
++ * This primitive provides the guarantees made by the (now removed)
++ * synchronize_kernel() API.  In contrast, synchronize_rcu() only
++ * guarantees that rcu_read_lock() sections will have completed.
++ * In "classic RCU", these two guarantees happen to be one and
++ * the same, but can differ in realtime RCU implementations.
++ */
++void synchronize_sched(void)
++{
++	struct rcu_synchronize rcu;
 +
- 	rcu_bootup_announce();
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
-@@ -1791,6 +1793,15 @@ void __init __rcu_init(void)
- 	RCU_INIT_FLAVOR(&rcu_bh_state, rcu_bh_data);
- 	__rcu_init_preempt();
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
++	if (rcu_blocking_is_gp())
++		return;
 +
-+	/*
-+	 * We don't need protection against CPU-hotplug here because
-+	 * this is called early in boot, before either interrupts
-+	 * or the scheduler are operational.
-+	 */
-+	cpu_notifier(rcu_cpu_notify, 0);
-+	for_each_online_cpu(i)
-+		rcu_cpu_notify(NULL, CPU_UP_PREPARE, (void *)(long)i);
++	init_completion(&rcu.completion);
++	/* Will wake me after RCU finished. */
++	call_rcu_sched(&rcu.head, wakeme_after_rcu);
++	/* Wait for it. */
++	wait_for_completion(&rcu.completion);
++}
++EXPORT_SYMBOL_GPL(synchronize_sched);
++
++/**
++ * synchronize_rcu_bh - wait until an rcu_bh grace period has elapsed.
++ *
++ * Control will return to the caller some time after a full rcu_bh grace
++ * period has elapsed, in other words after all currently executing rcu_bh
++ * read-side critical sections have completed.  RCU read-side critical
++ * sections are delimited by rcu_read_lock_bh() and rcu_read_unlock_bh(),
++ * and may be nested.
++ */
++void synchronize_rcu_bh(void)
++{
++	struct rcu_synchronize rcu;
++
++	if (rcu_blocking_is_gp())
++		return;
++
++	init_completion(&rcu.completion);
++	/* Will wake me after RCU finished. */
++	call_rcu_bh(&rcu.head, wakeme_after_rcu);
++	/* Wait for it. */
++	wait_for_completion(&rcu.completion);
++}
++EXPORT_SYMBOL_GPL(synchronize_rcu_bh);
++
+ /*
+  * Check to see if there is any immediate RCU-related work to be done
+  * by the current CPU, for the specified type of RCU, returning 1 if so.
+@@ -1480,6 +1545,21 @@ int rcu_needs_cpu(int cpu)
+ 	       rcu_preempt_needs_cpu(cpu);
  }
  
- #include "rcutree_plugin.h"
++/*
++ * This function is invoked towards the end of the scheduler's initialization
++ * process.  Before this is called, the idle task might contain
++ * RCU read-side critical sections (during which time, this idle
++ * task is booting the system).  After this function is called, the
++ * idle tasks are prohibited from containing RCU read-side critical
++ * sections.
++ */
++void rcu_scheduler_starting(void)
++{
++	WARN_ON(num_online_cpus() != 1);
++	WARN_ON(nr_context_switches() > 0);
++	rcu_scheduler_active = 1;
++}
++
+ static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+ static atomic_t rcu_barrier_cpu_count;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index 0bdb592..1d295c7 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -425,6 +425,30 @@ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+ }
+ EXPORT_SYMBOL_GPL(call_rcu);
+ 
++/**
++ * synchronize_rcu - wait until a grace period has elapsed.
++ *
++ * Control will return to the caller some time after a full grace
++ * period has elapsed, in other words after all currently executing RCU
++ * read-side critical sections have completed.  RCU read-side critical
++ * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
++ * and may be nested.
++ */
++void synchronize_rcu(void)
++{
++	struct rcu_synchronize rcu;
++
++	if (!rcu_scheduler_active)
++		return;
++
++	init_completion(&rcu.completion);
++	/* Will wake me after RCU finished. */
++	call_rcu(&rcu.head, wakeme_after_rcu);
++	/* Wait for it. */
++	wait_for_completion(&rcu.completion);
++}
++EXPORT_SYMBOL_GPL(synchronize_rcu);
++
+ /*
+  * Wait for an rcu-preempt grace period.  We are supposed to expedite the
+  * grace period, but this is the crude slow compatability hack, so just
 -- 
 1.5.2.5
 
