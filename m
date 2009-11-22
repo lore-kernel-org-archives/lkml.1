@@ -1,63 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZKVJGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZKVJPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZKVJGs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 04:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZKVJGr
+	id S1754177AbZKVJPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 04:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZKVJPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 04:06:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45627 "EHLO mx2.mail.elte.hu"
+	Sun, 22 Nov 2009 04:15:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55699 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbZKVJGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 04:06:43 -0500
-Date: Sun, 22 Nov 2009 10:05:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>, Andrew Haley <aph@redhat.com>,
-       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
-       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
- messing with mcount prologue
-Message-ID: <20091122090531.GA21833@elte.hu>
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain>
- <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org>
- <20091119072040.GA23579@elte.hu>
- <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain>
- <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain>
- <1258694593.22249.1012.camel@gandalf.stny.rr.com>
- <1258736456.22249.1032.camel@gandalf.stny.rr.com>
+	id S1752213AbZKVJPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 04:15:36 -0500
+Message-ID: <4B0900D8.80606@kernel.org>
+Date: Sun, 22 Nov 2009 01:14:00 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258736456.22249.1032.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: move find_smp_config early
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+move find_smp_config calling before bootmem initialized.
+use reserve_early instead of reserve_bootmem in it.
 
-> Ingo, Thomas and Linus,
-> 
-> I know Thomas did a patch to force the -mtune=generic, but just in 
-> case gcc decides to do something crazy again, this patch will catch 
-> it.
-> 
-> Should we try to get this in now?
+so could only call find_smp_config one time and remove unneeded reserve parameter
 
-Very nice example of defensive coding - i like this. I've queued it up 
-for .33 (unless anyone objects) as i think it's too late for .32.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-	Ingo
+---
+ arch/x86/include/asm/mpspec.h   |   11 ++--------
+ arch/x86/include/asm/x86_init.h |    2 -
+ arch/x86/kernel/apic/numaq_32.c |    5 ----
+ arch/x86/kernel/mpparse.c       |   44 ++++++++++------------------------------
+ arch/x86/kernel/setup.c         |   10 ++++-----
+ arch/x86/kernel/visws_quirks.c  |    2 -
+ arch/x86/mm/k8topology_64.c     |   12 ----------
+ 7 files changed, 22 insertions(+), 64 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -71,12 +71,7 @@ static inline void early_get_smp_config(
+ 
+ static inline void find_smp_config(void)
+ {
+-	x86_init.mpparse.find_smp_config(1);
+-}
+-
+-static inline void early_find_smp_config(void)
+-{
+-	x86_init.mpparse.find_smp_config(0);
++	x86_init.mpparse.find_smp_config();
+ }
+ 
+ #ifdef CONFIG_X86_MPPARSE
+@@ -89,7 +84,7 @@ extern void default_mpc_oem_bus_info(str
+ # else
+ #  define default_mpc_oem_bus_info NULL
+ # endif
+-extern void default_find_smp_config(unsigned int reserve);
++extern void default_find_smp_config(void);
+ extern void default_get_smp_config(unsigned int early);
+ #else
+ static inline void early_reserve_e820_mpc_new(void) { }
+@@ -97,7 +92,7 @@ static inline void early_reserve_e820_mp
+ #define default_mpc_apic_id NULL
+ #define default_smp_read_mpc_oem NULL
+ #define default_mpc_oem_bus_info NULL
+-#define default_find_smp_config x86_init_uint_noop
++#define default_find_smp_config x86_init_noop
+ #define default_get_smp_config x86_init_uint_noop
+ #endif
+ 
+Index: linux-2.6/arch/x86/include/asm/x86_init.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/x86_init.h
++++ linux-2.6/arch/x86/include/asm/x86_init.h
+@@ -26,7 +26,7 @@ struct x86_init_mpparse {
+ 	void (*smp_read_mpc_oem)(struct mpc_table *mpc);
+ 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
+ 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
+-	void (*find_smp_config)(unsigned int reserve);
++	void (*find_smp_config)(void);
+ 	void (*get_smp_config)(unsigned int early);
+ };
+ 
+Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
++++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
+@@ -264,11 +264,6 @@ static void __init smp_read_mpc_oem(stru
+ static __init void early_check_numaq(void)
+ {
+ 	/*
+-	 * Find possible boot-time SMP configuration:
+-	 */
+-	early_find_smp_config();
+-
+-	/*
+ 	 * get boot-time SMP configuration:
+ 	 */
+ 	if (smp_found_config)
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -667,36 +667,18 @@ void __init default_get_smp_config(unsig
+ 	 */
+ }
+ 
+-static void __init smp_reserve_bootmem(struct mpf_intel *mpf)
++static void __init smp_reserve_memory(struct mpf_intel *mpf)
+ {
+ 	unsigned long size = get_mpc_size(mpf->physptr);
+-#ifdef CONFIG_X86_32
+-	/*
+-	 * We cannot access to MPC table to compute table size yet,
+-	 * as only few megabytes from the bottom is mapped now.
+-	 * PC-9800's MPC table places on the very last of physical
+-	 * memory; so that simply reserving PAGE_SIZE from mpf->physptr
+-	 * yields BUG() in reserve_bootmem.
+-	 * also need to make sure physptr is below than max_low_pfn
+-	 * we don't need reserve the area above max_low_pfn
+-	 */
+-	unsigned long end = max_low_pfn * PAGE_SIZE;
+ 
+-	if (mpf->physptr < end) {
+-		if (mpf->physptr + size > end)
+-			size = end - mpf->physptr;
+-		reserve_bootmem_generic(mpf->physptr, size, BOOTMEM_DEFAULT);
+-	}
+-#else
+-	reserve_bootmem_generic(mpf->physptr, size, BOOTMEM_DEFAULT);
+-#endif
++	reserve_early(mpf->physptr, mpf->physptr+size, "MP-table mpc");
+ }
+ 
+-static int __init smp_scan_config(unsigned long base, unsigned long length,
+-				  unsigned reserve)
++static int __init smp_scan_config(unsigned long base, unsigned long length)
+ {
+ 	unsigned int *bp = phys_to_virt(base);
+ 	struct mpf_intel *mpf;
++	unsigned long mem;
+ 
+ 	apic_printk(APIC_VERBOSE, "Scan SMP from %p for %ld bytes.\n",
+ 			bp, length);
+@@ -717,12 +699,10 @@ static int __init smp_scan_config(unsign
+ 			printk(KERN_INFO "found SMP MP-table at [%p] %llx\n",
+ 			       mpf, (u64)virt_to_phys(mpf));
+ 
+-			if (!reserve)
+-				return 1;
+-			reserve_bootmem_generic(virt_to_phys(mpf), sizeof(*mpf),
+-						BOOTMEM_DEFAULT);
++			mem = virt_to_phys(mpf);
++			reserve_early(mem, mem + sizeof(*mpf), "MP-table mpf");
+ 			if (mpf->physptr)
+-				smp_reserve_bootmem(mpf);
++				smp_reserve_memory(mpf);
+ 
+ 			return 1;
+ 		}
+@@ -732,7 +712,7 @@ static int __init smp_scan_config(unsign
+ 	return 0;
+ }
+ 
+-void __init default_find_smp_config(unsigned int reserve)
++void __init default_find_smp_config(void)
+ {
+ 	unsigned int address;
+ 
+@@ -744,9 +724,9 @@ void __init default_find_smp_config(unsi
+ 	 * 2) Scan the top 1K of base RAM
+ 	 * 3) Scan the 64K of bios
+ 	 */
+-	if (smp_scan_config(0x0, 0x400, reserve) ||
+-	    smp_scan_config(639 * 0x400, 0x400, reserve) ||
+-	    smp_scan_config(0xF0000, 0x10000, reserve))
++	if (smp_scan_config(0x0, 0x400) ||
++	    smp_scan_config(639 * 0x400, 0x400) ||
++	    smp_scan_config(0xF0000, 0x10000))
+ 		return;
+ 	/*
+ 	 * If it is an SMP machine we should know now, unless the
+@@ -767,7 +747,7 @@ void __init default_find_smp_config(unsi
+ 
+ 	address = get_bios_ebda();
+ 	if (address)
+-		smp_scan_config(address, 0x400, reserve);
++		smp_scan_config(address, 0x400);
+ }
+ 
+ #ifdef CONFIG_X86_IO_APIC
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -946,6 +946,11 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	early_acpi_boot_init();
+ 
++	/*
++	 * Find and reserve possible boot-time SMP configuration:
++	 */
++	find_smp_config();
++
+ #ifdef CONFIG_ACPI_NUMA
+ 	/*
+ 	 * Parse SRAT to discover nodes.
+@@ -960,11 +965,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	initmem_init(0, max_pfn, acpi, k8);
+ 
+-	/*
+-	 * Find and reserve possible boot-time SMP configuration:
+-	 */
+-	find_smp_config();
+-
+ 	reserve_crashkernel();
+ 
+ #ifdef CONFIG_X86_64
+Index: linux-2.6/arch/x86/kernel/visws_quirks.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/visws_quirks.c
++++ linux-2.6/arch/x86/kernel/visws_quirks.c
+@@ -197,7 +197,7 @@ static void __init MP_processor_info(str
+ 	apic_version[m->apicid] = ver;
+ }
+ 
+-static void __init visws_find_smp_config(unsigned int reserve)
++static void __init visws_find_smp_config(void)
+ {
+ 	struct mpc_cpu *mp = phys_to_virt(CO_CPU_TAB_PHYS);
+ 	unsigned short ncpus = readw(phys_to_virt(CO_CPU_NUM_PHYS));
+Index: linux-2.6/arch/x86/mm/k8topology_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/k8topology_64.c
++++ linux-2.6/arch/x86/mm/k8topology_64.c
+@@ -57,18 +57,6 @@ static __init void early_get_boot_cpu_id
+ 	 * need to get boot_cpu_id so can use that to create apicid_to_node
+ 	 * in k8_scan_nodes()
+ 	 */
+-	/*
+-	 * Find possible boot-time SMP configuration:
+-	 */
+-#ifdef CONFIG_X86_MPPARSE
+-	early_find_smp_config();
+-#endif
+-#ifdef CONFIG_ACPI
+-	/*
+-	 * Read APIC information from ACPI tables.
+-	 */
+-	early_acpi_boot_init();
+-#endif
+ #ifdef CONFIG_X86_MPPARSE
+ 	/*
+ 	 * get boot-time SMP configuration:
