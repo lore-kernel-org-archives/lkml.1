@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZKWHMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbZKWFno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZKWHMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 02:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZKWHMb
+	id S1751523AbZKWFno (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 00:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZKWFnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 02:12:31 -0500
-Received: from mail.interware.hu ([195.70.32.130]:32951 "EHLO
-	mail.interware.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbZKWHMa (ORCPT
+	Mon, 23 Nov 2009 00:43:43 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46947 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbZKWFnn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 02:12:30 -0500
-X-Greylist: delayed 5632 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 02:12:30 EST
-Message-ID: <24747.41.220.75.3.1258954529.squirrel@webmail.interware.hu>
-Date: Mon, 23 Nov 2009 06:35:29 +0100 (CET)
-Subject: GRATULERER: OFFICIAL PRIZE NOTIFICATION!
-From: "Microsoft E-mail Promotions" <info.winner@microsoft.com>
-Reply-To: ivannickerson0@yahoo.com.hk
-User-Agent: SquirrelMail/1.4.4
+	Mon, 23 Nov 2009 00:43:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UnV/akFvva7BsdWKdtUCCxTXVqEGGunC1L0IwUEqd105S9KdiI8Tmz4hAZFC0BM2VQ
+         cLhLsdvJyrO2dsfMubwKJy9K23tODke9fDwY2owo86hoWa3Q/c0O8Ue3myISeeXb6pgN
+         q6CzK44tQ88oaXW9rG9/VXyXrwlPWfA5R7PeY=
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-2
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+In-Reply-To: <cb9ecdfa0911221914t78f7849h9f00c68420f63d14@mail.gmail.com>
+References: <cb9ecdfa0911190150w4edbacdfp24a7069c618193f4@mail.gmail.com>
+	 <4B065712.4050202@gmail.com>
+	 <cb9ecdfa0911221914t78f7849h9f00c68420f63d14@mail.gmail.com>
+Date: Mon, 23 Nov 2009 00:43:47 -0500
+Message-ID: <73c1f2160911222143j196fac7cqf0464c4ad9c35cfc@mail.gmail.com>
+Subject: Re: How to move two valuables to x86 CPU register ebx, ecx by using 
+	AT&A inline asm.
+From: Brian Gerst <brgerst@gmail.com>
+To: Johnny Hung <johnny.hacking@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, kernelnewbies@nl.linux.org,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GRATULERER: OFFICIAL PRIZE NOTIFICATION!
+On Sun, Nov 22, 2009 at 10:14 PM, Johnny Hung <johnny.hacking@gmail.com> wrote:
+> After testing:
+>
+> # gcc inlineasm.c
+> inlineasm.c: Assembler messages:
+> inlineasm.c:7: Error: suffix or operands invalid for `out'
+> [root@debian-johnny] ~/workspace/test
+>
+> # cat inlineasm.c
+> #include <stdio.h>
+>
+> int main ()
+> {
+>    unsigned int val = 5, tmp = 10;
+>    asm volatile ("outb $0x27, %%al"
+>     :
+>     : "a" (0xb2), "b"(val), "c" (tmp)
+>    );
+> }
+>
+>    It seems the source of outb instruction cannot be a constant. Is
+> there a AT&T instructions document for x86?
 
-You are a winner of �250,000 Pounds Sterling courtesy of Microsoft
-Corporation,United Kingdom.
+In AT&T syntax, the source register comes first.  So it should be
+"outb %%al, $0x27", assuming that 0x27 is the port number you are
+trying to write to.
 
-your secret pin code 092075ML and your reference number REF
-NO:MICRO-L/2009-END10.
-
-Please acknowledge the receipt of this mail with the details below to
-
-
-NAME:  Ivan Nickerson
-EMAIL: ivannickerson01@yahoo.com.hk
-TEL:   +44 703 590 2789
-
-PLEASE NOTE YOU ARE TO SEND THE FOLLOWING INFORMATION TO CLAIM YOUR PRIZE:
-1.Full Name:... 2.Address:... 3.Phone:... 4.Country:... 5.Sex/Gender:...
-
-
-
-YOURS SINCERELY,
-LOUIZA NORWOOD.
-----------------------------------------------------------------------
-
-GRATULERER: OFFICIAL PRIZE NOTIFICATION!
-
-Du er en vinner p� � 250,000 pund h�flighet av Microsoft
-Corporation, Storbritannia.
-
-your secret pin-koden 092075ML og ditt referansenummer REF
-NO: MICRO-L/2009-END10.
-
-Vennligst bekrefter mottak av e-post med detaljer nedenfor
-
-
-NAVN: Ivan Nickerson
-EMAIL: ivannickerson01@yahoo.com.hk
-TEL: +44 703 590 2789
-
-MERK skal du sende f�lgende opplysninger for � kreve premien din:
-1.Full Navn: ... 2.Address: ... 3.Phone: ... 4.Country: ... 5.Sex/Gender: ...
-
-
-
-Med vennlig hilsen,
-LOUIZA NORWOOD.
-
+--
+Brian Gerst
