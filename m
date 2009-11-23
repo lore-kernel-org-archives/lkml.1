@@ -1,257 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZKWLrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZKWLsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZKWLrv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbZKWLru
+	id S1757244AbZKWLsv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZKWLsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:47:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49588 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 06:48:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53002 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756489AbZKWLrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:47:48 -0500
-Message-ID: <4B0A765F.7010204@redhat.com>
-Date: Mon, 23 Nov 2009 09:47:43 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1752588AbZKWLsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 06:48:50 -0500
+Date: Mon, 23 Nov 2009 12:48:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Mike Galbraith <efault@gmx.de>, Robert Swan <swan.r.l@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091123114845.GC25575@elte.hu>
+References: <20091121222319.GA3905@swanrl.gmail.com>
+ <20091122063926.GA18224@elte.hu>
+ <20091122122312.71a343d9@lxorguk.ukuu.org.uk>
+ <1258952431.6261.38.camel@marge.simson.net>
+ <20091123113110.15063a0a@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Jarod Wilson <jarod@redhat.com>
-CC: linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com>
-In-Reply-To: <200910200958.50574.jarod@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123113110.15063a0a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jarod,
 
-Jarod Wilson wrote:
-> Core Linux Infrared Remote Control driver and infrastructure
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+> > index 66fa4e1..92a0864 100644
+> > --- a/drivers/char/tty_buffer.c
+> > +++ b/drivers/char/tty_buffer.c
+> > @@ -495,7 +495,7 @@ void tty_flip_buffer_push(struct tty_struct *tty)
+> >  	if (tty->low_latency)
+> >  		flush_to_ldisc(&tty->buf.work.work);
+> >  	else
+> > -		schedule_delayed_work(&tty->buf.work, 1);
+> > +		schedule_delayed_work(&tty->buf.work, 0);
+> >  }
+> >  EXPORT_SYMBOL(tty_flip_buffer_push);
 > 
-> -Add Kconfig and Makefile bits
-> -Add device driver interface and headers
+> Another possibility is to do
 > 
-> The initial Kconfig and Makefile bits were done by Mario Limonciello for
-> the Ubuntu kernel, but have been tweaked a bit since then. Any errors are
-> probably my doing.
-> 
-> Changes from prior submission:
-> - Now uses dev_dbg instead of its own dprintk
-> - Dynamic device numbers used
-> - sleep_on() ripped out in favor of wake bits
-> - Kconfig text improved and simplified
-> - All inline keywords removed where possible
-> - Obfuscating #defines and wrapper functions removed
-> - We call 'em lirc drivers now instead of lirc plugins
+> 	if (tty->low_latency)
+> 		schedule_delayed_work(&tty->buf.work, 0);
+> 	else
+> 		schedule_delayed_work(&tty->buf.work, 1);
 
-Sorry to not analyze the code before. -ETOOBUSY here...
+Flaggery for low latency is kind of lame though - especially if it 
+defaults to off in most drivers as you say.
 
-Some generic comments first:
-
-1) As I said before, this code adds a new input API. So, you should
-get input people's ack about it. It seems fine for me;
-
-2) It would be really cool if you could submit a patch for DocBook as
-well, in order to describe the API. IMO, the better is to put it together
-with media infrastructure docbook, since, although it is possible to use
-lirc code with other hardware (and were originally designed for it), the
-current wider usage is together with V4L/DVB devices. The Docbooks are
-at kernel Documentation/DocBook/ directory. Also, we have a copy of it
-at our development tree (http://linuxtv.org/hg/v4l-dvb) at media-specs/
-directory.
-
-3) In general, the code looks sane for me. I have just a few small sugestions
-for improvements:
-
-> Index: b/drivers/input/lirc/lirc.h
-> ===================================================================
-> --- /dev/null
-> +++ b/drivers/input/lirc/lirc.h
-
-Hmm... as you're defining the kernel userspace interface, it would
-be better to put the header under include/linux.
-
-> +#define LIRC_GET_FEATURES              _IOR('i', 0x00000000, unsigned long)
-> +
-> +#define LIRC_GET_SEND_MODE             _IOR('i', 0x00000001, unsigned long)
-> +#define LIRC_GET_REC_MODE              _IOR('i', 0x00000002, unsigned long)
-> +#define LIRC_GET_SEND_CARRIER          _IOR('i', 0x00000003, unsigned int)
-> +#define LIRC_GET_REC_CARRIER           _IOR('i', 0x00000004, unsigned int)
-> +#define LIRC_GET_SEND_DUTY_CYCLE       _IOR('i', 0x00000005, unsigned int)
-> +#define LIRC_GET_REC_DUTY_CYCLE        _IOR('i', 0x00000006, unsigned int)
-> +#define LIRC_GET_REC_RESOLUTION        _IOR('i', 0x00000007, unsigned int)
-> +
-> +/* code length in bits, currently only for LIRC_MODE_LIRCCODE */
-> +#define LIRC_GET_LENGTH                _IOR('i', 0x0000000f, unsigned long)
-> +
-> +#define LIRC_SET_SEND_MODE             _IOW('i', 0x00000011, unsigned long)
-> +#define LIRC_SET_REC_MODE              _IOW('i', 0x00000012, unsigned long)
-> +/* Note: these can reset the according pulse_width */
-> +#define LIRC_SET_SEND_CARRIER          _IOW('i', 0x00000013, unsigned int)
-> +#define LIRC_SET_REC_CARRIER           _IOW('i', 0x00000014, unsigned int)
-> +#define LIRC_SET_SEND_DUTY_CYCLE       _IOW('i', 0x00000015, unsigned int)
-> +#define LIRC_SET_REC_DUTY_CYCLE        _IOW('i', 0x00000016, unsigned int)
-> +#define LIRC_SET_TRANSMITTER_MASK      _IOW('i', 0x00000017, unsigned int)
-> +
-
-Hmm... unsigned int/unsigned long are not portable between different architectures.
-It would be better to use instead __u16/__u32/__u64. This way, you won't need
-a 32 bits compat layer.
-
-> +
-> +int lirc_register_driver(struct lirc_driver *d)
-> +{
-> +	struct irctl *ir;
-> +	int minor;
-> +	int bytes_in_key;
-> +	unsigned int chunk_size;
-> +	unsigned int buffer_size;
-> +	int err;
-> +
-> +	if (!d) {
-> +		printk(KERN_ERR "lirc_dev: lirc_register_driver: "
-> +		       "driver pointer must be not NULL!\n");
-> +		err = -EBADRQC;
-> +		goto out;
-> +	}
-> +
-> +	if (MAX_IRCTL_DEVICES <= d->minor) {
-> +		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +			"\"minor\" must be between 0 and %d (%d)!\n",
-> +			MAX_IRCTL_DEVICES-1, d->minor);
-> +		err = -EBADRQC;
-> +		goto out;
-> +	}
-> +
-> +	if (1 > d->code_length || (BUFLEN * 8) < d->code_length) {
-> +		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +			"code length in bits for minor (%d) "
-> +			"must be less than %d!\n",
-> +			d->minor, BUFLEN * 8);
-> +		err = -EBADRQC;
-> +		goto out;
-> +	}
-> +
-> +	dev_dbg(d->dev, "lirc_dev: lirc_register_driver: sample_rate: %d\n",
-> +		d->sample_rate);
-> +	if (d->sample_rate) {
-> +		if (2 > d->sample_rate || HZ < d->sample_rate) {
-> +			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +				"sample_rate must be between 2 and %d!\n", HZ);
-> +			err = -EBADRQC;
-> +			goto out;
-> +		}
-> +		if (!d->add_to_buf) {
-> +			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +				"add_to_buf cannot be NULL when "
-> +				"sample_rate is set\n");
-> +			err = -EBADRQC;
-> +			goto out;
-> +		}
-> +	} else if (!(d->fops && d->fops->read) && !d->rbuf) {
-> +		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +			"fops->read and rbuf cannot all be NULL!\n");
-> +		err = -EBADRQC;
-> +		goto out;
-> +	} else if (!d->rbuf) {
-> +		if (!(d->fops && d->fops->read && d->fops->poll &&
-> +		      d->fops->ioctl)) {
-> +			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +				"neither read, poll nor ioctl can be NULL!\n");
-> +			err = -EBADRQC;
-> +			goto out;
-> +		}
-> +	}
-> +
-> +	mutex_lock(&lirc_dev_lock);
-> +
-> +	minor = d->minor;
-> +
-> +	if (minor < 0) {
-> +		/* find first free slot for driver */
-> +		for (minor = 0; minor < MAX_IRCTL_DEVICES; minor++)
-> +			if (!irctls[minor])
-> +				break;
-> +		if (MAX_IRCTL_DEVICES == minor) {
-> +			dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +				"no free slots for drivers!\n");
-> +			err = -ENOMEM;
-> +			goto out_lock;
-> +		}
-> +	} else if (irctls[minor]) {
-> +		dev_err(d->dev, "lirc_dev: lirc_register_driver: "
-> +			"minor (%d) just registered!\n", minor);
-> +		err = -EBUSY;
-> +		goto out_lock;
-> +	}
-> +
-> +	ir = kzalloc(sizeof(struct irctl), GFP_KERNEL);
-> +	if (!ir) {
-> +		err = -ENOMEM;
-> +		goto out_lock;
-> +	}
-> +	init_irctl(ir);
-> +	irctls[minor] = ir;
-> +	d->minor = minor;
-> +
-> +	if (d->sample_rate) {
-> +		ir->jiffies_to_wait = HZ / d->sample_rate;
-> +	} else {
-> +		/* it means - wait for external event in task queue */
-> +		ir->jiffies_to_wait = 0;
-> +	}
-> +
-> +	/* some safety check 8-) */
-> +	d->name[sizeof(d->name)-1] = '\0';
-> +
-> +	bytes_in_key = BITS_TO_LONGS(d->code_length) +
-> +			(d->code_length % 8 ? 1 : 0);
-> +	buffer_size = d->buffer_size ? d->buffer_size : BUFLEN / bytes_in_key;
-> +	chunk_size  = d->chunk_size  ? d->chunk_size  : bytes_in_key;
-> +
-> +	if (d->rbuf) {
-> +		ir->buf = d->rbuf;
-> +	} else {
-> +		ir->buf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
-
-For security reasons, wouldn't be better to use kzalloc here?
-
-> +#ifdef CONFIG_COMPAT
-> +#define LIRC_GET_FEATURES_COMPAT32     _IOR('i', 0x00000000, __u32)
-> +
-> +#define LIRC_GET_SEND_MODE_COMPAT32    _IOR('i', 0x00000001, __u32)
-> +#define LIRC_GET_REC_MODE_COMPAT32     _IOR('i', 0x00000002, __u32)
-> +
-> +#define LIRC_GET_LENGTH_COMPAT32       _IOR('i', 0x0000000f, __u32)
-> +
-> +#define LIRC_SET_SEND_MODE_COMPAT32    _IOW('i', 0x00000011, __u32)
-> +#define LIRC_SET_REC_MODE_COMPAT32     _IOW('i', 0x00000012, __u32)
-
-You wouldn't need those code, if you declare the ioctl's as __u32 at the
-first place.
-
-Also, the compat layer is needed not only for x86_64, but some other architectures
-like sparc64 needs it, since userspace is 32 bits and kernelspace is 64 bits.
-
-With V4L ioctls, we needed to do some adjustments for sparc, since the sizes there
-are different for other types as well. Unfortunately, I can't remember what were
-the difference (maybe int size?).
-
-So, IMO, it would be a way better if you just declare everything using __u16/__u32/__u64
-at the original ioctl definition and just remove all compat code.
-
-> +EXPORT_SYMBOL(lirc_register_driver);
-> +EXPORT_SYMBOL(lirc_unregister_driver);
-> +EXPORT_SYMBOL(lirc_dev_fop_close);
-> +EXPORT_SYMBOL(lirc_dev_fop_poll);
-> +EXPORT_SYMBOL(lirc_dev_fop_ioctl);
-> +EXPORT_SYMBOL(lirc_dev_fop_compat_ioctl);
-> +EXPORT_SYMBOL(lirc_dev_fop_read);
-> +EXPORT_SYMBOL(lirc_get_pdata);
-> +EXPORT_SYMBOL(lirc_dev_fop_write);
-
-I would declare everything as EXPORT_SYMBOL_GPL instead.
+	Ingo
