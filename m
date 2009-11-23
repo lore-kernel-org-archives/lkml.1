@@ -1,210 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZKWQHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZKWQIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZKWQHJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZKWQHI
+	id S1755408AbZKWQIo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 11:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZKWQIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:07:08 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:44896 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351AbZKWQHF (ORCPT
+	Mon, 23 Nov 2009 11:08:43 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:42451 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754600AbZKWQIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:07:05 -0500
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
- and big packets in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200911231138.30755.rusty@rustcorp.com.au>
-References: <1258697745.7416.20.camel@localhost.localdomain>
-	 <4B063509.10006@gmail.com> <1258734101.11049.1.camel@localhost.localdomain>
-	 <200911231138.30755.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 08:07:01 -0800
-Message-Id: <1258992421.5022.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 11:08:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=biJzBQYOwXAmHsjn2Vnh2NhzLru8rGkhRQ9eoRxxm0rWgR9TpU8ggx7fmCMPDWCWv8
+         Z6OVFy6W1QE22yCDH7J4ESs/RjQa9QWlZtEZ1iDPsi3mHvespP9S8tm245IpbRT2fR8U
+         8liyUC8HZrwMnJHflf+rnSj5+KVA+jUk7jobs=
+Date: Mon, 23 Nov 2009 08:08:41 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] do not overwrite the first part of phys string
+Message-ID: <20091123160841.GA3491@core.coreip.homeip.net>
+References: <4B079CE0.60604@freemail.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B079CE0.60604@freemail.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 11:38 +1030, Rusty Russell wrote:
-> How about:
->         struct page *end;
+Jiri,
+
+Do you want to split out usbkbd section or do you want me to pick up
+everything?
+
+Thanks.
+
+On Sat, Nov 21, 2009 at 08:55:12AM +0100, Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
 > 
->         /* Find end of list, sew whole thing into vi->pages. */
->         for (end = page; end->private; end = (struct page
-> *)end->private);
->         end->private = (unsigned long)vi->pages;
->         vi->pages = page;
-
-Yes, this looks nicer.
-
-> > +void virtio_free_pages(void *buf)
+> Use strlcat() to append a string to the previously created first part.
 > 
-> This is a terrible name; it's specific to virtio_net, plus it should
-> be
-> static.  Just "free_pages" should be sufficient here I think.
-
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> ---
+> diff -upr linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c
+> --- linux-2.6.32-rc7.orig/drivers/hid/usbhid/usbkbd.c	2009-09-10 00:13:59.000000000 +0200
+> +++ linux-2.6.32-rc7/drivers/hid/usbhid/usbkbd.c	2009-11-21 08:48:32.000000000 +0100
+> @@ -266,7 +266,7 @@ static int usb_kbd_probe(struct usb_inte
+>  			 le16_to_cpu(dev->descriptor.idProduct));
 > 
-> This smells a lot like a for loop to me?
+>  	usb_make_path(dev, kbd->phys, sizeof(kbd->phys));
+> -	strlcpy(kbd->phys, "/input0", sizeof(kbd->phys));
+> +	strlcat(kbd->phys, "/input0", sizeof(kbd->phys));
 > 
->         struct page *i, *next;
+>  	input_dev->name = kbd->name;
+>  	input_dev->phys = kbd->phys;
+> diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c linux-2.6.32-rc7/drivers/input/misc/ati_remote.c
+> --- linux-2.6.32-rc7.orig/drivers/input/misc/ati_remote.c	2009-09-10 00:13:59.000000000 +0200
+> +++ linux-2.6.32-rc7/drivers/input/misc/ati_remote.c	2009-11-21 08:48:50.000000000 +0100
+> @@ -766,7 +766,7 @@ static int ati_remote_probe(struct usb_i
+>  	ati_remote->interface = interface;
 > 
->         for (i = buf; next; i = next) {
->                 next = (struct page *)i->private;
->                 __free_pages(i, 0);
->         }
-Agree, will change it.
-
-> > +static int set_skb_frags(struct sk_buff *skb, struct page *page,
-> > +                             int offset, int len)
+>  	usb_make_path(udev, ati_remote->phys, sizeof(ati_remote->phys));
+> -	strlcpy(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
+> +	strlcat(ati_remote->phys, "/input0", sizeof(ati_remote->phys));
 > 
-> A better name might be "skb_add_frag()"?
-OK.
-
-> > +             skb = (struct sk_buff *)buf;
-> This cast is unnecessary, but a comment would be nice:
->         /* Simple case: the pointer is the 1514-byte skb */
+>  	if (udev->manufacturer)
+>  		strlcpy(ati_remote->name, udev->manufacturer, sizeof(ati_remote->name));
+> diff -upr linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c linux-2.6.32-rc7/drivers/input/misc/powermate.c
+> --- linux-2.6.32-rc7.orig/drivers/input/misc/powermate.c	2009-09-10 00:13:59.000000000 +0200
+> +++ linux-2.6.32-rc7/drivers/input/misc/powermate.c	2009-11-21 08:48:44.000000000 +0100
+> @@ -338,7 +338,7 @@ static int powermate_probe(struct usb_in
+>  	pm->input = input_dev;
 > 
-> > +     } else {
-
-Without this cast there is a compile warning. 
-
-> And a matching comment here:
+>  	usb_make_path(udev, pm->phys, sizeof(pm->phys));
+> -	strlcpy(pm->phys, "/input0", sizeof(pm->phys));
+> +	strlcat(pm->phys, "/input0", sizeof(pm->phys));
 > 
->         /* The pointer is a chain of pages. */
+>  	spin_lock_init(&pm->lock);
 > 
-OK.
 
-> > +             if (unlikely(!skb)) {
-> > +                     dev->stats.rx_dropped++;
-> 
-> Does this mean we leak all those pages?  Shouldn't we give_pages()
-> here?
-
-Yes, it should call give_pages here.
-
-
-> > +                     offset = hdr_len + 6;
-> 
-> Really?  I can't see where the current driver does this 6 byte offset.
-> There
-> should be a header, then the packet...
-> Ah, I see below that you set things up this way.  The better way to do
-> this
-> is to create a new structure to use in various places.
-> 
->         struct padded_vnet_hdr {
->                 struct virtio_net_hdr hdr;
->                 /* This padding makes our packet 16 byte aligned */
->                 char padding[6];
->         };
-> 
-> However, I question whether making it 16 byte is the right thing: the
-> ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
-
-Because in QEMU it requires 10 bytes header in a separately, so one page
-is used to share between virtio_net_hdr header which is 10 bytes head
-and rest of data. So I put 6 bytes offset here between two buffers. I
-didn't look at the reason why a seperate buf is used for virtio_net_hdr
-in QEMU.
-
-> > +             }
-> 
-> I think you can move the memcpy outside the if, like so:
-> 
->         memcpy(&hdr, p, hdr_len);
-
-I didn't move it out, because num_buf = hdr->mhdr.num_buffers;
-
-> > +             if (!len)
-> > +                     give_pages(vi, page);
-> > +             else {
-> > +                     len = set_skb_frags(skb, page, copy + offset,
-> len);
-> > +                     /* process big packets */
-> > +                     while (len > 0) {
-> > +                             page = (struct page *)page->private;
-> > +                             if (!page)
-> > +                                     break;
-> > +                             len = set_skb_frags(skb, page, 0,
-> len);
-> > +                     }
-> > +                     if (page && page->private)
-> > +                             give_pages(vi, (struct page
-> *)page->private);
-> >               }
-> 
-> I can't help but think this statement should be one loop somehow.
-> Something
-> like:
-> 
->         offset += copy;
-> 
->         while (len) {
->                 len = skb_add_frag(skb, page, offset, len);
->                 page = (struct page *)page->private;
->                 offset = 0;
->         }
->         if (page)
->                 give_pages(vi, page);
-
-I was little bit worried about qemu messed up len (i saw code in
-mergeable buffer checking len > PAGE_SIZE), so I put page checking
-inside. I will change it outside if checking len is enough.
-
-> > -static bool try_fill_recv_maxbufs(struct virtnet_info *vi, gfp_t
-> gfp)
-> > +/* Returns false if we couldn't fill entirely (OOM). */
-> > +static bool try_fill_recv(struct virtnet_info *vi, gfp_t gfp)
-> 
-> The result of trying to merge all the cases here is messy.  I'd split
-> it
-> inside the loop into: add_recvbuf_small(vi, gfp), add_recvbuf_big(vi,
-> gfp)
-> and add_recvbuf_mergeable(vi, gfp).
-> 
-> It'll also be easier for me to review each case then, as well as
-> getting
-> rid of the big packets if we decide to do that later.  You could even
-> do
-> that split as a separate patch, before this one.
-
-Ok, will separate it.
-
-> destroy_buf should really be called destroy_bufs().  And I don't think
-> you
-> use the vi->recv skb list in this case at all, so the loop which
-> purges those
-> should be under an "else {" of this branch.
-
-Yes.
-
-> This new parameter should be introduced as a separate patch.  It
-> should also be
-> called destroy_bufs.  It also returns an unsigned int.  I would call
-> the callback
-> something a little more informative, such as "destroy"; here and in
-> the header.
-
-Ok.
-
-> ret is a bad name for this; how about buf?
-Sure.
-
-> Overall, the patch looks good.  But it would have been nicer if it
-> were
-> split into several parts: cleanups, new infrastructure, then the
-> actual
-> allocation change.
-
-I will try to separate this patch.
-
-Thanks
-Shirley
-
+-- 
+Dmitry
