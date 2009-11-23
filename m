@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZKWQWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbZKWQbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbZKWQWG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZKWQWF
+	id S1756452AbZKWQbG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 11:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZKWQbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:22:05 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:37319 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755643AbZKWQWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:22:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=SG66Sd7z9o5FqQQg25ZBXifbpiF3UxXf/UOK9UomShr1w8FiGucS4tIH/dujLNtYbG
-         XpsFQTdGGKa2sB3cZsFVV+qnRnT99tWX65SIdYVleqMZ0xW6LOOkWVNBNVHzS8NRRXTF
-         AlFW4gnNCrP4WU5Pi6U6aXnvcIb1PKt9KaijQ=
-MIME-Version: 1.0
-In-Reply-To: <20091123151946.GA3112@redhat.com>
-References: <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com>
-	 <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com>
-	 <20091120141840.GA5872@redhat.com>
-	 <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com>
-	 <20091120150421.GC5872@redhat.com>
-	 <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com>
-	 <20091120184257.GG5872@redhat.com>
-	 <4e5e476b0911201150p7cbdfc20k4b8d02f07e16abc8@mail.gmail.com>
-	 <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
-	 <20091123151946.GA3112@redhat.com>
-Date: Mon, 23 Nov 2009 17:22:09 +0100
-Message-ID: <4e5e476b0911230822p4ddaf0cbv187c2bea29cba932@mail.gmail.com>
-Subject: Re: [RFC] Block IO Controller V2 - some results
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Content-Type: text/plain; charset=UTF-8
+	Mon, 23 Nov 2009 11:31:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52686 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755508AbZKWQ2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 11:28:09 -0500
+From: Tejun Heo <tj@kernel.org>
+To: peterz@infradead.org, torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net
+Subject: [PATCHSET] workqueue: prepare for concurrency managed workqueue, take#3
+Date: Tue, 24 Nov 2009 01:26:50 +0900
+Message-Id: <1258993624-28735-1-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-On Mon, Nov 23, 2009 at 4:19 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> Hi Corrado,
->
-> This patch seems to be working much better in marking the random writer
-> queue as sync and not interefere with sync-noidle workload.
->
-> So frequent migration of random writer queue across group has stopped.
-Great. I think this is good regardless of cgroups, to fix the fairness
-issue regarding deep aio sync writers against random readers you
-reported, so I'll send it to Jens.
+Hello, all.
 
-> But there seems to be a different issue now after sometime, random writer
-> queue stops generating enough traffic and gets deleted after one request
-> and root group now runs random reader for sometime. So it basically
-> changes the ratio in which random writers and random readers get disk
-> share.
->
-> I guess part of the dependency comes from kjournald which is in root
-> group. But there is something else too because I don't see this happening
-> when there are no cgroups. I will do more debugging on this.
-Ok.
+This patchset is the third take of prep-for-concurrent-managed-wq
+patchset.  Changes from the last take[L] are
 
-Thanks,
-Corrado
+* sched_notifier wakeup notification firing location moved so that it
+  happens after wake up is complete to allow calling local wake up
+  function from wakeup notifier.
 
-> Thanks
-> Vivek
->
+* sched-implement-sched_notifier_wake_up_process() replaced with
+  sched-refactor-try_to_wake_up-and-implement-try_to_wake_up_local.
+  Instead of implementing separately, common part is factored out from
+  try_to_wake_up() and used to implement try_to_wake_up_local() as
+  suggested by Peter Zijlstra.
+
+* Patch description updated on sched-implement-force_cpus_allowed.
+
+* 0015-0019 dropped from this series.  Updated versions will be posted
+  in another patchset with other patches.
+
+This patchset contains the following 14 patches.
+
+  0001-sched-kvm-fix-race-condition-involving-sched_in_pree.patch
+  0002-workqueue-Add-debugobjects-support.patch
+  0003-sched-rename-preempt_notifier-to-sched_notifier-and-.patch
+  0004-sched-update-sched_notifier-and-add-wakeup-sleep-not.patch
+  0005-sched-refactor-try_to_wake_up-and-implement-try_to_w.patch
+  0006-sched-implement-force_cpus_allowed.patch
+  0007-acpi-use-queue_work_on-instead-of-binding-workqueue-.patch
+  0008-stop_machine-reimplement-without-using-workqueue.patch
+  0009-workqueue-misc-cosmetic-updates.patch
+  0010-workqueue-merge-feature-parameters-into-flags.patch
+  0011-workqueue-update-cwq-alignement-and-make-one-more-fl.patch
+  0012-workqueue-define-both-bit-position-and-mask-for-work.patch
+  0013-workqueue-separate-out-process_one_work.patch
+  0014-workqueue-temporarily-disable-workqueue-tracing.patch
+
+This patchset is available in the following git tree.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git review-wq-prep
+
+Please note that the above tree is temporary.  It needs to be rebased
+once 0001 appears in upstream.
+
+This patchset contains the following changes.
+
+ arch/ia64/kvm/Kconfig        |    1 
+ arch/powerpc/kvm/Kconfig     |    1 
+ arch/s390/kvm/Kconfig        |    1 
+ arch/x86/kernel/smpboot.c    |    4 
+ arch/x86/kvm/Kconfig         |    1 
+ drivers/acpi/osl.c           |   41 +---
+ include/linux/kvm_host.h     |    4 
+ include/linux/preempt.h      |   43 ----
+ include/linux/sched.h        |   59 +++++-
+ include/linux/stop_machine.h |    6 
+ include/linux/workqueue.h    |   96 ++++++----
+ init/Kconfig                 |    4 
+ init/main.c                  |    2 
+ kernel/sched.c               |  316 ++++++++++++++++++++------------
+ kernel/stop_machine.c        |  151 +++++++++++++--
+ kernel/trace/Kconfig         |    4 
+ kernel/workqueue.c           |  412 ++++++++++++++++++++++++++++++-------------
+ lib/Kconfig.debug            |    8 
+ virt/kvm/kvm_main.c          |   28 +-
+ 19 files changed, 786 insertions(+), 396 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[L] http://thread.gmane.org/gmane.linux.kernel/916333
