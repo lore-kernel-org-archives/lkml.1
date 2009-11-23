@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZKWUsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbZKWUdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbZKWUsy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZKWUsy
+	id S1756417AbZKWUdw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZKWUdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:48:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51144 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753512AbZKWUsx (ORCPT
+	Mon, 23 Nov 2009 15:33:51 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:59358 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754015AbZKWUdu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:48:53 -0500
-Date: Mon, 23 Nov 2009 20:32:13 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_hpt37x: add proper cable detection methods
-Message-ID: <20091123203213.3ed4f7d4@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B0AE59F.7040202@ru.mvista.com>
-References: <200911191910.44609.bzolnier@gmail.com>
-	<4B0AE59F.7040202@ru.mvista.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 15:33:50 -0500
+Date: Mon, 23 Nov 2009 15:33:56 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: tmhikaru@gmail.com
+cc: Jan Kara <jack@suse.cz>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       <linux-scsi@vger.kernel.org>, <linux-ext4@vger.kernel.org>
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+In-Reply-To: <20091123200605.GA19446@roll>
+Message-ID: <Pine.LNX.4.44L0.0911231533071.2958-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009 22:42:23 +0300
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
 
-> Hello.
+> Uhh, this could be a problem. CONFIG_USB_MON=y is set in my .config BUT,
+> although I followed the directions and debugfs is mounted,
 > 
-> Bartlomiej Zolnierkiewicz wrote:
+> root@roll:/home/tm# mount
+> /dev/root on / type ext4 (rw,relatime,barrier=1,data=ordered,data_err=abort)
+> proc on /proc type proc (rw)
+> sysfs on /sys type sysfs (rw)
+> usbfs on /proc/bus/usb type usbfs (rw)
+> none_debugs on /sys/kernel/debug type debugfs (rw)
 > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ata/pata_hpt37x.c |   86 +++++++++++++++++++++++++++++-----------------
-> >  1 file changed, 56 insertions(+), 30 deletions(-)
+> I receive this message when I test if usbmon's directory exists:
 > 
-> > Index: b/drivers/ata/pata_hpt37x.c
-> > ===================================================================
-> > --- a/drivers/ata/pata_hpt37x.c
-> > +++ b/drivers/ata/pata_hpt37x.c
-> > @@ -303,6 +303,59 @@ static unsigned long hpt370a_filter(stru
+> root@roll:/home/tm# ls /sys/kernel/debug/usbmon
+> ls: cannot access /sys/kernel/debug/usbmon: No such file or directory
 > 
->     As this driver still carries a version info, don't we need to update it?
+> According to the kernel documentation usbmon should be loaded already. Help?
 
-I don't think the version info is really useful any more - it was when
-they were being developed but it has become a bit meaningless
+The documentation is slightly out of date.  The usbmon directory has 
+been moved down a level, to /sys/kernel/debug/usb/usbmon.
+
+Alan Stern
 
