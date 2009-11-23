@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZKWTub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbZKWTvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbZKWTub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbZKWTuZ
+	id S1756354AbZKWTvT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZKWTvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:50:25 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:54871 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756096AbZKWTuW (ORCPT
+	Mon, 23 Nov 2009 14:51:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34490 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756141AbZKWTvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:50:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RrJBS6z5RX2yRU98jFNT9hgLGIQ9aLi+l+2aA6ucZ22yltI7oEI5zIjlGm5LHlXJbT
-         ibhVgS4VR9Ztr4x8FkVwYGh1RlLzBZj4hKshUntQM5ZFLb+sLHtc5e4/00AtJF1XUbt4
-         pRzNysflbPmSZcaWCCHYYFD3W8xS4SM6Inc7g=
-Date: Mon, 23 Nov 2009 14:50:22 -0500
-From: tmhikaru@gmail.com
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Jens Axboe <axboe@kernel.dk>, linux-scsi@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
-Message-ID: <20091123195022.GA18510@roll>
-References: <20091123160914.GG15679@duck.suse.cz> <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org> <20091123185449.GA11186@quack.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123185449.GA11186@quack.suse.cz>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 23 Nov 2009 14:51:18 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] perf tools: Move graph_line and graph_dotted_line from top
+Date: Mon, 23 Nov 2009 17:51:08 -0200
+Message-Id: <1259005869-13487-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 07:54:50PM +0100, Jan Kara wrote:
-> On Mon 23-11-09 13:20:26, Alan Stern wrote:
-> > On Mon, 23 Nov 2009, Jan Kara wrote:
-> > 
-> > > On Mon 23-11-09 10:06:03, Alan Stern wrote:
-> > > > On Mon, 23 Nov 2009, Jan Kara wrote:
-> > > > 
-> > > > >   Yeah, from what you write, it looks like USB enclosure is at fault (or it
-> > > > > could still be your USB controller but I doubt it).  It's still a bit
-> > > > > bothering that the error reported by the drive was not properly propagated
-> > > > > up to VFS. Either it's some block layer retry/ignore magic that I missed or
-> > > > > we ignore errors from block layer in some place.
-> > > > 
-> > > > Is there any interest in tracking this down?  It's not hard to find out
-> > > > what low-level errors are being reported and to generate them on demand
-> > > > with an emulated USB disk drive.
-> > >   Well, if you could provide me with the patch, I could try to track down
-> > > why the errors aren't propagated... It would be interesting because if it's
-> > > not some retry logic in block layer, it's a bug in VFS ;).
-> > 
-> > I can't provide a patch without first knowing what the errors are.  The 
-> > way to find out is to use usbmon.  See Documentation/usb/usbmon.txt for 
-> > instructions.
->   Ah, OK. The problem manifests itself as an error in SATA communication
-> (which in fact somehow happens over USB, but I don't really know the
-> details of mass storage over USB) so debugging USB would become actual only
-> if we found out it's really some bug in an usb stack. But so far the most
-> probable is just an error somewhere between the USB controller in the
-> enclosure and the drive itself. BTW: Is the data transferred over USB
-> checksummed?
-> 
-> 									Honza
-	Mind that this is an ide hard drive in a usb enclosure, not sata.
-The error reported is bizzare. I don't know if I'll be able to get the
-enclosure to cause the error on demand, but before I try supergluing it,
-I'll try to do whatever I need to do with usbmon so we can get the error
-that's actually happening so you can do whatever you need to do to track it
-down :)
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Tim McGrath
+So that they can be used in other tools.
+
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-top.c |    7 -------
+ tools/perf/util/ctype.c  |    8 ++++++++
+ tools/perf/util/util.h   |    3 +++
+ 3 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index eef9caa..6a5de90 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -80,13 +80,6 @@ static bool			hide_kernel_symbols		=  false;
+ static bool			hide_user_symbols		=  false;
+ static struct winsize		winsize;
+ const char 			*vmlinux_name;
+-static const char		*graph_line			=
+-	"_____________________________________________________________________"
+-	"_____________________________________________________________________";
+-static const char		*graph_dotted_line			=
+-	"---------------------------------------------------------------------"
+-	"---------------------------------------------------------------------"
+-	"---------------------------------------------------------------------";
+ 
+ /*
+  * Source
+diff --git a/tools/perf/util/ctype.c b/tools/perf/util/ctype.c
+index 0b791bd..3507362 100644
+--- a/tools/perf/util/ctype.c
++++ b/tools/perf/util/ctype.c
+@@ -29,3 +29,11 @@ unsigned char sane_ctype[256] = {
+ 	A, A, A, A, A, A, A, A, A, A, A, R, R, P, P, 0,		/* 112..127 */
+ 	/* Nothing in the 128.. range */
+ };
++
++const char *graph_line =
++	"_____________________________________________________________________"
++	"_____________________________________________________________________";
++const char *graph_dotted_line =
++	"---------------------------------------------------------------------"
++	"---------------------------------------------------------------------"
++	"---------------------------------------------------------------------";
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index f2203a0..e1c623e 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -84,6 +84,9 @@
+ #include <iconv.h>
+ #endif
+ 
++extern const char *graph_line;
++extern const char *graph_dotted_line;
++
+ /* On most systems <limits.h> would have given us this, but
+  * not on some systems (e.g. GNU/Hurd).
+  */
+-- 
+1.6.2.5
+
