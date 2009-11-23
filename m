@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZKWKKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZKWKLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZKWKKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 05:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZKWKKt
+	id S1756860AbZKWKLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 05:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZKWKLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 05:10:49 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:36108 "EHLO
+	Mon, 23 Nov 2009 05:11:17 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:36705 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756803AbZKWKKq (ORCPT
+	with ESMTP id S1756803AbZKWKLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 05:10:46 -0500
-Message-ID: <4B0A5FA7.405@canonical.com>
-Date: Mon, 23 Nov 2009 02:10:47 -0800
+	Mon, 23 Nov 2009 05:11:15 -0500
+Message-ID: <4B0A5FC4.1010902@canonical.com>
+Date: Mon, 23 Nov 2009 02:11:16 -0800
 From: John Johansen <john.johansen@canonical.com>
 Organization: Canonical
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
 Subject: Re: [AppArmor #3 0/12] AppArmor security module
-References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>	<200911210239.DCI56207.HQFOVOJOSLMFFt@I-love.SAKURA.ne.jp>	<200911211428.JJH90667.LFOJFMSQVOFOtH@I-love.SAKURA.ne.jp> <200911222049.BCG40864.HVQMOOFtLFJOSF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200911222049.BCG40864.HVQMOOFtLFJOSF@I-love.SAKURA.ne.jp>
+References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>	<200911210239.DCI56207.HQFOVOJOSLMFFt@I-love.SAKURA.ne.jp> <200911211428.JJH90667.LFOJFMSQVOFOtH@I-love.SAKURA.ne.jp>
+In-Reply-To: <200911211428.JJH90667.LFOJFMSQVOFOtH@I-love.SAKURA.ne.jp>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,291 +28,240 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Tetsuo Handa wrote:
-> And the rest of files...
+> Regarding file.c ipc.c lib.c lsm.c
 > 
 > 
 > 
-> Regarding match.c
+> You can use container_of() inside callback functions to avoid "void *".
 > 
-> Why not to start YYTD_ID_something from 0 so that we can avoid "- 1" in
-> dfa->tables[table->td_id - 1] ? I think you can do "- 1" at
-> 
-Right this is a legacy bit, to make a long story short they exactly match
-the Flex table mappings which is unnecessary as we explicitly are not
-compatible with Flex in other ways.  It will probably wait until after
-the next push as I am looking at accept state cleanup for the dfa as well.
+yeah that is cleaner, will do
 
-> 	th.td_id = be16_to_cpu(*(u16 *) (blob));
-that is a possibility as long as it got a good comment to explain what
-is going on.
-
+>> int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
+>> 	     void (*cb) (struct audit_buffer *, void *))
 > 
-> .
+> int aa_audit(int type, struct aa_profile *profile, struct aa_audit *sa,
+> 	     void (*cb) (struct audit_buffer *, struct aa_audit *))
 > 
+>> static int aa_audit_base(int type, struct aa_profile *profile,
+>> 			 struct aa_audit *sa, struct audit_context *audit_cxt,
+>> 			 void (*cb) (struct audit_buffer *, void *))
 > 
+> static int aa_audit_base(int type, struct aa_profile *profile,
+> 			 struct aa_audit *sa, struct audit_context *audit_cxt,
+> 			 void (*cb) (struct audit_buffer *, struct aa_audit *))
 > 
->> int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size)
+>> void file_audit_cb(struct audit_buffer *ab, void *va)
 >> {
-> (...snipped...)
->> fail:
->> 	for (i = 0; i < ARRAY_SIZE(dfa->tables); i++) {
->> 		free_table(dfa->tables[i]);
->> 		dfa->tables[i] = NULL;
->> 	}
+>> 	struct aa_audit_file *sa = va;
 > 
-> This function is called by only aa_unpack_dfa(), and aa_unpack_dfa() calls
-> aa_match_free(). Thus, you don't need to call free_table() here.
+> void file_audit_cb(struct audit_buffer *ab, struct aa_audit *va)
+> {
+> 	struct aa_audit_file *sa = container_of(va, struct aa_audit_file, base);
 > 
-Hrmm, yeah it needs to be reworked, I don't particularly like returning a
-partial struct to have it cleaned up later.  I think it might be better
-to rework aa_unpack_dfa, dropping the aa_match_free and moving the verify
-call into the unpack routine, and the above for loop can be replaced
-by aa_match_free
-
-
->> 	return error;
+>> int aa_audit_file(struct aa_profile *profile, struct aa_audit_file *sa)
+>> (...snipped...)
+>> 	return aa_audit(type, profile, (struct aa_audit *)sa, file_audit_cb);
+> 
+> 	return aa_audit(type, profile, &sa->base, file_audit_cb);
+> 
 >> }
-> 
-> 
-> 
-> Regarding net.c
 > 
 >> static void audit_cb(struct audit_buffer *ab, void *va)
 >> {
->> 	struct aa_audit_net *sa = va;
+>> 	struct aa_audit_ptrace *sa = va;
 > 
 > static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
 > {
-> 	struct aa_audit_net *sa = container_of(va, struct aa_audit_net, base);
+> 	struct aa_audit_ptrace *sa = container_of(va, struct aa_audit_ptrace,
+> 		base);
 > 
->> static int aa_audit_net(struct aa_profile *profile, struct aa_audit_net *sa)
->> {
-> (...snipped...)
->> 	return aa_audit(type, profile, (struct aa_audit *)sa, audit_cb);
-> 
-> 	return aa_audit(type, profile, &sa->base, audit_cb);
-> 
->> }
-> 
-> 
-yep, thanks
-
-> 
-> Regarding policy.c
-> 
->> struct aa_namespace *alloc_aa_namespace(const char *name)
-> 
-> This function could be "static". Please try "make namespacecheck".
-> 
-will do
-
-> 
-> 
->> struct aa_namespace *aa_prepare_namespace(const char *name)
-> 
-> This function could be "static".
-> 
->> {
->> 	struct aa_namespace *ns;
->>
->> 	write_lock(&ns_list_lock);
->> 	if (name)
->> 		/* released by caller */
->> 		ns = aa_get_namespace(__aa_find_namespace(&ns_list, name));
->> 	else
->> 		/* released by caller */
->> 		ns = aa_get_namespace(default_namespace);
-> 
-> alloc_aa_namespace() returns NULL if name == NULL.
-> If it is intended behavior, you may do like
-> 
-> 	else {
->  		/* released by caller */
-> 		ns = aa_get_namespace(default_namespace);
-> 		write_unlock(&ns_list_lock);
-> 		return ns;
-> 	}
-> 
-well at this point name != NULL because in that case ns == default_namespace,
-but it should be documented that name can not be null here.
-
-In general I am not happy with prepare_namespace and will take another look
-at this.
-
->> 	if (!ns) {
->> 		struct aa_namespace *new_ns;
->> 		write_unlock(&ns_list_lock);
->> 		new_ns = alloc_aa_namespace(name);
->> 		if (!new_ns)
->> 			return NULL;
->> 		write_lock(&ns_list_lock);
->> 		/* test for race when new_ns was allocated */
->> 		ns = __aa_find_namespace(&ns_list, name);
->> 		if (!ns) {
->> 			list_add(&new_ns->base.list, &ns_list);
->> 			/* add list ref */
->> 			ns = aa_get_namespace(new_ns);
->> 		} else {
->> 			/* raced so free the new one */
->> 			free_aa_namespace(new_ns);
->> 			/* get reference on namespace */
->> 			aa_get_namespace(ns);
->> 		}
->> 	}
->> 	write_unlock(&ns_list_lock);
->>
->> 	/* return ref */
->> 	return ns;
->> }
-> 
-> 
-> 
->> void __aa_replace_profile(struct aa_profile *old,
->> 			  struct aa_profile *new)
-> 
-> This function could be "static".
-> 
-> 
-> 
->> void __aa_profile_list_release(struct list_head *head)
-> 
-> This function could be "static".
-> 
-> 
-> 
->> void __aa_remove_namespace(struct aa_namespace *ns)
-> 
-> This function could be "static".
-> 
->> {
->> 	struct aa_profile *unconfined = ns->unconfined;
->> 	/* remove ns from namespace list */
->> 	list_del_init(&ns->base.list);
->>
->> 	/*
->> 	 * break the ns, unconfined profile cyclic reference and forward
->> 	 * all new unconfined profiles requests to the default namespace
->> 	 * This will result in all confined tasks that have a profile
->> 	 * being removed inheriting the default->unconfined profile.
->> 	 */
->> 	ns->unconfined = aa_get_profile(default_namespace->unconfined);
->> 	__aa_profile_list_release(&ns->base.profiles);
->> 	/* release original ns->unconfined ref */
->> 	aa_put_profile(unconfined);
->> 	/* release ns->base.list ref, from removal above */
->> 	aa_put_namespace(ns);
-> 
-> aa_put_profile() and aa_put_namespace() may call write_lock() inside
-> free_aa_profile(). Are you sure that these calls do not dead lock?
-> 
-Yes, though I will give it another run through and reverify and add better
-comments.  The locking is such that the profile should be removed from
-the list before free_aa_profile is called, and once in free_aa_profile
-the lock is taken and released before any put_ is done.
-
->> }
-> 
-> 
-> 
->> ssize_t aa_interface_remove_profiles(char *name, size_t size)
-> (...snipped...)
->> 	write_lock(&ns_list_lock);
->> 	if (name[0] == ':') {
->> 	char *ns_name;
->> 	name = aa_split_name_from_ns(name, &ns_name);
->> 	/* released below */
->> 	ns = aa_get_namespace(__aa_find_namespace(&ns_list, ns_name));
-> 
-> aa_split_name_from_ns() may set ns_name to NULL but __aa_find_namespace() can't
-> handle ns_name == NULL case. I think you should check ns_name != NULL.
-> 
-yep
-
-> 
-> 
-> Regarding policy_unpack.c
-> 
-> Please use bool for functions that return 0 or 1.
-> 
-> 
-> 
->> static void audit_cb(struct audit_buffer *ab, void *va)
->> {
->> 	struct aa_audit_iface *sa = va;
-> 
-> static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
-> {
-> 	struct aa_audit_iface *sa = container_of(va, struct aa_audit_iface,
-> 						 base);
-> 
-> 
-> 
->> static int aa_unpack_trans_table(struct aa_ext *e, struct aa_profile *profile)
-> (...snipped...)
->> 		for (i = 0; i < size; i++) {
->> 			char *tmp;
->> 			if (!unpack_dynstring(e, &tmp, NULL))
->> 				goto fail;
->> 			/*
->> 			 * note: strings beginning with a : have an embedded
->> 			 * \0 seperating the profile ns name from the profile
->> 			 * name
->> 			 */
->> 			profile->file.trans.table[i] = tmp;
-> 
-> unpack_dynstring() returns string duplicated by kstrdup(). Thus, "tmp" can't
-> have an embedded \0 seperating the profile ns name from the profile name
-> even if tmp[0] == ':' is true, can it?
-> 
-indeed, I should not have switched to kstrdup.
-
->> 		}
-> 
-> 
-> 
-> Regarding resource.c
-> 
->> static void audit_cb(struct audit_buffer *ab, void *va)
->> {
->> 	struct aa_audit_resource *sa = va;
-> 
-> static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
-> {
-> 	struct aa_audit_resource *sa = container_of(va, struct aa_audit_resource,
-> 						    base);
-> 
-> 
-> 
->> static int aa_audit_resource(struct aa_profile *profile,
->> 			     struct aa_audit_resource *sa)
+>> static int aa_audit_ptrace(struct aa_profile *profile,
+>> 			   struct aa_audit_ptrace *sa)
 >> {
 >> 	return aa_audit(AUDIT_APPARMOR_AUTO, profile, (struct aa_audit *)sa,
 >> 			audit_cb);
 > 
 > 	return aa_audit(AUDIT_APPARMOR_AUTO, profile, &sa->base, audit_cb);
 > 
+> 
+> 
+>> int aa_path_link(struct aa_profile *profile, struct dentry *old_dentry,
+>> 		 struct path *new_dir, struct dentry *new_dentry)
+> (.,..snipped...)
+>> 	unsigned int state;
+> (.,..snipped...)
+>> 	sa.perms = aa_str_perms(profile->file.dfa, DFA_START, sa.name, &cond,
+>> 				&state);
+> 
+> "state" remains uninitialized if profile->file.dfa == NULL.
+> Are you sure profile->file.dfa != NULL ?
+> 
+No this needs to be fixed.
+
+> 
+> 
+>> char *aa_strchrnul(const char *s, int c)
+>> {
+>> 	for (; *s != (char)c && *s != '\0'; ++s)
+>> 		;
+>> 	return (char *)s;
+>> }
+> 
+> Only fqname_subname() calls aa_strchrnul() and
+> fqname_subname() returns NULL if aa_strchrnul() returns '\0'.
+> You can use strchr() instead.
+> 
+hrmm right thanks
+
+>> static const char *fqname_subname(const char *name)
+>> {
+>> 	char *split;
+>> 	/* check for namespace which begins with a : and ends with : or \0 */
+>> 	name = strstrip((char *)name);
+>> 	if (*name == ':') {
+>> 		split = aa_strchrnul(name + 1, ':');
+>> 		if (*split == '\0')
+>> 			return NULL;
+> 
+> 		split = strchr(name + 1, ':');
+> 		if (!split)
+> 			return NULL;
+> 
+yep
+
+>> 		name = strstrip(split + 1);
+>> 	}
+>> 	for (split = strstr(name, "//"); split; split = strstr(name, "//"))
+>> 	name = split + 2;
+>>
+>> 	return name;
 >> }
 > 
 > 
 > 
-> Regarding sid.c
-> 
->> int aa_add_sid_profile(u32 sid, struct aa_profile *profile)
-> 
-> This function is not used.
-> 
-> 
-> 
->> int aa_replace_sid_profile(u32 sid, struct aa_profile *profile)
-> 
-> This function is not used.
-> 
+>> char *aa_split_name_from_ns(char *args, char **ns_name)
+>> {
+>> 	char *name = strstrip(args);
+>>
+>> 	*ns_name = NULL;
+>> 	if (args[0] == ':') {
+>> 		char *split = strstrip(strchr(&args[1], ':'));
+>>
+>> 		if (!split)
+>> 			return NULL;
 > 
 > 
->> struct aa_profile *aa_get_sid_profile(u32 sid)
+> strchr() returns NULL if not found, and strstrip(NULL) will do strlen(NULL).
+> strstrip() never returns NULL. Did you mean
 > 
-> This function is not used.
+> 		char *split = strchr(&args[1], ':');
+> 
+> 		if (!split)
+> 			return NULL;
+> 		split = strstrip(split);
+> 
+> ?
+yes, thanks
 
-right will fix
+> 
+>> 		*split = 0;
+>> 		*ns_name = &args[1];
+>> 		name = strstrip(split + 1);
+>> 	}
+>> 	if (*name == 0)
+>> 		name = NULL;
+>>
+>> 	return name;
+>> }
+> 
+> 
+> 
+>> static int apparmor_sysctl(struct ctl_table *table, int op)
+> This hook will be removed.
+> 
+>> char *sysctl_pathname(struct ctl_table *table, char *buffer, int buflen)
+> This function will no longer be needed.
+> 
+>> int aa_pathstr_perm(struct aa_profile *profile, const char *op,
+>> 		    const char *name, u16 request, struct path_cond *cond)
+> This function will no longer be needed.
+> 
+yep
 
-thanks
+> 
+> 
+>> static int apparmor_file_permission(struct file *file, int mask)
+>> {
+>> 	/*
+>> 	 * TODO: cache profiles that have revalidated?
+>> 	 */
+>> 	struct aa_file_cxt *fcxt = file->f_security;
+>> 	struct aa_profile *profile, *fprofile = fcxt->profile;
+>> 	int error = 0;
+>>
+>> 	if (!fprofile || !file->f_path.mnt ||
+>> 	    !mediated_filesystem(file->f_path.dentry->d_inode))
+>> 		return 0;
+>>
+>> 	profile = aa_current_profile();
+>>
+>> #ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
+>> 	/*
+>> 	 * AppArmor <= 2.4 revalidates files at access time instead
+>> 	 * of at exec.
+>> 	 */
+>> 	if (profile && ((fprofile != profile) || (mask & ~fcxt->allowed)))
+>> 	    error = aa_file_perm(profile, "file_perm", file, mask);
+>> #endif
+>>
+>> 	return error;
+>> }
+> 
+> Why need to call this function if CONFIG_SECURITY_APPARMOR_COMPAT_24=n ?
+> I think we can do
+> 
+>> static struct security_operations apparmor_ops = {
+> (...snipped...)
+> 
+> #ifdef CONFIG_SECURITY_APPARMOR_COMPAT_24
+> 
+>> 	.file_permission =              apparmor_file_permission,
+> 
+> #endif
+> 
+yes we can currently.  Though this will change in the future, but for now
+we should got with the cleaner switch.
+
+> (...snipped...)
+>> }
+> 
+> 
+> 
+>> int aa_alloc_default_namespace(void)
+> 
+> This function could be declared with __init attribute.
+> 
+yep, thanks
+
+> 
+> 
+>> static int __init apparmor_init(void)
+> (...snipped...)
+>> 	error = set_init_cxt();
+>> 	if (error) {
+>> 		AA_ERROR("Failed to set context on init task\n");
+>> 		goto alloc_out;
+> 
+> This should be
+> 
+> 		goto register_security_out;
+> 
+> in order to call aa_free_default_namespace().
+> 
+>> 	}
+
+indeed
+
+thanks again for taking the time to review
+john
+
