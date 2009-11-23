@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZKWJi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZKWJmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZKWJi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 04:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbZKWJi0
+	id S1756502AbZKWJmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 04:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZKWJms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 04:38:26 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:45036 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756531AbZKWJiZ convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 04:42:48 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:42671 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbZKWJms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 04:38:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=dF5WEdW5s+dIuWV080UAPHza9ysZ/rFnKpDWNPIbEHrUl+sODj0qmpUtpL06KjXr7Z
-         0rccDWRoqvcADwyoJTGHfeUrk/SlQkHlZ3R5/Y1r6rvFFSpNX9qS3Ea/wN1YfMh/ZtlO
-         ty8lBygSwB1JgXyILfBf4HfSXTaah6ma86VBU=
-MIME-Version: 1.0
-In-Reply-To: <0e91f1c4ecc5bc5000f729ccb56e9b6e1fbd4bd3.1258805412.git.andre.goddard@gmail.com>
-References: <cover.1258805412.git.andre.goddard@gmail.com>
-	 <0e91f1c4ecc5bc5000f729ccb56e9b6e1fbd4bd3.1258805412.git.andre.goddard@gmail.com>
-Date: Mon, 23 Nov 2009 11:38:30 +0200
-X-Google-Sender-Auth: 9815b71f9a0fa5fe
-Message-ID: <84144f020911230138v11b18709q28c186f9260f6d66@mail.gmail.com>
-Subject: Re: [PATCH 1/2] pid: tighten pidmap spinlock critical section by 
-	removing kfree()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>, Jiri Kosina <jkosina@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 04:42:48 -0500
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <20091122162936.ac603ad1.kristoffer.ericson@gmail.com>
+References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
+	 <mYW9sxtWd2G.A.EnF.gDACLB@chimera> <4B08258E.9050607@gmail.com>
+	 <1258886823.7094.101.camel@johannes.local>
+	 <20091122162936.ac603ad1.kristoffer.ericson@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tI7BhJzGHXdKd8/OEBT5"
+Date: Mon, 23 Nov 2009 10:42:46 +0100
+Message-ID: <1258969366.7094.136.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding some CC's.)
 
-On Sat, Nov 21, 2009 at 2:16 PM, André Goddard Rosa
-<andre.goddard@gmail.com> wrote:
-> Avoid calling kfree() under pidmap spinlock, calling it afterwards.
->
-> Normally kfree() is very fast, but sometimes it can be slow, so avoid
-> calling it under the spinlock if we can.
->
-> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
-> cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  kernel/pid.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index d3f722d..55fd590 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -141,11 +141,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
->                         * installing it:
->                         */
->                        spin_lock_irq(&pidmap_lock);
-> -                       if (map->page)
-> -                               kfree(page);
-> -                       else
-> +                       if (!map->page) {
->                                map->page = page;
-> +                               page = NULL;
-> +                       }
->                        spin_unlock_irq(&pidmap_lock);
-> +                       kfree(page);
->                        if (unlikely(!map->page))
->                                break;
->                }
-> --
-> 1.6.5.3.298.g39add
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--=-tI7BhJzGHXdKd8/OEBT5
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 2009-11-22 at 16:29 +0100, Kristoffer Ericson wrote:
+
+> > +	hw->wiphy->ps_default =3D false;
+> > +
+> >  	hw->queues =3D 4;
+> >  	hw->max_rates =3D 4;
+> >  	hw->channel_change_time =3D 5000;
+> >=20
+> >=20
+>=20
+> Johannes, am I correct in thinking that this also solves the decreased si=
+gnal strength
+> issue in bug http://bugzilla.kernel.org/show_bug.cgi?id=3D13807 ?
+
+Unless the driver is really very broken, that's rather unlikely.
+
+johannes
+
+--=-tI7BhJzGHXdKd8/OEBT5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLClkTAAoJEODzc/N7+QmabvoQAI/WvqmSw9Tmkc/5bnVsCgng
+nYKDxefC4irZyDknjqqB16D3Qf6k9qvhUr5X0jGIkdJ35XAK0DfltfJn6zNgNT6z
+cxc2xB0ye9X5nZn0a9WxNpG06kz/ayu/1igZ2tsyOKOHOGstwuILEd3k7PDDBSvd
+uXSPvI0XOV8DkkMrhWSqsZ0rbxqxrh+Hop94BHDBRvZQ9WS6weWh0wuF0BQUkhEz
+zPm63e4OVgb3+LFwIuoANGMY3FzfPmaV+3yErZiROn02uJPELNBpwcQGR2zxlQTM
+eNJGkAXYg4Hjde+3+n1DmofWDPJTgXzDLSt28NjHopcXMYs9z+WqnOCyFiOhNn9H
+DGMi04X8CcYP0AXXyonmk62WR3SsosCpoQoDnXjcmP8OyrcRW31hiVBHBkO6dqLz
+Cs5owgtcydt2jZ199mlrfPCuqBaRjdusYyKkqh5hgiSWXf4y61I8Wnv4VbcMeFdR
+fWTRoE3G0fAVklS6XPxkJUsojruE6j6Iyz/OoaoLvmPpOTQcNaxDe7k+avb0Dqzj
+ywzho+yieLE3ymRNFsNxlb3CCrR7+sYSsoWscy5omt/Eu7V6wID0ny91gQ/CsYwM
+cC1vzVbqL3/5ktHezHxlz/xoyivZKJoQX6e4YmRzElN301Sv0fMihQDvxOdpMomP
+x+m7P8PesH+WUthQasdz
+=or9T
+-----END PGP SIGNATURE-----
+
+--=-tI7BhJzGHXdKd8/OEBT5--
+
