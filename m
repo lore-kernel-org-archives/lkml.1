@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbZKWUX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZKWUXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756446AbZKWUX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZKWUX2
+	id S1756938AbZKWUXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbZKWUXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:23:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:33326 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756094AbZKWUX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:23:27 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com>
-Date: Mon, 23 Nov 2009 21:23:30 +0100
-In-Reply-To: <4B0AC8C9.6080504@redhat.com> (Mauro Carvalho Chehab's message of
-	"Mon, 23 Nov 2009 15:39:21 -0200")
-Message-ID: <m34oolrnwd.fsf@intrepid.localdomain>
+	Mon, 23 Nov 2009 15:23:44 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34989 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756527AbZKWUXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 15:23:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=YzJmwEvT2kJIAlaITa+JI22TfH4vtmy6fcMG8/twtpoA7E7LnCEllyW0SXewD25BPQ
+         MgI/tot1UIcPuyYfHA1YksBbFGmp5QyuqZbOasVtb8BMEZeOI4KyGCSj35SIkUZvNiTh
+         ZO2H60LAJCwI1xmqzy0GnnJJqlcJmDmrBznas=
+Message-ID: <4B0AEF4E.8070005@gmail.com>
+Date: Mon, 23 Nov 2009 21:23:42 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vt: Don't exceed max_font_size on copy in con_font_get()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+font.data is kmallocd with max_font_size (defined 65536). Below occurs a
+copy_to_user with `c' as a size argument. Ensure we don't copy too much.
 
->> (This is no recommendation for lirc.  I have no idea whether a
->> pulse/space -> scancode -> keycode translation would be practical
->> there.)
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/char/vt.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-It would, but not exactly in the present shape.
+If it is possible for c to be greater than 65536 then I think we may need this.
+Correct?
 
-> For example, there are several bttv and saa7134 devices that polls (or receive
-> IRQ interrupts) to detect pulses (and the absense of them) in order to create
-> a pulse/space code. The conversion from pulse/space to scancode is done inside
-> the driver, with the help of some generic routines and based on the protocol
-> specifications.
-
-Right. There are currently several problems (I'm quite familiar with
-saa713x RC5 code): the one that it barely works and is not implemented
-for most such "GPIO/IRQ-driven" cards (as of 2.6.29 or so). This could
-be fixed, I even have a working though quick&dirty patch. Another: the
-RC5 allows for groups and codes within groups. The mapping can only use
-one group, and there can only be one mapping. These design limitations
-mean it's unusable in many cases.
-
-> Those devices where the decoding is done by software can support any
-> IR protocols.
-
-Yes, and there can be multiple remote controllers, and multiple code
-groups within a remote.
-
-> This can be solved by adding a few ioctls to enumerate the supported
-> protocols and to select the one(s) that will be handled by the kernel
-> driver.
-
-The driver may have to handle many protocols simultaneously. This is not
-a problem from a technical POV.
--- 
-Krzysztof Halasa
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 0c80c68..045af83 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -3861,6 +3861,10 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
+ 		goto out;
+ 
+ 	c = (font.width+7)/8 * 32 * font.charcount;
++	if (c > max_font_size) {
++		rc = -EINVAL;
++		goto out;
++	}
+ 
+ 	if (op->data && font.charcount > op->charcount)
+ 		rc = -ENOSPC;
