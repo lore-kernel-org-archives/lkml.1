@@ -1,126 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbZKWUCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZKWUfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbZKWUCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZKWUCJ
+	id S1756817AbZKWUfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZKWUe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:02:09 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:34917 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbZKWUCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:02:08 -0500
-Message-ID: <4B0AEA33.3010306@nokia.com>
-Date: Mon, 23 Nov 2009 22:01:55 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 23 Nov 2009 15:34:59 -0500
+Received: from panacea.frsk.net ([92.243.16.10]:36178 "EHLO panacea.frsk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755990AbZKWUe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 15:34:58 -0500
+X-Greylist: delayed 1949 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 15:34:58 EST
+From: Henrik Austad <henrik@austad.us>
+To: Peter Zijlstra <peterz@infradead.org>
+Date: Mon, 23 Nov 2009 21:02:03 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Jon Tore Hafstad <jontore@gmail.com>, linux-kernel@vger.kernel.org,
+       dhaval.giani@gmail.com, mingo@elte.hu, tglx@linutronix.de,
+       bbb@cs.unc.edu, jmc@cs.unc.edu, Jeff Dike <jdike@addtoit.com>
+References: <78b8ce680911181211k6c15a976u52186b5849224040@mail.gmail.com> <1258985295.4531.496.camel@laptop>
+In-Reply-To: <1258985295.4531.496.camel@laptop>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
-Subject: Re: [PATCH 4/7] nandsim: Don't use PF_MEMALLOC
-References: <20091117161551.3DD4.A69D9226@jp.fujitsu.com>	 <20091117161843.3DE0.A69D9226@jp.fujitsu.com> <1258988417.18407.44.camel@localhost>
-In-Reply-To: <1258988417.18407.44.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart2781745.HptGoNdTSc";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Nov 2009 20:01:56.0141 (UTC) FILETIME=[CEE395D0:01CA6C77]
-X-Nokia-AV: Clean
+Message-Id: <200911232102.07419.henrik@austad.us>
+X-SA-Exim-Connect-IP: 129.241.93.108
+X-SA-Exim-Mail-From: henrik@austad.us
+Subject: Re: LinSched updated to current linux kernel version
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on panacea.frsk.net)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bityutskiy Artem (Nokia-D/Helsinki) wrote:
-> On Tue, 2009-11-17 at 16:19 +0900, KOSAKI Motohiro wrote:
->> Non MM subsystem must not use PF_MEMALLOC. Memory reclaim need few
->> memory, anyone must not prevent it. Otherwise the system cause
->> mysterious hang-up and/or OOM Killer invokation.
->>
->> Cc: David Woodhouse <David.Woodhouse@intel.com>
->> Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
->> Cc: linux-mtd@lists.infradead.org
->> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> ---
->>  drivers/mtd/nand/nandsim.c |   22 ++--------------------
->>  1 files changed, 2 insertions(+), 20 deletions(-)
->>
->> diff --git a/drivers/mtd/nand/nandsim.c b/drivers/mtd/nand/nandsim.c
->> index cd0711b..97a8bbb 100644
->> --- a/drivers/mtd/nand/nandsim.c
->> +++ b/drivers/mtd/nand/nandsim.c
->> @@ -1322,34 +1322,18 @@ static int get_pages(struct nandsim *ns, struct file *file, size_t count, loff_t
->>  	return 0;
->>  }
->>  
->> -static int set_memalloc(void)
->> -{
->> -	if (current->flags & PF_MEMALLOC)
->> -		return 0;
->> -	current->flags |= PF_MEMALLOC;
->> -	return 1;
->> -}
->> -
->> -static void clear_memalloc(int memalloc)
->> -{
->> -	if (memalloc)
->> -		current->flags &= ~PF_MEMALLOC;
->> -}
->> -
->>  static ssize_t read_file(struct nandsim *ns, struct file *file, void *buf, size_t count, loff_t *pos)
->>  {
->>  	mm_segment_t old_fs;
->>  	ssize_t tx;
->> -	int err, memalloc;
->> +	int err;
->>  
->>  	err = get_pages(ns, file, count, *pos);
->>  	if (err)
->>  		return err;
->>  	old_fs = get_fs();
->>  	set_fs(get_ds());
->> -	memalloc = set_memalloc();
->>  	tx = vfs_read(file, (char __user *)buf, count, pos);
->> -	clear_memalloc(memalloc);
->>  	set_fs(old_fs);
->>  	put_pages(ns);
->>  	return tx;
->> @@ -1359,16 +1343,14 @@ static ssize_t write_file(struct nandsim *ns, struct file *file, void *buf, size
->>  {
->>  	mm_segment_t old_fs;
->>  	ssize_t tx;
->> -	int err, memalloc;
->> +	int err;
->>  
->>  	err = get_pages(ns, file, count, *pos);
->>  	if (err)
->>  		return err;
->>  	old_fs = get_fs();
->>  	set_fs(get_ds());
->> -	memalloc = set_memalloc();
->>  	tx = vfs_write(file, (char __user *)buf, count, pos);
->> -	clear_memalloc(memalloc);
->>  	set_fs(old_fs);
->>  	put_pages(ns);
->>  	return tx;PF_MEMALLOC,
-> 
-> I vaguely remember Adrian (CCed) did this on purpose. This is for the
-> case when nandsim emulates NAND flash on top of a file. So there are 2
-> file-systems involved: one sits on top of nandsim (e.g. UBIFS) and the
-> other owns the file which nandsim uses (e.g., ext3).
-> 
-> And I really cannot remember off the top of my head why he needed
-> PF_MEMALLOC, but I think Adrian wanted to prevent the direct reclaim
-> path to re-enter, say UBIFS, and cause deadlock. But I'd thing that all
-> the allocations in vfs_read()/vfs_write() should be GFP_NOFS, so that
-> should not be a probelm?
-> 
+--nextPart2781745.HptGoNdTSc
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Yes it needs PF_MEMALLOC to prevent deadlock because there can be a
-file system on top of nandsim which, in this case, is on top of another
-file system.
+On Monday 23. November 2009 15.08.15 Peter Zijlstra wrote:
+> On Wed, 2009-11-18 at 21:11 +0100, Jon Tore Hafstad wrote:
+> >  Hi all
+> >
+> > I wish to inform you about an update of LinSched (The Linux Scheduler
+> > Simulator([1])) I'm currently working on.
+> >
+> > =3D=3D Motivation =3D=3D
+> > I wished to implement different EDF schedulers to gain a better
+> > understanding of kernel internals as well as scheduling dynamics. I
+> > got some feedback from Henrik Austad  that LinSched was a tool that
+> > made implementing a scheduler in to  the linux kernel easier,  since
+> > the code compiles in a fraction of the time the kernel does (Yes, I
+> > know you can pull all sorts of tricks and tweaks in order to speed up
+> > a kernel compilation), a segfault will be a segfault, and not a kernel
+> > oops ;),and the full range of debuggers and memory analyzers will be
+> > available.
+>=20
+> I would have expected people to use UML for this (User-Mode-Linux, not
+> the draw lots of silly pictures thing).
 
-I do not see how mempools will help here.
+What is the current status of UML - is anyone actually working on that thes=
+e=20
+days?
 
-Please offer an alternative solution.
+> The main draw-back is that UML doesn't currently support SMP and any
+> interesting preemption modes, but adding that to UML would help out more
+> people -- I know the VM (virtual Memory, not the machine thing) people
+> used to use UML for exactly these reasons, easy gdb, etc..
+
+Well, another drawback of UML is the size. The whole point with LinSched is=
+ to=20
+be *lightweight* while still being accurate. By accurate I mean that code=20
+written and tested with LinSched should work nearly out of the box when pla=
+ced=20
+in the kernel.
+
+LinSched is all about scheduling - nothing else. To be able to compile the=
+=20
+code in a fraction of a second, and then simulate hours worth of computing =
+(or=20
+at least the task-switches) can be *very* useful.=20
+
+IMHO, making it easy to test new scheduling algorithms is a very neat way o=
+f=20
+attracting new kernel/scheduler hackers (as well as testing all sorts of cr=
+azy=20
+algorithms).
+
+Just my $0.02
+
+=2D-=20
+     henrik
+
+--nextPart2781745.HptGoNdTSc
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAksK6jsACgkQ6k5VT6v45lmn5wCghhXWM8YS29rFJqekE5tPhFQF
+eyAAn3Vm3ZyolhViOHniSBPRdvBYPhpk
+=ZY+4
+-----END PGP SIGNATURE-----
+
+--nextPart2781745.HptGoNdTSc--
