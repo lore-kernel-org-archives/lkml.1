@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZKWSP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZKWSU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZKWSP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 13:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZKWSP2
+	id S1754578AbZKWSU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 13:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZKWSU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 13:15:28 -0500
-Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:48189 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750820AbZKWSP1 convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 13:20:27 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:55387 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753758AbZKWSU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 13:15:27 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 23 Nov 2009 13:20:26 -0500
+Date: Mon, 23 Nov 2009 13:20:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jan Kara <jack@suse.cz>
+cc: tmhikaru@gmail.com, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       <linux-scsi@vger.kernel.org>, <linux-ext4@vger.kernel.org>
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+In-Reply-To: <20091123160914.GG15679@duck.suse.cz>
+Message-ID: <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: drivers/ide/au1xxx-ide.c: use resource_size()
-Date: Mon, 23 Nov 2009 13:15:32 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901EE5BFD@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: drivers/ide/au1xxx-ide.c: use resource_size()
-Thread-Index: AcpsaPHWA/wxJDXARlSRLSGFtV3r+w==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
-X-OriginalArrivalTime: 23 Nov 2009 18:15:32.0280 (UTC) FILETIME=[F1CFB380:01CA6C68]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size() for {request/release}_mem_region and ioremap.
+On Mon, 23 Nov 2009, Jan Kara wrote:
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> On Mon 23-11-09 10:06:03, Alan Stern wrote:
+> > On Mon, 23 Nov 2009, Jan Kara wrote:
+> > 
+> > >   Yeah, from what you write, it looks like USB enclosure is at fault (or it
+> > > could still be your USB controller but I doubt it).  It's still a bit
+> > > bothering that the error reported by the drive was not properly propagated
+> > > up to VFS. Either it's some block layer retry/ignore magic that I missed or
+> > > we ignore errors from block layer in some place.
+> > 
+> > Is there any interest in tracking this down?  It's not hard to find out
+> > what low-level errors are being reported and to generate them on demand
+> > with an emulated USB disk drive.
+>   Well, if you could provide me with the patch, I could try to track down
+> why the errors aren't propagated... It would be interesting because if it's
+> not some retry logic in block layer, it's a bug in VFS ;).
 
----
+I can't provide a patch without first knowing what the errors are.  The 
+way to find out is to use usbmon.  See Documentation/usb/usbmon.txt for 
+instructions.
 
-diff --git a/drivers/ide/au1xxx-ide.c b/drivers/ide/au1xxx-ide.c
-index 58121bd..87cef0c 100644
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -532,14 +532,13 @@ static int au_ide_probe(struct platform_device *dev)
- 		goto out;
- 	}
- 
--	if (!request_mem_region(res->start, res->end - res->start + 1,
--				dev->name)) {
-+	if (!request_mem_region(res->start, resource_size(res), dev->name)) {
- 		pr_debug("%s: request_mem_region failed\n", DRV_NAME);
- 		ret =  -EBUSY;
- 		goto out;
- 	}
- 
--	ahwif->regbase = (u32)ioremap(res->start, res->end - res->start + 1);
-+	ahwif->regbase = (u32)ioremap(res->start, resource_size(res));
- 	if (ahwif->regbase == 0) {
- 		ret = -ENOMEM;
- 		goto out;
-@@ -575,7 +574,7 @@ static int au_ide_remove(struct platform_device *dev)
- 	iounmap((void *)ahwif->regbase);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 
- 	return 0;
- } 
+Alan Stern
+
