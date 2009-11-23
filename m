@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZKWLWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZKWL3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbZKWLWY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbZKWLWX
+	id S1757194AbZKWL3X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757007AbZKWL3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:22:23 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40889 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755586AbZKWLWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:22:23 -0500
-Date: Mon, 23 Nov 2009 12:22:28 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: newidle balancing in NUMA domain?
-Message-ID: <20091123112228.GA2287@wotan.suse.de>
+	Mon, 23 Nov 2009 06:29:23 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40763 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756935AbZKWL3W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 06:29:22 -0500
+Date: Mon, 23 Nov 2009 11:31:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Robert Swan <swan.r.l@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091123113110.15063a0a@lxorguk.ukuu.org.uk>
+In-Reply-To: <1258952431.6261.38.camel@marge.simson.net>
+References: <20091121222319.GA3905@swanrl.gmail.com>
+	<20091122063926.GA18224@elte.hu>
+	<20091122122312.71a343d9@lxorguk.ukuu.org.uk>
+	<1258952431.6261.38.camel@marge.simson.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+> index 66fa4e1..92a0864 100644
+> --- a/drivers/char/tty_buffer.c
+> +++ b/drivers/char/tty_buffer.c
+> @@ -495,7 +495,7 @@ void tty_flip_buffer_push(struct tty_struct *tty)
+>  	if (tty->low_latency)
+>  		flush_to_ldisc(&tty->buf.work.work);
+>  	else
+> -		schedule_delayed_work(&tty->buf.work, 1);
+> +		schedule_delayed_work(&tty->buf.work, 0);
+>  }
+>  EXPORT_SYMBOL(tty_flip_buffer_push);
 
-I wonder why it was decided to do newidle balancing in the NUMA
-domain? And with newidle_idx == 0 at that.
+Another possibility is to do
 
-This means that every time the CPU goes idle, every CPU in the
-system gets a remote cacheline or two hit. Not very nice O(n^2)
-behaviour on the interconnect. Not to mention trashing our
-NUMA locality.
+	if (tty->low_latency)
+		schedule_delayed_work(&tty->buf.work, 0);
+	else
+		schedule_delayed_work(&tty->buf.work, 1);
 
-And then I see some proposal to do ratelimiting of newidle
-balancing :( Seems like hack upon hack making behaviour much more
-complex.
+At the moment the ->low_latency flag is just used by a few drivers that
+want to avoid a double delay (eg if the process events off a work queue
+not in the IRQ handler), and they have to jump through other hoops around
+re-entrancy. Doing it that way might make the processing a miniscule more
+slow for those cases but would also let the low_latency flag do something
+useful for the many drivers that don't work byte at a time and want stuff
+to be blocked up.
 
-One "symptom" of bad mutex contention can be that increasing the
-balancing rate can help a bit to reduce idle time (because it
-can get the woken thread which is holding a semaphore to run ASAP
-after we run out of runnable tasks in the system due to them 
-hitting contention on that semaphore).
+The general case is things like UART chips where you get one char and one
+push per byte receiving so usually don't want one run through the ldisc
+each time when a lot of data is arriving.
 
-I really hope this change wasn't done in order to help -rt or
-something sad like sysbench on MySQL.
+If low_latency means schedule ASAP not call inline then pty can use
+low_latency and we can avoid suddenly changing the behaviour of every
+device but instead do them as they make sense (eg all USB should probably
+be low_latency with that queueing change)
 
-And btw, I'll stay out of mentioning anything about CFS development,
-but it really sucks to be continually making significant changes to
-domains balancing *and* per-runqueue scheduling at the same time :(
-It makes it even difficult to bisect things.
-
-Thanks,
-Nick
-
+Alan
