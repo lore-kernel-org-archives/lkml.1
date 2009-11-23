@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbZKWMu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZKWM67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbZKWMu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 07:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbZKWMuz
+	id S1757231AbZKWM67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 07:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbZKWM66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 07:50:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48719 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756706AbZKWMuy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 07:50:54 -0500
-Subject: Re: [tip:perf/core] perf_events: Undo some recursion damage
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20091123123935.GB4989@nowhere>
-References: <20091123103819.993226816@chello.nl>
-	 <tip-4ed7c92d68a5387ba5f7030dc76eab03558e27f5@git.kernel.org>
-	 <20091123123935.GB4989@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 13:50:48 +0100
-Message-ID: <1258980648.4531.390.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 23 Nov 2009 07:58:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8587 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756585AbZKWM65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 07:58:57 -0500
+Message-ID: <4B0A8710.9060104@redhat.com>
+Date: Mon, 23 Nov 2009 10:58:56 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Jarod Wilson <jarod@redhat.com>
+CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [PATCH 3/3 v2] lirc driver for SoundGraph iMON IR receivers and
+ displays
+References: <200910200956.33391.jarod@redhat.com> <200910201000.57536.jarod@redhat.com>
+In-Reply-To: <200910201000.57536.jarod@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 13:39 +0100, Frederic Weisbecker wrote:
-> On Mon, Nov 23, 2009 at 11:55:08AM +0000, tip-bot for Peter Zijlstra wrote:
-> > Commit-ID:  4ed7c92d68a5387ba5f7030dc76eab03558e27f5
-> > Gitweb:     http://git.kernel.org/tip/4ed7c92d68a5387ba5f7030dc76eab03558e27f5
-> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > AuthorDate: Mon, 23 Nov 2009 11:37:29 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Mon, 23 Nov 2009 11:49:57 +0100
-> > 
-> > perf_events: Undo some recursion damage
-> > 
-> > Make perf_swevent_get_recursion_context return a context number
-> > and disable preemption.
-> > 
-> > This could be used to remove the IRQ disable from the trace bit
-> > and index the per-cpu buffer with.
+Jarod Wilson wrote:
+> lirc driver for SoundGraph iMON IR receivers and displays
 > 
+> Successfully tested with multiple devices with and without displays.
 > 
-> But if I do that, it means I will lose traces once irq nest.
 
-Ah yes, that crap :-(
 
-Maybe its about time we extend the generic irq bits to know about nested
-irqs, or firmly kill the whole notion.
+> +static struct usb_device_id imon_usb_id_table[] = {
+> +	/* TriGem iMON (IR only) -- TG_iMON.inf */
+> +	{ USB_DEVICE(0x0aa8, 0x8001) },
+...
+
+Another set of USB vendor ID's... this time, vendors weren't described. The
+same comment I did on patch 2/3 applies here... IMO, we should really try
+to create a global list of vendors/devices on kernel. Of course this is not
+a non-go issue, as it is already present on several other USB drivers.
+
+> +
+> +	/*
+> +	 * Translate received data to pulse and space lengths.
+> +	 * Received data is active low, i.e. pulses are 0 and
+> +	 * spaces are 1.
+> +	 *
+> +	 * My original algorithm was essentially similar to
+> +	 * Changwoo Ryu's with the exception that he switched
+> +	 * the incoming bits to active high and also fed an
+> +	 * initial space to LIRC at the start of a new sequence
+> +	 * if the previous bit was a pulse.
+> +	 *
+> +	 * I've decided to adopt his algorithm.
+> +	 */
+> +
+
+Before digging into all code details, am I wrong or this device has the
+pulse/space decoding inside the chip?
+
+In this case, we shouldn't really be converting their IR keystroke events into
+a pseudo set of pulse/space marks, but use the standard events interface.
+
+Cheers,
+Mauro.
 
