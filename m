@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbZKWViA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZKWVkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077AbZKWViA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 16:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZKWVh7
+	id S1757223AbZKWVkE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 16:40:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbZKWVkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 16:37:59 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54330 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754286AbZKWVh7 (ORCPT
+	Mon, 23 Nov 2009 16:40:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59482 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756527AbZKWVkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 16:37:59 -0500
-Message-ID: <4B0B00AF.4050000@zytor.com>
-Date: Mon, 23 Nov 2009 13:37:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Stepping down as kbuild maintainer
-References: <20091120182249.GA28251@merkur.ravnborg.org>
-In-Reply-To: <20091120182249.GA28251@merkur.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Nov 2009 16:40:02 -0500
+Date: Mon, 23 Nov 2009 13:40:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Otavio Salvador <otavio@ossystems.com.br>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Vortex86SX: only works with irqpoll
+Message-Id: <20091123134002.bac1e664.akpm@linux-foundation.org>
+In-Reply-To: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com>
+References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/20/2009 10:22 AM, Sam Ravnborg wrote:
-> It has been fun to be kbuild maintainer but
-> as things stand right now I do not have the
-> time needed to be kbuild maintainer.
+On Thu, 19 Nov 2009 19:11:49 -0200
+Otavio Salvador <otavio@ossystems.com.br> wrote:
 
-Sam, thank you for all your work, and it is sad to see you go.
+> 
+> I got this machine working booting it with "irqpoll" parameter however
+> it drops the performance a lot and I'd like to try to fix the root
+> problem of it.
+> 
+> Without 'irqpoll' the disk and network adaptor doesn't work.
+> 
+> ...
+>
+> [    0.000000] ACPI Error: A valid RSDP was not found (20090903/tbxfroot-219)
 
-	-hpa
+No ACPI.
+
+Please raise a report against acpi_bios@kernel-bugs.osdl.org at
+bugzilla.kernel.org, thanks.
+
