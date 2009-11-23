@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZKWQUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZKWQWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbZKWQUY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbZKWQUX
+	id S1755985AbZKWQWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 11:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZKWQWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:20:23 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:45965 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869AbZKWQUW convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 11:22:05 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:37319 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755643AbZKWQWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:20:22 -0500
+	Mon, 23 Nov 2009 11:22:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FDf0ljjxn+mxhGcpPgv9tnxTpxylsHU6+P8wPCM6Oui9mLeMTpd4hroFhmsNotvDSR
-         P1eoHFAZmlVHO8L7opCPhFWRDmH2fhXq3+X0BRK2FDxHIbF5Lelv9VFLg5krXUUUNmGx
-         XSvCC3BXNmh/sUXg2VkgNNQQtPVre1ruAgmiQ=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=SG66Sd7z9o5FqQQg25ZBXifbpiF3UxXf/UOK9UomShr1w8FiGucS4tIH/dujLNtYbG
+         XpsFQTdGGKa2sB3cZsFVV+qnRnT99tWX65SIdYVleqMZ0xW6LOOkWVNBNVHzS8NRRXTF
+         AlFW4gnNCrP4WU5Pi6U6aXnvcIb1PKt9KaijQ=
 MIME-Version: 1.0
-In-Reply-To: <1258982793.2845.13.camel@achroite.uk.solarflarecom.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com> 
-	<1258750858.2877.58.camel@achroite.uk.solarflarecom.com> <43e72e890911201307g2a1f280aie223ed4fd270aad@mail.gmail.com> 
-	<1258982793.2845.13.camel@achroite.uk.solarflarecom.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 23 Nov 2009 08:20:08 -0800
-Message-ID: <43e72e890911230820x2c784c57he387ffd53a9ccc9@mail.gmail.com>
-Subject: Re: A generic kernel compatibilty code
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <20091123151946.GA3112@redhat.com>
+References: <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com>
+	 <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com>
+	 <20091120141840.GA5872@redhat.com>
+	 <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com>
+	 <20091120150421.GC5872@redhat.com>
+	 <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com>
+	 <20091120184257.GG5872@redhat.com>
+	 <4e5e476b0911201150p7cbdfc20k4b8d02f07e16abc8@mail.gmail.com>
+	 <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
+	 <20091123151946.GA3112@redhat.com>
+Date: Mon, 23 Nov 2009 17:22:09 +0100
+Message-ID: <4e5e476b0911230822p4ddaf0cbv187c2bea29cba932@mail.gmail.com>
+Subject: Re: [RFC] Block IO Controller V2 - some results
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 5:26 AM, Ben Hutchings
-<bhutchings@solarflare.com> wrote:
-> On Fri, 2009-11-20 at 13:07 -0800, Luis R. Rodriguez wrote:
->> On Fri, Nov 20, 2009 at 1:00 PM, Ben Hutchings
->> <bhutchings@solarflare.com> wrote:
->> > On Fri, 2009-11-20 at 12:45 -0800, Luis R. Rodriguez wrote:
->> >> Everyone and their mother reinvents the wheel when it comes to
->> >> backporting kernel modules. It a painful job and it seems to me an
->> >> alternative is possible. If we can write generic compatibilty code for
->> >> a new routine introduced on the next kernel how about just merging it
->> >> to the kernel under some generic compat module. This would be
->> >> completey ignored by everyone using the stable kernel but can be
->> >> copied by anyone doing backport work.
->> >>
->> >> So I'm thinking something as simple as a generic compat/comat.ko with
->> >> compat-2.6.32.[ch] files.
->> >>
->> >> We've already backported everything needed for wireless drivers under
->> >> compat-wireless under this format down to even 2.6.25.
->> > [...]
->> >
->> > If you think 2.6.25 is old then I don't think you understand the scale
->> > of the problem.
->> >
->> > OEMs still expect us to support RHEL 4 (2.6.9) and SLES 9 (2.6.5) though
->> > the latter will probably be dropped soon.  Some other vendors apparently
->> > still need to support even 2.4 kernels!
->>
->> Heh understood. Well shouldn't this help with that then? Sure I'd love
->> to see the Enteprise Linux releases on 2.6.31 but that's not going to
->> happen right? Shouldn't this help then?
+Hi Vivek,
+On Mon, Nov 23, 2009 at 4:19 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> Hi Corrado,
 >
-> You'd really have to ask the 'enterprise' vendors whether they'd be
-> interested in working on some sort of shared forward-compat library.
+> This patch seems to be working much better in marking the random writer
+> queue as sync and not interefere with sync-noidle workload.
+>
+> So frequent migration of random writer queue across group has stopped.
+Great. I think this is good regardless of cgroups, to fix the fairness
+issue regarding deep aio sync writers against random readers you
+reported, so I'll send it to Jens.
 
-OK will do thanks.
+> But there seems to be a different issue now after sometime, random writer
+> queue stops generating enough traffic and gets deleted after one request
+> and root group now runs random reader for sometime. So it basically
+> changes the ratio in which random writers and random readers get disk
+> share.
+>
+> I guess part of the dependency comes from kjournald which is in root
+> group. But there is something else too because I don't see this happening
+> when there are no cgroups. I will do more debugging on this.
+Ok.
 
-> If the library is to include a module rather than being statically linked
-> into each module that needs it then there can only be one instance in
-> the system.
+Thanks,
+Corrado
 
-Sure, that's the idea.
-
-  Luis
+> Thanks
+> Vivek
+>
