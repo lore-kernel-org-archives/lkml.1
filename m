@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZKWPU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZKWPVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbZKWPU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZKWPU5
+	id S1755571AbZKWPVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZKWPVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:20:57 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45216 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754781AbZKWPUy (ORCPT
+	Mon, 23 Nov 2009 10:21:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43082 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755067AbZKWPVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:20:54 -0500
-Date: Mon, 23 Nov 2009 15:20:57 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: mfd tree build failure
-Message-ID: <20091123152057.GH24326@rakim.wolfsonmicro.main>
-References: <20091123144103.73b4d64c.sfr@canb.auug.org.au>
- <20091123150346.e3948feb.sfr@canb.auug.org.au>
- <20091123122903.GB3616@sortiz.org>
- <20091123131113.GE24326@rakim.wolfsonmicro.main>
- <20091123144413.GD3616@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123144413.GD3616@sortiz.org>
-X-Cookie: Avoid contact with eyes.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 23 Nov 2009 10:21:44 -0500
+Subject: Re: newidle balancing in NUMA domain?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091123151152.GA19175@wotan.suse.de>
+References: <20091123112228.GA2287@wotan.suse.de>
+	 <1258987059.6193.73.camel@marge.simson.net>
+	 <20091123151152.GA19175@wotan.suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 23 Nov 2009 16:21:44 +0100
+Message-ID: <1258989704.4531.574.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 03:44:14PM +0100, Samuel Ortiz wrote:
-> On Mon, Nov 23, 2009 at 01:11:13PM +0000, Mark Brown wrote:
+On Mon, 2009-11-23 at 16:11 +0100, Nick Piggin wrote:
 
-> > I don't see getting them exported flying, especially not in the
-> > timeframe we've got for the merge window.  Keeping them non-exported has
-> > been a deliberate decision on the part of the genirq maintainers. 
+> Wait, you say it was activated to improve fork/exec CPU utilization?
+> For the x264 load? What do you mean by this? Do you mean it is doing
+> a lot of fork/exec/exits and load is not being spread quickly enough?
+> Or that NUMA allocations get screwed up because tasks don't get spread
+> out quickly enough before running?
+> 
+> In either case, I think newidle balancing is maybe not the right solution.
+> newidle balancing only checks the system state when the destination
+> CPU goes idle. fork events increase load at the source CPU. So for
+> example if you find newidle helps to pick up forks, then if the
+> newidle event happens to come in before the fork, we'll have to wait
+> for the next rebalance event.
+> 
+> So possibly making fork/exec balancing more aggressive might be a
+> better approach. This can be done by reducing the damping idx, or
+> perhaps some other conditions to reduce eg imbalance_pct or something
+> for forkexec balancing. Probably needs some studying of the workload
+> to work out why forkexec is failing.
 
-> Out of curiosity, what's the reasoning behind thatdecision ?
+>From what I can remember from that workload it basically spawns tons of
+very short lived threads, waits for a bunch to complete, goto 1.
 
-Unless you're actually implementing an interrupt controller those APIs
-should never be called and people should be using flags on request_irq()
-or similar.  Driver authors have been awfully fond of bypassing those
-APIs, but this prevents them doing so.
+Fork balancing only works until all cpus are active. But once a core
+goes idle it's left idle until we hit a general load-balance cycle.
+Newidle helps because it picks up these threads from other cpus,
+completing the current batch sooner, allowing the program to continue
+with the next.
 
-None of this is really a practical issue unless you implement an IRQ
-controller in a driver and that's very rare (or has been up until now).
+There's just not much you can do from the fork() side of things once
+you've got them all running.
+
+> OK. This would be great if fixing up involves making things closer
+> to what they were rather than adding more complex behaviour on top
+> of other changes that broke stuff. And doing it in 2.6.32 would be
+> kind of nice...
+
+.32 is kind of closed, with us being at -rc8.
+
