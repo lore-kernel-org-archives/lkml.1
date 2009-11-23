@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZKWBTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbZKXR1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZKWBTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 20:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbZKWBTT
+	id S933558AbZKXR1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933301AbZKXR1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 20:19:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34995
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754176AbZKWBTS (ORCPT
+	Tue, 24 Nov 2009 12:27:11 -0500
+Received: from ip154.67-202-65.static.steadfast.net ([67.202.65.154]:52665
+	"EHLO ip154.67-202-65.static.steadfast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932859AbZKXR1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 20:19:18 -0500
-Date: Sun, 22 Nov 2009 17:19:32 -0800 (PST)
-Message-Id: <20091122.171932.74107512.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com
-Subject: Re: linux-next: manual merge of the net tree with the net-current
- tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091123120052.dd388203.sfr@canb.auug.org.au>
-References: <20091123120052.dd388203.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 12:27:11 -0500
+Date: 22 Nov 2009 19:38:02 -0600
+Message-ID: <20091123013802.1175.qmail@ip154.67-202-65.static.steadfast.net>
+To: linux-kernel@vger.kernel.org
+Subject: Mail Order
+From: Albert Grayson <wilson19600@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 23 Nov 2009 12:00:52 +1100
 
-> Today's linux-next merge of the net tree got a conflict in
-> drivers/ieee802154/fakehard.c between commit
-> 56cf54831fd1be105e89a9df899e3b22442da180 ("ieee802154: dont leak skbs in
-> ieee802154_fake_xmit()") from the net-current tree and commit
-> 8964be4a9a5ca8cab1219bb046db2f6d1936227c ("net: rename skb->iif to
-> skb->skb_iif") from the net tree.
-> 
-> The former removed the code modified by the latter, so I used the former.
+Hello,
 
-Hmmm... I specifically remember taking core of this conflict when I
-merged net-next-2.6 into net-2.6 yesterday or the day before.
+I am interested in purchasing some of your products, I will like to know if
+
+you can ship directly to NEW ZEALAND , I also want you
+
+to know my mode of payment for this order is via Credit Card. Get back to me if
+
+you can ship to that destination and also if you accept the payment
+
+type I indicated.
+
+
+
+Kindly return this email with your price list of your products..
+
+
+
+I await your quick response.
+
+Kind Regards
+
+Albert Grayson
+
+
+
