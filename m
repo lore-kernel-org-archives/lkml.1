@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbZKWREp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbZKWRFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752026AbZKWREp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZKWREo
+	id S1752323AbZKWRFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZKWRFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:04:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44888 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbZKWREo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:04:44 -0500
-Date: Mon, 23 Nov 2009 18:04:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: newidle balancing in NUMA domain?
-Message-ID: <20091123170445.GA29058@elte.hu>
-References: <20091123112228.GA2287@wotan.suse.de>
- <1258987059.6193.73.camel@marge.simson.net>
- <20091123151152.GA19175@wotan.suse.de>
- <1258989704.4531.574.camel@laptop>
- <20091123152931.GD19175@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123152931.GD19175@wotan.suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Nov 2009 12:05:22 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58090 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbZKWRFV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:05:21 -0500
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Cc: Yong Zhang <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+In-Reply-To: <1258968980.2697.9.camel@ppwaskie-mobl2>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+	 <1258968980.2697.9.camel@ppwaskie-mobl2>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 23 Nov 2009 18:05:23 +0100
+Message-ID: <1258995923.4531.715.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-11-23 at 01:36 -0800, Peter P Waskiewicz Jr wrote:
 
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> > .32 is kind of closed, with us being at -rc8.
+> This mechanism isn't going to be used by any internal kernel mechanism
+> for determining interrupt placement or operation.  It's purely something
+> that either a driver can modify, or external script (through /proc),
+> that irqbalance will make use of.  If irqbalance isn't running, or the
+> current version of irqbalance doesn't support reading node_affinity,
+> then it won't affect the system's operation.
 > 
-> It's a bad regression though.
+> If irqbalance does support it, it'll read whatever the supplied mask is,
+> and then will try and balance interrupts within that mask.  It will bail
+> if the mask is invalid, or won't apply to the running system, just like
+> how putting a bogus mask into smp_affinity is ignored.
+> 
+> If there's something I'm missing beyond this with the two suggestions
+> you've made (I looked into those two parameters and tried to draw
+> conclusions), please let me know.
 
-It's about 3 months too late for that. Ideally we want performance 
-regressions to be looked for and reported when the patches go into the 
-devel tree. Failing that, -rc1 would be the good time to re-test 
-whatever workload you care about.
+I don't see the point in adding it, if the driver wants to set a node
+cpu mask it can already do that using the regular smp affinity settings.
 
-If you cannot test it in a regular fashion you can offload the testing 
-to us, by adding a similar/equivalent workload to 'perf bench sched'. 
-We'll make sure it stays sane.
+Same for userspace.
 
-Thanks,
-
-	Ingo
