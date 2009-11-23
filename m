@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZKWSKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZKWSLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZKWSKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 13:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbZKWSKX
+	id S1754575AbZKWSLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 13:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZKWSLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 13:10:23 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:49389 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501AbZKWSKW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 13:10:22 -0500
-From: Amit Salecha <amit.salecha@qlogic.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 23 Nov 2009 12:09:10 -0600
-Subject: RE: linux-next: manual merge of the net tree with the net-current
- tree
-Thread-Topic: linux-next: manual merge of the net tree with the net-current
- tree
-Thread-Index: Acpr2Dq+419uwBvpSRCrvK2bE1ljiwAj3P0w
-Message-ID: <99737F4847ED0A48AECC9F4A1974A4B80CFE956C25@MNEXMB2.qlogic.org>
-References: <20091123120043.24cf5c12.sfr@canb.auug.org.au>
-In-Reply-To: <20091123120043.24cf5c12.sfr@canb.auug.org.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 13:11:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35074 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754324AbZKWSLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 13:11:40 -0500
+Date: Mon, 23 Nov 2009 19:10:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: tglx@linutronix.de, Jack Steiner <steiner@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/8] x86: UV - XPC fixes with related support
+ functionality V2.
+Message-ID: <20091123181049.GA5220@elte.hu>
+References: <20091119173157.337874000@alcatraz.americas.sgi.com>
+ <20091123180321.GB15594@elte.hu>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 23 Nov 2009 18:09:14.0331 (UTC) FILETIME=[108942B0:01CA6C68]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123180321.GB15594@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen
 
- This merge looks ok and I have tested it. 
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Thanks
-Amit Salecha
+> * Robin Holt <holt@sgi.com> wrote:
+> 
+> > 
+> > The UV BIOS has been updated to implement some of our interface
+> > functionality differently than originally expected.  These patches
+> > update us to that working bios and include a few minor bug fixes
+> > which prevent us from doing significant testing on real hardware.
+> > 
+> > Changes from V1:
+> > 
+> > - Actually include the patch introducing the gru_read_gpa.  This
+> >   was missed in the V1 submission.
+> > 
+> > - One additional BIOS change has the OS no longer passing blade
+> >   to the BIOS when registering a message queue watchlist.
+> 
+> Note, the patches are a bit hard to review without diffstats - mind 
+> generating them for future patches? Also, putting a 'summary' diffstat 
+> (the total diffstat effect of all patches) into the 0/8 description mail 
+> is common courtesy that is much welcome by maintainers and reviewers as 
+> well.
 
------Original Message-----
-From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
-Sent: Sunday, November 22, 2009 5:01 PM
-To: David Miller; netdev@vger.kernel.org
-Cc: linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; Amit Salecha
-Subject: linux-next: manual merge of the net tree with the net-current tree
+Ah, sorry - they were there, just merged together with the patch so i 
+missed them.
 
-Hi all,
+Regarding the patches - i still very much dislike how the code 
+interfaces to the 'BIOS'. The drivers/misc/sgi-xp/ code looks rather 
+messy.
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/net/netxen/netxen_nic_init.c between commit
-5d521fd36de4e61ab16a358df54c5babe153396c ("netxen: fix memory
-initialization") from the net-current tree and commit
-0be367bd5d10634c0836f57a684432fee935d929 ("netxen: reset sequence
-changes") from the net tree.
+Why isnt a pure hardware interface exposed, as both hpa and me suggested 
+in the past?
 
-Just context changes. I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Anyway ... these bits got merged via -mm in the past so i guess it could 
+be done there in the future too - the series does not look horrible - 
+but the whole concept ought to be done in a cleaner way.
 
-diff --cc drivers/net/netxen/netxen_nic_init.c
-index 8a09043,6ee27a6..0000000
---- a/drivers/net/netxen/netxen_nic_init.c
-+++ b/drivers/net/netxen/netxen_nic_init.c
-@@@ -544,9 -528,8 +528,10 @@@ int netxen_pinit_from_rom(struct netxen
-  				continue;
-  			if (off == (ROMUSB_GLB + 0x1c)) /* MS clock */
-  				continue;
- +			if ((off & 0x0ff00000) == NETXEN_CRB_DDR_NET)
- +				continue;
-- 			if (off == (NETXEN_CRB_PEG_NET_1 + 0x18))
-+ 			if (off == (NETXEN_CRB_PEG_NET_1 + 0x18) &&
-+ 				!NX_IS_REVISION_P3P(adapter->ahw.revision_id))
-  				buf[i].data = 0x1020;
-  			/* skip the function enable register */
-  			if (off == NETXEN_PCIE_REG(PCIE_SETUP_FUNCTION))
+	Ingo
