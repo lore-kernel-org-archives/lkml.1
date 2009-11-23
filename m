@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbZKWLY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZKWLWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757011AbZKWLY6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZKWLY6
+	id S1756944AbZKWLWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbZKWLWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:24:58 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:38498 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756641AbZKWLY5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:24:57 -0500
-X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 06:24:56 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=blYPQppUPDyfOc0Bfmayif+COcNEr+bLr7vQ+YF1MA7Z1d5WNYXhkREbuW7VTGbrkw
-         jW4zxSFiYZZf1nyB1dKVh5grUh1aJ4ez6Grlmjqu17akDJVPQRkoMmRFlNJOopM7g8vJ
-         S3QrfkZU4BiQWlqkjbz4o/dQeb4OvrE7DAg9E=
-Date: Mon, 23 Nov 2009 13:17:44 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Joern Engel <joern@logfs.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 5/17] [LogFS] dir.c
-Message-ID: <20091123111744.GA17527@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Joern Engel <joern@logfs.org>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-mtd@lists.infradead.org
-References: <20091120181113.GA2159@logfs.org> <E1NBZIP-0003g2-0r@longford.logfs.org>
-MIME-Version: 1.0
+	Mon, 23 Nov 2009 06:22:23 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40889 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755586AbZKWLWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 06:22:23 -0500
+Date: Mon, 23 Nov 2009 12:22:28 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: newidle balancing in NUMA domain?
+Message-ID: <20091123112228.GA2287@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1NBZIP-0003g2-0r@longford.logfs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 08:37:29PM +0100, Joern Engel wrote:
-> +static int logfs_unlink(struct inode *dir, struct dentry *dentry)
-> +{
-> +	struct logfs_super *super = logfs_super(dir->i_sb);
-> +	struct inode *inode = dentry->d_inode;
-> +	struct logfs_transaction *ta;
-> +	struct page *page;
-> +	pgoff_t index;
-> +	int ret;
-> +
-> +	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
-> +	if (!ta)
-> +		return -ENOMEM;
-> +
-> +	ta->state = UNLINK_1;
-> +	ta->ino = inode->i_ino;
-> +
-> +	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
-> +
-> +	page = logfs_get_dd_page(dir, dentry);
-> +	if (!page)
+Hi,
 
-kfree(ta);
+I wonder why it was decided to do newidle balancing in the NUMA
+domain? And with newidle_idx == 0 at that.
 
-> +		return -ENOENT;
-> +	if (IS_ERR(page))
+This means that every time the CPU goes idle, every CPU in the
+system gets a remote cacheline or two hit. Not very nice O(n^2)
+behaviour on the interconnect. Not to mention trashing our
+NUMA locality.
 
-kfree(ta);
+And then I see some proposal to do ratelimiting of newidle
+balancing :( Seems like hack upon hack making behaviour much more
+complex.
 
-> +		return PTR_ERR(page);
+One "symptom" of bad mutex contention can be that increasing the
+balancing rate can help a bit to reduce idle time (because it
+can get the woken thread which is holding a semaphore to run ASAP
+after we run out of runnable tasks in the system due to them 
+hitting contention on that semaphore).
 
-regards,
-dan carpenter
+I really hope this change wasn't done in order to help -rt or
+something sad like sysbench on MySQL.
+
+And btw, I'll stay out of mentioning anything about CFS development,
+but it really sucks to be continually making significant changes to
+domains balancing *and* per-runqueue scheduling at the same time :(
+It makes it even difficult to bisect things.
+
+Thanks,
+Nick
+
