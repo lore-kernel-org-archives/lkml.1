@@ -1,164 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbZKWWrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZKWWsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbZKWWrR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbZKWWrQ
+	id S1756270AbZKWWsk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 17:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZKWWsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:47:16 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:4269 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbZKWWrQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:47:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=rD6qYpissBj+E7x49JyzSBDYvM9se9+MTSbuofmMQ/38i818NS4eVvA95COmz5i/wn
-         pTizSf+p+twRiTgSDezmI0TfmJltM7EFNDn1Wb/064RMX0E2acnaliLpDQjjmFxSb/QF
-         JfGde7Pmne+AckEFcWYhQWJSwQocUFh6BSeBo=
-Message-ID: <4B0B10FA.7030402@tuffmail.co.uk>
-Date: Mon, 23 Nov 2009 22:47:22 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 23 Nov 2009 17:48:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:49197 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755123AbZKWWsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 17:48:38 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/6] cpumask: truncate task_struct.cpus_allowed for CONFIG_CPUMASK_OFFSTACK
+Date: Tue, 24 Nov 2009 09:18:39 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200911191930.59400.rusty@rustcorp.com.au> <20091123182307.GA9123@elte.hu>
+In-Reply-To: <20091123182307.GA9123@elte.hu>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Alex Chiang <achiang@hp.com>, Tony Luck <tony.luck@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] modpost: fix modules on ia64 - use @fptr() on exported function
- symbols
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911240918.40418.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On function descriptor architectures (powerpc and ia64), we need to export
-the address of the function descriptor and not the actual function.
-The C compiler naturally does this for us.  However we now export vmlinux
-symbols using the assembler, in order to sort the exports.
+On Tue, 24 Nov 2009 04:53:07 am Ingo Molnar wrote:
+> 
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > Turns cpus_allowed into a bitmap, and truncate it to nr_cpu_ids if
+> > CONFIG_CPUMASK_OFFSTACK is set.
+> > 
+> > I do this rather than the classic [0] dangling array trick, because of
+> > INIT_TASK and references to sizeof(struct task_struct).
+> > 
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > ---
+> >  include/linux/init_task.h |    2 +-
+> >  include/linux/sched.h     |    7 +++++--
+> >  kernel/fork.c             |   19 ++++++++++++++++++-
+> >  3 files changed, 24 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+> > --- a/include/linux/init_task.h
+> > +++ b/include/linux/init_task.h
+> > @@ -130,7 +130,7 @@ extern struct cred init_cred;
+> >  	.static_prio	= MAX_PRIO-20,					\
+> >  	.normal_prio	= MAX_PRIO-20,					\
+> >  	.policy		= SCHED_NORMAL,					\
+> > -	.cpus_allowed	= CPU_MASK_ALL,					\
+> > +	.cpus_allowed	= CPU_BITS_ALL,					\
+> >  	.mm		= NULL,						\
+> >  	.active_mm	= &init_mm,					\
+> >  	.se		= {						\
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1256,7 +1256,6 @@ struct task_struct {
+> >  #endif
+> >  
+> >  	unsigned int policy;
+> > -	cpumask_t cpus_allowed;
+> >  
+> >  #ifdef CONFIG_TREE_PREEMPT_RCU
+> >  	int rcu_read_lock_nesting;
+> > @@ -1544,10 +1543,14 @@ struct task_struct {
+> >  	unsigned long trace_recursion;
+> >  #endif /* CONFIG_TRACING */
+> >  	unsigned long stack_start;
+> > +
+> > +	/* This has to go at the end: if CONFIG_CPUMASK_OFFSTACK=y, only
+> > +	 * nr_cpu_ids bits will actually be allocated. */
+> > +	DECLARE_BITMAP(cpus_allowed, CONFIG_NR_CPUS);
+> 
+> (nit: please use the comment style you see elsewhere in the file.)
 
-This is not a problem on powerpc.  On powerpc, the function descriptor
-is simply "printk" (the action function entry point is ".printk").
-But ia64 assembly needs special handling.  The function descriptor for
-printk(), for example, is "@fptr(printk)".
+Sure, my mistake.
 
-I have tested that modpost now generates the desired assembly code when
-run against an IA64 module.  I have not tested with an actual IA64
-vmlinux, assembler, compiler or processor.  I assume that the IA64
-assembler defines __ia64__, just as the i386 assembler defines __i386__.
+> >  };
+> >  
+> >  /* Future-safe accessor for struct task_struct's cpus_allowed. */
+> > -#define tsk_cpumask(tsk) (&(tsk)->cpus_allowed)
+> > +#define tsk_cpumask(tsk) (to_cpumask((tsk)->cpus_allowed))
+> 
+> Please use tsk_cpus_allowed() throughout - so that people who knew what 
+> p->cpus_allowed did know what this new thing does.
 
-Reported-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
----
- include/linux/mod_export.h |   17 +++++++++++++++--
- scripts/mod/modpost.c      |   22 +++++++++++++++++++++-
- 2 files changed, 36 insertions(+), 3 deletions(-)
+OK.  I chose this because it's shorter and consistent with other uses
+(esp. mm_cpumask).  It's been in Linus' tree for a while, but noone uses
+it so it's easy to rename.
+ 
+> Also, i'm still having second thoughts about it all - could we somehow 
+> avoid all this wrappery of commonly used fields? (My main and pretty 
+> much only worry is that struct field members look so much cleaner than 
+> some wrapper intermediary.)
 
-diff --git a/include/linux/mod_export.h b/include/linux/mod_export.h
-index 394795e..3f4e38a 100644
---- a/include/linux/mod_export.h
-+++ b/include/linux/mod_export.h
-@@ -111,6 +111,12 @@ struct kernel_symbol {
- #define SYM(sym) PASTE(SYMBOL_PREFIX, sym)
- #endif
- 
-+#ifdef __ia64__
-+#define FSYM(x) @fptr(SYM(x))
-+#else
-+#define FSYM(x) SYM(x)
-+#endif
-+
- 
- #ifdef CONFIG_MODVERSIONS
- #define __CRC_SYMBOL(sym, crcsec)				\
-@@ -125,7 +131,7 @@ struct kernel_symbol {
- #define __CRC_SYMBOL(sym, section)
- #endif
- 
--#define __EXPORT_SYMBOL(sym, sec, strsec, crcsec)		\
-+#define __EXPORT_SYMBOL_VALUE(sym, symvalue, sec, strsec, crcsec) \
- 	.globl SYM(sym);					\
- 								\
- 	__CRC_SYMBOL(sym, crcsec)				\
-@@ -138,10 +144,17 @@ struct kernel_symbol {
- 	.pushsection sec, "a";					\
- 	ALGN;							\
- 	SYM(__ksymtab_##sym):					\
--	PTR SYM(sym);						\
-+	PTR symvalue;						\
- 	PTR SYM(__kstrtab_##sym);				\
- 	.popsection;
- 
-+#define __EXPORT_DATA_SYMBOL(sym, sec, strsec, crcsec)		\
-+	__EXPORT_SYMBOL_VALUE(sym, SYM(sym), sec, strsec, crcsec)
-+
-+#define __EXPORT_FUNCTION_SYMBOL(sym, sec, strsec, crcsec)	\
-+	__EXPORT_SYMBOL_VALUE(sym, FSYM(sym), sec, strsec, crcsec)
-+
-+
- #endif /* __MODPOST_EXPORTS__ */
- 
- #endif /* __GENKSYMS__ */
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index b5a801d..31256d7 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -158,6 +158,7 @@ struct symbol {
- 	unsigned int kernel:1;     /* 1 if symbol is from kernel
- 				    *  (only for external modules) **/
- 	unsigned int preloaded:1;  /* 1 if symbol from Module.symvers */
-+	unsigned int function:1;   /* 1 if symbol refers to a function */
- 	enum export  export;       /* Type of export */
- 	char name[0];
- };
-@@ -582,6 +583,17 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
- 	}
- }
- 
-+static void mark_function_symbols(Elf_Sym *sym, const char *symname)
-+{
-+	struct symbol *export_symbol;
-+
-+	export_symbol = find_symbol(symname);
-+	if (!export_symbol)
-+		return;
-+
-+	export_symbol->function = (ELF_ST_TYPE(sym->st_info) == STT_FUNC);
-+}
-+
- /**
-  * Parse tag=value strings from .modinfo section
-  **/
-@@ -1619,6 +1631,13 @@ static void read_symbols(char *modname)
- 		handle_modversions(mod, &info, sym, symname);
- 		handle_moddevtable(mod, &info, sym, symname);
- 	}
-+
-+	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
-+		symname = info.strtab + sym->st_name;
-+
-+		mark_function_symbols(sym, symname);
-+	}
-+
- 	if (!is_vmlinux(modname) ||
- 	     (is_vmlinux(modname) && vmlinux_section_warnings))
- 		check_sec_ref(mod, modname, &info);
-@@ -2027,10 +2046,11 @@ static void write_exports(const char *fname)
- 	for (i = 0; i < n; i++) {
- 		sym = symbols[i];
- 
--		buf_printf(&buf, "__EXPORT_SYMBOL(%s,"
-+		buf_printf(&buf, "__EXPORT_%s_SYMBOL(%s,"
- 					" __ksymtab%s_sorted,"
- 					" __ksymtab_strings_sorted,"
- 					" __kcrctab%s_sorted)\n",
-+					sym->function ? "FUNCTION" : "DATA",
- 					sym->name,
- 					section_names[sym->export],
- 					section_names[sym->export]);
--- 
-1.6.3.3
+I'm not a fan either, but it does avoid a flag-day transition.  And I was
+pleasantly surprised how few places access ->cpus_allowed.
 
+If we use a cpumask_var_t, we still need to change all the callers
+(since it'll now look like a ptr), but we get a gratuitous ptr deref
+for CONFIG_CPUMASK_OFFSTACK=y.
 
+INIT_TASK needs some tweaking, but it's not a showstopper AFAICT.
 
+Want me to create a cpumask_var_t version for comparison?
+
+Thanks,
+Rusty.
