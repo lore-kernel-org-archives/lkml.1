@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZKWRoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZKWRok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbZKWRoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZKWRoX
+	id S1754773AbZKWRok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZKWRoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:44:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41606 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 12:44:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41621 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753673AbZKWRoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:44:21 -0500
-Date: Mon, 23 Nov 2009 17:43:49 GMT
+	id S1752540AbZKWRog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:44:36 -0500
+Date: Mon, 23 Nov 2009 17:44:03 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
        hpa@zytor.com, mingo@redhat.com, peterz@infradead.org,
@@ -18,12 +18,12 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
        tglx@linutronix.de, mingo@elte.hu, prasad@linux.vnet.ibm.com
-In-Reply-To: <1258987355-8751-3-git-send-email-fweisbec@gmail.com>
-References: <1258987355-8751-3-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1258987355-8751-4-git-send-email-fweisbec@gmail.com>
+References: <1258987355-8751-4-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf: Add kernel side syscall events support for breakpoints
-Message-ID: <tip-f5ffe02e5046003ae7e2ce70d3d1c2a73331268b@git.kernel.org>
-Git-Commit-ID: f5ffe02e5046003ae7e2ce70d3d1c2a73331268b
+Subject: [tip:perf/core] perf tools: Add support for breakpoint events in perf tools
+Message-ID: <tip-1b290d670ffa883b7e062177463a8efd00eaa2c1@git.kernel.org>
+Git-Commit-ID: 1b290d670ffa883b7e062177463a8efd00eaa2c1
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,97 +32,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f5ffe02e5046003ae7e2ce70d3d1c2a73331268b
-Gitweb:     http://git.kernel.org/tip/f5ffe02e5046003ae7e2ce70d3d1c2a73331268b
+Commit-ID:  1b290d670ffa883b7e062177463a8efd00eaa2c1
+Gitweb:     http://git.kernel.org/tip/1b290d670ffa883b7e062177463a8efd00eaa2c1
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 23 Nov 2009 15:42:34 +0100
+AuthorDate: Mon, 23 Nov 2009 15:42:35 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Mon, 23 Nov 2009 18:18:31 +0100
 
-perf: Add kernel side syscall events support for breakpoints
+perf tools: Add support for breakpoint events in perf tools
 
-Add the remaining necessary bits to support breakpoints created
-through perf syscall.
+Add the breakpoint events support with this new sysnopsis:
 
-We don't use the software counter interface as:
+  mem:addr[:access]
 
-- We don't need to check against recursion, this is already done
-  in hardware breakpoints arch level.
+Where addr is a raw addr value in the kernel and access can be
+either [r][w][x]
 
-- We already know the perf event we are dealing with when the
-  event is to be committed.
+Example to profile tasklist_lock:
+
+	$ grep tasklist_lock /proc/kallsyms
+	ffffffff8189c000 D tasklist_lock
+
+	$ perf record -e mem:0xffffffff8189c000:rw -a -f -c 1
+	$ perf report
+
+	# Samples: 62
+	#
+	# Overhead          Command  Shared Object  Symbol
+	# ........  ...............  .............  ......
+	#
+	    29.03%          swapper  [kernel]       [k] _raw_read_trylock
+	    29.03%          swapper  [kernel]       [k] _raw_read_unlock
+	    19.35%             init  [kernel]       [k] _raw_read_trylock
+	    19.35%             init  [kernel]       [k] _raw_read_unlock
+	     1.61%         events/0  [kernel]       [k] _raw_read_trylock
+	     1.61%         events/0  [kernel]       [k] _raw_read_unlock
+
+Coming soon:
+
+ - Support for symbols in the event definition.
+
+ - Default period to 1 for breakpoint events because these are
+   not high frequency events. The same thing is needed for trace
+   events.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <1258987355-8751-3-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1258987355-8751-4-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
 ---
- kernel/perf_event.c |   34 +++++++++++++++++++++++++---------
- 1 files changed, 25 insertions(+), 9 deletions(-)
+ tools/perf/Documentation/perf-record.txt |   16 ++++--
+ tools/perf/util/parse-events.c           |   84 +++++++++++++++++++++++++++++-
+ 2 files changed, 95 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 0aafe85..9425c96 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -3831,6 +3831,20 @@ static int perf_swevent_is_counting(struct perf_event *event)
- static int perf_tp_event_match(struct perf_event *event,
- 				struct perf_sample_data *data);
+diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
+index 0ff23de..fc46c0b 100644
+--- a/tools/perf/Documentation/perf-record.txt
++++ b/tools/perf/Documentation/perf-record.txt
+@@ -26,11 +26,19 @@ OPTIONS
  
-+static int perf_exclude_event(struct perf_event *event,
-+			      struct pt_regs *regs)
+ -e::
+ --event=::
+-	Select the PMU event. Selection can be a symbolic event name
+-	(use 'perf list' to list all events) or a raw PMU
+-	event (eventsel+umask) in the form of rNNN where NNN is a
+-	hexadecimal event descriptor.
++	Select the PMU event. Selection can be:
+ 
++        - a symbolic event name	(use 'perf list' to list all events)
++
++        - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
++	  hexadecimal event descriptor.
++
++        - a hardware breakpoint event in the form of '\mem:addr[:access]'
++          where addr is the address in memory you want to break in.
++          Access is the memory access type (read, write, execute) it can
++          be passed as follows: '\mem:addr[:[r][w][x]]'.
++          If you want to profile read-write accesses in 0x1000, just set
++          'mem:0x1000:rw'.
+ -a::
+         System-wide collection.
+ 
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 0faf4f2..0700274 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -1,4 +1,4 @@
+-
++#include "../../../include/linux/hw_breakpoint.h"
+ #include "util.h"
+ #include "../perf.h"
+ #include "parse-options.h"
+@@ -540,6 +540,81 @@ static enum event_result parse_tracepoint_event(const char **strp,
+ 						     attr, strp);
+ }
+ 
++static enum event_result
++parse_breakpoint_type(const char *type, const char **strp,
++		      struct perf_event_attr *attr)
 +{
-+	if (regs) {
-+		if (event->attr.exclude_user && user_mode(regs))
-+			return 1;
++	int i;
 +
-+		if (event->attr.exclude_kernel && !user_mode(regs))
-+			return 1;
++	for (i = 0; i < 3; i++) {
++		if (!type[i])
++			break;
++
++		switch (type[i]) {
++		case 'r':
++			attr->bp_type |= HW_BREAKPOINT_R;
++			break;
++		case 'w':
++			attr->bp_type |= HW_BREAKPOINT_W;
++			break;
++		case 'x':
++			attr->bp_type |= HW_BREAKPOINT_X;
++			break;
++		default:
++			return EVT_FAILED;
++		}
 +	}
++	if (!attr->bp_type) /* Default */
++		attr->bp_type = HW_BREAKPOINT_R | HW_BREAKPOINT_W;
 +
-+	return 0;
++	*strp = type + i;
++
++	return EVT_HANDLED;
 +}
 +
- static int perf_swevent_match(struct perf_event *event,
- 				enum perf_type_id type,
- 				u32 event_id,
-@@ -3842,16 +3856,12 @@ static int perf_swevent_match(struct perf_event *event,
- 
- 	if (event->attr.type != type)
- 		return 0;
++static enum event_result
++parse_breakpoint_event(const char **strp, struct perf_event_attr *attr)
++{
++	const char *target;
++	const char *type;
++	char *endaddr;
++	u64 addr;
++	enum event_result err;
 +
- 	if (event->attr.config != event_id)
- 		return 0;
- 
--	if (regs) {
--		if (event->attr.exclude_user && user_mode(regs))
--			return 0;
--
--		if (event->attr.exclude_kernel && !user_mode(regs))
--			return 0;
--	}
-+	if (perf_exclude_event(event, regs))
-+		return 0;
- 
- 	if (event->attr.type == PERF_TYPE_TRACEPOINT &&
- 	    !perf_tp_event_match(event, data))
-@@ -4282,9 +4292,15 @@ static const struct pmu *bp_perf_event_init(struct perf_event *bp)
- 	return &perf_ops_bp;
- }
- 
--void perf_bp_event(struct perf_event *bp, void *regs)
-+void perf_bp_event(struct perf_event *bp, void *data)
++	target = strchr(*strp, ':');
++	if (!target)
++		return EVT_FAILED;
++
++	if (strncmp(*strp, "mem", target - *strp) != 0)
++		return EVT_FAILED;
++
++	target++;
++
++	addr = strtoull(target, &endaddr, 0);
++	if (target == endaddr)
++		return EVT_FAILED;
++
++	attr->bp_addr = addr;
++	*strp = endaddr;
++
++	type = strchr(target, ':');
++
++	/* If no type is defined, just rw as default */
++	if (!type) {
++		attr->bp_type = HW_BREAKPOINT_R | HW_BREAKPOINT_W;
++	} else {
++		err = parse_breakpoint_type(++type, strp, attr);
++		if (err == EVT_FAILED)
++			return EVT_FAILED;
++	}
++
++	/* We should find a nice way to override the access type */
++	attr->bp_len = HW_BREAKPOINT_LEN_4;
++	attr->type = PERF_TYPE_BREAKPOINT;
++
++	return EVT_HANDLED;
++}
++
+ static int check_events(const char *str, unsigned int i)
  {
--	/* TODO */
-+	struct perf_sample_data sample;
-+	struct pt_regs *regs = data;
+ 	int n;
+@@ -673,6 +748,10 @@ parse_event_symbols(const char **str, struct perf_event_attr *attr)
+ 	if (ret != EVT_FAILED)
+ 		goto modifier;
+ 
++	ret = parse_breakpoint_event(str, attr);
++	if (ret != EVT_FAILED)
++		goto modifier;
 +
-+	sample.addr = bp->attr.bp_addr;
+ 	fprintf(stderr, "invalid or unsupported event: '%s'\n", *str);
+ 	fprintf(stderr, "Run 'perf list' for a list of valid events\n");
+ 	return EVT_FAILED;
+@@ -859,6 +938,9 @@ void print_events(void)
+ 		"rNNN");
+ 	printf("\n");
+ 
++	printf("  %-42s [hardware breakpoint]\n", "mem:<addr>[:access]");
++	printf("\n");
 +
-+	if (!perf_exclude_event(bp, regs))
-+		perf_swevent_add(bp, 1, 1, &sample, regs);
- }
- #else
- static void bp_perf_event_destroy(struct perf_event *event)
+ 	print_tracepoint_events();
+ 
+ 	exit(129);
