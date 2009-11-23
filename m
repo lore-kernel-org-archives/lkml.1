@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZKWN0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZKWNcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZKWN0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 08:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZKWN0a
+	id S1753709AbZKWNcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 08:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZKWNcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 08:26:30 -0500
-Received: from exchange.solarflare.com ([216.237.3.220]:56028 "EHLO
-	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbZKWN03 (ORCPT
+	Mon, 23 Nov 2009 08:32:16 -0500
+Received: from lazybastard.de ([212.112.238.170]:46633 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZKWNcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 08:26:29 -0500
-Subject: Re: A generic kernel compatibilty code
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       linux-wireless <linux-wireless@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <43e72e890911201307g2a1f280aie223ed4fd270aad@mail.gmail.com>
-References: <43e72e890911201245r4de5b039hb2dd5011dabf2399@mail.gmail.com>
-	 <1258750858.2877.58.camel@achroite.uk.solarflarecom.com>
-	 <43e72e890911201307g2a1f280aie223ed4fd270aad@mail.gmail.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Mon, 23 Nov 2009 13:26:33 +0000
-Message-Id: <1258982793.2845.13.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Nov 2009 13:27:01.0400 (UTC) FILETIME=[A3B90980:01CA6C40]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17026.005
-X-TM-AS-Result: No--37.703600-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+	Mon, 23 Nov 2009 08:32:16 -0500
+X-Greylist: delayed 985 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 08:32:15 EST
+Date: Mon, 23 Nov 2009 14:32:15 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Dan Carpenter <error27@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 5/17] [LogFS] dir.c
+Message-ID: <20091123133214.GB18889@logfs.org>
+References: <20091120181113.GA2159@logfs.org> <E1NBZIP-0003g2-0r@longford.logfs.org> <20091123111744.GA17527@bicker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091123111744.GA17527@bicker>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 13:07 -0800, Luis R. Rodriguez wrote:
-> On Fri, Nov 20, 2009 at 1:00 PM, Ben Hutchings
-> <bhutchings@solarflare.com> wrote:
-> > On Fri, 2009-11-20 at 12:45 -0800, Luis R. Rodriguez wrote:
-> >> Everyone and their mother reinvents the wheel when it comes to
-> >> backporting kernel modules. It a painful job and it seems to me an
-> >> alternative is possible. If we can write generic compatibilty code for
-> >> a new routine introduced on the next kernel how about just merging it
-> >> to the kernel under some generic compat module. This would be
-> >> completey ignored by everyone using the stable kernel but can be
-> >> copied by anyone doing backport work.
-> >>
-> >> So I'm thinking something as simple as a generic compat/comat.ko with
-> >> compat-2.6.32.[ch] files.
-> >>
-> >> We've already backported everything needed for wireless drivers under
-> >> compat-wireless under this format down to even 2.6.25.
-> > [...]
-> >
-> > If you think 2.6.25 is old then I don't think you understand the scale
-> > of the problem.
-> >
-> > OEMs still expect us to support RHEL 4 (2.6.9) and SLES 9 (2.6.5) though
-> > the latter will probably be dropped soon.  Some other vendors apparently
-> > still need to support even 2.4 kernels!
+On Mon, 23 November 2009 13:17:44 +0200, Dan Carpenter wrote:
+> On Fri, Nov 20, 2009 at 08:37:29PM +0100, Joern Engel wrote:
+> > +static int logfs_unlink(struct inode *dir, struct dentry *dentry)
+> > +{
+> > +	struct logfs_super *super = logfs_super(dir->i_sb);
+> > +	struct inode *inode = dentry->d_inode;
+> > +	struct logfs_transaction *ta;
+> > +	struct page *page;
+> > +	pgoff_t index;
+> > +	int ret;
+> > +
+> > +	ta = kzalloc(sizeof(*ta), GFP_KERNEL);
+> > +	if (!ta)
+> > +		return -ENOMEM;
+> > +
+> > +	ta->state = UNLINK_1;
+> > +	ta->ino = inode->i_ino;
+> > +
+> > +	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+> > +
+> > +	page = logfs_get_dd_page(dir, dentry);
+> > +	if (!page)
 > 
-> Heh understood. Well shouldn't this help with that then? Sure I'd love
-> to see the Enteprise Linux releases on 2.6.31 but that's not going to
-> happen right? Shouldn't this help then?
+> kfree(ta);
+> 
+> > +		return -ENOENT;
+> > +	if (IS_ERR(page))
+> 
+> kfree(ta);
+> 
+> > +		return PTR_ERR(page);
 
-You'd really have to ask the 'enterprise' vendors whether they'd be
-interested in working on some sort of shared forward-compat library.  If
-the library is to include a module rather than being statically linked
-into each module that needs it then there can only be one instance in
-the system.
+Ick!  The drunkard who wrote that code ought to get fired.  Thank you
+for noticing, Dan.
 
-Ben.
+Fixed in the git tree.  And maybe I should go look for similar cases.
+
+Jörn
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+You can't tell where a program is going to spend its time. Bottlenecks
+occur in surprising places, so don't try to second guess and put in a
+speed hack until you've proven that's where the bottleneck is.
+-- Rob Pike
