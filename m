@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZKWQxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbZKWRAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbZKWQxV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZKWQxV
+	id S1751630AbZKWRAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZKWRAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:53:21 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:56564 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbZKWQxU (ORCPT
+	Mon, 23 Nov 2009 12:00:20 -0500
+Received: from mail2.microsoft.com ([131.107.115.215]:23462 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZKWRAT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:53:20 -0500
-Message-ID: <4B0ABE01.3030901@monstr.eu>
-Date: Mon, 23 Nov 2009 17:53:21 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Mon, 23 Nov 2009 12:00:19 -0500
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: "'gregkh@suse.de'" <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Staging: hv: Fix some missing author names
+Thread-Topic: [PATCH] Staging: hv: Fix some missing author names
+Thread-Index: AQHKbF5yMVoMJ9MaM06P3jFcr9P/mw==
+Date: Mon, 23 Nov 2009 17:00:22 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF7230C8352F@TK5EX14MBXC126.redmond.corp.microsoft.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, dmitchell@amcc.com
-CC: Grant Likely <grant.likely@secretlab.ca>,
-       John Williams <john.williams@petalogix.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Add UPF_FIXED_TYPE flag - eedacbf02df462d6c915d8d642b23fb450d485c7
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben and David,
+From: Haiyang Zhang <haiyangz@microsoft.com>
 
-I have found one problem with input overrun. My problem is of course on 
-Microblaze with uart16550.
+Fix some missing author names. 
+They were accidentally removed previously.
 
-Here is the behavior - I just pressed left arrow.
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
+Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
 
-~ # fdasfdakjsdhfkajsdhfkjadklasdjfhajksdhfkahsdfjkahsdkjfhjkattyS0: 3 
-input overrun(s)
-[[DttyS0: 3 input overrun(s)
-[[[[[DDDahsdk[[[[D[DDjfhjka[D          [[[DttyS0: 6 input 
-overrun(s)jk[[D[D[[D[[
-[[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[
-D[[[[DDDahsdk[[[[D[DDjfhjka[D
--sh: 
-fdasfdakjsdhfkajsdhfkjadklasdjfhajk[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[D[[[[DDDahsdk[[[[D[DDjfhjka[D: 
-not found
-
-
-I bisected it and yours Subject patch caused my problems. It is really 
-old patch and I was surprised how old it is.
-
-
-Here is your diff
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index 02406ba..54483cd 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -67,7 +67,7 @@ static int __devinit of_platform_serial_setup(struct 
-of_device *ofdev,
-         port->type = type;
-         port->uartclk = *clk;
-         port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
--               | UPF_FIXED_PORT | UPF_FIXED_TYPE;
-+               | UPF_FIXED_PORT;
-         port->dev = &ofdev->dev;
-         /* If current-speed was set, then try not to change it. */
-         if (spd)
-
-
-If I trace port->type I am getting 3. (drivers/serial/8250.c:3089 
-serial8250_register_port func 3118 - serial8250_register_port)
-Grant: Could you please print that value on ppc?
-
-Can you give me any hints what could be wrong? I will continue on it 
-tomorrow.
-
-Thanks,
-Michal
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+---
+diff --git a/drivers/staging/hv/BlkVsc.c b/drivers/staging/hv/BlkVsc.c
+index 51aa861..a48ee3a 100644
+--- a/drivers/staging/hv/BlkVsc.c
++++ b/drivers/staging/hv/BlkVsc.c
+@@ -16,6 +16,7 @@
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+  * Authors:
++ *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  *
+  */
+diff --git a/drivers/staging/hv/NetVsc.c b/drivers/staging/hv/NetVsc.c
+index d384c0d..1c717f9 100644
+--- a/drivers/staging/hv/NetVsc.c
++++ b/drivers/staging/hv/NetVsc.c
+@@ -15,6 +15,7 @@
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+  * Authors:
++ *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  */
+ #include <linux/kernel.h>
+diff --git a/drivers/staging/hv/NetVsc.h b/drivers/staging/hv/NetVsc.h
+index 3e7112f..6e0e034 100644
+--- a/drivers/staging/hv/NetVsc.h
++++ b/drivers/staging/hv/NetVsc.h
+@@ -16,6 +16,7 @@
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+  * Authors:
++ *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  *
+  */
+diff --git a/drivers/staging/hv/blkvsc_drv.c b/drivers/staging/hv/blkvsc_drv.c
+index 99c4926..62b2828 100644
+--- a/drivers/staging/hv/blkvsc_drv.c
++++ b/drivers/staging/hv/blkvsc_drv.c
+@@ -15,6 +15,7 @@
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+  * Authors:
++ *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  */
+ #include <linux/init.h>
+diff --git a/drivers/staging/hv/netvsc_drv.c b/drivers/staging/hv/netvsc_drv.c
+index 3192d50..0d7459e 100644
+--- a/drivers/staging/hv/netvsc_drv.c
++++ b/drivers/staging/hv/netvsc_drv.c
+@@ -15,6 +15,7 @@
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+  * Authors:
++ *   Haiyang Zhang <haiyangz@microsoft.com>
+  *   Hank Janssen  <hjanssen@microsoft.com>
+  */
+ #include <linux/init.h>
