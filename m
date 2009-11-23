@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbZKWQw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZKWQxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbZKWQw5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZKWQw5
+	id S1753617AbZKWQxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 11:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZKWQxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:52:57 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:54413 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbZKWQw4 (ORCPT
+	Mon, 23 Nov 2009 11:53:21 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:56564 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226AbZKWQxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:52:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=h7zd2yazXeYMvA5m9Vu9bDNrgA0ib15hPiBVhh5dejKC29CP05N1L6PVnThK76P27r
-         bKwyt8ek8/4PwLYiqvZa2iEIkh0B0KlEnA9Ug55fBJdFud0JnlpOQ3J1yp0cfbhFv8aj
-         lfca6rm6R/jlTi0o9E7zUh3zcqpnY8gxFQvTo=
+	Mon, 23 Nov 2009 11:53:20 -0500
+Message-ID: <4B0ABE01.3030901@monstr.eu>
+Date: Mon, 23 Nov 2009 17:53:21 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-In-Reply-To: <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
-References: <200910200956.33391.jarod@redhat.com>
-	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
-Date: Mon, 23 Nov 2009 16:53:00 +0000
-X-Google-Sender-Auth: 0349d4cec0ea884e
-Message-ID: <abc933c50911230853o1caab007te9ac07dbbbd6e191@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: James Mastros <james@mastros.biz>
-To: Devin Heitmueller <dheitmueller@kernellabs.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=UTF-8
+To: benh@kernel.crashing.org, dmitchell@amcc.com
+CC: Grant Likely <grant.likely@secretlab.ca>,
+       John Williams <john.williams@petalogix.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Add UPF_FIXED_TYPE flag - eedacbf02df462d6c915d8d642b23fb450d485c7
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/23 Devin Heitmueller <dheitmueller@kernellabs.com>:
-> Just bear in mind that with the current in-kernel code, users do *not
-> * have to manually select the RC code to use if they are using the
-> default remote that shipped with the product.
-This could still happen, if LIRC checks the identifiers of the
-reciving device, and has a database that tells it mappings between
-those devices and the remote controls that shipped with them.
-However, it occours to me that the IR circumstances map pretty well to
-what happens with ps/2 and serial devices now:
+Hi Ben and David,
 
-1: There are a variety of drivers for serio computer-side hardware,
-each of which speaks the serio interface to the next-higher level.
-These corrospond to the drivers for IR recievers.
-2: There's a raw serio interface, for those wishing to do strange things.
-3: There's also a variety of things that take data, using the kernel
-serio API, and decode it into input events -- the ps2 keyboard driver,
-the basic mouse driver, the advanced mice drivers.  This is where the
-interface falls down a little bit -- the ps2 keyboard driver is the
-closest analogue to what I'm suggesting.  The ps2 keyboard driver
-creates scancode events, which map nicely to what the keyboard is
-sending -- these are, for ex, rc5 codes.  It will also produce
-key-up/key-down events, if it has a keymap loaded.  (This is the
-difference with a ps2 keyboard -- a ps2 keyboard gets a map assigned
-to it at boottime, so it works out-of-box.  This isn't really possible
-with an IR remote -- though perhaps rc5 is standarized enough, I don't
-think other protocols neccessarly are.)
+I have found one problem with input overrun. My problem is of course on 
+Microblaze with uart16550.
 
-Userspace would have to load a keymap; those don't really belong in
-kernel code.  Of course, userspace could look at the device
-identifiers to pick a reasonable default keymap if it's not configured
-to load another, solving the out-of-box experince.
+Here is the behavior - I just pressed left arrow.
 
-Why is this such a contentious point?  I can understand wanting to
-keep uncommon decoding algos out of the kernel, and keymaps, but at
-the same time, they are currently there, in multiple drivers, and
-while colesing them into a single place each makes sense, I'm not
-convinced that moving them out completely makes all that much sense.
-Having an explicit layer between the raw pulse/space layer and the
-decoders means that usespace can hook in there, and create scancode
-events, if it wishes to, but for the majority of remotes that use just
-a couple of encoding schemes, the code can stay in the kernel.  Of
-course, devices that do the decoding in hardware would not implement
-the raw interface, but simply create the scancode/keycode events.
+~ # fdasfdakjsdhfkajsdhfkjadklasdjfhajksdhfkahsdfjkahsdkjfhjkattyS0: 3 
+input overrun(s)
+[[DttyS0: 3 input overrun(s)
+[[[[[DDDahsdk[[[[D[DDjfhjka[D          [[[DttyS0: 6 input 
+overrun(s)jk[[D[D[[D[[
+[[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[
+D[[[[DDDahsdk[[[[D[DDjfhjka[D
+-sh: 
+fdasfdakjsdhfkajsdhfkjadklasdjfhajk[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[D[[[[DDDahsdk[[[[D[DDjfhjka[D: 
+not found
 
-   -=- James Mastros
+
+I bisected it and yours Subject patch caused my problems. It is really 
+old patch and I was surprised how old it is.
+
+
+Here is your diff
+diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+index 02406ba..54483cd 100644
+--- a/drivers/serial/of_serial.c
++++ b/drivers/serial/of_serial.c
+@@ -67,7 +67,7 @@ static int __devinit of_platform_serial_setup(struct 
+of_device *ofdev,
+         port->type = type;
+         port->uartclk = *clk;
+         port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+-               | UPF_FIXED_PORT | UPF_FIXED_TYPE;
++               | UPF_FIXED_PORT;
+         port->dev = &ofdev->dev;
+         /* If current-speed was set, then try not to change it. */
+         if (spd)
+
+
+If I trace port->type I am getting 3. (drivers/serial/8250.c:3089 
+serial8250_register_port func 3118 - serial8250_register_port)
+Grant: Could you please print that value on ppc?
+
+Can you give me any hints what could be wrong? I will continue on it 
+tomorrow.
+
+Thanks,
+Michal
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
