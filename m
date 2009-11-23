@@ -1,228 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZKWMqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbZKWMu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbZKWMqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 07:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbZKWMqU
+	id S1757271AbZKWMu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 07:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbZKWMuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 07:46:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57394 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757266AbZKWMqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 07:46:15 -0500
-Date: Mon, 23 Nov 2009 13:46:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: newidle balancing in NUMA domain?
-Message-ID: <20091123124615.GA27808@elte.hu>
-References: <20091123112228.GA2287@wotan.suse.de>
- <1258976175.4531.299.camel@laptop>
- <20091123114550.GB25575@elte.hu>
- <20091123120100.GC2287@wotan.suse.de>
- <20091123120849.GB32009@elte.hu>
- <20091123122731.GE2287@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123122731.GE2287@wotan.suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Nov 2009 07:50:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48719 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756706AbZKWMuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 07:50:54 -0500
+Subject: Re: [tip:perf/core] perf_events: Undo some recursion damage
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091123123935.GB4989@nowhere>
+References: <20091123103819.993226816@chello.nl>
+	 <tip-4ed7c92d68a5387ba5f7030dc76eab03558e27f5@git.kernel.org>
+	 <20091123123935.GB4989@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 23 Nov 2009 13:50:48 +0100
+Message-ID: <1258980648.4531.390.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> > (I hope i explained my point clearly enough.)
+On Mon, 2009-11-23 at 13:39 +0100, Frederic Weisbecker wrote:
+> On Mon, Nov 23, 2009 at 11:55:08AM +0000, tip-bot for Peter Zijlstra wrote:
+> > Commit-ID:  4ed7c92d68a5387ba5f7030dc76eab03558e27f5
+> > Gitweb:     http://git.kernel.org/tip/4ed7c92d68a5387ba5f7030dc76eab03558e27f5
+> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > AuthorDate: Mon, 23 Nov 2009 11:37:29 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Mon, 23 Nov 2009 11:49:57 +0100
 > > 
-> > No argument that it could be done cleaner - the duality right now of 
-> > both having the fuzzy stats and the rate limiting should be decided 
-> > one way or another.
+> > perf_events: Undo some recursion damage
+> > 
+> > Make perf_swevent_get_recursion_context return a context number
+> > and disable preemption.
+> > 
+> > This could be used to remove the IRQ disable from the trace bit
+> > and index the per-cpu buffer with.
 > 
-> Well, I would say please keep domain balancing behaviour at least 
-> somewhat close to how it was with O(1) scheduler at least until CFS is 
-> more sorted out. There is no need to knee jerk because BFS is better 
-> at something.
+> 
+> But if I do that, it means I will lose traces once irq nest.
 
-Well, see the change (commit 0ec9fab3d) attached below - even in 
-hindsight it was well argued by Mike with quite a few numbers: +68% in 
-x264 performance.
+Ah yes, that crap :-(
 
-If you think it's a bad change (combined with newidle-rate-limit) then 
-please show the numbers that counter it and preferably extend 'perf 
-bench sched' with the testcases that you care about most.
+Maybe its about time we extend the generic irq bits to know about nested
+irqs, or firmly kill the whole notion.
 
-IIRC (and Peter mentioned this too) Mike got into the whole kbuild angle 
-due to comparing mainline scheduler to BFS - but that's really a 
-positive thing IMO, not some "knee-jerk reaction".
-
-	Ingo
-
------------------------>
->From 0ec9fab3d186d9cbb00c0f694d4a260d07c198d9 Mon Sep 17 00:00:00 2001
-From: Mike Galbraith <efault@gmx.de>
-Date: Tue, 15 Sep 2009 15:07:03 +0200
-Subject: [PATCH] sched: Improve latencies and throughput
-
-Make the idle balancer more agressive, to improve a
-x264 encoding workload provided by Jason Garrett-Glaser:
-
- NEXT_BUDDY NO_LB_BIAS
- encoded 600 frames, 252.82 fps, 22096.60 kb/s
- encoded 600 frames, 250.69 fps, 22096.60 kb/s
- encoded 600 frames, 245.76 fps, 22096.60 kb/s
-
- NO_NEXT_BUDDY LB_BIAS
- encoded 600 frames, 344.44 fps, 22096.60 kb/s
- encoded 600 frames, 346.66 fps, 22096.60 kb/s
- encoded 600 frames, 352.59 fps, 22096.60 kb/s
-
- NO_NEXT_BUDDY NO_LB_BIAS
- encoded 600 frames, 425.75 fps, 22096.60 kb/s
- encoded 600 frames, 425.45 fps, 22096.60 kb/s
- encoded 600 frames, 422.49 fps, 22096.60 kb/s
-
-Peter pointed out that this is better done via newidle_idx,
-not via LB_BIAS, newidle balancing should look for where
-there is load _now_, not where there was load 2 ticks ago.
-
-Worst-case latencies are improved as well as no buddies
-means less vruntime spread. (as per prior lkml discussions)
-
-This change improves kbuild-peak parallelism as well.
-
-Reported-by: Jason Garrett-Glaser <darkshikari@gmail.com>
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1253011667.9128.16.camel@marge.simson.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/ia64/include/asm/topology.h    |    5 +++--
- arch/powerpc/include/asm/topology.h |    2 +-
- arch/sh/include/asm/topology.h      |    3 ++-
- arch/x86/include/asm/topology.h     |    4 +---
- include/linux/topology.h            |    2 +-
- kernel/sched_features.h             |    2 +-
- 6 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
-index 47f3c51..42f1673 100644
---- a/arch/ia64/include/asm/topology.h
-+++ b/arch/ia64/include/asm/topology.h
-@@ -61,7 +61,7 @@ void build_cpu_to_node_map(void);
- 	.cache_nice_tries	= 2,			\
- 	.busy_idx		= 2,			\
- 	.idle_idx		= 1,			\
--	.newidle_idx		= 2,			\
-+	.newidle_idx		= 0,			\
- 	.wake_idx		= 0,			\
- 	.forkexec_idx		= 1,			\
- 	.flags			= SD_LOAD_BALANCE	\
-@@ -87,10 +87,11 @@ void build_cpu_to_node_map(void);
- 	.cache_nice_tries	= 2,			\
- 	.busy_idx		= 3,			\
- 	.idle_idx		= 2,			\
--	.newidle_idx		= 2,			\
-+	.newidle_idx		= 0,			\
- 	.wake_idx		= 0,			\
- 	.forkexec_idx		= 1,			\
- 	.flags			= SD_LOAD_BALANCE	\
-+				| SD_BALANCE_NEWIDLE	\
- 				| SD_BALANCE_EXEC	\
- 				| SD_BALANCE_FORK	\
- 				| SD_BALANCE_WAKE	\
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index a6b220a..1a2c9eb 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -57,7 +57,7 @@ static inline int pcibus_to_node(struct pci_bus *bus)
- 	.cache_nice_tries	= 1,			\
- 	.busy_idx		= 3,			\
- 	.idle_idx		= 1,			\
--	.newidle_idx		= 2,			\
-+	.newidle_idx		= 0,			\
- 	.wake_idx		= 0,			\
- 	.flags			= SD_LOAD_BALANCE	\
- 				| SD_BALANCE_EXEC	\
-diff --git a/arch/sh/include/asm/topology.h b/arch/sh/include/asm/topology.h
-index 9054e5c..c843677 100644
---- a/arch/sh/include/asm/topology.h
-+++ b/arch/sh/include/asm/topology.h
-@@ -15,13 +15,14 @@
- 	.cache_nice_tries	= 2,			\
- 	.busy_idx		= 3,			\
- 	.idle_idx		= 2,			\
--	.newidle_idx		= 2,			\
-+	.newidle_idx		= 0,			\
- 	.wake_idx		= 0,			\
- 	.forkexec_idx		= 1,			\
- 	.flags			= SD_LOAD_BALANCE	\
- 				| SD_BALANCE_FORK	\
- 				| SD_BALANCE_EXEC	\
- 				| SD_BALANCE_WAKE	\
-+				| SD_BALANCE_NEWIDLE	\
- 				| SD_SERIALIZE,		\
- 	.last_balance		= jiffies,		\
- 	.balance_interval	= 1,			\
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 4b1b335..7fafd1b 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -116,14 +116,12 @@ extern unsigned long node_remap_size[];
- 
- # define SD_CACHE_NICE_TRIES	1
- # define SD_IDLE_IDX		1
--# define SD_NEWIDLE_IDX		2
- # define SD_FORKEXEC_IDX	0
- 
- #else
- 
- # define SD_CACHE_NICE_TRIES	2
- # define SD_IDLE_IDX		2
--# define SD_NEWIDLE_IDX		2
- # define SD_FORKEXEC_IDX	1
- 
- #endif
-@@ -137,7 +135,7 @@ extern unsigned long node_remap_size[];
- 	.cache_nice_tries	= SD_CACHE_NICE_TRIES,			\
- 	.busy_idx		= 3,					\
- 	.idle_idx		= SD_IDLE_IDX,				\
--	.newidle_idx		= SD_NEWIDLE_IDX,			\
-+	.newidle_idx		= 0,					\
- 	.wake_idx		= 0,					\
- 	.forkexec_idx		= SD_FORKEXEC_IDX,			\
- 									\
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index c87edcd..4298745 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -151,7 +151,7 @@ int arch_update_cpu_topology(void);
- 	.cache_nice_tries	= 1,					\
- 	.busy_idx		= 2,					\
- 	.idle_idx		= 1,					\
--	.newidle_idx		= 2,					\
-+	.newidle_idx		= 0,					\
- 	.wake_idx		= 0,					\
- 	.forkexec_idx		= 1,					\
- 									\
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index 891ea0f..e98c2e8 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -67,7 +67,7 @@ SCHED_FEAT(AFFINE_WAKEUPS, 1)
-  * wakeup-preemption), since its likely going to consume data we
-  * touched, increases cache locality.
-  */
--SCHED_FEAT(NEXT_BUDDY, 1)
-+SCHED_FEAT(NEXT_BUDDY, 0)
- 
- /*
-  * Prefer to schedule the task that ran last (when we did
