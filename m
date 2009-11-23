@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZKWSzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZKWSyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZKWSzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 13:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZKWSzk
+	id S1755507AbZKWSyw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 13:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZKWSyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 13:55:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56017 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 13:54:51 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59718 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbZKWSzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 13:55:38 -0500
-Date: Mon, 23 Nov 2009 18:54:36 GMT
-From: tip-bot for Jan Blunck <jblunck@suse.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jamie@shareable.org, peterz@infradead.org, alan@lxorguk.ukuu.org.uk,
-       jblunck@suse.de, hch@infradead.org, arnd@arndb.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jamie@shareable.org, peterz@infradead.org, jblunck@suse.de,
-       alan@lxorguk.ukuu.org.uk, hch@infradead.org, arnd@arndb.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1258735245-25826-8-git-send-email-jblunck@suse.de>
-References: <1258735245-25826-8-git-send-email-jblunck@suse.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched_feat_write(): Update ppos instead of file->f_pos
-Message-ID: <tip-429947248f814e90f416ab4f68a871ab628000c3@git.kernel.org>
-Git-Commit-ID: 429947248f814e90f416ab4f68a871ab628000c3
-X-Mailer: tip-git-log-daemon
+	id S1754200AbZKWSyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 13:54:50 -0500
+Date: Mon, 23 Nov 2009 19:54:50 +0100
+From: Jan Kara <jack@suse.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jan Kara <jack@suse.cz>, tmhikaru@gmail.com, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+Message-ID: <20091123185449.GA11186@quack.suse.cz>
+References: <20091123160914.GG15679@duck.suse.cz>
+ <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  429947248f814e90f416ab4f68a871ab628000c3
-Gitweb:     http://git.kernel.org/tip/429947248f814e90f416ab4f68a871ab628000c3
-Author:     Jan Blunck <jblunck@suse.de>
-AuthorDate: Fri, 20 Nov 2009 17:40:37 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Nov 2009 19:38:03 +0100
+On Mon 23-11-09 13:20:26, Alan Stern wrote:
+> On Mon, 23 Nov 2009, Jan Kara wrote:
+> 
+> > On Mon 23-11-09 10:06:03, Alan Stern wrote:
+> > > On Mon, 23 Nov 2009, Jan Kara wrote:
+> > > 
+> > > >   Yeah, from what you write, it looks like USB enclosure is at fault (or it
+> > > > could still be your USB controller but I doubt it).  It's still a bit
+> > > > bothering that the error reported by the drive was not properly propagated
+> > > > up to VFS. Either it's some block layer retry/ignore magic that I missed or
+> > > > we ignore errors from block layer in some place.
+> > > 
+> > > Is there any interest in tracking this down?  It's not hard to find out
+> > > what low-level errors are being reported and to generate them on demand
+> > > with an emulated USB disk drive.
+> >   Well, if you could provide me with the patch, I could try to track down
+> > why the errors aren't propagated... It would be interesting because if it's
+> > not some retry logic in block layer, it's a bug in VFS ;).
+> 
+> I can't provide a patch without first knowing what the errors are.  The 
+> way to find out is to use usbmon.  See Documentation/usb/usbmon.txt for 
+> instructions.
+  Ah, OK. The problem manifests itself as an error in SATA communication
+(which in fact somehow happens over USB, but I don't really know the
+details of mass storage over USB) so debugging USB would become actual only
+if we found out it's really some bug in an usb stack. But so far the most
+probable is just an error somewhere between the USB controller in the
+enclosure and the drive itself. BTW: Is the data transferred over USB
+checksummed?
 
-sched_feat_write(): Update ppos instead of file->f_pos
-
-sched_feat_write() should update ppos instead of file->f_pos.
-
-(This reduces some BKL dependencies of this code.)
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Cc: jkacur@redhat.com
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jamie Lokier <jamie@shareable.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-LKML-Reference: <1258735245-25826-8-git-send-email-jblunck@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ab9a034..93474a7 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -771,7 +771,7 @@ sched_feat_write(struct file *filp, const char __user *ubuf,
- 	if (!sched_feat_names[i])
- 		return -EINVAL;
- 
--	filp->f_pos += cnt;
-+	*ppos += cnt;
- 
- 	return cnt;
- }
+									Honza
