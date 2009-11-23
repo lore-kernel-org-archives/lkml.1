@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbZKWTbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZKWTey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755663AbZKWTbX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbZKWTbW
+	id S1755366AbZKWTey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZKWTex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:31:22 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:52058 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754457AbZKWTbW (ORCPT
+	Mon, 23 Nov 2009 14:34:53 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:41482 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbZKWTex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:31:22 -0500
-Date: Mon, 23 Nov 2009 13:30:50 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       linux-mm@kvack.org, mpm@selenic.com,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-In-Reply-To: <1259002800.5630.1.camel@penberg-laptop>
-Message-ID: <alpine.DEB.2.00.0911231329560.5617@router.home>
-References: <20091118181202.GA12180@linux.vnet.ibm.com>  <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>  <1258709153.11284.429.camel@laptop>  <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>  <1258714328.11284.522.camel@laptop> 
- <4B067816.6070304@cs.helsinki.fi>  <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 23 Nov 2009 14:34:53 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEACpzCkurR7H+/2dsb2JhbADAD5cehDwE
+X-IronPort-AV: E=Sophos;i="4.47,273,1257120000"; 
+   d="scan'208";a="438907914"
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Cc: Linux RDMA <linux-rdma@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Joachim Fenkes <fenkes@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>
+Subject: Re: [PATCH resend] ib/ehca: rework destroy_eq()
+References: <20091120103213.13b7ba81@alex-laptop>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 23 Nov 2009 11:34:58 -0800
+In-Reply-To: <20091120103213.13b7ba81@alex-laptop> (Alexander Schmidt's
+	message of "Fri, 20 Nov 2009 10:32:13 +0100")
+Message-ID: <adazl6d2fx9.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Nov 2009 19:34:58.0995 (UTC) FILETIME=[0AFEB030:01CA6C74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009, Pekka Enberg wrote:
 
-> That turns out to be _very_ hard. How about something like the following
-> untested patch which delays slab_destroy() while we're under nc->lock.
+ > seems like I used your old mail address and I forgot to add the linux-rdma
+ > list.
 
-Code changes to deal with a diagnostic issue?
+Yes... it didn't go onto patchwork so I missed it.  Will review and
+apply, thanks.
