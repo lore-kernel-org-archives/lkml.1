@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZKWMi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZKWMjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbZKWMi2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 07:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZKWMi2
+	id S1757270AbZKWMjf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 07:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbZKWMje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 07:38:28 -0500
-Received: from e24smtp04.br.ibm.com ([32.104.18.25]:39675 "EHLO
-	e24smtp04.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757178AbZKWMi1 (ORCPT
+	Mon, 23 Nov 2009 07:39:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:25988 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756950AbZKWMjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 07:38:27 -0500
-Message-ID: <4B0A8245.6020506@linux.vnet.ibm.com>
-Date: Mon, 23 Nov 2009 10:38:29 -0200
-From: Breno Leitao <leitao@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 23 Nov 2009 07:39:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=prCJU1Emeeymd0Q5kxiZPgXdy9XZC52MUXq/uXb/NEVReabxa97W9f7PaOTg2LU5Jn
+         cSSYIyCMXn/5lapfQZWBKYE2V3O2fWvUd9a95WM6WjeQZdi2LUp8YzITUTfqkM6CNi5T
+         m3af6OArxlkfwdE+c77tn9ZG7oJXN9OOKLU/c=
+Date: Mon, 23 Nov 2009 13:39:37 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] perf_events: Undo some recursion damage
+Message-ID: <20091123123935.GB4989@nowhere>
+References: <20091123103819.993226816@chello.nl> <tip-4ed7c92d68a5387ba5f7030dc76eab03558e27f5@git.kernel.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Ben Hutchings <bhutchings@solarflare.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-net-drivers@solarflare.com
-Subject: Re: PCI: pci_restore_state() is returning 0 when it fails
-References: <4AFD91DD.7000104@linux.vnet.ibm.com> <200911132108.56691.rjw@sisk.pl>  <4B015E0C.9030904@linux.vnet.ibm.com> <1258382974.2841.23.camel@achroite.uk.solarflarecom.com>
-In-Reply-To: <1258382974.2841.23.camel@achroite.uk.solarflarecom.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-4ed7c92d68a5387ba5f7030dc76eab03558e27f5@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael, 
-
-I didn't hear back after the analysis that there is no regression
-after this patch. Did you have a chance to think about this patch ?
-
-Thanks
-Breno
-
-Ben Hutchings wrote:
-> On Mon, 2009-11-16 at 12:13 -0200, Breno Leitao wrote:
->> Hi Rafael, 
->>
->> Rafael J. Wysocki wrote:
->>> On Friday 13 November 2009, Breno Leitao wrote:
->>>> Actually pci_restore_state() is returning 0 if the restore process
->>>> fails, instead of a error value.
->>>>
->>>> If it fails, I believe that it should return -EPERM, once that
->>>> it is an invalid operation and probably pci_save_state() wasn't
->>>> called.
->>> I believe this patch will break a number of things.
->> Well, I checked it, and found that there are around 10 places that
->> really verify the return value for this function, and almost all of them
->> do the correct thing, and the patch doesn't seem to break any of them
->> except a specific case in the drivers/net/sfc/falcon.c file, that contains:
-> [...]
->> That's because the code is calling pci_restore_state() twice without calling
->> pci_save_state() in the middle. 
->> Since this seems to be the only place that will be broken, and the fix is
->> trivial, I believe that the patch can be applied smoothly.
-> [...]
+On Mon, Nov 23, 2009 at 11:55:08AM +0000, tip-bot for Peter Zijlstra wrote:
+> Commit-ID:  4ed7c92d68a5387ba5f7030dc76eab03558e27f5
+> Gitweb:     http://git.kernel.org/tip/4ed7c92d68a5387ba5f7030dc76eab03558e27f5
+> Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> AuthorDate: Mon, 23 Nov 2009 11:37:29 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Mon, 23 Nov 2009 11:49:57 +0100
 > 
-> This code supports two similar PCI devices, one of which has a second
-> function that is not truly independent.  For that chip it saves and
-> restores both functions' config space.  So far as I know, there are no
-> cases where it fails to match save and restore.
+> perf_events: Undo some recursion damage
 > 
-> Ben.
+> Make perf_swevent_get_recursion_context return a context number
+> and disable preemption.
 > 
+> This could be used to remove the IRQ disable from the trace bit
+> and index the per-cpu buffer with.
+
+
+But if I do that, it means I will lose traces once irq nest.
+
