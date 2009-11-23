@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZKWOJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZKWONG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZKWOJG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:09:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZKWOJF
+	id S1754167AbZKWONG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:13:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZKWONF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:09:05 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47391 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753000AbZKWOJE (ORCPT
+	Mon, 23 Nov 2009 09:13:05 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:58984 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbZKWOND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:09:04 -0500
-Subject: Re: LinSched updated to current linux kernel version
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jon Tore Hafstad <jontore@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dhaval.giani@gmail.com, mingo@elte.hu,
-       tglx@linutronix.de, bbb@cs.unc.edu, henrik@austad.us, jmc@cs.unc.edu,
-       Jeff Dike <jdike@addtoit.com>
-In-Reply-To: <78b8ce680911181211k6c15a976u52186b5849224040@mail.gmail.com>
-References: <78b8ce680911181211k6c15a976u52186b5849224040@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 15:08:15 +0100
-Message-ID: <1258985295.4531.496.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 09:13:03 -0500
+Date: Mon, 23 Nov 2009 14:12:55 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, David Zeuthen <david@fubar.dk>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091123141255.GA9889@srcf.ucam.org>
+References: <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> <1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <20091122233749.GA9699@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091122233749.GA9699@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-18 at 21:11 +0100, Jon Tore Hafstad wrote:
->  Hi all
+On Mon, Nov 23, 2009 at 12:37:49AM +0100, Pavel Machek wrote:
+> On Wed 2009-11-18 20:07:12, Matthew Garrett wrote:
+> > On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
+> > 
+> > > Sure, but what's wrong with reading that file every 50 seconds? Almost
+> > > all boxes poll for media changes of optical drives and usb card
+> > > readers anyway, so it's not that we are not doing stuff like this
+> > > already.
+> > 
+> > We poll for media because there's no event-based way of avoiding it - in 
+> > this case there is.
 > 
-> I wish to inform you about an update of LinSched (The Linux Scheduler
-> Simulator([1])) I'm currently working on.
+> ...when you add overhead to every disk operation. I'd say that polling
+> once in 50 seconds is preferable to that.
 
-> == Motivation ==
-> I wished to implement different EDF schedulers to gain a better
-> understanding of kernel internals as well as scheduling dynamics. I
-> got some feedback from Henrik Austad  that LinSched was a tool that
-> made implementing a scheduler in to  the linux kernel easier,  since
-> the code compiles in a fraction of the time the kernel does (Yes, I
-> know you can pull all sorts of tricks and tweaks in order to speed up
-> a kernel compilation), a segfault will be a segfault, and not a kernel
-> oops ;),and the full range of debuggers and memory analyzers will be
-> available.
+Yeah, but 50 seconds isn't the timescale we're talking about here.
 
-I would have expected people to use UML for this (User-Mode-Linux, not
-the draw lots of silly pictures thing).
-
-The main draw-back is that UML doesn't currently support SMP and any
-interesting preemption modes, but adding that to UML would help out more
-people -- I know the VM (virtual Memory, not the machine thing) people
-used to use UML for exactly these reasons, easy gdb, etc..
-
-But I suspect that with KVM's gdb stub getting usable more and more
-people are abandoning this.
-
-> == Remaining Work ==
-> One of the major issues right now is the hrtimers, which large
-> portions of the scheduler now use. I have not decided exactly how to
-> solve this issue yet,but this will be the focus of my work for the
-> coming weeks.
-
-The typical implementation would be signals using the posix timers.
-
-Have the spin_lock_irq variants mask signals etc..
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
