@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZKWXQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbZKWXR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZKWXQM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZKWXQL
+	id S1757170AbZKWXR6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbZKWXR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:16:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24554 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 18:17:57 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41516 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751995AbZKWXQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:16:10 -0500
-Date: Mon, 23 Nov 2009 18:15:45 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
- and file bind mounts (try #5)
-Message-ID: <20091123181545.05ad004d@tlielax.poochiereds.net>
-In-Reply-To: <20091123224948.GB5598@shareable.org>
-References: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
-	<m1my2cdhi3.fsf@fess.ebiederm.org>
-	<20091123173616.75c3f600@tlielax.poochiereds.net>
-	<20091123224948.GB5598@shareable.org>
+	id S1752809AbZKWXR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 18:17:57 -0500
+Date: Tue, 24 Nov 2009 10:17:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Amit Salecha <amit.salecha@qlogic.com>
+Cc: David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the net tree with the net-current
+ tree
+Message-Id: <20091124101757.6260ce95.sfr@canb.auug.org.au>
+In-Reply-To: <99737F4847ED0A48AECC9F4A1974A4B80CFE956C25@MNEXMB2.qlogic.org>
+References: <20091123120043.24cf5c12.sfr@canb.auug.org.au>
+	<99737F4847ED0A48AECC9F4A1974A4B80CFE956C25@MNEXMB2.qlogic.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_10_17_57_+1100_NG0l+4.wqUNj+I66"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009 22:49:48 +0000
-Jamie Lokier <jamie@shareable.org> wrote:
+--Signature=_Tue__24_Nov_2009_10_17_57_+1100_NG0l+4.wqUNj+I66
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Jeff Layton wrote:
-> > > check_path_accessible seems pretty horrible.   If a process is running
-> > > inside of a subdirectory it doesn't have permissions to access, say
-> > > a chroot, /proc/self/fd/XXX becomes completely unusable.
-> > > 
-> > 
-> > Hmm...I have this in there:
-> > 
-> > +		/* are we at global root or root of namespace? */
-> > +		if ((tdentry == root.dentry && vfsmnt == root.mnt) ||
-> > +		    vfsmnt->mnt_parent == vfsmnt)
-> > +			break;
-> > 
-> > ...In the case of a chroot, wouldn't "current->fs->root" point to the
-> > root of the process' namespace? Or am I misunderstanding what
-> > current->fs actually represents?
-> 
-> A process can run inside a subdirectory it doesn't have permissions to
-> access without that being a chroot.
-> 
+Hi Amit,
 
-Certainly.
+On Mon, 23 Nov 2009 12:09:10 -0600 Amit Salecha <amit.salecha@qlogic.com> w=
+rote:
+>
+>  This merge looks ok and I have tested it.=20
 
-> It can also run inside a subdirectory that isn't accessible from it's
-> root, if that's how it was started - as well as having other
-> descriptors pointing to things outside its root.
-> 
+Thanks for the confirmation.
 
-Yes.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> It can also be passed file descriptors from outside it's root while
-> it's running.
-> 
+--Signature=_Tue__24_Nov_2009_10_17_57_+1100_NG0l+4.wqUNj+I66
+Content-Type: application/pgp-signature
 
-Yep.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> Really, I think the /proc/PID/fd/N check should restrict the open to
-> the O_* limitations that were used to open fd N before, and not have
-> any connection to actual paths at the time of this check.
-> 
+iEYEARECAAYFAksLGCUACgkQjjKRsyhoI8wPeQCeIlvj5yYU5fq1nS7aPWmIDf1o
+/bUAoKcnD/ntl1MVmDxPJ0noe7w5XLeA
+=F77n
+-----END PGP SIGNATURE-----
 
-The big question with all of this is: Should a task have the ability
-to follow a /proc/pid symlink to a path that it wouldn't ordinarily be
-able to resolve with a path lookup. The concensus that I got from the
-bugtraq discussion was that it should not, and this patch is an attempt
-to prevent that.
-
-I take it from you and Eric's comments that you disagree? If so, what's
-your rationale for allowing a task to resolve this symlink when it
-wouldn't ordinarily be able to do so if it were a "normal" symlink?
-
--- 
-Jeff Layton <jlayton@redhat.com>
+--Signature=_Tue__24_Nov_2009_10_17_57_+1100_NG0l+4.wqUNj+I66--
