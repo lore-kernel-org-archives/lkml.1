@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753683AbZKWRxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZKWR6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753683AbZKWRxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbZKWRxr
+	id S1754029AbZKWR6D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:58:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZKWR6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:53:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56975 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Nov 2009 12:58:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53540 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbZKWRxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:53:46 -0500
-Date: Mon, 23 Nov 2009 18:53:30 +0100
+	id S1753693AbZKWR57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:57:59 -0500
+Date: Mon, 23 Nov 2009 18:57:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Li Zefan <lizf@cn.fujitsu.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
-Message-ID: <20091123175330.GA29396@elte.hu>
-References: <20091120081440.GA19778@elte.hu>
- <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com>
- <20091120083053.GB19778@elte.hu>
- <4B0657A4.2040606@cs.helsinki.fi>
- <20091120090134.GD19778@elte.hu>
- <84144f020911200115g14cfa3b5k959f8751001b8b35@mail.gmail.com>
- <20091120101305.GA16781@elte.hu>
- <4B067007.8070607@cs.helsinki.fi>
- <20091120104920.GA12634@elte.hu>
- <1258987585.22249.1036.camel@gandalf.stny.rr.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Oleg Nesterov <oleg@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip v3 0/3] tracepoint: Add signal events
+Message-ID: <20091123175740.GA15594@elte.hu>
+References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1258987585.22249.1036.camel@gandalf.stny.rr.com>
+In-Reply-To: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-> On Fri, 2009-11-20 at 11:49 +0100, Ingo Molnar wrote:
-> > > 
-> > > You're right, of course. With kmemtrace-user, I just copied the raw 
-> > > trace file from /sys/kernel. I wonder if that's a good enough reason 
-> > > to keep kmemtrace bits around?
-> > 
-> > Not really. If then a light-weight recording app could be made but 
-> > i'd rather wait for actual usecases to pop up.
+> Hi,
 > 
-> Hmm, but isn't this an actual use case?
+> These patches add signal related tracepoints including
+> signal generation, delivery, and loss. First patch also
+> moves signal-sending tracepoint from events/sched.h to
+> events/signal.h.
+> 
+> Changes in v3
+> - Add Docbook style comments
+> 
+> Changes in v2
+> - Add siginfo arguments
+> 
+> Thank you,
+> 
+> ---
+> 
+> Masami Hiramatsu (3):
+>       tracepoint: Add signal loss events
+>       tracepoint: Add signal deliver event
+>       tracepoint: Move signal sending tracepoint to events/signal.h
+> 
+> 
+>  Documentation/DocBook/tracepoint.tmpl |    5 +
+>  include/trace/events/sched.h          |   25 -----
+>  include/trace/events/signal.h         |  173 +++++++++++++++++++++++++++++++++
+>  kernel/signal.c                       |   27 ++++-
+>  4 files changed, 198 insertions(+), 32 deletions(-)
+>  create mode 100644 include/trace/events/signal.h
 
-Not really - perf record is pretty lightweight and you'd want perf for 
-hands-on stats anyway.
+Would be nice to have Roland's and Oleg's Acked-by tags in the patches - 
+to show that this is a representative and useful looking set of signal 
+events.
 
 	Ingo
