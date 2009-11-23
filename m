@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZKWRjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZKWRlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbZKWRjr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZKWRjq
+	id S1753949AbZKWRlk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZKWRlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:39:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40882 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 12:41:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9416 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752287AbZKWRjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:39:45 -0500
-Message-ID: <4B0AC8C9.6080504@redhat.com>
-Date: Mon, 23 Nov 2009 15:39:21 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de>
-In-Reply-To: <4B0AB60B.2030006@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753783AbZKWRli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:41:38 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: ebiederm@xmission.com, pavel@ucw.cz, miklos@szeredi.hu,
+       viro@ZenIV.linux.org.uk
+Subject: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks and file bind mounts (try #5)
+Date: Mon, 23 Nov 2009 12:41:21 -0500
+Message-Id: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Krzysztof Halasa wrote:
->> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
->>
->>> Event input has the advantage that the keystrokes will provide an unique
->>> representation that is independent of the device.
->> This can hardly work as the only means, the remotes have different keys,
->> the user almost always has to provide customized key<>function mapping.
-> 
-> Modern input drivers in the mainline kernel have a scancode-to-keycode
-> translation table (or equivalent) which can be overwritten by userspace.
-> The mechanism to do that is the EVIOCSKEYCODE ioctl.
+There are a few situations where a lookup can end up returning a dentry
+without revalidating it, and without checking whether the calling
+process has permissions to access it. Two situations identified so far
+are:
 
-This mechanism is already used by all V4L drivers and several DVB drivers.
+1) LAST_BIND symlinks (such as those under /proc/<pid>)
 
-> (This is no recommendation for lirc.  I have no idea whether a
-> pulse/space -> scancode -> keycode translation would be practical there.)
+2) file bind mounts
 
-pulse/space -> scancode translation is already done by several existing drivers.
+This patchset is intended to fix this by forcing revalidation of the
+returned dentries at appropriate locations.
 
-For example, there are several bttv and saa7134 devices that polls (or receive
-IRQ interrupts) to detect pulses (and the absense of them) in order to create
-a pulse/space code. The conversion from pulse/space to scancode is done inside
-the driver, with the help of some generic routines and based on the protocol
-specifications.
+In the case of LAST_BIND symlinks it also adds a check to verify that
+the target of the symlink is accessible by the current process by
+walking mounts and dentries back up to the root and checking permission
+on each inode.
 
-The conversion from the scancode to a keycode is done based on in-kernel keycode
-tables that can be changed from userspace with EVIOCSKEYCODE ioctl.
+This set fixes the reproducers I have (including the reproducer that
+Pavel provided for the permissions bypass). It's still pretty rough
+though and I expect that it'll need revision. At this point, I'm mainly
+looking to get these questions answered:
 
-I can't see any technical reason why not doing the same for the lirc drivers,
-except for one issue:
+1) what should we do if these dentries are found to be invalid? Is it ok
+to d_invalidate them? Or is that likely to break something (particularly
+in the case of file bind mounts)?
 
-Those devices where the decoding is done by software can support any IR protocols.
-So, it is possible to buy a device with a NEC IR, and use a RC5 IR to control it.
+2) I'm using FS_REVAL_DOT as an indicator of whether to force a
+d_revalidate. I think that it's appropriate to key off of that flag, but
+we may want to rename it (maybe FS_FORCE_D_REVAL ?).
 
-However, currently, there's no way to inform the kernel to use a different algorithm
-to translate the kernel.
+3) is check_path_accessible racy? It seems to work, but something
+doesn't seem quite right with this approach. Is this defeatable somehow?
+Could a rename of one of the intermediate path components cause
+problems?
 
-This can be solved by adding a few ioctls to enumerate the supported protocols and
-to select the one(s) that will be handled by the kernel driver.
+4) do we need to hold the dcache_lock across the check_path_accessible
+call?
 
-Cheers,
-Mauro
+This isn't my usual area of expertise, so I'm definitely open to
+suggestions on this.
+
+Jeff Layton (3):
+  vfs: force reval of target when following LAST_BIND symlinks
+  vfs: force reval on dentry of bind mounted files on FS_REVAL_DOT
+    filesystems
+  vfs: check path permissions on target of LAST_BIND symlinks
+
+ fs/namei.c |  104 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 102 insertions(+), 2 deletions(-)
+
