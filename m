@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZKWQ21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbZKWQ32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbZKWQ21 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 11:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbZKWQ20
+	id S1756479AbZKWQ32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 11:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbZKWQ21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 11:28:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52709 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 11:28:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52725 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756086AbZKWQ2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 11:28:19 -0500
+	id S1756134AbZKWQ2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 11:28:23 -0500
 From: Tejun Heo <tj@kernel.org>
 To: peterz@infradead.org, torvalds@linux-foundation.org, awalls@radix.net,
        linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
@@ -16,9 +16,9 @@ To: peterz@infradead.org, torvalds@linux-foundation.org, awalls@radix.net,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
        avi@redhat.com, johannes@sipsolutions.net
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/14] sched: refactor try_to_wake_up() and implement try_to_wake_up_local()
-Date: Tue, 24 Nov 2009 01:26:55 +0900
-Message-Id: <1258993624-28735-6-git-send-email-tj@kernel.org>
+Subject: [PATCH 06/14] sched: implement force_cpus_allowed()
+Date: Tue, 24 Nov 2009 01:26:56 +0900
+Message-Id: <1258993624-28735-7-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <1258993624-28735-1-git-send-email-tj@kernel.org>
 References: <1258993624-28735-1-git-send-email-tj@kernel.org>
@@ -26,230 +26,255 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up() and
-use them to implement try_to_wake_up_local().  try_to_wake_up_local()
-is similar to try_to_wake_up() but it assumes the caller has this_rq()
-locked and the target task is bound to this_rq().
-try_to_wake_up_local() can be called from wakeup and sleep scheduler
-notifiers.
+set_cpus_allowed_ptr() modifies the allowed cpu mask of a task.  The
+function performs the following checks before applying new mask.
 
-The factoring out doesn't affect try_to_wake_up() much
-code-generation-wise.  Depending on configuration options, it ends up
-generating the same object code as before or slightly different one
-due to different register assignment.
+* Check whether PF_THREAD_BOUND is set.  This is set for bound
+  kthreads so that they can't be moved around.
 
-The refactoring and local wake up function implementation using
-refactored functions are based on Peter Zijlstra's suggestion.
+* Check whether the target cpu is still marked active - cpu_active().
+  Active state is cleared early while downing a cpu.
+
+This patch adds force_cpus_allowed() which bypasses the above two
+checks.  The caller is responsible for guaranteeing that the
+destination cpu doesn't go down until force_cpus_allowed() finishes.
+
+The first check is bypassed by factoring out actual migration part
+into __set_cpus_allowed() from set_cpus_allowed_ptr() and calling the
+inner function from force_cpus_allowed().
+
+The second check is buried deep down in __migrate_task() which is
+executed by migration threads.  @force parameter is added to
+__migrate_task().  As the only way to pass parameters from
+__set_cpus_allowed() is through migration_req, migration_req->force is
+added and the @force parameter is passed down to __migrate_task().
+
+Please note the naming discrepancy between set_cpus_allowed_ptr() and
+the new functions.  The _ptr suffix is from the days when cpumask api
+wasn't mature and future changes should drop it from
+set_cpus_allowed_ptr() too.
+
+force_cpus_allowed() will be used for concurrency-managed workqueue.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Peter Zijlstra <peterz@infradead.org>
 ---
- include/linux/sched.h |    2 +
- kernel/sched.c        |  148 ++++++++++++++++++++++++++++++++++++-------------
- 2 files changed, 111 insertions(+), 39 deletions(-)
+ include/linux/sched.h |    7 ++++
+ kernel/sched.c        |   89 +++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 67 insertions(+), 29 deletions(-)
 
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 657372f..5a9c14f 100644
+index 5a9c14f..2a3c0dc 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -2057,6 +2057,8 @@ extern void release_uids(struct user_namespace *ns);
+@@ -1851,6 +1851,8 @@ static inline void rcu_copy_process(struct task_struct *p)
+ #ifdef CONFIG_SMP
+ extern int set_cpus_allowed_ptr(struct task_struct *p,
+ 				const struct cpumask *new_mask);
++extern int force_cpus_allowed(struct task_struct *p,
++				  const struct cpumask *new_mask);
+ #else
+ static inline int set_cpus_allowed_ptr(struct task_struct *p,
+ 				       const struct cpumask *new_mask)
+@@ -1859,6 +1861,11 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p,
+ 		return -EINVAL;
+ 	return 0;
+ }
++static inline int force_cpus_allowed(struct task_struct *p,
++				     const struct cpumask *new_mask)
++{
++	return set_cpus_allowed_ptr(p, new_mask);
++}
+ #endif
  
- extern void do_timer(unsigned long ticks);
- 
-+extern bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
-+				 int wake_flags);
- extern int wake_up_state(struct task_struct *tsk, unsigned int state);
- extern int wake_up_process(struct task_struct *tsk);
- extern void wake_up_new_task(struct task_struct *tsk,
+ #ifndef CONFIG_CPUMASK_OFFSTACK
 diff --git a/kernel/sched.c b/kernel/sched.c
-index da0513e..50877aa 100644
+index 50877aa..8e7b2ce 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -2332,11 +2332,62 @@ void task_oncpu_function_call(struct task_struct *p,
- 	preempt_enable();
- }
+@@ -2107,6 +2107,7 @@ struct migration_req {
  
--/***
-+static inline void ttwu_activate(struct task_struct *p, struct rq *rq,
-+				 bool is_sync, bool is_migrate, bool is_local)
-+{
-+	schedstat_inc(p, se.nr_wakeups);
-+	if (is_sync)
-+		schedstat_inc(p, se.nr_wakeups_sync);
-+	if (is_migrate)
-+		schedstat_inc(p, se.nr_wakeups_migrate);
-+	if (is_local)
-+		schedstat_inc(p, se.nr_wakeups_local);
-+	else
-+		schedstat_inc(p, se.nr_wakeups_remote);
-+
-+	activate_task(rq, p, 1);
-+
-+	/*
-+	 * Only attribute actual wakeups done by this task.
-+	 */
-+	if (!in_interrupt()) {
-+		struct sched_entity *se = &current->se;
-+		u64 sample = se->sum_exec_runtime;
-+
-+		if (se->last_wakeup)
-+			sample -= se->last_wakeup;
-+		else
-+			sample -= se->start_runtime;
-+		update_avg(&se->avg_wakeup, sample);
-+
-+		se->last_wakeup = se->sum_exec_runtime;
-+	}
-+}
-+
-+static inline void ttwu_woken_up(struct task_struct *p, struct rq *rq,
-+				 int wake_flags, bool success)
-+{
-+	trace_sched_wakeup(rq, p, success);
-+	check_preempt_curr(rq, p, wake_flags);
-+
-+	p->state = TASK_RUNNING;
-+#ifdef CONFIG_SMP
-+	if (p->sched_class->task_wake_up)
-+		p->sched_class->task_wake_up(rq, p);
-+#endif
-+	/*
-+	 * Wake up is complete, fire wake up notifier.  This allows
-+	 * try_to_wake_up_local() to be called from wake up notifiers.
-+	 */
-+	if (success)
-+		fire_sched_notifier(p, wakeup);
-+}
-+
-+/**
-  * try_to_wake_up - wake up a thread
-  * @p: the to-be-woken-up thread
-  * @state: the mask of task states that can be woken
-- * @sync: do a synchronous wakeup?
-+ * @wake_flags: wake modifier flags (WF_*)
-  *
-  * Put it on the run-queue if it's not already there. The "current"
-  * thread is always on the run-queue (except when the actual
-@@ -2344,7 +2395,8 @@ void task_oncpu_function_call(struct task_struct *p,
-  * the simpler "current->state = TASK_RUNNING" to mark yourself
-  * runnable without the overhead of this.
-  *
-- * returns failure only if the task is already active.
-+ * Returns %true if @p was woken up, %false if it was already running
-+ * or @state didn't match @p's state.
+ 	struct task_struct *task;
+ 	int dest_cpu;
++	bool force;
+ 
+ 	struct completion done;
+ };
+@@ -2115,8 +2116,8 @@ struct migration_req {
+  * The task's runqueue lock must be held.
+  * Returns true if you have to wait for migration thread.
   */
- static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 			  int wake_flags)
-@@ -2414,48 +2466,61 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+-static int
+-migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
++static int migrate_task(struct task_struct *p, int dest_cpu,
++			struct migration_req *req, bool force)
+ {
+ 	struct rq *rq = task_rq(p);
  
- out_activate:
- #endif /* CONFIG_SMP */
--	schedstat_inc(p, se.nr_wakeups);
--	if (wake_flags & WF_SYNC)
--		schedstat_inc(p, se.nr_wakeups_sync);
--	if (orig_cpu != cpu)
--		schedstat_inc(p, se.nr_wakeups_migrate);
--	if (cpu == this_cpu)
--		schedstat_inc(p, se.nr_wakeups_local);
--	else
--		schedstat_inc(p, se.nr_wakeups_remote);
--	activate_task(rq, p, 1);
-+	ttwu_activate(p, rq, wake_flags & WF_SYNC, orig_cpu != cpu,
-+		      cpu == this_cpu);
- 	success = 1;
-+out_running:
-+	ttwu_woken_up(p, rq, wake_flags, success);
-+out:
-+	task_rq_unlock(rq, &flags);
-+	put_cpu();
+@@ -2132,6 +2133,7 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
+ 	init_completion(&req->done);
+ 	req->task = p;
+ 	req->dest_cpu = dest_cpu;
++	req->force = force;
+ 	list_add(&req->list, &rq->migration_queue);
  
--	/*
--	 * Only attribute actual wakeups done by this task.
--	 */
--	if (!in_interrupt()) {
--		struct sched_entity *se = &current->se;
--		u64 sample = se->sum_exec_runtime;
-+	return success;
-+}
+ 	return 1;
+@@ -3163,7 +3165,7 @@ static void sched_migrate_task(struct task_struct *p, int dest_cpu)
+ 		goto out;
  
--		if (se->last_wakeup)
--			sample -= se->last_wakeup;
--		else
--			sample -= se->start_runtime;
--		update_avg(&se->avg_wakeup, sample);
-+/**
-+ * try_to_wake_up_local - try to wake up a local task with rq lock held
-+ * @p: the to-be-woken-up thread
-+ * @state: the mask of task states that can be woken
-+ * @wake_flags: wake modifier flags (WF_*)
-+ *
-+ * Put @p on the run-queue if it's not alredy there.  The caller must
-+ * ensure that this_rq() is locked, @p is bound to this_rq() and @p is
-+ * not the current task.  this_rq() stays locked over invocation.
-+ *
-+ * This function can be called from wakeup and sleep scheduler
-+ * notifiers.  Be careful not to create deep recursion by chaining
-+ * wakeup notifiers.
-+ *
-+ * Returns %true if @p was woken up, %false if it was already running
-+ * or @state didn't match @p's state.
-+ */
-+bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
-+			  int wake_flags)
-+{
-+	struct rq *rq = task_rq(p);
-+	bool success = false;
+ 	/* force the process onto the specified CPU */
+-	if (migrate_task(p, dest_cpu, &req)) {
++	if (migrate_task(p, dest_cpu, &req, false)) {
+ 		/* Need to wait for migration thread (might exit: take ref). */
+ 		struct task_struct *mt = rq->migration_thread;
  
--		se->last_wakeup = se->sum_exec_runtime;
+@@ -7083,34 +7085,19 @@ static inline void sched_init_granularity(void)
+  * 7) we wake up and the migration is done.
+  */
+ 
+-/*
+- * Change a given task's CPU affinity. Migrate the thread to a
+- * proper CPU and schedule it away if the CPU it's executing on
+- * is removed from the allowed bitmask.
+- *
+- * NOTE: the caller must have a valid reference to the task, the
+- * task must not exit() & deallocate itself prematurely. The
+- * call is not atomic; no spinlocks may be held.
+- */
+-int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
++static inline int __set_cpus_allowed(struct task_struct *p,
++				     const struct cpumask *new_mask,
++				     struct rq *rq, unsigned long *flags,
++				     bool force)
+ {
+ 	struct migration_req req;
+-	unsigned long flags;
+-	struct rq *rq;
+ 	int ret = 0;
+ 
+-	rq = task_rq_lock(p, &flags);
+ 	if (!cpumask_intersects(new_mask, cpu_online_mask)) {
+ 		ret = -EINVAL;
+ 		goto out;
+ 	}
+ 
+-	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
+-		     !cpumask_equal(&p->cpus_allowed, new_mask))) {
+-		ret = -EINVAL;
+-		goto out;
 -	}
-+	BUG_ON(rq != this_rq());
-+	BUG_ON(p == current);
-+	lockdep_assert_held(&rq->lock);
+-
+ 	if (p->sched_class->set_cpus_allowed)
+ 		p->sched_class->set_cpus_allowed(p, new_mask);
+ 	else {
+@@ -7122,12 +7109,13 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
+ 	if (cpumask_test_cpu(task_cpu(p), new_mask))
+ 		goto out;
  
--out_running:
--	trace_sched_wakeup(rq, p, success);
--	check_preempt_curr(rq, p, wake_flags);
-+	if (!sched_feat(SYNC_WAKEUPS))
-+		wake_flags &= ~WF_SYNC;
+-	if (migrate_task(p, cpumask_any_and(cpu_online_mask, new_mask), &req)) {
++	if (migrate_task(p, cpumask_any_and(cpu_online_mask, new_mask), &req,
++			 force)) {
+ 		/* Need help from migration thread: drop lock and wait. */
+ 		struct task_struct *mt = rq->migration_thread;
  
--	p->state = TASK_RUNNING;
--#ifdef CONFIG_SMP
--	if (p->sched_class->task_wake_up)
--		p->sched_class->task_wake_up(rq, p);
--#endif
--	if (success)
--		fire_sched_notifier(p, wakeup);
--out:
+ 		get_task_struct(mt);
+-		task_rq_unlock(rq, &flags);
++		task_rq_unlock(rq, flags);
+ 		wake_up_process(rq->migration_thread);
+ 		put_task_struct(mt);
+ 		wait_for_completion(&req.done);
+@@ -7135,13 +7123,54 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
+ 		return 0;
+ 	}
+ out:
 -	task_rq_unlock(rq, &flags);
--	put_cpu();
-+	if (!(p->state & state))
-+		return false;
++	task_rq_unlock(rq, flags);
+ 
+ 	return ret;
+ }
 +
-+	if (!p->se.on_rq) {
-+		if (likely(!task_running(rq, p))) {
-+			schedstat_inc(rq, ttwu_count);
-+			schedstat_inc(rq, ttwu_local);
-+		}
-+		ttwu_activate(p, rq, wake_flags & WF_SYNC, false, true);
-+		success = true;
++/*
++ * Change a given task's CPU affinity. Migrate the thread to a
++ * proper CPU and schedule it away if the CPU it's executing on
++ * is removed from the allowed bitmask.
++ *
++ * NOTE: the caller must have a valid reference to the task, the
++ * task must not exit() & deallocate itself prematurely. The
++ * call is not atomic; no spinlocks may be held.
++ */
++int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
++{
++	unsigned long flags;
++	struct rq *rq;
++
++	rq = task_rq_lock(p, &flags);
++
++	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
++		     !cpumask_equal(&p->cpus_allowed, new_mask))) {
++		task_rq_unlock(rq, &flags);
++		return -EINVAL;
 +	}
 +
-+	ttwu_woken_up(p, rq, wake_flags, success);
++	return __set_cpus_allowed(p, new_mask, rq, &flags, false);
++}
+ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
  
- 	return success;
+ /*
++ * Similar to set_cpus_allowed_ptr() but bypasses PF_THREAD_BOUND
++ * check and ignores cpu_active() status as long as the cpu is online.
++ * The caller is responsible for guaranteeing that the destination
++ * cpus don't go down until this function finishes and in general
++ * ensuring things don't go bonkers.
++ */
++int force_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
++{
++	unsigned long flags;
++	struct rq *rq;
++
++	rq = task_rq_lock(p, &flags);
++	return __set_cpus_allowed(p, new_mask, rq, &flags, true);
++}
++
++/*
+  * Move (not current) task off this cpu, onto dest cpu. We're doing
+  * this because either it can't run here any more (set_cpus_allowed()
+  * away from this CPU, or CPU going down), or because we're
+@@ -7152,12 +7181,13 @@ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
+  *
+  * Returns non-zero if task was successfully migrated.
+  */
+-static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
++static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu,
++			  bool force)
+ {
+ 	struct rq *rq_dest, *rq_src;
+ 	int ret = 0, on_rq;
+ 
+-	if (unlikely(!cpu_active(dest_cpu)))
++	if (!force && unlikely(!cpu_active(dest_cpu)))
+ 		return ret;
+ 
+ 	rq_src = cpu_rq(src_cpu);
+@@ -7236,7 +7266,8 @@ static int migration_thread(void *data)
+ 
+ 		if (req->task != NULL) {
+ 			spin_unlock(&rq->lock);
+-			__migrate_task(req->task, cpu, req->dest_cpu);
++			__migrate_task(req->task, cpu, req->dest_cpu,
++				       req->force);
+ 		} else if (likely(cpu == (badcpu = smp_processor_id()))) {
+ 			req->dest_cpu = RCU_MIGRATION_GOT_QS;
+ 			spin_unlock(&rq->lock);
+@@ -7261,7 +7292,7 @@ static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
+ 	int ret;
+ 
+ 	local_irq_disable();
+-	ret = __migrate_task(p, src_cpu, dest_cpu);
++	ret = __migrate_task(p, src_cpu, dest_cpu, false);
+ 	local_irq_enable();
+ 	return ret;
  }
-@@ -5413,6 +5478,11 @@ need_resched_nonpreemptible:
- 		if (unlikely(signal_pending_state(prev->state, prev))) {
- 			prev->state = TASK_RUNNING;
- 		} else {
-+			/*
-+			 * Fire sleep notifier before changing any scheduler
-+			 * state.  This allows try_to_wake_up_local() to be
-+			 * called from sleep notifiers.
-+			 */
- 			fire_sched_notifier(prev, sleep);
- 			deactivate_task(rq, prev, 1);
- 		}
 -- 
 1.6.5.3
 
