@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZKWKKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZKWKKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZKWKKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 05:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbZKWKKj
+	id S1756821AbZKWKKu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 05:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZKWKKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 05:10:39 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:35903 "EHLO
+	Mon, 23 Nov 2009 05:10:49 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:36108 "EHLO
 	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756749AbZKWKKf (ORCPT
+	with ESMTP id S1756803AbZKWKKq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 05:10:35 -0500
-Message-ID: <4B0A5F9C.4050109@canonical.com>
-Date: Mon, 23 Nov 2009 02:10:36 -0800
+	Mon, 23 Nov 2009 05:10:46 -0500
+Message-ID: <4B0A5FA7.405@canonical.com>
+Date: Mon, 23 Nov 2009 02:10:47 -0800
 From: John Johansen <john.johansen@canonical.com>
 Organization: Canonical
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
 Subject: Re: [AppArmor #3 0/12] AppArmor security module
-References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com> <200911210239.DCI56207.HQFOVOJOSLMFFt@I-love.SAKURA.ne.jp>
-In-Reply-To: <200911210239.DCI56207.HQFOVOJOSLMFFt@I-love.SAKURA.ne.jp>
+References: <1257869585-7092-1-git-send-email-john.johansen@canonical.com>	<200911210239.DCI56207.HQFOVOJOSLMFFt@I-love.SAKURA.ne.jp>	<200911211428.JJH90667.LFOJFMSQVOFOtH@I-love.SAKURA.ne.jp> <200911222049.BCG40864.HVQMOOFtLFJOSF@I-love.SAKURA.ne.jp>
+In-Reply-To: <200911222049.BCG40864.HVQMOOFtLFJOSF@I-love.SAKURA.ne.jp>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,382 +28,291 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Tetsuo Handa wrote:
-> Hello.
+> And the rest of files...
 > 
-> Sorry for late response.
-np. we are all busy and any time taken to review code is greatly appreciated
+> 
+> 
+> Regarding match.c
+> 
+> Why not to start YYTD_ID_something from 0 so that we can avoid "- 1" in
+> dfa->tables[table->td_id - 1] ? I think you can do "- 1" at
+> 
+Right this is a legacy bit, to make a long story short they exactly match
+the Flex table mappings which is unnecessary as we explicitly are not
+compatible with Flex in other ways.  It will probably wait until after
+the next push as I am looking at accept state cleanup for the dfa as well.
 
-> I browsed apparmorfs-24.c apparmorfs.c audit.c capability.c context.c domain.c .
-> Comments are shown below.
-> 
-> 
-> 
->> static int aa_audit_base(int type, struct aa_profile *profile,
->> 			   struct aa_audit *sa, struct audit_context *audit_cxt,
->> 			   void (*cb) (struct audit_buffer *, void *))
-> (...snipped...)
->> if (profile && PROFILE_KILL(profile) && type == AUDIT_APPARMOR_DENIED)
->> 	type = AUDIT_APPARMOR_KILL;
-> 
-> PROFILE_KILL(profile) includes profile != NULL checks.
-> Are you doing
-> 
-> 	profile && PROFILE_KILL(profile)
-> 
-> in order to ignore aa_g_profile_mode == APPARMOR_KILL if profile == NULL?
-> 
-yes.  The profile kill flag should not be set unless there is a profile
-confining the task.  This is confusing and really should be reworked, by
-either renaming PROFILE_KILL and adding a comment here, or reworking the
-PROFILE_KILL check, and its callers.  In any case I need to go through
-and document which functions require filtered vs. unfiltered profiles
-(ie. profile != NULL) I'll update this for the next posting.
+> 	th.td_id = be16_to_cpu(*(u16 *) (blob));
+that is a possibility as long as it got a good comment to explain what
+is going on.
 
 > 
+> .
 > 
->> int aa_restore_previous_profile(u64 token)
+> 
+> 
+>> int unpack_dfa(struct aa_dfa *dfa, void *blob, size_t size)
 >> {
->> 	struct aa_task_context *cxt;
->> 	struct cred *new = prepare_creds();
->> 	if (!new)
->> 		return -ENOMEM;
->>
->> 	cxt = new->security;
->> 	if (cxt->sys.token != token) {
->> 		abort_creds(new);
-> 
-> I think simply returning -EACCES when trying to escape from some profile
-> gives hijacked process chances to do brute force attack.
-> Don't you need to kill the current process?
-> 
->> 		return -EACCES;
->> 	}
-> 
-> 
-correct and we do.  It is done by the caller (aa_change_hat()) by setting the
-kill flag in the audit structure.
-	} else if (previous_profile) {
-		sa.name = previous_profile->fqname;
-		sa.base.error = aa_restore_previous_profile(token);
-		sa.perms.kill = AA_MAY_CHANGEHAT;
-
-> 
->> static struct aa_profile *x_to_profile(struct aa_namespace *ns,
->> 					 struct aa_profile *profile,
->> 					 const char *name, u16 xindex)
 > (...snipped...)
->> 	case AA_X_TABLE:
->> 		if (index > profile->file.trans.size) {
-> 
-> profile->file.trans.table[0] is not permitted if profile->file.trans.size == 0,
-> is it?
-No it isn't.
-> Did you mean index >= profile->file.trans.size ?
-> 
-No, a file.trans.size == 0 means there are no transition entries, in which case the
-type should not be AA_X_TABLE.  It is a consistency check that should never occur
-if the user space tools properly generate the policy.  This check could, and probably
-should be moved to a late pass in the policy unpack, so the check is only ever done
-once for a given profile.
-
-
->> 			AA_ERROR("Invalid named transition\n");
->> 			return ERR_PTR(-EACCES);
->> 		}
->> 		name = profile->file.trans.table[index];
-> (...snipped...)
->> 	} else if (*name == ':') {
->> 		/* switching namespace */
->> 		const char *ns_name = name + 1;
->> 		name = xname = ns_name + strlen(ns_name) + 1;
->> 		if (!*xname)
-> 
-> Isn't *xname undefined because it is beyond '\0'?
-> 
-No, however this needs to be better documented, and perhaps pulled out
-into its own function.  The encoding of the names:
-if there is a namespace the general case is
-  :<namespace>\0<name>\0
-if there is a namespace and the name is not specified, it becomes
-  :<namespace>\0\0
-else if the name does not begin with a : it is just a name
-  <name>\0
-
-  
->> 			/* no name so use profile name */
->> 			xname = profile->fqname;
-> 
-> (...snipped...)
-> 
->> 	} else if (*name == '@') {
->> 		/* TODO: variable support */
->>
-> 
-> You want "continue;" here in order to avoid doing strstr(NULL, "//")
-> inside aa_find_profile().
-> 
-yep, thanks for catching that
-
->> 	} else {
-> 
-> 
-> 
->> int apparmor_bprm_set_creds(struct linux_binprm *bprm)
->> {
->> 	struct aa_task_context *cxt;
->> 	struct aa_profile *profile, *new_profile = NULL;
->> 	struct aa_namespace *ns;
->> 	char *buffer = NULL;
->> 	unsigned int state = DFA_START;
->> 	struct path_cond cond = {
->> 		bprm->file->f_path.dentry->d_inode->i_uid,
->> 		bprm->file->f_path.dentry->d_inode->i_mode
->> 	};
->> 	struct aa_audit_file sa = {
->> 		.base.operation = "exec",
->> 		.base.gfp_mask = GFP_KERNEL,
->> 		.request = MAY_EXEC,
->> 		.cond = &cond,
->> 	};
->>
->> 	sa.base.error = cap_bprm_set_creds(bprm);
->> 	if (sa.base.error)
->> 		return sa.base.error;
->>
->> 	if (bprm->cred_prepared)
->> 		return 0;
->>
->> 	cxt = bprm->cred->security;
->> 	BUG_ON(!cxt);
->>
->> 	profile = aa_confining_profile(cxt->sys.profile);
->> 	ns = profile->ns;
-> 
-> aa_confining_profile() may return NULL.
-> According to apparmor-kermic tree, it is
-> 
-> 	ns = cxt->sys.profile->ns;
-> 
-yep, I introduced this error when reworking the profile filtering, while
-cleaning up the removed profile checks.  I really should have done it
-as a separate patch, and I only caught it after I pushed this patch set.
-It is already fixed for the next push.
-
->> 	/* buffer freed below, name is pointer inside of buffer */
->> 	sa.base.error = aa_get_name(&bprm->file->f_path, 0, &buffer,
->> 				    (char **)&sa.name);
->> 	if (sa.base.error) {
->> 		if (!profile || profile->flags & PFLAG_IX_ON_NAME_ERROR)
->> 			sa.base.error = 0;
->> 		sa.base.info = "Exec failed name resolution";
->> 		sa.name = bprm->filename;
->> 		goto audit;
+>> fail:
+>> 	for (i = 0; i < ARRAY_SIZE(dfa->tables); i++) {
+>> 		free_table(dfa->tables[i]);
+>> 		dfa->tables[i] = NULL;
 >> 	}
->>
->> 	if (!profile) {
->> 		/* unconfined task - attach profile if one matches */
->> 		new_profile = aa_sys_find_attach(&ns->base, sa.name);
->> 		if (!new_profile)
->> 			goto cleanup;
->> 		goto apply;
->> 	} else if (cxt->sys.onexec) {
->> 		/*
->> 		 * onexec permissions are stored in a pair, rewalk the
->> 		 * dfa to get start of the exec path match.
->> 		 */
->> 		sa.perms = change_profile_perms(profile, cxt->sys.onexec->ns,
->> 						sa.name, &state);
->> 		state = aa_dfa_null_transition(profile->file.dfa, state);
->> 	}
->> 	sa.perms = aa_str_perms(profile->file.dfa, state, sa.name, &cond, NULL);> 
->> 	if (cxt->sys.onexec && sa.perms.allowed & AA_MAY_ONEXEC) {
->> 		new_profile = cxt->sys.onexec;
->> 		cxt->sys.onexec = NULL;
->> 		sa.base.info = "change_profile onexec";
->> 	} else if (sa.perms.allowed & MAY_EXEC) {
->> 		new_profile = x_to_profile(ns, profile, sa.name,
->> 					   sa.perms.xindex);
->> 		if (IS_ERR(new_profile)) {
->> 			if (sa.perms.xindex & AA_X_INHERIT) {
->> 				/* (p|c|n)ix - don't change profile */
->> 				sa.base.info = "ix fallback";
->> 				goto x_clear;
->> 			} else if (sa.perms.xindex & AA_X_UNCONFINED) {
->> 				new_profile = aa_get_profile(ns->unconfined);
->> 				sa.base.info = "ux fallback";
 > 
-> IS_ERR(new_profile) is true but new_profile == NULL is false.
-> What I worry is that you sometimes embed error values into pointer but you
-> are sometimes checking only NULL.
+> This function is called by only aa_unpack_dfa(), and aa_unpack_dfa() calls
+> aa_match_free(). Thus, you don't need to call free_table() here.
 > 
-Right, the use of ERR_PTR is limited but it is easy to mess up, and/or not follow
-and maintenance could be problematic.  It might be best to rework so none of
-the functions return ERR_PTR, avoiding any potential problems here.
+Hrmm, yeah it needs to be reworked, I don't particularly like returning a
+partial struct to have it cleaned up later.  I think it might be better
+to rework aa_unpack_dfa, dropping the aa_match_free and moving the verify
+call into the unpack routine, and the above for loop can be replaced
+by aa_match_free
 
->> 			} else {
->> 				sa.base.error = PTR_ERR(new_profile);
->> 				if (sa.base.error == -ENOENT)
->> 					sa.base.info = "profile not found";
->> 				new_profile = NULL;
->> 			}
->> 		}
->> 	} else if (PROFILE_COMPLAIN(profile)) {
->> 		new_profile = aa_alloc_null_profile(profile, 0);
->> 		sa.base.error = -EACCES;
->> 		if (!new_profile)
->> 			sa.base.error = -ENOMEM;
->> 		sa.name2 = new_profile->fqname;
-> 
-> This will oops if new_profile == NULL. Please fix apparmor-karmic as well.
-> 
-ouch :(, thanks again
 
->> 		sa.perms.xindex |= AA_X_UNSAFE;
->> 	} else {
->> 		sa.base.error = -EACCES;
->> 	}
->>
->> 	if (!new_profile)
->> 		goto audit;
-> 
-> You want to do
-> 
-> 	if (!new_profile || IS_ERR(new_profile))
-> 
-> rather than
-> 
-> 	if (!new_profile)
-> 
-> Please fix apparmor-karmic as well.
-> 
-Well it shouldn't ever get to this code with an ERR_PTR, it is handled by
-		new_profile = x_to_profile(ns, profile, sa.name,
-					   sa.perms.xindex);
-		if (IS_ERR(new_profile)) {
-above, but it is too easy to miss this, or break in the future so I will
-rework to drop the use of ERR_PTR with profile.
-
->> 	if (profile == new_profile) {
->> 		aa_put_profile(new_profile);
-> 
-> aa_put_profile() with error pointer, which will be fixed by above change.
-> 
-dito
-
->> 		goto audit;
->> 	}
->>
->> 	if (bprm->unsafe & LSM_UNSAFE_SHARE) {
->> 		/* FIXME: currently don't mediate shared state */
->> 		;
->> 	}
->>
->> 	if (bprm->unsafe & (LSM_UNSAFE_PTRACE | LSM_UNSAFE_PTRACE_CAP)) {
->> 		sa.base.error = aa_may_change_ptraced_domain(current,
->> 							     new_profile);
-> 
-> aa_may_change_ptraced_domain() with error pointer, which will be fixed by
-> above change.
-> 
-dito
-
->> 		if (sa.base.error)
->> 			goto audit;
->> 	}
->>
->> 	/* Determine if secure exec is needed.
->> 	 * Can be at this point for the following reasons:
->> 	 * 1. unconfined switching to confined
->> 	 * 2. confined switching to different confinement
->> 	 * 3. confined switching to unconfined
->> 	 *
->> 	 * Cases 2 and 3 are marked as requiring secure exec
->> 	 * (unless policy specified "unsafe exec")
->> 	 *
->> 	 * bprm->unsafe is used to cache the AA_X_UNSAFE permission
->> 	 * to avoid having to recompute in secureexec
->> 	 */
->> 	if (!(sa.perms.xindex & AA_X_UNSAFE))
->> 		bprm->unsafe |= AA_SECURE_X_NEEDED;
->>
->> apply:
->> 	sa.name2 = new_profile->fqname;
-> 
-> error pointer, which will be fixed by above change.
-> 
-dito
-
->> 	/* When switching namespace ensure its part of audit message */
->> 	if (new_profile->ns != ns)
->> 		sa.name3 = new_profile->ns->base.name;
->>
->> 	/* when transitioning profiles clear unsafe personality bits */
->> 	bprm->per_clear |= PER_CLEAR_ON_SETID;
->>
->> 	aa_put_profile(cxt->sys.profile);
->> 	/* transfer new profile reference will be released when cxt is freed */
->> 	cxt->sys.profile = new_profile;
->>
->> x_clear:
->> 	aa_put_profile(cxt->sys.previous);
->> 	aa_put_profile(cxt->sys.onexec);
->> 	cxt->sys.previous = NULL;
->> 	cxt->sys.onexec = NULL;
->> 	cxt->sys.token = 0;
->>
->> audit:
->> 	sa.base.error = aa_audit_file(profile, &sa);
-> 
-> aa_audit_file() might return 0 if PROFILE_COMPLAIN(profile) == true even if
-> sa.base.error != 0 . I think regarding execve(), we should not ignore errors
-> like -EACCES, -ENOMEM etc. if something went wrong before auditing.
-> Otherwise, current process might continue execve() with unexpected profile.
-> 
-true enough, it should only be EPERM, EACCES
-
->> cleanup:
->> 	kfree(buffer);
->>
->> 	return sa.base.error;
+>> 	return error;
 >> }
 > 
 > 
 > 
->> int aa_change_hat(const char *hat_name, u64 token, int permtest)
+> Regarding net.c
+> 
+>> static void audit_cb(struct audit_buffer *ab, void *va)
+>> {
+>> 	struct aa_audit_net *sa = va;
+> 
+> static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
+> {
+> 	struct aa_audit_net *sa = container_of(va, struct aa_audit_net, base);
+> 
+>> static int aa_audit_net(struct aa_profile *profile, struct aa_audit_net *sa)
+>> {
 > (...snipped...)
->> 			/* freed below */
->> 			name = new_compound_name(root->fqname, hat_name);
+>> 	return aa_audit(type, profile, (struct aa_audit *)sa, audit_cb);
+> 
+> 	return aa_audit(type, profile, &sa->base, audit_cb);
+> 
+>> }
+> 
+> 
+yep, thanks
+
+> 
+> Regarding policy.c
+> 
+>> struct aa_namespace *alloc_aa_namespace(const char *name)
+> 
+> This function could be "static". Please try "make namespacecheck".
+> 
+will do
+
+> 
+> 
+>> struct aa_namespace *aa_prepare_namespace(const char *name)
+> 
+> This function could be "static".
+> 
+>> {
+>> 	struct aa_namespace *ns;
 >>
+>> 	write_lock(&ns_list_lock);
+>> 	if (name)
+>> 		/* released by caller */
+>> 		ns = aa_get_namespace(__aa_find_namespace(&ns_list, name));
+>> 	else
+>> 		/* released by caller */
+>> 		ns = aa_get_namespace(default_namespace);
 > 
-> Audit log lacks "name=%s" part if name == NULL.
+> alloc_aa_namespace() returns NULL if name == NULL.
+> If it is intended behavior, you may do like
 > 
-hrmm, yeah that is less than ideal, will fix
+> 	else {
+>  		/* released by caller */
+> 		ns = aa_get_namespace(default_namespace);
+> 		write_unlock(&ns_list_lock);
+> 		return ns;
+> 	}
+> 
+well at this point name != NULL because in that case ns == default_namespace,
+but it should be documented that name can not be null here.
 
->> 			sa.name = name;
->> 			sa.base.info = "hat not found";
->> 			sa.base.error = -ENOENT;
+In general I am not happy with prepare_namespace and will take another look
+at this.
+
+>> 	if (!ns) {
+>> 		struct aa_namespace *new_ns;
+>> 		write_unlock(&ns_list_lock);
+>> 		new_ns = alloc_aa_namespace(name);
+>> 		if (!new_ns)
+>> 			return NULL;
+>> 		write_lock(&ns_list_lock);
+>> 		/* test for race when new_ns was allocated */
+>> 		ns = __aa_find_namespace(&ns_list, name);
+>> 		if (!ns) {
+>> 			list_add(&new_ns->base.list, &ns_list);
+>> 			/* add list ref */
+>> 			ns = aa_get_namespace(new_ns);
+>> 		} else {
+>> 			/* raced so free the new one */
+>> 			free_aa_namespace(new_ns);
+>> 			/* get reference on namespace */
+>> 			aa_get_namespace(ns);
+>> 		}
+>> 	}
+>> 	write_unlock(&ns_list_lock);
+>>
+>> 	/* return ref */
+>> 	return ns;
+>> }
 > 
 > 
 > 
->> int aa_change_profile(const char *ns_name, const char *fqname, int onexec,
->> 		      int permtest)
+>> void __aa_replace_profile(struct aa_profile *old,
+>> 			  struct aa_profile *new)
+> 
+> This function could be "static".
+> 
+> 
+> 
+>> void __aa_profile_list_release(struct list_head *head)
+> 
+> This function could be "static".
+> 
+> 
+> 
+>> void __aa_remove_namespace(struct aa_namespace *ns)
+> 
+> This function could be "static".
+> 
+>> {
+>> 	struct aa_profile *unconfined = ns->unconfined;
+>> 	/* remove ns from namespace list */
+>> 	list_del_init(&ns->base.list);
+>>
+>> 	/*
+>> 	 * break the ns, unconfined profile cyclic reference and forward
+>> 	 * all new unconfined profiles requests to the default namespace
+>> 	 * This will result in all confined tasks that have a profile
+>> 	 * being removed inheriting the default->unconfined profile.
+>> 	 */
+>> 	ns->unconfined = aa_get_profile(default_namespace->unconfined);
+>> 	__aa_profile_list_release(&ns->base.profiles);
+>> 	/* release original ns->unconfined ref */
+>> 	aa_put_profile(unconfined);
+>> 	/* release ns->base.list ref, from removal above */
+>> 	aa_put_namespace(ns);
+> 
+> aa_put_profile() and aa_put_namespace() may call write_lock() inside
+> free_aa_profile(). Are you sure that these calls do not dead lock?
+> 
+Yes, though I will give it another run through and reverify and add better
+comments.  The locking is such that the profile should be removed from
+the list before free_aa_profile is called, and once in free_aa_profile
+the lock is taken and released before any put_ is done.
+
+>> }
+> 
+> 
+> 
+>> ssize_t aa_interface_remove_profiles(char *name, size_t size)
 > (...snipped...)
+>> 	write_lock(&ns_list_lock);
+>> 	if (name[0] == ':') {
+>> 	char *ns_name;
+>> 	name = aa_split_name_from_ns(name, &ns_name);
 >> 	/* released below */
->> 	target = aa_find_profile(ns, fqname);
->> 	if (!target) {
->> 		sa.base.info = "profile not found";
->> 		sa.base.error = -ENOENT;
->> 		if (permtest || !PROFILE_COMPLAIN(profile))
->> 			goto audit;
->> 		/* release below */
->> 		target = aa_alloc_null_profile(profile, 0);
+>> 	ns = aa_get_namespace(__aa_find_namespace(&ns_list, ns_name));
 > 
-> aa_alloc_null_profile() will oops if profile == NULL.
+> aa_split_name_from_ns() may set ns_name to NULL but __aa_find_namespace() can't
+> handle ns_name == NULL case. I think you should check ns_name != NULL.
+> 
+yep
 
-right this is actually caught by the !PROFILE_COMPLAIN(profile) part of
->> 		if (permtest || !PROFILE_COMPLAIN(profile))
->> 			goto audit;
-immediately above but that is less than obvious and needs to be documented.
+> 
+> 
+> Regarding policy_unpack.c
+> 
+> Please use bool for functions that return 0 or 1.
+> 
+> 
+> 
+>> static void audit_cb(struct audit_buffer *ab, void *va)
+>> {
+>> 	struct aa_audit_iface *sa = va;
+> 
+> static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
+> {
+> 	struct aa_audit_iface *sa = container_of(va, struct aa_audit_iface,
+> 						 base);
+> 
+> 
+> 
+>> static int aa_unpack_trans_table(struct aa_ext *e, struct aa_profile *profile)
+> (...snipped...)
+>> 		for (i = 0; i < size; i++) {
+>> 			char *tmp;
+>> 			if (!unpack_dynstring(e, &tmp, NULL))
+>> 				goto fail;
+>> 			/*
+>> 			 * note: strings beginning with a : have an embedded
+>> 			 * \0 seperating the profile ns name from the profile
+>> 			 * name
+>> 			 */
+>> 			profile->file.trans.table[i] = tmp;
+> 
+> unpack_dynstring() returns string duplicated by kstrdup(). Thus, "tmp" can't
+> have an embedded \0 seperating the profile ns name from the profile name
+> even if tmp[0] == ':' is true, can it?
+> 
+indeed, I should not have switched to kstrdup.
 
-thanks again
-john
+>> 		}
+> 
+> 
+> 
+> Regarding resource.c
+> 
+>> static void audit_cb(struct audit_buffer *ab, void *va)
+>> {
+>> 	struct aa_audit_resource *sa = va;
+> 
+> static void audit_cb(struct audit_buffer *ab, struct aa_audit *va)
+> {
+> 	struct aa_audit_resource *sa = container_of(va, struct aa_audit_resource,
+> 						    base);
+> 
+> 
+> 
+>> static int aa_audit_resource(struct aa_profile *profile,
+>> 			     struct aa_audit_resource *sa)
+>> {
+>> 	return aa_audit(AUDIT_APPARMOR_AUTO, profile, (struct aa_audit *)sa,
+>> 			audit_cb);
+> 
+> 	return aa_audit(AUDIT_APPARMOR_AUTO, profile, &sa->base, audit_cb);
+> 
+>> }
+> 
+> 
+> 
+> Regarding sid.c
+> 
+>> int aa_add_sid_profile(u32 sid, struct aa_profile *profile)
+> 
+> This function is not used.
+> 
+> 
+> 
+>> int aa_replace_sid_profile(u32 sid, struct aa_profile *profile)
+> 
+> This function is not used.
+> 
+> 
+> 
+>> struct aa_profile *aa_get_sid_profile(u32 sid)
+> 
+> This function is not used.
+
+right will fix
+
+thanks
