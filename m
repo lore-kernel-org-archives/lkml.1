@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZKWMgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZKWMgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbZKWMgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 07:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbZKWMgN
+	id S1757462AbZKWMgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 07:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757449AbZKWMgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 07:36:13 -0500
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:51930 "EHLO h5.dl5rb.org.uk"
+	Mon, 23 Nov 2009 07:36:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61191 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757416AbZKWMgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 07:36:13 -0500
-Date: Mon, 23 Nov 2009 12:36:15 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: wuzhangjin@gmail.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MIPS: Fixups of ALSA memory maps
-Message-ID: <20091123123615.GB32675@linux-mips.org>
-References: <9cbcd06037c18288a6493459b8f3a6e1562eca77.1258389992.git.wuzhangjin@gmail.com> <s5hd43iiebt.wl%tiwai@suse.de> <20091116174324.GA17748@linux-mips.org> <s5hhbst4hzt.wl%tiwai@suse.de> <20091118142056.GB6615@linux-mips.org> <s5hskcbbu80.wl%tiwai@suse.de> <1258806701.5752.8.camel@falcon.domain.org> <s5h3a45aabc.wl%tiwai@suse.de>
+	id S1757448AbZKWMgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 07:36:18 -0500
+Message-ID: <4B0A81BF.4090203@redhat.com>
+Date: Mon, 23 Nov 2009 10:36:15 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h3a45aabc.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: [RFC] Should we create a raw input interface for IR's ? - Was: Re:
+ [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+In-Reply-To: <4B0A765F.7010204@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 09:56:39AM +0100, Takashi Iwai wrote:
+Mauro Carvalho Chehab wrote:
 
-> > On Wed, 2009-11-18 at 18:47 +0100, Takashi Iwai wrote:
-> > [...]
-> > > 
-> > > Well, we haven't reached the consensus.  The discussion faded away
-> > > somehow mainly because I had too little time to update and ping people
-> > > again.
-> > > 
-> > > In Tokyo, I talked with some guys regarding this.  Ben agreed to take
-> > > this approach for ppc, and David said that he doesn't mind for sparc
-> > > part.   Fujita-san mentioned it's no big problem to add one op from
-> > > the generic dma_ops.
-> > > 
-> > > So, maybe somehow need to convince James in the end (and ask Paul to
-> > > check SH part, too), then it'll be all up... theoretically :)
-> > > 
-> > > Anyway, I'm going to raise the discussion again on linux-arch.
-> > > I'm afraid it's a bit too late game for 2.6.33, but starting now is
-> > > better than too late again.
-> > 
-> > Hi, Takashi Iwai
-> > 
-> > Before the API stuff going into the mainline(2.6.33), can we apply this
-> > "[PATCH] MIPS: Fixups of ALSA memory maps"(This is the minimal
-> > necessares) as a current fixup. and then we will not get a broken sound
-> > support for MIPS, and also the support to the latest Loongson2F family
-> > machines will benefit from it.
-> > 
-> > and Ralf, what about your suggestion?
+> Jarod Wilson wrote:
+> 1) As I said before, this code adds a new input API. So, you should
+> get input people's ack about it. It seems fine for me;
+
+>> Index: b/drivers/input/lirc/lirc.h
+>> ===================================================================
+>> --- /dev/null
+>> +++ b/drivers/input/lirc/lirc.h
 > 
-> The question is whether this hack can be safely added for all MIPS
-> platforms just by checking kconfig.  I had an impression that rather
-> many things have to be checked in the runtime.
-> 
-> As I have really little clue about MIPS architecture, I'd like let
-> MIPS guys decide about it...
+> Hmm... as you're defining the kernel userspace interface, it would
+> be better to put the header under include/linux.
 
-Okay, I'll cook up a nice kludge.  It can't cover all cases but it will
-be an improvment for most platforms.
+It seems that I ran away from one important discussion here...
 
-  Ralf
+In fact, it seemed better to start a thread to discuss the API issues in
+separate, an then adequate the code to do whatever decided.
+
+-
+
+The way the out-of-tree lirc driver works is by outputing (and inputing)
+a raw sequence of pulses and spaces that have several different IR protocols,
+like NEC, RC4, RC5, RC6 and pulse-distance protocols. On the other hand,
+the current Input event interface (and the IR drivers at V4L/DVB code) does
+is to have in-kernel code that converts those sequences or pulse/space into
+a keystroke representation, outputing it to userspace.
+
+To make things a little more complicated, it is also possible for some devices
+to output IR codes. Let's first discuss the IR input case. IMO, whatever we define
+for input, we should do also for output.
+
+There's some advantages and disadvantages of both strategies, being the most
+notable ones:
+
+Raw pulse/space allows reception of IR's from all different variations of
+the IR protocols. However:
+	it means a more complex setup at userspace, since the user must 
+use a daemon to decode IR code;
+	user must inform the IR type and the kernel driver that will receive
+those keystrokes.
+
+Event input has the advantage that the keystrokes will provide an unique
+representation that is independent of the device. Considering the common case
+where the lirc driver will be associated with a media input device, the
+IR type can be detected automatically on kernel. However, advanced users may
+opt to use other IR types than what's provided with the device they bought.
+
+It should also be noticed that not all the already-existing IR drivers on kernel can
+provide a lirc interface, since several devices have their own IR decoding chips
+inside the hardware. On some cases, the hardware can be programmed to receive more
+than one IR protocol type, where on others, the manufacturer provides IR decoding
+capabilities only for the protocol they decided to provide together with their
+hardware.
+
+IMO, there are two different approaches that can be taken:
+
+1) Just add lirc API as-is and let's have two different ways to get IR events
+on kernel, and have two different API's for IR;
+
+2) create a lirc kernel API, and have a layer there to decode IR protocols and
+output them via the already existing input layer. In this case, all we need to do,
+in terms of API, is to add a way to set the IR protocol that will be decoded, 
+and to enumberate the capabilities. The lirc API, will be an in-kernel API to
+communicate with the devices that don't have IR protocols decoding capabilities
+inside the hardware.
+
+So, the basic question that should be decided is: should we create a new
+userspace API for raw IR pulse/space or it would be better to standardize it
+to always use the existing input layer?
+
+Comments?
+
+Cheers,
+Mauro
