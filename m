@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZKWSyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZKWSzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbZKWSyw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 13:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZKWSyv
+	id S1755520AbZKWSzc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 13:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZKWSzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 13:54:51 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59718 "EHLO mx1.suse.de"
+	Mon, 23 Nov 2009 13:55:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56012 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200AbZKWSyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 13:54:50 -0500
-Date: Mon, 23 Nov 2009 19:54:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jan Kara <jack@suse.cz>, tmhikaru@gmail.com, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-Message-ID: <20091123185449.GA11186@quack.suse.cz>
-References: <20091123160914.GG15679@duck.suse.cz>
- <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org>
+	id S1751558AbZKWSzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 13:55:31 -0500
+Date: Mon, 23 Nov 2009 18:54:51 GMT
+From: tip-bot for Jan Beulich <JBeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       seto.hidetoshi@jp.fujitsu.com, yong.y.wang@intel.com,
+       arjan@infradead.org, jbeulich@novell.com, ak@linux.intel.com,
+       JBeulich@novell.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       mingo@elte.hu, borislav.petkov@amd.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       seto.hidetoshi@jp.fujitsu.com, yong.y.wang@intel.com,
+       arjan@infradead.org, jbeulich@novell.com, suresh.b.siddha@intel.com,
+       JBeulich@novell.com, ak@linux.intel.com, tglx@linutronix.de,
+       borislav.petkov@amd.com, mingo@elte.hu
+In-Reply-To: <4B06AFA902000078000211F8@vpn.id2.novell.com>
+References: <4B06AFA902000078000211F8@vpn.id2.novell.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/mce] x86: Tighten conditionals on MCE related statistics
+Message-ID: <tip-0444c9bd0cf4e0eb946a7fcaf34765accfa9404a@git.kernel.org>
+Git-Commit-ID: 0444c9bd0cf4e0eb946a7fcaf34765accfa9404a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 23-11-09 13:20:26, Alan Stern wrote:
-> On Mon, 23 Nov 2009, Jan Kara wrote:
-> 
-> > On Mon 23-11-09 10:06:03, Alan Stern wrote:
-> > > On Mon, 23 Nov 2009, Jan Kara wrote:
-> > > 
-> > > >   Yeah, from what you write, it looks like USB enclosure is at fault (or it
-> > > > could still be your USB controller but I doubt it).  It's still a bit
-> > > > bothering that the error reported by the drive was not properly propagated
-> > > > up to VFS. Either it's some block layer retry/ignore magic that I missed or
-> > > > we ignore errors from block layer in some place.
-> > > 
-> > > Is there any interest in tracking this down?  It's not hard to find out
-> > > what low-level errors are being reported and to generate them on demand
-> > > with an emulated USB disk drive.
-> >   Well, if you could provide me with the patch, I could try to track down
-> > why the errors aren't propagated... It would be interesting because if it's
-> > not some retry logic in block layer, it's a bug in VFS ;).
-> 
-> I can't provide a patch without first knowing what the errors are.  The 
-> way to find out is to use usbmon.  See Documentation/usb/usbmon.txt for 
-> instructions.
-  Ah, OK. The problem manifests itself as an error in SATA communication
-(which in fact somehow happens over USB, but I don't really know the
-details of mass storage over USB) so debugging USB would become actual only
-if we found out it's really some bug in an usb stack. But so far the most
-probable is just an error somewhere between the USB controller in the
-enclosure and the drive itself. BTW: Is the data transferred over USB
-checksummed?
+Commit-ID:  0444c9bd0cf4e0eb946a7fcaf34765accfa9404a
+Gitweb:     http://git.kernel.org/tip/0444c9bd0cf4e0eb946a7fcaf34765accfa9404a
+Author:     Jan Beulich <JBeulich@novell.com>
+AuthorDate: Fri, 20 Nov 2009 14:03:05 +0000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 23 Nov 2009 19:40:06 +0100
 
-									Honza
+x86: Tighten conditionals on MCE related statistics
+
+irq_thermal_count is only being maintained when
+X86_THERMAL_VECTOR, and both X86_THERMAL_VECTOR and
+X86_MCE_THRESHOLD don't need extra wrapping in X86_MCE
+conditionals.
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Yong Wang <yong.y.wang@intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+LKML-Reference: <4B06AFA902000078000211F8@vpn.id2.novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/hardirq.h |    6 +++---
+ arch/x86/kernel/irq.c          |   12 ++++++------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/include/asm/hardirq.h b/arch/x86/include/asm/hardirq.h
+index 82e3e8f..108eb6f 100644
+--- a/arch/x86/include/asm/hardirq.h
++++ b/arch/x86/include/asm/hardirq.h
+@@ -20,11 +20,11 @@ typedef struct {
+ 	unsigned int irq_call_count;
+ 	unsigned int irq_tlb_count;
+ #endif
+-#ifdef CONFIG_X86_MCE
++#ifdef CONFIG_X86_THERMAL_VECTOR
+ 	unsigned int irq_thermal_count;
+-# ifdef CONFIG_X86_MCE_THRESHOLD
++#endif
++#ifdef CONFIG_X86_MCE_THRESHOLD
+ 	unsigned int irq_threshold_count;
+-# endif
+ #endif
+ } ____cacheline_aligned irq_cpustat_t;
+ 
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 04bbd52..19212cb 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -92,17 +92,17 @@ static int show_other_interrupts(struct seq_file *p, int prec)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_tlb_count);
+ 	seq_printf(p, "  TLB shootdowns\n");
+ #endif
+-#ifdef CONFIG_X86_MCE
++#ifdef CONFIG_X86_THERMAL_VECTOR
+ 	seq_printf(p, "%*s: ", prec, "TRM");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_thermal_count);
+ 	seq_printf(p, "  Thermal event interrupts\n");
+-# ifdef CONFIG_X86_MCE_THRESHOLD
++#endif
++#ifdef CONFIG_X86_MCE_THRESHOLD
+ 	seq_printf(p, "%*s: ", prec, "THR");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
+ 	seq_printf(p, "  Threshold APIC interrupts\n");
+-# endif
+ #endif
+ #ifdef CONFIG_X86_MCE
+ 	seq_printf(p, "%*s: ", prec, "MCE");
+@@ -194,11 +194,11 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
+ 	sum += irq_stats(cpu)->irq_call_count;
+ 	sum += irq_stats(cpu)->irq_tlb_count;
+ #endif
+-#ifdef CONFIG_X86_MCE
++#ifdef CONFIG_X86_THERMAL_VECTOR
+ 	sum += irq_stats(cpu)->irq_thermal_count;
+-# ifdef CONFIG_X86_MCE_THRESHOLD
++#endif
++#ifdef CONFIG_X86_MCE_THRESHOLD
+ 	sum += irq_stats(cpu)->irq_threshold_count;
+-# endif
+ #endif
+ #ifdef CONFIG_X86_MCE
+ 	sum += per_cpu(mce_exception_count, cpu);
