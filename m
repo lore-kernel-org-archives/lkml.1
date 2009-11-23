@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZKWLun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZKWLw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZKWLun (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZKWLum
+	id S1757215AbZKWLw0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbZKWLwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:50:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34932 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbZKWLum (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:50:42 -0500
-Subject: Re: newidle balancing in NUMA domain?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20091123114339.GB2287@wotan.suse.de>
-References: <20091123112228.GA2287@wotan.suse.de>
-	 <1258976175.4531.299.camel@laptop>  <20091123114339.GB2287@wotan.suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 12:50:45 +0100
-Message-ID: <1258977045.4531.317.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 06:52:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55933 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756968AbZKWLwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 06:52:25 -0500
+Date: Mon, 23 Nov 2009 11:51:47 GMT
+From: tip-bot for Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4B07A739.3030104@kernel.org>
+References: <4B07A739.3030104@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/apic] x86: apic: Remove not needed #ifdef
+Message-ID: <tip-e670761f12f4069d204f433bf547d9c679a4fd05@git.kernel.org>
+Git-Commit-ID: e670761f12f4069d204f433bf547d9c679a4fd05
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 12:43 +0100, Nick Piggin wrote:
-> On Mon, Nov 23, 2009 at 12:36:15PM +0100, Peter Zijlstra wrote:
+Commit-ID:  e670761f12f4069d204f433bf547d9c679a4fd05
+Gitweb:     http://git.kernel.org/tip/e670761f12f4069d204f433bf547d9c679a4fd05
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Sat, 21 Nov 2009 00:23:37 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 23 Nov 2009 09:54:15 +0100
 
-> > IIRC this was kbuild and other spreading workloads that want this.
-> > 
-> > the newidle_idx=0 thing is because I frequently saw it make funny
-> > balance decisions based on old load numbers, like f_b_g() selecting a
-> > group that didn't even have tasks in anymore.
-> 
-> Well it is just a damping factor on runqueue flucturations. If the
-> group recently had load then the point of the idx is to account
-> for this. On the other hand, if we have other groups that are also
-> above the idx damped average, it would make sense to use them
-> instead. (ie. cull source groups with no pullable tasks).
+x86: apic: Remove not needed #ifdef
 
-Right, thing is, I'm still catching up from being gone, and haven't
-actually read and tought through the whole rate-limiting thing :-(
+Suresh made dmar_table_init() already have that protection.
 
-If you see a better way to accomplish things, please holler.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <4B07A739.3030104@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/apic.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-> > We went without newidle for a while, but then people started complaining
-> > about that kbuild time, and there is a x264 encoder thing that looses
-> > tons of throughput.
-> 
-> So... these were due to what? Other changes in domains balancing?
-> Changes in CFS? Something else? Or were they comparisons versus
-> other operating systems?
-
-Comparison to Con's latest single-rq spread like there's no cache
-affinity BFS thing.
-
-
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 4c689f4..ad8c75b 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1377,14 +1377,11 @@ void __init enable_IR_x2apic(void)
+ 	unsigned long flags;
+ 	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 	int ret, x2apic_enabled = 0;
+-	int dmar_table_init_ret = 0;
++	int dmar_table_init_ret;
+ 
+-#ifdef CONFIG_INTR_REMAP
+ 	dmar_table_init_ret = dmar_table_init();
+-	if (dmar_table_init_ret)
+-		pr_debug("dmar_table_init() failed with %d:\n",
+-				dmar_table_init_ret);
+-#endif
++	if (dmar_table_init_ret && !x2apic_supported())
++		return;
+ 
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
