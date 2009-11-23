@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbZKWUcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZKWUsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbZKWUcH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:32:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZKWUcG
+	id S1754687AbZKWUsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZKWUsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:32:06 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54166 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbZKWUcF (ORCPT
+	Mon, 23 Nov 2009 15:48:54 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51144 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753512AbZKWUsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:32:05 -0500
-Date: Mon, 23 Nov 2009 21:32:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, zaurus-devel@www.linuxtogo.org
-Subject: spitz: suspend/resume broken in pxa tree
-Message-ID: <20091123203204.GA26942@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 23 Nov 2009 15:48:53 -0500
+Date: Mon, 23 Nov 2009 20:32:13 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] pata_hpt37x: add proper cable detection methods
+Message-ID: <20091123203213.3ed4f7d4@lxorguk.ukuu.org.uk>
+In-Reply-To: <4B0AE59F.7040202@ru.mvista.com>
+References: <200911191910.44609.bzolnier@gmail.com>
+	<4B0AE59F.7040202@ru.mvista.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 23 Nov 2009 22:42:23 +0300
+Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-I tried checking out Eric's pxa tree (I hope I got it right), and 
+> Hello.
+> 
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ata/pata_hpt37x.c |   86 +++++++++++++++++++++++++++++-----------------
+> >  1 file changed, 56 insertions(+), 30 deletions(-)
+> 
+> > Index: b/drivers/ata/pata_hpt37x.c
+> > ===================================================================
+> > --- a/drivers/ata/pata_hpt37x.c
+> > +++ b/drivers/ata/pata_hpt37x.c
+> > @@ -303,6 +303,59 @@ static unsigned long hpt370a_filter(stru
+> 
+>     As this driver still carries a version info, don't we need to update it?
 
-commit b0bd7b56ff4a0672d11751e4f20505d1cad1e132
-Merge: 989eadd 0352170
-Author: Eric Miao <eric.y.miao@gmail.com>
-Date:   Wed Nov 11 22:51:19 2009 +0800
+I don't think the version info is really useful any more - it was when
+they were being developed but it has become a bit meaningless
 
-    Merge branch 'topic/cm-x300' into for-next
-    
-    Conflicts:
-        arch/arm/mach-pxa/cm-x300.c
-
-(which should be current head?) seems to boot ok, but there's no
-reaction on power button after suspend :-(.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
