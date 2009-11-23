@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZKWRqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZKWRjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbZKWRqS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZKWRqR
+	id S1753561AbZKWRjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZKWRjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:46:17 -0500
-Received: from exprod6og116.obsmtp.com ([64.18.1.37]:52475 "EHLO
-	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbZKWRqQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:46:16 -0500
-X-Greylist: delayed 425 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 12:46:16 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 23 Nov 2009 12:39:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40882 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752287AbZKWRjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:39:45 -0500
+Message-ID: <4B0AC8C9.6080504@redhat.com>
+Date: Mon, 23 Nov 2009 15:39:21 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: drivers/block/mg_disk.c: use resource_size()
-Date: Mon, 23 Nov 2009 12:39:15 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901EE5BE1@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: drivers/block/mg_disk.c: use resource_size()
-Thread-Index: AcpsY+CBZeT856zjT7aXa9JN3AjRQg==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <donari75@gmail.com>
-X-OriginalArrivalTime: 23 Nov 2009 17:39:16.0106 (UTC) FILETIME=[E0B5E6A0:01CA6C63]
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de>
+In-Reply-To: <4B0AB60B.2030006@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use resource_size() for ioremap.
+Stefan Richter wrote:
+> Krzysztof Halasa wrote:
+>> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+>>
+>>> Event input has the advantage that the keystrokes will provide an unique
+>>> representation that is independent of the device.
+>> This can hardly work as the only means, the remotes have different keys,
+>> the user almost always has to provide customized key<>function mapping.
+> 
+> Modern input drivers in the mainline kernel have a scancode-to-keycode
+> translation table (or equivalent) which can be overwritten by userspace.
+> The mechanism to do that is the EVIOCSKEYCODE ioctl.
 
-The ioremap appears to be passing the incorrect size for the platform
-resource.  Unfortunately, I can't locate a user in mainline to verify
-this.  Using resource_size should be the correct fix.
+This mechanism is already used by all V4L drivers and several DVB drivers.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: unsik Kim <donari75@gmail.com>
+> (This is no recommendation for lirc.  I have no idea whether a
+> pulse/space -> scancode -> keycode translation would be practical there.)
 
----
+pulse/space -> scancode translation is already done by several existing drivers.
 
-diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
-index e0339aa..02b2583 100644
---- a/drivers/block/mg_disk.c
-+++ b/drivers/block/mg_disk.c
-@@ -860,7 +860,7 @@ static int mg_probe(struct platform_device *plat_dev)
- 		err = -EINVAL;
- 		goto probe_err_2;
- 	}
--	host->dev_base = ioremap(rsc->start , rsc->end + 1);
-+	host->dev_base = ioremap(rsc->start, resource_size(rsc));
- 	if (!host->dev_base) {
- 		printk(KERN_ERR "%s:%d ioremap fail\n",
- 				__func__, __LINE__); 
+For example, there are several bttv and saa7134 devices that polls (or receive
+IRQ interrupts) to detect pulses (and the absense of them) in order to create
+a pulse/space code. The conversion from pulse/space to scancode is done inside
+the driver, with the help of some generic routines and based on the protocol
+specifications.
+
+The conversion from the scancode to a keycode is done based on in-kernel keycode
+tables that can be changed from userspace with EVIOCSKEYCODE ioctl.
+
+I can't see any technical reason why not doing the same for the lirc drivers,
+except for one issue:
+
+Those devices where the decoding is done by software can support any IR protocols.
+So, it is possible to buy a device with a NEC IR, and use a RC5 IR to control it.
+
+However, currently, there's no way to inform the kernel to use a different algorithm
+to translate the kernel.
+
+This can be solved by adding a few ioctls to enumerate the supported protocols and
+to select the one(s) that will be handled by the kernel driver.
+
+Cheers,
+Mauro
