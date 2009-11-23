@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbZKWRFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZKWRFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752323AbZKWRFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZKWRFW
+	id S1752794AbZKWRFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZKWRFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:05:22 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58090 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494AbZKWRFV (ORCPT
+	Mon, 23 Nov 2009 12:05:49 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:56706 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752636AbZKWRFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:05:21 -0500
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
- irqbalance hints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Cc: Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-In-Reply-To: <1258968980.2697.9.camel@ppwaskie-mobl2>
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
-	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
-	 <1258968980.2697.9.camel@ppwaskie-mobl2>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 18:05:23 +0100
-Message-ID: <1258995923.4531.715.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 12:05:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=E90wTXog9DWv69I/SU5KBo/Hx2pwrSMVW8A3zXzJhetDQSpnWSz90/40k+8swK6UrW
+         1iXsfy26Ui5LdX/8F7v39y3cSH+9ak2oozcQx1+X0ovbOv+DCJnow7IZW8l0phqt7p95
+         7DmMutbVagDOqtqRqeK57VV9q7uHkx9JMN8o8=
+MIME-Version: 1.0
+In-Reply-To: <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
+References: <200910200956.33391.jarod@redhat.com>
+	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	 <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
+Date: Mon, 23 Nov 2009 17:05:53 +0000
+X-Google-Sender-Auth: 4bf56259ac8ed55d
+Message-ID: <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: James Mastros <james@mastros.biz>
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 01:36 -0800, Peter P Waskiewicz Jr wrote:
+2009/11/23 Devin Heitmueller <dheitmueller@kernellabs.com>:
+> Just bear in mind that with the current in-kernel code, users do *not
+> * have to manually select the RC code to use if they are using the
+> default remote that shipped with the product.
+This could still happen, if LIRC checks the identifiers of the
+reciving device, and has a database that tells it mappings between
+those devices and the remote controls that shipped with them.
+However, it occours to me that the IR circumstances map pretty well to
+what happens with ps/2 and serial devices now:
 
-> This mechanism isn't going to be used by any internal kernel mechanism
-> for determining interrupt placement or operation.  It's purely something
-> that either a driver can modify, or external script (through /proc),
-> that irqbalance will make use of.  If irqbalance isn't running, or the
-> current version of irqbalance doesn't support reading node_affinity,
-> then it won't affect the system's operation.
-> 
-> If irqbalance does support it, it'll read whatever the supplied mask is,
-> and then will try and balance interrupts within that mask.  It will bail
-> if the mask is invalid, or won't apply to the running system, just like
-> how putting a bogus mask into smp_affinity is ignored.
-> 
-> If there's something I'm missing beyond this with the two suggestions
-> you've made (I looked into those two parameters and tried to draw
-> conclusions), please let me know.
+1: There are a variety of drivers for serio computer-side hardware,
+each of which speaks the serio interface to the next-higher level.
+These corrospond to the drivers for IR recievers.
+2: There's a raw serio interface, for those wishing to do strange things.
+3: There's also a variety of things that take data, using the kernel
+serio API, and decode it into input events -- the ps2 keyboard driver,
+the basic mouse driver, the advanced mice drivers.  This is where the
+interface falls down a little bit -- the ps2 keyboard driver is the
+closest analogue to what I'm suggesting.  The ps2 keyboard driver
+creates scancode events, which map nicely to what the keyboard is
+sending -- these are, for ex, rc5 codes.  It will also produce
+key-up/key-down events, if it has a keymap loaded.  (This is the
+difference with a ps2 keyboard -- a ps2 keyboard gets a map assigned
+to it at boottime, so it works out-of-box.  This isn't really possible
+with an IR remote -- though perhaps rc5 is standarized enough, I don't
+think other protocols neccessarly are.)
 
-I don't see the point in adding it, if the driver wants to set a node
-cpu mask it can already do that using the regular smp affinity settings.
+Userspace would have to load a keymap; those don't really belong in
+kernel code.  Of course, userspace could look at the device
+identifiers to pick a reasonable default keymap if it's not configured
+to load another, solving the out-of-box experince.
 
-Same for userspace.
-
+    -=- James Mastros
