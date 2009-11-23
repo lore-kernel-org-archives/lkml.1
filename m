@@ -1,260 +1,313 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbZKWJIf (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 23 Nov 2009 04:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbZKWJIc
+	id S1756431AbZKWJIi (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 23 Nov 2009 04:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbZKWJIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 04:08:32 -0500
+	Mon, 23 Nov 2009 04:08:35 -0500
 Received: from gw.wifiinternet.cz ([89.31.42.6]:49967 "EHLO monstr.eu"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756215AbZKWJIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 04:08:30 -0500
+	id S1756239AbZKWJId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 04:08:33 -0500
 X-Greylist: delayed 1579 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 04:08:12 EST
 From: y@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: michal.simek@petalogix.com, wuzhangjin@gmail.com, mingo@elte.hu,
         rostedt@goodmis.org, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 1/5] microblaze: ftrace: add static function tracer
-Date: Mon, 23 Nov 2009 09:41:19 +0100
-Message-Id: <1258965683-21302-2-git-send-email-y>
+Subject: [PATCH 3/5] microblaze: ftrace: Add dynamic trace support
+Date: Mon, 23 Nov 2009 09:41:21 +0100
+Message-Id: <1258965683-21302-4-git-send-email-y>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1258965683-21302-1-git-send-email-y>
+In-Reply-To: <1258965683-21302-3-git-send-email-y>
 References: <y>
  <1258965683-21302-1-git-send-email-y>
+ <1258965683-21302-2-git-send-email-y>
+ <1258965683-21302-3-git-send-email-y>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michal Simek <monstr@monstr.eu>
 
-If -pg of gcc is enabled with CONFIG_FUNCTION_TRACER=y. a calling to
-_mcount will be inserted into each kernel function. so, there is a
-possibility to trace the kernel functions in _mcount.
+With dynamic function tracer, by default, _mcount is defined as an
+"empty" function, it returns directly without any more action. When
+enabling it in user-space, it will jump to a real tracing
+function(ftrace_caller), and do the real job for us.
 
-This patch add the specific _mcount support for static function
-tracing. by default, ftrace_trace_function is initialized as
-ftrace_stub(an empty function), so, the default _mcount will introduce
-very little overhead. after enabling ftrace in user-space, it will jump
-to a real tracing function and do static function tracing for us.
+Differ from the static function tracer, dynamic function tracer provides
+two functions ftrace_make_call()/ftrace_make_nop() to enable/disable the
+tracing of some indicated kernel functions(set_ftrace_filter).
 
-Commit message from Wu Zhangjin <wuzhangjin@gmail.com>
+In the kernel version, there is only one "_mcount" string for every
+kernel function, so, we just need to match this one in mcount_regex of
+scripts/recordmcount.pl.
+
+For more information please look at code and Documentation/trace folder.
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/Kconfig                   |    1 +
- arch/microblaze/include/asm/ftrace.h      |   14 ++++
- arch/microblaze/kernel/Makefile           |   11 +++
- arch/microblaze/kernel/cpu/Makefile       |    4 +
- arch/microblaze/kernel/mcount.S           |  105 +++++++++++++++++++++++++++++
- arch/microblaze/kernel/microblaze_ksyms.c |    5 ++
- 6 files changed, 140 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/mcount.S
+ arch/microblaze/Kconfig              |    2 +
+ arch/microblaze/include/asm/ftrace.h |   11 +++
+ arch/microblaze/kernel/Makefile      |    2 +-
+ arch/microblaze/kernel/ftrace.c      |  151 ++++++++++++++++++++++++++++++++++
+ arch/microblaze/kernel/mcount.S      |   13 +++
+ scripts/recordmcount.pl              |    3 +
+ 6 files changed, 181 insertions(+), 1 deletions(-)
+ create mode 100644 arch/microblaze/kernel/ftrace.c
 
 diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index 57eeaa6..18003ca 100644
+index cccf3ad..102d73a 100644
 --- a/arch/microblaze/Kconfig
 +++ b/arch/microblaze/Kconfig
-@@ -6,6 +6,7 @@ mainmenu "Linux/Microblaze Kernel Configuration"
- config MICROBLAZE
- 	def_bool y
+@@ -8,6 +8,8 @@ config MICROBLAZE
  	select HAVE_LMB
-+	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
++	select HAVE_DYNAMIC_FTRACE
++	select HAVE_FTRACE_MCOUNT_RECORD
  	select USB_ARCH_HAS_EHCI
  	select ARCH_WANT_OPTIONAL_GPIOLIB
  
 diff --git a/arch/microblaze/include/asm/ftrace.h b/arch/microblaze/include/asm/ftrace.h
-index 8b13789..22beec5 100644
+index 22beec5..fd2fa2e 100644
 --- a/arch/microblaze/include/asm/ftrace.h
 +++ b/arch/microblaze/include/asm/ftrace.h
-@@ -1 +1,15 @@
-+#ifndef _ASM_MICROBLAZE_FTRACE
-+#define _ASM_MICROBLAZE_FTRACE
+@@ -11,5 +11,16 @@ extern void _mcount(void);
+ extern void ftrace_call_graph(void);
+ #endif
  
-+#ifdef CONFIG_FUNCTION_TRACER
++#ifdef CONFIG_DYNAMIC_FTRACE
++/* reloction of mcount call site is the same as the address */
++static inline unsigned long ftrace_call_adjust(unsigned long addr)
++{
++	return addr;
++}
 +
-+#define MCOUNT_ADDR		((long)(_mcount))
-+#define MCOUNT_INSN_SIZE	8 /* sizeof mcount call */
++struct dyn_arch_ftrace {
++};
++#endif /* CONFIG_DYNAMIC_FTRACE */
 +
-+#ifndef __ASSEMBLY__
-+extern void _mcount(void);
-+extern void ftrace_call_graph(void);
-+#endif
-+
-+#endif /* CONFIG_FUNCTION_TRACER */
-+#endif /* _ASM_MICROBLAZE_FTRACE */
+ #endif /* CONFIG_FUNCTION_TRACER */
+ #endif /* _ASM_MICROBLAZE_FTRACE */
 diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
-index c465a5c..d5ee326 100644
+index d5ee326..b07594e 100644
 --- a/arch/microblaze/kernel/Makefile
 +++ b/arch/microblaze/kernel/Makefile
-@@ -2,6 +2,16 @@
- # Makefile
- #
- 
-+ifdef CONFIG_FUNCTION_TRACER
-+# Do not trace early boot code and low level code
-+CFLAGS_REMOVE_timer.o = -pg
-+CFLAGS_REMOVE_intc.o = -pg
-+CFLAGS_REMOVE_early_printk.o = -pg
-+CFLAGS_REMOVE_selfmod.o = -pg
-+CFLAGS_REMOVE_heartbeat.o = -pg
-+CFLAGS_REMOVE_ftrace.o = -pg
-+endif
-+
- extra-y := head.o vmlinux.lds
- 
- obj-y += exceptions.o \
-@@ -17,5 +27,6 @@ obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
+@@ -27,6 +27,6 @@ obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
  obj-$(CONFIG_MODULES)		+= microblaze_ksyms.o module.o
  obj-$(CONFIG_MMU)		+= misc.o
  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
-+obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o
+-obj-$(CONFIG_FUNCTION_TRACER)	+= mcount.o
++obj-$(CONFIG_FUNCTION_TRACER)	+= ftrace.o mcount.o
  
  obj-y	+= entry$(MMU).o
-diff --git a/arch/microblaze/kernel/cpu/Makefile b/arch/microblaze/kernel/cpu/Makefile
-index 20646e5..59cc7bc 100644
---- a/arch/microblaze/kernel/cpu/Makefile
-+++ b/arch/microblaze/kernel/cpu/Makefile
-@@ -2,6 +2,10 @@
- # Build the appropriate CPU version support
- #
- 
-+ifdef CONFIG_FUNCTION_TRACER
-+CFLAGS_REMOVE_cache.o = -pg
-+endif
-+
- EXTRA_CFLAGS += -DCPU_MAJOR=$(CPU_MAJOR) -DCPU_MINOR=$(CPU_MINOR) \
- 		-DCPU_REV=$(CPU_REV)
- 
-diff --git a/arch/microblaze/kernel/mcount.S b/arch/microblaze/kernel/mcount.S
+diff --git a/arch/microblaze/kernel/ftrace.c b/arch/microblaze/kernel/ftrace.c
 new file mode 100644
-index 0000000..a257a1b
+index 0000000..c1889b1
 --- /dev/null
-+++ b/arch/microblaze/kernel/mcount.S
-@@ -0,0 +1,105 @@
++++ b/arch/microblaze/kernel/ftrace.c
+@@ -0,0 +1,151 @@
 +/*
-+ * Low-level ftrace handling
++ * Ftrace support for Microblaze.
 + *
 + * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2009 PetaLogix
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
++ * Based on MIPS and PowerPC ftrace code
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/linkage.h>
-+
-+#define NOALIGN_ENTRY(name)	.globl name; name:
-+
-+/* FIXME MS: I think that I don't need to save all regs */
-+#define SAVE_REGS		\
-+	addik	r1, r1, -120;	\
-+	swi	r2, r1, 4;	\
-+	swi	r3, r1, 8;	\
-+	swi	r4, r1, 12;	\
-+	swi	r5, r1, 116;	\
-+	swi	r6, r1, 16;	\
-+	swi	r7, r1, 20;	\
-+	swi	r8, r1, 24;	\
-+	swi	r9, r1, 28;	\
-+	swi	r10, r1, 32;	\
-+	swi	r11, r1, 36;	\
-+	swi	r12, r1, 40;	\
-+	swi	r13, r1, 44;	\
-+	swi	r14, r1, 48;	\
-+	swi	r16, r1, 52;	\
-+	swi	r17, r1, 56;	\
-+	swi	r18, r1, 60;	\
-+	swi	r19, r1, 64;	\
-+	swi	r20, r1, 68;	\
-+	swi	r21, r1, 72;	\
-+	swi	r22, r1, 76;	\
-+	swi	r23, r1, 80;	\
-+	swi	r24, r1, 84;	\
-+	swi	r25, r1, 88;	\
-+	swi	r26, r1, 92;	\
-+	swi	r27, r1, 96;	\
-+	swi	r28, r1, 100;	\
-+	swi	r29, r1, 104;	\
-+	swi	r30, r1, 108;	\
-+	swi	r31, r1, 112;
-+
-+#define RESTORE_REGS		\
-+	lwi	r2, r1, 4;	\
-+	lwi	r3, r1, 8;	\
-+	lwi	r4, r1, 12;	\
-+	lwi	r5, r1, 116;	\
-+	lwi	r6, r1, 16;	\
-+	lwi	r7, r1, 20;	\
-+	lwi	r8, r1, 24;	\
-+	lwi	r9, r1, 28;	\
-+	lwi	r10, r1, 32;	\
-+	lwi	r11, r1, 36;	\
-+	lwi	r12, r1, 40;	\
-+	lwi	r13, r1, 44;	\
-+	lwi	r14, r1, 48;	\
-+	lwi	r16, r1, 52;	\
-+	lwi	r17, r1, 56;	\
-+	lwi	r18, r1, 60;	\
-+	lwi	r19, r1, 64;	\
-+	lwi	r20, r1, 68;	\
-+	lwi	r21, r1, 72;	\
-+	lwi	r22, r1, 76;	\
-+	lwi	r23, r1, 80;	\
-+	lwi	r24, r1, 84;	\
-+	lwi	r25, r1, 88;	\
-+	lwi	r26, r1, 92;	\
-+	lwi	r27, r1, 96;	\
-+	lwi	r28, r1, 100;	\
-+	lwi	r29, r1, 104;	\
-+	lwi	r30, r1, 108;	\
-+	lwi	r31, r1, 112;	\
-+	addik	r1, r1, 120;
-+
-+ENTRY(ftrace_stub)
-+	rtsd	r15, 8;
-+	nop;
-+
-+ENTRY(_mcount)
-+	SAVE_REGS
-+	swi	r15, r1, 0;
-+	/* MS: test function trace if is taken or not */
-+	lwi	r20, r0, ftrace_trace_function;
-+	addik	r6, r0, ftrace_stub;
-+	cmpu	r5, r20, r6; /* ftrace_trace_function != ftrace_stub */
-+	beqid	r5, end; /* MS: not taken -> jump over */
-+	nop;
-+/* static normal trace */
-+	lwi	r6, r1, 120; /* MS: load parent addr */
-+	addik	r5, r15, 0; /* MS: load current function addr */
-+	/* MS: here is dependency on previous code */
-+	brald	r15, r20; /* MS: jump to ftrace handler */
-+	nop;
-+end:
-+	lwi	r15, r1, 0;
-+	RESTORE_REGS
-+
-+	rtsd	r15, 8; /* MS: jump back */
-+	nop;
-diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
-index 59ff20e..bc4dcb7 100644
---- a/arch/microblaze/kernel/microblaze_ksyms.c
-+++ b/arch/microblaze/kernel/microblaze_ksyms.c
-@@ -18,6 +18,7 @@
- #include <linux/io.h>
- #include <asm/page.h>
- #include <asm/system.h>
++#include <asm/cacheflush.h>
 +#include <linux/ftrace.h>
- #include <linux/uaccess.h>
- 
- /*
-@@ -47,3 +48,7 @@ extern void __umodsi3(void);
- EXPORT_SYMBOL(__umodsi3);
- extern char *_ebss;
- EXPORT_SYMBOL_GPL(_ebss);
-+#ifdef CONFIG_FUNCTION_TRACER
-+extern void _mcount(void);
-+EXPORT_SYMBOL(_mcount);
++
++#ifdef CONFIG_DYNAMIC_FTRACE
++/* save value to addr - it is save to do it in asm */
++static int ftrace_modify_code(unsigned long addr, unsigned int value)
++{
++	int faulted = 0;
++
++	__asm__ __volatile__("	1:	swi	%2, %1, 0;		\
++					addik	%0, r0, 0;		\
++				2:					\
++					.section .fixup, \"ax\";	\
++				3:	brid	2b;			\
++					addik	%0, r0, 1;		\
++					.previous;			\
++					.section __ex_table,\"a\";	\
++					.word	1b,3b;			\
++					.previous;"			\
++				: "=r" (faulted)
++				: "r" (addr), "r" (value)
++	);
++
++	if (unlikely(faulted))
++		return -EFAULT;
++
++	return 0;
++}
++
++#define MICROBLAZE_NOP 0x80000000
++#define MICROBLAZE_BRI 0xb800000C
++
++static unsigned int recorded; /* if save was or not */
++static unsigned int imm; /* saving whole imm instruction */
++
++/* There are two approaches howto solve ftrace_make nop function - look below */
++#undef USE_FTRACE_NOP
++
++#ifdef USE_FTRACE_NOP
++static unsigned int bralid; /* saving whole bralid instruction */
 +#endif
++
++int ftrace_make_nop(struct module *mod,
++			struct dyn_ftrace *rec, unsigned long addr)
++{
++	/* we have this part of code which we are working with
++	 * b000c000        imm     -16384
++	 * b9fc8e30        bralid  r15, -29136     // c0008e30 <_mcount>
++	 * 80000000        or      r0, r0, r0
++	 *
++	 * The first solution (!USE_FTRACE_NOP-could be called branch solution)
++	 * b000c000        bri	12 (0xC - jump to any other instruction)
++	 * b9fc8e30        bralid  r15, -29136     // c0008e30 <_mcount>
++	 * 80000000        or      r0, r0, r0
++	 * any other instruction
++	 *
++	 * The second solution (USE_FTRACE_NOP) - no jump just nops
++	 * 80000000        or      r0, r0, r0
++	 * 80000000        or      r0, r0, r0
++	 * 80000000        or      r0, r0, r0
++	 */
++	int ret = 0;
++
++	if (recorded == 0) {
++		recorded = 1;
++		imm = *(unsigned int *)rec->ip;
++		pr_debug("%s: imm:0x%x\n", __func__, imm);
++#ifdef USE_FTRACE_NOP
++		bralid = *(unsigned int *)(rec->ip + 4);
++		pr_debug("%s: bralid 0x%x\n", __func__, bralid);
++#endif /* USE_FTRACE_NOP */
++	}
++
++#ifdef USE_FTRACE_NOP
++	ret = ftrace_modify_code(rec->ip, MICROBLAZE_NOP);
++	ret += ftrace_modify_code(rec->ip + 4, MICROBLAZE_NOP);
++#else /* USE_FTRACE_NOP */
++	ret = ftrace_modify_code(rec->ip, MICROBLAZE_BRI);
++#endif /* USE_FTRACE_NOP */
++	return ret;
++}
++
++static int ret_addr; /* initialized as 0 by default */
++
++/* I believe that first is called ftrace_make_nop before this function */
++int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
++{
++	int ret;
++	ret_addr = addr; /* saving where the barrier jump is */
++	pr_debug("%s: addr:0x%x, rec->ip: 0x%x, imm:0x%x\n",
++		__func__, (unsigned int)addr, (unsigned int)rec->ip, imm);
++	ret = ftrace_modify_code(rec->ip, imm);
++#ifdef USE_FTRACE_NOP
++	pr_debug("%s: bralid:0x%x\n", __func__, bralid);
++	ret += ftrace_modify_code(rec->ip + 4, bralid);
++#endif /* USE_FTRACE_NOP */
++	return ret;
++}
++
++int __init ftrace_dyn_arch_init(void *data)
++{
++	/* The return code is retured via data */
++	*(unsigned long *)data = 0;
++
++	return 0;
++}
++
++int ftrace_update_ftrace_func(ftrace_func_t func)
++{
++	unsigned long ip = (unsigned long)(&ftrace_call);
++	unsigned int upper = (unsigned int)func;
++	unsigned int lower = (unsigned int)func;
++	int ret = 0;
++
++	/* create proper saving to ftrace_call poll */
++	upper = 0xb0000000 + (upper >> 16); /* imm func_upper */
++	lower = 0x32800000 + (lower & 0xFFFF); /* addik r20, r0, func_lower */
++
++	pr_debug("%s: func=0x%x, ip=0x%x, upper=0x%x, lower=0x%x\n",
++		__func__, (unsigned int)func, (unsigned int)ip, upper, lower);
++
++	/* save upper and lower code */
++	ret = ftrace_modify_code(ip, upper);
++	ret += ftrace_modify_code(ip + 4, lower);
++
++	/* We just need to remove the rtsd r15, 8 by NOP */
++	BUG_ON(!ret_addr);
++	if (ret_addr)
++		ret += ftrace_modify_code(ret_addr, MICROBLAZE_NOP);
++	else
++		ret = 1; /* fault */
++
++	/* All changes are done - lets do caches consistent */
++	flush_icache();
++	return ret;
++}
++
++#endif /* CONFIG_DYNAMIC_FTRACE */
+diff --git a/arch/microblaze/kernel/mcount.S b/arch/microblaze/kernel/mcount.S
+index 97eef3e..30aaf8f 100644
+--- a/arch/microblaze/kernel/mcount.S
++++ b/arch/microblaze/kernel/mcount.S
+@@ -83,6 +83,12 @@ ENTRY(ftrace_stub)
+ 	nop;
+ 
+ ENTRY(_mcount)
++#ifdef CONFIG_DYNAMIC_FTRACE
++ENTRY(ftrace_caller)
++	/* MS: It is just barrier which is removed from C code */
++	rtsd	r15, 8
++	nop
++#endif /* CONFIG_DYNAMIC_FTRACE */
+ 	SAVE_REGS
+ 	swi	r15, r1, 0;
+ 	/* MS: HAVE_FUNCTION_TRACE_MCOUNT_TEST begin of checking */
+@@ -90,12 +96,19 @@ ENTRY(_mcount)
+ 	bneid	r5, end;
+ 	nop;
+ 	/* MS: HAVE_FUNCTION_TRACE_MCOUNT_TEST end of checking */
++#ifndef CONFIG_DYNAMIC_FTRACE
+ 	/* MS: test function trace if is taken or not */
+ 	lwi	r20, r0, ftrace_trace_function;
+ 	addik	r6, r0, ftrace_stub;
+ 	cmpu	r5, r20, r6; /* ftrace_trace_function != ftrace_stub */
+ 	beqid	r5, end; /* MS: not taken -> jump over */
+ 	nop;
++#else /* CONFIG_DYNAMIC_FTRACE */
++NOALIGN_ENTRY(ftrace_call)
++/* instruction for setup imm FUNC_part1, addik r20, r0, FUNC_part2 */
++	nop
++	nop
++#endif /* CONFIG_DYNAMIC_FTRACE */
+ /* static normal trace */
+ 	lwi	r6, r1, 120; /* MS: load parent addr */
+ 	addik	r5, r15, 0; /* MS: load current function addr */
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 090d300..b30dabd 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -245,6 +245,9 @@ if ($arch eq "x86_64") {
+     $ld .= " -m elf64_sparc";
+     $cc .= " -m64";
+     $objcopy .= " -O elf64-sparc";
++} elsif ($arch eq "microblaze") {
++    # Microblaze calls '_mcount' instead of plain 'mcount'.
++    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
+ } else {
+     die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
+ }
 -- 
 1.5.5.1
 
