@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZKWWyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZKWXBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZKWWyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZKWWyx
+	id S1756867AbZKWXBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZKWXBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:54:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:38279 "EHLO ozlabs.org"
+	Mon, 23 Nov 2009 18:01:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31971 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755951AbZKWWyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:54:52 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for November 23
-Date: Tue, 24 Nov 2009 09:24:54 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20091123185232.1423c56b.sfr@canb.auug.org.au> <20091123111510.9b0c0714.randy.dunlap@oracle.com>
-In-Reply-To: <20091123111510.9b0c0714.randy.dunlap@oracle.com>
+	id S1752872AbZKWXBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 18:01:19 -0500
+Date: Mon, 23 Nov 2009 18:00:22 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip v3 0/3] tracepoint: Add signal events
+Message-ID: <20091123230022.GA2744@redhat.com>
+References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911240924.54675.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 05:45:10 am Randy Dunlap wrote:
-> On Mon, 23 Nov 2009 18:52:32 +1100 Stephen Rothwell wrote:
+On Fri, Nov 20, 2009 at 04:31:08PM -0500, Masami Hiramatsu wrote:
+> Hi,
 > 
-> > Hi all,
-> > 
-> > Changes since 20091120:
+> These patches add signal related tracepoints including
+> signal generation, delivery, and loss. First patch also
+> moves signal-sending tracepoint from events/sched.h to
+> events/signal.h.
 > 
+> Changes in v3
+> - Add Docbook style comments
 > 
-> Hey rr,
-> 
-> This patch "param\:remove-useless-writable-charp.patch" has several typos
-> that cause build errors in drivers/staging/.  I sent patches for these errors
-> to gregkh but he couldn't apply them.  Please build STAGING (drivers/staging/)
-> crap along with other build testing when you make changes.
 
-Hi Randy,
+Documentation bits look good. thanks for adding them.
 
-    Fixed.  And I guess linux-next doesn't build staging?  Seems a fair call,
-I should have done so.
-
-Thanks,
-Rusty.
+Reviewed-by: Jason Baron <jbaron@redhat.com>
