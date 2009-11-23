@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbZKWWxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZKWWyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbZKWWxH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZKWWxG
+	id S1756818AbZKWWyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 17:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZKWWyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:53:06 -0500
-Received: from khc.piap.pl ([195.187.100.11]:33120 "EHLO khc.piap.pl"
+	Mon, 23 Nov 2009 17:54:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:38279 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756021AbZKWWxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:53:05 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Devin Heitmueller <dheitmueller@kernellabs.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph> <m3einork1o.fsf@intrepid.localdomain>
-	<829197380911231354y764e01b7hc0c5721b3ebf1f26@mail.gmail.com>
-	<m36390rhzp.fsf@intrepid.localdomain>
-	<829197380911231437v909a111rcc2967af3e4fffa2@mail.gmail.com>
-Date: Mon, 23 Nov 2009 23:53:08 +0100
-In-Reply-To: <829197380911231437v909a111rcc2967af3e4fffa2@mail.gmail.com>
-	(Devin Heitmueller's message of "Mon, 23 Nov 2009 17:37:00 -0500")
-Message-ID: <m31vjorgyz.fsf@intrepid.localdomain>
+	id S1755951AbZKWWyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 17:54:52 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for November 23
+Date: Tue, 24 Nov 2009 09:24:54 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20091123185232.1423c56b.sfr@canb.auug.org.au> <20091123111510.9b0c0714.randy.dunlap@oracle.com>
+In-Reply-To: <20091123111510.9b0c0714.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911240924.54675.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Devin Heitmueller <dheitmueller@kernellabs.com> writes:
+On Tue, 24 Nov 2009 05:45:10 am Randy Dunlap wrote:
+> On Mon, 23 Nov 2009 18:52:32 +1100 Stephen Rothwell wrote:
+> 
+> > Hi all,
+> > 
+> > Changes since 20091120:
+> 
+> 
+> Hey rr,
+> 
+> This patch "param\:remove-useless-writable-charp.patch" has several typos
+> that cause build errors in drivers/staging/.  I sent patches for these errors
+> to gregkh but he couldn't apply them.  Please build STAGING (drivers/staging/)
+> crap along with other build testing when you make changes.
 
-> For example, you might want the IR receiver to be listening for codes
-> using the "Universal Remote Control XYZ" profile and the IR
-> transmitter pretending to be "Cable Company Remote Control ABC" when
-> blasting IR codes to the cable box.  Ideally, there would be a single
-> shared database of the definitions of the remote controls, regardless
-> of whether you are IR receiving or transmitting.
+Hi Randy,
 
-Well, with different receivers, the maps must certainly be different.
-There can be single database in the userspace but the kernel must be
-uploaded the relevant info only.
--- 
-Krzysztof Halasa
+    Fixed.  And I guess linux-next doesn't build staging?  Seems a fair call,
+I should have done so.
+
+Thanks,
+Rusty.
