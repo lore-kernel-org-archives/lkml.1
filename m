@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZKWPUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZKWPU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZKWPUw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:20:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZKWPUv
+	id S1755435AbZKWPU7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZKWPU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:20:51 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:48171 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbZKWPUu (ORCPT
+	Mon, 23 Nov 2009 10:20:57 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45216 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754781AbZKWPUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:20:50 -0500
+	Mon, 23 Nov 2009 10:20:54 -0500
+Date: Mon, 23 Nov 2009 15:20:57 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: mfd tree build failure
+Message-ID: <20091123152057.GH24326@rakim.wolfsonmicro.main>
+References: <20091123144103.73b4d64c.sfr@canb.auug.org.au>
+ <20091123150346.e3948feb.sfr@canb.auug.org.au>
+ <20091123122903.GB3616@sortiz.org>
+ <20091123131113.GE24326@rakim.wolfsonmicro.main>
+ <20091123144413.GD3616@sortiz.org>
 MIME-Version: 1.0
-In-Reply-To: <m36391tjj3.fsf@intrepid.localdomain>
-References: <200910200956.33391.jarod@redhat.com>
-	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-Date: Mon, 23 Nov 2009 10:20:54 -0500
-Message-ID: <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123144413.GD3616@sortiz.org>
+X-Cookie: Avoid contact with eyes.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 9:14 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> I think this makes a lot of sense.
-> But: we don't need a database of RC codes in the kernel (that's a lot of
-> data, the user has to select the RC in use anyway so he/she can simply
-> provide mapping e.g. RC5<>keycode).
+On Mon, Nov 23, 2009 at 03:44:14PM +0100, Samuel Ortiz wrote:
+> On Mon, Nov 23, 2009 at 01:11:13PM +0000, Mark Brown wrote:
 
-Just bear in mind that with the current in-kernel code, users do *not
-* have to manually select the RC code to use if they are using the
-default remote that shipped with the product.  This helps alot for
-those unfamiliar with LIRC, since their product "works out of the box"
-with the remote the product came with.  I agree though, that the user
-should be able to easily change the RC to be used if he/she decides to
-use a remote other than the default.
+> > I don't see getting them exported flying, especially not in the
+> > timeframe we've got for the merge window.  Keeping them non-exported has
+> > been a deliberate decision on the part of the genirq maintainers. 
 
-Devin
+> Out of curiosity, what's the reasoning behind thatdecision ?
 
--- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+Unless you're actually implementing an interrupt controller those APIs
+should never be called and people should be using flags on request_irq()
+or similar.  Driver authors have been awfully fond of bypassing those
+APIs, but this prevents them doing so.
+
+None of this is really a practical issue unless you implement an IRQ
+controller in a driver and that's very rare (or has been up until now).
