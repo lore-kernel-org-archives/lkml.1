@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZKWV0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbZKWVaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZKWV0n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 16:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbZKWV0m
+	id S1757096AbZKWVaL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 16:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbZKWVaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 16:26:42 -0500
-Received: from fieldses.org ([174.143.236.118]:46697 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756202AbZKWV0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 16:26:42 -0500
-Date: Mon, 23 Nov 2009 16:27:26 -0500
-From: "J. Bruce Fields" <bfields@fieldses.org>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Greg Banks <gnb@fmeh.org>
-Subject: Re: 2.6.31 under "heavy" NFS load.
-Message-ID: <20091123212726.GC8534@fieldses.org>
-References: <4AF86DE4.5010607@krogh.cc> <20091110184126.GD15000@fieldses.org> <4AF9B994.8040301@krogh.cc> <4B05A91D.1090305@krogh.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B05A91D.1090305@krogh.cc>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Nov 2009 16:30:10 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:45850 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756035AbZKWVaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 16:30:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=cZn7Zn/ZfxSCoJms5RxMc9diVlKX8n6DfEPmlZcTNunjeNVGrYfqGKLW/zZN6BOI13
+         jntUw7pRcyrbrFlWHMgNqKCBr1zxjNUyNLb0JghJyBZmV2DRe3jdLD6bh2hlht+9vLcK
+         Ws5zbiIsDVrD//2Pz8ZB8f+xFGOBt6nrk0bhs=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Kisskb-bot by Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] hw-breakpoints: Fix misordered ifdef
+Date: Mon, 23 Nov 2009 22:30:12 +0100
+Message-Id: <1259011812-8093-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 19, 2009 at 09:22:53PM +0100, Jesper Krogh wrote:
-> Ok, I still haven't had the "excact same" workload put on the host, but
-> it has been running on the patched kernel for 8 days now and I havent
-> seen load numbers over 32 while service 1100MB/s over NFS (dd'ing 512
-> bytes blocks out of the server from the clients) while doing local disk
-> IO for an iowait of ~25% (4 cores sucking what they can). This workload
-> is "similar" to the one sending it to load numbers of over 100 earlier.
-> 
-> So I'm confident that the problem is solved by reverting the patch.
+Fix a misplaced ifdef. We need the perf event headers also in off-case
+to avoid the following build error:
 
-OK, I'm applying the revert for 2.6.33.
+include/linux/hw_breakpoint.h:94: error: expected declaration specifiers or '...' before 'perf_callback_t'
+include/linux/hw_breakpoint.h:102: error: expected declaration specifiers or '...' before 'perf_callback_t'
+include/linux/hw_breakpoint.h:109: error: expected declaration specifiers or '...' before 'perf_callback_t'
+include/linux/hw_breakpoint.h:116: error: expected declaration specifiers or '...' before 'perf_callback_t'
 
---b.
+Reported-by: Kisskb-bot by Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+---
+ include/linux/hw_breakpoint.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 76a48ab..c9f7f7c 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -15,10 +15,11 @@ enum {
+ };
+ 
+ #ifdef __KERNEL__
+-#ifdef CONFIG_HAVE_HW_BREAKPOINT
+ 
+ #include <linux/perf_event.h>
+ 
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++
+ static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
+ {
+ 	return bp->attr.bp_addr;
+-- 
+1.6.2.3
+
