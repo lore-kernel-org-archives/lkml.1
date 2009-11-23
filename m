@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZKWNPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZKWNQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZKWNPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 08:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757238AbZKWNPv
+	id S1757433AbZKWNQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 08:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757238AbZKWNQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 08:15:51 -0500
-Received: from lazybastard.de ([212.112.238.170]:59170 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757206AbZKWNPu (ORCPT
+	Mon, 23 Nov 2009 08:16:09 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:21001 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757401AbZKWNQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 08:15:50 -0500
-Date: Mon, 23 Nov 2009 14:15:47 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 12/17] [LogFS] readwrite.c
-Message-ID: <20091123131547.GA18889@logfs.org>
-References: <20091120181113.GA2159@logfs.org> <E1NBZJ5-0003hL-Qc@longford.logfs.org> <84144f020911230433q5fd90321m9b463cb425fafe7d@mail.gmail.com>
+	Mon, 23 Nov 2009 08:16:08 -0500
+Date: Mon, 23 Nov 2009 16:16:13 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Neil Brown <neilb@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH] jffs2: Fix memory corruption in
+ jffs2_read_inode_range()
+Message-ID: <20091123131613.GA14619@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20091120194532.GA9455@oksana.dev.rtsoft.ru>
+ <1258885259.1127.80.camel@macbook.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020911230433q5fd90321m9b463cb425fafe7d@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1258885259.1127.80.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pekka!
-
-On Mon, 23 November 2009 14:33:15 +0200, Pekka Enberg wrote:
+On Sun, Nov 22, 2009 at 10:20:59AM +0000, David Woodhouse wrote:
+> On Fri, 2009-11-20 at 12:45 -0700, Anton Vorontsov wrote:
+> > +       if (pg->index > ((i_size_read(inode) - 1) >> PAGE_CACHE_SHIFT)) {
+> > +               ret = 0;
+> > +               memset(pg_buf, 0, PAGE_CACHE_SIZE);
+> > +       } else {
+> > +               ret = jffs2_read_inode_range(c, f, pg_buf,
+> > +                       pg->index << PAGE_CACHE_SHIFT, PAGE_CACHE_SIZE);
+> > +       } 
 > 
-> (Dunno who to CC, really, so lets see if I can trick Andrew or Hugh
-> into looking at the issue.)
-
-That would be nice.
-
-> On Fri, Nov 20, 2009 at 9:38 PM, Joern Engel <joern@logfs.org> wrote:
-> > +static void logfs_lock_write_page(struct page *page)
-> > +{
-> > +       int loop = 0;
-> > +
-> > +       while (unlikely(!trylock_page(page))) {
-> > +               if (loop++ > 0x1000) {
-> > +                       /* Has been observed once so far... */
-> > +                       printk(KERN_ERR "stack at %p\n", &loop);
-> > +                       BUG();
-> > +               }
-> > +               if (PagePreLocked(page)) {
-> > +                       /* Holder of page lock is waiting for us, it
-> > +                        * is safe to use this page. */
-> > +                       break;
-> > +               }
-> > +               /* Some other process has this page locked and has
-> > +                * nothing to do with us.  Wait for it to finish.
-> > +                */
-> > +               schedule();
-> > +       }
-> > +       BUG_ON(!PageLocked(page));
-> > +}
+> Thank you for the excellent diagnosis and the patch. 
 > 
-> What's the purpose of PagePreLocked()? The above function looks pretty
-> fragile for a filesystem to me.
+> I think I'd prefer to fix it a little differently though -- I would be
+> happier to make jffs2_read_inode_range() cope with out-of-file reads,
+> rather than adding this special case where we don't call it.
+> 
+> That way we aren't at all susceptible to potential races between the
+> VFS-maintained i_size and our own internal fragtree handling. And
+> jffs2_read_inode_range() already handles the memset to zero for various
+> other reasons anyway.
+> 
+> Does this patch look OK to you? It seems to work on the test cases I've
+> tried.
 
-Avoiding deadlocks.  Garbage collection is the cause of almost all
-headaches in logfs, including this.  Any write may require some amount
-of garbage collection to free up some space.  Garbage collection
-consists of basically random reads followed by random writes.  So in
-order to write any page, it may be required to first read and write some
-other inconvenient page.
+Yep, it looks good (and works).
 
-Simple case:
-	Thread A writes page 1, GC then reads/writes page 1.
-More complicated:
-	Thread A writes page 1, thread B writes page 2.
-	Thread A gets the write lock, thread B blocks on write lock.
-	Thread A does GC which reads/writes page 2.
-
-The more complicated case requires that any thread holding the write
-lock must be able to read/write any page belonging to this filesystem.
-If those pages are locked by someone else, it should wait it out and
-only use the page when the page lock is released.  But if the pages are
-locked in a logfs write path, that would cause a deadlock.
-
-So PagePreLocked(page) indicates that this page is in a logfs write
-path.  It won't change until the current thread releases the logfs write
-lock and is fair game for GC.
-
-Jörn
+Thanks David!
 
 -- 
-The cheapest, fastest and most reliable components of a computer
-system are those that aren't there.
--- Gordon Bell, DEC labratories
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
