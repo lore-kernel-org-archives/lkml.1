@@ -1,56 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZKWMFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbZKWMIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZKWMFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 07:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZKWMFR
+	id S1757383AbZKWMIx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 07:08:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbZKWMIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 07:05:17 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:51783 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757238AbZKWMFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 07:05:16 -0500
-Date: Mon, 23 Nov 2009 20:05:14 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Fixes for 2.6.32
-Message-ID: <20091123120514.GA6738@gondor.apana.org.au>
-References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au> <20090910141905.GA17948@gondor.apana.org.au> <20091020065442.GA5947@gondor.apana.org.au> <20091020072650.GA6621@gondor.apana.org.au>
+	Mon, 23 Nov 2009 07:08:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38019 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757206AbZKWMIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 07:08:52 -0500
+Date: Mon, 23 Nov 2009 13:08:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: newidle balancing in NUMA domain?
+Message-ID: <20091123120849.GB32009@elte.hu>
+References: <20091123112228.GA2287@wotan.suse.de>
+ <1258976175.4531.299.camel@laptop>
+ <20091123114550.GB25575@elte.hu>
+ <20091123120100.GC2287@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091020072650.GA6621@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091123120100.GC2287@wotan.suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
 
-This push fixes a crash in the gcm driver when used in conjunction
-with an asynchronous cipher (e.g., aesni-intel).
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Please pull from
+> On Mon, Nov 23, 2009 at 12:45:50PM +0100, Ingo Molnar wrote:
+> > 
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Mon, 2009-11-23 at 12:22 +0100, Nick Piggin wrote:
+> > > > Hi,
+> > > > 
+> > > > I wonder why it was decided to do newidle balancing in the NUMA
+> > > > domain? And with newidle_idx == 0 at that.
+> > > > 
+> > > > This means that every time the CPU goes idle, every CPU in the
+> > > > system gets a remote cacheline or two hit. Not very nice O(n^2)
+> > > > behaviour on the interconnect. Not to mention trashing our
+> > > > NUMA locality.
+> > > > 
+> > > > And then I see some proposal to do ratelimiting of newidle
+> > > > balancing :( Seems like hack upon hack making behaviour much more
+> > > > complex.
+> > > > 
+> > > > One "symptom" of bad mutex contention can be that increasing the
+> > > > balancing rate can help a bit to reduce idle time (because it
+> > > > can get the woken thread which is holding a semaphore to run ASAP
+> > > > after we run out of runnable tasks in the system due to them 
+> > > > hitting contention on that semaphore).
+> > > > 
+> > > > I really hope this change wasn't done in order to help -rt or
+> > > > something sad like sysbench on MySQL.
+> > > 
+> > > IIRC this was kbuild and other spreading workloads that want this.
+> > > 
+> > > the newidle_idx=0 thing is because I frequently saw it make funny 
+> > > balance decisions based on old load numbers, like f_b_g() selecting a 
+> > > group that didn't even have tasks in anymore.
+> > > 
+> > > We went without newidle for a while, but then people started 
+> > > complaining about that kbuild time, and there is a x264 encoder thing 
+> > > that looses tons of throughput.
+> > 
+> > Yep, i too reacted in a similar way to Nick initially - but i think you 
+> > are right, we really want good, precise metrics and want to be 
+> > optional/fuzzy in our balancing _decisions_, not in our metrics.
+> 
+> Well to be fair, the *decision* is to use a longer-term weight for the 
+> runqueue to reduce balancing (seeing as we naturally do far more 
+> balancing on conditions means that we tend to look at our instant 
+> runqueue weight when it is 0).
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+Well, the problem with that is that it uses a potentially outdated piece 
+of metric - and that can become visible if balancing events are rare 
+enough.
 
-or
+I.e. we do need a time scale (rate of balancing) to be able to do this 
+correctly on a statistical level - which pretty much brings in 'rate 
+limit' kind of logic.
 
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+We are better off observing reality precisely and then saying "dont do 
+this action" instead of fuzzing our metrics [or using fuzzy metrics 
+conditionally - which is really the same] and hoping that in the end it 
+will be as if we didnt do certain decisions.
 
+(I hope i explained my point clearly enough.)
 
-Huang Ying (1):
-      crypto: gcm - fix another complete call in complete fuction
+No argument that it could be done cleaner - the duality right now of
+both having the fuzzy stats and the rate limiting should be decided 
+one way or another.
 
- crypto/gcm.c |  107 +++++++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 73 insertions(+), 34 deletions(-)
- 
+Also, no argument that if you can measure bad effects from this change 
+on any workload we need to look at that and fix it.
+
 Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+	Ingo
