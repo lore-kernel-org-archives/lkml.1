@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZKWPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZKWPVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbZKWPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZKWPVX
+	id S1755517AbZKWPVg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:21:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZKWPVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:21:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53417 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 10:21:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60158 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755464AbZKWPVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:21:20 -0500
-Date: Mon, 23 Nov 2009 16:16:12 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: Zombie process when ptracing
-Message-ID: <20091123151612.GC4495@redhat.com>
-References: <20091119102543.GB5602@wotan.suse.de> <20091120012930.GA3985@redhat.com> <20091123083623.GD5602@wotan.suse.de>
+	id S1754121AbZKWPVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 10:21:32 -0500
+Date: Mon, 23 Nov 2009 10:19:46 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [RFC] Block IO Controller V2 - some results
+Message-ID: <20091123151946.GA3112@redhat.com>
+References: <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com> <20091118225626.GA2974@redhat.com> <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com> <20091120141840.GA5872@redhat.com> <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com> <20091120150421.GC5872@redhat.com> <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com> <20091120184257.GG5872@redhat.com> <4e5e476b0911201150p7cbdfc20k4b8d02f07e16abc8@mail.gmail.com> <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091123083623.GD5602@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23, Nick Piggin wrote:
->
-> On Fri, Nov 20, 2009 at 02:29:30AM +0100, Oleg Nesterov wrote:
-> > Hi,
+On Sat, Nov 21, 2009 at 06:57:47PM +0100, Corrado Zoccolo wrote:
+> Hi Vivek,
+> On Fri, Nov 20, 2009 at 8:50 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> > On Fri, Nov 20, 2009 at 7:42 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >>
+> >> Should we also take into account the "cfqq->dispatched" request in
+> >> determining whether we should enable idling on deep queue random seeky
+> >> readers?
 > >
-> > On 11/19, Nick Piggin wrote:
-> > >
-> > > Running recent git kernel, I have a process stuck in Z state
-> > >
-> > > bash          ? 0000000000000000     0  3188   3187 0x00000000
-> > >  ffff88012e24fec8 0000000000000046 0000000000000000 0000000000000012
-> > >  ffff88012e24fec8 ffff88012e24e000 ffff88012e24ffd8 ffff88012e24e000
-> > >  000000000000efc8 ffff88012e24e000 ffff88012ea82090 ffff88012ff78640
-> > > Call Trace:
-> > >  [<ffffffff8124baee>] ? proc_clear_tty+0x5e/0x70
-> > >  [<ffffffff810587a8>] ? exit_ptrace+0xb8/0x140
-> > >  [<ffffffff8105126a>] do_exit+0x58a/0x7c0
-> > >  [<ffffffff810514dd>] do_group_exit+0x3d/0xb0
-> > >  [<ffffffff81051562>] sys_exit_group+0x12/0x20
-> > >  [<ffffffff8100b3eb>] system_call_fastpath+0x16/0x1b
-> > >
-> > > This was after stracing a few test programs.
-> > >
-> > > It also seems to have lost job control (^C) at the same time.
-> >
-> > This can happen if the tracer (strace) itself hangs, zombies
-> > should go away once the tracer is killed. Or its ->real_parent
-> > is stopped or hangs...
-> >
-> > (I assume you didn't strace /sbin/init)
->
-> No, I straced something else, and all straces seemed to be
-> killed but bash remained. I was running a script that in
-> turn launched another process, so I ran it via
-> strace -ff bash ./script.sh
+> > Probably, but I think the most important thing is to do some averaging
+> > or hysteresis, so the completion of a single request doesn't cause the
+> > switch of a workload.
+> 
+> can you test the new version of the idling patch?
+> I register the fact that the queue had a large depth in a flag, that
+> is reset only when the idle times out (so at the end of the burst).
+> Idling is enabled if that flag is set (and think time is acceptable).
+> This should fix the switching behaviour you observed.
+> 
+> I decided to not count cfqq->dispatched to determine the depth.
+> In this way, when all queues in the system are random the idling is
+> enabled only if the requests queue builds up faster than it can be
+> consumed.
 
-OK, thanks.
+Hi Corrado,
 
-Hmm. Just noticed the state above == '?'. Looks like sched_show_task()
-is buggy, it should check ->exit_state for "ZX" from TASK_STATE_TO_CHAR_STR.
-But this is off-topic.
+This patch seems to be working much better in marking the random writer
+queue as sync and not interefere with sync-noidle workload.
 
-> > If you see a zombie again, could you look at its /ptoc/pid/status?
->
-> OK, any other hints if I see it again?
+So frequent migration of random writer queue across group has stopped.
 
-Well, also the contents of /proc/PPid/status and /proc/TracerPid/status
-may help. And sysrq-t ouput. Otherwise, currently I have no idea where
-to start.
+But there seems to be a different issue now after sometime, random writer
+queue stops generating enough traffic and gets deleted after one request
+and root group now runs random reader for sometime. So it basically
+changes the ratio in which random writers and random readers get disk 
+share.
 
-Oleg.
+I guess part of the dependency comes from kjournald which is in root
+group. But there is something else too because I don't see this happening
+when there are no cgroups. I will do more debugging on this.
 
+Thanks
+Vivek
