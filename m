@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZKWTld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZKWTnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbZKWTld (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZKWTlc
+	id S1755914AbZKWTnb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZKWTna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:41:32 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:6728 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755098AbZKWTlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:41:32 -0500
-Message-ID: <4B0AE59F.7040202@ru.mvista.com>
-Date: Mon, 23 Nov 2009 22:42:23 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 23 Nov 2009 14:43:30 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47127 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751536AbZKWTna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 14:43:30 -0500
+Date: Mon, 23 Nov 2009 11:43:34 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       mpm@selenic.com, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091123194334.GD6774@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091118181202.GA12180@linux.vnet.ibm.com> <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <alpine.DEB.2.00.0911231329560.5617@router.home>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] pata_hpt37x: add proper cable detection methods
-References: <200911191910.44609.bzolnier@gmail.com>
-In-Reply-To: <200911191910.44609.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0911231329560.5617@router.home>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, Nov 23, 2009 at 01:30:50PM -0600, Christoph Lameter wrote:
+> On Mon, 23 Nov 2009, Pekka Enberg wrote:
+> 
+> > That turns out to be _very_ hard. How about something like the following
+> > untested patch which delays slab_destroy() while we're under nc->lock.
+> 
+> Code changes to deal with a diagnostic issue?
 
-Bartlomiej Zolnierkiewicz wrote:
+Indeed!  At least if we want the diagnostics to have any value, we do
+need to avoid false alarms.  Same reasoning as for gcc warnings, right?
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ata/pata_hpt37x.c |   86 +++++++++++++++++++++++++++++-----------------
->  1 file changed, 56 insertions(+), 30 deletions(-)
-
-> Index: b/drivers/ata/pata_hpt37x.c
-> ===================================================================
-> --- a/drivers/ata/pata_hpt37x.c
-> +++ b/drivers/ata/pata_hpt37x.c
-> @@ -303,6 +303,59 @@ static unsigned long hpt370a_filter(stru
-
-    As this driver still carries a version info, don't we need to update it?
-
-MBR, Sergei
+							Thanx, Paul
