@@ -1,92 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZKWWfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZKWWg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZKWWfT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:35:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbZKWWfT
+	id S1756178AbZKWWg3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 17:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbZKWWg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:35:19 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:52322 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755655AbZKWWfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:35:17 -0500
-Message-ID: <4B0B0DDB.4070504@oracle.com>
-Date: Mon, 23 Nov 2009 14:34:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: James Morris <jmorris@namei.org>, lkml <linux-kernel@vger.kernel.org>,
-       "Andrew G. Morgan" <morgan@kernel.org>, Steve Grubb <sgrubb@redhat.com>,
-       linux-security-module@vger.kernel.org,
-       Kees Cook <kees.cook@canonical.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       George Wilson <gcwilson@us.ibm.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH] remove CONFIG_SECURITY_FILE_CAPABILITIES compile option
-References: <20091123222130.GA11325@us.ibm.com>
-In-Reply-To: <20091123222130.GA11325@us.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+	Mon, 23 Nov 2009 17:36:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63196 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755729AbZKWWg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 17:36:27 -0500
+Date: Mon, 23 Nov 2009 17:36:16 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@ucw.cz,
+       miklos@szeredi.hu, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
+ and file bind mounts (try #5)
+Message-ID: <20091123173616.75c3f600@tlielax.poochiereds.net>
+In-Reply-To: <m1my2cdhi3.fsf@fess.ebiederm.org>
+References: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
+	<m1my2cdhi3.fsf@fess.ebiederm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4B0B0DE0.0102:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> As far as I know, all distros currently ship kernels with default
-> CONFIG_SECURITY_FILE_CAPABILITIES=y.  Since having the option on
-> leaves a 'no_file_caps' option to boot without file capabilities,
-> the main reason to keep the option is that turning it off saves
-> you (on my s390x partition) 5k.  In particular, vmlinux sizes
-> came to:
-> 
-> without patch fscaps=n:		 	53598392
-> without patch fscaps=y:		 	53603406
-> with this patch applied:		53603342
-> 
-> with the security-next tree.
-> 
-> Against this we must weigh the fact that there is no simple way for
-> userspace to figure out whether file capabilities are supported,
-> while things like per-process securebits, capability bounding
-> sets, and adding bits to pI if CAP_SETPCAP is in pE are not supported
-> with SECURITY_FILE_CAPABILITIES=n, leaving a bit of a problem for
-> applications wanting to know whether they can use them and/or why
-> something failed.
-> 
-> It also adds another subtly different set of semantics which we must
-> maintain at the risk of severe security regressions.
+On Mon, 23 Nov 2009 14:05:24 -0800
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Hi,
-
-This is or is not the same security option that is referred to in
-(new:) http://bugzilla.kernel.org/show_bug.cgi?id=14675 ?
-
-
-> So this patch removes the SECURITY_FILE_CAPABILITIES compile
-> option.  It drops the kernel size by about 50k over the stock
-> SECURITY_FILE_CAPABILITIES=y kernel, by removing the
-> cap_limit_ptraced_target() function.
+> Jeff Layton <jlayton@redhat.com> writes:
 > 
-> Changelog:
-> 	Nov 20: remove cap_limit_ptraced_target() as it's logic
-> 		was ifndef'ed.
+> > There are a few situations where a lookup can end up returning a dentry
+> > without revalidating it, and without checking whether the calling
+> > process has permissions to access it. Two situations identified so far
+> > are:
+> >
+> > 1) LAST_BIND symlinks (such as those under /proc/<pid>)
+> >
+> > 2) file bind mounts
+> >
+> > This patchset is intended to fix this by forcing revalidation of the
+> > returned dentries at appropriate locations.
+> >
+> > In the case of LAST_BIND symlinks it also adds a check to verify that
+> > the target of the symlink is accessible by the current process by
+> > walking mounts and dentries back up to the root and checking permission
+> > on each inode.
+> >
+> > This set fixes the reproducers I have (including the reproducer that
+> > Pavel provided for the permissions bypass). It's still pretty rough
+> > though and I expect that it'll need revision. At this point, I'm mainly
+> > looking to get these questions answered:
+> >
+> > 1) what should we do if these dentries are found to be invalid? Is it ok
+> > to d_invalidate them? Or is that likely to break something (particularly
+> > in the case of file bind mounts)?
 > 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> Acked-by: Andrew G. Morgan" <morgan@kernel.org>
-> ---
->  include/linux/capability.h |    2 -
->  include/linux/init_task.h  |    4 --
->  kernel/capability.c        |    2 -
->  security/Kconfig           |    9 -----
->  security/commoncap.c       |   72 +------------------------------------------
->  5 files changed, 2 insertions(+), 87 deletions(-)
+> The normal sequence in do_revalidate should be safe.  In practice what we
+> should see is d_drop().  If we access the dentries via another path today
+> we already go through d_revalidate.  It is only the reference count on
+> the dentry that keeps them alive and working.  The cases I have looked
+> at for distributed filesystems have to call d_drop themselves so I don't
+> know if it would add anything if the vfs called d_revalidate.  Especially
+> since FS_REVAL_DOT doesn't have that logic.
+> 
+> > 2) I'm using FS_REVAL_DOT as an indicator of whether to force a
+> > d_revalidate. I think that it's appropriate to key off of that flag, but
+> > we may want to rename it (maybe FS_FORCE_D_REVAL ?).
+> 
+> Perhaps FS_ALWAYS_REVAL.    I don't think it makes much of
+> a difference either way.  I expect a rename should come after we fix
+> nfsv4 so there is a chance at pushing the fixes back to stable.
+> 
+> > 3) is check_path_accessible racy? It seems to work, but something
+> > doesn't seem quite right with this approach. Is this defeatable somehow?
+> > Could a rename of one of the intermediate path components cause
+> > problems?
+> 
+> check_path_accessible seems pretty horrible.   If a process is running
+> inside of a subdirectory it doesn't have permissions to access, say
+> a chroot, /proc/self/fd/XXX becomes completely unusable.
+> 
 
+Hmm...I have this in there:
 
++		/* are we at global root or root of namespace? */
++		if ((tdentry == root.dentry && vfsmnt == root.mnt) ||
++		    vfsmnt->mnt_parent == vfsmnt)
++			break;
+
+...In the case of a chroot, wouldn't "current->fs->root" point to the
+root of the process' namespace? Or am I misunderstanding what
+current->fs actually represents?
 
 -- 
-~Randy
+Jeff Layton <jlayton@redhat.com>
