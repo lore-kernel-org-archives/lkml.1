@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZKWOmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZKWOmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZKWOmh (ORCPT <rfc822;w@1wt.eu>);
+	id S1755211AbZKWOmh (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 23 Nov 2009 09:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZKWOmg
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZKWOmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:42:36 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:22984 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755032AbZKWOmd (ORCPT
+	Mon, 23 Nov 2009 09:42:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:60467 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbZKWOme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:42:33 -0500
+	Mon, 23 Nov 2009 09:42:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=OzH92MrhwZXzDm+uWDUa9lt0mk9g5wATatzhTZUZH22uSeos6yUTayIJIQvxsOk6YS
-         D6bxPaeX9ARPq33Wjnuj4v2Xw4PcDbkGqdZ+FygO9PfFOd2qbgpzUVoltpEpK3+ZbkA3
-         qSA+B48ysNsylo9xHtHh/sfi6j0GN0zrOkTTw=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=JAmXhmENhkdECuWzkzKMdkBYeCdG2ALVOSMN51FyQHDXHSrh47tdqCSHZw4an9Hcbc
+         Cia3VJRT5avnI1iypvtsaSdMYLBZN003SSyTsRjn/IktGQ9aZsyfTOuU6idfsGUS5flJ
+         cN4btfkqLSRueYNkW3n6VmK6kA0GkoWeTFsG4=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,16 +23,27 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Paul Mackerras <paulus@samba.org>, Prasad <prasad@linux.vnet.ibm.com>
-Subject: [PATCH 1/4] hw-breakpoints: Include only linux/perf_event.h from kernel part of bp headers
-Date: Mon, 23 Nov 2009 15:42:32 +0100
-Message-Id: <1258987355-8751-1-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/4] hw-breakpoints: Check the breakpoint params from perf tools
+Date: Mon, 23 Nov 2009 15:42:33 +0100
+Message-Id: <1258987355-8751-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1258987355-8751-1-git-send-email-fweisbec@gmail.com>
+References: <1258987355-8751-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As userspace only needs the breakpoints enum types from the breakpoints
-headers.
+Perf tools create perf events as disabled in the beginning. Breakpoints
+are then considered like ptrace temporary breakpoints, only meant to
+reserve a breakpoint slot until we get all the necessary informations
+from the user.
+
+In this case, we don't check the address that is breakpointed as it is
+NULL in the ptrace case.
+
+But perf tools don't have the same purpose, events are created disabled
+to wait for all events to be created before enabling all of them.
+We want to check the breakpoint parameters in this case.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -40,31 +51,31 @@ Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Prasad <prasad@linux.vnet.ibm.com>
 ---
- include/linux/hw_breakpoint.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/hw_breakpoint.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index 4659e0c..76a48ab 100644
---- a/include/linux/hw_breakpoint.h
-+++ b/include/linux/hw_breakpoint.h
-@@ -1,8 +1,6 @@
- #ifndef _LINUX_HW_BREAKPOINT_H
- #define _LINUX_HW_BREAKPOINT_H
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index b6d6fa2..1d8911a 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -263,7 +263,16 @@ int __register_perf_hw_breakpoint(struct perf_event *bp)
+ 	if (ret)
+ 		return ret;
  
--#include <linux/perf_event.h>
--
- enum {
- 	HW_BREAKPOINT_LEN_1 = 1,
- 	HW_BREAKPOINT_LEN_2 = 2,
-@@ -19,6 +17,8 @@ enum {
- #ifdef __KERNEL__
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
+-	if (!bp->attr.disabled)
++	/*
++	 * Ptrace breakpoints can be temporary perf events only
++	 * meant to reserve a slot. In this case, it is created disabled and
++	 * we don't want to check the params right now (as we put a null addr)
++	 * But perf tools create events as disabled and we want to check
++	 * the params for them.
++	 * This is a quick hack that will be removed soon, once we remove
++	 * the tmp breakpoints from ptrace
++	 */
++	if (!bp->attr.disabled || bp->callback == perf_bp_event)
+ 		ret = arch_validate_hwbkpt_settings(bp, bp->ctx->task);
  
-+#include <linux/perf_event.h>
-+
- static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
- {
- 	return bp->attr.bp_addr;
+ 	return ret;
 -- 
 1.6.2.3
 
