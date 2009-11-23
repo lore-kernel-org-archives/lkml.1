@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZKWRTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZKWJpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbZKWRTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZKWRTk
+	id S1756531AbZKWJpI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 04:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbZKWJpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:19:40 -0500
-Received: from www.tglx.de ([62.245.132.106]:46580 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752758AbZKWRTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:19:39 -0500
-Date: Mon, 23 Nov 2009 18:19:20 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       alan@linux.intel.com
-Subject: Re: [patch] timer: Add a mod_timer_msec() API function
-In-Reply-To: <20091123065108.1fd78779@infradead.org>
-Message-ID: <alpine.LFD.2.00.0911231728200.24119@localhost.localdomain>
-References: <20091122154111.197e1a8a@infradead.org> <20091123082648.GB13186@elte.hu> <20091123065108.1fd78779@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Nov 2009 04:45:07 -0500
+Received: from mga10.intel.com ([192.55.52.92]:53671 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753791AbZKWJpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 04:45:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,271,1257148800"; 
+   d="scan'208";a="516464419"
+Date: Mon, 23 Nov 2009 12:21:17 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Youquan,Song" <youquan.song@linux.intel.com>,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
+       youquan.song@intel.com
+Subject: Re: [PATCH]crypto: Fix algorithm and driver duplicate registered
+Message-ID: <20091123172117.GA14372@youquan-linux.bj.intel.com>
+References: <20091119003202.GA28448@youquan-linux.bj.intel.com> <20091119001827.GC2315@gondor.apana.org.au> <20091119110222.GA19379@youquan-linux.bj.intel.com> <20091119114730.GC6392@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091119114730.GC6392@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009, Arjan van de Ven wrote:
-> On Mon, 23 Nov 2009 09:26:48 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > This code first rounds to 1 second - and if that doesnt fall within
-> > the slack window it rounds to the (rather aribtrary) rounding of 16
-> > jiffies.
-> > 
-> > I'd suggest to use up the slack to its maximum, by rounding up modulo 
-> > the largest power-of-2 value that still fits into the slack.
-> > 
-> > So if slack is 30, the rounding is 16. If slack is 5, the rounding is
-> > 4, etc.
+> Can you show me a sample /proc/crypto showing this problem and how
+> you created it?
 > 
-> well.. the point of the rounding is that there is a maximum likelyhood
-> that OTHER timers align.
-> 
-> I suppose what you suggest would do that too; need to think of a clever
-> way to not make that expensive
-> (after coffee I'll look at if xor + find first bit will work ;-)
+Sorry for late. I use the cryptodev-2.6 tree, enable AESNI and PCLMULQDQ NI.
 
-I think we need to rethink the timer wheel subsystem in general
-instead of adding more and more fancy interfaces.
+Step: like this.  
+A. modprobe tcrypt mode=35
+B. modprobe aesni-intel
+C. modprobe tcrypt mode=35
 
-Looking at the examples you provided for mod_timer_msec() I noticed
-that most of the slack values you chose are between 10% and 20% of the
-timeout.
+After I do A. Because it do not load aesni-intel, so I do B, then repeat C.
 
-That means the larger the timeout the less interesting is the accuracy
-which makes a lot of sense.
+cat /proc/crypto.
 
-I really wonder whether there is any timer_list user which has the
-need for large and precise timeouts. If not we could simplify the
-whole timer wheel business radically and get rid of the worst thing in
-it: recascading.
+there is two identical gcm: 
 
-That's what I have in mind:
+name         : gcm(aes)
+driver       : gcm_base(ctr-aes-aesni,ghash-clmulni)
+module       : gcm
+priority     : 400
+refcnt       : 1
+selftest     : unknown
+type         : aead
+async        : yes
+blocksize    : 1
+ivsize       : 16
+maxauthsize  : 16
+geniv        : <built-in>
 
-    	       timeout    accuracy
-array0	  <    0.256 s        1 ms
-array1	  <    2.560 s       40 ms
-array2	  <   25.600 s      400 ms
-array3	  <  256.000 s     4000 ms
-array4	  >= 256.000 s    40000 ms 
+name         : gcm(aes)
+driver       : gcm_base(ctr-aes-aesni,ghash-clmulni)
+module       : gcm
+priority     : 400
+refcnt       : 1
+selftest     : unknown
+type         : aead
+async        : yes
+blocksize    : 1
+ivsize       : 16
+maxauthsize  : 16
+geniv        : <built-in>
 
-Similar to the current timer wheel, but instead of recascading on
-every wraparound of the array0 index we could expire the timers in
-array1-4 in their accuracy interval which aligns them automatically
-without any slack and rounding business on timer insertion.
+name         : fpu(ctr(__aes-aesni))
+driver       : cryptd(fpu(ctr(__driver-aes-aesni)))
+module       : cryptd
+priority     : 50
+refcnt       : 1
+selftest     : passed
+type         : ablkcipher
+async        : yes
+blocksize    : 1
+min keysize  : 16
+max keysize  : 32
+ivsize       : 16
+geniv        : <default>
 
-The exact array definitions need of course more thought, but you get
-the idea.
+name         : fpu(ctr(__aes-aesni))
+driver       : fpu(ctr(__driver-aes-aesni))
+module       : fpu
+priority     : 0
+refcnt       : 1
+selftest     : passed
+type         : blkcipher
+blocksize    : 1
+min keysize  : 16
+max keysize  : 32
+ivsize       : 16
 
-Such an implementation would also simplify the search for the next
-expiring timer as we could keep track of empty/non-empty buckets with
-an additional per array bitfield.
+ 
 
-If there are a few timers which really need large and precise timeouts
-its easy enough to switch them over to hrtimers.
-
-Thoughts ?
-
-Thanks,
-
-	tglx
