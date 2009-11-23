@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZKWRst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZKWRuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZKWRst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZKWRss
+	id S1754455AbZKWRuy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbZKWRux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:48:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60902 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Nov 2009 12:50:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11608 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753860AbZKWRsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:48:47 -0500
-Date: Mon, 23 Nov 2009 18:48:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <gregkh@suse.de>
-Cc: Mike Galbraith <efault@gmx.de>, Robert Swan <swan.r.l@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bisected] pty performance problem
-Message-ID: <20091123174839.GC6717@elte.hu>
-References: <20091121222319.GA3905@swanrl.gmail.com>
- <20091122063926.GA18224@elte.hu>
- <20091122122312.71a343d9@lxorguk.ukuu.org.uk>
- <1258952431.6261.38.camel@marge.simson.net>
- <20091123113110.15063a0a@lxorguk.ukuu.org.uk>
- <20091123114845.GC25575@elte.hu>
- <20091123115949.29bcf89d@lxorguk.ukuu.org.uk>
- <20091123120409.GA32009@elte.hu>
- <20091123133423.64f34c73@lxorguk.ukuu.org.uk>
+	id S1753793AbZKWRuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:50:52 -0500
+Message-ID: <4B0ACB70.9090707@redhat.com>
+Date: Mon, 23 Nov 2009 15:50:40 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123133423.64f34c73@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: James Mastros <james@mastros.biz>
+CC: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	 <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com> <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
+In-Reply-To: <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Mastros wrote:
+> 2009/11/23 Devin Heitmueller <dheitmueller@kernellabs.com>:
+>> Just bear in mind that with the current in-kernel code, users do *not
+>> * have to manually select the RC code to use if they are using the
+>> default remote that shipped with the product.
+> This could still happen, if LIRC checks the identifiers of the
+> reciving device, and has a database that tells it mappings between
+> those devices and the remote controls that shipped with them.
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+True, but this means that everyone with an IR will need to use lirc.
 
-> > > So you'd prefer to detect devices that are byte based or message based 
-> > > by what method ?
-> > 
-> > I'd not delay the worklet by default - i.e. i'd do Mike's patch.
-> 
-> Certainly stuff like pty should not delay
-> > 
-> > Havent tested all effects of it though - do you have any estimation 
-> > about negative effects from such a change? We do have hard numbers 
-> > (latencies in the millisecs range) from the opposite direction and those 
-> > numbers arent pretty.
-> 
-> On a PC I'm not too worried - we might burn a bit more CPU and Arjan
-> might even manage to measure it somewhere. There is the theoretical bad
-> case where we end up at 100% CPU because the irq, wake, process one char,
-> irq wake, process one char sequence fits the CPU so we don't sleep.
-> 
-> Embedded might be more of a concern, the old behaviour comes from 386/486
-> days with low CPU power.
-> 
-> USB doesn't worry me - USB devices generally have their own buffering
-> algorithm and use a timer so that they batch data efficiently into USB
-> buffers.
-> 
-> The drivers/serial layer is often run with low latency set anyway so that
-> seems to be ok for the most part.
-> 
-> Give it a go, send the patch to the maintainer, try it in -next and see
-> if anyone screams.
+/me thinks that, whatever decided with those lirc drivers, this should be applied also to the existing V4L/DVB drivers.
 
-(Doh, i should have Cc:-ed Greg first time around - fixed that.)
+IMO, it would be better to load the tables at the boot time (or at the 
+corresponding hotplug event, for USB devices).
 
-	Ingo
+> However, it occours to me that the IR circumstances map pretty well to
+> what happens with ps/2 and serial devices now:
+> 
+> 1: There are a variety of drivers for serio computer-side hardware,
+> each of which speaks the serio interface to the next-higher level.
+> These corrospond to the drivers for IR recievers.
+> 2: There's a raw serio interface, for those wishing to do strange things.
+> 3: There's also a variety of things that take data, using the kernel
+> serio API, and decode it into input events -- the ps2 keyboard driver,
+> the basic mouse driver, the advanced mice drivers. 
+
+Seems an interesting model.
+
+> This is where the
+> interface falls down a little bit -- the ps2 keyboard driver is the
+> closest analogue to what I'm suggesting.  The ps2 keyboard driver
+> creates scancode events, which map nicely to what the keyboard is
+> sending -- these are, for ex, rc5 codes.  It will also produce
+> key-up/key-down events, if it has a keymap loaded.  (This is the
+> difference with a ps2 keyboard -- a ps2 keyboard gets a map assigned
+> to it at boottime, so it works out-of-box.  This isn't really possible
+> with an IR remote -- though perhaps rc5 is standarized enough, I don't
+> think other protocols neccessarly are.)
+
+Even with RC5, there are some vendors that implement it differently on his
+IR (for example, using VCR and/or TV group for the keys).
+
+> Userspace would have to load a keymap; those don't really belong in
+> kernel code.  Of course, userspace could look at the device
+> identifiers to pick a reasonable default keymap if it's not configured
+> to load another, solving the out-of-box experince.
+
+I like this idea. We currently have hundreds of IR keymaps already in kernel.
+It seems good to remove from kernel and let udev load those.
+
+Cheers,
+Mauro.
