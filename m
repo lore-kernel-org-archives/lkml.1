@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZKWEcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbZKWEDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756349AbZKWEcs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 23:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZKWEcr
+	id S1756269AbZKWEDx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 23:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbZKWEDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 23:32:47 -0500
-Received: from mfo11.iijmio.jp ([210.138.77.173]:35435 "EHLO mfo11.iijmio.jp"
+	Sun, 22 Nov 2009 23:03:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56208 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756261AbZKWEcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 23:32:46 -0500
-X-Greylist: delayed 2202 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Nov 2009 23:32:46 EST
-Date: Mon, 23 Nov 2009 12:55:48 +0900
-From: Hideki Yamane <henrich@debian.or.jp>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Hideki Yamane" <henrich@debian.or.jp>
-Subject: Re: [Bug #14588] Kernel panic - not syncing: stack-protector:
- Kernel stack is corrupted in: ccccb5b0
-Message-Id: <20091123125548.e12fe7bd.henrich@debian.or.jp>
-In-Reply-To: <mYW9sxtWd2G.A.YkE.xCACLB@chimera>
-References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
-	<mYW9sxtWd2G.A.YkE.xCACLB@chimera>
-Organization: Debian JP Project
+	id S1756157AbZKWEDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 23:03:52 -0500
+Date: Mon, 23 Nov 2009 15:03:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: linux-next: mfd tree build failure
+Message-Id: <20091123150346.e3948feb.sfr@canb.auug.org.au>
+In-Reply-To: <20091123144103.73b4d64c.sfr@canb.auug.org.au>
+References: <20091123144103.73b4d64c.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__23_Nov_2009_15_03_46_+1100_XBWu2w3ErxsqzBhH"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Mon__23_Nov_2009_15_03_46_+1100_XBWu2w3ErxsqzBhH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 21 Nov 2009 16:02:17 +0100 (CET)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14588
-> Subject		: Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: ccccb5b0
-> Submitter	: Hideki Yamane <henrich@debian.or.jp>
-> Date		: 2009-11-12 02:25 (10 days old)
+Hi Samuel,
 
- With 2.6.32-rc8, it works for me. 
+On Mon, 23 Nov 2009 14:41:03 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+>=20
+> ERROR: "irq_to_desc" [drivers/mfd/wm831x.ko] undefined!
+> ERROR: "handle_edge_irq" [drivers/mfd/wm831x.ko] undefined!
+> ERROR: "set_irq_chip_and_handler" [drivers/mfd/wm831x.ko] undefined!
+> ERROR: "set_irq_noprobe" [drivers/mfd/wm831x.ko] undefined!
+>=20
+> Probably caused by commit 8fc686c7369173519817f0cfbb2df9a3671d5b8d ("mfd:
+> Move WM831x to generic IRQ").  Maybe a Kconfig dependency is missing?
 
-henrich@hatchpotch:~$ uname -a
-Linux hatchpotch 2.6.32-rc8 #5 SMP Sun Nov 22 22:32:12 JST 2009 i686 GNU/Linux
+It actually looks as though set_irq_chip_and_handler (at least) is not
+exported to modules.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-henrich@hatchpotch:~$ grep STACKPROTECT /boot/config-2.6.32-rc8 
-CONFIG_CC_STACKPROTECTOR=y
+--Signature=_Mon__23_Nov_2009_15_03_46_+1100_XBWu2w3ErxsqzBhH
+Content-Type: application/pgp-signature
 
--- 
-Regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
- Hideki Yamane     henrich @ debian.or.jp/iijmio-mail.jp
- http://wiki.debian.org/HidekiYamane
+iEYEARECAAYFAksKCaIACgkQjjKRsyhoI8x0jACeMLfWXCOBU+kMLNt1Rskq5AhI
+LLMAn3MnRmrMS37NxoSFQUR7Khl+IQTx
+=LmuJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__23_Nov_2009_15_03_46_+1100_XBWu2w3ErxsqzBhH--
