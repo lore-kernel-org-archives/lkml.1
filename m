@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbZKWWLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZKWWTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbZKWWLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZKWWLw
+	id S1757452AbZKWWTv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 17:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbZKWWTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:11:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39702 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756202AbZKWWLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:11:51 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Resend][PATCH] Wireless / ath5k: Simplify suspend and resume callbacks
-Date: Mon, 23 Nov 2009 23:12:18 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
-Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       Bob Copeland <me@bobcopeland.com>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>, netdev@vger.kernel.org,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-References: <200911212344.24170.rjw@sisk.pl> <20091123213353.GA9045@tuxdriver.com>
-In-Reply-To: <20091123213353.GA9045@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 23 Nov 2009 17:19:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42826 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757415AbZKWWTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 17:19:32 -0500
+Date: Mon, 23 Nov 2009 14:19:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH 5/7] kfifo: add DEFINE_KFIFO and friends, add very tiny
+ functions
+Message-Id: <20091123141910.af8f0d30.akpm@linux-foundation.org>
+In-Reply-To: <1258705633.4426.16.camel@wall-e>
+References: <1258704942.4426.5.camel@wall-e>
+	<1258705633.4426.16.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911232312.18344.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 November 2009, John W. Linville wrote:
-> On Sat, Nov 21, 2009 at 11:44:24PM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: Wireless / ath5k: Simplify suspend and resume callbacks
-> > 
-> > Simplify the suspend and resume callbacks of ath5k by converting the
-> > driver to struct dev_pm_ops and allowing the PCI PM core to do the
-> > PCI-specific suspend/resume handling.
-> > 
-> > Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
-> > D-Link CardBus.adapter.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> This is already queued for -next.
+On Fri, 20 Nov 2009 09:27:13 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-Thanks!
+> +#define __kfifo_initializer(s, b) \
+> +	(struct kfifo) { \
+> +		.size	= s, \
+> +		.in	= 0, \
+> +		.out	= 0, \
+> +		.buffer = b \
+> +	}
 
-Rafael
+This could be #undef'ed after its last invokation, assuming that it is
+not intended that .c files use __kfifo_initializer().  
