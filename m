@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZKWHQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZKWH27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZKWHQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 02:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZKWHQX
+	id S1754084AbZKWH27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 02:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZKWH26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 02:16:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55177 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753225AbZKWHQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 02:16:22 -0500
-Date: Mon, 23 Nov 2009 07:15:48 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] ring-buffer benchmark: Run producer/consumer threads at nice +19
-Message-ID: <tip-98e4833ba3c314c99dc364012fba6ac894230ad0@git.kernel.org>
-Git-Commit-ID: 98e4833ba3c314c99dc364012fba6ac894230ad0
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Mon, 23 Nov 2009 02:28:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56049 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbZKWH26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 02:28:58 -0500
+Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20091123065110.GC31758@elte.hu>
+References: <4B064AF5.9060208@cn.fujitsu.com>
+	 <20091120081440.GA19778@elte.hu>
+	 <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com>
+	 <20091120083053.GB19778@elte.hu> <4B0657A4.2040606@cs.helsinki.fi>
+	 <4B06590C.7010109@cn.fujitsu.com> <20091120090353.GE19778@elte.hu>
+	 <20091120144215.GH18283@ghostprotocols.net>
+	 <20091120164110.GA24183@elte.hu>
+	 <20091120175228.GD27926@ghostprotocols.net>
+	 <20091123065110.GC31758@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 23 Nov 2009 08:22:21 +0100
+Message-ID: <1258960941.4531.19.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  98e4833ba3c314c99dc364012fba6ac894230ad0
-Gitweb:     http://git.kernel.org/tip/98e4833ba3c314c99dc364012fba6ac894230ad0
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 23 Nov 2009 08:03:09 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Nov 2009 08:03:09 +0100
+On Mon, 2009-11-23 at 07:51 +0100, Ingo Molnar wrote:
+> 
+> * Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
+> 
+> > Em Fri, Nov 20, 2009 at 05:41:10PM +0100, Ingo Molnar escreveu:
+> > > > So we have a mechanism that is already present in several distros
+> > > > (build-id), that is in the kernel build process since ~2.6.23, and that
+> > > > avoids using mismatching DSOs when resolving symbols.
+> > > 
+> > > But what do we do if we have another box that runs say on a MIPS CPU, 
+> > > uses some minimal distro - and copy that perf.data over to an x86 box.
+> > 
+> > There would be no problem, it would be just a matter of installing the
+> > right -debuginfo packages, for MIPS.
+> 
+> I havent tried this - is this really possible to do on an x86 box, with 
+> a typical distro? Can i install say Fedora PowerPC debuginfo packages on 
+> an x86 box, while also having the x86 debuginfo packages there? 
 
-ring-buffer benchmark: Run producer/consumer threads at nice +19
+The best option would be to allow to specify a chroot parameter, where
+we can specify the embedded root filesystem on out machine.
 
-The ring-buffer benchmark threads run on nice 0 by default, using
-up a lot of CPU time and slowing down the system:
+I'm not even sure embedded distros even have this separate debug package
+crazyness, you simply build the distro with or without debuginfo.
 
-   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-  1024 root      20   0     0    0    0 D 95.3  0.0   4:01.67 rb_producer
-  1023 root      20   0     0    0    0 R 93.5  0.0   2:54.33 rb_consumer
- 21569 mingo     40   0 14852 1048  772 R  3.6  0.1   0:00.05 top
-     1 root      40   0  4080  928  668 S  0.0  0.0   0:23.98 init
-
-Renice them to +19 to make them less intrusive.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/ring_buffer_benchmark.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
-index 70df73e..3875d49 100644
---- a/kernel/trace/ring_buffer_benchmark.c
-+++ b/kernel/trace/ring_buffer_benchmark.c
-@@ -399,6 +399,12 @@ static int __init ring_buffer_benchmark_init(void)
- 	if (IS_ERR(producer))
- 		goto out_kill;
- 
-+	/*
-+	 * Run them as low-prio background tasks by default:
-+	 */
-+	set_user_nice(consumer, 19);
-+	set_user_nice(producer, 19);
-+
- 	return 0;
- 
-  out_kill:
