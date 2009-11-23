@@ -1,42 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbZKWVql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZKWVrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757157AbZKWVql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 16:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbZKWVql
+	id S1757154AbZKWVrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 16:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZKWVrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 16:46:41 -0500
-Received: from khc.piap.pl ([195.187.100.11]:38182 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753226AbZKWVqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 16:46:40 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: lirc@bartelmus.de (Christoph Bartelmus)
-Cc: dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>
-Date: Mon, 23 Nov 2009 22:46:43 +0100
-In-Reply-To: <BDRae8rZjFB@christoph> (Christoph Bartelmus's message of "23 Nov
-	2009 22:11:00 +0100")
-Message-ID: <m3einork1o.fsf@intrepid.localdomain>
+	Mon, 23 Nov 2009 16:47:48 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:19435 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbZKWVrr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 16:47:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=IiyrAVyJ/qsO7VKzLustEpyTBBWXs70XSS3uvjOsDIPygJ58O4SE7rWMTstv2hKCC5
+         sdfpKl/Ww0WUxPA0cW8KCYjdC0LnnkU70Qm/PhbIGDsX1HzDzhcbiGxtrMFhHhf2/Te4
+         uOQGjhAqdsaZ/nxdObNJyYB5dbWOjV3ruMCwY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43e72e890911191519h73bd6699if860257c049ba1a0@mail.gmail.com>
+References: <4ADE2F66.1070703@gmail.com> <43e72e890911161515q64ff527cyefd7d769f3c501b@mail.gmail.com> 
+	<a44ae5cd0911161641n36d3c746pb69a9cac1eba1784@mail.gmail.com> 
+	<43e72e890911161708o607da2a5hefe98e92fd13ee7a@mail.gmail.com> 
+	<43e72e890911191519h73bd6699if860257c049ba1a0@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Mon, 23 Nov 2009 13:47:32 -0800
+Message-ID: <43e72e890911231347k48f105dcw24dd99c1c39f034@mail.gmail.com>
+Subject: Re: 2.6.32-rc5-git1 -- BUG kmalloc-8192: Poison overwritten (ath9k 
+	implicated)
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Felix Fietkau <nbd@openwrt.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lirc@bartelmus.de (Christoph Bartelmus) writes:
-
->> I think we shouldn't at this time worry about IR transmitters.
+On Thu, Nov 19, 2009 at 3:19 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Mon, Nov 16, 2009 at 5:08 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> On Mon, Nov 16, 2009 at 4:41 PM, Miles Lane <miles.lane@gmail.com> wrote:
+>>> On Mon, Nov 16, 2009 at 6:15 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>>> On Tue, Oct 20, 2009 at 1:45 PM, Miles Lane <miles.lane@gmail.com> wrote:
+>>>>> Let me know if you want my .config file.  I think this was triggered by
+>>>>> suspending my laptop.
+>>>>>
+>>>>> BUG kmalloc-8192: Poison overwritten
+>>>>
+>>>> Thanks for your report Miles.
+>>>>
+>>>> Are you using Linus' tree? Felix wrote some patches that got rid of
+>>>> the rate control private area which we kmalloc/kfree and at least one
+>>>> user reported that these patches fixed a memory leak. I'm curious if
+>>>> the same patches would resolve this issue.
+>>>>
+>>>> Only thing is these patches apply against wireless-testing and not
+>>>> 2.6.32. To test them you'd have to pull wireless-testing master to
+>>>> your tree and then apply the patches both before and after.
+>>>>
+>>>> Would you be up to try that?
+>>>
+>>> Yes, definitely.  Thanks.  I will try to accomplish this and let you
+>>> know if I get stuck.
+>>
+>> OK, not sure if a merge of wireless-testing will be clean so you may
+>> want to just clone fresh.. Anyway after you get wireless-testing bits
+>> you'll want to apply these:
+>>
+>> http://patchwork.kernel.org/patch/60127/
+>> http://patchwork.kernel.org/patch/60128/
+>> http://patchwork.kernel.org/patch/60126/
+>>
+>> If you want to merge wireless-testing you can try:
+>>
+>> git merge git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
+>> master
+>>
+>> If that'd doesn't gos smooth just clone it and I think you should be
+>> able to safely --reference your current tree for objects for Linus'
+>> tree.
 >
-> Sorry, but I have to disagree strongly.
-> Any interface without transmitter support would be absolutely unacceptable
-> for many LIRC users, including myself.
+> Miles I see no reply from you yet so I backported the patches in
+> question for you. Can you please try 2.6.32-rc7 and apply these
+> patches on top:
+>
+> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
+> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
 
-I don't say don't use a transmitter.
-I say the transmitter is not an input device, they are completely
-independent functions. I can't see any reason to try and fit both in the
-same interface - can you?
--- 
-Krzysztof Halasa
+Miles, any luck testing this?
+
+  Luis
