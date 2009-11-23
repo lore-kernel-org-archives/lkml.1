@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZKWWYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZKWWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbZKWWYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 17:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbZKWWYX
+	id S1757396AbZKWWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 17:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbZKWWZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 17:24:23 -0500
-Received: from ozlabs.org ([203.10.76.45]:41453 "EHLO ozlabs.org"
+	Mon, 23 Nov 2009 17:25:55 -0500
+Received: from khc.piap.pl ([195.187.100.11]:57697 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757006AbZKWWYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 17:24:22 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Shirley Ma <mashirle@us.ibm.com>
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers and big packets in virtio_net
-Date: Tue, 24 Nov 2009 08:54:23 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-References: <1258697745.7416.20.camel@localhost.localdomain> <200911231138.30755.rusty@rustcorp.com.au> <1258992421.5022.19.camel@localhost.localdomain>
-In-Reply-To: <1258992421.5022.19.camel@localhost.localdomain>
+	id S1757290AbZKWWZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 17:25:54 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com>
+Date: Mon, 23 Nov 2009 23:25:57 +0100
+In-Reply-To: <4B0A81BF.4090203@redhat.com> (Mauro Carvalho Chehab's message of
+	"Mon, 23 Nov 2009 10:36:15 -0200")
+Message-ID: <m3aaycri8a.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911240854.24054.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 02:37:01 am Shirley Ma wrote:
-> > > +             skb = (struct sk_buff *)buf;
-> > This cast is unnecessary, but a comment would be nice:
-> 
-> Without this cast there is a compile warning. 
+I though about it a bit - my idea:
 
-Hi Shirley,
+1. Receivers that can only decode their own remote controllers.
+   The present code (saa713x etc) can stay mostly unchanged. I'd only
+   verify that 7 bits (or whatever the number is) is enough for all
+   cases. The ioctl() should stay unchanged. That means keyboard-like
+   input layer interface.
 
-   Looks like buf is a void *, so no cast should be necessary.  But I could
-be reading the patch wrong.
 
-> > However, I question whether making it 16 byte is the right thing: the
-> > ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
-> 
-> Because in QEMU it requires 10 bytes header in a separately, so one page
-> is used to share between virtio_net_hdr header which is 10 bytes head
-> and rest of data. So I put 6 bytes offset here between two buffers. I
-> didn't look at the reason why a seperate buf is used for virtio_net_hdr
-> in QEMU.
+2. Receivers that can be programmed to receive different codes, and/or
+   which simply generate IRQ on space/mark changes. They would use a new
+   ioctl() instead:
 
-It's a qemu bug.  It insists the header be an element in the scatterlist by
-itself.  Unfortunately we have to accommodate it.
+int set_rc_mapping_ioctl(void *data ...)
 
-However, there's no reason for the merged rxbuf and big packet layout to be
-the same: for the big packet case you should layout as follows:
+data should be:
+	u32 protocol1;
+	u32 length1;
+	u32 protocol2;
+        u32 length2;
+        ...
+        u32 protocol_last;
+        u32 length_last;
+        (u32) 0.
 
-#define BIG_PACKET_PAD (NET_SKB_PAD - sizeof(struct virtio_net_hdr) + NET_IP_ALIGN)
-struct big_packet_page {
-	struct virtio_net_hdr hdr;
-	char pad[BIG_PACKET_PAD];
-	/* Actual packet data starts here */
-	unsigned char data[PAGE_SIZE - BIG_PACKET_PAD - sizeof(struct virtio_net_hdr)];
-};
+The protocol data would follow (after all proto/length fields to avoid
+alignment issues, but that's a detail of course).
 
-Then use this type as the template for registering the sg list for the
-big packet case.
+For example, RC5. It uses 1 start bit (formerly 2 bits), 1 "toggle" bit,
+5 address bits (group code) and 7 command bits (formerly 6 bits).
+Each key would be represented by u16, or maybe by a couple of u8.
+A "discard repeated" (perhaps inverted) bit should be included. Of
+course, the "symbolic" key code should be included for each "scan" code.
 
-> > I think you can move the memcpy outside the if, like so:
-> > 
-> >         memcpy(&hdr, p, hdr_len);
-> 
-> I didn't move it out, because num_buf = hdr->mhdr.num_buffers;
+Maybe:  u8 address_and_discard_repeated_bit;
+        u8 command_value;
+        u8 symbolic_key_code;
+repeated as required.
 
-Yes, that has to stay inside, but the memcpy can move out.  It's just a bit
-neater to have more common code.
+Protocol2 would follow protocol1 etc. (alignment issues). The driver
+could see this info (for example, to program hardware to receive a
+specific protocol) and then it should pass it to the generic
+lirc_set_mapping() routine.
 
-Thanks,
-Rusty.
+I'd also add separate trivial space/mark protocol, for debugging etc.
+Maybe:  u8 key_code_for_space;
+        u8 key_code_for_mark;
+Maybe specifying length = 0 (meaning constant "key" codes) would be
+enough? I think the "key" code should also specify some time stamp (or
+pulse length).
+
+
+
+Interface to the sensor driver:
+The driver should register an IRQ called on both (preferably) edges of
+the input signal. Basically it should only register IRQ and do:
+
+irqreturn_t xxx_irq()
+{
+	ack_irq_as_usual_etc();
+        if (input_signal->changed_state) /* really for us */
+		lirc_signal_state_change(input_signal->current_state);
+}
+
+The sensor driver would not know about the protocols etc. unless it
+needs to e.g. program the hardware.
+
+The middle layer (some sort of a library, and module) would interface to
+the userspace (ioctl passed by the driver, input interface) and to the
+hw driver. It would have to enable and call the required protocol
+decoders (based on the keymap loaded).
+-- 
+Krzysztof Halasa
