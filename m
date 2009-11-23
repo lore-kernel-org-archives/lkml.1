@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbZKWRHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZKWRM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbZKWRHk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:07:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZKWRHj
+	id S1752878AbZKWRM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZKWRM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:07:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52234 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbZKWRHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:07:39 -0500
-Date: Mon, 23 Nov 2009 18:07:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephane Eranian <eranian@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, eranian@gmail.com,
-       a.p.zijlstra@chello.nl, paulus@samba.org,
-       perfmon2-devel@lists.sourceforge.net
-Subject: Re: [PATCH] perf_events: fix bogus copy_to_user() in
- perf_event_read_group()
-Message-ID: <20091123170734.GB6209@elte.hu>
-References: <4b0ab8b1.1c07d00a.4859.5f71@mx.google.com>
- <bd4cb8900911230836na261658udd82f5c20630ffba@mail.gmail.com>
+	Mon, 23 Nov 2009 12:12:27 -0500
+Received: from gv-out-0910.google.com ([216.239.58.191]:41892 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZKWRM0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:12:26 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd4cb8900911230836na261658udd82f5c20630ffba@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
+References: <200910200956.33391.jarod@redhat.com>
+	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	 <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
+	 <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
+Date: Mon, 23 Nov 2009 12:12:30 -0500
+Message-ID: <829197380911230912i53d57dc2h10a5c31c79c9f1c@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: James Mastros <james@mastros.biz>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 23, 2009 at 12:05 PM, James Mastros <james@mastros.biz> wrote:
+> 2009/11/23 Devin Heitmueller <dheitmueller@kernellabs.com>:
+>> Just bear in mind that with the current in-kernel code, users do *not
+>> * have to manually select the RC code to use if they are using the
+>> default remote that shipped with the product.
+> This could still happen, if LIRC checks the identifiers of the
+> reciving device, and has a database that tells it mappings between
+> those devices and the remote controls that shipped with them.
+> However, it occours to me that the IR circumstances map pretty well to
+> what happens with ps/2 and serial devices now:
+>
+> 1: There are a variety of drivers for serio computer-side hardware,
+> each of which speaks the serio interface to the next-higher level.
+> These corrospond to the drivers for IR recievers.
+> 2: There's a raw serio interface, for those wishing to do strange things.
+> 3: There's also a variety of things that take data, using the kernel
+> serio API, and decode it into input events -- the ps2 keyboard driver,
+> the basic mouse driver, the advanced mice drivers.  This is where the
+> interface falls down a little bit -- the ps2 keyboard driver is the
+> closest analogue to what I'm suggesting.  The ps2 keyboard driver
+> creates scancode events, which map nicely to what the keyboard is
+> sending -- these are, for ex, rc5 codes.  It will also produce
+> key-up/key-down events, if it has a keymap loaded.  (This is the
+> difference with a ps2 keyboard -- a ps2 keyboard gets a map assigned
+> to it at boottime, so it works out-of-box.  This isn't really possible
+> with an IR remote -- though perhaps rc5 is standarized enough, I don't
+> think other protocols neccessarly are.)
+>
+> Userspace would have to load a keymap; those don't really belong in
+> kernel code.  Of course, userspace could look at the device
+> identifiers to pick a reasonable default keymap if it's not configured
+> to load another, solving the out-of-box experince.
 
-* Stephane Eranian <eranian@google.com> wrote:
+I think perhaps before we go much further into this, we may wish to
+come up with a set of use cases and expected behavior.  I worry that
+part of the problem here is people are thinking of how their
+particular cards behave, and few people have a holistic picture of all
+the possible scenarios.  Whatever implementation we come up, we should
+be confident that it meets the requirements of *all* the various
+hardware implementations.
 
-> ?? ?? ?? ??When using an event group, the value and id for non leaders events were
-> ?? ?? ?? ??wrong due to invalid offset into the outgoing buffer.
-> 
-> ?? ?? ?? ??Signed-off-by: Stephane Eranian <eranian@google.com>
-> 
-> ---
-> ??perf_event.c | ?? ??2 +-
-> ??1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-> index 0b0d5f7..8306127 100644
-> --- a/kernel/perf_event.c
-> +++ b/kernel/perf_event.c
-> @@ -1826,7 +1826,7 @@ static int perf_event_read_group(struct perf_event *event,
-> 
-> ?? ?? ?? ?? ?? ?? ?? ??size = n * sizeof(u64);
-> 
-> - ?? ?? ?? ?? ?? ?? ?? if (copy_to_user(buf + size, values, size)) {
-> + ?? ?? ?? ?? ?? ?? ?? if (copy_to_user(buf + ret, values, size)) {
-> ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??ret = -EFAULT;
-> ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??goto unlock;
-> ?? ?? ?? ?? ?? ?? ?? ??}
+I will try to draft up some requirements/use cases if people think
+this would be worthwhile.
 
-hm, patch is seriously garbled - mind sending it according to 
-Documentation/email-clients.txt?
+Devin
 
-Thanks,
-
-	Ingo
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
