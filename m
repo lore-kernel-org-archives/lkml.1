@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZKWJSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZKWJUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbZKWJSF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 04:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZKWJSE
+	id S1756390AbZKWJUS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 04:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZKWJUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 04:18:04 -0500
-Received: from zbasel.fortytwo.ch ([193.138.215.60]:50533 "EHLO
-	zbasel.fortytwo.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752548AbZKWJSD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 04:18:03 -0500
-From: Adrian von Bidder <avbidder@fortytwo.ch>
-To: Peter Feuerer <peter@piie.net>
-Subject: Re: acerhdf: stilll fighting between kernel and BIOS?
-Date: Mon, 23 Nov 2009 10:17:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-1-686; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200911200823.58897@fortytwo.ch> <cone.1258925270.277361.2967.1000@deskpiie>
-In-Reply-To: <cone.1258925270.277361.2967.1000@deskpiie>
+	Mon, 23 Nov 2009 04:20:17 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38471 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754721AbZKWJUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 04:20:17 -0500
+Date: Mon, 23 Nov 2009 10:20:18 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kernel.h: Fix kernel-doc notation
+In-Reply-To: <200911231220.26402.rusty@rustcorp.com.au>
+Message-ID: <alpine.LSU.2.00.0911231019400.18626@wotan.suse.de>
+References: <1258877529.4495.43.camel@ht.satnam> <200911231220.26402.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911231018.00163@fortytwo.ch>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heyho!
+On Mon, 23 Nov 2009, Rusty Russell wrote:
 
-On Sunday 22 November 2009 22.27:50 Peter Feuerer wrote:
-> issues with AOA 150 netbooks should be solved with current 2.6.32-git
->  tree. You can also try to use latest acerhdf of http://piie.net
+> On Sun, 22 Nov 2009 06:42:09 pm Jaswinder Singh Rajput wrote:
+> > 
+> > Fix the following htmldocs warnings:
+> > 
+> >   Warning(include/linux/kernel.h:708): No description found for parameter 'condition'
+> >   Warning(include/linux/kernel.h:708): Excess function parameter 'cond' description in 'BUILD_BUG_ON'
+> 
+> This look like  ajob for trivial@kernel.org or akpm?
+> 
+> For the pedants: Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Seems to work fine.  That was the fix I thought was already included in 
-2.6.31.
-
-thanks a lot.
-
--- vbi
-
- 
-> > Nov 20 08:07:12 laeggerli kernel: [100246.224141] acerhdf: temp 51
-> > Nov 20 08:07:12 laeggerli kernel: [100246.272136] acerhdf: fan OFF
-> > Nov 20 08:07:22 laeggerli kernel: [100256.328145] acerhdf: temp 51
-> > Nov 20 08:07:22 laeggerli kernel: [100256.376072] acerhdf: fan OFF
-
+Thanks, but ... what tree is this against? Certainly doesn't apply for 
+current Linus' tree.
 
 -- 
-As flies to wanton boys are we to the gods; they kill us for their sport.
-		-- Shakespeare, "King Lear"
+Jiri Kosina
+SUSE Labs, Novell Inc.
