@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZKWTuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZKWTub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbZKWTuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZKWTuM
+	id S1756265AbZKWTub (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbZKWTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:50:12 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51358 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756103AbZKWTuJ (ORCPT
+	Mon, 23 Nov 2009 14:50:25 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:54871 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756096AbZKWTuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:50:09 -0500
-Subject: Re: lockdep complaints in slab allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
-       linux-mm@kvack.org, mpm@selenic.com,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <alpine.DEB.2.00.0911231329560.5617@router.home>
-References: <20091118181202.GA12180@linux.vnet.ibm.com>
-	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-	 <1258709153.11284.429.camel@laptop>
-	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
-	 <1258714328.11284.522.camel@laptop>  <4B067816.6070304@cs.helsinki.fi>
-	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0911231329560.5617@router.home>
-Date: Mon, 23 Nov 2009 21:50:14 +0200
-Message-Id: <1259005814.15619.14.camel@penberg-laptop>
+	Mon, 23 Nov 2009 14:50:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RrJBS6z5RX2yRU98jFNT9hgLGIQ9aLi+l+2aA6ucZ22yltI7oEI5zIjlGm5LHlXJbT
+         ibhVgS4VR9Ztr4x8FkVwYGh1RlLzBZj4hKshUntQM5ZFLb+sLHtc5e4/00AtJF1XUbt4
+         pRzNysflbPmSZcaWCCHYYFD3W8xS4SM6Inc7g=
+Date: Mon, 23 Nov 2009 14:50:22 -0500
+From: tmhikaru@gmail.com
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Jens Axboe <axboe@kernel.dk>, linux-scsi@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
+Message-ID: <20091123195022.GA18510@roll>
+References: <20091123160914.GG15679@duck.suse.cz> <Pine.LNX.4.44L0.0911231319060.2958-100000@iolanthe.rowland.org> <20091123185449.GA11186@quack.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123185449.GA11186@quack.suse.cz>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009, Pekka Enberg wrote:
-> > That turns out to be _very_ hard. How about something like the following
-> > untested patch which delays slab_destroy() while we're under nc->lock.
+On Mon, Nov 23, 2009 at 07:54:50PM +0100, Jan Kara wrote:
+> On Mon 23-11-09 13:20:26, Alan Stern wrote:
+> > On Mon, 23 Nov 2009, Jan Kara wrote:
+> > 
+> > > On Mon 23-11-09 10:06:03, Alan Stern wrote:
+> > > > On Mon, 23 Nov 2009, Jan Kara wrote:
+> > > > 
+> > > > >   Yeah, from what you write, it looks like USB enclosure is at fault (or it
+> > > > > could still be your USB controller but I doubt it).  It's still a bit
+> > > > > bothering that the error reported by the drive was not properly propagated
+> > > > > up to VFS. Either it's some block layer retry/ignore magic that I missed or
+> > > > > we ignore errors from block layer in some place.
+> > > > 
+> > > > Is there any interest in tracking this down?  It's not hard to find out
+> > > > what low-level errors are being reported and to generate them on demand
+> > > > with an emulated USB disk drive.
+> > >   Well, if you could provide me with the patch, I could try to track down
+> > > why the errors aren't propagated... It would be interesting because if it's
+> > > not some retry logic in block layer, it's a bug in VFS ;).
+> > 
+> > I can't provide a patch without first knowing what the errors are.  The 
+> > way to find out is to use usbmon.  See Documentation/usb/usbmon.txt for 
+> > instructions.
+>   Ah, OK. The problem manifests itself as an error in SATA communication
+> (which in fact somehow happens over USB, but I don't really know the
+> details of mass storage over USB) so debugging USB would become actual only
+> if we found out it's really some bug in an usb stack. But so far the most
+> probable is just an error somewhere between the USB controller in the
+> enclosure and the drive itself. BTW: Is the data transferred over USB
+> checksummed?
+> 
+> 									Honza
+	Mind that this is an ide hard drive in a usb enclosure, not sata.
+The error reported is bizzare. I don't know if I'll be able to get the
+enclosure to cause the error on demand, but before I try supergluing it,
+I'll try to do whatever I need to do with usbmon so we can get the error
+that's actually happening so you can do whatever you need to do to track it
+down :)
 
-On Mon, 2009-11-23 at 13:30 -0600, Christoph Lameter wrote:
-> Code changes to deal with a diagnostic issue?
-
-OK, fair enough. If I suffer permanent brain damage from staring at the
-SLAB code for too long, I hope you and Matt will chip in to pay for my
-medication.
-
-I think I was looking at the wrong thing here. The problem is in
-cache_free_alien() so the comment in slab_destroy() isn't relevant.
-Looking at init_lock_keys() we already do special lockdep annotations
-but there's a catch (as explained in a comment on top of
-on_slab_alc_key):
-
- * We set lock class for alien array caches which are up during init.
- * The lock annotation will be lost if all cpus of a node goes down and
- * then comes back up during hotplug
-
-Paul said he was running CPU hotplug so maybe that explains the problem?
-
-			Pekka
-
+Tim McGrath
