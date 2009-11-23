@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZKWPxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZKWPyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbZKWPxq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZKWPxq
+	id S1754424AbZKWPyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZKWPyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:53:46 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36786 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753053AbZKWPxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:53:45 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18+V1NSPDo+A5lnQfOcxaFT2/ETnYJGduFU2GsTVl
-	ziqWwo/tkP8Uz6
-Subject: Re: newidle balancing in NUMA domain?
-From: Mike Galbraith <efault@gmx.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20091123152931.GD19175@wotan.suse.de>
-References: <20091123112228.GA2287@wotan.suse.de>
-	 <1258987059.6193.73.camel@marge.simson.net>
-	 <20091123151152.GA19175@wotan.suse.de> <1258989704.4531.574.camel@laptop>
-	 <20091123152931.GD19175@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 16:53:37 +0100
-Message-Id: <1258991617.6182.21.camel@marge.simson.net>
+	Mon, 23 Nov 2009 10:54:16 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:36126 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561AbZKWPyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 10:54:16 -0500
+Subject: Re: [PATCH] Fixed bug in Wireless Extension Code
+ (CONFIG_WEXT_CORE).
+From: Johannes Berg <johannes@sipsolutions.net>
+To: mike@mspradling.com
+Cc: davem@davemloft.net, hugh.dickins@ticali.co.uk, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091123154225.GA26103@MSServer>
+References: <1258936602-6110-1-git-send-email-mike@mspradling.com>
+	 <1258969541.7094.138.camel@johannes.local>
+	 <20091123154225.GA26103@MSServer>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-JPQRH8OzDM0VlCEdBEKn"
+Date: Mon, 23 Nov 2009 16:53:46 +0100
+Message-ID: <1258991626.7094.174.camel@johannes.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 16:29 +0100, Nick Piggin wrote:
 
-> So basically about the least well performing or scalable possible
-> software architecture. This is exactly the wrong thing to optimise
-> for, guys.
+--=-JPQRH8OzDM0VlCEdBEKn
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hm.  Isn't fork/exec our daily bread?
+On Mon, 2009-11-23 at 10:42 -0500, Michael Spradling wrote:
+> I don't think its a Kconfig issue, see notes below.  However,
+> I have included my config file just in case I may be wrong.
 
-> The fact that you have to coax the scheduler into touching heaps
-> more remote cachelines and vastly increasing the amount of inter
-> node task migration should have been kind of a hint.
-> 
-> 
-> > Fork balancing only works until all cpus are active. But once a core
-> > goes idle it's left idle until we hit a general load-balance cycle.
-> > Newidle helps because it picks up these threads from other cpus,
-> > completing the current batch sooner, allowing the program to continue
-> > with the next.
-> > 
-> > There's just not much you can do from the fork() side of things once
-> > you've got them all running.
-> 
-> It sounds like allowing fork balancing to be more aggressive could
-> definitely help.
+You config file doesn't have _any_ wireless options set. Not even
+CONFIG_NET.
 
-It doesn't. Task which is _already_ forked, placed and waiting over
-yonder can't do spit for getting this cpu active again without running
-so he can phone home.  This isn't only observable with x264, it just
-rubs our noses in it.  It is also quite observable in a kbuild.  What if
-the waiter is your next fork?
+johannes
 
-	-Mike
+--=-JPQRH8OzDM0VlCEdBEKn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLCrAHAAoJEODzc/N7+Qma4NkP/A1yPNgSYbHBCDokP20si9KW
+UXfG8Rmbdb378eRWIt3hmKE96vouCZkcka0uqbn/iILprofnVXBwnGKR/FqNA6zt
+AgF78zJQ/QXczPd43Z3vvGrqbq0altYmXbmuWY6v4TQHOWQzA9dUHkcmyJ9DTd9P
+PfjwStT4jso7zccaj0prHPG7SyAZB15vrBee7RvRK492BX+zPCAs5QjRLOYOynq3
+aj8tuDxXGW+K0uNOcj/1AZtYn0pusdD+0D8WYWQWTNT9caOpy8jMTZEGg89WGlYm
+YO3gN281gRRblwfbg1hHfCCMh6xXoLW8WGzCgOXmvSW87bdHzenKy5eBX7JWcXD3
+mZIxz38gDSmHglbBegtcHUpWawgZceiASLxE/fV0mgJVdYCMfrvjSZvpfoSf8pge
+jgtpWhnrLIjO9kSZqAxeB+4ZACjXhbzSW+fz0qt+oMslwPLomsA2Ts7hejfYw7nG
+y3s5Sqx3WaCAFDltvDClteK5cjbKofCLLO0lL6WwxquvOUx6eiO+oWjqV0c9aGFo
+sREDbyriXFe+F8C+Sq6cjI/UCwqPV5groUmke3P3b7hlSkIN5ePkEfo04q+cgiJQ
+0ViJifbuHlA2A+Z4kiluKn2YTBZs9s51u4Wd/jSMHkHurRtG67f69MHNWqPfw6UN
+MKfQ529PQ0c8dVgFz+5R
+=FshL
+-----END PGP SIGNATURE-----
+
+--=-JPQRH8OzDM0VlCEdBEKn--
 
