@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZKWTCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZKWTDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZKWTCD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:02:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZKWTCC
+	id S1754977AbZKWTDi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZKWTDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:02:02 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55125 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZKWTCA (ORCPT
+	Mon, 23 Nov 2009 14:03:38 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:54566 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZKWTDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:02:00 -0500
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
- and big packets in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200911231138.30755.rusty@rustcorp.com.au>
-References: <1258697745.7416.20.camel@localhost.localdomain>
-	 <4B063509.10006@gmail.com> <1258734101.11049.1.camel@localhost.localdomain>
-	 <200911231138.30755.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 11:01:46 -0800
-Message-Id: <1259002906.5022.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Mon, 23 Nov 2009 14:03:37 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Subject: Re: RFC: Put printk buffer in video ram
+Date: Mon, 23 Nov 2009 20:03:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev@lists.ozlabs.org
+References: <1258855506.3153.1.camel@maxim-laptop> <20091123183220.GB24482@elte.hu> <4B0ADA84.5050300@nortel.com>
+In-Reply-To: <4B0ADA84.5050300@nortel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911232003.31482.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18A1DCViTXvSJ1I4W+5ZS780tp5F1m3juXVBu5
+ sJHlM7Fzk4thpFaiv1C6fDujx9jDpj2OgPspDOLJSNhX+qbLGB
+ c9/PbvI46sNSJ8x3hPa0A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rusty,
+On Monday 23 November 2009, Chris Friesen wrote:
+> We've had a mechanism sort of like this for quite a while.  Hasn't been
+> pushed to mainline because it used board-specific hardware and we're
+> usually multiple kernel versions behind mainline.
+> 
+> Anyways, a couple things that we've found to be useful are:
+> 1) The ability to allocate a chunk of this persistent memory area for a
+> special purpose.  This allows things like memory-mapped circular buffers
+> for per-cpu binary data.
+> 2) An API to log just to this persistent area and bypass the normal
+> console completely.  This can be useful when debugging issues where the
+> normal logging paths result in a hang.
 
-On Mon, 2009-11-23 at 11:38 +1030, Rusty Russell wrote:
-> Overall, the patch looks good.  But it would have been nicer if it
-> were
-> split into several parts: cleanups, new infrastructure, then the
-> actual
-> allocation change.
+Some powerpc machines have a memory-mapped nvram, in which the kernel
+can install persistant 'partitions'. Not all of them are memory mapped,
+but for those that are (e.g. IBM QS22), your approach sounds perfect.
 
-I have split the patch into a set: cleanups, new infrastructure, and
-actual allocation change in add buffers: add_recvbuf_big,
-add_recvbuf_small, add_recvbuf_mergeage per your suggestion, and also in
-recv buffers: recv_big, recv_small, recv_mergeable.
-
-I hope you will agree with it. I am testing the patch-set now, will
-submit it soon after finishing all test cases.
-
-Thanks
-Shirley
-
+	Arnd <><
