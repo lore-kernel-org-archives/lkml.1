@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZKWOhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbZKWOhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbZKWOhO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:37:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZKWOhN
+	id S1755166AbZKWOhi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZKWOhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:37:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47421 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbZKWOhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:37:12 -0500
-Date: Mon, 23 Nov 2009 12:37:02 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 1/2] perf: Add 'perf kmem' tool
-Message-ID: <20091123143701.GC15547@ghostprotocols.net>
-References: <84144f020911200019p4978c8e8tc593334d974ee5ff@mail.gmail.com> <20091120083053.GB19778@elte.hu> <4B0657A4.2040606@cs.helsinki.fi> <4B06590C.7010109@cn.fujitsu.com> <20091120090353.GE19778@elte.hu> <20091120144215.GH18283@ghostprotocols.net> <20091120164110.GA24183@elte.hu> <20091120175228.GD27926@ghostprotocols.net> <20091123065110.GC31758@elte.hu> <1258960941.4531.19.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1258960941.4531.19.camel@laptop>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 23 Nov 2009 09:37:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46403 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754833AbZKWOhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 09:37:37 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18YKR1/ozIYwfvkeDMZWP4qMMxcMsVQftBEzpGGfu
+	0Iq8kGGAgzTMs5
+Subject: Re: newidle balancing in NUMA domain?
+From: Mike Galbraith <efault@gmx.de>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20091123112228.GA2287@wotan.suse.de>
+References: <20091123112228.GA2287@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 23 Nov 2009 15:37:39 +0100
+Message-Id: <1258987059.6193.73.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Nov 23, 2009 at 08:22:21AM +0100, Peter Zijlstra escreveu:
-> On Mon, 2009-11-23 at 07:51 +0100, Ingo Molnar wrote:
-> > I havent tried this - is this really possible to do on an x86 box, with 
-> > a typical distro? Can i install say Fedora PowerPC debuginfo packages on 
-> > an x86 box, while also having the x86 debuginfo packages there? 
+On Mon, 2009-11-23 at 12:22 +0100, Nick Piggin wrote:
+> Hi,
 > 
-> The best option would be to allow to specify a chroot parameter, where
-> we can specify the embedded root filesystem on out machine.
+> I wonder why it was decided to do newidle balancing in the NUMA
+> domain? And with newidle_idx == 0 at that.
+> 
+> This means that every time the CPU goes idle, every CPU in the
+> system gets a remote cacheline or two hit. Not very nice O(n^2)
+> behaviour on the interconnect. Not to mention trashing our
+> NUMA locality.
 
-yeah, I'm working now on a vmlinux_path, so that the symbol machinery in
-perf looks at /lib/module/`uname -r`/build/vmlinux,
-/usr/lib/debug/lib/modules/`uname -r`/vmlinux, ./vmlinux as a default or
-in getenv("VMLINUX_PATH") if set. Being able to specify a
-SYMTAB_PREFIX_PATH also should be possible.
+Painful on little boxen too if left unchained.
  
-> I'm not even sure embedded distros even have this separate debug package
-> crazyness, you simply build the distro with or without debuginfo.
+> And then I see some proposal to do ratelimiting of newidle
+> balancing :( Seems like hack upon hack making behaviour much more
+> complex.
 
-Whatever crazyness people usually do to find the files with matching,
-richer symtabs we should support :)
+That's mine, and yeah, it is hackish.  It just keeps newidle at bay for
+high speed switchers while keeping it available to kick start CPUs for
+fork/exec loads.  Suggestions welcome.  I have a threaded testcase
+(x264) where turning the think off costs ~40% throughput.  Take that
+same testcase (or ilk) to a big NUMA beast, and performance will very
+likely suck just as bad as it does on my little Q6600 box.
 
-- Arnaldo
+Other than that, I'd be most happy to see the thing crawl back in it's
+cave and _die_ despite the little gain it provides for a kbuild.  It has
+been (is) very annoying.
+
+> One "symptom" of bad mutex contention can be that increasing the
+> balancing rate can help a bit to reduce idle time (because it
+> can get the woken thread which is holding a semaphore to run ASAP
+> after we run out of runnable tasks in the system due to them 
+> hitting contention on that semaphore).
+
+Yes, when mysql+oltp starts jamming up, load balancing helps bust up the
+logjam somewhat, but that's not at all why newidle was activated..
+
+> I really hope this change wasn't done in order to help -rt or
+> something sad like sysbench on MySQL.
+
+Newidle was activated to improve fork/exec CPU utilization.  A nasty
+side effect is that it tries to rip other loads to tatters.
+
+> And btw, I'll stay out of mentioning anything about CFS development,
+> but it really sucks to be continually making significant changes to
+> domains balancing *and* per-runqueue scheduling at the same time :(
+> It makes it even difficult to bisect things.
+
+Yeah, balancing got jumbled up with desktop tweakage.  Much fallout this
+round, and some things still to be fixed back up.
+
+	-Mike
+
