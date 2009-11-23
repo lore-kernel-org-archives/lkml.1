@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZKWTxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZKWTyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZKWTxS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbZKWTxR
+	id S1756326AbZKWTyZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZKWTyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:53:17 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:3438 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755806AbZKWTxQ (ORCPT
+	Mon, 23 Nov 2009 14:54:24 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:59479 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755459AbZKWTyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:53:16 -0500
-Date: Mon, 23 Nov 2009 12:53:20 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Tony Luck <tony.luck@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       greg@kroah.com, linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, deller@gmx.de,
-       jejb@parisc-linux.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
-Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the
-	kernel (__ksymtab)
-Message-ID: <20091123195320.GD26810@ldl.fc.hp.com>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <20091104171916.GA6323@merkur.ravnborg.org> <4AF2E00A.3010107@tuffmail.co.uk> <200911091347.57286.rusty@rustcorp.com.au> <12c511ca0911201420i5f2d4751m25ae5288b69dbabb@mail.gmail.com> <4B072E31.4000906@tuffmail.co.uk>
+	Mon, 23 Nov 2009 14:54:23 -0500
+Date: Mon, 23 Nov 2009 19:54:15 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Kay Sievers <kay.sievers@vrfy.org>,
+       David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
+       linux-hotplug@vger.kernel.org
+Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
+	changes
+Message-ID: <20091123195415.GA16833@srcf.ucam.org>
+References: <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <20091122233749.GA9699@ucw.cz> <20091123141754.GE8742@kernel.dk> <20091123142557.GA10084@srcf.ucam.org> <20091123143140.GG8742@kernel.dk> <20091123144238.GA10275@srcf.ucam.org> <20091123195000.GK8742@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B072E31.4000906@tuffmail.co.uk>
+In-Reply-To: <20091123195000.GK8742@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan, Rusty,
+On Mon, Nov 23, 2009 at 08:50:00PM +0100, Jens Axboe wrote:
 
-* Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
-> Tony Luck wrote:
->> The sorted ksymtab breaks ia64 (and possibly ppc64 and
->> parisc too).
+> If the polling works out, then yes that approach is certainly a lot
+> better from a performance impact pov.
+> 
+> What kind of time intervals are you targetting?
 
-[snip]
+On the order of a second. I'm doing benchmarking with my current 
+implementation now, I'll let you know how it looks.
 
->> The syntax you need for this* is:
->>
->>         .long @fptr(____pagevec_lru_add)
->>         .long __kstrtab____pagevec_lru_add
->>
->> Note that you must only use the @fptr(name) syntax for
->> function exports. Exported data items just need an address.
->>
->> -Tony
->>
->> * On ia64 ... powerpc and parisc might need something else.
->>   
-> Thanks!  It doesn't sound too hard to retro-fit your suggestion.
->
-> Still, I can't help wondering if I've done this all wrong :-/.  Perhaps  
-> I should avoid the assembler.  Instead, I could write a tool to sort the  
-> ksymtab elf sections in-place (and mangle their relocations  
-> accordingly).  That should preserve any special handling for function  
-> symbols without arch-specific special cases.  It would also concentrate  
-> all the magic in one tool - rather than it being scattered between the  
-> modpost tool, mod_export.h, tmp_exports.S, and vmlinux.lds.h.
-
-In the meantime, while Alan is deciding the proper way to fix
-this, would it be possible to drop the offending patch series
-from linux-next?
-
-It makes ia64 unbootable, and has ripple-through effects, since
-mmotm is based on linux-next these days.
-
-Thanks,
-/ac
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
