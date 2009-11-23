@@ -1,57 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZKWTDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZKWTFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754977AbZKWTDi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZKWTDi
+	id S1753914AbZKWTFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZKWTFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:03:38 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:54566 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbZKWTDh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:03:37 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: RFC: Put printk buffer in video ram
-Date: Mon, 23 Nov 2009 20:03:31 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linuxppc-dev@lists.ozlabs.org
-References: <1258855506.3153.1.camel@maxim-laptop> <20091123183220.GB24482@elte.hu> <4B0ADA84.5050300@nortel.com>
-In-Reply-To: <4B0ADA84.5050300@nortel.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 23 Nov 2009 14:05:25 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:60671 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752957AbZKWTFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 14:05:24 -0500
+Date: Mon, 23 Nov 2009 20:05:27 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v3] k10temp: temperature sensor for AMD Family 10h/11h 
+ CPUs
+Message-ID: <20091123200527.1114cbc2@hyperion.delvare>
+In-Reply-To: <4B0AAA55.3040702@ladisch.de>
+References: <4AF91F70.10106@ladisch.de>
+	<4B06501B.8080509@ladisch.de>
+	<87ws1l5wcl.fsf@depni.sinp.msu.ru>
+	<4B0673D7.5010006@ladisch.de>
+	<20091120123016.19d98ab4@hyperion.delvare>
+	<4B068402.7020606@ladisch.de>
+	<20091120131855.7f8f8722@hyperion.delvare>
+	<4B0A3DB6.9090703@ladisch.de>
+	<20091123145154.5b2b5735@hyperion.delvare>
+	<4B0AAA55.3040702@ladisch.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911232003.31482.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18A1DCViTXvSJ1I4W+5ZS780tp5F1m3juXVBu5
- sJHlM7Fzk4thpFaiv1C6fDujx9jDpj2OgPspDOLJSNhX+qbLGB
- c9/PbvI46sNSJ8x3hPa0A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 November 2009, Chris Friesen wrote:
-> We've had a mechanism sort of like this for quite a while.  Hasn't been
-> pushed to mainline because it used board-specific hardware and we're
-> usually multiple kernel versions behind mainline.
+On Mon, 23 Nov 2009 16:29:25 +0100, Clemens Ladisch wrote:
+> Jean Delvare wrote:
+> > On Mon, 23 Nov 2009 08:45:58 +0100, Clemens Ladisch wrote:
+> >>  Documentation/hwmon/k10temp |   57 ++++++++++++
+> >>  drivers/hwmon/k10temp.c     |  142 ++++++++++++++++++++++++++++++++
+> > 
+> > The name k10temp is a problem, as AMD insists that there is no such
+> > things as K10 and K11, but instead "family 10h" and "family 11h"
+> > processors.
 > 
-> Anyways, a couple things that we've found to be useful are:
-> 1) The ability to allocate a chunk of this persistent memory area for a
-> special purpose.  This allows things like memory-mapped circular buffers
-> for per-cpu binary data.
-> 2) An API to log just to this persistent area and bypass the normal
-> console completely.  This can be useful when debugging issues where the
-> normal logging paths result in a hang.
+> K10 was AMD's internal code name, and is widely used in practice.
+> I'd like to keep this name since it is consistent with the older
+> k8temp driver.
+> 
+> What name would you propose instead?  "amdfam10temp"?
 
-Some powerpc machines have a memory-mapped nvram, in which the kernel
-can install persistant 'partitions'. Not all of them are memory mapped,
-but for those that are (e.g. IBM QS22), your approach sounds perfect.
+Not very readable, I admit. "amd10temp" would do, I guess. But I agree
+it doesn't matter that much, it's only a driver name after all.
 
-	Arnd <><
+> >> +  control cooling systems. Tctl is a non-physical temperature on an
+> >> +  arbitrary scale measured in degrees. It does _not_ represent an actual
+> >> +  physical temperature like die or case temperature. Instead, it specifies
+> >> +  the processor temperature relative to the point at which the system must
+> >> +  supply the maximum cooling for the processor's specified maximum case
+> >> +  temperature and maximum thermal power dissipation.
+> >> +
+> >> +The maximum value for Tctl is defined as 70 degrees, so, as a rule of thumb,
+> >> +this value should not exceed 60 degrees.
+> > 
+> > Now I am puzzled. If the temperature value is on an arbitrary scale,
+> > then the value returned by the driver is essentially fake?
+> 
+> Yes (and it's near enough the absolute value to look plausible).
+
+I don't know if it is a good or bad idea. Bad, I guess.
+
+> > Don't we have additional information about the actual maximum Tcase
+> > value for the different supported models, as we have in coretemp?
+> 
+> For AMD, Tcase is the physical temperature.  Did you mean Tctl?
+
+I meant the physical temperature when Tctl = 70. In other words, the
+offset between Tctl and the physical temperature.
+
+> I'll add Tctl max (= "100% cooling, please") as temp1_max, and there's
+
+Yes, good idea.
+
+> a register that contains the Tctl value at which the processor starts
+> throttling, which could be exported as temp1_crit(_hyst), if I
+> understand the lm-sensors documentation correctly.
+
+This is correct.
+
+> As for your other comments, I'll integrate them in the next version of
+> the patch.
+>
+> > If not, then it might be the right time to introduce a new interface
+> > for relative temperature values. This needs some work, as we must first
+> > define the interface, then implement support in libsensors and sensors,
+> > and other monitoring applications, and then convert the affected
+> > drivers. But apparently we will have to, as major CPU makers are not
+> > able to implement something as simple as an absolute temperature
+> > sensor :(
+> 
+> There still is the built-in diode to be read by the motherboard, but the
+> internal sensor was never intended to be an absolute measurement but
+> just as a means for controlling the cooling.
+
+Still we use it for that purpose at the moment. Maybe we simply should
+not?
+
+-- 
+Jean Delvare
