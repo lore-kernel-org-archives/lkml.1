@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZKWRM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZKWRTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752878AbZKWRM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZKWRM1
+	id S1753005AbZKWRTk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZKWRTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:12:27 -0500
-Received: from gv-out-0910.google.com ([216.239.58.191]:41892 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbZKWRM0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:12:26 -0500
+	Mon, 23 Nov 2009 12:19:40 -0500
+Received: from www.tglx.de ([62.245.132.106]:46580 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbZKWRTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:19:39 -0500
+Date: Mon, 23 Nov 2009 18:19:20 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       alan@linux.intel.com
+Subject: Re: [patch] timer: Add a mod_timer_msec() API function
+In-Reply-To: <20091123065108.1fd78779@infradead.org>
+Message-ID: <alpine.LFD.2.00.0911231728200.24119@localhost.localdomain>
+References: <20091122154111.197e1a8a@infradead.org> <20091123082648.GB13186@elte.hu> <20091123065108.1fd78779@infradead.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
-References: <200910200956.33391.jarod@redhat.com>
-	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
-	 <abc933c50911230905g60e2071bpbee9318817d56fb5@mail.gmail.com>
-Date: Mon, 23 Nov 2009 12:12:30 -0500
-Message-ID: <829197380911230912i53d57dc2h10a5c31c79c9f1c@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: James Mastros <james@mastros.biz>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 12:05 PM, James Mastros <james@mastros.biz> wrote:
-> 2009/11/23 Devin Heitmueller <dheitmueller@kernellabs.com>:
->> Just bear in mind that with the current in-kernel code, users do *not
->> * have to manually select the RC code to use if they are using the
->> default remote that shipped with the product.
-> This could still happen, if LIRC checks the identifiers of the
-> reciving device, and has a database that tells it mappings between
-> those devices and the remote controls that shipped with them.
-> However, it occours to me that the IR circumstances map pretty well to
-> what happens with ps/2 and serial devices now:
->
-> 1: There are a variety of drivers for serio computer-side hardware,
-> each of which speaks the serio interface to the next-higher level.
-> These corrospond to the drivers for IR recievers.
-> 2: There's a raw serio interface, for those wishing to do strange things.
-> 3: There's also a variety of things that take data, using the kernel
-> serio API, and decode it into input events -- the ps2 keyboard driver,
-> the basic mouse driver, the advanced mice drivers.  This is where the
-> interface falls down a little bit -- the ps2 keyboard driver is the
-> closest analogue to what I'm suggesting.  The ps2 keyboard driver
-> creates scancode events, which map nicely to what the keyboard is
-> sending -- these are, for ex, rc5 codes.  It will also produce
-> key-up/key-down events, if it has a keymap loaded.  (This is the
-> difference with a ps2 keyboard -- a ps2 keyboard gets a map assigned
-> to it at boottime, so it works out-of-box.  This isn't really possible
-> with an IR remote -- though perhaps rc5 is standarized enough, I don't
-> think other protocols neccessarly are.)
->
-> Userspace would have to load a keymap; those don't really belong in
-> kernel code.  Of course, userspace could look at the device
-> identifiers to pick a reasonable default keymap if it's not configured
-> to load another, solving the out-of-box experince.
+On Mon, 23 Nov 2009, Arjan van de Ven wrote:
+> On Mon, 23 Nov 2009 09:26:48 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > This code first rounds to 1 second - and if that doesnt fall within
+> > the slack window it rounds to the (rather aribtrary) rounding of 16
+> > jiffies.
+> > 
+> > I'd suggest to use up the slack to its maximum, by rounding up modulo 
+> > the largest power-of-2 value that still fits into the slack.
+> > 
+> > So if slack is 30, the rounding is 16. If slack is 5, the rounding is
+> > 4, etc.
+> 
+> well.. the point of the rounding is that there is a maximum likelyhood
+> that OTHER timers align.
+> 
+> I suppose what you suggest would do that too; need to think of a clever
+> way to not make that expensive
+> (after coffee I'll look at if xor + find first bit will work ;-)
 
-I think perhaps before we go much further into this, we may wish to
-come up with a set of use cases and expected behavior.  I worry that
-part of the problem here is people are thinking of how their
-particular cards behave, and few people have a holistic picture of all
-the possible scenarios.  Whatever implementation we come up, we should
-be confident that it meets the requirements of *all* the various
-hardware implementations.
+I think we need to rethink the timer wheel subsystem in general
+instead of adding more and more fancy interfaces.
 
-I will try to draft up some requirements/use cases if people think
-this would be worthwhile.
+Looking at the examples you provided for mod_timer_msec() I noticed
+that most of the slack values you chose are between 10% and 20% of the
+timeout.
 
-Devin
+That means the larger the timeout the less interesting is the accuracy
+which makes a lot of sense.
 
--- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+I really wonder whether there is any timer_list user which has the
+need for large and precise timeouts. If not we could simplify the
+whole timer wheel business radically and get rid of the worst thing in
+it: recascading.
+
+That's what I have in mind:
+
+    	       timeout    accuracy
+array0	  <    0.256 s        1 ms
+array1	  <    2.560 s       40 ms
+array2	  <   25.600 s      400 ms
+array3	  <  256.000 s     4000 ms
+array4	  >= 256.000 s    40000 ms 
+
+Similar to the current timer wheel, but instead of recascading on
+every wraparound of the array0 index we could expire the timers in
+array1-4 in their accuracy interval which aligns them automatically
+without any slack and rounding business on timer insertion.
+
+The exact array definitions need of course more thought, but you get
+the idea.
+
+Such an implementation would also simplify the search for the next
+expiring timer as we could keep track of empty/non-empty buckets with
+an additional per array bitfield.
+
+If there are a few timers which really need large and precise timeouts
+its easy enough to switch them over to hrtimers.
+
+Thoughts ?
+
+Thanks,
+
+	tglx
