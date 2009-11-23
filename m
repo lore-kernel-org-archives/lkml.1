@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZKWSGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbZKWSIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZKWSGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 13:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZKWSGV
+	id S1753090AbZKWSIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 13:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZKWSIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 13:06:21 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:28245 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZKWSGU (ORCPT
+	Mon, 23 Nov 2009 13:08:51 -0500
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:33938 "EHLO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751128AbZKWSIu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 13:06:20 -0500
-Date: Mon, 23 Nov 2009 10:05:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: tip tree build warning
-Message-Id: <20091123100539.bcdbd211.randy.dunlap@oracle.com>
-In-Reply-To: <20091116090507.18abfa0f.randy.dunlap@oracle.com>
-References: <20091116162503.7f083c3a.sfr@canb.auug.org.au>
-	<20091116090507.18abfa0f.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Mon, 23 Nov 2009 13:08:50 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B0ACF05.0214:SCFMA4539814,ss=1,fgs=0
+Content-Transfer-Encoding: 7BIT
+Subject: drivers/gpio/vr41xx_giu.c: use resource_size()
+Date: Mon, 23 Nov 2009 13:08:56 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901EE5BF9@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: drivers/gpio/vr41xx_giu.c: use resource_size()
+Thread-Index: AcpsaAW4r99jz6PvQRKzkPc0pB5A0g==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <yuasa@linux-mips.org>
+X-OriginalArrivalTime: 23 Nov 2009 18:08:56.0361 (UTC) FILETIME=[05D34190:01CA6C68]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Nov 2009 09:05:07 -0800 Randy Dunlap wrote:
+Use resource_size() for ioremap.
 
-> On Mon, 16 Nov 2009 16:25:03 +1100 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> > 
-> > Today's linux-next build (x86_64 allmodconfig) produced this warning:
-> > 
-> > arch/x86/kernel/apic/apic.c: In function 'calibrate_APIC_clock':
-> > arch/x86/kernel/apic/apic.c:650: warning: format '%ld' expects type 'long int', but argument 2 has type 'u32'
-> > 
-> > Introduced by commit 23af368e9a904f59256c27d371ce223d6cee0430
-> > ("clockevents: Use u32 for mult and shift factors").
-> 
-> 
-> also this warning:
-> 
-> arch/x86/kernel/vmiclock_32.c:230: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'u32'
-> 
-> (i386 build)
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Yoichi Yuasa <yuasa@linux-mips.org>
 
-
-Thomas posted a patch for this, but I'm still seeing this warning (20091123),
-so I guess his patch hasn't been merged/pushed yet?
-
-thanks,
 ---
-~Randy
+
+diff --git a/drivers/gpio/vr41xx_giu.c b/drivers/gpio/vr41xx_giu.c
+index b16c9a8..956f911 100644
+--- a/drivers/gpio/vr41xx_giu.c
++++ b/drivers/gpio/vr41xx_giu.c
+@@ -518,7 +518,7 @@ static int __devinit giu_probe(struct platform_device *pdev)
+ 	if (!res)
+ 		return -EBUSY;
+ 
+-	giu_base = ioremap(res->start, res->end - res->start + 1);
++	giu_base = ioremap(res->start, resource_size(res));
+ 	if (!giu_base)
+ 		return -ENOMEM;
+  
