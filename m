@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZKWXxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbZKWX5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932102AbZKWXxF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:53:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbZKWXxD
+	id S1757557AbZKWX5t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbZKWX5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:53:03 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48126 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756829AbZKWXxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:53:01 -0500
-Date: Tue, 24 Nov 2009 10:53:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: failed to fetch the mips tree
-Message-Id: <20091124105303.512479aa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__24_Nov_2009_10_53_03_+1100_q2.3EmxB3cfI6JNI"
+	Mon, 23 Nov 2009 18:57:46 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:53023 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757521AbZKWX5n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 18:57:43 -0500
+Message-ID: <4B0B214A.5020006@oracle.com>
+Date: Mon, 23 Nov 2009 15:56:58 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Greg KH <gregkh@suse.de>, kay.sievers@vrfy.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sysfs: fix SYSFS_DEPRECATED_V2 prompt
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B0B216D.00B8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__24_Nov_2009_10_53_03_+1100_q2.3EmxB3cfI6JNI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi Ralf,
+The SYSFS_DEPRECATED_V2 says "remove" older, deprecated features,
+but it actually enables them, so correct this confusing, backwards
+text.
 
-Today's fetch of the mips tree got this error:
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+---
+ init/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-git.linux-mips.org[0: 78.24.191.183]: errno=3DConnection refused
-fatal: unable to connect a socket (Connection refused)
-
-I will use the version from next-20091123 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__24_Nov_2009_10_53_03_+1100_q2.3EmxB3cfI6JNI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksLIF8ACgkQjjKRsyhoI8y/IACff+jsQdXtOf/jo7W8Bv59jHhv
-dqsAnRhEC0V82IaATKoQfsrMAp6tQ2Ew
-=yg4j
------END PGP SIGNATURE-----
-
---Signature=_Tue__24_Nov_2009_10_53_03_+1100_q2.3EmxB3cfI6JNI--
+--- lnx-2632-rc8.orig/init/Kconfig
++++ lnx-2632-rc8/init/Kconfig
+@@ -606,7 +606,7 @@ config SYSFS_DEPRECATED
+ 	bool
+ 
+ config SYSFS_DEPRECATED_V2
+-	bool "remove sysfs features which may confuse old userspace tools"
++	bool "enable deprecated sysfs features which may confuse old userspace tools"
+ 	depends on SYSFS
+ 	default n
+ 	select SYSFS_DEPRECATED
