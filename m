@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbZKWXcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZKWXdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbZKWXcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbZKWXcb
+	id S1757531AbZKWXdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbZKWXdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:32:31 -0500
-Received: from mga11.intel.com ([192.55.52.93]:64352 "EHLO mga11.intel.com"
+	Mon, 23 Nov 2009 18:33:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41974 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757267AbZKWXcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:32:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,274,1257148800"; 
-   d="scan'208";a="516706482"
-Date: Mon, 23 Nov 2009 15:32:36 -0800 (Pacific Standard Time)
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-In-Reply-To: <1258995923.4531.715.camel@laptop>
-Message-ID: <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com> 
- <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com> 
- <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
-ReplyTo: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-X-X-Sender: amrppwaskie@imapmail.glb.intel.com
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1757398AbZKWXdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 18:33:18 -0500
+Date: Tue, 24 Nov 2009 10:33:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, gregkh@suse.de,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 23
+Message-Id: <20091124103318.bfcb504c.sfr@canb.auug.org.au>
+In-Reply-To: <200911240924.54675.rusty@rustcorp.com.au>
+References: <20091123185232.1423c56b.sfr@canb.auug.org.au>
+	<20091123111510.9b0c0714.randy.dunlap@oracle.com>
+	<200911240924.54675.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_10_33_18_+1100_SOLgE0Vj61Mls8j5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009, Peter Zijlstra wrote:
+--Signature=_Tue__24_Nov_2009_10_33_18_+1100_SOLgE0Vj61Mls8j5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2009-11-23 at 01:36 -0800, Peter P Waskiewicz Jr wrote:
-> 
-> > This mechanism isn't going to be used by any internal kernel mechanism
-> > for determining interrupt placement or operation.  It's purely something
-> > that either a driver can modify, or external script (through /proc),
-> > that irqbalance will make use of.  If irqbalance isn't running, or the
-> > current version of irqbalance doesn't support reading node_affinity,
-> > then it won't affect the system's operation.
-> > 
-> > If irqbalance does support it, it'll read whatever the supplied mask is,
-> > and then will try and balance interrupts within that mask.  It will bail
-> > if the mask is invalid, or won't apply to the running system, just like
-> > how putting a bogus mask into smp_affinity is ignored.
-> > 
-> > If there's something I'm missing beyond this with the two suggestions
-> > you've made (I looked into those two parameters and tried to draw
-> > conclusions), please let me know.
-> 
-> I don't see the point in adding it, if the driver wants to set a node
-> cpu mask it can already do that using the regular smp affinity settings.
+Hi Rusty,
 
-Unfortunately, a driver can't.  The irq_set_affinity() function isn't 
-exported.  I proposed a patch on netdev to export it, and then to tie down 
-an interrupt using IRQF_NOBALANCING, so irqbalance won't touch it.  That 
-was rejected, since the driver is enforcing policy of the interrupt 
-balancing, not irqbalance.
+On Tue, 24 Nov 2009 09:24:54 +1030 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+>     And I guess linux-next doesn't build staging?
 
-I and Jesse Brandeburg had a meeting with Arjan about this.  What we came 
-up with was this interface, so drivers can set what they'd like to see, if 
-irqbalance decides to honor it.  That way interrupt affinity policies are 
-set only by irqbalance, but this interface gives us a mechanism to hint to 
-irqbalance what we'd like it to do.
+Correct - it breaks to much and too often :-)
 
-Also, if you use the /proc interface to change smp_affinity on an 
-interrupt without any of these changes, irqbalance will override it on its 
-next poll interval.  This also is not desirable.
-
+--=20
 Cheers,
--PJ
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__24_Nov_2009_10_33_18_+1100_SOLgE0Vj61Mls8j5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksLG74ACgkQjjKRsyhoI8wh6QCgs+SBioRtMcKV8+/dXSH6BDLI
+1ZAAnAwk2WJM2KeGm+Ibz4IEDEL9c65u
+=Yqs0
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Nov_2009_10_33_18_+1100_SOLgE0Vj61Mls8j5--
