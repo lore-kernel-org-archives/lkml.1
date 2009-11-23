@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZKWXZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZKWX1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbZKWXZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZKWXZQ
+	id S932119AbZKWX1P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756463AbZKWX1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:25:16 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:16597 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755982AbZKWXZP (ORCPT
+	Mon, 23 Nov 2009 18:27:14 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60738 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756371AbZKWX1N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:25:15 -0500
-Date: Mon, 23 Nov 2009 16:25:20 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Tony Luck <tony.luck@gmail.com>,
-       James.Bottomley@suse.de, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] modpost: fix modules on ia64 - use @fptr() on exported
-	function symbols
-Message-ID: <20091123232520.GA18976@ldl.fc.hp.com>
-References: <4B0B10FA.7030402@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0B10FA.7030402@tuffmail.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Nov 2009 18:27:13 -0500
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
+ and big packets in virtio_net
+From: Shirley Ma <mashirle@us.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <200911240854.24054.rusty@rustcorp.com.au>
+References: <1258697745.7416.20.camel@localhost.localdomain>
+	 <200911231138.30755.rusty@rustcorp.com.au>
+	 <1258992421.5022.19.camel@localhost.localdomain>
+	 <200911240854.24054.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Mon, 23 Nov 2009 15:27:15 -0800
+Message-Id: <1259018835.5022.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
-> On function descriptor architectures (powerpc and ia64), we need to export
-> the address of the function descriptor and not the actual function.
-> The C compiler naturally does this for us.  However we now export vmlinux
-> symbols using the assembler, in order to sort the exports.
->
-> This is not a problem on powerpc.  On powerpc, the function descriptor
-> is simply "printk" (the action function entry point is ".printk").
-> But ia64 assembly needs special handling.  The function descriptor for
-> printk(), for example, is "@fptr(printk)".
->
-> I have tested that modpost now generates the desired assembly code when
-> run against an IA64 module.  I have not tested with an actual IA64
-> vmlinux, assembler, compiler or processor.  I assume that the IA64
-> assembler defines __ia64__, just as the i386 assembler defines __i386__.
->
-> Reported-by: Alex Chiang <achiang@hp.com>
+On Tue, 2009-11-24 at 08:54 +1030, Rusty Russell wrote:
+> #define BIG_PACKET_PAD (NET_SKB_PAD - sizeof(struct virtio_net_hdr) +
+> NET_IP_ALIGN)
+> struct big_packet_page {
+>         struct virtio_net_hdr hdr;
+>         char pad[BIG_PACKET_PAD];
+>         /* Actual packet data starts here */
+>         unsigned char data[PAGE_SIZE - BIG_PACKET_PAD - sizeof(struct
+> virtio_net_hdr)];
+> };
 
-I applied this patch to a tree that had 20ba8ef1de7e77e4c
-(kbuild: sort the list of symbols exported by the kernel
-(__ksymtab)) as a HEAD.
+The padding was used for qemu userspace buffer copy, skb data is copied
+from the page for size of GOOD_COPY_LEN, and skb data is reserved
+NET_IP_ALIGN.
 
-Without the patch, I get a panic. With the patch, boot succeeds.
+If we add paddings as above, userspace copy will starts NET_SKB_PAD +
+NET_IP_ALIGN? I am little bit confused here.
 
-I also applied this patch on top of 9d5bf6fad2 (Add linux-next
-specific files for 20091123), and verified that boot also
-succeeds.
+> Then use this type as the template for registering the sg list for the
+> big packet case.
+> 
+> > > I think you can move the memcpy outside the if, like so:
+> > > 
+> > >         memcpy(&hdr, p, hdr_len);
+> > 
+> > I didn't move it out, because num_buf = hdr->mhdr.num_buffers;
+> 
+> Yes, that has to stay inside, but the memcpy can move out.  It's just
+> a bit
+> neater to have more common code.
 
-So for ia64, you can add my:
+num_buf is assigned after memcpy so we couldn't move memcpy out.
 
-Tested-by: Alex Chiang <achiang@hp.com>
+Anyway I separated mergeable buffers and big packets in the new patch to
+make it clear and it will be easy to modify when we drop big packets
+support in the future.
 
-However, I've cc'ed James Bottomley who is currently testing
-parisc. parsic is another function descriptor architecture, and
-due to your very specific #ifdef __ia64__ in the patch, it
-clearly won't fix parisc (if indeed it is broken).
+Thanks
+Shirley
 
-James mentioned something about needing an fptr arch symbol, but
-I'll let him expand on his idea.
-
-Thanks,
-/ac
