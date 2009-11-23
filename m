@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbZKWKaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZKWK0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756895AbZKWKaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 05:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbZKWKae
+	id S1756890AbZKWK0z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 05:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZKWK0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 05:30:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31948 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756202AbZKWKad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 05:30:33 -0500
-Date: Mon, 23 Nov 2009 11:28:07 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Spencer Candland <spencer@bluehost.com>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH tip/sched/core] introduce task_times() to replace
-	task_[us]time() pair
-Message-ID: <20091123102806.GD25978@dhcp-lab-161.englab.brq.redhat.com>
-References: <4B061E9A.8040100@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B061E9A.8040100@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 23 Nov 2009 05:26:55 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54323 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753791AbZKWK0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 05:26:54 -0500
+Date: Mon, 23 Nov 2009 10:28:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Robert Swan <swan.r.l@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091123102844.25757450@lxorguk.ukuu.org.uk>
+In-Reply-To: <1258952431.6261.38.camel@marge.simson.net>
+References: <20091121222319.GA3905@swanrl.gmail.com>
+	<20091122063926.GA18224@elte.hu>
+	<20091122122312.71a343d9@lxorguk.ukuu.org.uk>
+	<1258952431.6261.38.camel@marge.simson.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 01:44:10PM +0900, Hidetoshi Seto wrote:
-> Function task_[us]times() are called consecutively in almost all
-> cases.  However task_stime() is implemented to call task_utime()
-> from its inside, so such paired calls run task_utime() twice.
-> 
-> It means we do heavy divisions (div_u64 + do_div) twice to get
-> stime and utime which can be obtained at same time by one set
-> of divisions.
-> 
-> This patch introduces task_times(*tsk, *utime, *stime) to get
-> stime and utime at once, in better, optimized way.
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> Hm.  Looks to me like it's doing what it was told to do.
 
-[snip]
-
-> @@ -5155,6 +5155,14 @@ cputime_t task_stime(struct task_struct *p)
->  {
->  	return p->stime;
+Yes. I realised this morning too.
+> 
+> diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+> index 66fa4e1..92a0864 100644
+> --- a/drivers/char/tty_buffer.c
+> +++ b/drivers/char/tty_buffer.c
+> @@ -495,7 +495,7 @@ void tty_flip_buffer_push(struct tty_struct *tty)
+>  	if (tty->low_latency)
+>  		flush_to_ldisc(&tty->buf.work.work);
+>  	else
+> -		schedule_delayed_work(&tty->buf.work, 1);
+> +		schedule_delayed_work(&tty->buf.work, 0);
 >  }
-> +
-> +void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
-> +{
-> +	if (ut)
-> +		*ut = task_utime(p);
-> +	if (st)
-> +		*st = task_stime(p);
-> +}
->  #else
+>  EXPORT_SYMBOL(tty_flip_buffer_push);
+>  
+> Telling it to execute now made test proggy happy.. and likely broke tons
+> of things that need a delay there.  So, what's wrong with delaying, when
+> that's what the customer asked for?  /me must be missing something.  It
+> could know that no delay is needed?
 
-I think task_{u,s}time are not needed anymore. Can we just fully get
-rid of them and only use task_times() ?
+The old model the tty code used was to queue bytes and process them each
+timer tick. The idea is that this avoids thrashing the locks and stuff
+gets processed more efficiently.
 
->  #ifndef nsecs_to_cputime
-> @@ -5162,41 +5170,48 @@ cputime_t task_stime(struct task_struct *p)
->  	msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
->  #endif
+It's probably completely the wrong model today and removing the delay
+will now only hit fine grained locks, and will get better flow control
+behaviour at high speeds.
 
-Could we furhter optimize this? Perhaps we can use below code
-(taken from timespec_to_jiffies()):
+Try it and see - worst case it becomes some kind of per tty property.
 
-	cputime = (nsec * NSEC_CONVERSION) >>
-                 (NSEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
-
-
-Stanislaw
+Alan
