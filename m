@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZKWONG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbZKWOVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZKWONG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZKWONF
+	id S1754275AbZKWOVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZKWOVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:13:05 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:58984 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbZKWOND (ORCPT
+	Mon, 23 Nov 2009 09:21:19 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:41043 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbZKWOVT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:13:03 -0500
-Date: Mon, 23 Nov 2009 14:12:55 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, David Zeuthen <david@fubar.dk>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091123141255.GA9889@srcf.ucam.org>
-References: <ac3eb2510911170755i5188fb53ud2d6012a2db8c00a@mail.gmail.com> <1258474180.16176.62.camel@localhost.localdomain> <20091117185742.GA19829@srcf.ucam.org> <ac3eb2510911181130l6f25642cy1d5332f79a112cf9@mail.gmail.com> <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <20091122233749.GA9699@ucw.cz>
+	Mon, 23 Nov 2009 09:21:19 -0500
+X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 09:21:18 EST
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091122233749.GA9699@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <s5h8wdxab2h.wl%tiwai@suse.de>
+References: <200911222201.59471.linux@rainbow-software.org> 
+	<200911231359.54544.rusty@rustcorp.com.au> <s5h8wdxab2h.wl%tiwai@suse.de>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 23 Nov 2009 15:13:27 +0100
+Message-ID: <ac3eb2510911230613w5543e98bg4203a1fbd7269931@mail.gmail.com>
+Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org,
+       Jon Masters <jonathan@jonmasters.org>, Jaroslav Kysela <perex@perex.cz>,
+       Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 12:37:49AM +0100, Pavel Machek wrote:
-> On Wed 2009-11-18 20:07:12, Matthew Garrett wrote:
-> > On Wed, Nov 18, 2009 at 09:03:21PM +0100, Kay Sievers wrote:
-> > 
-> > > Sure, but what's wrong with reading that file every 50 seconds? Almost
-> > > all boxes poll for media changes of optical drives and usb card
-> > > readers anyway, so it's not that we are not doing stuff like this
-> > > already.
-> > 
-> > We poll for media because there's no event-based way of avoiding it - in 
-> > this case there is.
-> 
-> ...when you add overhead to every disk operation. I'd say that polling
-> once in 50 seconds is preferable to that.
+On Mon, Nov 23, 2009 at 09:40, Takashi Iwai <tiwai@suse.de> wrote:
+> At Mon, 23 Nov 2009 13:59:53 +1030,
+> Rusty Russell wrote:
+>>
+>> On Mon, 23 Nov 2009 07:31:57 am Ondrej Zary wrote:
+>> > The problem is that
+>> > scripts/mod/file2alias.c simply ignores isapnp.
+>>
+>> AFAICT it always has, and noone has complained until now.  Perhaps something
+>> was still reading /lib/modules/`uname -r`/modules.isapnpmap?
+>
+> I don't think modules.isapnpmap is needed again.
+> The question came from the fact that the isapnp device wasn't loaded
+> automatically.
 
-Yeah, but 50 seconds isn't the timescale we're talking about here.
+All the map files are not uses for anything these days. Ideally,
+depmod should just stop creating these dead files.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> But, I thought Kay already added isapnp support sometime ago, but it
+> didn't seem to get in...  Kay?
+
+No, we don't even have proper modaliases for the pnp bus
+(/sys/bus/pnp) and the alias string for pnp in the modules have a
+broken and unfixable format. PNP autoloading is all handled by the
+acpi modaliases these days. This is the first time in years I hear
+anybody asking for hotplug setups of plain old pnp devices. :)
+
+Thanks,
+Kay
