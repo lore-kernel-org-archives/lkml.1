@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZKWHbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbZKWHcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZKWHbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 02:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZKWHbi
+	id S1755066AbZKWHcx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 02:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZKWHcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 02:31:38 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45411 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbZKWHbh (ORCPT
+	Mon, 23 Nov 2009 02:32:52 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:34444 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbZKWHcv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 02:31:37 -0500
-Subject: Re: [PATCH 03/15] perf: optimize perf_swevent_ctx_event()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <19210.8856.446670.786636@cargo.ozlabs.ibm.com>
-References: <20091120211942.676891948@chello.nl>
-	 <20091120212508.378188589@chello.nl>
-	 <19210.8856.446670.786636@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 08:31:40 +0100
-Message-ID: <1258961500.4531.38.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 02:32:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VoIpT+/MxiUWbE8ts6VTAMHi2+OanM4O+QYEGXju7sjk/ihTqW398Ss3UBttNfVVwb
+         tSmcF0btJh4Mi/yBFUPE0SdJpkhQRcta1wuiNpkfOzi8iRC6KG1Ub+CKCSn7kiTuMSVJ
+         9ReHFZFGgYdjKfiNfnnxbd9p45WB4LfkzYA74=
+MIME-Version: 1.0
+In-Reply-To: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+Date: Mon, 23 Nov 2009 15:32:57 +0800
+Message-ID: <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance 
+	hints
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Cc: linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
+       davem@davemloft.net, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 16:50 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > We can do away with the system_state check if the machine still boots
-> > after this patch (seems to be the case).
-> 
-> I have a recollection (possible faulty) that the problem we can get
-> into if we don't have this check is that if we take a bad page fault
-> in the kernel (e.g. NULL dereference) early in boot before the perf
-> cpu context has been initialized, we then get another NULL dereference
-> because the pointers in ctx->event_list are NULL, and recurse to
-> death.
-> 
-> So that check was possibly more about debugging than correctness.
-> Possibly also the x86 do_page_fault() is different enough from the
-> powerpc one that the problem can't occur on x86.
+On Mon, Nov 23, 2009 at 2:46 PM, Peter P Waskiewicz Jr
+<peter.p.waskiewicz.jr@intel.com> wrote:
+> This patchset adds a new CPU mask for SMP systems to the irq_desc
+> struct.  It also exposes an API for underlying device drivers to
+> assist irqbalance in making smarter decisions when balancing, especially
+> in a NUMA environment.  For example, an ethernet driver with MSI-X may
+> wish to limit the CPUs that an interrupt can be balanced within to
+> stay on a single NUMA node.  Current irqbalance operation can move the
+> interrupt off the node, resulting in cross-node memory accesses and
+> locks.
+>
+> The API is a get/set API within the kernel, along with a /proc entry
+> for the interrupt.
+>
+> Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> ---
 
-Right, I remembered there was _something_ we added them for, but
-couldn't for the live of me remember what.
+1) I think you should consider CONFIG_CPUMASK_OFFSTACK which will affect
+   node_affinity.
+2) It seems like this patch can't work with SPARSE_IRQ.
 
-Hmm, maybe we can initialize all the recursion variables to 1, that
-should avoid us ever entering into the swcounter code until we reset
-them.
-
+Thanks,
+Yong
