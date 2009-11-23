@@ -1,55 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZKWBSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbZKWBUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZKWBSH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 20:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZKWBSG
+	id S1755974AbZKWBUO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 20:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZKWBUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 20:18:06 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47368 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753460AbZKWBSF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 20:18:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bAq63kneaZTizRQDdR+/wL3/ONktw46H/ub5JtkXPpDrvHhQ+D5AMkR8R8VLdbCLw1
-         WhmlxdOfpvLD7kPHboUr34GhLXRHag4wgPKi0Ph6FaVV8Qxk8mx1UbNpchcGNyEgmFTR
-         ueHPuCMnJzMU69ZaAkMyk2jdkHKANRuMvubj4=
+	Sun, 22 Nov 2009 20:20:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39071 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754065AbZKWBUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 20:20:12 -0500
+Message-ID: <4B09E2F9.7040403@kernel.org>
+Date: Sun, 22 Nov 2009 17:18:49 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <m18wdypvjd.fsf@fess.ebiederm.org>
-References: <86802c440911220226g21cc42bbmdc3ebe21d0f61943@mail.gmail.com>
-	 <m18wdypvjd.fsf@fess.ebiederm.org>
-Date: Sun, 22 Nov 2009 17:18:09 -0800
-Message-ID: <86802c440911221718l541c0dq599f6a401fd03157@mail.gmail.com>
-Subject: Re: [PATCH] x86: crash kernel reserve with reserve_early
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Vivek Goyal <vgoyal@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kexec@lists.infradead.org
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: crash kernel reserve with reserve_early -v2
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 22, 2009 at 4:56 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Yinghai Lu <yhlu.kernel@gmail.com> writes:
->
->> [PATCH] x86: crash kernel reserve with reserve_early
->>
->> use find_e820_area/reserve_early instead.
->> will get next good one automatically with alignment
->
-> Semantically this is broken, as you are now ignoring a passed in
-> base address if one is supplied.  What problem are you trying to fix?
 
-avoid to use bootmem.
+use find_e820_area/reserve_early instead.
 
-also simpify the code.
+-v2: address Eric's request, to restore original semantics.
+     will fail, if the provided address can not be used.
 
-YH
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/setup.c |   57 ++++++++++++------------------------------------
+ 1 file changed, 15 insertions(+), 42 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -488,42 +488,11 @@ static void __init reserve_early_setup_d
+ 
+ #ifdef CONFIG_KEXEC
+ 
+-/**
+- * Reserve @size bytes of crashkernel memory at any suitable offset.
+- *
+- * @size: Size of the crashkernel memory to reserve.
+- * Returns the base address on success, and -1ULL on failure.
+- */
+-static
+-unsigned long long __init find_and_reserve_crashkernel(unsigned long long size)
+-{
+-	const unsigned long long alignment = 16<<20; 	/* 16M */
+-	unsigned long long start = 0LL;
+-
+-	while (1) {
+-		int ret;
+-
+-		start = find_e820_area(start, ULONG_MAX, size, alignment);
+-		if (start == -1ULL)
+-			return start;
+-
+-		/* try to reserve it */
+-		ret = reserve_bootmem_generic(start, size, BOOTMEM_EXCLUSIVE);
+-		if (ret >= 0)
+-			return start;
+-
+-		start += alignment;
+-	}
+-}
+-
+ static inline unsigned long long get_total_mem(void)
+ {
+ 	unsigned long long total;
+ 
+-	total = max_low_pfn - min_low_pfn;
+-#ifdef CONFIG_HIGHMEM
+-	total += highend_pfn - highstart_pfn;
+-#endif
++	total = max_pfn - min_low_pfn;
+ 
+ 	return total << PAGE_SHIFT;
+ }
+@@ -543,21 +512,25 @@ static void __init reserve_crashkernel(v
+ 
+ 	/* 0 means: find the address automatically */
+ 	if (crash_base <= 0) {
+-		crash_base = find_and_reserve_crashkernel(crash_size);
++		const unsigned long long alignment = 16<<20;	/* 16M */
++
++		crash_base = find_e820_area(alignment, ULONG_MAX, crash_size,
++				 alignment);
+ 		if (crash_base == -1ULL) {
+-			pr_info("crashkernel reservation failed. "
+-				"No suitable area found.\n");
++			pr_info("crashkernel reservation failed - No suitable area found.\n");
+ 			return;
+ 		}
+ 	} else {
+-		ret = reserve_bootmem_generic(crash_base, crash_size,
+-					BOOTMEM_EXCLUSIVE);
+-		if (ret < 0) {
+-			pr_info("crashkernel reservation failed - "
+-				"memory is in use\n");
++		unsigned long long start;
++
++		start = find_e820_area(crash_base, ULONG_MAX, crash_size,
++				 1<<20);
++		if (start != crash_base) {
++			pr_info("crashkernel reservation failed - memory is in use.\n");
+ 			return;
+ 		}
+ 	}
++	reserve_early(crash_base, crash_base + crash_size, "CRASH KERNEL");
+ 
+ 	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
+ 			"for crashkernel (System RAM: %ldMB)\n",
+@@ -935,6 +908,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	reserve_initrd();
+ 
++	reserve_crashkernel();
++
+ 	vsmp_init();
+ 
+ 	io_delay_init();
+@@ -965,8 +940,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	initmem_init(0, max_pfn, acpi, k8);
+ 
+-	reserve_crashkernel();
+-
+ #ifdef CONFIG_X86_64
+ 	/*
+ 	 * dma32_reserve_bootmem() allocates bootmem which may conflict
