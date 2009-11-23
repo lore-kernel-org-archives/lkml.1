@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZKWUUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbZKWUX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbZKWUUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZKWUUV
+	id S1756446AbZKWUX3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZKWUX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:20:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50524
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755589AbZKWUUU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:20:20 -0500
-Date: Mon, 23 Nov 2009 12:20:38 -0800 (PST)
-Message-Id: <20091123.122038.64001211.davem@davemloft.net>
-To: hartleys@visionengravers.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: drivers/ide/au1xxx-ide.c: use resource_size()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901EE5C3E@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901EE5C0C@mi8nycmail19.Mi8.com>
-	<20091123.103810.44071453.davem@davemloft.net>
-	<BD79186B4FD85F4B8E60E381CAEE190901EE5C3E@mi8nycmail19.Mi8.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 15:23:28 -0500
+Received: from khc.piap.pl ([195.187.100.11]:33326 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756094AbZKWUX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 15:23:27 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	<4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com>
+Date: Mon, 23 Nov 2009 21:23:30 +0100
+In-Reply-To: <4B0AC8C9.6080504@redhat.com> (Mauro Carvalho Chehab's message of
+	"Mon, 23 Nov 2009 15:39:21 -0200")
+Message-ID: <m34oolrnwd.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Date: Mon, 23 Nov 2009 15:01:02 -0500
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> On Monday, November 23, 2009 11:38 AM, David Miller wrote:
->>>  
->>> -	ahwif->regbase = (u32)ioremap(res->start, res->end - res->start + 1);
->>> +	ahwif->regbase = (u32)ioremap(res->start, resource_size(res));
->>>  	if (ahwif->regbase == 0) {
->>>  		ret = -ENOMEM;
->>>  		goto out;
->>
->> That needs some fixing.  ioremap()'s return value is an
->> "__iomem" pointer, not an integer.  ->regbase's type should be
->> changed to something like "void __iomem *" etc.
-> 
-> FWIW, following is an updated patch that fixes the "__iomem" pointer.
+>> (This is no recommendation for lirc.  I have no idea whether a
+>> pulse/space -> scancode -> keycode translation would be practical
+>> there.)
 
-Please, I've already applied your resource_size() patch, and you
-should submit a seperate patch relative to that in order to address
-the ioremap() pointer issues.
+It would, but not exactly in the present shape.
 
-Thank you.
+> For example, there are several bttv and saa7134 devices that polls (or receive
+> IRQ interrupts) to detect pulses (and the absense of them) in order to create
+> a pulse/space code. The conversion from pulse/space to scancode is done inside
+> the driver, with the help of some generic routines and based on the protocol
+> specifications.
+
+Right. There are currently several problems (I'm quite familiar with
+saa713x RC5 code): the one that it barely works and is not implemented
+for most such "GPIO/IRQ-driven" cards (as of 2.6.29 or so). This could
+be fixed, I even have a working though quick&dirty patch. Another: the
+RC5 allows for groups and codes within groups. The mapping can only use
+one group, and there can only be one mapping. These design limitations
+mean it's unusable in many cases.
+
+> Those devices where the decoding is done by software can support any
+> IR protocols.
+
+Yes, and there can be multiple remote controllers, and multiple code
+groups within a remote.
+
+> This can be solved by adding a few ioctls to enumerate the supported
+> protocols and to select the one(s) that will be handled by the kernel
+> driver.
+
+The driver may have to handle many protocols simultaneously. This is not
+a problem from a technical POV.
+-- 
+Krzysztof Halasa
