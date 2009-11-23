@@ -1,76 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZKWJgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZKWJhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbZKWJgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 04:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbZKWJgK
+	id S1756539AbZKWJhL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 04:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZKWJhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 04:36:10 -0500
-Received: from mga01.intel.com ([192.55.52.88]:31992 "EHLO mga01.intel.com"
+	Mon, 23 Nov 2009 04:37:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51637 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756145AbZKWJgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 04:36:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,268,1257148800"; 
-   d="scan'208";a="749538472"
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
- irqbalance hints
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-In-Reply-To: <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
-	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 01:36:19 -0800
-Message-Id: <1258968980.2697.9.camel@ppwaskie-mobl2>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1751706AbZKWJhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 04:37:09 -0500
+Date: Mon, 23 Nov 2009 04:37:02 -0500
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Andi Kleen <andi@firstfloor.org>, Amerigo Wang <amwang@redhat.com>,
+       Neil Horman <nhorman@redhat.com>
+Message-Id: <20091123093958.4963.38592.sendpatchset@localhost.localdomain>
+Subject: [Resend Patch] kexec: allow to shrink reserved memory
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-22 at 23:32 -0800, Yong Zhang wrote:
-> On Mon, Nov 23, 2009 at 2:46 PM, Peter P Waskiewicz Jr
-> <peter.p.waskiewicz.jr@intel.com> wrote:
-> > This patchset adds a new CPU mask for SMP systems to the irq_desc
-> > struct.  It also exposes an API for underlying device drivers to
-> > assist irqbalance in making smarter decisions when balancing, especially
-> > in a NUMA environment.  For example, an ethernet driver with MSI-X may
-> > wish to limit the CPUs that an interrupt can be balanced within to
-> > stay on a single NUMA node.  Current irqbalance operation can move the
-> > interrupt off the node, resulting in cross-node memory accesses and
-> > locks.
-> >
-> > The API is a get/set API within the kernel, along with a /proc entry
-> > for the interrupt.
-> >
-> > Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-> > ---
-> 
-> 1) I think you should consider CONFIG_CPUMASK_OFFSTACK which will affect
->    node_affinity.
-> 2) It seems like this patch can't work with SPARSE_IRQ.
 
-This mechanism isn't going to be used by any internal kernel mechanism
-for determining interrupt placement or operation.  It's purely something
-that either a driver can modify, or external script (through /proc),
-that irqbalance will make use of.  If irqbalance isn't running, or the
-current version of irqbalance doesn't support reading node_affinity,
-then it won't affect the system's operation.
+This patch implements shrinking the reserved memory for crash kernel,
+if it is more than enough.
 
-If irqbalance does support it, it'll read whatever the supplied mask is,
-and then will try and balance interrupts within that mask.  It will bail
-if the mask is invalid, or won't apply to the running system, just like
-how putting a bogus mask into smp_affinity is ignored.
+For example, if you have already reserved 128M, now you just want 100M,
+you can do:
 
-If there's something I'm missing beyond this with the two suggestions
-you've made (I looked into those two parameters and tried to draw
-conclusions), please let me know.
+# echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
 
-Cheers,
--PJ Waskiewicz
+Note, you can only do this before loading the crash kernel.
 
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Neil Horman <nhorman@redhat.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+
+---
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index adc34f2..c356b69 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -206,6 +206,8 @@ extern size_t vmcoreinfo_max_size;
+ 
+ int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+ 		unsigned long long *crash_size, unsigned long long *crash_base);
++int crash_shrink_memory(unsigned long new_size);
++size_t crash_get_memory_size(void);
+ 
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index f336e21..433e9fc 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/vmalloc.h>
++#include <linux/swap.h>
+ 
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1082,6 +1083,64 @@ void crash_kexec(struct pt_regs *regs)
+ 	}
+ }
+ 
++size_t crash_get_memory_size(void)
++{
++	size_t size;
++	mutex_lock(&kexec_mutex);
++	size = crashk_res.end - crashk_res.start + 1;
++	mutex_unlock(&kexec_mutex);
++	return size;
++}
++
++static void free_reserved_phys_range(unsigned long begin, unsigned long end)
++{
++	unsigned long addr;
++
++	for (addr = begin; addr < end; addr += PAGE_SIZE) {
++		ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
++		init_page_count(pfn_to_page(addr >> PAGE_SHIFT));
++		free_page((unsigned long)__va(addr));
++		totalram_pages++;
++	}
++}
++
++int crash_shrink_memory(unsigned long new_size)
++{
++	int ret = 0;
++	unsigned long start, end;
++
++	mutex_lock(&kexec_mutex);
++
++	if (kexec_crash_image) {
++		ret = -ENOENT;
++		goto unlock;
++	}
++	start = crashk_res.start;
++	end = crashk_res.end;
++
++	if (new_size >= end - start + 1) {
++		ret = -EINVAL;
++		if (new_size == end - start + 1)
++			ret = 0;
++		goto unlock;
++	}
++
++	start = roundup(start, PAGE_SIZE);
++	end = roundup(start + new_size, PAGE_SIZE);
++
++	free_reserved_phys_range(end, crashk_res.end);
++
++	if (start == end) {
++		crashk_res.end = end;
++		release_resource(&crashk_res);
++	} else
++		crashk_res.end = end - 1;
++
++unlock:
++	mutex_unlock(&kexec_mutex);
++	return ret;
++}
++
+ static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+ 			    size_t data_len)
+ {
+diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
+index 528dd78..5b9276b 100644
+--- a/kernel/ksysfs.c
++++ b/kernel/ksysfs.c
+@@ -100,6 +100,26 @@ static ssize_t kexec_crash_loaded_show(struct kobject *kobj,
+ }
+ KERNEL_ATTR_RO(kexec_crash_loaded);
+ 
++static ssize_t kexec_crash_size_show(struct kobject *kobj,
++				       struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", crash_get_memory_size());
++}
++static ssize_t kexec_crash_size_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t count)
++{
++	unsigned long cnt;
++	int ret;
++
++	if (strict_strtoul(buf, 0, &cnt))
++		return -EINVAL;
++
++	ret = crash_shrink_memory(cnt);
++	return ret < 0 ? ret : count;
++}
++KERNEL_ATTR_RW(kexec_crash_size);
++
+ static ssize_t vmcoreinfo_show(struct kobject *kobj,
+ 			       struct kobj_attribute *attr, char *buf)
+ {
+@@ -147,6 +167,7 @@ static struct attribute * kernel_attrs[] = {
+ #ifdef CONFIG_KEXEC
+ 	&kexec_loaded_attr.attr,
+ 	&kexec_crash_loaded_attr.attr,
++	&kexec_crash_size_attr.attr,
+ 	&vmcoreinfo_attr.attr,
+ #endif
+ 	NULL
