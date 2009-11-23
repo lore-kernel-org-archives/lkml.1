@@ -1,102 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbZKWXfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbZKWXgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757559AbZKWXfr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbZKWXfq
+	id S1757577AbZKWXgl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbZKWXgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:35:46 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:55566 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754499AbZKWXfp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:35:45 -0500
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk
-References: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
-	<m1my2cdhi3.fsf@fess.ebiederm.org>
-	<20091123173616.75c3f600@tlielax.poochiereds.net>
-	<20091123224948.GB5598@shareable.org>
-	<20091123181545.05ad004d@tlielax.poochiereds.net>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 23 Nov 2009 15:35:44 -0800
-In-Reply-To: <20091123181545.05ad004d@tlielax.poochiereds.net> (Jeff Layton's message of "Mon\, 23 Nov 2009 18\:15\:45 -0500")
-Message-ID: <m1ljhwbyr3.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks and file bind mounts (try #5)
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Mon, 23 Nov 2009 18:36:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42053 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757328AbZKWXgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 18:36:40 -0500
+Date: Tue, 24 Nov 2009 10:36:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, gregkh@suse.de,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 23
+Message-Id: <20091124103641.abd7bd6b.sfr@canb.auug.org.au>
+In-Reply-To: <4B0B1507.4060202@oracle.com>
+References: <20091123185232.1423c56b.sfr@canb.auug.org.au>
+	<20091123111510.9b0c0714.randy.dunlap@oracle.com>
+	<200911240924.54675.rusty@rustcorp.com.au>
+	<4B0B1507.4060202@oracle.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_10_36_41_+1100_osLQJYXzLdPmCazz"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton <jlayton@redhat.com> writes:
+--Signature=_Tue__24_Nov_2009_10_36_41_+1100_osLQJYXzLdPmCazz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 23 Nov 2009 22:49:48 +0000
-> Jamie Lokier <jamie@shareable.org> wrote:
->
->> Jeff Layton wrote:
->> > > check_path_accessible seems pretty horrible.   If a process is running
->> > > inside of a subdirectory it doesn't have permissions to access, say
->> > > a chroot, /proc/self/fd/XXX becomes completely unusable.
->> > > 
->> > 
->> > Hmm...I have this in there:
->> > 
->> > +		/* are we at global root or root of namespace? */
->> > +		if ((tdentry == root.dentry && vfsmnt == root.mnt) ||
->> > +		    vfsmnt->mnt_parent == vfsmnt)
->> > +			break;
->> > 
->> > ...In the case of a chroot, wouldn't "current->fs->root" point to the
->> > root of the process' namespace? Or am I misunderstanding what
->> > current->fs actually represents?
->> 
->> A process can run inside a subdirectory it doesn't have permissions to
->> access without that being a chroot.
->> 
->
-> Certainly.
->
->> It can also run inside a subdirectory that isn't accessible from it's
->> root, if that's how it was started - as well as having other
->> descriptors pointing to things outside its root.
->> 
->
-> Yes.
->
->> It can also be passed file descriptors from outside it's root while
->> it's running.
->> 
->
-> Yep.
->
->> Really, I think the /proc/PID/fd/N check should restrict the open to
->> the O_* limitations that were used to open fd N before, and not have
->> any connection to actual paths at the time of this check.
->> 
->
-> The big question with all of this is: Should a task have the ability
-> to follow a /proc/pid symlink to a path that it wouldn't ordinarily be
-> able to resolve with a path lookup. The concensus that I got from the
-> bugtraq discussion was that it should not, and this patch is an attempt
-> to prevent that.
->
-> I take it from you and Eric's comments that you disagree? If so, what's
-> your rationale for allowing a task to resolve this symlink when it
-> wouldn't ordinarily be able to do so if it were a "normal" symlink?
+Hi Randy,
 
-For myself I start with the simple fact that the code has worked the
-way it currently does since around linux 0.99.  We have to be very
-careful if we change this to avoid breaking existing applications.
+On Mon, 23 Nov 2009 15:04:39 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
+>
+> I decided to check on linux-next (only checked x86_64 allmodconfig),
+> and viola:
+>=20
+> CONFIG_STAGING=3Dy
+> CONFIG_STAGING_EXCLUDE_BUILD=3Dy
+>=20
+> That is just too helpful.  :(
 
-So if we change the existing behaviour it must be done in such a way
-that legitimate applications do not break.
+The Kconfig was deliberately done so that the all{no,yes,mod}config
+builds don't build the staging stuff.  You need to explictly ask for it.
+Otherwise I would spend all my time reporting/fixing errors and warnings
+in linux-next.
 
-Eric
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__24_Nov_2009_10_36_41_+1100_osLQJYXzLdPmCazz
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksLHIkACgkQjjKRsyhoI8yD1QCfdJDz8ggbvVrqqCQDdVWQ879g
+o+sAn2InPfaA8/hvvGS/rgMgOIFCKkay
+=lEvm
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Nov_2009_10_36_41_+1100_osLQJYXzLdPmCazz--
