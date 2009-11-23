@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbZKWL5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbZKWL6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbZKWL5c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZKWL5a
+	id S1757285AbZKWL6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbZKWL6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:57:30 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:60054 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757111AbZKWL51 (ORCPT
+	Mon, 23 Nov 2009 06:58:32 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36833 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757077AbZKWL6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:57:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rWyTNggKeWecEwVyv35usgpazawPBJd+8TqPOZpNxca/DOp45FiedueQjwW9jet86A
-         iisFpmY8m85SMmoJyy8DFVg2o3gSvncrO9aHfVzm/uL/+zee8ZCAuvBM3ZI3joSgtxor
-         bArQi/vj6OyPfq/MPNJlzbKJ6btMKug4koIww=
-Date: Mon, 23 Nov 2009 12:57:16 +0100
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mel Gorman <mel@csn.ul.ie>,
-       Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-Subject: Re: [Bug #14265] ifconfig: page allocation failure. order:5,
-	mode:0x8020 w/ e100
-Message-ID: <20091123115716.GB5256@bizet.domek.prywatny>
-References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera> <mYW9sxtWd2G.A.3sF.jDACLB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <mYW9sxtWd2G.A.3sF.jDACLB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 23 Nov 2009 06:58:31 -0500
+Date: Mon, 23 Nov 2009 11:59:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Robert Swan <swan.r.l@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091123115949.29bcf89d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091123114845.GC25575@elte.hu>
+References: <20091121222319.GA3905@swanrl.gmail.com>
+	<20091122063926.GA18224@elte.hu>
+	<20091122122312.71a343d9@lxorguk.ukuu.org.uk>
+	<1258952431.6261.38.camel@marge.simson.net>
+	<20091123113110.15063a0a@lxorguk.ukuu.org.uk>
+	<20091123114845.GC25575@elte.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 04:02:11PM +0100, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14265
-> Subject		: ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-> Submitter	: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-> Date		: 2009-09-15 12:05 (68 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125301636509517&w=4
+> > Another possibility is to do
+> > 
+> > 	if (tty->low_latency)
+> > 		schedule_delayed_work(&tty->buf.work, 0);
+> > 	else
+> > 		schedule_delayed_work(&tty->buf.work, 1);
+> 
+> Flaggery for low latency is kind of lame though - especially if it 
+> defaults to off in most drivers as you say.
 
-Status of this bug in mainline didn't change. However, there are
-patches to fix this issue:
+So you'd prefer to detect devices that are byte based or message based by
+what method ?
 
-  1. http://marc.info/?l=e1000-devel&m=125659409119946&w=2
-
-Works -- interface is brought up properly.  However, kernel warns
-about two allocation failures (and succeeds in thrid attempt).
-
-Patches to make warnings appear every 10th failure have been
-presented.  What this basically means for me is that failure message
-would pop up every 5th suspend-resume cycle.
-
-(Patch has a typo that needs fixing: s/struct cbs/struct cb/)
-
-
-  2. http://marc.info/?l=e1000-devel&m=125637894721936&w=2
-
-Works without any warnings.  Sadly, patch is far more intrusive.
-
-Thanks.
+Alan
