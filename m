@@ -1,81 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbZKWUDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZKWUD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756635AbZKWUDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZKWUDS
+	id S1756557AbZKWUD7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZKWUD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:03:18 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55199 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756547AbZKWUDO convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 15:03:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57368 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755573AbZKWUD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:03:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=wR75lZmH0TTN2myIdxA6GHsyglkYPMIs29mBQsGZHYlqf7v7v5LD0Zpnp9pbSIx3GY
-         JnVTZqjLogj1nyXI4VkCE1j7vskqFW2Hjc+ujK5vmEkkwCWlHmeLbauI7V+R4s4VTfnh
-         T7GvqGq8DZYsCEYqhm6ctNnpaIihrwEC+KIHA=
+	Mon, 23 Nov 2009 15:03:58 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/1] perf top: Always show the DSO column, even if its all the same
+Date: Mon, 23 Nov 2009 18:03:49 -0200
+Message-Id: <1259006629-13696-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
 MIME-Version: 1.0
-In-Reply-To: <1259005869-13487-2-git-send-email-acme@infradead.org>
-References: <1259005869-13487-1-git-send-email-acme@infradead.org>
-	 <1259005869-13487-2-git-send-email-acme@infradead.org>
-Date: Mon, 23 Nov 2009 22:03:19 +0200
-X-Google-Sender-Auth: fdea3e59c6239380
-Message-ID: <84144f020911231203p2e4afd11tc5068c55cf2b1d12@mail.gmail.com>
-Subject: Re: [PATCH 2/2] perf kmem: resolve symbols
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 9:51 PM, Arnaldo Carvalho de Melo
-<acme@infradead.org> wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
->
-> E.g.
->
-> [root@doppio linux-2.6-tip]# perf kmem record sleep 3s
-> [ perf record: Woken up 2 times to write data ]
-> [ perf record: Captured and wrote 0.804 MB perf.data (~35105 samples) ]
-> [root@doppio linux-2.6-tip]# perf kmem --stat caller | head -10
-> ------------------------------------------------------------------------------
-> Callsite                    |Total_alloc/Per | Total_req/Per | Hit  | Frag
-> ------------------------------------------------------------------------------
-> getname/40                  | 1519616/4096   | 1519616/4096  |   371|   0.000%
-> seq_read/a2                 |  987136/4096   |  987136/4096  |   241|   0.000%
-> __netdev_alloc_skb/43       |  260368/1049   |  259968/1048  |   248|   0.154%
-> __alloc_skb/5a              |   77312/256    |   77312/256   |   302|   0.000%
-> proc_alloc_inode/33         |   76480/632    |   76472/632   |   121|   0.010%
-> get_empty_filp/8d           |   70272/192    |   70272/192   |   366|   0.000%
-> split_vma/8e                |   42064/176    |   42064/176   |   239|   0.000%
-> [root@doppio linux-2.6-tip]#
->
-> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: linux-mm@kvack.org <linux-mm@kvack.org>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Looks good to me!
+Ingo found it confusing, and I agree with that, for 'perf report' its OK
+because it is static, but for a tool refreshing it the eventual switch
+from column to summary at the top may seem confusing.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Cc: FrÃ©dÃ©ric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-top.c |   38 +++++++++++---------------------------
+ 1 files changed, 11 insertions(+), 27 deletions(-)
+
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 6a5de90..b9a321f 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -451,9 +451,8 @@ static void print_sym_table(void)
+ 	struct sym_entry *syme, *n;
+ 	struct rb_root tmp = RB_ROOT;
+ 	struct rb_node *nd;
+-	int sym_width = 0, dso_width = 0;
++	int sym_width = 0, dso_width = 0, max_dso_width;
+ 	const int win_width = winsize.ws_col - 1;
+-	struct dso *unique_dso = NULL, *first_dso = NULL;
+ 
+ 	samples = userspace_samples = 0;
+ 
+@@ -539,11 +538,6 @@ static void print_sym_table(void)
+ 		    (int)syme->snap_count < count_filter)
+ 			continue;
+ 
+-		if (first_dso == NULL)
+-			unique_dso = first_dso = syme->map->dso;
+-		else if (syme->map->dso != first_dso)
+-			unique_dso = NULL;
+-
+ 		if (syme->map->dso->long_name_len > dso_width)
+ 			dso_width = syme->map->dso->long_name_len;
+ 
+@@ -553,14 +547,10 @@ static void print_sym_table(void)
+ 
+ 	printed = 0;
+ 
+-	if (unique_dso)
+-		printf("DSO: %s\n", unique_dso->long_name);
+-	else {
+-		int max_dso_width = winsize.ws_col - sym_width - 29;
+-		if (dso_width > max_dso_width)
+-			dso_width = max_dso_width;
+-		putchar('\n');
+-	}
++	max_dso_width = winsize.ws_col - sym_width - 29;
++	if (dso_width > max_dso_width)
++		dso_width = max_dso_width;
++	putchar('\n');
+ 	if (nr_counters == 1)
+ 		printf("             samples  pcnt");
+ 	else
+@@ -568,17 +558,13 @@ static void print_sym_table(void)
+ 
+ 	if (verbose)
+ 		printf("         RIP       ");
+-	printf(" %-*.*s", sym_width, sym_width, "function");
+-	if (!unique_dso)
+-		printf(" DSO");
+-	putchar('\n');
++	printf(" %-*.*s DSO\n", sym_width, sym_width, "function");
+ 	printf("   %s    _______ _____",
+ 	       nr_counters == 1 ? "      " : "______");
+ 	if (verbose)
+ 		printf(" ________________");
+ 	printf(" %-*.*s", sym_width, sym_width, graph_line);
+-	if (!unique_dso)
+-		printf(" %-*.*s", dso_width, dso_width, graph_line);
++	printf(" %-*.*s", dso_width, dso_width, graph_line);
+ 	puts("\n");
+ 
+ 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
+@@ -603,12 +589,10 @@ static void print_sym_table(void)
+ 		if (verbose)
+ 			printf(" %016llx", sym->start);
+ 		printf(" %-*.*s", sym_width, sym_width, sym->name);
+-		if (!unique_dso)
+-			printf(" %-*.*s", dso_width, dso_width,
+-			       dso_width >= syme->map->dso->long_name_len ?
+-						syme->map->dso->long_name :
+-						syme->map->dso->short_name);
+-		printf("\n");
++		printf(" %-*.*s\n", dso_width, dso_width,
++		       dso_width >= syme->map->dso->long_name_len ?
++					syme->map->dso->long_name :
++					syme->map->dso->short_name);
+ 	}
+ }
+ 
+-- 
+1.6.2.5
+
