@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZKWPyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbZKWP7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZKWPyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZKWPyQ
+	id S1754875AbZKWP7Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZKWP7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:54:16 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:36126 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561AbZKWPyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:54:16 -0500
-Subject: Re: [PATCH] Fixed bug in Wireless Extension Code
- (CONFIG_WEXT_CORE).
-From: Johannes Berg <johannes@sipsolutions.net>
-To: mike@mspradling.com
-Cc: davem@davemloft.net, hugh.dickins@ticali.co.uk, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091123154225.GA26103@MSServer>
-References: <1258936602-6110-1-git-send-email-mike@mspradling.com>
-	 <1258969541.7094.138.camel@johannes.local>
-	 <20091123154225.GA26103@MSServer>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-JPQRH8OzDM0VlCEdBEKn"
-Date: Mon, 23 Nov 2009 16:53:46 +0100
-Message-ID: <1258991626.7094.174.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 23 Nov 2009 10:59:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15176 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753729AbZKWP7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 10:59:23 -0500
+Date: Mon, 23 Nov 2009 17:58:51 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       riel@redhat.com
+Subject: Re: [PATCH v2 10/12] Maintain preemptability count even for
+ !CONFIG_PREEMPT kernels
+Message-ID: <20091123155851.GU2999@redhat.com>
+References: <1258985167-29178-1-git-send-email-gleb@redhat.com>
+ <1258985167-29178-11-git-send-email-gleb@redhat.com>
+ <1258990455.4531.594.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1258990455.4531.594.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 23, 2009 at 04:34:15PM +0100, Peter Zijlstra wrote:
+> On Mon, 2009-11-23 at 16:06 +0200, Gleb Natapov wrote:
+> > Do not preempt kernel. Just maintain counter to know if task can be rescheduled.
+> > Asynchronous page fault may be delivered while spinlock is held or current
+> > process can't be preempted for other reasons. KVM uses preempt_count() to check if preemptions is allowed and schedule other process if possible. This works
+> > with preemptable kernels since they maintain accurate information about
+> > preemptability in preempt_count. This patch make non-preemptable kernel
+> > maintain accurate information in preempt_count too.
+> 
+> I'm thinking you're going to have to convince some people this won't
+> slow them down for no good.
+> 
+I saw old discussions about this in mailing list archives. Usually
+someone wanted to use in_atomic() in driver code and this, of course,
+caused the resistant. In this case, I think, the use is legitimate.
 
---=-JPQRH8OzDM0VlCEdBEKn
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> Personally I always have PREEMPT=y, but other people seem to feel
+> strongly about not doing so.
+> 
+It is possible to add one more config option to enable reliable
+preempt_count() without enabling preemption or make async pf be
+dependable on PREEMPT=y. Don't like both of this options especially first
+one. There are more then enough options already.
 
-On Mon, 2009-11-23 at 10:42 -0500, Michael Spradling wrote:
-> I don't think its a Kconfig issue, see notes below.  However,
-> I have included my config file just in case I may be wrong.
-
-You config file doesn't have _any_ wireless options set. Not even
-CONFIG_NET.
-
-johannes
-
---=-JPQRH8OzDM0VlCEdBEKn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLCrAHAAoJEODzc/N7+Qma4NkP/A1yPNgSYbHBCDokP20si9KW
-UXfG8Rmbdb378eRWIt3hmKE96vouCZkcka0uqbn/iILprofnVXBwnGKR/FqNA6zt
-AgF78zJQ/QXczPd43Z3vvGrqbq0altYmXbmuWY6v4TQHOWQzA9dUHkcmyJ9DTd9P
-PfjwStT4jso7zccaj0prHPG7SyAZB15vrBee7RvRK492BX+zPCAs5QjRLOYOynq3
-aj8tuDxXGW+K0uNOcj/1AZtYn0pusdD+0D8WYWQWTNT9caOpy8jMTZEGg89WGlYm
-YO3gN281gRRblwfbg1hHfCCMh6xXoLW8WGzCgOXmvSW87bdHzenKy5eBX7JWcXD3
-mZIxz38gDSmHglbBegtcHUpWawgZceiASLxE/fV0mgJVdYCMfrvjSZvpfoSf8pge
-jgtpWhnrLIjO9kSZqAxeB+4ZACjXhbzSW+fz0qt+oMslwPLomsA2Ts7hejfYw7nG
-y3s5Sqx3WaCAFDltvDClteK5cjbKofCLLO0lL6WwxquvOUx6eiO+oWjqV0c9aGFo
-sREDbyriXFe+F8C+Sq6cjI/UCwqPV5groUmke3P3b7hlSkIN5ePkEfo04q+cgiJQ
-0ViJifbuHlA2A+Z4kiluKn2YTBZs9s51u4Wd/jSMHkHurRtG67f69MHNWqPfw6UN
-MKfQ529PQ0c8dVgFz+5R
-=FshL
------END PGP SIGNATURE-----
-
---=-JPQRH8OzDM0VlCEdBEKn--
-
+--
+			Gleb.
