@@ -1,116 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZKWG4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZKWHCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZKWG4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 01:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZKWG4Q
+	id S1752756AbZKWHCO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 02:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZKWHCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 01:56:16 -0500
-Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:47514 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752297AbZKWG4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 01:56:15 -0500
-Message-ID: <4B0A3211.8020104@internode.on.net>
-Date: Mon, 23 Nov 2009 17:26:17 +1030
-From: indexer <indexer@internode.on.net>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 23 Nov 2009 02:02:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51890 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752551AbZKWHCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 02:02:11 -0500
+Date: Mon, 23 Nov 2009 07:01:43 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12589088301770-git-send-email->
+References: <12589088301770-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Fix grace-period-stall bug on large systems with CPU hotplug
+Message-ID: <tip-b668c9cf3e58739dac54a1d6f42f2b4bdd980b3e@git.kernel.org>
+Git-Commit-ID: b668c9cf3e58739dac54a1d6f42f2b4bdd980b3e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "Tang, Feng" <feng.tang@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 14658] Regression in efi.c
-References: <bug-14658-6666@http.bugzilla.kernel.org/> <200911212017.nALKHLSC029634@demeter.kernel.org> <alpine.LFD.2.00.0911221817200.24119@localhost.localdomain> <4B09F685.2080201@internode.on.net> <EADF0A36011179459010BDF5142A457501CFFF3AE2@pdsmsx502.ccr.corp.intel.com>
-In-Reply-To: <EADF0A36011179459010BDF5142A457501CFFF3AE2@pdsmsx502.ccr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tang, Feng wrote:
-> Hi William,
->
-> One stupid question, when you did the bisect, did you really try to boot every kernel that you built out?
->
-> - Feng
->   
->> -----Original Message-----
->> Thomas
->>
->> I had already done a similar bisect to this in private conversation to
->> Huang Ying, and is what prompted me to expand my bisect out. I redid it
->> regardless and will send you the information.
->>
->> commit 74fca6a42863ffacaf7ba6f1936a9f228950f657
->> Author: Linus Torvalds <torvalds@linux-foundation.org>
->> Date:   Wed Sep 9 15:13:59 2009 -0700
->>
->>    Linux 2.6.31
->>
->> Makefile |    2 +-
->> 1 files changed, 1 insertions(+), 1 deletions(-)
->>
->>
->> git bisect start
->> # good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
->> git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
->> # bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
->> git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
->> # good: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736):
->> videobuf: modify return value of VIDIOC_REQBUFS ioctl
->> git bisect good 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
->> # good: [a380137900fca5c79e6daa9500bdb6ea5649188e] ixgbe: Fix device
->> capabilities of 82599 single speed fiber NICs.
->> git bisect good a380137900fca5c79e6daa9500bdb6ea5649188e
->> # good: [b54c3835469c9548d470e7788cb22a2fd7e21133] Merge branch
->> 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
->> git bisect good b54c3835469c9548d470e7788cb22a2fd7e21133
->> # good: [7b2aa037e878c939676675969983284a02958ae3] Merge
->> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6
->> git bisect good 7b2aa037e878c939676675969983284a02958ae3
->> # good: [8486a0f95c844b27ecc855cfec89b7e34f831cad] Merge
->> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
->> git bisect good 8486a0f95c844b27ecc855cfec89b7e34f831cad
->> # good: [f415c413f458837bd0c27086b79aca889f9435e4] Merge
->> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
->> git bisect good f415c413f458837bd0c27086b79aca889f9435e4
->> # good: [37d0892c5a94e208cf863e3b7bac014edee4346d] autofs4 - fix missed
->> case when changing to use struct path
->> git bisect good 37d0892c5a94e208cf863e3b7bac014edee4346d
->> # good: [0edfa2b1b5a5e1475e76dd3c792447687d966de4] Merge branch
->> 'for-linus' of git://oss.sgi.com/xfs/xfs
->> git bisect good 0edfa2b1b5a5e1475e76dd3c792447687d966de4
->> # good: [5136a6c0fd5b26bbf39ad761cf7a4fc563ad83a3] Merge
->> git://git.infradead.org/~dwmw2/mtd-2.6.31
->> git bisect good 5136a6c0fd5b26bbf39ad761cf7a4fc563ad83a3
->> # good: [f69fb9c39868463f6b0b8306824341bd5610250b] Merge branch
->> 'for-linus' of
->> git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel
->> git bisect good f69fb9c39868463f6b0b8306824341bd5610250b
->> # good: [755ae761c5519929a97567d61a379b87352c337c] Merge branch
->> 'for-linus' of
->> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6
->> git bisect good 755ae761c5519929a97567d61a379b87352c337c
->> # good: [7c8460db30dfd085ef3837c8fb02ecf2e718b983] drm/i915: fix mask
->> bits setting
->> git bisect good 7c8460db30dfd085ef3837c8fb02ecf2e718b983
->> # good: [7135a71b19be1faf48b7148d77844d03bc0717d6] aoe: allocate unused
->> request_queue for sysfs
->> git bisect good 7135a71b19be1faf48b7148d77844d03bc0717d6
->> Sincerely
->>
->> William
->>
->> PS - The fact remains i still cant efi boot in 2.6.32-rc7, so this bug
->> still exists, and I will keep doing what i can to help track this down.
->>     
-Feng
+Commit-ID:  b668c9cf3e58739dac54a1d6f42f2b4bdd980b3e
+Gitweb:     http://git.kernel.org/tip/b668c9cf3e58739dac54a1d6f42f2b4bdd980b3e
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Sun, 22 Nov 2009 08:53:48 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 22 Nov 2009 18:58:15 +0100
 
-Yes, i did boot every single on. We had this problem where it was the 
-makefile when i did a similar bisect with Huang Ying, and it is what 
-prompted me to expand the bisect parameters to v2.6.32. I believe the 
-email about that is in the  mailing list still, and im more than happy 
-to do any other tests you can think of to test and isolate this bug as 
-it currently causes a significant issue.
+rcu: Fix grace-period-stall bug on large systems with CPU hotplug
 
-Cheers
+When the last CPU of a given leaf rcu_node structure goes
+offline, all of the tasks queued on that leaf rcu_node structure
+(due to having blocked in their current RCU read-side critical
+sections) are requeued onto the root rcu_node structure.  This
+requeuing is carried out by rcu_preempt_offline_tasks().
+However, it is possible that these queued tasks are the only
+thing preventing the leaf rcu_node structure from reporting a
+quiescent state up the rcu_node hierarchy.  Unfortunately, the
+old code would fail to do this reporting, resulting in a
+grace-period stall given the following sequence of events:
 
-William
+1.	Kernel built for more than 32 CPUs on 32-bit systems or for more
+	than 64 CPUs on 64-bit systems, so that there is more than one
+	rcu_node structure.  (Or CONFIG_RCU_FANOUT is artificially set
+	to a number smaller than CONFIG_NR_CPUS.)
+
+2.	The kernel is built with CONFIG_TREE_PREEMPT_RCU.
+
+3.	A task running on a CPU associated with a given leaf rcu_node
+	structure blocks while in an RCU read-side critical section
+	-and- that CPU has not yet passed through a quiescent state
+	for the current RCU grace period.  This will cause the task
+	to be queued on the leaf rcu_node's blocked_tasks[] array, in
+	particular, on the element of this array corresponding to the
+	current grace period.
+
+4.	Each of the remaining CPUs corresponding to this same leaf rcu_node
+	structure pass through a quiescent state.  However, the task is
+	still in its RCU read-side critical section, so these quiescent
+	states cannot be reported further up the rcu_node hierarchy.
+	Nevertheless, all bits in the leaf rcu_node structure's ->qsmask
+	field are now zero.
+
+5.	Each of the remaining CPUs go offline.  (The events in step
+	#4 and #5 can happen in any order as long as each CPU passes
+	through a quiescent state before going offline.)
+
+6.	When the last CPU goes offline, __rcu_offline_cpu() will invoke
+	rcu_preempt_offline_tasks(), which will move the task to the
+	root rcu_node structure, but without reporting a quiescent state
+	up the rcu_node hierarchy (and this failure to report a quiescent
+	state is the bug).
+
+	But because this leaf rcu_node structure's ->qsmask field is
+	already zero and its ->block_tasks[] entries are all empty,
+	force_quiescent_state() will skip this rcu_node structure.
+
+	Therefore, grace periods are now hung.
+
+This patch abstracts some code out of rcu_read_unlock_special(),
+calling the result task_quiet() by analogy with cpu_quiet(), and
+invokes task_quiet() from both rcu_read_lock_special() and
+__rcu_offline_cpu().  Invoking task_quiet() from
+__rcu_offline_cpu() reports the quiescent state up the rcu_node
+hierarchy, fixing the bug.  This ends up requiring a separate
+lock_class_key per level of the rcu_node hierarchy, which this
+patch also provides.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <12589088301770-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/rcutree.c        |   40 +++++++++++----------
+ kernel/rcutree.h        |    3 ++
+ kernel/rcutree_plugin.h |   85 +++++++++++++++++++++++++++++++++-------------
+ 3 files changed, 85 insertions(+), 43 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 9b36d6d..b79bfcd 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -51,7 +51,7 @@
+ 
+ /* Data structures. */
+ 
+-static struct lock_class_key rcu_root_class;
++static struct lock_class_key rcu_node_class[NUM_RCU_LVLS];
+ 
+ #define RCU_STATE_INITIALIZER(name) { \
+ 	.level = { &name.node[0] }, \
+@@ -936,6 +936,7 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ {
+ 	unsigned long flags;
+ 	unsigned long mask;
++	int need_quiet = 0;
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+ 	struct rcu_node *rnp;
+ 
+@@ -949,29 +950,30 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 		spin_lock(&rnp->lock);		/* irqs already disabled. */
+ 		rnp->qsmaskinit &= ~mask;
+ 		if (rnp->qsmaskinit != 0) {
+-			spin_unlock(&rnp->lock); /* irqs remain disabled. */
++			if (rnp != rdp->mynode)
++				spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 			break;
+ 		}
+-
+-		/*
+-		 * If there was a task blocking the current grace period,
+-		 * and if all CPUs have checked in, we need to propagate
+-		 * the quiescent state up the rcu_node hierarchy.  But that
+-		 * is inconvenient at the moment due to deadlock issues if
+-		 * this should end the current grace period.  So set the
+-		 * offlined CPU's bit in ->qsmask in order to force the
+-		 * next force_quiescent_state() invocation to clean up this
+-		 * mess in a deadlock-free manner.
+-		 */
+-		if (rcu_preempt_offline_tasks(rsp, rnp, rdp) && !rnp->qsmask)
+-			rnp->qsmask |= mask;
+-
++		if (rnp == rdp->mynode)
++			need_quiet = rcu_preempt_offline_tasks(rsp, rnp, rdp);
++		else
++			spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 		mask = rnp->grpmask;
+-		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
+ 		rnp = rnp->parent;
+ 	} while (rnp != NULL);
+ 
+-	spin_unlock_irqrestore(&rsp->onofflock, flags);
++	/*
++	 * We still hold the leaf rcu_node structure lock here, and
++	 * irqs are still disabled.  The reason for this subterfuge is
++	 * because invoking task_quiet() with ->onofflock held leads
++	 * to deadlock.
++	 */
++	spin_unlock(&rsp->onofflock); /* irqs remain disabled. */
++	rnp = rdp->mynode;
++	if (need_quiet)
++		task_quiet(rnp, flags);
++	else
++		spin_unlock_irqrestore(&rnp->lock, flags);
+ 
+ 	rcu_adopt_orphan_cbs(rsp);
+ }
+@@ -1731,6 +1733,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 		rnp = rsp->level[i];
+ 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+ 			spin_lock_init(&rnp->lock);
++			lockdep_set_class(&rnp->lock, &rcu_node_class[i]);
+ 			rnp->gpnum = 0;
+ 			rnp->qsmask = 0;
+ 			rnp->qsmaskinit = 0;
+@@ -1753,7 +1756,6 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
+ 		}
+ 	}
+-	lockdep_set_class(&rcu_get_root(rsp)->lock, &rcu_root_class);
+ }
+ 
+ /*
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 17a28a0..a81188c 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -305,6 +305,9 @@ static void rcu_bootup_announce(void);
+ long rcu_batches_completed(void);
+ static void rcu_preempt_note_context_switch(int cpu);
+ static int rcu_preempted_readers(struct rcu_node *rnp);
++#ifdef CONFIG_HOTPLUG_CPU
++static void task_quiet(struct rcu_node *rnp, unsigned long flags);
++#endif /* #ifdef CONFIG_HOTPLUG_CPU */
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+ static void rcu_print_task_stall(struct rcu_node *rnp);
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index 5ca2d26..0bdb592 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -160,11 +160,51 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
+ 	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
+ }
+ 
++/*
++ * Record a quiescent state for all tasks that were previously queued
++ * on the specified rcu_node structure and that were blocking the current
++ * RCU grace period.  The caller must hold the specified rnp->lock with
++ * irqs disabled, and this lock is released upon return, but irqs remain
++ * disabled.
++ */
++static void task_quiet(struct rcu_node *rnp, unsigned long flags)
++	__releases(rnp->lock)
++{
++	unsigned long mask;
++	struct rcu_node *rnp_p;
++
++	if (rnp->qsmask != 0 || rcu_preempted_readers(rnp)) {
++		spin_unlock_irqrestore(&rnp->lock, flags);
++		return;  /* Still need more quiescent states! */
++	}
++
++	rnp_p = rnp->parent;
++	if (rnp_p == NULL) {
++		/*
++		 * Either there is only one rcu_node in the tree,
++		 * or tasks were kicked up to root rcu_node due to
++		 * CPUs going offline.
++		 */
++		cpu_quiet_msk_finish(&rcu_preempt_state, flags);
++		return;
++	}
++
++	/* Report up the rest of the hierarchy. */
++	mask = rnp->grpmask;
++	spin_unlock(&rnp->lock);	/* irqs remain disabled. */
++	spin_lock(&rnp_p->lock);	/* irqs already disabled. */
++	cpu_quiet_msk(mask, &rcu_preempt_state, rnp_p, flags);
++}
++
++/*
++ * Handle special cases during rcu_read_unlock(), such as needing to
++ * notify RCU core processing or task having blocked during the RCU
++ * read-side critical section.
++ */
+ static void rcu_read_unlock_special(struct task_struct *t)
+ {
+ 	int empty;
+ 	unsigned long flags;
+-	unsigned long mask;
+ 	struct rcu_node *rnp;
+ 	int special;
+ 
+@@ -213,30 +253,15 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 		/*
+ 		 * If this was the last task on the current list, and if
+ 		 * we aren't waiting on any CPUs, report the quiescent state.
+-		 * Note that both cpu_quiet_msk_finish() and cpu_quiet_msk()
+-		 * drop rnp->lock and restore irq.
++		 * Note that task_quiet() releases rnp->lock.
+ 		 */
+-		if (!empty && rnp->qsmask == 0 &&
+-		    !rcu_preempted_readers(rnp)) {
+-			struct rcu_node *rnp_p;
+-
+-			if (rnp->parent == NULL) {
+-				/* Only one rcu_node in the tree. */
+-				cpu_quiet_msk_finish(&rcu_preempt_state, flags);
+-				return;
+-			}
+-			/* Report up the rest of the hierarchy. */
+-			mask = rnp->grpmask;
++		if (empty)
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+-			rnp_p = rnp->parent;
+-			spin_lock_irqsave(&rnp_p->lock, flags);
+-			WARN_ON_ONCE(rnp->qsmask);
+-			cpu_quiet_msk(mask, &rcu_preempt_state, rnp_p, flags);
+-			return;
+-		}
+-		spin_unlock(&rnp->lock);
++		else
++			task_quiet(rnp, flags);
++	} else {
++		local_irq_restore(flags);
+ 	}
+-	local_irq_restore(flags);
+ }
+ 
+ /*
+@@ -303,6 +328,8 @@ static void rcu_preempt_check_blocked_tasks(struct rcu_node *rnp)
+  * rcu_node.  The reason for not just moving them to the immediate
+  * parent is to remove the need for rcu_read_unlock_special() to
+  * make more than two attempts to acquire the target rcu_node's lock.
++ * Returns true if there were tasks blocking the current RCU grace
++ * period.
+  *
+  * Returns 1 if there was previously a task blocking the current grace
+  * period on the specified rcu_node structure.
+@@ -316,7 +343,7 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	int i;
+ 	struct list_head *lp;
+ 	struct list_head *lp_root;
+-	int retval = rcu_preempted_readers(rnp);
++	int retval;
+ 	struct rcu_node *rnp_root = rcu_get_root(rsp);
+ 	struct task_struct *tp;
+ 
+@@ -334,6 +361,7 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	 * rcu_nodes in terms of gp_num value.  This fact allows us to
+ 	 * move the blocked_tasks[] array directly, element by element.
+ 	 */
++	retval = rcu_preempted_readers(rnp);
+ 	for (i = 0; i < 2; i++) {
+ 		lp = &rnp->blocked_tasks[i];
+ 		lp_root = &rnp_root->blocked_tasks[i];
+@@ -346,7 +374,6 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 			spin_unlock(&rnp_root->lock); /* irqs remain disabled */
+ 		}
+ 	}
+-
+ 	return retval;
+ }
+ 
+@@ -512,6 +539,16 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
++/* Because preemptible RCU does not exist, no quieting of tasks. */
++static void task_quiet(struct rcu_node *rnp, unsigned long flags)
++{
++	spin_unlock_irqrestore(&rnp->lock, flags);
++}
++
++#endif /* #ifdef CONFIG_HOTPLUG_CPU */
++
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+ 
+ /*
