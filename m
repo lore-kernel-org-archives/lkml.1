@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZKWPVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZKWP0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZKWPVq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZKWPVp
+	id S1755425AbZKWP0Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZKWP0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:21:45 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43082 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755067AbZKWPVo (ORCPT
+	Mon, 23 Nov 2009 10:26:23 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:64501 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754441AbZKWP0X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:21:44 -0500
-Subject: Re: newidle balancing in NUMA domain?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20091123151152.GA19175@wotan.suse.de>
-References: <20091123112228.GA2287@wotan.suse.de>
-	 <1258987059.6193.73.camel@marge.simson.net>
-	 <20091123151152.GA19175@wotan.suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 23 Nov 2009 16:21:44 +0100
-Message-ID: <1258989704.4531.574.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Nov 2009 10:26:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=vnrFNGgn3Yf6BArMSgoa7/TGU57jc1LsCd9ikTcwm8AwFV7cw2yBJxvG0ZNb96g1bY
+         Y2acVY7oGeKgARd17U8bbXZVwZg+R8nYFj56jVNxn69ynr65ElvsTfcixZb56yrUiIGd
+         BLnfQU4aLjdl4/jZg6yuEDKHKUZxCzdduItLc=
+MIME-Version: 1.0
+In-Reply-To: <20091123140323.GA4495@redhat.com>
+References: <cover.1258805412.git.andre.goddard@gmail.com> 
+	<0e91f1c4ecc5bc5000f729ccb56e9b6e1fbd4bd3.1258805412.git.andre.goddard@gmail.com> 
+	<84144f020911230138v11b18709q28c186f9260f6d66@mail.gmail.com> 
+	<20091123140323.GA4495@redhat.com>
+From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
+Date: Mon, 23 Nov 2009 13:26:09 -0200
+Message-ID: <b8bf37780911230726x7ec9b8b4s9adec2202de5fb87@mail.gmail.com>
+Subject: Re: [PATCH 1/2] pid: tighten pidmap spinlock critical section by 
+	removing kfree()
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jiri Kosina <jkosina@suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 16:11 +0100, Nick Piggin wrote:
+Hi, Oleg!
 
-> Wait, you say it was activated to improve fork/exec CPU utilization?
-> For the x264 load? What do you mean by this? Do you mean it is doing
-> a lot of fork/exec/exits and load is not being spread quickly enough?
-> Or that NUMA allocations get screwed up because tasks don't get spread
-> out quickly enough before running?
-> 
-> In either case, I think newidle balancing is maybe not the right solution.
-> newidle balancing only checks the system state when the destination
-> CPU goes idle. fork events increase load at the source CPU. So for
-> example if you find newidle helps to pick up forks, then if the
-> newidle event happens to come in before the fork, we'll have to wait
-> for the next rebalance event.
-> 
-> So possibly making fork/exec balancing more aggressive might be a
-> better approach. This can be done by reducing the damping idx, or
-> perhaps some other conditions to reduce eg imbalance_pct or something
-> for forkexec balancing. Probably needs some studying of the workload
-> to work out why forkexec is failing.
+On Mon, Nov 23, 2009 at 12:03 PM, Oleg Nesterov <oleg@redhat.com> wrote:
+> On 11/23, Pekka Enberg wrote:
+>> (Adding some CC's.)
+>>
+>> On Sat, Nov 21, 2009 at 2:16 PM, André Goddard Rosa
+>> <andre.goddard@gmail.com> wrote:
+>> > Avoid calling kfree() under pidmap spinlock, calling it afterwards.
+>> >
+>> > Normally kfree() is very fast, but sometimes it can be slow, so avoid
+>> > calling it under the spinlock if we can.
+>
+> kfree() is called when we race with another process which also
+> finds map->page == NULL, allocs the new page and takes pidmap_lock
+> before us. This is extremely unlikely case, right?
 
->From what I can remember from that workload it basically spawns tons of
-very short lived threads, waits for a bunch to complete, goto 1.
+Right, somehow.
 
-Fork balancing only works until all cpus are active. But once a core
-goes idle it's left idle until we hit a general load-balance cycle.
-Newidle helps because it picks up these threads from other cpus,
-completing the current batch sooner, allowing the program to continue
-with the next.
+>> > @@ -141,11 +141,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+>> >                         * installing it:
+>> >                         */
+>> >                        spin_lock_irq(&pidmap_lock);
+>> > -                       if (map->page)
+>> > -                               kfree(page);
+>> > -                       else
+>> > +                       if (!map->page) {
+>> >                                map->page = page;
+>> > +                               page = NULL;
+>> > +                       }
+>> >                        spin_unlock_irq(&pidmap_lock);
+>> > +                       kfree(page);
+>
+> And this change pessimizes (a little bit) the likely case, when
+> the race doesn't happen. And imho this change doesn't make the
+> code more readable.
+>
+> But this is subjective, and technically the patch is correct
+> afaics.
 
-There's just not much you can do from the fork() side of things once
-you've got them all running.
+It does not affect the likely case which happens when the pidmap is
+already allocated.
 
-> OK. This would be great if fixing up involves making things closer
-> to what they were rather than adding more complex behaviour on top
-> of other changes that broke stuff. And doing it in 2.6.32 would be
-> kind of nice...
+In the unlikely case where the pidmap must be allocated, if we think
+that we could have
+let's say 8 processes contending for that spinlock, while one process
+got it first and allocated
+the page, having the kfree() out of the spinlock would make those
+other 7 processes doing
+useful work (performing the release of the page) before, because it
+would avoid all of them
+spinning around waiting until the all the others also free their
+allocated pages.
 
-.32 is kind of closed, with us being at -rc8.
+>> >                        if (unlikely(!map->page))
+>> >                         �
+>
+> Hmm. Off-topic, but why alloc_pidmap() does not do this right
+> after kzalloc() ?
 
+Hmm... I would say that it's an optimistic best effort. We avoid
+failing right away
+hoping that another process (racing) had success allocating the page.
+That is unlikely! :)
+
+Thank you,
+André
