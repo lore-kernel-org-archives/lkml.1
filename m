@@ -1,233 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZKWHHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZKWHQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZKWHHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 02:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZKWHHr
+	id S1754321AbZKWHQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 02:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZKWHQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 02:07:47 -0500
-Received: from mga02.intel.com ([134.134.136.20]:6215 "EHLO mga02.intel.com"
+	Mon, 23 Nov 2009 02:16:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55177 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753258AbZKWHHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 02:07:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,270,1257148800"; 
-   d="scan'208";a="572153629"
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Subject: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance hints
-To: linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com
-Cc: davem@davemloft.net, netdev@vger.kernel.org
-Date: Sun, 22 Nov 2009 23:12:50 -0800
-Message-ID: <20091123071250.7626.17713.stgit@ppwaskie-hc2.jf.intel.com>
-User-Agent: StGIT/0.14.3
+	id S1753225AbZKWHQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 02:16:22 -0500
+Date: Mon, 23 Nov 2009 07:15:48 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] ring-buffer benchmark: Run producer/consumer threads at nice +19
+Message-ID: <tip-98e4833ba3c314c99dc364012fba6ac894230ad0@git.kernel.org>
+Git-Commit-ID: 98e4833ba3c314c99dc364012fba6ac894230ad0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset adds a new CPU mask for SMP systems to the irq_desc
-struct.  It also exposes an API for underlying device drivers to
-assist irqbalance in making smarter decisions when balancing, especially
-in a NUMA environment.  For example, an ethernet driver with MSI-X may
-wish to limit the CPUs that an interrupt can be balanced within to
-stay on a single NUMA node.  Current irqbalance operation can move the
-interrupt off the node, resulting in cross-node memory accesses and
-locks.
+Commit-ID:  98e4833ba3c314c99dc364012fba6ac894230ad0
+Gitweb:     http://git.kernel.org/tip/98e4833ba3c314c99dc364012fba6ac894230ad0
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Mon, 23 Nov 2009 08:03:09 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 23 Nov 2009 08:03:09 +0100
 
-The API is a get/set API within the kernel, along with a /proc entry
-for the interrupt.
+ring-buffer benchmark: Run producer/consumer threads at nice +19
 
-Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+The ring-buffer benchmark threads run on nice 0 by default, using
+up a lot of CPU time and slowing down the system:
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+  1024 root      20   0     0    0    0 D 95.3  0.0   4:01.67 rb_producer
+  1023 root      20   0     0    0    0 R 93.5  0.0   2:54.33 rb_consumer
+ 21569 mingo     40   0 14852 1048  772 R  3.6  0.1   0:00.05 top
+     1 root      40   0  4080  928  668 S  0.0  0.0   0:23.98 init
+
+Renice them to +19 to make them less intrusive.
+
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ kernel/trace/ring_buffer_benchmark.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
- include/linux/interrupt.h |    8 ++++++
- include/linux/irq.h       |    2 ++
- kernel/irq/manage.c       |   32 +++++++++++++++++++++++++
- kernel/irq/proc.c         |   57 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 99 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 75f3f00..9fd08aa 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -208,6 +208,8 @@ extern cpumask_var_t irq_default_affinity;
- extern int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask);
- extern int irq_can_set_affinity(unsigned int irq);
- extern int irq_select_affinity(unsigned int irq);
-+extern int irq_set_node_affinity(unsigned int irq,
-+                                 const struct cpumask *cpumask);
+diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
+index 70df73e..3875d49 100644
+--- a/kernel/trace/ring_buffer_benchmark.c
++++ b/kernel/trace/ring_buffer_benchmark.c
+@@ -399,6 +399,12 @@ static int __init ring_buffer_benchmark_init(void)
+ 	if (IS_ERR(producer))
+ 		goto out_kill;
  
- #else /* CONFIG_SMP */
- 
-@@ -223,6 +225,12 @@ static inline int irq_can_set_affinity(unsigned int irq)
- 
- static inline int irq_select_affinity(unsigned int irq)  { return 0; }
- 
-+static inline int irq_set_node_affinity(unsigned int irq,
-+                                        const struct cpumask *m)
-+{
-+	return -EINVAL;
-+}
++	/*
++	 * Run them as low-prio background tasks by default:
++	 */
++	set_user_nice(consumer, 19);
++	set_user_nice(producer, 19);
 +
- #endif /* CONFIG_SMP && CONFIG_GENERIC_HARDIRQS */
- 
- #ifdef CONFIG_GENERIC_HARDIRQS
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index ae9653d..26d7d07 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -166,6 +166,7 @@ struct irq_2_iommu;
-  * @lock:		locking for SMP
-  * @affinity:		IRQ affinity on SMP
-  * @node:		node index useful for balancing
-+ * @node_affinity:	irq mask hints for irqbalance
-  * @pending_mask:	pending rebalanced interrupts
-  * @threads_active:	number of irqaction threads currently running
-  * @wait_for_threads:	wait queue for sync_irq to wait for threaded handlers
-@@ -196,6 +197,7 @@ struct irq_desc {
- #ifdef CONFIG_SMP
- 	cpumask_var_t		affinity;
- 	unsigned int		node;
-+	cpumask_var_t		node_affinity;
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	cpumask_var_t		pending_mask;
- #endif
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 7305b29..9e80783 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -138,6 +138,38 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
  	return 0;
- }
  
-+/**
-+ *	irq_set_node_affinity - Set the CPU mask this interrupt can run on
-+ *	@irq:		Interrupt to modify
-+ *	@cpumask:	CPU mask to assign to the interrupt
-+ *
-+ */
-+int irq_set_node_affinity(unsigned int irq, const struct cpumask *cpumask)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&desc->lock, flags);
-+	cpumask_copy(desc->node_affinity, cpumask);
-+	spin_unlock_irqrestore(&desc->lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(irq_set_node_affinity);
-+
-+/**
-+ *	irq_get_node_affinity - Get the CPU mask this interrupt can run on
-+ *	@irq:		Interrupt to get information
-+ *
-+ */
-+struct cpumask *irq_get_node_affinity(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	return desc->node_affinity;
-+}
-+EXPORT_SYMBOL(irq_get_node_affinity);
-+
- #ifndef CONFIG_AUTO_IRQ_AFFINITY
- /*
-  * Generic version of the affinity autoselector.
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index 0832145..192e3fb 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -31,6 +31,16 @@ static int irq_affinity_proc_show(struct seq_file *m, void *v)
- 	return 0;
- }
- 
-+static int irq_node_affinity_proc_show(struct seq_file *m, void *v)
-+{
-+	struct irq_desc *desc = irq_to_desc((long)m->private);
-+	const struct cpumask *mask = desc->node_affinity;
-+
-+	seq_cpumask(m, mask);
-+	seq_putc(m, '\n');
-+	return 0;
-+}
-+
- #ifndef is_affinity_mask_valid
- #define is_affinity_mask_valid(val) 1
- #endif
-@@ -78,11 +88,46 @@ free_cpumask:
- 	return err;
- }
- 
-+static ssize_t irq_node_affinity_proc_write(struct file *file,
-+		const char __user *buffer, size_t count, loff_t *pos)
-+{
-+	unsigned int irq = (int)(long)PDE(file->f_path.dentry->d_inode)->data;
-+	cpumask_var_t new_value;
-+	int err;
-+
-+	if (no_irq_affinity || irq_balancing_disabled(irq))
-+		return -EIO;
-+
-+	if (!alloc_cpumask_var(&new_value, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	err = cpumask_parse_user(buffer, count, new_value);
-+	if (err)
-+		goto free_cpumask;
-+
-+	if (!is_affinity_mask_valid(new_value)) {
-+		err = -EINVAL;
-+		goto free_cpumask;
-+	}
-+
-+	irq_set_node_affinity(irq, new_value);
-+	err = count;
-+
-+free_cpumask:
-+	free_cpumask_var(new_value);
-+	return err;
-+}
-+
- static int irq_affinity_proc_open(struct inode *inode, struct file *file)
- {
- 	return single_open(file, irq_affinity_proc_show, PDE(inode)->data);
- }
- 
-+static int irq_node_affinity_proc_open(struct inode *inode, struct file *f)
-+{
-+	return single_open(f, irq_node_affinity_proc_show, PDE(inode)->data);
-+}
-+
- static const struct file_operations irq_affinity_proc_fops = {
- 	.open		= irq_affinity_proc_open,
- 	.read		= seq_read,
-@@ -91,6 +136,14 @@ static const struct file_operations irq_affinity_proc_fops = {
- 	.write		= irq_affinity_proc_write,
- };
- 
-+static const struct file_operations irq_node_affinity_proc_fops = {
-+	.open		= irq_node_affinity_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= irq_node_affinity_proc_write,
-+};
-+
- static int default_affinity_show(struct seq_file *m, void *v)
- {
- 	seq_cpumask(m, irq_default_affinity);
-@@ -230,6 +283,10 @@ void register_irq_proc(unsigned int irq, struct irq_desc *desc)
- 	/* create /proc/irq/<irq>/smp_affinity */
- 	proc_create_data("smp_affinity", 0600, desc->dir,
- 			 &irq_affinity_proc_fops, (void *)(long)irq);
-+
-+	/* create /proc/irq/<irq>/node_affinity */
-+	proc_create_data("node_affinity", 0600, desc->dir,
-+	                 &irq_node_affinity_proc_fops, (void *)(long)irq);
- #endif
- 
- 	proc_create_data("spurious", 0444, desc->dir,
-
+  out_kill:
