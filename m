@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZKWOIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZKWOJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZKWOIm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZKWOIm
+	id S1753733AbZKWOJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:09:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZKWOJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:08:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32369 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 09:09:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16272 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbZKWOIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:08:41 -0500
-Date: Mon, 23 Nov 2009 15:03:23 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: =?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH 1/2] pid: tighten pidmap spinlock critical section by
-	removing kfree()
-Message-ID: <20091123140323.GA4495@redhat.com>
-References: <cover.1258805412.git.andre.goddard@gmail.com> <0e91f1c4ecc5bc5000f729ccb56e9b6e1fbd4bd3.1258805412.git.andre.goddard@gmail.com> <84144f020911230138v11b18709q28c186f9260f6d66@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020911230138v11b18709q28c186f9260f6d66@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753576AbZKWOJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 09:09:12 -0500
+From: Gleb Natapov <gleb@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       hpa@zytor.com, riel@redhat.com
+Subject: [PATCH v2 00/12] KVM: Add asynchronous page fault for PV guest.
+Date: Mon, 23 Nov 2009 16:05:55 +0200
+Message-Id: <1258985167-29178-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23, Pekka Enberg wrote:
-> (Adding some CC's.)
->
-> On Sat, Nov 21, 2009 at 2:16 PM, André Goddard Rosa
-> <andre.goddard@gmail.com> wrote:
-> > Avoid calling kfree() under pidmap spinlock, calling it afterwards.
-> >
-> > Normally kfree() is very fast, but sometimes it can be slow, so avoid
-> > calling it under the spinlock if we can.
+KVM virtuaize guest memory by means of shadow pages or HW assistance
+like NPT/EPT. Not all memory used by a guest is mapped into the guest
+address space or even present in a host memory at any given time.
+When vcpu tries to access memory page that is not mapped into guest
+address space KVM is notified about it. KVM maps the page into guest
+address space and resumes vcpu execution. If the page is swapped out
+from host memory vcpu execution is suspended till page is not swapped
+into the memory again. This is inefficient since vcpu can do other work
+(run other task or serve interrupts) while page gets swapped in.
 
-kfree() is called when we race with another process which also
-finds map->page == NULL, allocs the new page and takes pidmap_lock
-before us. This is extremely unlikely case, right?
+To overcome this inefficient this patch series implements "asynchronous
+page fault" for paravirtualized  KVM guests. If a page that vcpu is trying
+to access is swapped out KVM sends async PF to the vcpu and continues vcpu
+execution. Requested page is swapped in by another thread in parallel.
+When vcpu gets async PF it puts the task that faulted to sleep until
+"wake up" interrupt is delivered. When page is brought to host memory
+KVM sends "wake up" interrupt and the guest task resumes execution.
 
-> > @@ -141,11 +141,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
-> >                         * installing it:
-> >                         */
-> >                        spin_lock_irq(&pidmap_lock);
-> > -                       if (map->page)
-> > -                               kfree(page);
-> > -                       else
-> > +                       if (!map->page) {
-> >                                map->page = page;
-> > +                               page = NULL;
-> > +                       }
-> >                        spin_unlock_irq(&pidmap_lock);
-> > +                       kfree(page);
+Changes:
+ v1->v2
+   Use MSR instead of hypercall.
+   Move most of the code into arch independent place.
+   halt inside a guest instead of doing "wait for page" hypercall if
+    preemption is disabled.
+   
+Gleb Natapov (12):
+  Move kvm_smp_prepare_boot_cpu() from kvmclock.c to kvm.c.
+  Add PV MSR to enable asynchronous page faults delivery.
+  Add async PF initialization to PV guest.
+  Add "handle page fault" PV helper.
+  Handle asynchronous page fault in a PV guest.
+  Export __get_user_pages_fast.
+  Add get_user_pages() variant that fails if major fault is required.
+  Inject asynchronous page fault into a guest if page is swapped out.
+  Retry fault before vmentry
+  Maintain preemptability count even for !CONFIG_PREEMPT kernels
+  Handle async PF in non preemptable context.
+  Send async PF when guest is not in userspace too.
 
-And this change pessimizes (a little bit) the likely case, when
-the race doesn't happen. And imho this change doesn't make the
-code more readable.
-
-But this is subjective, and technically the patch is correct
-afaics.
-
-> >                        if (unlikely(!map->page))
-> >                         �
-
-Hmm. Off-topic, but why alloc_pidmap() does not do this right
-after kzalloc() ?
-
-Oleg.
+ arch/x86/include/asm/kvm_host.h       |   22 +++-
+ arch/x86/include/asm/kvm_para.h       |   11 ++
+ arch/x86/include/asm/paravirt.h       |    7 +
+ arch/x86/include/asm/paravirt_types.h |    4 +
+ arch/x86/kernel/kvm.c                 |  215 +++++++++++++++++++++++++++++++
+ arch/x86/kernel/kvmclock.c            |   13 +--
+ arch/x86/kernel/paravirt.c            |    8 +
+ arch/x86/kernel/paravirt_patch_32.c   |    8 +
+ arch/x86/kernel/paravirt_patch_64.c   |    7 +
+ arch/x86/kernel/smpboot.c             |    3 +
+ arch/x86/kvm/Kconfig                  |    2 +
+ arch/x86/kvm/mmu.c                    |   46 ++++++-
+ arch/x86/kvm/paging_tmpl.h            |   50 +++++++-
+ arch/x86/kvm/x86.c                    |   86 ++++++++++++-
+ arch/x86/mm/fault.c                   |    3 +
+ arch/x86/mm/gup.c                     |    2 +
+ fs/ncpfs/mmap.c                       |    2 +
+ include/linux/hardirq.h               |   14 +--
+ include/linux/kvm.h                   |    1 +
+ include/linux/kvm_host.h              |   27 ++++
+ include/linux/kvm_para.h              |    2 +
+ include/linux/mm.h                    |    5 +
+ include/linux/preempt.h               |   22 +++-
+ include/linux/sched.h                 |    4 -
+ include/trace/events/kvm.h            |   60 +++++++++
+ kernel/sched.c                        |    6 -
+ lib/kernel_lock.c                     |    1 +
+ mm/filemap.c                          |    3 +
+ mm/memory.c                           |   31 ++++-
+ mm/shmem.c                            |    8 +-
+ virt/kvm/Kconfig                      |    3 +
+ virt/kvm/kvm_main.c                   |  227 ++++++++++++++++++++++++++++++++-
+ 32 files changed, 846 insertions(+), 57 deletions(-)
 
