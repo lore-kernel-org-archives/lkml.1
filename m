@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZKWOyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZKWO7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZKWOyF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZKWOyE
+	id S1754373AbZKWO7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZKWO7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:54:04 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54365 "EHLO mx2.suse.de"
+	Mon, 23 Nov 2009 09:59:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24348 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbZKWOyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:54:04 -0500
-Date: Mon, 23 Nov 2009 15:54:09 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [rfc] "fair" rw spinlocks
-Message-ID: <20091123145409.GA29627@wotan.suse.de>
+	id S1751186AbZKWO7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 09:59:18 -0500
+Subject: Re: kvmmmu tracing
+From: Steven Rostedt <srostedt@redhat.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1258974375.7094.158.camel@johannes.local>
+References: <1258974375.7094.158.camel@johannes.local>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 23 Nov 2009 09:58:58 -0500
+Message-Id: <1258988338.31359.147.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2009-11-23 at 12:06 +0100, Johannes Berg wrote:
+> Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
+> the userspace interface for tracing because of the weird
+> KVM_MMU_PAGE_PRINTK macro.
+> 
+> Maybe we should have a "unsafe for export" flag for events, if they do
+> strange things like that?
+> 
+> As it stands, I can't use trace-cmd on an x86 machine that has kvm
+> enabled because it will try to read all the kvm stuff. Arguably, it
+> should only try to parse it when it needs it (i.e. not for me) but still
+> it's very inconvenient to export something to userspace that it cannot
+> possibly understand.
 
-Last time this issue came up that I could see, I don't think
-there were objections to making rwlocks fair, the main
-difficulty seemed to be that we allow reentrant read locks
-(so a write lock waiting must not block arbitrary read lockers).
+Note, I updated trace-cmd. I still does not read this macro nicely, but
+it at least does not fail anymore.
 
-Nowadays our rwlock usage is smaller although still quite a
-few, so it would make better sense to do a conversion by
-introducing a new lock type and move them over I guess.
+-- Steve
 
-Anyway, I would like to add some kind of fairness or at least
-anti starvation for writers. We have a customer seeing total
-livelock on tasklist_lock for write locking on a system as small
-as 8 core Opteron.
-
-This was basically reproduced by several cores executing wait
-with WNOHANG.
-
-Of course it would always be nice to improve locking so
-contention isn't an issue, but so long as we have rwlocks, we
-could possibly get into a situation where starvation is
-triggered *somehow*. So I'd really like to fix this.
-
-This particular starvation on tasklist lock I guess is a local
-DoS vulnerability even if the workload is not particularly
-realistic.
-
-Anyway, I don't have a patch yet. I'm sure it can be done
-without extra atomics in fastpaths. Comments?
 
