@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZKWOlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZKWOmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZKWOlH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:41:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZKWOlG
+	id S1755242AbZKWOmh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZKWOmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:41:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:15122 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbZKWOlF (ORCPT
+	Mon, 23 Nov 2009 09:42:36 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:22984 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755032AbZKWOmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:41:05 -0500
+	Mon, 23 Nov 2009 09:42:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ao089ngVOP3EhgkWjtaX3r1RuzKpTf1CKUF4Yt5KpnxNYbxvjTFbMEGK0oixAjop9x
-         wHHcdoeDHFQQp+ZqQE2DQLUi6oKUTuN+J/buwkB8TKpeUM78gxXrnvzAAAp7DkqKt8L6
-         NeL49J9rz+XhMYWz7VpTkVKzW1ZQ+CI9G1llg=
-Date: Mon, 23 Nov 2009 22:41:52 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: "Helight.Xu" <helight.xu@gmail.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: =?utf-8?B?5aaC5L2V6YCa6L+HZmTmib7liLA=?=
-	=?utf-8?B?5omT5byA5paH5Lu255qE6Lev5b6E5Y+K5ZCN56ew?=
-Message-ID: <20091123144152.GC2412@hack>
-References: <4B06384C.2080703@gmail.com> <20091122163700.GC3476@hack> <4B09DF29.8020003@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B09DF29.8020003@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=OzH92MrhwZXzDm+uWDUa9lt0mk9g5wATatzhTZUZH22uSeos6yUTayIJIQvxsOk6YS
+         D6bxPaeX9ARPq33Wjnuj4v2Xw4PcDbkGqdZ+FygO9PfFOd2qbgpzUVoltpEpK3+ZbkA3
+         qSA+B48ysNsylo9xHtHh/sfi6j0GN0zrOkTTw=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Prasad <prasad@linux.vnet.ibm.com>
+Subject: [PATCH 1/4] hw-breakpoints: Include only linux/perf_event.h from kernel part of bp headers
+Date: Mon, 23 Nov 2009 15:42:32 +0100
+Message-Id: <1258987355-8751-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 09:02:33AM +0800, Helight.Xu wrote:
-> Américo Wang wrote:
->> On Fri, Nov 20, 2009 at 02:33:48PM +0800, Helight.Xu wrote:
->>   
->>> 在用户程序中打开文件进行编辑，那在内核中如何能通过open后的fd
->>> 来找到相应打开文件的路径及其名字呢？
->>>
->>>     
->>
->> 问题是你为什么要在内核中做呢？在用户空间完全可以完成：
->>
->>  % readlink /proc/<PID>/fd/X
->>   
-> 我是想在内核中实现一些功能，所以现在内核中找到文件的路径及其名称，
+As userspace only needs the breakpoints enum types from the breakpoints
+headers.
 
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+---
+ include/linux/hw_breakpoint.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-能在用户层完成的就不要跑到内核里去做，完全没必要。
-
-而且，你在处理这个问题时还要考虑pipe和socket这些特殊的文件，
-它们对应的fd可是没有file的。
-
-> 现在只  
-> 能找到文件名，还在找路径。。。
-
-你可以看看proc文件中对fd/X的处理，或许能帮上忙。
-
-
--- 
-Live like a child, think like the god.
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 4659e0c..76a48ab 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -1,8 +1,6 @@
+ #ifndef _LINUX_HW_BREAKPOINT_H
+ #define _LINUX_HW_BREAKPOINT_H
  
+-#include <linux/perf_event.h>
+-
+ enum {
+ 	HW_BREAKPOINT_LEN_1 = 1,
+ 	HW_BREAKPOINT_LEN_2 = 2,
+@@ -19,6 +17,8 @@ enum {
+ #ifdef __KERNEL__
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+ 
++#include <linux/perf_event.h>
++
+ static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
+ {
+ 	return bp->attr.bp_addr;
+-- 
+1.6.2.3
+
