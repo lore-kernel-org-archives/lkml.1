@@ -1,107 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZKWP0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZKWP3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbZKWP0Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:26:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZKWP0X
+	id S1755323AbZKWP3Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZKWP3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:26:23 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:64501 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754441AbZKWP0X convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 10:29:23 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35389 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753564AbZKWP3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:26:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=vnrFNGgn3Yf6BArMSgoa7/TGU57jc1LsCd9ikTcwm8AwFV7cw2yBJxvG0ZNb96g1bY
-         Y2acVY7oGeKgARd17U8bbXZVwZg+R8nYFj56jVNxn69ynr65ElvsTfcixZb56yrUiIGd
-         BLnfQU4aLjdl4/jZg6yuEDKHKUZxCzdduItLc=
+	Mon, 23 Nov 2009 10:29:23 -0500
+X-Sasl-enc: mUHo4kbyygZH2j1CvdbxNOddrl5mUvv9gQMXanoPpQDd 1258990168
+Message-ID: <4B0AAA55.3040702@ladisch.de>
+Date: Mon, 23 Nov 2009 16:29:25 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <20091123140323.GA4495@redhat.com>
-References: <cover.1258805412.git.andre.goddard@gmail.com> 
-	<0e91f1c4ecc5bc5000f729ccb56e9b6e1fbd4bd3.1258805412.git.andre.goddard@gmail.com> 
-	<84144f020911230138v11b18709q28c186f9260f6d66@mail.gmail.com> 
-	<20091123140323.GA4495@redhat.com>
-From: =?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>
-Date: Mon, 23 Nov 2009 13:26:09 -0200
-Message-ID: <b8bf37780911230726x7ec9b8b4s9adec2202de5fb87@mail.gmail.com>
-Subject: Re: [PATCH 1/2] pid: tighten pidmap spinlock critical section by 
-	removing kfree()
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jiri Kosina <jkosina@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jean Delvare <khali@linux-fr.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v3] k10temp: temperature sensor for AMD Family 10h/11h
+ CPUs
+References: <4AF91F70.10106@ladisch.de>	<4B06501B.8080509@ladisch.de>	<87ws1l5wcl.fsf@depni.sinp.msu.ru>	<4B0673D7.5010006@ladisch.de>	<20091120123016.19d98ab4@hyperion.delvare>	<4B068402.7020606@ladisch.de>	<20091120131855.7f8f8722@hyperion.delvare>	<4B0A3DB6.9090703@ladisch.de> <20091123145154.5b2b5735@hyperion.delvare>
+In-Reply-To: <20091123145154.5b2b5735@hyperion.delvare>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Oleg!
+Jean Delvare wrote:
+> On Mon, 23 Nov 2009 08:45:58 +0100, Clemens Ladisch wrote:
+>>  Documentation/hwmon/k10temp |   57 ++++++++++++
+>>  drivers/hwmon/k10temp.c     |  142 ++++++++++++++++++++++++++++++++
+> 
+> The name k10temp is a problem, as AMD insists that there is no such
+> things as K10 and K11, but instead "family 10h" and "family 11h"
+> processors.
 
-On Mon, Nov 23, 2009 at 12:03 PM, Oleg Nesterov <oleg@redhat.com> wrote:
-> On 11/23, Pekka Enberg wrote:
->> (Adding some CC's.)
->>
->> On Sat, Nov 21, 2009 at 2:16 PM, André Goddard Rosa
->> <andre.goddard@gmail.com> wrote:
->> > Avoid calling kfree() under pidmap spinlock, calling it afterwards.
->> >
->> > Normally kfree() is very fast, but sometimes it can be slow, so avoid
->> > calling it under the spinlock if we can.
->
-> kfree() is called when we race with another process which also
-> finds map->page == NULL, allocs the new page and takes pidmap_lock
-> before us. This is extremely unlikely case, right?
+K10 was AMD's internal code name, and is widely used in practice.
+I'd like to keep this name since it is consistent with the older
+k8temp driver.
 
-Right, somehow.
+What name would you propose instead?  "amdfam10temp"?
 
->> > @@ -141,11 +141,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
->> >                         * installing it:
->> >                         */
->> >                        spin_lock_irq(&pidmap_lock);
->> > -                       if (map->page)
->> > -                               kfree(page);
->> > -                       else
->> > +                       if (!map->page) {
->> >                                map->page = page;
->> > +                               page = NULL;
->> > +                       }
->> >                        spin_unlock_irq(&pidmap_lock);
->> > +                       kfree(page);
->
-> And this change pessimizes (a little bit) the likely case, when
-> the race doesn't happen. And imho this change doesn't make the
-> code more readable.
->
-> But this is subjective, and technically the patch is correct
-> afaics.
+>> +  control cooling systems. Tctl is a non-physical temperature on an
+>> +  arbitrary scale measured in degrees. It does _not_ represent an actual
+>> +  physical temperature like die or case temperature. Instead, it specifies
+>> +  the processor temperature relative to the point at which the system must
+>> +  supply the maximum cooling for the processor's specified maximum case
+>> +  temperature and maximum thermal power dissipation.
+>> +
+>> +The maximum value for Tctl is defined as 70 degrees, so, as a rule of thumb,
+>> +this value should not exceed 60 degrees.
+> 
+> Now I am puzzled. If the temperature value is on an arbitrary scale,
+> then the value returned by the driver is essentially fake?
 
-It does not affect the likely case which happens when the pidmap is
-already allocated.
+Yes (and it's near enough the absolute value to look plausible).
 
-In the unlikely case where the pidmap must be allocated, if we think
-that we could have
-let's say 8 processes contending for that spinlock, while one process
-got it first and allocated
-the page, having the kfree() out of the spinlock would make those
-other 7 processes doing
-useful work (performing the release of the page) before, because it
-would avoid all of them
-spinning around waiting until the all the others also free their
-allocated pages.
+> Don't we have additional information about the actual maximum Tcase
+> value for the different supported models, as we have in coretemp?
 
->> >                        if (unlikely(!map->page))
->> >                         �
->
-> Hmm. Off-topic, but why alloc_pidmap() does not do this right
-> after kzalloc() ?
+For AMD, Tcase is the physical temperature.  Did you mean Tctl?
 
-Hmm... I would say that it's an optimistic best effort. We avoid
-failing right away
-hoping that another process (racing) had success allocating the page.
-That is unlikely! :)
+I'll add Tctl max (= "100% cooling, please") as temp1_max, and there's
+a register that contains the Tctl value at which the processor starts
+throttling, which could be exported as temp1_crit(_hyst), if I
+understand the lm-sensors documentation correctly.
 
-Thank you,
-André
+As for your other comments, I'll integrate them in the next version of
+the patch.
+
+
+> If not, then it might be the right time to introduce a new interface
+> for relative temperature values. This needs some work, as we must first
+> define the interface, then implement support in libsensors and sensors,
+> and other monitoring applications, and then convert the affected
+> drivers. But apparently we will have to, as major CPU makers are not
+> able to implement something as simple as an absolute temperature
+> sensor :(
+
+There still is the built-in diode to be read by the motherboard, but the
+internal sensor was never intended to be an absolute measurement but
+just as a means for controlling the cooling.
+
+
+
+Best regards,
+Clemens
