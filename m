@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZKWTt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZKWTuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZKWTt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 14:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZKWTt4
+	id S1756197AbZKWTuN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 14:50:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZKWTuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 14:49:56 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:49910 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755294AbZKWTtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 14:49:55 -0500
-Date: Mon, 23 Nov 2009 20:50:00 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Kay Sievers <kay.sievers@vrfy.org>,
-       David Zeuthen <david@fubar.dk>, linux-kernel@vger.kernel.org,
-       linux-hotplug@vger.kernel.org
-Subject: Re: [PATCH] [RFC] Add support for uevents on block device idle
-	changes
-Message-ID: <20091123195000.GK8742@kernel.dk>
-References: <20091118194053.GB12944@srcf.ucam.org> <ac3eb2510911181147ufeacb58u5194b0e1e5fd86d6@mail.gmail.com> <20091118195342.GA13627@srcf.ucam.org> <ac3eb2510911181203r1be5c3dajdacec94f196d550c@mail.gmail.com> <20091118200712.GA14026@srcf.ucam.org> <20091122233749.GA9699@ucw.cz> <20091123141754.GE8742@kernel.dk> <20091123142557.GA10084@srcf.ucam.org> <20091123143140.GG8742@kernel.dk> <20091123144238.GA10275@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091123144238.GA10275@srcf.ucam.org>
+	Mon, 23 Nov 2009 14:50:12 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51358 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756103AbZKWTuJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 14:50:09 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       linux-mm@kvack.org, mpm@selenic.com,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <alpine.DEB.2.00.0911231329560.5617@router.home>
+References: <20091118181202.GA12180@linux.vnet.ibm.com>
+	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop>  <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0911231329560.5617@router.home>
+Date: Mon, 23 Nov 2009 21:50:14 +0200
+Message-Id: <1259005814.15619.14.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23 2009, Matthew Garrett wrote:
-> On Mon, Nov 23, 2009 at 03:31:40PM +0100, Jens Axboe wrote:
-> 
-> > Well, take a look at laptop mode. A timer per-io is probably
-> > unavoidable, but doing it at IO completion could mean a big decrease in
-> > timer activity as opposed to doing it for each incoming IO. And since
-> > you are looking at when the disk is idle, it makes a lot more sense to
-> > me to do that when the we complete a request (and have no further
-> > pending IO) rather than on incoming IO.
-> 
-> Right. The current implementation I have does a del_timer() at 
-> submission (which should be moved to post-merge) - that should be cheap 
-> in the common case of a new command being submitted when there's already 
-> commands outstanding. There's then a mod_timer() at completion time. 
-> That's still a certain amount of expense, but it should be less.
-> 
-> > Your biggest performance issue here is going to be sync IO, since the
-> > disk will go idle very briefly before being kicked into action again.
-> 
-> Ok, I'll try to benchmark that.
-> 
-> The alternative (polling) method would be something much like Kay 
-> suggested - either add an extra field to stat or an extra sysfs file, 
-> then invalidate that on submission and set to jiffies on completion. 
-> It's not ideal from a wakeups perspective, but it's pretty low impact on 
-> the kernel side.
+On Mon, 23 Nov 2009, Pekka Enberg wrote:
+> > That turns out to be _very_ hard. How about something like the following
+> > untested patch which delays slab_destroy() while we're under nc->lock.
 
-If the polling works out, then yes that approach is certainly a lot
-better from a performance impact pov.
+On Mon, 2009-11-23 at 13:30 -0600, Christoph Lameter wrote:
+> Code changes to deal with a diagnostic issue?
 
-What kind of time intervals are you targetting?
+OK, fair enough. If I suffer permanent brain damage from staring at the
+SLAB code for too long, I hope you and Matt will chip in to pay for my
+medication.
 
--- 
-Jens Axboe
+I think I was looking at the wrong thing here. The problem is in
+cache_free_alien() so the comment in slab_destroy() isn't relevant.
+Looking at init_lock_keys() we already do special lockdep annotations
+but there's a catch (as explained in a comment on top of
+on_slab_alc_key):
+
+ * We set lock class for alien array caches which are up during init.
+ * The lock annotation will be lost if all cpus of a node goes down and
+ * then comes back up during hotplug
+
+Paul said he was running CPU hotplug so maybe that explains the problem?
+
+			Pekka
 
