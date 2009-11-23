@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbZKWDlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZKWEcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbZKWDlI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Nov 2009 22:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZKWDlI
+	id S1756349AbZKWEcs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Nov 2009 23:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZKWEcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Nov 2009 22:41:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58968 "EHLO smtps.tip.net.au"
+	Sun, 22 Nov 2009 23:32:47 -0500
+Received: from mfo11.iijmio.jp ([210.138.77.173]:35435 "EHLO mfo11.iijmio.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754229AbZKWDlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Nov 2009 22:41:07 -0500
-Date: Mon, 23 Nov 2009 14:41:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: linux-next: mfd tree build failure
-Message-Id: <20091123144103.73b4d64c.sfr@canb.auug.org.au>
+	id S1756261AbZKWEcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Nov 2009 23:32:46 -0500
+X-Greylist: delayed 2202 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Nov 2009 23:32:46 EST
+Date: Mon, 23 Nov 2009 12:55:48 +0900
+From: Hideki Yamane <henrich@debian.or.jp>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Hideki Yamane" <henrich@debian.or.jp>
+Subject: Re: [Bug #14588] Kernel panic - not syncing: stack-protector:
+ Kernel stack is corrupted in: ccccb5b0
+Message-Id: <20091123125548.e12fe7bd.henrich@debian.or.jp>
+In-Reply-To: <mYW9sxtWd2G.A.YkE.xCACLB@chimera>
+References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
+	<mYW9sxtWd2G.A.YkE.xCACLB@chimera>
+Organization: Debian JP Project
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__23_Nov_2009_14_41_03_+1100_w5meP58ucp_+kmlG"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__23_Nov_2009_14_41_03_+1100_w5meP58ucp_+kmlG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Samuel,
+On Sat, 21 Nov 2009 16:02:17 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.30 and 2.6.31.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14588
+> Subject		: Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: ccccb5b0
+> Submitter	: Hideki Yamane <henrich@debian.or.jp>
+> Date		: 2009-11-12 02:25 (10 days old)
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+ With 2.6.32-rc8, it works for me. 
 
-ERROR: "irq_to_desc" [drivers/mfd/wm831x.ko] undefined!
-ERROR: "handle_edge_irq" [drivers/mfd/wm831x.ko] undefined!
-ERROR: "set_irq_chip_and_handler" [drivers/mfd/wm831x.ko] undefined!
-ERROR: "set_irq_noprobe" [drivers/mfd/wm831x.ko] undefined!
+henrich@hatchpotch:~$ uname -a
+Linux hatchpotch 2.6.32-rc8 #5 SMP Sun Nov 22 22:32:12 JST 2009 i686 GNU/Linux
 
-Probably caused by commit 8fc686c7369173519817f0cfbb2df9a3671d5b8d ("mfd:
-Move WM831x to generic IRQ").  Maybe a Kconfig dependency is missing?
+henrich@hatchpotch:~$ grep STACKPROTECT /boot/config-2.6.32-rc8 
+CONFIG_CC_STACKPROTECTOR=y
 
-I have used the mfd tree from next-20091120 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Regards,
 
---Signature=_Mon__23_Nov_2009_14_41_03_+1100_w5meP58ucp_+kmlG
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksKBE8ACgkQjjKRsyhoI8zyyACfYyDnIVrxoodSc3qSh+Bh7ELd
-UIcAoL3ERYv9aHjMFYN+RBvfvrBzub/h
-=JIUB
------END PGP SIGNATURE-----
-
---Signature=_Mon__23_Nov_2009_14_41_03_+1100_w5meP58ucp_+kmlG--
+ Hideki Yamane     henrich @ debian.or.jp/iijmio-mail.jp
+ http://wiki.debian.org/HidekiYamane
