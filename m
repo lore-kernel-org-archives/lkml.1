@@ -1,176 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZKWOMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZKWOLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbZKWOMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZKWOMX
+	id S1754695AbZKWOLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZKWOJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:12:23 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46157 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 09:09:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56246 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbZKWOJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:09:16 -0500
+	id S1753958AbZKWOJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 09:09:28 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        hpa@zytor.com, riel@redhat.com
-Subject: [PATCH v2 03/12] Add async PF initialization to PV guest.
-Date: Mon, 23 Nov 2009 16:05:58 +0200
-Message-Id: <1258985167-29178-4-git-send-email-gleb@redhat.com>
+Subject: [PATCH v2 04/12] Add "handle page fault" PV helper.
+Date: Mon, 23 Nov 2009 16:05:59 +0200
+Message-Id: <1258985167-29178-5-git-send-email-gleb@redhat.com>
 In-Reply-To: <1258985167-29178-1-git-send-email-gleb@redhat.com>
 References: <1258985167-29178-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Allow paravirtualized guest to do special handling for some page faults.
+
+Ingo's concerns not yet addressed here. What was the conclusion of previous
+discussion? 
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- arch/x86/include/asm/kvm_para.h |    5 ++++
- arch/x86/kernel/kvm.c           |   49 +++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/smpboot.c       |    3 ++
- include/linux/kvm_para.h        |    2 +
- 4 files changed, 59 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/paravirt.h       |    7 +++++++
+ arch/x86/include/asm/paravirt_types.h |    4 ++++
+ arch/x86/kernel/paravirt.c            |    8 ++++++++
+ arch/x86/kernel/paravirt_patch_32.c   |    8 ++++++++
+ arch/x86/kernel/paravirt_patch_64.c   |    7 +++++++
+ arch/x86/mm/fault.c                   |    3 +++
+ 6 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
-index 222d5fd..d7d7079 100644
---- a/arch/x86/include/asm/kvm_para.h
-+++ b/arch/x86/include/asm/kvm_para.h
-@@ -49,6 +49,11 @@ struct kvm_mmu_op_release_pt {
- 	__u64 pt_phys;
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index efb3899..5203da1 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -6,6 +6,7 @@
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/pgtable_types.h>
+ #include <asm/asm.h>
++#include <asm/ptrace.h>
+ 
+ #include <asm/paravirt_types.h>
+ 
+@@ -710,6 +711,12 @@ static inline void arch_end_context_switch(struct task_struct *next)
+ 	PVOP_VCALL1(pv_cpu_ops.end_context_switch, next);
+ }
+ 
++static inline int arch_handle_page_fault(struct pt_regs *regs,
++					 unsigned long error_code)
++{
++	return PVOP_CALL2(int, pv_cpu_ops.handle_pf, regs, error_code);
++}
++
+ #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+ static inline void arch_enter_lazy_mmu_mode(void)
+ {
+diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
+index 9357473..bcc39b3 100644
+--- a/arch/x86/include/asm/paravirt_types.h
++++ b/arch/x86/include/asm/paravirt_types.h
+@@ -186,6 +186,7 @@ struct pv_cpu_ops {
+ 
+ 	void (*start_context_switch)(struct task_struct *prev);
+ 	void (*end_context_switch)(struct task_struct *next);
++	int (*handle_pf)(struct pt_regs *regs, unsigned long error_code);
  };
  
-+struct kvm_vcpu_pv_apf_data {
-+	__u32 reason;
-+	__u32 enabled;
-+};
+ struct pv_irq_ops {
+@@ -385,6 +386,7 @@ extern struct pv_lock_ops pv_lock_ops;
+ unsigned paravirt_patch_nop(void);
+ unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len);
+ unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len);
++unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len);
+ unsigned paravirt_patch_ignore(unsigned len);
+ unsigned paravirt_patch_call(void *insnbuf,
+ 			     const void *target, u16 tgt_clobbers,
+@@ -676,8 +678,10 @@ void paravirt_leave_lazy_mmu(void);
+ void _paravirt_nop(void);
+ u32 _paravirt_ident_32(u32);
+ u64 _paravirt_ident_64(u64);
++unsigned long _paravirt_ret_0(void);
+ 
+ #define paravirt_nop	((void *)_paravirt_nop)
++#define paravirt_ret_0  ((void *)_paravirt_ret_0)
+ 
+ /* These all sit in the .parainstructions section to tell us what to patch. */
+ struct paravirt_patch_site {
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 1b1739d..7d8f37b 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -54,6 +54,11 @@ u64 _paravirt_ident_64(u64 x)
+ 	return x;
+ }
+ 
++unsigned long _paravirt_ret_0(void)
++{
++	return 0;
++}
 +
- #ifdef __KERNEL__
- #include <asm/processor.h>
+ void __init default_banner(void)
+ {
+ 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+@@ -154,6 +159,8 @@ unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
+ 		ret = paravirt_patch_ident_32(insnbuf, len);
+ 	else if (opfunc == _paravirt_ident_64)
+ 		ret = paravirt_patch_ident_64(insnbuf, len);
++	else if (opfunc == _paravirt_ret_0)
++		ret = paravirt_patch_ret_0(insnbuf, len);
  
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index e6db179..fdd0b95 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -27,7 +27,10 @@
- #include <linux/mm.h>
- #include <linux/highmem.h>
- #include <linux/hardirq.h>
-+#include <linux/notifier.h>
-+#include <linux/reboot.h>
- #include <asm/timer.h>
-+#include <asm/cpu.h>
+ 	else if (type == PARAVIRT_PATCH(pv_cpu_ops.iret) ||
+ 		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_sysexit) ||
+@@ -380,6 +387,7 @@ struct pv_cpu_ops pv_cpu_ops = {
  
- #define MMU_QUEUE_SIZE 1024
- 
-@@ -37,6 +40,7 @@ struct kvm_para_state {
+ 	.start_context_switch = paravirt_nop,
+ 	.end_context_switch = paravirt_nop,
++	.handle_pf = paravirt_ret_0,
  };
  
- static DEFINE_PER_CPU(struct kvm_para_state, para_state);
-+static DEFINE_PER_CPU_ALIGNED(struct kvm_vcpu_pv_apf_data, apf_reason);
+ struct pv_apic_ops pv_apic_ops = {
+diff --git a/arch/x86/kernel/paravirt_patch_32.c b/arch/x86/kernel/paravirt_patch_32.c
+index d9f32e6..de006b1 100644
+--- a/arch/x86/kernel/paravirt_patch_32.c
++++ b/arch/x86/kernel/paravirt_patch_32.c
+@@ -12,6 +12,8 @@ DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
+ DEF_NATIVE(pv_cpu_ops, clts, "clts");
+ DEF_NATIVE(pv_cpu_ops, read_tsc, "rdtsc");
  
- static struct kvm_para_state *kvm_para_state(void)
++DEF_NATIVE(, mov0, "xor %eax, %eax");
++
+ unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
  {
-@@ -231,10 +235,35 @@ static void __init paravirt_ops_setup(void)
- #endif
+ 	/* arg in %eax, return in %eax */
+@@ -24,6 +26,12 @@ unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len)
+ 	return 0;
  }
  
-+static void kvm_pv_disable_apf(void *unused)
++unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len)
 +{
-+	if (!per_cpu(apf_reason, smp_processor_id()).enabled)
++	return paravirt_patch_insns(insnbuf, len,
++				    start__mov0, end__mov0);
++}
++
+ unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
+ 		      unsigned long addr, unsigned len)
+ {
+diff --git a/arch/x86/kernel/paravirt_patch_64.c b/arch/x86/kernel/paravirt_patch_64.c
+index 3f08f34..d685e7d 100644
+--- a/arch/x86/kernel/paravirt_patch_64.c
++++ b/arch/x86/kernel/paravirt_patch_64.c
+@@ -21,6 +21,7 @@ DEF_NATIVE(pv_cpu_ops, swapgs, "swapgs");
+ 
+ DEF_NATIVE(, mov32, "mov %edi, %eax");
+ DEF_NATIVE(, mov64, "mov %rdi, %rax");
++DEF_NATIVE(, mov0, "xor %rax, %rax");
+ 
+ unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
+ {
+@@ -34,6 +35,12 @@ unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len)
+ 				    start__mov64, end__mov64);
+ }
+ 
++unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len)
++{
++	return paravirt_patch_insns(insnbuf, len,
++				    start__mov0, end__mov0);
++}
++
+ unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
+ 		      unsigned long addr, unsigned len)
+ {
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index f4cee90..14707dc 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -952,6 +952,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 	int write;
+ 	int fault;
+ 
++	if (arch_handle_page_fault(regs, error_code))
 +		return;
 +
-+	wrmsrl(MSR_KVM_ASYNC_PF_EN, 0);
-+	per_cpu(apf_reason, smp_processor_id()).enabled = 0;
-+
-+	printk(KERN_INFO"Unregister pv shared memory for cpu %d\n",
-+	       smp_processor_id());
-+}
-+
-+static int kvm_pv_reboot_notify(struct notifier_block *nb,
-+				unsigned long code, void *unused)
-+{
-+	if (code == SYS_RESTART)
-+		on_each_cpu(kvm_pv_disable_apf, NULL, 1);
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block kvm_pv_reboot_nb = {
-+	.notifier_call = kvm_pv_reboot_notify,
-+};
-+
- #ifdef CONFIG_SMP
- static void __init kvm_smp_prepare_boot_cpu(void)
- {
- 	WARN_ON(kvm_register_clock("primary cpu clock"));
-+	kvm_guest_cpu_init();
- 	native_smp_prepare_boot_cpu();
- }
- #endif
-@@ -245,7 +274,27 @@ void __init kvm_guest_init(void)
- 		return;
+ 	tsk = current;
+ 	mm = tsk->mm;
  
- 	paravirt_ops_setup();
-+	register_reboot_notifier(&kvm_pv_reboot_nb);
- #ifdef CONFIG_SMP
- 	smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
-+#else
-+	kvm_guest_cpu_init();
- #endif
- }
-+
-+void __cpuinit kvm_guest_cpu_init(void)
-+{
-+	if (!kvm_para_available())
-+		return;
-+
-+	if (kvm_para_has_feature(KVM_FEATURE_ASYNC_PF)) {
-+		u64 pa = __pa(&per_cpu(apf_reason, smp_processor_id()));
-+
-+		if (native_write_msr_safe(MSR_KVM_ASYNC_PF_EN,
-+					  pa | 1, pa >> 32))
-+			return;
-+		per_cpu(apf_reason, smp_processor_id()).enabled = 1;
-+		printk(KERN_INFO"Setup pv shared memory for cpu %d\n",
-+		       smp_processor_id());
-+	}
-+}
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 565ebc6..5599098 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -65,6 +65,7 @@
- #include <asm/setup.h>
- #include <asm/uv/uv.h>
- #include <linux/mc146818rtc.h>
-+#include <linux/kvm_para.h>
- 
- #include <asm/smpboot_hooks.h>
- 
-@@ -321,6 +322,8 @@ notrace static void __cpuinit start_secondary(void *unused)
- 	ipi_call_unlock();
- 	per_cpu(cpu_state, smp_processor_id()) = CPU_ONLINE;
- 
-+	kvm_guest_cpu_init();
-+
- 	/* enable local interrupts */
- 	local_irq_enable();
- 
-diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
-index d731092..4c8a2e6 100644
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -26,8 +26,10 @@
- #ifdef __KERNEL__
- #ifdef CONFIG_KVM_GUEST
- void __init kvm_guest_init(void);
-+void __cpuinit kvm_guest_cpu_init(void);
- #else
- #define kvm_guest_init() do { } while (0)
-+#define kvm_guest_cpu_init() do { } while (0)
- #endif
- 
- static inline int kvm_para_has_feature(unsigned int feature)
 -- 
 1.6.5
 
