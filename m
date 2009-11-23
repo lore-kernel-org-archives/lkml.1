@@ -1,227 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZKWUBC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZKWUBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZKWUBC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 15:01:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZKWUBB
+	id S1756435AbZKWUBO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 15:01:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZKWUBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 15:01:01 -0500
-Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:44888 "EHLO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753226AbZKWUA7 convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 15:01:12 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48438 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756178AbZKWUBK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 15:00:59 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: drivers/ide/au1xxx-ide.c: use resource_size()
-Date: Mon, 23 Nov 2009 15:01:02 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901EE5C3E@mi8nycmail19.Mi8.com>
-In-Reply-To: <20091123.103810.44071453.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: drivers/ide/au1xxx-ide.c: use resource_size()
-Thread-Index: AcpsbBWuXwXUzHQWRyKcWNVhFhnt0QACSIiw
-References: <BD79186B4FD85F4B8E60E381CAEE190901EE5BFD@mi8nycmail19.Mi8.com><20091123.102817.157628485.davem@davemloft.net><BD79186B4FD85F4B8E60E381CAEE190901EE5C0C@mi8nycmail19.Mi8.com> <20091123.103810.44071453.davem@davemloft.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
-X-OriginalArrivalTime: 23 Nov 2009 20:01:02.0802 (UTC) FILETIME=[AF18B320:01CA6C77]
+	Mon, 23 Nov 2009 15:01:10 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       linux-mm@kvack.org, mpm@selenic.com,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <1259005814.15619.14.camel@penberg-laptop>
+References: <20091118181202.GA12180@linux.vnet.ibm.com>
+	 <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop>  <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0911231329560.5617@router.home>
+	 <1259005814.15619.14.camel@penberg-laptop>
+Date: Mon, 23 Nov 2009 22:01:15 +0200
+Message-Id: <1259006475.15619.16.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, November 23, 2009 11:38 AM, David Miller wrote:
->>  
->> -	ahwif->regbase = (u32)ioremap(res->start, res->end - res->start + 1);
->> +	ahwif->regbase = (u32)ioremap(res->start, resource_size(res));
->>  	if (ahwif->regbase == 0) {
->>  		ret = -ENOMEM;
->>  		goto out;
->
-> That needs some fixing.  ioremap()'s return value is an
-> "__iomem" pointer, not an integer.  ->regbase's type should be
-> changed to something like "void __iomem *" etc.
+On Mon, 2009-11-23 at 21:50 +0200, Pekka Enberg wrote:
+> On Mon, 23 Nov 2009, Pekka Enberg wrote:
+> > > That turns out to be _very_ hard. How about something like the following
+> > > untested patch which delays slab_destroy() while we're under nc->lock.
+> 
+> On Mon, 2009-11-23 at 13:30 -0600, Christoph Lameter wrote:
+> > Code changes to deal with a diagnostic issue?
+> 
+> OK, fair enough. If I suffer permanent brain damage from staring at the
+> SLAB code for too long, I hope you and Matt will chip in to pay for my
+> medication.
+> 
+> I think I was looking at the wrong thing here. The problem is in
+> cache_free_alien() so the comment in slab_destroy() isn't relevant.
+> Looking at init_lock_keys() we already do special lockdep annotations
+> but there's a catch (as explained in a comment on top of
+> on_slab_alc_key):
+> 
+>  * We set lock class for alien array caches which are up during init.
+>  * The lock annotation will be lost if all cpus of a node goes down and
+>  * then comes back up during hotplug
+> 
+> Paul said he was running CPU hotplug so maybe that explains the problem?
 
-FWIW, following is an updated patch that fixes the "__iomem" pointer.
+Maybe something like this untested patch fixes the issue...
 
-I have no way to even build test this but it seems clean enough.  The
-only issue I can see is in auide_setup_ports().  The regbase needed
-to be cast back to a unsigned long in order to correctly setup the
-io_ports_array.
+			Pekka
 
----
-
-Use resource_size() for {request/release}_mem_region and ioremap.
-
-The iomap return value is an __iomem *, not an integer.  Update the
-private structure to reflect this.  Remove the typedef for _auide_hwif
-and just use struct auide_hwif instead.
-
-auide_setup_ports() still needs to cast the regbase back to an integer
-to correctly setup the io_ports_array.
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David Miller <davem@davemloft.net>
-
----
-
-diff --git a/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h b/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-index 5656c72..f44b8bc 100644
---- a/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-+++ b/arch/mips/include/asm/mach-au1x00/au1xxx_ide.h
-@@ -46,7 +46,7 @@
- #define CONFIG_BLK_DEV_IDE_AU1XXX_BURSTABLE_ON	0
- #endif
+diff --git a/mm/slab.c b/mm/slab.c
+index 7dfa481..84de47e 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -604,6 +604,26 @@ static struct kmem_cache cache_cache = {
  
--typedef struct {
-+struct auide_hwif {
- 	u32			tx_dev_id, rx_dev_id, target_dev_id;
- 	u32			tx_chan, rx_chan;
- 	void			*tx_desc_head, *rx_desc_head;
-@@ -57,8 +57,8 @@ typedef struct {
- 	dma_addr_t		dma_table_dma;
- #endif
- 	int			irq;
--	u32			regbase;
--} _auide_hwif;
-+	void __iomem		*regbase;
-+};
+ #define BAD_ALIEN_MAGIC 0x01020304ul
  
- /******************************************************************************/
- /* PIO Mode timing calculation :					      */
-diff --git a/drivers/ide/au1xxx-ide.c b/drivers/ide/au1xxx-ide.c
-index 58121bd..1c6d663 100644
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -46,13 +46,13 @@
- /* enable the burstmode in the dbdma */
- #define IDE_AU1XXX_BURSTMODE	1
++/*
++ * chicken and egg problem: delay the per-cpu array allocation
++ * until the general caches are up.
++ */
++static enum {
++	NONE,
++	PARTIAL_AC,
++	PARTIAL_L3,
++	EARLY,
++	FULL
++} g_cpucache_up;
++
++/*
++ * used by boot code to determine if it can use slab based allocator
++ */
++int slab_is_available(void)
++{
++	return g_cpucache_up >= EARLY;
++}
++
+ #ifdef CONFIG_LOCKDEP
  
--static _auide_hwif auide_hwif;
-+static struct auide_hwif auide_hwif;
+ /*
+@@ -620,40 +640,52 @@ static struct kmem_cache cache_cache = {
+ static struct lock_class_key on_slab_l3_key;
+ static struct lock_class_key on_slab_alc_key;
  
- #if defined(CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA)
- 
- static inline void auide_insw(unsigned long port, void *addr, u32 count)
+-static inline void init_lock_keys(void)
+-
++static void init_node_lock_keys(int q)
  {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	chan_tab_t *ctp;
- 	au1x_ddma_desc_t *dp;
+-	int q;
+ 	struct cache_sizes *s = malloc_sizes;
  
-@@ -70,7 +70,7 @@ static inline void auide_insw(unsigned long port, void *addr, u32 count)
- 
- static inline void auide_outsw(unsigned long port, void *addr, u32 count)
- {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	chan_tab_t *ctp;
- 	au1x_ddma_desc_t *dp;
- 
-@@ -212,7 +212,7 @@ static void auide_set_dma_mode(ide_drive_t *drive, const u8 speed)
- static int auide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
- {
- 	ide_hwif_t *hwif = drive->hwif;
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	struct scatterlist *sg;
- 	int i = cmd->sg_nents, count = 0;
- 	int iswrite = !!(cmd->tf_flags & IDE_TFLAG_WRITE);
-@@ -344,7 +344,7 @@ static const struct ide_dma_ops au1xxx_dma_ops = {
- 
- static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
- {
--	_auide_hwif *auide = &auide_hwif;
-+	struct auide_hwif *auide = &auide_hwif;
- 	dbdev_tab_t source_dev_tab, target_dev_tab;
- 	u32 dev_id, tsize, devwidth, flags;
- 
-@@ -404,7 +404,7 @@ static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
+-	while (s->cs_size != ULONG_MAX) {
+-		for_each_node(q) {
+-			struct array_cache **alc;
+-			int r;
+-			struct kmem_list3 *l3 = s->cs_cachep->nodelists[q];
+-			if (!l3 || OFF_SLAB(s->cs_cachep))
+-				continue;
+-			lockdep_set_class(&l3->list_lock, &on_slab_l3_key);
+-			alc = l3->alien;
+-			/*
+-			 * FIXME: This check for BAD_ALIEN_MAGIC
+-			 * should go away when common slab code is taught to
+-			 * work even without alien caches.
+-			 * Currently, non NUMA code returns BAD_ALIEN_MAGIC
+-			 * for alloc_alien_cache,
+-			 */
+-			if (!alc || (unsigned long)alc == BAD_ALIEN_MAGIC)
+-				continue;
+-			for_each_node(r) {
+-				if (alc[r])
+-					lockdep_set_class(&alc[r]->lock,
+-					     &on_slab_alc_key);
+-			}
++	if (g_cpucache_up != FULL)
++		return;
++
++	for (s = malloc_sizes; s->cs_size != ULONG_MAX; s++) {
++		struct array_cache **alc;
++		struct kmem_list3 *l3;
++		int r;
++
++		l3 = s->cs_cachep->nodelists[q];
++		if (!l3 || OFF_SLAB(s->cs_cachep))
++			return;
++		lockdep_set_class(&l3->list_lock, &on_slab_l3_key);
++		alc = l3->alien;
++		/*
++		 * FIXME: This check for BAD_ALIEN_MAGIC
++		 * should go away when common slab code is taught to
++		 * work even without alien caches.
++		 * Currently, non NUMA code returns BAD_ALIEN_MAGIC
++		 * for alloc_alien_cache,
++		 */
++		if (!alc || (unsigned long)alc == BAD_ALIEN_MAGIC)
++			return;
++		for_each_node(r) {
++			if (alc[r])
++				lockdep_set_class(&alc[r]->lock,
++					&on_slab_alc_key);
+ 		}
+-		s++;
+ 	}
+ }
++
++static inline void init_lock_keys(void)
++{
++	int node;
++
++	for_each_node(node)
++		init_node_lock_keys(node);
++}
  #else
- static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
++static void init_node_lock_keys(int q)
++{
++}
++
+ static inline void init_lock_keys(void)
  {
--	_auide_hwif *auide = &auide_hwif;
-+	struct auide_hwif *auide = &auide_hwif;
- 	dbdev_tab_t source_dev_tab;
- 	int flags;
- 
-@@ -449,17 +449,18 @@ static int auide_ddma_init(ide_hwif_t *hwif, const struct ide_port_info *d)
  }
- #endif
+@@ -665,26 +697,6 @@ static inline void init_lock_keys(void)
+ static DEFINE_MUTEX(cache_chain_mutex);
+ static struct list_head cache_chain;
  
--static void auide_setup_ports(struct ide_hw *hw, _auide_hwif *ahwif)
-+static void auide_setup_ports(struct ide_hw *hw, struct auide_hwif *ahwif)
- {
--	int i;
- 	unsigned long *ata_regs = hw->io_ports_array;
-+	unsigned long regbase = (unsigned long)ahwif->regbase;
-+	int i;
+-/*
+- * chicken and egg problem: delay the per-cpu array allocation
+- * until the general caches are up.
+- */
+-static enum {
+-	NONE,
+-	PARTIAL_AC,
+-	PARTIAL_L3,
+-	EARLY,
+-	FULL
+-} g_cpucache_up;
+-
+-/*
+- * used by boot code to determine if it can use slab based allocator
+- */
+-int slab_is_available(void)
+-{
+-	return g_cpucache_up >= EARLY;
+-}
+-
+ static DEFINE_PER_CPU(struct delayed_work, reap_work);
  
- 	/* FIXME? */
- 	for (i = 0; i < 8; i++)
--		*ata_regs++ = ahwif->regbase + (i << IDE_REG_SHIFT);
-+		*ata_regs++ = regbase + (i << IDE_REG_SHIFT);
- 
- 	/* set the Alternative Status register */
--	*ata_regs = ahwif->regbase + (14 << IDE_REG_SHIFT);
-+	*ata_regs = regbase + (14 << IDE_REG_SHIFT);
- }
- 
- #ifdef CONFIG_BLK_DEV_IDE_AU1XXX_PIO_DBDMA
-@@ -504,7 +505,7 @@ static const struct ide_port_info au1xxx_port_info = {
- 
- static int au_ide_probe(struct platform_device *dev)
- {
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 	struct resource *res;
- 	struct ide_host *host;
- 	int ret = 0;
-@@ -516,7 +517,7 @@ static int au_ide_probe(struct platform_device *dev)
- 	char *mode = "PIO+DDMA(offload)";
- #endif
- 
--	memset(&auide_hwif, 0, sizeof(_auide_hwif));
-+	memset(&auide_hwif, 0, sizeof(struct auide_hwif));
- 	ahwif->irq = platform_get_irq(dev, 0);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-@@ -532,15 +533,14 @@ static int au_ide_probe(struct platform_device *dev)
- 		goto out;
+ static inline struct array_cache *cpu_cache_get(struct kmem_cache *cachep)
+@@ -1254,6 +1266,8 @@ static int __cpuinit cpuup_prepare(long cpu)
+ 		kfree(shared);
+ 		free_alien_cache(alien);
  	}
- 
--	if (!request_mem_region(res->start, res->end - res->start + 1,
--				dev->name)) {
-+	if (!request_mem_region(res->start, resource_size(res), dev->name)) {
- 		pr_debug("%s: request_mem_region failed\n", DRV_NAME);
- 		ret =  -EBUSY;
- 		goto out;
- 	}
- 
--	ahwif->regbase = (u32)ioremap(res->start, res->end - res->start + 1);
--	if (ahwif->regbase == 0) {
-+	ahwif->regbase = ioremap(res->start, resource_size(res));
-+	if (!ahwif->regbase) {
- 		ret = -ENOMEM;
- 		goto out;
- 	}
-@@ -568,14 +568,14 @@ static int au_ide_remove(struct platform_device *dev)
- {
- 	struct resource *res;
- 	struct ide_host *host = platform_get_drvdata(dev);
--	_auide_hwif *ahwif = &auide_hwif;
-+	struct auide_hwif *ahwif = &auide_hwif;
- 
- 	ide_host_remove(host);
- 
--	iounmap((void *)ahwif->regbase);
-+	iounmap(ahwif->regbase);
- 
- 	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 
++	init_node_lock_keys(node);
++
  	return 0;
- } 
+ bad:
+ 	cpuup_canceled(cpu);
+
+
