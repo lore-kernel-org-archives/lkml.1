@@ -1,114 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZKWOJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZKWOLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbZKWOJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 09:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZKWOJR
+	id S1754744AbZKWOLD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 09:11:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZKWOLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 09:09:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11523 "EHLO mx1.redhat.com"
+	Mon, 23 Nov 2009 09:11:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14195 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753631AbZKWOJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 09:09:14 -0500
+	id S1754166AbZKWOJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 09:09:34 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        hpa@zytor.com, riel@redhat.com
-Subject: [PATCH v2 01/12] Move kvm_smp_prepare_boot_cpu() from kvmclock.c to kvm.c.
-Date: Mon, 23 Nov 2009 16:05:56 +0200
-Message-Id: <1258985167-29178-2-git-send-email-gleb@redhat.com>
+Subject: [PATCH v2 02/12] Add PV MSR to enable asynchronous page faults delivery.
+Date: Mon, 23 Nov 2009 16:05:57 +0200
+Message-Id: <1258985167-29178-3-git-send-email-gleb@redhat.com>
 In-Reply-To: <1258985167-29178-1-git-send-email-gleb@redhat.com>
 References: <1258985167-29178-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Async PF also needs to hook into smp_prepare_boot_cpu so move the hook
-into generic code.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- arch/x86/include/asm/kvm_para.h |    1 +
- arch/x86/kernel/kvm.c           |   11 +++++++++++
- arch/x86/kernel/kvmclock.c      |   13 +------------
- 3 files changed, 13 insertions(+), 12 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    3 ++
+ arch/x86/include/asm/kvm_para.h |    2 +
+ arch/x86/kvm/x86.c              |   42 +++++++++++++++++++++++++++++++++++++-
+ include/linux/kvm.h             |    1 +
+ 4 files changed, 46 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
-index c584076..5f580f2 100644
---- a/arch/x86/include/asm/kvm_para.h
-+++ b/arch/x86/include/asm/kvm_para.h
-@@ -51,6 +51,7 @@ struct kvm_mmu_op_release_pt {
- #include <asm/processor.h>
- 
- extern void kvmclock_init(void);
-+extern int kvm_register_clock(char *txt);
- 
- 
- /* This instruction is vmcall.  On non-VT architectures, it will generate a
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 63b0ec8..e6db179 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -231,10 +231,21 @@ static void __init paravirt_ops_setup(void)
- #endif
- }
- 
-+#ifdef CONFIG_SMP
-+static void __init kvm_smp_prepare_boot_cpu(void)
-+{
-+	WARN_ON(kvm_register_clock("primary cpu clock"));
-+	native_smp_prepare_boot_cpu();
-+}
-+#endif
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 06e0856..9598e85 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -374,6 +374,9 @@ struct kvm_vcpu_arch {
+ 	/* used for guest single stepping over the given code position */
+ 	u16 singlestep_cs;
+ 	unsigned long singlestep_rip;
 +
- void __init kvm_guest_init(void)
- {
- 	if (!kvm_para_available())
- 		return;
- 
- 	paravirt_ops_setup();
-+#ifdef CONFIG_SMP
-+	smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
-+#endif
- }
-diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-index feaeb0d..6ab9622 100644
---- a/arch/x86/kernel/kvmclock.c
-+++ b/arch/x86/kernel/kvmclock.c
-@@ -122,7 +122,7 @@ static struct clocksource kvm_clock = {
- 	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
++	u32 __user *apf_data;
++	u64 apf_msr_val;
  };
  
--static int kvm_register_clock(char *txt)
-+int kvm_register_clock(char *txt)
- {
- 	int cpu = smp_processor_id();
- 	int low, high;
-@@ -146,14 +146,6 @@ static void __cpuinit kvm_setup_secondary_clock(void)
- }
- #endif
+ struct kvm_mem_alias {
+diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
+index 5f580f2..222d5fd 100644
+--- a/arch/x86/include/asm/kvm_para.h
++++ b/arch/x86/include/asm/kvm_para.h
+@@ -15,9 +15,11 @@
+ #define KVM_FEATURE_CLOCKSOURCE		0
+ #define KVM_FEATURE_NOP_IO_DELAY	1
+ #define KVM_FEATURE_MMU_OP		2
++#define KVM_FEATURE_ASYNC_PF		3
  
--#ifdef CONFIG_SMP
--static void __init kvm_smp_prepare_boot_cpu(void)
--{
--	WARN_ON(kvm_register_clock("primary cpu clock"));
--	native_smp_prepare_boot_cpu();
--}
--#endif
--
- /*
-  * After the clock is registered, the host will keep writing to the
-  * registered memory location. If the guest happens to shutdown, this memory
-@@ -192,9 +184,6 @@ void __init kvmclock_init(void)
- 		x86_cpuinit.setup_percpu_clockev =
- 			kvm_setup_secondary_clock;
+ #define MSR_KVM_WALL_CLOCK  0x11
+ #define MSR_KVM_SYSTEM_TIME 0x12
++#define MSR_KVM_ASYNC_PF_EN 0x13
+ 
+ #define KVM_MAX_MMU_OP_BATCH           32
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 35eea30..ce8e66d 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -566,9 +566,9 @@ static inline u32 bit(int bitno)
+  * kvm-specific. Those are put in the beginning of the list.
+  */
+ 
+-#define KVM_SAVE_MSRS_BEGIN	2
++#define KVM_SAVE_MSRS_BEGIN	3
+ static u32 msrs_to_save[] = {
+-	MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
++	MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK, MSR_KVM_ASYNC_PF_EN,
+ 	MSR_IA32_SYSENTER_CS, MSR_IA32_SYSENTER_ESP, MSR_IA32_SYSENTER_EIP,
+ 	MSR_K6_STAR,
+ #ifdef CONFIG_X86_64
+@@ -949,6 +949,26 @@ out:
+ 	return r;
+ }
+ 
++static int kvm_pv_enable_async_pf(struct kvm_vcpu *vcpu, u64 data)
++{
++	u64 gpa = data & ~0x3f;
++	int offset = offset_in_page(gpa);
++	unsigned long addr;
++
++	addr = gfn_to_hva(vcpu->kvm, gpa >> PAGE_SHIFT);
++	if (kvm_is_error_hva(addr))
++		return 1;
++
++	vcpu->arch.apf_data = (u32 __user*)(addr + offset);
++
++	/* check if address is mapped */
++	if (get_user(offset, vcpu->arch.apf_data)) {
++		vcpu->arch.apf_data = NULL;
++		return 1;
++	}
++	return 0;
++}
++
+ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+ {
+ 	switch (msr) {
+@@ -1029,6 +1049,14 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+ 		kvm_request_guest_time_update(vcpu);
+ 		break;
+ 	}
++	case MSR_KVM_ASYNC_PF_EN:
++		vcpu->arch.apf_msr_val = data;
++		if (data & 1) {
++			if (kvm_pv_enable_async_pf(vcpu, data))
++				return 1;
++		} else
++			vcpu->arch.apf_data = NULL;
++		break;
+ 	case MSR_IA32_MCG_CTL:
+ 	case MSR_IA32_MCG_STATUS:
+ 	case MSR_IA32_MC0_CTL ... MSR_IA32_MC0_CTL + 4 * KVM_MAX_MCE_BANKS - 1:
+@@ -1221,6 +1249,9 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	case MSR_KVM_SYSTEM_TIME:
+ 		data = vcpu->arch.time;
+ 		break;
++	case MSR_KVM_ASYNC_PF_EN:
++		data = vcpu->arch.apf_msr_val;
++		break;
+ 	case MSR_IA32_P5_MC_ADDR:
+ 	case MSR_IA32_P5_MC_TYPE:
+ 	case MSR_IA32_MCG_CAP:
+@@ -1343,6 +1374,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_XEN_HVM:
+ 	case KVM_CAP_ADJUST_CLOCK:
+ 	case KVM_CAP_VCPU_EVENTS:
++	case KVM_CAP_ASYNC_PF:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -4965,6 +4997,9 @@ free_vcpu:
+ 
+ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ {
++	vcpu->arch.apf_data = NULL;
++	vcpu->arch.apf_msr_val = 0;
++
+ 	vcpu_load(vcpu);
+ 	kvm_mmu_unload(vcpu);
+ 	vcpu_put(vcpu);
+@@ -4982,6 +5017,9 @@ int kvm_arch_vcpu_reset(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.dr6 = DR6_FIXED_1;
+ 	vcpu->arch.dr7 = DR7_FIXED_1;
+ 
++	vcpu->arch.apf_data = NULL;
++	vcpu->arch.apf_msr_val = 0;
++
+ 	return kvm_x86_ops->vcpu_reset(vcpu);
+ }
+ 
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 92045a9..6af1c99 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -492,6 +492,7 @@ struct kvm_ioeventfd {
+ #ifdef __KVM_HAVE_VCPU_EVENTS
+ #define KVM_CAP_VCPU_EVENTS 41
  #endif
--#ifdef CONFIG_SMP
--		smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
--#endif
- 		machine_ops.shutdown  = kvm_shutdown;
- #ifdef CONFIG_KEXEC
- 		machine_ops.crash_shutdown  = kvm_crash_shutdown;
++#define KVM_CAP_ASYNC_PF 42
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
 -- 
 1.6.5
 
