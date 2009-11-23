@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZKWIsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZKWIym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbZKWIsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 03:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZKWIsk
+	id S1756056AbZKWIym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 03:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZKWIyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 03:48:40 -0500
-Received: from mga10.intel.com ([192.55.52.92]:3523 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751524AbZKWIsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 03:48:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,268,1257148800"; 
-   d="scan'208";a="516452369"
-Subject: Re: [MM] Make mm counters per cpu instead of atomic
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
-References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
-	 <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost>
-	 <1258450465.11321.36.camel@localhost>
-	 <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Mon, 23 Nov 2009 16:51:10 +0800
-Message-Id: <1258966270.29789.45.camel@localhost>
+	Mon, 23 Nov 2009 03:54:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21314 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752576AbZKWIyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 03:54:40 -0500
+Subject: Re: [PATCH 0/1] Defer skb allocation for both mergeable buffers
+ and big packets in virtio_net
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Shirley Ma <mashirle@us.ibm.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+       Avi Kivity <avi@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <200911231123.18898.rusty@rustcorp.com.au>
+References: <1258697359.7416.14.camel@localhost.localdomain>
+	 <200911231123.18898.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 23 Nov 2009 08:51:50 +0000
+Message-Id: <1258966310.14708.11.camel@blaa>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 12:25 -0500, Christoph Lameter wrote:
-> On Tue, 17 Nov 2009, Zhang, Yanmin wrote:
-> 
-> > The right change above should be:
-> >  struct mm_counter *m = per_cpu_ptr(mm->rss, cpu);
-> 
-> Right.
-> 
-> > With the change, command 'make oldconfig' and a boot command still
-> > hangs.
-> 
-> Not sure if its worth spending more time on this but if you want I will
-> consolidate the fixes so far and put out another patchset.
-> 
-> Where does it hang during boot?
-Definitely faint.
+On Mon, 2009-11-23 at 11:23 +1030, Rusty Russell wrote:
+> I'd like to drop big packet support from our driver, but I don't know
+> how many kvm hosts will not offer mergable rx bufs yet.  Anthony?
 
-1) In function exec_mmap: in the 2nd 'if (old_mm) {', mm_reader_unlock
-should be used. Your patch uses mm_reader_lock. I found it when reviewing your
-patch, but forgot to fix it when testing.
-2) In function madvise: the last unlock should be mm_reader_unlock. Your
-patch uses mm_writer_unlock.
+Mergeable rx bufs were first added in kvm-80 and qemu-0.10.0
 
-It's easy to hit the issues with normal testing. I'm surprised you didn't
-hit them.
+So e.g., it's in Fedora since Fedora 11 and RHEL since 5.4
 
-Another theoretic issue is below scenario:
-Process A get the read lock on cpu 0 and is scheduled to cpu 2 to unlock. Then
-it's scheduled back to cpu 0 to repeat the step. eventually, the reader counter
-will overflow. Considering multiple thread cases, it might be faster to
-overflow than what we imagine. When it overflows, processes will hang there.
-
+Cheers,
+Mark.
 
