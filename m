@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZKWX1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZKWXbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbZKWX1P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 18:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756463AbZKWX1O
+	id S1756797AbZKWXbo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 18:31:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZKWXbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 18:27:14 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60738 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756371AbZKWX1N (ORCPT
+	Mon, 23 Nov 2009 18:31:44 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:62332 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752844AbZKWXbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 18:27:13 -0500
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
- and big packets in virtio_net
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-In-Reply-To: <200911240854.24054.rusty@rustcorp.com.au>
-References: <1258697745.7416.20.camel@localhost.localdomain>
-	 <200911231138.30755.rusty@rustcorp.com.au>
-	 <1258992421.5022.19.camel@localhost.localdomain>
-	 <200911240854.24054.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 15:27:15 -0800
-Message-Id: <1259018835.5022.64.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Mon, 23 Nov 2009 18:31:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Sctd7wvVolXwU+xaCRTBLRzcLn4+UiuaVCyR3314Bff9QvStclG3vHw+wB1z6xYXBm
+         8p61MljTvUAZfs6MsXFi/keCfs+yvQMOpRibA5pJfC2ef5anZrkNrC6q7Ht78DZ/A0/T
+         r8SxzMhaJ2YejX/WD8u/Kik3jvoWboUC5g1wY=
+Message-ID: <4B0B1B62.2030302@gmail.com>
+Date: Mon, 23 Nov 2009 17:31:46 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Otavio Salvador <otavio@ossystems.com.br>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: Vortex86SX: only works with irqpoll
+References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com> <20091123134002.bac1e664.akpm@linux-foundation.org>
+In-Reply-To: <20091123134002.bac1e664.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 08:54 +1030, Rusty Russell wrote:
-> #define BIG_PACKET_PAD (NET_SKB_PAD - sizeof(struct virtio_net_hdr) +
-> NET_IP_ALIGN)
-> struct big_packet_page {
->         struct virtio_net_hdr hdr;
->         char pad[BIG_PACKET_PAD];
->         /* Actual packet data starts here */
->         unsigned char data[PAGE_SIZE - BIG_PACKET_PAD - sizeof(struct
-> virtio_net_hdr)];
-> };
+On 11/23/2009 03:40 PM, Andrew Morton wrote:
+> On Thu, 19 Nov 2009 19:11:49 -0200
+> Otavio Salvador<otavio@ossystems.com.br>  wrote:
+>
+>>
+>> I got this machine working booting it with "irqpoll" parameter however
+>> it drops the performance a lot and I'd like to try to fix the root
+>> problem of it.
+>>
+>> Without 'irqpoll' the disk and network adaptor doesn't work.
+>>
+>> ...
+>>
+>> [    0.000000] ACPI Error: A valid RSDP was not found (20090903/tbxfroot-219)
+>
+> No ACPI.
+>
+> Please raise a report against acpi_bios@kernel-bugs.osdl.org at
+> bugzilla.kernel.org, thanks.
+>
 
-The padding was used for qemu userspace buffer copy, skb data is copied
-from the page for size of GOOD_COPY_LEN, and skb data is reserved
-NET_IP_ALIGN.
-
-If we add paddings as above, userspace copy will starts NET_SKB_PAD +
-NET_IP_ALIGN? I am little bit confused here.
-
-> Then use this type as the template for registering the sg list for the
-> big packet case.
-> 
-> > > I think you can move the memcpy outside the if, like so:
-> > > 
-> > >         memcpy(&hdr, p, hdr_len);
-> > 
-> > I didn't move it out, because num_buf = hdr->mhdr.num_buffers;
-> 
-> Yes, that has to stay inside, but the memcpy can move out.  It's just
-> a bit
-> neater to have more common code.
-
-num_buf is assigned after memcpy so we couldn't move memcpy out.
-
-Anyway I separated mergeable buffers and big packets in the new patch to
-make it clear and it will be easy to modify when we drop big packets
-support in the future.
-
-Thanks
-Shirley
-
+I believe that just means the machine doesn't support ACPI at all..
