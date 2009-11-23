@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZKWP3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZKWP33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbZKWP3Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZKWP3X
+	id S1755588AbZKWP33 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZKWP31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:29:23 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35389 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753564AbZKWP3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:29:23 -0500
-X-Sasl-enc: mUHo4kbyygZH2j1CvdbxNOddrl5mUvv9gQMXanoPpQDd 1258990168
-Message-ID: <4B0AAA55.3040702@ladisch.de>
-Date: Mon, 23 Nov 2009 16:29:25 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v3] k10temp: temperature sensor for AMD Family 10h/11h
- CPUs
-References: <4AF91F70.10106@ladisch.de>	<4B06501B.8080509@ladisch.de>	<87ws1l5wcl.fsf@depni.sinp.msu.ru>	<4B0673D7.5010006@ladisch.de>	<20091120123016.19d98ab4@hyperion.delvare>	<4B068402.7020606@ladisch.de>	<20091120131855.7f8f8722@hyperion.delvare>	<4B0A3DB6.9090703@ladisch.de> <20091123145154.5b2b5735@hyperion.delvare>
-In-Reply-To: <20091123145154.5b2b5735@hyperion.delvare>
+	Mon, 23 Nov 2009 10:29:27 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38378 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755468AbZKWP30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 10:29:26 -0500
+Date: Mon, 23 Nov 2009 16:29:31 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: newidle balancing in NUMA domain?
+Message-ID: <20091123152931.GD19175@wotan.suse.de>
+References: <20091123112228.GA2287@wotan.suse.de> <1258987059.6193.73.camel@marge.simson.net> <20091123151152.GA19175@wotan.suse.de> <1258989704.4531.574.camel@laptop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1258989704.4531.574.camel@laptop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Mon, 23 Nov 2009 08:45:58 +0100, Clemens Ladisch wrote:
->>  Documentation/hwmon/k10temp |   57 ++++++++++++
->>  drivers/hwmon/k10temp.c     |  142 ++++++++++++++++++++++++++++++++
+On Mon, Nov 23, 2009 at 04:21:44PM +0100, Peter Zijlstra wrote:
+> On Mon, 2009-11-23 at 16:11 +0100, Nick Piggin wrote:
 > 
-> The name k10temp is a problem, as AMD insists that there is no such
-> things as K10 and K11, but instead "family 10h" and "family 11h"
-> processors.
-
-K10 was AMD's internal code name, and is widely used in practice.
-I'd like to keep this name since it is consistent with the older
-k8temp driver.
-
-What name would you propose instead?  "amdfam10temp"?
-
->> +  control cooling systems. Tctl is a non-physical temperature on an
->> +  arbitrary scale measured in degrees. It does _not_ represent an actual
->> +  physical temperature like die or case temperature. Instead, it specifies
->> +  the processor temperature relative to the point at which the system must
->> +  supply the maximum cooling for the processor's specified maximum case
->> +  temperature and maximum thermal power dissipation.
->> +
->> +The maximum value for Tctl is defined as 70 degrees, so, as a rule of thumb,
->> +this value should not exceed 60 degrees.
+> > Wait, you say it was activated to improve fork/exec CPU utilization?
+> > For the x264 load? What do you mean by this? Do you mean it is doing
+> > a lot of fork/exec/exits and load is not being spread quickly enough?
+> > Or that NUMA allocations get screwed up because tasks don't get spread
+> > out quickly enough before running?
+> > 
+> > In either case, I think newidle balancing is maybe not the right solution.
+> > newidle balancing only checks the system state when the destination
+> > CPU goes idle. fork events increase load at the source CPU. So for
+> > example if you find newidle helps to pick up forks, then if the
+> > newidle event happens to come in before the fork, we'll have to wait
+> > for the next rebalance event.
+> > 
+> > So possibly making fork/exec balancing more aggressive might be a
+> > better approach. This can be done by reducing the damping idx, or
+> > perhaps some other conditions to reduce eg imbalance_pct or something
+> > for forkexec balancing. Probably needs some studying of the workload
+> > to work out why forkexec is failing.
 > 
-> Now I am puzzled. If the temperature value is on an arbitrary scale,
-> then the value returned by the driver is essentially fake?
+> >From what I can remember from that workload it basically spawns tons of
+> very short lived threads, waits for a bunch to complete, goto 1.
 
-Yes (and it's near enough the absolute value to look plausible).
+So basically about the least well performing or scalable possible
+software architecture. This is exactly the wrong thing to optimise
+for, guys.
 
-> Don't we have additional information about the actual maximum Tcase
-> value for the different supported models, as we have in coretemp?
-
-For AMD, Tcase is the physical temperature.  Did you mean Tctl?
-
-I'll add Tctl max (= "100% cooling, please") as temp1_max, and there's
-a register that contains the Tctl value at which the processor starts
-throttling, which could be exported as temp1_crit(_hyst), if I
-understand the lm-sensors documentation correctly.
-
-As for your other comments, I'll integrate them in the next version of
-the patch.
+The fact that you have to coax the scheduler into touching heaps
+more remote cachelines and vastly increasing the amount of inter
+node task migration should have been kind of a hint.
 
 
-> If not, then it might be the right time to introduce a new interface
-> for relative temperature values. This needs some work, as we must first
-> define the interface, then implement support in libsensors and sensors,
-> and other monitoring applications, and then convert the affected
-> drivers. But apparently we will have to, as major CPU makers are not
-> able to implement something as simple as an absolute temperature
-> sensor :(
+> Fork balancing only works until all cpus are active. But once a core
+> goes idle it's left idle until we hit a general load-balance cycle.
+> Newidle helps because it picks up these threads from other cpus,
+> completing the current batch sooner, allowing the program to continue
+> with the next.
+> 
+> There's just not much you can do from the fork() side of things once
+> you've got them all running.
 
-There still is the built-in diode to be read by the motherboard, but the
-internal sensor was never intended to be an absolute measurement but
-just as a means for controlling the cooling.
+It sounds like allowing fork balancing to be more aggressive could
+definitely help.
 
 
+> > OK. This would be great if fixing up involves making things closer
+> > to what they were rather than adding more complex behaviour on top
+> > of other changes that broke stuff. And doing it in 2.6.32 would be
+> > kind of nice...
+> 
+> .32 is kind of closed, with us being at -rc8.
 
-Best regards,
-Clemens
+It's a bad regression though.
+
