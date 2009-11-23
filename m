@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZKWNeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZKWNce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbZKWNeB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 08:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZKWNeA
+	id S1754572AbZKWNce (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 08:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZKWNcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 08:34:00 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:37647 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbZKWNd7 convert rfc822-to-8bit (ORCPT
+	Mon, 23 Nov 2009 08:32:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58759 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754282AbZKWNcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 08:33:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=wMfQKqcsLl2QpfjbKU7TVN4UqcZ0d/54KcicbJVQ8phEDH04gePHwjyuIRFHm8RLDo
-         lXmVk7uRym/srMjdWiaKFprwei3QnSOTgZvLBP8WAH6LhCMH36zh4QPE/dR9CUs6iZxA
-         T022gusidcFeJBcfmORllzNnO3Vbe7FjdX/UU=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <1258562785.3918.685.camel@laptop>
-References: <1256223091-6002-1-git-send-email-eranian@gmail.com>
-	 <1258562785.3918.685.camel@laptop>
-Date: Mon, 23 Nov 2009 14:34:04 +0100
-Message-ID: <7c86c4470911230534i4119734k1478550567852220@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: fix validate_event bug
-From: stephane eranian <eranian@googlemail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       perfmon2-devel@lists.sf.net, eranian@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 08:32:32 -0500
+Date: Mon, 23 Nov 2009 13:34:23 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Robert Swan <swan.r.l@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [bisected] pty performance problem
+Message-ID: <20091123133423.64f34c73@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091123120409.GA32009@elte.hu>
+References: <20091121222319.GA3905@swanrl.gmail.com>
+	<20091122063926.GA18224@elte.hu>
+	<20091122122312.71a343d9@lxorguk.ukuu.org.uk>
+	<1258952431.6261.38.camel@marge.simson.net>
+	<20091123113110.15063a0a@lxorguk.ukuu.org.uk>
+	<20091123114845.GC25575@elte.hu>
+	<20091123115949.29bcf89d@lxorguk.ukuu.org.uk>
+	<20091123120409.GA32009@elte.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > So you'd prefer to detect devices that are byte based or message based 
+> > by what method ?
+> 
+> I'd not delay the worklet by default - i.e. i'd do Mike's patch.
 
-Sorry for the delay,
+Certainly stuff like pty should not delay
+> 
+> Havent tested all effects of it though - do you have any estimation 
+> about negative effects from such a change? We do have hard numbers 
+> (latencies in the millisecs range) from the opposite direction and those 
+> numbers arent pretty.
 
-On Wed, Nov 18, 2009 at 5:46 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, 2009-10-22 at 16:51 +0200, Stephane Eranian wrote:
->>       The validate_event() was failing on valid event
->>       combinations. The function was assuming that if
->>       x86_schedule_event() returned 0, it meant error.
->>       But x86_schedule_event() returns the counter index
->>       and 0 is a perfectly valid value. An error is returned
->>       if the function returns a negative value.
->
-> Good point.
->
->>       Furthermore, validate_event() was also failing for
->>       event groups because the event->pmu was not set until
->>       after hw_perf_pmu_init().
->
-> (hw_perf_event_init, right?)
->
-Yes.
+On a PC I'm not too worried - we might burn a bit more CPU and Arjan
+might even manage to measure it somewhere. There is the theoretical bad
+case where we end up at 100% CPU because the irq, wake, process one char,
+irq wake, process one char sequence fits the CPU so we don't sleep.
 
-> Won't this give very funny results for mixed pmu groups?
->
+Embedded might be more of a concern, the old behaviour comes from 386/486
+days with low CPU power.
 
-What do you mean by 'mixed pmu groups'?
+USB doesn't worry me - USB devices generally have their own buffering
+algorithm and use a timer so that they batch data efficiently into USB
+buffers.
 
-> How about something like:
->
->  if (event->pmu && event->pmu != &pmu)
->        return 0;
->
-> That should deal with new events, who do not yet have their pmu set and
-> for those we know they're for us, but exclude events for other PMUs.
->
->>       Signed-off-by: Stephane Eranian <eranian@gmail.com>
->> --
->>  arch/x86/kernel/cpu/perf_event.c |    5 +----
->>  1 file changed, 1 insertion(+), 4 deletions(-)
->>
->> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
->> index 2e20bca..d321ff7 100644
->> --- a/arch/x86/kernel/cpu/perf_event.c
->> +++ b/arch/x86/kernel/cpu/perf_event.c
->> @@ -2229,10 +2229,7 @@ validate_event(struct cpu_hw_events *cpuc, struct perf_event *event)
->>  {
->>       struct hw_perf_event fake_event = event->hw;
->>
->> -     if (event->pmu != &pmu)
->> -             return 0;
->> -
->> -     return x86_schedule_event(cpuc, &fake_event);
->> +     return x86_schedule_event(cpuc, &fake_event) >= 0;
->>  }
->>
->>  static int validate_group(struct perf_event *event)
->
->
->
+The drivers/serial layer is often run with low latency set anyway so that
+seems to be ok for the most part.
+
+Give it a go, send the patch to the maintainer, try it in -next and see
+if anyone screams.
+
+Alan
