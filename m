@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZKWPVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZKWPUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZKWPVg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 10:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZKWPVf
+	id S1754305AbZKWPUw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 10:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZKWPUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 10:21:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60158 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754121AbZKWPVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 10:21:32 -0500
-Date: Mon, 23 Nov 2009 10:19:46 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [RFC] Block IO Controller V2 - some results
-Message-ID: <20091123151946.GA3112@redhat.com>
-References: <4e5e476b0911180820y5d99a81et6be7f6f94442d0d5@mail.gmail.com> <20091118225626.GA2974@redhat.com> <4e5e476b0911181535y4d73d381s14b54c6d787d2b46@mail.gmail.com> <20091120141840.GA5872@redhat.com> <4e5e476b0911200628g42a0ab6ftd65b68bff5d1aea3@mail.gmail.com> <20091120150421.GC5872@redhat.com> <4e5e476b0911201032j5319b012v5fd0a64ebfe11089@mail.gmail.com> <20091120184257.GG5872@redhat.com> <4e5e476b0911201150p7cbdfc20k4b8d02f07e16abc8@mail.gmail.com> <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
+	Mon, 23 Nov 2009 10:20:51 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:48171 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbZKWPUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 10:20:50 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0911210957g5b099329u33fa6ec4d740f7d1@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <m36391tjj3.fsf@intrepid.localdomain>
+References: <200910200956.33391.jarod@redhat.com>
+	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+Date: Mon, 23 Nov 2009 10:20:54 -0500
+Message-ID: <829197380911230720k233c3c86t659180d1413aa0dd@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 06:57:47PM +0100, Corrado Zoccolo wrote:
-> Hi Vivek,
-> On Fri, Nov 20, 2009 at 8:50 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> > On Fri, Nov 20, 2009 at 7:42 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >>
-> >> Should we also take into account the "cfqq->dispatched" request in
-> >> determining whether we should enable idling on deep queue random seeky
-> >> readers?
-> >
-> > Probably, but I think the most important thing is to do some averaging
-> > or hysteresis, so the completion of a single request doesn't cause the
-> > switch of a workload.
-> 
-> can you test the new version of the idling patch?
-> I register the fact that the queue had a large depth in a flag, that
-> is reset only when the idle times out (so at the end of the burst).
-> Idling is enabled if that flag is set (and think time is acceptable).
-> This should fix the switching behaviour you observed.
-> 
-> I decided to not count cfqq->dispatched to determine the depth.
-> In this way, when all queues in the system are random the idling is
-> enabled only if the requests queue builds up faster than it can be
-> consumed.
+On Mon, Nov 23, 2009 at 9:14 AM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> I think this makes a lot of sense.
+> But: we don't need a database of RC codes in the kernel (that's a lot of
+> data, the user has to select the RC in use anyway so he/she can simply
+> provide mapping e.g. RC5<>keycode).
 
-Hi Corrado,
+Just bear in mind that with the current in-kernel code, users do *not
+* have to manually select the RC code to use if they are using the
+default remote that shipped with the product.  This helps alot for
+those unfamiliar with LIRC, since their product "works out of the box"
+with the remote the product came with.  I agree though, that the user
+should be able to easily change the RC to be used if he/she decides to
+use a remote other than the default.
 
-This patch seems to be working much better in marking the random writer
-queue as sync and not interefere with sync-noidle workload.
+Devin
 
-So frequent migration of random writer queue across group has stopped.
-
-But there seems to be a different issue now after sometime, random writer
-queue stops generating enough traffic and gets deleted after one request
-and root group now runs random reader for sometime. So it basically
-changes the ratio in which random writers and random readers get disk 
-share.
-
-I guess part of the dependency comes from kjournald which is in root
-group. But there is something else too because I don't see this happening
-when there are no cgroups. I will do more debugging on this.
-
-Thanks
-Vivek
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
