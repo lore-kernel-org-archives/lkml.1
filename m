@@ -1,85 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZKWJ5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbZKWJxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZKWJ5N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 04:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbZKWJ5M
+	id S1756287AbZKWJxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 04:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbZKWJxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 04:57:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19124 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756437AbZKWJ5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 04:57:12 -0500
-Date: Mon, 23 Nov 2009 10:52:46 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Spencer Candland <spencer@bluehost.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
-Message-ID: <20091123095246.GA25978@dhcp-lab-161.englab.brq.redhat.com>
-References: <1257778154.4108.341.camel@laptop> <4AF8FD3C.2090008@jp.fujitsu.com> <4AF8FE76.406@jp.fujitsu.com> <20091111121150.GA2549@dhcp-lab-161.englab.brq.redhat.com> <4AFB5019.7030901@jp.fujitsu.com> <4AFB77C2.8080705@jp.fujitsu.com> <2375c9f90911111855w20491a1er8d3400cf4e027855@mail.gmail.com> <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com>
+	Mon, 23 Nov 2009 04:53:51 -0500
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:46558 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbZKWJxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 04:53:50 -0500
+Message-ID: <4B0A5BA7.8020604@in.ibm.com>
+Date: Mon, 23 Nov 2009 15:23:43 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: ego@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>
+Subject: Re: -next: Nov 12 - kernel BUG at kernel/sched.c:7359!
+References: <20091112195101.63263490.sfr@canb.auug.org.au> <4AFBF73B.5040500@in.ibm.com> <1258027820.4039.129.camel@laptop> <4AFBFE3D.80507@in.ibm.com> <1258028831.4039.152.camel@laptop> <1258045831.4039.736.camel@laptop>  <20091113095801.GA29977@in.ibm.com> <1258107368.4039.1149.camel@laptop> <1258108281.22655.5.camel@laptop>
+In-Reply-To: <1258108281.22655.5.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 03:49:19PM +0100, Stanislaw Gruszka wrote:
-> On Thu, Nov 12, 2009 at 01:33:45PM +0900, Hidetoshi Seto wrote:
-> > Originally task_s/utime() were designed to return clock_t but later
-> > changed to return cputime_t by following commit:
-> > 
-> >   commit efe567fc8281661524ffa75477a7c4ca9b466c63
-> >   Author: Christian Borntraeger <borntraeger@de.ibm.com>
-> >   Date:   Thu Aug 23 15:18:02 2007 +0200
-> > 
-> > It only changed the type of return value, but not the implementation.
-> > As the result the granularity of task_s/utime() is still that of
-> > clock_t, not that of cputime_t.
-> > 
-> > So using task_s/utime() in __exit_signal() makes values accumulated
-> > to the signal struct to be rounded and coarse grained.
-> > 
-> > This patch removes casts to clock_t in task_u/stime(), to keep
-> > granularity of cputime_t over the calculation.
-> > 
-> > v2:
-> >   Use div_u64() to avoid error "undefined reference to `__udivdi3`"
-> >   on some 32bit systems.
-> > 
-> > Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> > ---
-> >  kernel/sched.c |   22 +++++++++++++---------
-> >  1 files changed, 13 insertions(+), 9 deletions(-)
-> 
-> Patch not fix the issue on my system. I test it alone, together with 
-> 
-> posix-cpu-timers: avoid do_sys_times() races with __exit_signal(
-> 
-> and (further) together with
->  
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -248,8 +248,8 @@ void thread_group_cputime(struct task_struct *tsk,
-> struct task_cputime *times)
-> 
->         t = tsk;
->         do {
-> -               times->utime = cputime_add(times->utime, t->utime);
-> -               times->stime = cputime_add(times->stime, t->stime);
-> +               times->utime = cputime_add(times->utime, task_utime(t));
-> +               times->stime = cputime_add(times->stime, task_stime(t));
->                 times->sum_exec_runtime += t->se.sum_exec_runtime;
-> 
->                 t = next_thread(t);
-> 
-> What only changed was probability to enter the issue.
+Peter Zijlstra wrote:
+> Well, it boots for me, but then, I've not been able to reproduce any
+> issues anyway :/
+>
+> /me goes try a PREEMPT=n kernel, since that is what Mike reports boot
+> funnies with..
+>
+> Full running diff against -tip:
+>   
+Peter i still can recreate this issue with today's next(20091123).
+Looks like the following patch haven't been merged yet.
 
-I was wrong here, that combination fix the problem on my system. I don't
-know how I was testing it before, perhaps I booted wrong kernel.
+Thanks
+-Sachin
 
-Stanislaw
+> ---
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 1f2e99d..7089063 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2374,17 +2374,24 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+>  	if (task_contributes_to_load(p))
+>  		rq->nr_uninterruptible--;
+>  	p->state = TASK_WAKING;
+> -	task_rq_unlock(rq, &flags);
+> +	__task_rq_unlock(rq);
+>
+> +again:
+>  	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
+> +	if (!cpu_online(cpu))
+> +		cpu = cpumask_any_and(&p->cpus_allowed, cpu_online_mask);
+> +	if (cpu >= nr_cpu_ids) {
+> +		printk(KERN_ERR "Breaking affinity on %d/%s\n", p->pid, p->comm);
+> +		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
+> +		goto again;
+> +	}
+> +
+>  	if (cpu != orig_cpu) {
+> -		local_irq_save(flags);
+>  		rq = cpu_rq(cpu);
+>  		update_rq_clock(rq);
+>  		set_task_cpu(p, cpu);
+> -		local_irq_restore(flags);
+>  	}
+> -	rq = task_rq_lock(p, &flags);
+> +	rq = __task_rq_lock(p);
+>
+>  	WARN_ON(p->state != TASK_WAKING);
+>  	cpu = task_cpu(p);
+> @@ -7620,6 +7627,8 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+>  	unsigned long flags;
+>  	struct rq *rq;
+>
+> +	printk(KERN_ERR "migration call\n");
+> +
+>  	switch (action) {
+>
+>  	case CPU_UP_PREPARE:
+> @@ -9186,6 +9195,8 @@ int __init sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
+>  static int update_sched_domains(struct notifier_block *nfb,
+>  				unsigned long action, void *hcpu)
+>  {
+> +	printk(KERN_ERR "update_sched_domains\n");
+> +
+>  	switch (action) {
+>  	case CPU_ONLINE:
+>  	case CPU_ONLINE_FROZEN:
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 5488a5d..0ff21af 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1345,6 +1345,37 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+>  }
+>
+>  /*
+> + * Try and locate an idle CPU in the sched_domain.
+> + */
+> +static int
+> +select_idle_sibling(struct task_struct *p, struct sched_domain *sd, int target)
+> +{
+> +	int cpu = smp_processor_id();
+> +	int prev_cpu = task_cpu(p);
+> +	int i;
+> +
+> +	/*
+> +	 * If this domain spans both cpu and prev_cpu (see the SD_WAKE_AFFINE
+> +	 * test in select_task_rq_fair) and the prev_cpu is idle then that's
+> +	 * always a better target than the current cpu.
+> +	 */
+> +	if (target == cpu && !cpu_rq(prev_cpu)->cfs.nr_running)
+> +		return prev_cpu;
+> +
+> +	/*
+> +	 * Otherwise, iterate the domain and find an elegible idle cpu.
+> +	 */
+> +	for_each_cpu_and(i, sched_domain_span(sd), &p->cpus_allowed) {
+> +		if (!cpu_rq(i)->cfs.nr_running) {
+> +			target = i;
+> +			break;
+> +		}
+> +	}
+> +
+> +	return target;
+> +}
+> +
+> +/*
+>   * sched_balance_self: balance the current task (running on cpu) in domains
+>   * that have the 'flag' flag set. In practice, this is SD_BALANCE_FORK and
+>   * SD_BALANCE_EXEC.
+> @@ -1398,37 +1429,34 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
+>  				want_sd = 0;
+>  		}
+>
+> -		if (want_affine && (tmp->flags & SD_WAKE_AFFINE)) {
+> -			int candidate = -1, i;
+> +		/*
+> +		 * While iterating the domains looking for a spanning
+> +		 * WAKE_AFFINE domain, adjust the affine target to any idle cpu
+> +		 * in cache sharing domains along the way.
+> +		 */
+> +		if (want_affine) {
+> +			int target = -1;
+>
+> +			/*
+> +			 * If both cpu and prev_cpu are part of this domain,
+> +			 * cpu is a valid SD_WAKE_AFFINE target.
+> +			 */
+>  			if (cpumask_test_cpu(prev_cpu, sched_domain_span(tmp)))
+> -				candidate = cpu;
+> +				target = cpu;
+>
+>  			/*
+> -			 * Check for an idle shared cache.
+> +			 * If there's an idle sibling in this domain, make that
+> +			 * the wake_affine target instead of the current cpu.
+>  			 */
+> -			if (tmp->flags & SD_PREFER_SIBLING) {
+> -				if (candidate == cpu) {
+> -					if (!cpu_rq(prev_cpu)->cfs.nr_running)
+> -						candidate = prev_cpu;
+> -				}
+> +			if (tmp->flags & SD_PREFER_SIBLING)
+> +				target = select_idle_sibling(p, tmp, target);
+>
+> -				if (candidate == -1 || candidate == cpu) {
+> -					for_each_cpu(i, sched_domain_span(tmp)) {
+> -						if (!cpumask_test_cpu(i, &p->cpus_allowed))
+> -							continue;
+> -						if (!cpu_rq(i)->cfs.nr_running) {
+> -							candidate = i;
+> -							break;
+> -						}
+> -					}
+> +			if (target >= 0) {
+> +				if (tmp->flags & SD_WAKE_AFFINE) {
+> +					affine_sd = tmp;
+> +					want_affine = 0;
+>  				}
+> -			}
+> -
+> -			if (candidate >= 0) {
+> -				affine_sd = tmp;
+> -				want_affine = 0;
+> -				cpu = candidate;
+> +				cpu = target;
+>  			}
+>  		}
+>
+>
+>
+>   
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
