@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZKWLxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZKWLxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbZKWLxh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 06:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbZKWLxg
+	id S1757319AbZKWLxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 06:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZKWLxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 06:53:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56040 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 06:53:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56056 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757231AbZKWLxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 06:53:35 -0500
-Date: Mon, 23 Nov 2009 11:52:58 GMT
+	id S1757271AbZKWLxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 06:53:49 -0500
+Date: Mon, 23 Nov 2009 11:53:14 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
        mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf events: Do not generate function trace entries in perf code
-Message-ID: <tip-6e3d8330ae2c4b2c11a9577a0130d2ecda1c610d@git.kernel.org>
-Git-Commit-ID: 6e3d8330ae2c4b2c11a9577a0130d2ecda1c610d
+Subject: [tip:tracing/core] tracing, function tracer: Clean up strstrip() usage
+Message-ID: <tip-457dc928f586f3f4b930206965e6db270034e97e@git.kernel.org>
+Git-Commit-ID: 457dc928f586f3f4b930206965e6db270034e97e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,51 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6e3d8330ae2c4b2c11a9577a0130d2ecda1c610d
-Gitweb:     http://git.kernel.org/tip/6e3d8330ae2c4b2c11a9577a0130d2ecda1c610d
+Commit-ID:  457dc928f586f3f4b930206965e6db270034e97e
+Gitweb:     http://git.kernel.org/tip/457dc928f586f3f4b930206965e6db270034e97e
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 23 Nov 2009 10:19:20 +0100
+AuthorDate: Mon, 23 Nov 2009 11:03:28 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Nov 2009 10:19:20 +0100
+CommitDate: Mon, 23 Nov 2009 11:04:07 +0100
 
-perf events: Do not generate function trace entries in perf code
+tracing, function tracer: Clean up strstrip() usage
 
-Decreases perf overhead when function tracing is enabled,
-by about 50%.
+Clean up strstrip() usage - which also addresses this build warning:
 
+  kernel/trace/ftrace.c: In function 'ftrace_pid_write':
+  kernel/trace/ftrace.c:3004: warning: ignoring return value of 'strstrip', declared with attribute warn_unused_result
+
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
 LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/cpu/Makefile |    1 +
- kernel/Makefile              |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ kernel/trace/ftrace.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 68537e9..1d2cb38 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -5,6 +5,7 @@
- # Don't trace early stages of a secondary CPU boot
- ifdef CONFIG_FUNCTION_TRACER
- CFLAGS_REMOVE_common.o = -pg
-+CFLAGS_REMOVE_perf_event.o = -pg
- endif
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7f9b51e..1dc101d 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2985,7 +2985,7 @@ static ssize_t
+ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+-	char buf[64];
++	char buf[64], *tmp;
+ 	long val;
+ 	int ret;
  
- # Make sure load_percpu_segment has no stackprotector
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 17b575e..6b7ce81 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -21,6 +21,7 @@ CFLAGS_REMOVE_mutex-debug.o = -pg
- CFLAGS_REMOVE_rtmutex-debug.o = -pg
- CFLAGS_REMOVE_cgroup-debug.o = -pg
- CFLAGS_REMOVE_sched_clock.o = -pg
-+CFLAGS_REMOVE_perf_event.o = -pg
- endif
+@@ -3001,11 +3001,11 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 	 * Allow "echo > set_ftrace_pid" or "echo -n '' > set_ftrace_pid"
+ 	 * to clean the filter quietly.
+ 	 */
+-	strstrip(buf);
+-	if (strlen(buf) == 0)
++	tmp = strstrip(buf);
++	if (strlen(tmp) == 0)
+ 		return 1;
  
- obj-$(CONFIG_FREEZER) += freezer.o
+-	ret = strict_strtol(buf, 10, &val);
++	ret = strict_strtol(tmp, 10, &val);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -3391,4 +3391,3 @@ void ftrace_graph_stop(void)
+ 	ftrace_stop();
+ }
+ #endif
+-
