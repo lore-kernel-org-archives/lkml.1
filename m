@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbZKWRAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbZKWREp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751630AbZKWRAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 12:00:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZKWRAU
+	id S1752026AbZKWREp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 12:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZKWREo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 12:00:20 -0500
-Received: from mail2.microsoft.com ([131.107.115.215]:23462 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751501AbZKWRAT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 12:00:19 -0500
-From: Haiyang Zhang <haiyangz@microsoft.com>
-To: "'gregkh@suse.de'" <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Staging: hv: Fix some missing author names
-Thread-Topic: [PATCH] Staging: hv: Fix some missing author names
-Thread-Index: AQHKbF5yMVoMJ9MaM06P3jFcr9P/mw==
-Date: Mon, 23 Nov 2009 17:00:22 +0000
-Message-ID: <1FB5E1D5CA062146B38059374562DF7230C8352F@TK5EX14MBXC126.redmond.corp.microsoft.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 12:04:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44888 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbZKWREo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 12:04:44 -0500
+Date: Mon, 23 Nov 2009 18:04:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: newidle balancing in NUMA domain?
+Message-ID: <20091123170445.GA29058@elte.hu>
+References: <20091123112228.GA2287@wotan.suse.de>
+ <1258987059.6193.73.camel@marge.simson.net>
+ <20091123151152.GA19175@wotan.suse.de>
+ <1258989704.4531.574.camel@laptop>
+ <20091123152931.GD19175@wotan.suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123152931.GD19175@wotan.suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Haiyang Zhang <haiyangz@microsoft.com>
 
-Fix some missing author names. 
-They were accidentally removed previously.
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Hank Janssen <hjanssen@microsoft.com>
-Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+> > .32 is kind of closed, with us being at -rc8.
+> 
+> It's a bad regression though.
 
----
-diff --git a/drivers/staging/hv/BlkVsc.c b/drivers/staging/hv/BlkVsc.c
-index 51aa861..a48ee3a 100644
---- a/drivers/staging/hv/BlkVsc.c
-+++ b/drivers/staging/hv/BlkVsc.c
-@@ -16,6 +16,7 @@
-  * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-  * Authors:
-+ *   Haiyang Zhang <haiyangz@microsoft.com>
-  *   Hank Janssen  <hjanssen@microsoft.com>
-  *
-  */
-diff --git a/drivers/staging/hv/NetVsc.c b/drivers/staging/hv/NetVsc.c
-index d384c0d..1c717f9 100644
---- a/drivers/staging/hv/NetVsc.c
-+++ b/drivers/staging/hv/NetVsc.c
-@@ -15,6 +15,7 @@
-  * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-  * Authors:
-+ *   Haiyang Zhang <haiyangz@microsoft.com>
-  *   Hank Janssen  <hjanssen@microsoft.com>
-  */
- #include <linux/kernel.h>
-diff --git a/drivers/staging/hv/NetVsc.h b/drivers/staging/hv/NetVsc.h
-index 3e7112f..6e0e034 100644
---- a/drivers/staging/hv/NetVsc.h
-+++ b/drivers/staging/hv/NetVsc.h
-@@ -16,6 +16,7 @@
-  * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-  * Authors:
-+ *   Haiyang Zhang <haiyangz@microsoft.com>
-  *   Hank Janssen  <hjanssen@microsoft.com>
-  *
-  */
-diff --git a/drivers/staging/hv/blkvsc_drv.c b/drivers/staging/hv/blkvsc_drv.c
-index 99c4926..62b2828 100644
---- a/drivers/staging/hv/blkvsc_drv.c
-+++ b/drivers/staging/hv/blkvsc_drv.c
-@@ -15,6 +15,7 @@
-  * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-  * Authors:
-+ *   Haiyang Zhang <haiyangz@microsoft.com>
-  *   Hank Janssen  <hjanssen@microsoft.com>
-  */
- #include <linux/init.h>
-diff --git a/drivers/staging/hv/netvsc_drv.c b/drivers/staging/hv/netvsc_drv.c
-index 3192d50..0d7459e 100644
---- a/drivers/staging/hv/netvsc_drv.c
-+++ b/drivers/staging/hv/netvsc_drv.c
-@@ -15,6 +15,7 @@
-  * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-  * Authors:
-+ *   Haiyang Zhang <haiyangz@microsoft.com>
-  *   Hank Janssen  <hjanssen@microsoft.com>
-  */
- #include <linux/init.h>
+It's about 3 months too late for that. Ideally we want performance 
+regressions to be looked for and reported when the patches go into the 
+devel tree. Failing that, -rc1 would be the good time to re-test 
+whatever workload you care about.
+
+If you cannot test it in a regular fashion you can offload the testing 
+to us, by adding a similar/equivalent workload to 'perf bench sched'. 
+We'll make sure it stays sane.
+
+Thanks,
+
+	Ingo
