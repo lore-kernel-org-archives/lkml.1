@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZKXT2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZKXTgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbZKXT2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZKXT2f
+	id S1758210AbZKXTgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 14:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbZKXTgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:28:35 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:49237 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757935AbZKXT2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:28:34 -0500
-Date: Tue, 24 Nov 2009 14:28:35 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jan Kara <jack@suse.cz>, Boaz Harrosh <bharrosh@panasas.com>
-cc: tmhikaru@gmail.com, Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       <linux-ext4@vger.kernel.org>
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-In-Reply-To: <4B0C1C20.2080901@panasas.com>
-Message-ID: <Pine.LNX.4.44L0.0911241418440.2881-100000@iolanthe.rowland.org>
+	Tue, 24 Nov 2009 14:36:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52865 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758200AbZKXTgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 14:36:41 -0500
+Date: Tue, 24 Nov 2009 14:36:38 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [PATCH] cfq-iosched: cleanup unreachable code
+Message-ID: <20091124193638.GA2803@redhat.com>
+References: <200911241701.49677.czoccolo@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911241701.49677.czoccolo@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009, Boaz Harrosh wrote:
-
-> > I would have expected the READ to be retried, but in these two cases 
-> > it wasn't.  The usbmon log contained five instances of this error 
-> > sequence; the other three were retried successfully.  I don't know what 
-> > the difference was.
-> > 
+On Tue, Nov 24, 2009 at 05:01:49PM +0100, Corrado Zoccolo wrote:
+> cfq_should_idle returns false for no-idle queues that are not the last,
+> so the control flow will never reach the removed code in a state that
+> satisfies the if condition.
+> The unreachable code was added to emulate previous cfq behaviour for
+> non-NCQ rotational devices. My tests show that even without it, the
+> performances and fairness are comparable with previous cfq, thanks to
+> the fact that all seeky queues are grouped together, and that we idle at
+> the end of the tree.
 > 
-> Perhaps the time it took to complete.
+
+As you said that right now it is dead code, so better remove it.
+
+Theoretically, by retaining this code we could benefit on non NCQ
+rotational media if seek cost across the sync-noidle queues is higher
+as compared to seek cost with-in queue. Fix it if we run into it.
+
+Till then better to remove dead code.
+
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
+
+Thanks
+Vivek
+
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+> ---
+>  block/cfq-iosched.c |   13 -------------
+>  1 files changed, 0 insertions(+), 13 deletions(-)
 > 
-> I have a very old IDE disk connected to a USB box here, and some bad sectors take ages
-> to return. One thing I wanted to investigate is why the complete Linux system is frozen
-> for minutes when I "cp" one of these bad-sectors and then every thing is back to normal.
-> It's just an inserted external box. Swap system and everything is on an another healthy HD.
-> As if the USB controller actually locks the PCI bus, or the interrupts are off for a long
-> while. (Or is it the BKL?)
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index d44f8a4..7144649 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1274,19 +1274,6 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+>  	cfq_mark_cfqq_wait_request(cfqq);
+>  
+>  	sl = cfqd->cfq_slice_idle;
+> -	/* are we servicing noidle tree, and there are more queues?
+> -	 * non-rotational or NCQ: no idle
+> -	 * non-NCQ rotational : very small idle, to allow
+> -	 *     fair distribution of slice time for a process doing back-to-back
+> -	 *     seeks.
+> -	 */
+> -	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD &&
+> -	    service_tree_for(cfqd->serving_prio, SYNC_NOIDLE_WORKLOAD, cfqd)
+> -		->count > 0) {
+> -		if (blk_queue_nonrot(cfqd->queue) || cfqd->hw_tag)
+> -			return;
+> -		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
+> -	}
+>  
+>  	mod_timer(&cfqd->idle_slice_timer, jiffies + sl);
+>  	cfq_log_cfqq(cfqd, cfqq, "arm_idle: %lu", sl);
+> -- 
+> 1.6.2.5
 > 
-> Do you have time stamps on these?
-
-Yes.  Each of the unsuccessful reads, whether retried or not, lasted
-less than one millisecond.  So that's probably not the reason.
-
-
-On Tue, 24 Nov 2009, Jan Kara wrote:
-
->   My naive guess would be that those non-retried reads were actually
-> readahead. That's not retried if I remember correctly. Later, when we
-> really needed the data, we sent another read request...
-
-That would be my guess too.  I don't know how to verify it, though.
-
-If you're interested in pursuing this farther, I can show you how to 
-generate equivalent errors on demand using an emulated USB drive.  
-At this point it's not clear how much more one could learn by doing 
-this, however.
-
-Alan Stern
-
