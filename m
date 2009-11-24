@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbZKXVIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934127AbZKXVI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934102AbZKXVIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934092AbZKXVIu
+	id S934127AbZKXVI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934107AbZKXVIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:50 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44751 "EHLO
+	Tue, 24 Nov 2009 16:08:54 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44721 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934049AbZKXVIm (ORCPT
+	with ESMTP id S933394AbZKXVIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:42 -0500
+	Tue, 24 Nov 2009 16:08:41 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Hans Verkuil <hverkuil@xs4all.nl>, Manjunath Hadli <mrh@ti.com>,
-       Chaithrika U S <chaithrika@ti.com>,
+Cc: akpm@linux-foundation.org, Hans Verkuil <hverkuil@xs4all.nl>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Alexey Klimov <klimov.linux@gmail.com>,
        Muralidharan Karicheri <m-karicheri2@ti.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>,
        linux-media@vger.kernel.org
-Subject: [PATCH 35/38] move vpif_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:30 +0100
-Message-Id: <1259096853-18909-35-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 36/38] move vpss_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:31 +0100
+Message-Id: <1259096853-18909-36-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-34-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-35-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -58,6 +59,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-33-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-34-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-35-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -69,35 +71,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function vpif_remove is used only wrapped by __devexit_p so define
+The function vpss_remove is used only wrapped by __devexit_p so define
 it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
 Cc: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Manjunath Hadli <mrh@ti.com>
-Cc: Chaithrika U S <chaithrika@ti.com>
+Cc: Laurent Pinchart <laurent.pinchart@skynet.be>
+Cc: Alexey Klimov <klimov.linux@gmail.com>
 Cc: Muralidharan Karicheri <m-karicheri2@ti.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: linux-media@vger.kernel.org
 ---
- drivers/media/video/davinci/vpif.c |    2 +-
+ drivers/media/video/davinci/vpss.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/davinci/vpif.c b/drivers/media/video/davinci/vpif.c
-index 3b8eac3..1f532e3 100644
---- a/drivers/media/video/davinci/vpif.c
-+++ b/drivers/media/video/davinci/vpif.c
-@@ -266,7 +266,7 @@ fail:
+diff --git a/drivers/media/video/davinci/vpss.c b/drivers/media/video/davinci/vpss.c
+index 6d709ca..ed0472f 100644
+--- a/drivers/media/video/davinci/vpss.c
++++ b/drivers/media/video/davinci/vpss.c
+@@ -268,7 +268,7 @@ fail1:
  	return status;
  }
  
--static int vpif_remove(struct platform_device *pdev)
-+static int __devexit vpif_remove(struct platform_device *pdev)
+-static int vpss_remove(struct platform_device *pdev)
++static int __devexit vpss_remove(struct platform_device *pdev)
  {
- 	iounmap(vpif_base);
- 	release_mem_region(res->start, res_len);
+ 	iounmap(oper_cfg.vpss_bl_regs_base);
+ 	release_mem_region(oper_cfg.r1->start, oper_cfg.len1);
 -- 
 1.6.5.2
 
