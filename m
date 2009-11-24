@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934119AbZKXVLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbZKXVNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934119AbZKXVLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbZKXVLh
+	id S934180AbZKXVNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933532AbZKXVNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:11:37 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44702 "EHLO
+	Tue, 24 Nov 2009 16:13:42 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44650 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934027AbZKXVIg (ORCPT
+	with ESMTP id S932823AbZKXVIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:36 -0500
+	Tue, 24 Nov 2009 16:08:31 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Willem Riede <osst@riede.org>,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ed Lin <ed.lin@promise.com>, Yang Hongyang <yanghy@cn.fujitsu.com>,
-       linux-scsi@vger.kernel.org, osst-users@lists.sourceforge.net
-Subject: [PATCH 21/38] move stex_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:16 +0100
-Message-Id: <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       "Brian G. Merrell" <bgmerrell@novell.com>,
+       Shan Wei <shanwei@cn.fujitsu.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       devel@driverdev.osuosl.org
+Subject: [PATCH 22/38] move vhci_hcd_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:17 +0100
+Message-Id: <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -44,6 +42,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -55,37 +54,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function stex_remove is used only wrapped by __devexit_p so define
+The function vhci_hcd_remove is used only wrapped by __devexit_p so define
 it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Willem Riede <osst@riede.org>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-Cc: "Kai Mäkisara" <Kai.Makisara@kolumbus.fi>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ed Lin <ed.lin@promise.com>
-Cc: Yang Hongyang <yanghy@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-scsi@vger.kernel.org
-Cc: osst-users@lists.sourceforge.net
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Brian G. Merrell <bgmerrell@novell.com>
+Cc: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: devel@driverdev.osuosl.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/scsi/stex.c |    2 +-
+ drivers/staging/usbip/vhci_hcd.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 09fa886..09ee386 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -1679,7 +1679,7 @@ static void stex_hba_free(struct st_hba *hba)
- 			  hba->dma_mem, hba->dma_handle);
+diff --git a/drivers/staging/usbip/vhci_hcd.c b/drivers/staging/usbip/vhci_hcd.c
+index 6e91fc2..22b1c6c 100644
+--- a/drivers/staging/usbip/vhci_hcd.c
++++ b/drivers/staging/usbip/vhci_hcd.c
+@@ -1131,7 +1131,7 @@ static int vhci_hcd_probe(struct platform_device *pdev)
  }
  
--static void stex_remove(struct pci_dev *pdev)
-+static void __devexit stex_remove(struct pci_dev *pdev)
+ 
+-static int vhci_hcd_remove(struct platform_device *pdev)
++static int __devexit vhci_hcd_remove(struct platform_device *pdev)
  {
- 	struct st_hba *hba = pci_get_drvdata(pdev);
+ 	struct usb_hcd	*hcd;
  
 -- 
 1.6.5.2
