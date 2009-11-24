@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934405AbZKXXWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934424AbZKXXZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934405AbZKXXWh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 18:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934366AbZKXXWh
+	id S934424AbZKXXZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 18:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934394AbZKXXZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 18:22:37 -0500
-Received: from mga09.intel.com ([134.134.136.24]:32621 "EHLO mga09.intel.com"
+	Tue, 24 Nov 2009 18:25:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53338 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934364AbZKXXWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 18:22:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,280,1257148800"; 
-   d="scan'208";a="470301361"
-Date: Wed, 25 Nov 2009 00:24:21 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH 01/38] move asic3_remove to .devexit.text
-Message-ID: <20091124232421.GG8290@sortiz.org>
-References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	id S934387AbZKXXZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 18:25:19 -0500
+Message-ID: <4B0C6B5A.6080702@sandeen.net>
+Date: Tue, 24 Nov 2009 17:25:14 -0600
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+CC: xfs-masters@oss.sgi.com, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: [PATCH XFS] Fix error return for fallocate() on XFS
+References: <20091124215253.GA10693@obsidianresearch.com>
+In-Reply-To: <20091124215253.GA10693@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe,
+Jason Gunthorpe wrote:
+> Noticed that through glibc fallocate would return 28 rather than -1
+> and errno = 28 for ENOSPC. The xfs routines uses XFS_ERROR format
+> positive return error codes while the syscalls use negative return codes.
+> Fixup the two cases in xfs_vn_fallocate syscall to convert to negative.
 
-On Tue, Nov 24, 2009 at 10:06:56PM +0100, Uwe Kleine-König wrote:
-> The function asic3_remove is used only wrapped by __devexit_p so define
-> it using __devexit.
-This one was already applied to my for-next branch.
+grumblegrumble xfs error signs grumble...
 
-Cheers,
-Samuel.
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
+Thanks,
 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> Cc: Philipp Zabel <philipp.zabel@gmail.com>
-> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Cc: linux-kernel@vger.kernel.org
+Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
+
 > ---
->  drivers/mfd/asic3.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  fs/xfs/linux-2.6/xfs_iops.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
-> index 63a2a66..e22128c 100644
-> --- a/drivers/mfd/asic3.c
-> +++ b/drivers/mfd/asic3.c
-> @@ -908,7 +908,7 @@ static int __init asic3_probe(struct platform_device *pdev)
->  	return ret;
->  }
+> diff --git a/fs/xfs/linux-2.6/xfs_iops.c b/fs/xfs/linux-2.6/xfs_iops.c
+> index cd42ef7..1f3b4b8 100644
+> --- a/fs/xfs/linux-2.6/xfs_iops.c
+> +++ b/fs/xfs/linux-2.6/xfs_iops.c
+> @@ -573,8 +573,8 @@ xfs_vn_fallocate(
+>  	bf.l_len = len;
 >  
-> -static int asic3_remove(struct platform_device *pdev)
-> +static int __devexit asic3_remove(struct platform_device *pdev)
->  {
->  	int ret;
->  	struct asic3 *asic = platform_get_drvdata(pdev);
-> -- 
-> 1.6.5.2
-> 
+>  	xfs_ilock(ip, XFS_IOLOCK_EXCL);
+> -	error = xfs_change_file_space(ip, XFS_IOC_RESVSP, &bf,
+> -				      0, XFS_ATTR_NOLOCK);
+> +	error = -xfs_change_file_space(ip, XFS_IOC_RESVSP, &bf,
+> +				       0, XFS_ATTR_NOLOCK);
+>  	if (!error && !(mode & FALLOC_FL_KEEP_SIZE) &&
+>  	    offset + len > i_size_read(inode))
+>  		new_size = offset + len;
+> @@ -585,7 +585,7 @@ xfs_vn_fallocate(
+>  
+>  		iattr.ia_valid = ATTR_SIZE;
+>  		iattr.ia_size = new_size;
+> -		error = xfs_setattr(ip, &iattr, XFS_ATTR_NOLOCK);
+> +		error = -xfs_setattr(ip, &iattr, XFS_ATTR_NOLOCK);
+>  	}
+>  
+>  	xfs_iunlock(ip, XFS_IOLOCK_EXCL);
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
