@@ -1,441 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbZKXQyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbZKXQz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933515AbZKXQyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932859AbZKXQyg
+	id S933551AbZKXQz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932859AbZKXQz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:54:36 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:35768 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932734AbZKXQyf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:54:35 -0500
-X-Trace: 295551365/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgBAHaeC0tPRTgw/2dsb2JhbAAI1hSCNYIEBIFw
-X-IronPort-AV: E=Sophos;i="4.47,280,1257120000"; 
-   d="scan'208";a="295551365"
-Date: Tue, 24 Nov 2009 16:54:20 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 7/9] ksm: rmap_walk to remove_migation_ptes
-In-Reply-To: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0911241651160.25288@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+	Tue, 24 Nov 2009 11:55:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57964 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932846AbZKXQzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:55:25 -0500
+Date: Tue, 24 Nov 2009 16:54:37 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       acme@ghostprotocols.net, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
+References: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Fix compilation on powerpc
+Message-ID: <tip-ee3d250446f1c1be4eceab48f3a23794d9a6564c@git.kernel.org>
+Git-Commit-ID: ee3d250446f1c1be4eceab48f3a23794d9a6564c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A side-effect of making ksm pages swappable is that they have to be
-placed on the LRUs: which then exposes them to isolate_lru_page() and
-hence to page migration.
+Commit-ID:  ee3d250446f1c1be4eceab48f3a23794d9a6564c
+Gitweb:     http://git.kernel.org/tip/ee3d250446f1c1be4eceab48f3a23794d9a6564c
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Tue, 24 Nov 2009 15:19:43 +1100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Nov 2009 08:35:10 +0100
 
-Add rmap_walk() for remove_migration_ptes() to use: rmap_walk_anon()
-and rmap_walk_file() in rmap.c, but rmap_walk_ksm() in ksm.c.  Perhaps
-some consolidation with existing code is possible, but don't attempt
-that yet (try_to_unmap needs to handle nonlinears, but migration pte
-removal does not).
+perf tools: Fix compilation on powerpc
 
-rmap_walk() is sadly less general than it appears: rmap_walk_anon(),
-like remove_anon_migration_ptes() which it replaces, avoids calling
-page_lock_anon_vma(), because that includes a page_mapped() test which
-fails when all migration ptes are in place.  That was valid when NUMA
-page migration was introduced (holding mmap_sem provided the missing
-guarantee that anon_vma's slab had not already been destroyed), but
-I believe not valid in the memory hotremove case added since.
+Currently, perf fails to compile on powerpc with this error:
 
-For now do the same as before, and consider the best way to fix that
-unlikely race later on.  When fixed, we can probably use rmap_walk()
-on hwpoisoned ksm pages too: for now, they remain among hwpoison's
-various exceptions (its PageKsm test comes before the page is locked,
-but its page_lock_anon_vma fails safely if an anon gets upgraded).
+     CC util/header.o
+ In file included from util/../perf.h:17,
+                  from util/header.c:9:
+ util/../../../arch/powerpc/include/asm/unistd.h:360:27: error:
+ linux/linkage.h: No such file or directory make: ***
+ [util/header.o] Error 1
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+The reason is that we still have a #define __KERNEL__ in effect
+at the point where <asm/unistd.h> gets included, which means we
+get extra stuff that we don't need or want.
+
+This fixes the problem by undefining __KERNEL__ once we have
+included the file for which we need __KERNEL__ defined.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ tools/perf/util/include/linux/bitops.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
- include/linux/ksm.h  |   13 ++++++
- include/linux/rmap.h |    6 ++
- mm/ksm.c             |   65 +++++++++++++++++++++++++++++++
- mm/migrate.c         |   85 ++++++++---------------------------------
- mm/rmap.c            |   79 ++++++++++++++++++++++++++++++++++++++
- 5 files changed, 181 insertions(+), 67 deletions(-)
-
---- ksm6/include/linux/ksm.h	2009-11-22 20:40:04.000000000 +0000
-+++ ksm7/include/linux/ksm.h	2009-11-22 20:40:46.000000000 +0000
-@@ -88,6 +88,9 @@ static inline struct page *ksm_might_nee
- int page_referenced_ksm(struct page *page,
- 			struct mem_cgroup *memcg, unsigned long *vm_flags);
- int try_to_unmap_ksm(struct page *page, enum ttu_flags flags);
-+int rmap_walk_ksm(struct page *page, int (*rmap_one)(struct page *,
-+		  struct vm_area_struct *, unsigned long, void *), void *arg);
-+void ksm_migrate_page(struct page *newpage, struct page *oldpage);
+diff --git a/tools/perf/util/include/linux/bitops.h b/tools/perf/util/include/linux/bitops.h
+index ace57c3..8d63116 100644
+--- a/tools/perf/util/include/linux/bitops.h
++++ b/tools/perf/util/include/linux/bitops.h
+@@ -7,6 +7,8 @@
+ #define CONFIG_GENERIC_FIND_FIRST_BIT
+ #include "../../../../include/linux/bitops.h"
  
- #else  /* !CONFIG_KSM */
- 
-@@ -127,6 +130,16 @@ static inline int try_to_unmap_ksm(struc
++#undef __KERNEL__
++
+ static inline void set_bit(int nr, unsigned long *addr)
  {
- 	return 0;
- }
-+
-+static inline int rmap_walk_ksm(struct page *page, int (*rmap_one)(struct page*,
-+		struct vm_area_struct *, unsigned long, void *), void *arg)
-+{
-+	return 0;
-+}
-+
-+static inline void ksm_migrate_page(struct page *newpage, struct page *oldpage)
-+{
-+}
- #endif /* !CONFIG_KSM */
- 
- #endif /* __LINUX_KSM_H */
---- ksm6/include/linux/rmap.h	2009-11-22 20:40:11.000000000 +0000
-+++ ksm7/include/linux/rmap.h	2009-11-22 20:40:46.000000000 +0000
-@@ -164,6 +164,12 @@ struct anon_vma *page_lock_anon_vma(stru
- void page_unlock_anon_vma(struct anon_vma *anon_vma);
- int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
- 
-+/*
-+ * Called by migrate.c to remove migration ptes, but might be used more later.
-+ */
-+int rmap_walk(struct page *page, int (*rmap_one)(struct page *,
-+		struct vm_area_struct *, unsigned long, void *), void *arg);
-+
- #else	/* !CONFIG_MMU */
- 
- #define anon_vma_init()		do {} while (0)
---- ksm6/mm/ksm.c	2009-11-22 20:40:27.000000000 +0000
-+++ ksm7/mm/ksm.c	2009-11-22 20:40:46.000000000 +0000
-@@ -1656,6 +1656,71 @@ out:
- 	return ret;
- }
- 
-+#ifdef CONFIG_MIGRATION
-+int rmap_walk_ksm(struct page *page, int (*rmap_one)(struct page *,
-+		  struct vm_area_struct *, unsigned long, void *), void *arg)
-+{
-+	struct stable_node *stable_node;
-+	struct hlist_node *hlist;
-+	struct rmap_item *rmap_item;
-+	int ret = SWAP_AGAIN;
-+	int search_new_forks = 0;
-+
-+	VM_BUG_ON(!PageKsm(page));
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	stable_node = page_stable_node(page);
-+	if (!stable_node)
-+		return ret;
-+again:
-+	hlist_for_each_entry(rmap_item, hlist, &stable_node->hlist, hlist) {
-+		struct anon_vma *anon_vma = rmap_item->anon_vma;
-+		struct vm_area_struct *vma;
-+
-+		spin_lock(&anon_vma->lock);
-+		list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+			if (rmap_item->address < vma->vm_start ||
-+			    rmap_item->address >= vma->vm_end)
-+				continue;
-+			/*
-+			 * Initially we examine only the vma which covers this
-+			 * rmap_item; but later, if there is still work to do,
-+			 * we examine covering vmas in other mms: in case they
-+			 * were forked from the original since ksmd passed.
-+			 */
-+			if ((rmap_item->mm == vma->vm_mm) == search_new_forks)
-+				continue;
-+
-+			ret = rmap_one(page, vma, rmap_item->address, arg);
-+			if (ret != SWAP_AGAIN) {
-+				spin_unlock(&anon_vma->lock);
-+				goto out;
-+			}
-+		}
-+		spin_unlock(&anon_vma->lock);
-+	}
-+	if (!search_new_forks++)
-+		goto again;
-+out:
-+	return ret;
-+}
-+
-+void ksm_migrate_page(struct page *newpage, struct page *oldpage)
-+{
-+	struct stable_node *stable_node;
-+
-+	VM_BUG_ON(!PageLocked(oldpage));
-+	VM_BUG_ON(!PageLocked(newpage));
-+	VM_BUG_ON(newpage->mapping != oldpage->mapping);
-+
-+	stable_node = page_stable_node(newpage);
-+	if (stable_node) {
-+		VM_BUG_ON(stable_node->page != oldpage);
-+		stable_node->page = newpage;
-+	}
-+}
-+#endif /* CONFIG_MIGRATION */
-+
- #ifdef CONFIG_SYSFS
- /*
-  * This all compiles without CONFIG_SYSFS, but is a waste of space.
---- ksm6/mm/migrate.c	2009-11-14 10:17:02.000000000 +0000
-+++ ksm7/mm/migrate.c	2009-11-22 20:40:46.000000000 +0000
-@@ -21,6 +21,7 @@
- #include <linux/mm_inline.h>
- #include <linux/nsproxy.h>
- #include <linux/pagevec.h>
-+#include <linux/ksm.h>
- #include <linux/rmap.h>
- #include <linux/topology.h>
- #include <linux/cpu.h>
-@@ -78,8 +79,8 @@ int putback_lru_pages(struct list_head *
- /*
-  * Restore a potential migration pte to a working pte entry
-  */
--static void remove_migration_pte(struct vm_area_struct *vma,
--		struct page *old, struct page *new)
-+static int remove_migration_pte(struct page *new, struct vm_area_struct *vma,
-+				 unsigned long addr, void *old)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	swp_entry_t entry;
-@@ -88,40 +89,37 @@ static void remove_migration_pte(struct
-  	pmd_t *pmd;
- 	pte_t *ptep, pte;
-  	spinlock_t *ptl;
--	unsigned long addr = page_address_in_vma(new, vma);
--
--	if (addr == -EFAULT)
--		return;
- 
-  	pgd = pgd_offset(mm, addr);
- 	if (!pgd_present(*pgd))
--                return;
-+		goto out;
- 
- 	pud = pud_offset(pgd, addr);
- 	if (!pud_present(*pud))
--                return;
-+		goto out;
- 
- 	pmd = pmd_offset(pud, addr);
- 	if (!pmd_present(*pmd))
--		return;
-+		goto out;
- 
- 	ptep = pte_offset_map(pmd, addr);
- 
- 	if (!is_swap_pte(*ptep)) {
- 		pte_unmap(ptep);
-- 		return;
-+		goto out;
-  	}
- 
-  	ptl = pte_lockptr(mm, pmd);
-  	spin_lock(ptl);
- 	pte = *ptep;
- 	if (!is_swap_pte(pte))
--		goto out;
-+		goto unlock;
- 
- 	entry = pte_to_swp_entry(pte);
- 
--	if (!is_migration_entry(entry) || migration_entry_to_page(entry) != old)
--		goto out;
-+	if (!is_migration_entry(entry) ||
-+	    migration_entry_to_page(entry) != old)
-+		goto unlock;
- 
- 	get_page(new);
- 	pte = pte_mkold(mk_pte(new, vma->vm_page_prot));
-@@ -137,55 +135,10 @@ static void remove_migration_pte(struct
- 
- 	/* No need to invalidate - it was non-present before */
- 	update_mmu_cache(vma, addr, pte);
--
--out:
-+unlock:
- 	pte_unmap_unlock(ptep, ptl);
--}
--
--/*
-- * Note that remove_file_migration_ptes will only work on regular mappings,
-- * Nonlinear mappings do not use migration entries.
-- */
--static void remove_file_migration_ptes(struct page *old, struct page *new)
--{
--	struct vm_area_struct *vma;
--	struct address_space *mapping = new->mapping;
--	struct prio_tree_iter iter;
--	pgoff_t pgoff = new->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
--
--	if (!mapping)
--		return;
--
--	spin_lock(&mapping->i_mmap_lock);
--
--	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff)
--		remove_migration_pte(vma, old, new);
--
--	spin_unlock(&mapping->i_mmap_lock);
--}
--
--/*
-- * Must hold mmap_sem lock on at least one of the vmas containing
-- * the page so that the anon_vma cannot vanish.
-- */
--static void remove_anon_migration_ptes(struct page *old, struct page *new)
--{
--	struct anon_vma *anon_vma;
--	struct vm_area_struct *vma;
--
--	/*
--	 * We hold the mmap_sem lock. So no need to call page_lock_anon_vma.
--	 */
--	anon_vma = page_anon_vma(new);
--	if (!anon_vma)
--		return;
--
--	spin_lock(&anon_vma->lock);
--
--	list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
--		remove_migration_pte(vma, old, new);
--
--	spin_unlock(&anon_vma->lock);
-+out:
-+	return SWAP_AGAIN;
- }
- 
- /*
-@@ -194,10 +147,7 @@ static void remove_anon_migration_ptes(s
-  */
- static void remove_migration_ptes(struct page *old, struct page *new)
- {
--	if (PageAnon(new))
--		remove_anon_migration_ptes(old, new);
--	else
--		remove_file_migration_ptes(old, new);
-+	rmap_walk(new, remove_migration_pte, old);
- }
- 
- /*
-@@ -358,6 +308,7 @@ static void migrate_page_copy(struct pag
-  	}
- 
- 	mlock_migrate_page(newpage, page);
-+	ksm_migrate_page(newpage, page);
- 
- 	ClearPageSwapCache(page);
- 	ClearPagePrivate(page);
-@@ -577,9 +528,9 @@ static int move_to_new_page(struct page
- 	else
- 		rc = fallback_migrate_page(mapping, newpage, page);
- 
--	if (!rc) {
-+	if (!rc)
- 		remove_migration_ptes(page, newpage);
--	} else
-+	else
- 		newpage->mapping = NULL;
- 
- 	unlock_page(newpage);
---- ksm6/mm/rmap.c	2009-11-22 20:40:27.000000000 +0000
-+++ ksm7/mm/rmap.c	2009-11-22 20:40:46.000000000 +0000
-@@ -1199,3 +1199,82 @@ int try_to_munlock(struct page *page)
- 	else
- 		return try_to_unmap_file(page, TTU_MUNLOCK);
- }
-+
-+#ifdef CONFIG_MIGRATION
-+/*
-+ * rmap_walk() and its helpers rmap_walk_anon() and rmap_walk_file():
-+ * Called by migrate.c to remove migration ptes, but might be used more later.
-+ */
-+static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
-+		struct vm_area_struct *, unsigned long, void *), void *arg)
-+{
-+	struct anon_vma *anon_vma;
-+	struct vm_area_struct *vma;
-+	int ret = SWAP_AGAIN;
-+
-+	/*
-+	 * Note: remove_migration_ptes() cannot use page_lock_anon_vma()
-+	 * because that depends on page_mapped(); but not all its usages
-+	 * are holding mmap_sem, which also gave the necessary guarantee
-+	 * (that this anon_vma's slab has not already been destroyed).
-+	 * This needs to be reviewed later: avoiding page_lock_anon_vma()
-+	 * is risky, and currently limits the usefulness of rmap_walk().
-+	 */
-+	anon_vma = page_anon_vma(page);
-+	if (!anon_vma)
-+		return ret;
-+	spin_lock(&anon_vma->lock);
-+	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+		unsigned long address = vma_address(page, vma);
-+		if (address == -EFAULT)
-+			continue;
-+		ret = rmap_one(page, vma, address, arg);
-+		if (ret != SWAP_AGAIN)
-+			break;
-+	}
-+	spin_unlock(&anon_vma->lock);
-+	return ret;
-+}
-+
-+static int rmap_walk_file(struct page *page, int (*rmap_one)(struct page *,
-+		struct vm_area_struct *, unsigned long, void *), void *arg)
-+{
-+	struct address_space *mapping = page->mapping;
-+	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+	struct vm_area_struct *vma;
-+	struct prio_tree_iter iter;
-+	int ret = SWAP_AGAIN;
-+
-+	if (!mapping)
-+		return ret;
-+	spin_lock(&mapping->i_mmap_lock);
-+	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-+		unsigned long address = vma_address(page, vma);
-+		if (address == -EFAULT)
-+			continue;
-+		ret = rmap_one(page, vma, address, arg);
-+		if (ret != SWAP_AGAIN)
-+			break;
-+	}
-+	/*
-+	 * No nonlinear handling: being always shared, nonlinear vmas
-+	 * never contain migration ptes.  Decide what to do about this
-+	 * limitation to linear when we need rmap_walk() on nonlinear.
-+	 */
-+	spin_unlock(&mapping->i_mmap_lock);
-+	return ret;
-+}
-+
-+int rmap_walk(struct page *page, int (*rmap_one)(struct page *,
-+		struct vm_area_struct *, unsigned long, void *), void *arg)
-+{
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	if (unlikely(PageKsm(page)))
-+		return rmap_walk_ksm(page, rmap_one, arg);
-+	else if (PageAnon(page))
-+		return rmap_walk_anon(page, rmap_one, arg);
-+	else
-+		return rmap_walk_file(page, rmap_one, arg);
-+}
-+#endif /* CONFIG_MIGRATION */
+ 	addr[nr / BITS_PER_LONG] |= 1UL << (nr % BITS_PER_LONG);
