@@ -1,149 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbZKXKno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932731AbZKXKmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768AbZKXKno (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932762AbZKXKnn
+	id S932731AbZKXKmh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932701AbZKXKmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:43:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36511 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932741AbZKXKnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:43:41 -0500
-Message-ID: <4B0BB892.9080401@kernel.org>
-Date: Tue, 24 Nov 2009 02:42:26 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 24 Nov 2009 05:42:37 -0500
+Received: from stinky.trash.net ([213.144.137.162]:64918 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932695AbZKXKmg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 05:42:36 -0500
+Message-ID: <4B0BB89F.7030605@trash.net>
+Date: Tue, 24 Nov 2009 11:42:39 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-References: <4B0BA519.9090100@kernel.org>	<20091124183439J.fujita.tomonori@lab.ntt.co.jp>	<4B0BAC06.1000905@kernel.org> <20091124193031P.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091124193031P.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>
+Subject: Re: [PATCH 3/4] macvlan: implement bridge, VEPA and private mode
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-4-git-send-email-arnd@arndb.de>
+In-Reply-To: <1259024166-28158-4-git-send-email-arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Tue, 24 Nov 2009 01:48:54 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
+Arnd Bergmann wrote:
+> This allows each macvlan slave device to be in one
+> of three modes, depending on the use case:
 > 
->> FUJITA Tomonori wrote:
->>> On Tue, 24 Nov 2009 01:19:21 -0800
->>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> FUJITA Tomonori wrote:
->>>>> On Sat, 21 Nov 2009 20:24:52 -0800
->>>>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>>>
->>>>>> amd 64 systems that
->>>>>> 1. do not have  AGP
->>>>>> 2. do not have IOMMU
->>>>>> 3. mem > 4g
->>>>>> 4. BIOS do not allocate  correct gart in NB.
->>>>>> will leave them to use SWIOTLB forcely.
->>>>> Sorry, I forgot about this GART workaround.
->>>>>
->>>>>
->>>>>> Index: linux-2.6/arch/x86/kernel/pci-dma.c
->>>>>> ===================================================================
->>>>>> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
->>>>>> +++ linux-2.6/arch/x86/kernel/pci-dma.c
->>>>>> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
->>>>>>  	/* free the range so iommu could get some range less than 4G */
->>>>>>  	dma32_free_bootmem();
->>>>>>  #endif
->>>>>> +	if (!swiotlb_force)
->>>>>> +		gart_iommu_hole_init();
->>>>>> +
->>>>>>  	if (pci_swiotlb_init())
->>>>>>  		return;
->>>>>>  
->>>>>> -	gart_iommu_hole_init();
->>>>>> -
->>>>>>  	detect_calgary();
->>>>>>  
->>>>>>  	detect_intel_iommu();
->>>>> I prefer to detect all the IOMMU drivers in a consistent way;
->>>>> detecting only GART before swioltb doesn't look nice.
->>>>>
->>>>> As we did before, we could detect all the IOMMU driver before
->>>>> swiotlb. However, I think that it's better to simply change
->>>>> pci_swiotlb_init() not to steal the preallocate GART workaround memory.
->>>>>
->>>>> btw, initializing swiotlb before IOMMU detection is useful to GART
->>>>> too? If GART can't allocate the workaround memory, then the kernel
->>>>> panic now. We can use swiotlb instead in that case?
->>>>>
->>>>> =
->>>>> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>>>> Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
->>>>>
->>>>> swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
->>>>> dma32_reserv_bootmem allocates. We need to initialize swiotlb before
->>>>> dma32_free_bootmem().
->>>>>
->>>>> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>>>> ---
->>>>>  arch/x86/kernel/pci-dma.c |    6 +++++-
->>>>>  1 files changed, 5 insertions(+), 1 deletions(-)
->>>>>
->>>>> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
->>>>> index afcc58b..26fe2cd 100644
->>>>> --- a/arch/x86/kernel/pci-dma.c
->>>>> +++ b/arch/x86/kernel/pci-dma.c
->>>>> @@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
->>>>>  
->>>>>  void __init pci_iommu_alloc(void)
->>>>>  {
->>>>> +	int use_swiotlb;
->>>>> +
->>>>> +	use_swiotlb = pci_swiotlb_init();
->>>>> +
->>>>>  #ifdef CONFIG_X86_64
->>>>>  	/* free the range so iommu could get some range less than 4G */
->>>>>  	dma32_free_bootmem();
->>>>>  #endif
->>>>> -	if (pci_swiotlb_init())
->>>>> +	if (use_swiotlb)
->>>>>  		return;
->>>>>  
->>>>>  	gart_iommu_hole_init();
->>>> pci_swiotlb_init need be called after dma32_free_bootmem
->>>> otherwise it could fail for system with lots of memory and numa=off
->>> Why? swiotlb needs just 64MB (and some) in DMA32.
->>>
->>> swiotlb had been worked fine without that hack until 2.6.26?
->>>
->>> Only broken GART needs that hack (and I think that it's better to move
->>> that hack to GART code).
->> gart iommu workaround will allocate 64M by default.
->>
->> fail config: like system with 512g and sparse mem, and vmmap.
+> MACVLAN_PRIVATE:
+>   The device never communicates with any other device
+>   on the same upper_dev. This even includes frames
+>   coming back from a reflective relay, where supported
+>   by the adjacent bridge.
 > 
-> Well, some systems could fail but they can use swiotlb. If users
-> configures their systems not to use swioltb by boot option, it's fair
-> that systems don't work.
-i mean when 512g and numa = off, even swiotlb could have chance not to get that 64M ram
+> MACVLAN_VEPA:
+>   The new Virtual Ethernet Port Aggregator (VEPA) mode,
+>   we assume that the adjacent bridge returns all frames
+>   where both source and destination are local to the
+>   macvlan port, i.e. the bridge is set up as a reflective
+>   relay.
+>   Broadcast frames coming in from the upper_dev get
+>   flooded to all macvlan interfaces in VEPA mode.
+>   We never deliver any frames locally.
 > 
-> We are talking about a rare broken GART BIOS issue. I think that it's
-> much better to remove this hack completely. As VT-d does, we can use
-> swiotlb instead of this GART specific hack. I think that that's saner
-> approach to handle broken IOMMU hardware.
+> MACVLAN_BRIDGE:
+>   We provide the behavior of a simple bridge between
+>   different macvlan interfaces on the same port. Frames
+>   from one interface to another one get delivered directly
+>   and are not sent out externally. Broadcast frames get
+>   flooded to all other bridge ports and to the external
+>   interface, but when they come back from a reflective
+>   relay, we don't deliver them again.
+>   Since we know all the MAC addresses, the macvlan bridge
+>   mode does not require learning or STP like the bridge
+>   module does.
 
-your second patch could break swiotlb...
+This looks pretty nice. Some stylistic nitpicking below :)
 
-at GART iommu workaround : it is not rare. a lot of systems have this problem.
-and that workaround works well for several years.
-don't think user will like to use SWIOTLB instead of swiotlb.
+> diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
+> index a0dea23..b840b3a 100644
+> --- a/drivers/net/macvlan.c
+> +++ b/drivers/net/macvlan.c
+> @@ -29,9 +29,16 @@
+>  #include <linux/if_link.h>
+>  #include <linux/if_macvlan.h>
+>  #include <net/rtnetlink.h>
+> +#include <net/xfrm.h>
 
-that gart iommu hardware is not broken, just those BIOS guys just forget to program it.
+Do we really need this?
 
-here intel vt-d is different, it seems can not make it work just program some hardware register...
+> @@ -129,11 +137,14 @@ static inline void macvlan_count_rx(const struct macvlan_dev *vlan, int length,
+>  }
+>  
+>  static int macvlan_broadcast_one(struct sk_buff *skb, struct net_device *dev,
+> -				 const struct ethhdr *eth)
+> +				 const struct ethhdr *eth, int local)
 
-please check my v2 patch, to see if it breaks your setup.
+bool local?
 
-YH
+>  {
+>  	if (!skb)
+>  		return NET_RX_DROP;
+>  
+> +	if (local)
+> +		return dev_forward_skb(dev, skb);
+> +
+>  	skb->dev = dev;
+>  	if (!compare_ether_addr_64bits(eth->h_dest,
+>  				       dev->broadcast))
+> @@ -145,7 +156,9 @@ static int macvlan_broadcast_one(struct sk_buff *skb, struct net_device *dev,
+>  }
+>  
+>  static void macvlan_broadcast(struct sk_buff *skb,
+> -			      const struct macvlan_port *port)
+> +			      const struct macvlan_port *port,
+> +			      struct net_device *src,
+> +			      enum macvlan_mode mode)
+>  {
+>  	const struct ethhdr *eth = eth_hdr(skb);
+>  	const struct macvlan_dev *vlan;
+> @@ -159,8 +172,12 @@ static void macvlan_broadcast(struct sk_buff *skb,
+>  
+>  	for (i = 0; i < MACVLAN_HASH_SIZE; i++) {
+>  		hlist_for_each_entry_rcu(vlan, n, &port->vlan_hash[i], hlist) {
+> +			if ((vlan->dev == src) || !(vlan->mode & mode))
 
+Please remove those unnecessary parentheses around the
+device comparison.
+
+> @@ -173,6 +190,7 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
+>  	const struct ethhdr *eth = eth_hdr(skb);
+>  	const struct macvlan_port *port;
+>  	const struct macvlan_dev *vlan;
+> +	const struct macvlan_dev *src;
+>  	struct net_device *dev;
+>  
+>  	port = rcu_dereference(skb->dev->macvlan_port);
+> @@ -180,7 +198,20 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
+>  		return skb;
+>  
+>  	if (is_multicast_ether_addr(eth->h_dest)) {
+> -		macvlan_broadcast(skb, port);
+> +		src = macvlan_hash_lookup(port, eth->h_source);
+> +		if (!src)
+> +			/* frame comes from an external address */
+> +			macvlan_broadcast(skb, port, NULL, MACVLAN_MODE_PRIVATE
+> +				| MACVLAN_MODE_VEPA | MACVLAN_MODE_BRIDGE);
+
+The '|' should go on the first line.
+
+> +		else if (src->mode == MACVLAN_MODE_VEPA)
+> +			/* flood to everyone except source */
+> +			macvlan_broadcast(skb, port, src->dev,
+> +				MACVLAN_MODE_VEPA | MACVLAN_MODE_BRIDGE);
+> +		else if (src->mode == MACVLAN_MODE_BRIDGE)
+> +			/* flood only to VEPA ports, bridge ports
+> +			   already saw the frame */
+
+Multi-line comments should begin every line with '*'.
+
+> +			macvlan_broadcast(skb, port, src->dev,
+> +				MACVLAN_MODE_VEPA);
+
+Please align the mode values (in all cases above) to the arguments
+on the line above.
+
+>  		return skb;
+>  	}
+>  
+> @@ -203,18 +234,46 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
+>  	return NULL;
+>  }
+>  
+> +static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
+> +{
+> +	const struct macvlan_dev *vlan = netdev_priv(dev);
+> +	const struct macvlan_port *port = vlan->port;
+> +	const struct macvlan_dev *dest;
+> +
+> +	if (vlan->mode == MACVLAN_MODE_BRIDGE) {
+> +		const struct ethhdr *eth = (void *)skb->data;
+
+eth_hdr()?
+
+> +
+> +		/* send to other bridge ports directly */
+> +		if (is_multicast_ether_addr(eth->h_dest)) {
+> +			macvlan_broadcast(skb, port, dev, MACVLAN_MODE_BRIDGE);
+> +			goto xmit_world;
+> +		}
+> +
+> +		dest = macvlan_hash_lookup(port, eth->h_dest);
+> +		if (dest && dest->mode == MACVLAN_MODE_BRIDGE) {
+> +			int length = skb->len + ETH_HLEN;
+
+unsigned int for length values please.
+
+> +			int ret = dev_forward_skb(dest->dev, skb);
+> +			macvlan_count_rx(dest, length,
+> +					 likely(ret == NET_RX_SUCCESS), 0);
+> +
+> +			return NET_XMIT_SUCCESS;
+> +		}
+> +	}
+> +
+> +xmit_world:
+> +	skb->dev = vlan->lowerdev;
+> +	return dev_queue_xmit(skb);
+> +}
