@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757765AbZKXBPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZKXBTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757765AbZKXBPr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 20:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbZKXBPq
+	id S1757596AbZKXBTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 20:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZKXBTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 20:15:46 -0500
-Received: from mail1.radix.net ([207.192.128.31]:46693 "EHLO mail1.radix.net"
+	Mon, 23 Nov 2009 20:19:55 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:47282 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757579AbZKXBPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 20:15:45 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <m3einork1o.fsf@intrepid.localdomain>
-References: <BDRae8rZjFB@christoph>  <m3einork1o.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Mon, 23 Nov 2009 20:14:35 -0500
-Message-Id: <1259025275.3871.55.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752241AbZKXBTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 20:19:54 -0500
+Date: Tue, 24 Nov 2009 01:19:58 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Florian Fainelli <florian@openwrt.org>, linux-mips@linux-mips.org,
+       Manuel Lauss <manuel.lauss@googlemail.com>
+Subject: Re: linux-next: manual merge of the mips tree with the net-current
+	tree
+Message-ID: <20091124011958.GA8105@linux-mips.org>
+References: <20091124113717.c5d86d41.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124113717.c5d86d41.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-23 at 22:46 +0100, Krzysztof Halasa wrote:
-> lirc@bartelmus.de (Christoph Bartelmus) writes:
+On Tue, Nov 24, 2009 at 11:37:17AM +1100, Stephen Rothwell wrote:
+
+> Hi Ralf,
 > 
-> >> I think we shouldn't at this time worry about IR transmitters.
-> >
-> > Sorry, but I have to disagree strongly.
-> > Any interface without transmitter support would be absolutely unacceptable
-> > for many LIRC users, including myself.
+> Today's linux-next merge of the mips tree got a conflict in
+> drivers/net/au1000_eth.c between commit
+> 63edaf647607795a065e6956a79c47f500dc8447 ("Au1x00: fix crash when trying
+> register_netdev()") from the net-current tree and commit
+> 6cdbc95856e7f4ab4e7b2f2bdab5c3844537ad83 ("NET: au1000-eth: convert to
+> platform_driver model") from the mips tree.
 > 
-> I don't say don't use a transmitter.
-> I say the transmitter is not an input device, they are completely
-> independent functions. I can't see any reason to try and fit both in the
-> same interface - can you?
+> It looks to me that the mips tree change supercedes the net-current one
+> (since it moves the register_netdev() call much later), so I just used
+> this file from the mips tree.
 
-The underlying hardware need not be completely independent.
+I agree.  David, can you just drop the net-current patch then?  This fix
+is still needed for -stable however.
 
-For example, the CX2584[0123], CX2388[578], CX23418, and CX2310[012]
-chips have IR hardware that shares a common timing source, interrupt
-line, interrupt status register, etc, between IR Rx and Tx.  They can
-also do things like loopback of Tx to Rx.
-
-That said, an underlying hardware implementation can be split up to user
-space with separate interfaces Tx and Rx.  The underlying driver module
-would have to manage the dependencies.  I would guess that would be
-easier for driver modules, if the userspace interfaces were designed
-with such combined IR Tx/Rx hardware in mind.
-
-Regards,
-Andy
-
+  Ralf
