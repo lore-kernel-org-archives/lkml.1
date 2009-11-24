@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbZKXSWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbZKXSVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933862AbZKXSWD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:22:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZKXSWA
+	id S933830AbZKXSVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZKXSVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:22:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39874 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932929AbZKXSV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:21:58 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/kcPcKfGvk2Ob6IniuNFtINEnC6NJcG53pCWzQLs
-	tYgnBTWDqE0IN3
-Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259085280.4531.1730.camel@laptop>
-References: <1258891664.14325.30.camel@marge.simson.net>
-	 <1259070683.4531.1476.camel@laptop>
-	 <1259082449.15249.90.camel@marge.simson.net>
-	 <1259084140.4531.1710.camel@laptop>  <1259085280.4531.1730.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 24 Nov 2009 19:21:41 +0100
-Message-Id: <1259086901.15249.121.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Tue, 24 Nov 2009 13:21:54 -0500
+Received: from mail.klingt.org ([86.59.21.178]:60522 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933680AbZKXSVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:21:53 -0500
+Message-ID: <4B0C2445.2000008@klingt.org>
+Date: Tue, 24 Nov 2009 19:21:57 +0100
+From: Tim Blechmann <tim@klingt.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6pre) Gecko/20091121 Lightning/1.0pre Shredder/3.0.1pre
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] branch hint tweaks
+References: <4B0BBB83.2020604@klingt.org> <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
+In-Reply-To: <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig90376EF18A6C81F43926C3D9"
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [86.59.21.178]); Tue, 24 Nov 2009 19:21:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 18:54 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 18:35 +0100, Peter Zijlstra wrote:
-> > On Tue, 2009-11-24 at 18:07 +0100, Mike Galbraith wrote:
-> > > >       if (p->sched_class->task_new) {
-> > > >               /* can detect migration through: task_cpu(p) != smp_processor_id() */
-> > > 
-> > > What if the parent was migrated before we got here?
-> > 
-> > Well, the only case it really matters for is the child_runs_first crap,
-> > which is basically broken on SMP anyway, so I don't think we care too
-> > much if we race here.
-> > 
-> > Unless I missed some detail that is ;-)
-> 
-> 
-> Also, we're running all this from the parent context, and we have
-> preemption disabled, we're not going anywhere.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig90376EF18A6C81F43926C3D9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-In sched_fork() and wake_up_new_process(), but in between?
+> Did you run profiling tests again after making these changes to see if
+> they had any effect?  likely() and unlikely() are only hints.  GCC
+> doesn't have to follow them, or it could be broken in recent GCC
+> versions.
 
-	-Mike
+i know, the compiler doesn't have to follow the hint ... but with the
+likely/unlikely profiling, not the execution time is profiled, but
+whether the branch hint is pointing to the right direction on my machine
+=2E.. if the assembly is actually affected does probably depend on the
+compiler version, instruction set, cpu tuning ...
 
+tim
+
+--=20
+tim@klingt.org
+http://tim.klingt.org
+
+The aim of education is the knowledge, not of facts, but of values
+  William S. Burroughs
+
+
+--------------enig90376EF18A6C81F43926C3D9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksMJEUACgkQdL+4qsZfVsu0lgCdFIt7HZA/0jit0d5b0LBtYdsY
+eNMAn3tN28GRyZZrR+uci4a7LQFCGiSh
+=zSc2
+-----END PGP SIGNATURE-----
+
+--------------enig90376EF18A6C81F43926C3D9--
