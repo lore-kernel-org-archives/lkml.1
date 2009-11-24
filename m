@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZKXFgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZKXFRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbZKXFgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 00:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZKXFgm
+	id S1752241AbZKXFRq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 00:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZKXFRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 00:36:42 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43645 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbZKXFgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 00:36:41 -0500
-Subject: Re: [PATCH 7/8] spi_mpc8xxx: Turn qe_mode into flags
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <3E303C4F-CE29-470F-B34A-3413F31BC23C@kernel.crashing.org>
-References: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
-	 <20091012164925.GG4578@oksana.dev.rtsoft.ru>
-	 <3E303C4F-CE29-470F-B34A-3413F31BC23C@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 16:03:36 +1100
-Message-ID: <1259039016.16367.118.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Nov 2009 00:17:45 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:53198 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbZKXFRo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 00:17:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rfzwJdYzMBW/I8mWiahVWKn8mWrdYwii3nmozzuIWdMgGJ5BnykFi3QUfW/XuQU1oG
+         oUdeyf/4H7boTMhxnoheEdRdXawsF1S1WeTsI/6GTdqFxf2FleU5nIi0A2nogSWCLR6n
+         vKWui+2+BxOpTl6RgM4k8Q0T6xXoRJ5B6LM9Y=
+MIME-Version: 1.0
+In-Reply-To: <1258968980.2697.9.camel@ppwaskie-mobl2>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+	 <1258968980.2697.9.camel@ppwaskie-mobl2>
+Date: Tue, 24 Nov 2009 13:17:50 +0800
+Message-ID: <2674af740911232117l275e933yaca3f1b8c1207bce@mail.gmail.com>
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance 
+	hints
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-05 at 07:47 -0600, Kumar Gala wrote:
-> On Oct 12, 2009, at 11:49 AM, Anton Vorontsov wrote:
-> 
-> > Soon there will be more flags introduced in subsequent patches, so
-> > let's turn qe_mode into flags.
-> >
-> > Also introduce mpc8xxx_spi_strmode() and print current SPI mode.
-> >
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-> > ---
-> > drivers/spi/spi_mpc8xxx.c   |   30 +++++++++++++++++++-----------
-> > include/linux/fsl_devices.h |    2 +-
-> > 2 files changed, 20 insertions(+), 12 deletions(-)
-> 
-> applied to next
+[snip]
+>>
+>> 1) I think you should consider CONFIG_CPUMASK_OFFSTACK which will affect
+>>    node_affinity.
+>> 2) It seems like this patch can't work with SPARSE_IRQ.
+>
+> This mechanism isn't going to be used by any internal kernel mechanism
+> for determining interrupt placement or operation.  It's purely something
+> that either a driver can modify, or external script (through /proc),
+> that irqbalance will make use of.  If irqbalance isn't running, or the
+> current version of irqbalance doesn't support reading node_affinity,
+> then it won't affect the system's operation.
+>
+> If irqbalance does support it, it'll read whatever the supplied mask is,
+> and then will try and balance interrupts within that mask.  It will bail
+> if the mask is invalid, or won't apply to the running system, just like
+> how putting a bogus mask into smp_affinity is ignored.
+>
+> If there's something I'm missing beyond this with the two suggestions
+> you've made (I looked into those two parameters and tried to draw
+> conclusions), please let me know.
 
-This patch breaks my 6xx config:
+My two suggestions are both about your adding node_affinity. Before you can
+use this element, you must initialise it firstly. You can refer how
+irq_desc::affinity
+is used in function alloc_desc_masks().
+include/linux/irq.h:
+static inline bool alloc_desc_masks(struct irq_desc *desc, int node,
+							bool boot)
+{
+	gfp_t gfp = GFP_ATOMIC;
 
-/home/benh/linux-powerpc-test/arch/powerpc/platforms/83xx/mpc832x_rdb.c: In function ‘of_fsl_spi_probe’:
-/home/benh/linux-powerpc-test/arch/powerpc/platforms/83xx/mpc832x_rdb.c:77: error: ‘struct fsl_spi_platform_data’ has no member named ‘qe_
+	if (boot)
+		gfp = GFP_NOWAIT;
 
-The reason is that the mpc832x_rdb.c code still uses the legacy probing
-method. The fix is not totally trivial as the new flags are defined inside
-spi_mpc8xxx.c so either the flags need to be moved to fsl_devices.h or
-mpc832x_rdb.c needs to be converted to new style stuff.
+#ifdef CONFIG_CPUMASK_OFFSTACK
+	if (!alloc_cpumask_var_node(&desc->affinity, gfp, node))
+		return false;
 
-I'll commit (will be up later today in my next branch) a fix moving the
-flags over for now so the tree doesn't break building.
+#ifdef CONFIG_GENERIC_PENDING_IRQ
+	if (!alloc_cpumask_var_node(&desc->pending_mask, gfp, node)) {
+		free_cpumask_var(desc->affinity);
+		return false;
+	}
+#endif
+#endif
+	return true;
+}
 
-If you are going to keep the flags in the .c file you probably also want
-to remove the platform device definition from fsl_devices.h anyways as
-there's no point exposing to the world a structure with a "flags" member
-if the definition of those flags isn't also exposed.
+Thanks,
+Yong
 
-Cheers,
-Ben.
-
+>
+> Cheers,
+> -PJ Waskiewicz
+>
+>
