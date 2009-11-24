@@ -1,83 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbZKXQUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbZKXQXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933473AbZKXQUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbZKXQUT
+	id S1758113AbZKXQXK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbZKXQXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:20:19 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51570 "EHLO e6.ny.us.ibm.com"
+	Tue, 24 Nov 2009 11:23:09 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58835 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758095AbZKXQUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:20:18 -0500
-Message-ID: <4B0C07C2.7090608@us.ibm.com>
-Date: Tue, 24 Nov 2009 08:20:18 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1753306AbZKXQXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:23:08 -0500
+Date: Tue, 24 Nov 2009 08:23:11 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       cl@linux-foundation.org, mpm@selenic.com,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091124162311.GA8679@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091118181202.GA12180@linux.vnet.ibm.com> <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
 MIME-Version: 1.0
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Michel Lespinasse <walken@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/3] perf bench: Add wrappers for atomic operation of
- GCC
-References: <20091118033741.GB23808@google.com> <1259073555-7312-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <1259073555-7312-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259002800.5630.1.camel@penberg-laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hitoshi Mitake wrote:
-> This patch adds new file util/include/asm/atomic.h.
-> It contains wrappers for atomic operation of GCC,
-> I think this is useful not only for 'perf bench',
-> but also for entire of perf command.
+On Mon, Nov 23, 2009 at 09:00:00PM +0200, Pekka Enberg wrote:
+> Hi Peter,
 > 
-> This patch adds new typedefed struct 'atomic_t'.
-> I know new typedef is not a thing to welcome,
-> but I believe that atomic_t is worth to typedef
-> because it is much general.
+> On Fri, 2009-11-20 at 16:09 +0100, Peter Zijlstra wrote:
+> > > Uh, ok, so apparently I was right after all. There's a comment in 
+> > > free_block() above the slab_destroy() call that refers to the comment 
+> > > above alloc_slabmgmt() function definition which explains it all.
+> > > 
+> > > Long story short: ->slab_cachep never points to the same kmalloc cache 
+> > > we're allocating or freeing from. Where do we need to put the 
+> > > spin_lock_nested() annotation? Would it be enough to just use it in 
+> > > cache_free_alien() for alien->lock or do we need it in 
+> > > cache_flusharray() as well?
+> > 
+> > You'd have to somehow push the nested state down from the
+> > kmem_cache_free() call in slab_destroy() to all nc->lock sites below.
 > 
-> I borrowed this file from Darren Hart's futextest.
-> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
-
-Hi Hitoshi-san,
-
-I took the gcc built-ins approach for futextest.h because I didn't want 
-the hassle of maintaining per-arch asm files. Since perf is already in 
-the kernel source, I wonder if you could leverage the already existing 
-kernel atomic code? See Documentation/atomic_ops.txt.
-
+> That turns out to be _very_ hard. How about something like the following
+> untested patch which delays slab_destroy() while we're under nc->lock.
 > 
-> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: Michel Lespinasse <walken@google.com>
-> Cc: Darren Hart <dvhltc@us.ibm.com>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  tools/perf/util/include/asm/atomic.h |   91 ++++++++++++++++++++++++++++++++++
->  1 files changed, 91 insertions(+), 0 deletions(-)
->  create mode 100644 tools/perf/util/include/asm/atomic.h
+> 			Pekka
+
+Preliminary tests look good!  The test was a ten-hour rcutorture run on
+an 8-CPU Power system with a half-second delay between randomly chosen
+CPU-hotplug operations.  No lockdep warnings.  ;-)
+
+Will keep hammering on it.
+
+							Thanx, Paul
+
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7dfa481..6f522e3 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -316,7 +316,7 @@ struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
+>  static int drain_freelist(struct kmem_cache *cache,
+>  			struct kmem_list3 *l3, int tofree);
+>  static void free_block(struct kmem_cache *cachep, void **objpp, int len,
+> -			int node);
+> +			int node, struct list_head *to_destroy);
+>  static int enable_cpucache(struct kmem_cache *cachep, gfp_t gfp);
+>  static void cache_reap(struct work_struct *unused);
 > 
-> diff --git a/tools/perf/util/include/asm/atomic.h b/tools/perf/util/include/asm/atomic.h
-> new file mode 100644
-> index 0000000..1cef451
-> --- /dev/null
-> +++ b/tools/perf/util/include/asm/atomic.h
-> @@ -0,0 +1,91 @@
-> +/******************************************************************************
-> + *
-> + *   Copyright B) International Business Machines  Corp., 2009
-
-B) should be © (or (C) at the very least), I'm guessing character set issue?
-
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+> @@ -1002,7 +1002,8 @@ static void free_alien_cache(struct array_cache **ac_ptr)
+>  }
+> 
+>  static void __drain_alien_cache(struct kmem_cache *cachep,
+> -				struct array_cache *ac, int node)
+> +				struct array_cache *ac, int node,
+> +				struct list_head *to_destroy)
+>  {
+>  	struct kmem_list3 *rl3 = cachep->nodelists[node];
+> 
+> @@ -1016,12 +1017,22 @@ static void __drain_alien_cache(struct kmem_cache *cachep,
+>  		if (rl3->shared)
+>  			transfer_objects(rl3->shared, ac, ac->limit);
+> 
+> -		free_block(cachep, ac->entry, ac->avail, node);
+> +		free_block(cachep, ac->entry, ac->avail, node, to_destroy);
+>  		ac->avail = 0;
+>  		spin_unlock(&rl3->list_lock);
+>  	}
+>  }
+> 
+> +static void slab_destroy(struct kmem_cache *, struct slab *);
+> +
+> +static void destroy_slabs(struct kmem_cache *cache, struct list_head *to_destroy)
+> +{
+> +	struct slab *slab, *tmp;
+> +
+> +	list_for_each_entry_safe(slab, tmp, to_destroy, list)
+> +		slab_destroy(cache, slab);
+> +}
+> +
+>  /*
+>   * Called from cache_reap() to regularly drain alien caches round robin.
+>   */
+> @@ -1033,8 +1044,11 @@ static void reap_alien(struct kmem_cache *cachep, struct kmem_list3 *l3)
+>  		struct array_cache *ac = l3->alien[node];
+> 
+>  		if (ac && ac->avail && spin_trylock_irq(&ac->lock)) {
+> -			__drain_alien_cache(cachep, ac, node);
+> +			LIST_HEAD(to_destroy);
+> +
+> +			__drain_alien_cache(cachep, ac, node, &to_destroy);
+>  			spin_unlock_irq(&ac->lock);
+> +			destroy_slabs(cachep, &to_destroy);
+>  		}
+>  	}
+>  }
+> @@ -1049,9 +1063,12 @@ static void drain_alien_cache(struct kmem_cache *cachep,
+>  	for_each_online_node(i) {
+>  		ac = alien[i];
+>  		if (ac) {
+> +			LIST_HEAD(to_destroy);
+> +
+>  			spin_lock_irqsave(&ac->lock, flags);
+> -			__drain_alien_cache(cachep, ac, i);
+> +			__drain_alien_cache(cachep, ac, i, &to_destroy);
+>  			spin_unlock_irqrestore(&ac->lock, flags);
+> +			destroy_slabs(cachep, &to_destroy);
+>  		}
+>  	}
+>  }
+> @@ -1076,17 +1093,20 @@ static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
+>  	l3 = cachep->nodelists[node];
+>  	STATS_INC_NODEFREES(cachep);
+>  	if (l3->alien && l3->alien[nodeid]) {
+> +		LIST_HEAD(to_destroy);
+> +
+>  		alien = l3->alien[nodeid];
+>  		spin_lock(&alien->lock);
+>  		if (unlikely(alien->avail == alien->limit)) {
+>  			STATS_INC_ACOVERFLOW(cachep);
+> -			__drain_alien_cache(cachep, alien, nodeid);
+> +			__drain_alien_cache(cachep, alien, nodeid, &to_destroy);
+>  		}
+>  		alien->entry[alien->avail++] = objp;
+>  		spin_unlock(&alien->lock);
+> +		destroy_slabs(cachep, &to_destroy);
+>  	} else {
+>  		spin_lock(&(cachep->nodelists[nodeid])->list_lock);
+> -		free_block(cachep, &objp, 1, nodeid);
+> +		free_block(cachep, &objp, 1, nodeid, NULL);
+>  		spin_unlock(&(cachep->nodelists[nodeid])->list_lock);
+>  	}
+>  	return 1;
+> @@ -1118,7 +1138,7 @@ static void __cpuinit cpuup_canceled(long cpu)
+>  		/* Free limit for this kmem_list3 */
+>  		l3->free_limit -= cachep->batchcount;
+>  		if (nc)
+> -			free_block(cachep, nc->entry, nc->avail, node);
+> +			free_block(cachep, nc->entry, nc->avail, node, NULL);
+> 
+>  		if (!cpus_empty(*mask)) {
+>  			spin_unlock_irq(&l3->list_lock);
+> @@ -1128,7 +1148,7 @@ static void __cpuinit cpuup_canceled(long cpu)
+>  		shared = l3->shared;
+>  		if (shared) {
+>  			free_block(cachep, shared->entry,
+> -				   shared->avail, node);
+> +				   shared->avail, node, NULL);
+>  			l3->shared = NULL;
+>  		}
+> 
+> @@ -2402,7 +2422,7 @@ static void do_drain(void *arg)
+>  	check_irq_off();
+>  	ac = cpu_cache_get(cachep);
+>  	spin_lock(&cachep->nodelists[node]->list_lock);
+> -	free_block(cachep, ac->entry, ac->avail, node);
+> +	free_block(cachep, ac->entry, ac->avail, node, NULL);
+>  	spin_unlock(&cachep->nodelists[node]->list_lock);
+>  	ac->avail = 0;
+>  }
+> @@ -3410,7 +3430,7 @@ __cache_alloc(struct kmem_cache *cachep, gfp_t flags, void *caller)
+>   * Caller needs to acquire correct kmem_list's list_lock
+>   */
+>  static void free_block(struct kmem_cache *cachep, void **objpp, int nr_objects,
+> -		       int node)
+> +		       int node, struct list_head *to_destroy)
+>  {
+>  	int i;
+>  	struct kmem_list3 *l3;
+> @@ -3439,7 +3459,10 @@ static void free_block(struct kmem_cache *cachep, void **objpp, int nr_objects,
+>  				 * a different cache, refer to comments before
+>  				 * alloc_slabmgmt.
+>  				 */
+> -				slab_destroy(cachep, slabp);
+> +				if (to_destroy)
+> +					list_add(&slabp->list, to_destroy);
+> +				else
+> +					slab_destroy(cachep, slabp);
+>  			} else {
+>  				list_add(&slabp->list, &l3->slabs_free);
+>  			}
+> @@ -3479,7 +3502,7 @@ static void cache_flusharray(struct kmem_cache *cachep, struct array_cache *ac)
+>  		}
+>  	}
+> 
+> -	free_block(cachep, ac->entry, batchcount, node);
+> +	free_block(cachep, ac->entry, batchcount, node, NULL);
+>  free_done:
+>  #if STATS
+>  	{
+> @@ -3822,7 +3845,7 @@ static int alloc_kmemlist(struct kmem_cache *cachep, gfp_t gfp)
+> 
+>  			if (shared)
+>  				free_block(cachep, shared->entry,
+> -						shared->avail, node);
+> +						shared->avail, node, NULL);
+> 
+>  			l3->shared = new_shared;
+>  			if (!l3->alien) {
+> @@ -3925,7 +3948,7 @@ static int do_tune_cpucache(struct kmem_cache *cachep, int limit,
+>  		if (!ccold)
+>  			continue;
+>  		spin_lock_irq(&cachep->nodelists[cpu_to_node(i)]->list_lock);
+> -		free_block(cachep, ccold->entry, ccold->avail, cpu_to_node(i));
+> +		free_block(cachep, ccold->entry, ccold->avail, cpu_to_node(i), NULL);
+>  		spin_unlock_irq(&cachep->nodelists[cpu_to_node(i)]->list_lock);
+>  		kfree(ccold);
+>  	}
+> @@ -4007,7 +4030,7 @@ void drain_array(struct kmem_cache *cachep, struct kmem_list3 *l3,
+>  			tofree = force ? ac->avail : (ac->limit + 4) / 5;
+>  			if (tofree > ac->avail)
+>  				tofree = (ac->avail + 1) / 2;
+> -			free_block(cachep, ac->entry, tofree, node);
+> +			free_block(cachep, ac->entry, tofree, node, NULL);
+>  			ac->avail -= tofree;
+>  			memmove(ac->entry, &(ac->entry[tofree]),
+>  				sizeof(void *) * ac->avail);
+> 
+> 
