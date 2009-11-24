@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbZKXJ1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbZKXJ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbZKXJ1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZKXJ1x
+	id S932472AbZKXJ2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbZKXJ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:27:53 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.31.27]:47026 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932340AbZKXJ1w (ORCPT
+	Tue, 24 Nov 2009 04:28:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:5477 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932455AbZKXJ2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:27:52 -0500
-Message-ID: <4B0BA71B.8040800@ladisch.de>
-Date: Tue, 24 Nov 2009 10:27:55 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 24 Nov 2009 04:28:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gbfJrxV7M+eOm+WtyoPas8cFqqnwspK/WqGJ/aQgEeje2Sx1ugQhzeCruIzR1K4MgQ
+         WzYwNsHJdoI2YCzOtTE4Cyb37WEp8YCwhbYZy85xVb8tUk+GTPIWfZFwjrV/+wYHPyoP
+         GujEp0hhWiMK/vOZcR86DEvxCRBjO2GPV5Muo=
+Message-ID: <4B0BA725.2050604@tuffmail.co.uk>
+Date: Tue, 24 Nov 2009 09:28:05 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Monty Montgomery <xiphmont@gmail.com>
-CC: Linux kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Der Mickster <retroeffective@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: PATCH: fix multiple eMagic 6|2m regressions introduced in 2.6.27
-References: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
-In-Reply-To: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Alex Chiang <achiang@hp.com>,
+       Tony Luck <tony.luck@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Mike Frysinger <vapier.adi@gmail.com>, greg@kroah.com,
+       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
+       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, deller@gmx.de,
+       jejb@parisc-linux.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
+Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the
+ kernel (__ksymtab)
+References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>	 <4B072E31.4000906@tuffmail.co.uk> <20091123195320.GD26810@ldl.fc.hp.com>	 <200911241127.18013.rusty@rustcorp.com.au> <1259041182.2433.945.camel@mulgrave.site>
+In-Reply-To: <1259041182.2433.945.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Monty Montgomery wrote:
-> The eMagic driver code cleanup from 2.6.26->2.6.27 introduces three
-> new bugs that prevent the emi62 usb audio device from working.  2.6.31
-> continues to be identically broken. Note that this is the 6|2, not the
-> 2|6; the 2|6 works properly. The 6|2 does not function at all and will
-> oops the kernel when plugged in.
+James Bottomley wrote:
+> On Tue, 2009-11-24 at 11:27 +1030, Rusty Russell wrote:
+>   
+>> On Tue, 24 Nov 2009 06:23:20 am Alex Chiang wrote:
+>>     
+>>> Hi Alan, Rusty,
+>>>       
+>> Hi Alex,
+>>
+>>     
+>>> In the meantime, while Alan is deciding the proper way to fix
+>>> this, would it be possible to drop the offending patch series
+>>> from linux-next?
+>>>       
+>> Done.  That takes the pressure off Alan, and makes sure he has time to get
+>> it right.
+>>     
+>
+> That probably suits us on parisc too.  I just checked out our build in
+> linux-next: we don't pass __modpost ... it looks like we have all the
+> module symbols undefined.  Will investigate more.
+>
+> James
+>   
 
-This has been discussed in this thread:
-http://lists.linuxaudio.org/pipermail/linux-audio-user/2009-November/064931.html
+I think parisc wants P'printk where ia64 uses @fptr(printk).
 
-> Bug 1: a mirror of the loop termination bug that was fixed in the 2|6
-> driver last January, causing a similar oops as the 2|6 did in 2.6.27.
+It may also need ".import printk,code" or similar.
 
-My patch for this has already been picked up by akpm.
+Thanks
+Alan
 
-> Bug 2: the firmware load loop that is supposed to load the firmware
-> section that sits in the device's RAM mistakenly uses
-> ANCHOR_LOAD_EXTERNAL instead of ANCHOR_LOAD_INTERNAL, a bug from
-> copy/pasting out of the preceeding loop.  This is clearly a regression
-> from the 2.6.26 source which uses the proper target.
-> 
-> Bug 3: Fixing the first two problems prevents the oops and allows the
-> USB stack to successfully allocate an endpoint without crashing the
-> eMagic.  However, the eMagic crashes and lights its red INTERNAL ERROR
-> led later as it tries to start up.  This problem can be traced to the
-> linux/firmware/emi62/bistream.HEX file, which is loading different
-> FPGA firmware as compared to the driver pre-2.6.27.
-> [...]
-> Due to the size of the patch (the replacement firmware file is 250kB),
-> I've not attached it but rather stashed it at:
-> 
-> http://web.mit.edu/xiphmont/Public/emi/emi62.patch
-
-I don't have much time; David, please handle this.
-
-
-Clemens
