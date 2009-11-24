@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934211AbZKXVOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbZKXVI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934211AbZKXVOv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933991AbZKXVI1
+	id S933982AbZKXVI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933934AbZKXVIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:27 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44552 "EHLO
+	Tue, 24 Nov 2009 16:08:19 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44545 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933928AbZKXVIU (ORCPT
+	with ESMTP id S933381AbZKXVIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:20 -0500
+	Tue, 24 Nov 2009 16:08:18 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Christian Pellegrin <chripell@fsfe.org>,
-       Chris Verges <chrisv@cyberswitching.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>, rtc-linux@googlegroups.com
-Subject: [PATCH 31/38] move pcf2123_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:26 +0100
-Message-Id: <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Kumar Gala <galak@kernel.crashing.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       devicetree-discuss@lists.ozlabs.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net
+Subject: [PATCH 32/38] don't use __exit_p to wrap plat_mpc8xxx_spi_remove
+Date: Tue, 24 Nov 2009 22:07:27 +0100
+Message-Id: <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -52,6 +54,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -63,34 +66,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function pcf2123_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+The function plat_mpc8xxx_spi_remove is defined using __devexit, so don't
+use __exit_p but __devexit_p to wrap it.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christian Pellegrin <chripell@fsfe.org>
-Cc: Chris Verges <chrisv@cyberswitching.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: linux-kernel@vger.kernel.org
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: rtc-linux@googlegroups.com
+Cc: devicetree-discuss@lists.ozlabs.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: spi-devel-general@lists.sourceforge.net
 ---
- drivers/rtc/rtc-pcf2123.c |    2 +-
+ drivers/spi/spi_mpc8xxx.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/rtc/rtc-pcf2123.c b/drivers/rtc/rtc-pcf2123.c
-index e75df9d..2ceb365 100644
---- a/drivers/rtc/rtc-pcf2123.c
-+++ b/drivers/rtc/rtc-pcf2123.c
-@@ -315,7 +315,7 @@ kfree_exit:
- 	return ret;
- }
- 
--static int pcf2123_remove(struct spi_device *spi)
-+static int __devexit pcf2123_remove(struct spi_device *spi)
- {
- 	struct pcf2123_plat_data *pdata = spi->dev.platform_data;
- 	int i;
+diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+index 0fd0ec4..1d98be9 100644
+--- a/drivers/spi/spi_mpc8xxx.c
++++ b/drivers/spi/spi_mpc8xxx.c
+@@ -900,7 +900,7 @@ static int __devexit plat_mpc8xxx_spi_remove(struct platform_device *pdev)
+ MODULE_ALIAS("platform:mpc8xxx_spi");
+ static struct platform_driver mpc8xxx_spi_driver = {
+ 	.probe = plat_mpc8xxx_spi_probe,
+-	.remove = __exit_p(plat_mpc8xxx_spi_remove),
++	.remove = __devexit_p(plat_mpc8xxx_spi_remove),
+ 	.driver = {
+ 		.name = "mpc8xxx_spi",
+ 		.owner = THIS_MODULE,
 -- 
 1.6.5.2
 
