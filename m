@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933528AbZKXRYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbZKXR2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933528AbZKXRYl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932663AbZKXRYk
+	id S933601AbZKXR2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933501AbZKXR2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:24:40 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:63968 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932561AbZKXRYj (ORCPT
+	Tue, 24 Nov 2009 12:28:34 -0500
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:48124 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933481AbZKXR2d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:24:39 -0500
+	Tue, 24 Nov 2009 12:28:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=UOYIO1ERinbc6SXQUJ7CVQplNSdiRFsjo3wlQfS6lVfZEH0h9Kd0KVSMU+/B4AFHxv
-         kdFXtFhkilNNEjkuYOqYnx0cCfK4T8r0PcgSkWUWeA85sqQrULiAAqcI14lQ9SrgUcv+
-         j9Xg+yutKC2+MVHKblM2vODpHiQI4ELNKQyGU=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=No9PnKJ6nuu3TKKd7mby/YftaIzmvhF2GO6WIU4DeqqtkiC7BB0fFf5cpHqBvMSBnk
+         QKimu6TCzR/Ku3VTaMFGlHW4ad7T+oqKrg7p74+BTDIrivHFAjsptgSPc6phLliBKEMW
+         ruTV/TysfvKQoEJtvTrcx+EsWXCSSOD9OcGbY=
 MIME-Version: 1.0
-In-Reply-To: <20091124063653.GB20981@wotan.suse.de>
-References: <20091123112228.GA2287@wotan.suse.de> <1258976175.4531.299.camel@laptop> 
-	<20091123114550.GB25575@elte.hu> <20091123120100.GC2287@wotan.suse.de> 
-	<20091123120849.GB32009@elte.hu> <20091123122731.GE2287@wotan.suse.de> 
-	<20091123124615.GA27808@elte.hu> <20091124063653.GB20981@wotan.suse.de>
-From: Jason Garrett-Glaser <darkshikari@gmail.com>
-Date: Tue, 24 Nov 2009 09:24:26 -0800
-Message-ID: <28f2fcbc0911240924r708202cdx8bc7b465d473f283@mail.gmail.com>
-Subject: Re: newidle balancing in NUMA domain?
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
+References: <4B0BBB93.3080307@klingt.org>
+	 <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
+Date: Tue, 24 Nov 2009 12:28:18 -0500
+Message-ID: <73c1f2160911240928j69cbf65dx4a2747a06c7ca43d@mail.gmail.com>
+Subject: Re: [tip:sched/core] sched, x86: Optimize branch hint in 
+	__switch_to()
+From: Brian Gerst <brgerst@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       tim@klingt.org, mingo@elte.hu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quite a few being one test case, and on a program with a horrible
-> parallelism design (rapid heavy weight forks to distribute small
-> units of work).
+On Tue, Nov 24, 2009 at 11:57 AM, tip-bot for Tim Blechmann
+<tim@klingt.org> wrote:
+> Commit-ID:  a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
+> Gitweb:     http://git.kernel.org/tip/a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
+> Author:     Tim Blechmann <tim@klingt.org>
+> AuthorDate: Tue, 24 Nov 2009 11:55:15 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 24 Nov 2009 12:20:04 +0100
+>
+> sched, x86: Optimize branch hint in __switch_to()
+>
+> Branch hint profiling on my nehalem machine showed 96%
+> incorrect branch hints:
+>
+>  6548732 174664120  96 __switch_to                    process_64.c
+>    406
+>  6548745 174565593  96 __switch_to                    process_64.c
+>    410
+>
+> Signed-off-by: Tim Blechmann <tim@klingt.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> LKML-Reference: <4B0BBB93.3080307@klingt.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/process_64.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+> index ad535b6..d9db104 100644
+> --- a/arch/x86/kernel/process_64.c
+> +++ b/arch/x86/kernel/process_64.c
+> @@ -406,11 +406,10 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+>         * This won't pick up thread selector changes, but I guess that is ok.
+>         */
+>        savesegment(es, prev->es);
+> -       if (unlikely(next->es | prev->es))
+> +       if (next->es | prev->es)
+>                loadsegment(es, next->es);
+> -
+>        savesegment(ds, prev->ds);
+> -       if (unlikely(next->ds | prev->ds))
+> +       if (next->ds | prev->ds)
+>                loadsegment(ds, next->ds);
+>
+>
 
-> If x264 is declared dainbramaged, that's fine with me too.
+64-bit tasks should have %ds and %es set to null selectors.  The only
+time they should be different is for 32-bit tasks.  It lookx like some
+versions of GCC just aren't using the hint.  I've tested it with 4.4.2
+and the generated assembly is the same with or without the hint.
 
-We did multiple benchmarks using a thread pool and it did not help.
-If you want to declare our app "braindamaged", feel free, but pooling
-threads to avoid re-creation gave no benefit whatsoever.  If you think
-the parallelism methodology is wrong as a whole, you're basically
-saying that Linux shouldn't be used for video compression, because
-this is the exact same threading model used by almost every single
-video encoder ever made.  There are actually a few that use
-slice-based threading, but those are actually even worse from your
-perspective, because slice-based threading spawns mulitple threads PER
-FRAME instead of one per frame.
-
-Because of the inter-frame dependencies in video coding it is
-impossible to efficiently get a granularity of more than one thread
-per frame.  Pooling threads doesn't change the fact that you are
-conceptually creating a thread for each frame--it just eliminates the
-pthread_create call.  In theory you could do one thread per group of
-frames, but that is completely unrealistic for real-time encoding
-(e.g. streaming), requires a catastrophically large amount of memory,
-makes it impossible to track the bit buffer, and all other sorts of
-bad stuff.
-
-Jason Garrett-Glaser
+--
+Brian Gerst
