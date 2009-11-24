@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934269AbZKXV1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934183AbZKXVbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934269AbZKXV1F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933797AbZKXV1E
+	id S934183AbZKXVbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934074AbZKXVbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:27:04 -0500
-Received: from complete.lackof.org ([198.49.126.79]:39835 "EHLO
-	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934007AbZKXV1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:27:01 -0500
-Date: Tue, 24 Nov 2009 14:27:06 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCHSET 0-5] remove unneeded nfsd #includes
-Message-ID: <20091124212706.GB25755@lackof.org>
-References: <4B0C1EB7.50508@panasas.com>
-MIME-Version: 1.0
+	Tue, 24 Nov 2009 16:31:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30832 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934044AbZKXVbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:31:12 -0500
+Date: Tue, 24 Nov 2009 16:31:05 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, Ingo@firstfloor.org,
+       "Molnar <mingo"@firstfloor.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 14/14] utrace core
+Message-ID: <20091124213105.GG29296@redhat.com>
+References: <20091124200220.GA5828@redhat.com> <87my2bwtno.fsf@basil.nowhere.org> <20091124204152.GA9131@redhat.com> <20091124212619.GB29096@one.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B0C1EB7.50508@panasas.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091124212619.GB29096@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 07:58:15PM +0200, Boaz Harrosh wrote:
-> Some arch files had unneeded #includes directives from linux/nfsd/*.
-> Some vfs files had unneeded #includes directives from linux/nfsd/*.
-...
-> patches:
-> [PATCH 1/5] parsic: remove unused nfsd #includes
-> 	Some kind soul, please compile with this patch? compile
-> 	is all that's needed.
+Hi -
 
-Boaz,
-linux-2.6 compiles for parisc with this patch. Please add:
-    Tested-by: Grant Grundler <grundler@parisc-linux.org>
+On Tue, Nov 24, 2009 at 10:26:19PM +0100, Andi Kleen wrote:
+> [...]
+> > For example. tracehook_report_syscall_entry() has a lot of callers
+> > in arch/, each callsite should be changed to do
+> > 
+> > 	if ((task_utrace_flags(current) & UTRACE_EVENT(SYSCALL_ENTRY)) &&
+> > 		utrace_report_syscall_entry(regs))
+> > 		ret = -1; // this depends on machine
+> > 
+> > instead of simply calling tracehook_report_syscall_entry().
+> 
+> That should be in the utrace code?
+> 
+> I don't have a problem with having common code somewhere,
+> just not a whole layer whose only purpose seems to be obfuscation.
 
-thanks,
-grant
+One man's obfuscation is another man's abstraction.
+Would you be satisfied if "tracehook_" was renamed "utracehook_"?
 
-> 
-> [PATCH 2/5] sparc: remove unused nfsd #includes
-> [PATCH 3/5] s390: remove unused nfsd #includes
-> 	These two were cross compiled. Should we submit them through
-> 	nfsd tree or the ARCH trees?
-> 
-> [PATCH 4/5] vfs: nfsctl.c unused nfsd #includes
-> [PATCH 5/5] lockd: Remove unused nfsd headers #includes
-> 	Can these patches go through the nfsd tree?
-> 	Who's ACKs should we collect? Andrew?
-> 
-> Bruce Hi
-> With this set applied, the only nfsd files used publicly are:
-> 	const.h	export.h nfsfh.h stats.h syscall.h
-> 
-> These files can be moved to source folder:
-> 	cache.h  debug.h  nfsd.h  state.h xdr3.h  xdr4.h  xdr.h
-> 
-> Why is debug.h exported from Kernel? (include/linux/nfsd/Kbuild)
-> 
-> So just to see how this move might look like see last patch:
-> [RFC] nfsd: Move private headers to source directory
-> 	This patch was compiled, as well, on x86(32/64), sparc64, s390
-> 
-> Thanks
-> Boaz
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+- FChE
