@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934147AbZKXVMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbZKXVIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934147AbZKXVMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:12:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934038AbZKXVL6
+	id S934066AbZKXVIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbZKXVIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:11:58 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44693 "EHLO
+	Tue, 24 Nov 2009 16:08:43 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44727 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934022AbZKXVIf (ORCPT
+	with ESMTP id S934045AbZKXVIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:35 -0500
+	Tue, 24 Nov 2009 16:08:41 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, Kay Sievers <kay.sievers@vrfy.org>,
-       Helge Deller <deller@gmx.de>, linux-scsi@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 23/38] move zalon_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:18 +0100
-Message-Id: <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       devel@driverdev.osuosl.org
+Subject: [PATCH 24/38] move lis3l02dq_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:19 +0100
+Message-Id: <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -46,6 +42,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -57,35 +54,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function zalon_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+The function lis3l02dq_remove is used only wrapped by __devexit_p so
+define it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Cc: devel@driverdev.osuosl.org
 ---
- drivers/scsi/zalon.c |    2 +-
+ drivers/staging/iio/accel/lis3l02dq_core.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/zalon.c b/drivers/scsi/zalon.c
-index 27e84e4..1f8c03d 100644
---- a/drivers/scsi/zalon.c
-+++ b/drivers/scsi/zalon.c
-@@ -167,7 +167,7 @@ static struct parisc_device_id zalon_tbl[] = {
+diff --git a/drivers/staging/iio/accel/lis3l02dq_core.c b/drivers/staging/iio/accel/lis3l02dq_core.c
+index f008837..80e89a6 100644
+--- a/drivers/staging/iio/accel/lis3l02dq_core.c
++++ b/drivers/staging/iio/accel/lis3l02dq_core.c
+@@ -871,7 +871,7 @@ err_ret:
+ }
  
- MODULE_DEVICE_TABLE(parisc, zalon_tbl);
- 
--static int __exit zalon_remove(struct parisc_device *dev)
-+static int __devexit zalon_remove(struct parisc_device *dev)
+ /* fixme, confirm ordering in this function */
+-static int lis3l02dq_remove(struct spi_device *spi)
++static int __devexit lis3l02dq_remove(struct spi_device *spi)
  {
- 	struct Scsi_Host *host = dev_get_drvdata(&dev->dev);
- 
+ 	int ret;
+ 	struct lis3l02dq_state *st = spi_get_drvdata(spi);
 -- 
 1.6.5.2
 
