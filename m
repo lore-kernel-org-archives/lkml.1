@@ -1,139 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932513AbZKXJgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbZKXJaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932513AbZKXJgV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbZKXJgU
+	id S932487AbZKXJaQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbZKXJaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:36:20 -0500
-Received: from sh.osrg.net ([192.16.179.4]:45287 "EHLO sh.osrg.net"
+	Tue, 24 Nov 2009 04:30:15 -0500
+Received: from mga09.intel.com ([134.134.136.24]:6480 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932464AbZKXJgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:36:20 -0500
-Date: Tue, 24 Nov 2009 18:35:12 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0BA519.9090100@kernel.org>
-References: <4B08BD14.9060102@kernel.org>
-	<20091124174608Y.fujita.tomonori@lab.ntt.co.jp>
-	<4B0BA519.9090100@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S932357AbZKXJaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 04:30:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,276,1257148800"; 
+   d="scan'208";a="470074118"
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Subject: [PATCH v2] irq: Add node_affinity CPU masks for smarter irqbalance
+	hints
+To: linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com
+Cc: mingo@elte.hu, tglx@linutronix.de, yong.zhang0@gmail.com,
+       davem@davemloft.net, netdev@vger.kernel.org
+Date: Tue, 24 Nov 2009 01:35:18 -0800
+Message-ID: <20091124093518.3909.16435.stgit@ppwaskie-hc2.jf.intel.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091124183439J.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 24 Nov 2009 18:35:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 01:19:21 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+This patchset adds a new CPU mask for SMP systems to the irq_desc
+struct.  It also exposes an API for underlying device drivers to
+assist irqbalance in making smarter decisions when balancing, especially
+in a NUMA environment.  For example, an ethernet driver with MSI-X may
+wish to limit the CPUs that an interrupt can be balanced within to
+stay on a single NUMA node.  Current irqbalance operation can move the
+interrupt off the node, resulting in cross-node memory accesses and
+locks.
 
-> FUJITA Tomonori wrote:
-> > On Sat, 21 Nov 2009 20:24:52 -0800
-> > Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> amd 64 systems that
-> >> 1. do not have  AGP
-> >> 2. do not have IOMMU
-> >> 3. mem > 4g
-> >> 4. BIOS do not allocate  correct gart in NB.
-> >> will leave them to use SWIOTLB forcely.
-> > 
-> > Sorry, I forgot about this GART workaround.
-> > 
-> > 
-> >> Index: linux-2.6/arch/x86/kernel/pci-dma.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
-> >> +++ linux-2.6/arch/x86/kernel/pci-dma.c
-> >> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
-> >>  	/* free the range so iommu could get some range less than 4G */
-> >>  	dma32_free_bootmem();
-> >>  #endif
-> >> +	if (!swiotlb_force)
-> >> +		gart_iommu_hole_init();
-> >> +
-> >>  	if (pci_swiotlb_init())
-> >>  		return;
-> >>  
-> >> -	gart_iommu_hole_init();
-> >> -
-> >>  	detect_calgary();
-> >>  
-> >>  	detect_intel_iommu();
-> > 
-> > I prefer to detect all the IOMMU drivers in a consistent way;
-> > detecting only GART before swioltb doesn't look nice.
-> > 
-> > As we did before, we could detect all the IOMMU driver before
-> > swiotlb. However, I think that it's better to simply change
-> > pci_swiotlb_init() not to steal the preallocate GART workaround memory.
-> > 
-> > btw, initializing swiotlb before IOMMU detection is useful to GART
-> > too? If GART can't allocate the workaround memory, then the kernel
-> > panic now. We can use swiotlb instead in that case?
-> > 
-> > =
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
-> > 
-> > swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
-> > dma32_reserv_bootmem allocates. We need to initialize swiotlb before
-> > dma32_free_bootmem().
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  arch/x86/kernel/pci-dma.c |    6 +++++-
-> >  1 files changed, 5 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> > index afcc58b..26fe2cd 100644
-> > --- a/arch/x86/kernel/pci-dma.c
-> > +++ b/arch/x86/kernel/pci-dma.c
-> > @@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
-> >  
-> >  void __init pci_iommu_alloc(void)
-> >  {
-> > +	int use_swiotlb;
-> > +
-> > +	use_swiotlb = pci_swiotlb_init();
-> > +
-> >  #ifdef CONFIG_X86_64
-> >  	/* free the range so iommu could get some range less than 4G */
-> >  	dma32_free_bootmem();
-> >  #endif
-> > -	if (pci_swiotlb_init())
-> > +	if (use_swiotlb)
-> >  		return;
-> >  
-> >  	gart_iommu_hole_init();
-> 
-> pci_swiotlb_init need be called after dma32_free_bootmem
-> otherwise it could fail for system with lots of memory and numa=off
+The API is a get/set API within the kernel, along with a /proc entry
+for the interrupt.
 
-Why? swiotlb needs just 64MB (and some) in DMA32.
+Signed-off-by: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+---
 
-swiotlb had been worked fine without that hack until 2.6.26?
+ include/linux/interrupt.h |    8 ++++++
+ include/linux/irq.h       |    8 ++++++
+ kernel/irq/manage.c       |   32 +++++++++++++++++++++++++
+ kernel/irq/proc.c         |   57 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 105 insertions(+), 0 deletions(-)
 
-Only broken GART needs that hack (and I think that it's better to move
-that hack to GART code).
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 75f3f00..9fd08aa 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -208,6 +208,8 @@ extern cpumask_var_t irq_default_affinity;
+ extern int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask);
+ extern int irq_can_set_affinity(unsigned int irq);
+ extern int irq_select_affinity(unsigned int irq);
++extern int irq_set_node_affinity(unsigned int irq,
++                                 const struct cpumask *cpumask);
+ 
+ #else /* CONFIG_SMP */
+ 
+@@ -223,6 +225,12 @@ static inline int irq_can_set_affinity(unsigned int irq)
+ 
+ static inline int irq_select_affinity(unsigned int irq)  { return 0; }
+ 
++static inline int irq_set_node_affinity(unsigned int irq,
++                                        const struct cpumask *m)
++{
++	return -EINVAL;
++}
++
+ #endif /* CONFIG_SMP && CONFIG_GENERIC_HARDIRQS */
+ 
+ #ifdef CONFIG_GENERIC_HARDIRQS
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index ae9653d..819cda0 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -166,6 +166,7 @@ struct irq_2_iommu;
+  * @lock:		locking for SMP
+  * @affinity:		IRQ affinity on SMP
+  * @node:		node index useful for balancing
++ * @node_affinity:	irq mask hints for irqbalance
+  * @pending_mask:	pending rebalanced interrupts
+  * @threads_active:	number of irqaction threads currently running
+  * @wait_for_threads:	wait queue for sync_irq to wait for threaded handlers
+@@ -196,6 +197,7 @@ struct irq_desc {
+ #ifdef CONFIG_SMP
+ 	cpumask_var_t		affinity;
+ 	unsigned int		node;
++	cpumask_var_t		node_affinity;
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	cpumask_var_t		pending_mask;
+ #endif
+@@ -445,9 +447,15 @@ static inline bool alloc_desc_masks(struct irq_desc *desc, int node,
+ 	if (!alloc_cpumask_var_node(&desc->affinity, gfp, node))
+ 		return false;
+ 
++	if (!alloc_cpumask_var_node(&desc->node_affinity, gfp, node)) {
++		free_cpumask_var(desc->affinity);
++		return false;
++	}
++
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+ 	if (!alloc_cpumask_var_node(&desc->pending_mask, gfp, node)) {
+ 		free_cpumask_var(desc->affinity);
++		free_cpumask_var(desc->node_affinity);
+ 		return false;
+ 	}
+ #endif
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 7305b29..9e80783 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -138,6 +138,38 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
+ 	return 0;
+ }
+ 
++/**
++ *	irq_set_node_affinity - Set the CPU mask this interrupt can run on
++ *	@irq:		Interrupt to modify
++ *	@cpumask:	CPU mask to assign to the interrupt
++ *
++ */
++int irq_set_node_affinity(unsigned int irq, const struct cpumask *cpumask)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&desc->lock, flags);
++	cpumask_copy(desc->node_affinity, cpumask);
++	spin_unlock_irqrestore(&desc->lock, flags);
++
++	return 0;
++}
++EXPORT_SYMBOL(irq_set_node_affinity);
++
++/**
++ *	irq_get_node_affinity - Get the CPU mask this interrupt can run on
++ *	@irq:		Interrupt to get information
++ *
++ */
++struct cpumask *irq_get_node_affinity(unsigned int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	return desc->node_affinity;
++}
++EXPORT_SYMBOL(irq_get_node_affinity);
++
+ #ifndef CONFIG_AUTO_IRQ_AFFINITY
+ /*
+  * Generic version of the affinity autoselector.
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index 0832145..192e3fb 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -31,6 +31,16 @@ static int irq_affinity_proc_show(struct seq_file *m, void *v)
+ 	return 0;
+ }
+ 
++static int irq_node_affinity_proc_show(struct seq_file *m, void *v)
++{
++	struct irq_desc *desc = irq_to_desc((long)m->private);
++	const struct cpumask *mask = desc->node_affinity;
++
++	seq_cpumask(m, mask);
++	seq_putc(m, '\n');
++	return 0;
++}
++
+ #ifndef is_affinity_mask_valid
+ #define is_affinity_mask_valid(val) 1
+ #endif
+@@ -78,11 +88,46 @@ free_cpumask:
+ 	return err;
+ }
+ 
++static ssize_t irq_node_affinity_proc_write(struct file *file,
++		const char __user *buffer, size_t count, loff_t *pos)
++{
++	unsigned int irq = (int)(long)PDE(file->f_path.dentry->d_inode)->data;
++	cpumask_var_t new_value;
++	int err;
++
++	if (no_irq_affinity || irq_balancing_disabled(irq))
++		return -EIO;
++
++	if (!alloc_cpumask_var(&new_value, GFP_KERNEL))
++		return -ENOMEM;
++
++	err = cpumask_parse_user(buffer, count, new_value);
++	if (err)
++		goto free_cpumask;
++
++	if (!is_affinity_mask_valid(new_value)) {
++		err = -EINVAL;
++		goto free_cpumask;
++	}
++
++	irq_set_node_affinity(irq, new_value);
++	err = count;
++
++free_cpumask:
++	free_cpumask_var(new_value);
++	return err;
++}
++
+ static int irq_affinity_proc_open(struct inode *inode, struct file *file)
+ {
+ 	return single_open(file, irq_affinity_proc_show, PDE(inode)->data);
+ }
+ 
++static int irq_node_affinity_proc_open(struct inode *inode, struct file *f)
++{
++	return single_open(f, irq_node_affinity_proc_show, PDE(inode)->data);
++}
++
+ static const struct file_operations irq_affinity_proc_fops = {
+ 	.open		= irq_affinity_proc_open,
+ 	.read		= seq_read,
+@@ -91,6 +136,14 @@ static const struct file_operations irq_affinity_proc_fops = {
+ 	.write		= irq_affinity_proc_write,
+ };
+ 
++static const struct file_operations irq_node_affinity_proc_fops = {
++	.open		= irq_node_affinity_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++	.write		= irq_node_affinity_proc_write,
++};
++
+ static int default_affinity_show(struct seq_file *m, void *v)
+ {
+ 	seq_cpumask(m, irq_default_affinity);
+@@ -230,6 +283,10 @@ void register_irq_proc(unsigned int irq, struct irq_desc *desc)
+ 	/* create /proc/irq/<irq>/smp_affinity */
+ 	proc_create_data("smp_affinity", 0600, desc->dir,
+ 			 &irq_affinity_proc_fops, (void *)(long)irq);
++
++	/* create /proc/irq/<irq>/node_affinity */
++	proc_create_data("node_affinity", 0600, desc->dir,
++	                 &irq_node_affinity_proc_fops, (void *)(long)irq);
+ #endif
+ 
+ 	proc_create_data("spurious", 0444, desc->dir,
 
-
-> so dma32_free_bootmem will work for gart_iommu_hole_init and pci_swiotlb_init..
-> make sure they can get RAM < 4g.
-> 
-> also in gart_iommu_hole_init we need check swiotlb and !valid_agp...
-> -       } else if (!valid_agp) {
-> +       } else if (swiotlb && !valid_agp) {
-> 
-> otherwise the the workaround will be skipped...
-> 
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
