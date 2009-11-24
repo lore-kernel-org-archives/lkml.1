@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933912AbZKXSgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933926AbZKXSiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933912AbZKXSgO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933799AbZKXSgN
+	id S933926AbZKXSiZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933852AbZKXSiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:36:13 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56362 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933788AbZKXSgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:36:13 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19gBgdSdvxger4v5Suc4QXgijJ7/mrFFqoTYrOkvX
-	c3yBBfVLun45gx
-Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259087245.4531.1767.camel@laptop>
-References: <1258891664.14325.30.camel@marge.simson.net>
-	 <1259070683.4531.1476.camel@laptop>
-	 <1259082449.15249.90.camel@marge.simson.net>
-	 <1259084140.4531.1710.camel@laptop>  <1259085280.4531.1730.camel@laptop>
-	 <1259086901.15249.121.camel@marge.simson.net>
-	 <1259087245.4531.1767.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 24 Nov 2009 19:36:07 +0100
-Message-Id: <1259087767.17066.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 24 Nov 2009 13:38:25 -0500
+Received: from stinky.trash.net ([213.144.137.162]:42158 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933799AbZKXSiY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:38:24 -0500
+Message-ID: <4B0C2824.5010502@trash.net>
+Date: Tue, 24 Nov 2009 19:38:28 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de>	<200911241002.20904.arnd@arndb.de> <4B0BB2A7.5040707@trash.net>	<200911241034.43961.arnd@arndb.de> <4B0BB818.6090509@trash.net>	<m1aaybc1s5.fsf@fess.ebiederm.org> <4B0C1031.4050803@trash.net> <m1aayb6bfg.fsf@fess.ebiederm.org>
+In-Reply-To: <m1aayb6bfg.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 19:27 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 19:21 +0100, Mike Galbraith wrote:
-> > On Tue, 2009-11-24 at 18:54 +0100, Peter Zijlstra wrote:
-> > > On Tue, 2009-11-24 at 18:35 +0100, Peter Zijlstra wrote:
-> > > > On Tue, 2009-11-24 at 18:07 +0100, Mike Galbraith wrote:
-> > > > > >       if (p->sched_class->task_new) {
-> > > > > >               /* can detect migration through: task_cpu(p) != smp_processor_id() */
-> > > > > 
-> > > > > What if the parent was migrated before we got here?
-> > > > 
-> > > > Well, the only case it really matters for is the child_runs_first crap,
-> > > > which is basically broken on SMP anyway, so I don't think we care too
-> > > > much if we race here.
-> > > > 
-> > > > Unless I missed some detail that is ;-)
-> > > 
-> > > 
-> > > Also, we're running all this from the parent context, and we have
-> > > preemption disabled, we're not going anywhere.
-> > 
-> > In sched_fork() and wake_up_new_process(), but in between?
+Eric W. Biederman wrote:
+> Patrick McHardy <kaber@trash.net> writes:
 > 
-> Hmm, right, back to the previous argument then ;-)
+>> In the layered case (macvlan -> eth0) its common behaviour to
+>> keep the mark however. But in case of different namespaces,
+>> I think macvlan should also clear the mark on the dev_queue_xmit()
+>> path since this is just a shortcut to looping the packets
+>> through veth. In fact probably both of them should also clear
+>> skb->priority so other namespaces don't accidentally misclassify
+>> packets.
+> 
+> That is why I pushed for what is becoming dev_forward_skb.  So that
+> we have one place where we can make all of those tweaks.  It seems
+> like in every review we find another field that should be cleared/handled
+> specially.
+> 
+> I don't quite follow what you intend with dev_queue_xmit when the macvlan
+> is in one namespace and the real physical device is in another.  Are
+> you mentioning that the packet classifier runs in the namespace where
+> the primary device lives with packets from a different namespace?
 
-Yeah.
-
-We can be preempted between original task struct copy and getting to
-sched_fork(), and after leaving copy_process(), so I don't see any way
-around lock parent, update and copy vruntime.  Whether we race in
-placing the child wrt parent isn't a big deal, but the child's vruntime
-is, as is fiddling with the parent's task struct and runqueue.
-
-	-Mike
-
+Exactly. And I think we should make sure that the namespace of
+the macvlan device can't (deliberately or accidentally) cause
+misclassification.
