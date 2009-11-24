@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZKXHSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbZKXHTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbZKXHSw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 02:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZKXHSv
+	id S932155AbZKXHTh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 02:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZKXHTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 02:18:51 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:35902 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753300AbZKXHSu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 02:18:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=kwGN4/zyFWVQUGucj6QqpZ/Mh6SE30rUenavRtZRkfsozh2cw1+vhe/+evKScKg7om
-         eH+1ghSvYleMe5S//CrtSZxAWoZ9+uVPoe2OoYGKEMMh1rvS1el3dfcVgKh1cm/BPhRv
-         TxWexdBwx4BzhdDKD602NmDXfG9jMIMTvQCYc=
+	Tue, 24 Nov 2009 02:19:36 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39195 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753101AbZKXHTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 02:19:35 -0500
+Date: Tue, 24 Nov 2009 08:19:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robin Holt <holt@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de,
+       Jack Steiner <steiner@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/8] x86: UV - XPC fixes with related support
+ functionality V2.
+Message-ID: <20091124071931.GA4575@elte.hu>
+References: <20091119173157.337874000@alcatraz.americas.sgi.com>
+ <20091123180321.GB15594@elte.hu>
+ <20091123181049.GA5220@elte.hu>
+ <20091123235751.GX6671@sgi.com>
 MIME-Version: 1.0
-In-Reply-To: <4B0B6E44.6090106@cn.fujitsu.com>
-References: <4B0B6E44.6090106@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 09:18:56 +0200
-X-Google-Sender-Auth: c3e30c3739b5cd51
-Message-ID: <84144f020911232318q7ad8028ej13bf7799030878bc@mail.gmail.com>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more 
-	statistics
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123235751.GX6671@sgi.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 7:25 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> List of new things:
->
-> - Add option "--raw-ip", to print raw ip instead of symbols.
->
-> - Sort the output by fragmentation by default, and support
->  multi keys.
->
-> - Collect and show cross node allocation stats.
->
-> - Collect and show alloc/free ping-pong stats.
->
-> - And help file.
 
-The series looks good to me!
+* Robin Holt <holt@sgi.com> wrote:
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > Regarding the patches - i still very much dislike how the code 
+> > interfaces to the 'BIOS'. The drivers/misc/sgi-xp/ code looks rather 
+> > messy.
+> > 
+> > Why isnt a pure hardware interface exposed, as both hpa and me 
+> > suggested in the past?
+> 
+> The information is stored on hardware (UV-Hub and RAM) outside this 
+> instance of hardware.
+> 
+> The only safe way to access that hardware is via the GRU.
+> 
+> No GRU resources are available to the BIOS.
+> 
+> Ergo, this interface method with multiple passes is needed.
+> 
+> If there is a better way, I am open to suggestions.
+
+Erm, the better way is to not use the BIOS but to access those registers 
+that the BIOS accesses? (which is currently hidden by the BIOS)
+
+In other words, we want to remove arch/x86/kernel/bios_uv.c and the 
+uv_bios_call*() APIs and replace them via clear implementations for 
+clear hardware abstractions. That 'bios message queue' thing is absolute 
+madness for example. But the type-opaque software API too.
+
+	Ingo
