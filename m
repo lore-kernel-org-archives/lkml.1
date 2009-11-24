@@ -1,125 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbZKXWTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934168AbZKXWXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934033AbZKXWTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 17:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbZKXWTR
+	id S934168AbZKXWXd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 17:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933799AbZKXWXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 17:19:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39245 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758084AbZKXWTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 17:19:16 -0500
-Date: Tue, 24 Nov 2009 22:18:57 GMT
-From: tip-bot for Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de
-In-Reply-To: <4B0BB9A3.5020908@kernel.org>
-References: <4B0BB9A3.5020908@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86, mtrr: Fix sorting of mtrr after subtracting
-Message-ID: <tip-5bf65b9ba67226eae9ffc398a0369fc4da35c259@git.kernel.org>
-Git-Commit-ID: 5bf65b9ba67226eae9ffc398a0369fc4da35c259
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 24 Nov 2009 17:23:32 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:64562 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933798AbZKXWXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 17:23:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YqEtf6iVU49KnTieW418fcIZ+8dexrj5m38Ayg9lxs3xzRRnR6REqfC56TD4AIBL8V
+         NLZJ3F3lFtgvN8v6+HYS0sY6P+gIV47kZoGHhMHfzSfGjry2ZhTimm6hPrbD7X7pyquU
+         Na3C3DSP8CB9mnrFkXLIapwtpQ5elQAm/mbnE=
+Date: Tue, 24 Nov 2009 17:23:34 -0500
+From: tmhikaru@gmail.com
+To: tmhikaru@gmail.com
+Cc: Jan Kara <jack@suse.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
+Message-ID: <20091124222334.GB20245@roll>
+References: <20091124195607.GC16662@quack.suse.cz> <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org> <20091124203944.GD16662@quack.suse.cz> <20091124215044.GA20245@roll>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091124215044.GA20245@roll>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5bf65b9ba67226eae9ffc398a0369fc4da35c259
-Gitweb:     http://git.kernel.org/tip/5bf65b9ba67226eae9ffc398a0369fc4da35c259
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Tue, 24 Nov 2009 02:46:59 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 24 Nov 2009 13:06:16 -0800
+On Tue, Nov 24, 2009 at 04:50:44PM -0500, tmhikaru@gmail.com wrote:
+> On Tue, Nov 24, 2009 at 09:39:44PM +0100, Jan Kara wrote:
+> > On Tue 24-11-09 15:13:01, Alan Stern wrote:
+> > > On Tue, 24 Nov 2009, Jan Kara wrote:
+> > > 
+> > > >   After digging in block layer code, it's as we suspected:
+> > > > In case of host error DID_ERROR (which is our case), scsi request is
+> > > > retried iff it is not a FAILFAST request which is set if bio is doing
+> > > > readahead... So this is explained and everything behaves as it should.
+> > > > Thanks everybody involved :).
+> > > 
+> > > Okay, very good.  There remains the question of the disturbing error
+> > > messages in the system log.  Should they be supressed for FAILFAST
+> > > requests?
+> >   I think it's useful they are there because ultimately, something really
+> > went wrong and you should better investigate. BTW, "end_request: I/O error"
+> > messages are in the log even for requests where we retried and succeeded...
+> > 
+> > 								Honza
+> 
+> While I agree it is useful information, I think that if the error messages
+> are going to be printed, you should *also* print that this is a NON FATAL
+> error and that it's going to be retried. It'd help diagnosing the path it's
+> following through the failure code IMHO as well as not making users
+> completely freak out like I did in my case. It is *not* particularly obvious
+> given the message printed to syslog what is going wrong or why.
+> 
+> 	Just my opinion,
+> 	Tim McGrath
 
-x86, mtrr: Fix sorting of mtrr after subtracting
+	I should have asked since I'm here at the moment - do you need any
+more information out of the buggy USB enclosure at the moment, or can I work
+on trying to fix/replace it now?
 
-In some cases we can coalesce MTRR entries after cleanup; this may
-allow us to have more entries.  As such, introduce clean_sort_range to
-to sort and coaelsce the MTRR entries.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <4B0BB9A3.5020908@kernel.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpu/mtrr/cleanup.c |   49 +++++++++++++++++++++++++++++------
- 1 files changed, 40 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
-index 6e49f6f..6987af7 100644
---- a/arch/x86/kernel/cpu/mtrr/cleanup.c
-+++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
-@@ -170,6 +170,41 @@ static int __init cmp_range(const void *x1, const void *x2)
- 	return start1 - start2;
- }
- 
-+static int __init clean_sort_range(struct res_range *range, int az)
-+{
-+	int i, j, k = az - 1, nr_range = 0;
-+
-+	for (i = 0; i < k; i++) {
-+		if (range[i].end)
-+			continue;
-+		for (j = k; j > i; j--) {
-+			if (range[j].end) {
-+				k = j;
-+				break;
-+			}
-+		}
-+		if (j == i)
-+			break;
-+		range[i].start = range[k].start;
-+		range[i].end   = range[k].end;
-+		range[k].start = 0;
-+		range[k].end   = 0;
-+		k--;
-+	}
-+	/* count it */
-+	for (i = 0; i < az; i++) {
-+		if (!range[i].end) {
-+			nr_range = i;
-+			break;
-+		}
-+	}
-+
-+	/* sort them */
-+	sort(range, nr_range, sizeof(struct res_range), cmp_range, NULL);
-+
-+	return nr_range;
-+}
-+
- #define BIOS_BUG_MSG KERN_WARNING \
- 	"WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
- 
-@@ -223,22 +258,18 @@ x86_get_mtrr_mem_range(struct res_range *range, int nr_range,
- 		subtract_range(range, extra_remove_base,
- 				 extra_remove_base + extra_remove_size  - 1);
- 
--	/* get new range num */
--	nr_range = 0;
--	for (i = 0; i < RANGE_NUM; i++) {
--		if (!range[i].end)
--			continue;
--		nr_range++;
--	}
- 	if  (debug_print) {
- 		printk(KERN_DEBUG "After UC checking\n");
--		for (i = 0; i < nr_range; i++)
-+		for (i = 0; i < RANGE_NUM; i++) {
-+			if (!range[i].end)
-+				continue;
- 			printk(KERN_DEBUG "MTRR MAP PFN: %016lx - %016lx\n",
- 				 range[i].start, range[i].end + 1);
-+		}
- 	}
- 
- 	/* sort the ranges */
--	sort(range, nr_range, sizeof(struct res_range), cmp_range, NULL);
-+	nr_range = clean_sort_range(range, RANGE_NUM);
- 	if  (debug_print) {
- 		printk(KERN_DEBUG "After sorting\n");
- 		for (i = 0; i < nr_range; i++)
+Tim McGrath
