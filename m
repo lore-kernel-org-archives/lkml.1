@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934235AbZKXVQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934119AbZKXVLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934235AbZKXVQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933957AbZKXVIY
+	id S934119AbZKXVLq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbZKXVLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:24 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44562 "EHLO
+	Tue, 24 Nov 2009 16:11:37 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44702 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933657AbZKXVIV (ORCPT
+	with ESMTP id S934027AbZKXVIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:21 -0500
+	Tue, 24 Nov 2009 16:08:36 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Wolfgang Ocker <weo@reccoware.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       spi-devel-general@lists.sourceforge.net,
-       Mike Frysinger <vapier@gentoo.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH 20/38] move spidev_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:15 +0100
-Message-Id: <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Willem Riede <osst@riede.org>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ed Lin <ed.lin@promise.com>, Yang Hongyang <yanghy@cn.fujitsu.com>,
+       linux-scsi@vger.kernel.org, osst-users@lists.sourceforge.net
+Subject: [PATCH 21/38] move stex_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:16 +0100
+Message-Id: <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -43,6 +43,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,35 +55,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function spidev_remove is used only wrapped by __devexit_p so define
+The function stex_remove is used only wrapped by __devexit_p so define
 it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Willem Riede <osst@riede.org>
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
+Cc: "Kai Mäkisara" <Kai.Makisara@kolumbus.fi>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ed Lin <ed.lin@promise.com>
+Cc: Yang Hongyang <yanghy@cn.fujitsu.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wolfgang Ocker <weo@reccoware.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: spi-devel-general@lists.sourceforge.net
+Cc: linux-scsi@vger.kernel.org
+Cc: osst-users@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier@gentoo.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- drivers/spi/spidev.c |    2 +-
+ drivers/scsi/stex.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index 5d23983..5471bfc 100644
---- a/drivers/spi/spidev.c
-+++ b/drivers/spi/spidev.c
-@@ -610,7 +610,7 @@ static int spidev_probe(struct spi_device *spi)
- 	return status;
+diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+index 09fa886..09ee386 100644
+--- a/drivers/scsi/stex.c
++++ b/drivers/scsi/stex.c
+@@ -1679,7 +1679,7 @@ static void stex_hba_free(struct st_hba *hba)
+ 			  hba->dma_mem, hba->dma_handle);
  }
  
--static int spidev_remove(struct spi_device *spi)
-+static int __devexit spidev_remove(struct spi_device *spi)
+-static void stex_remove(struct pci_dev *pdev)
++static void __devexit stex_remove(struct pci_dev *pdev)
  {
- 	struct spidev_data	*spidev = spi_get_drvdata(spi);
+ 	struct st_hba *hba = pci_get_drvdata(pdev);
  
 -- 
 1.6.5.2
