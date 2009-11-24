@@ -1,52 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbZKXOmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933157AbZKXOmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933130AbZKXOmO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbZKXOmO
+	id S933157AbZKXOmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933141AbZKXOmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:42:14 -0500
-Received: from mga10.intel.com ([192.55.52.92]:29844 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933083AbZKXOmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:42:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,279,1257148800"; 
-   d="scan'208";a="749953612"
-Message-ID: <4B0BF0CA.5020600@linux.intel.com>
-Date: Tue, 24 Nov 2009 06:42:18 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 24 Nov 2009 09:42:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8055 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933140AbZKXOmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 09:42:20 -0500
+Date: Tue, 24 Nov 2009 09:42:22 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [PATCH 4/4] cfq-iosched: fix corner cases in idling logic
+Message-ID: <20091124144222.GC9595@redhat.com>
+References: <200911241449.36336.czoccolo@gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>	  <4B0B782A.4030901@linux.intel.com> <1259051986.4531.1057.camel@laptop>
-In-Reply-To: <1259051986.4531.1057.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911241449.36336.czoccolo@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->>> Same for userspace.
->> the problem is that there is no way currently that the driver can communicate
->> "I allocated all my metadata on THIS numa node". irqbalance and sysadmins need
->> that to not make really stupid decisions.....
+On Tue, Nov 24, 2009 at 02:49:36PM +0100, Corrado Zoccolo wrote:
+> Idling logic was disabled in some corner cases, leading to unfair share
+> for noidle queues.
+> * the idle timer was not armed if there were other requests in the
+>   driver. unfortunately, those requests could come from other workloads,
+>   or queues for which we don't enable idling. So we will check only
+>   pending requests from the active queue
+> * rq_noidle check on no-idle queue could disable the end of tree idle if
+>   the last completed request was rq_noidle. Now, we will disable that
+>   idle only if all the queues served in the no-idle tree had rq_noidle
+>   requests.
 > 
-> And what exactly is struct device::numa_node good for then?
+> Reported-by: Vivek Goyal <vgoyal@redhat.com>
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+
+Looks good to me.
+
+A minor nit, "noidle_tree_requires_idle" is too long a string. A little
+smaller string can be "idle_on_noidle_wl".
+
+Acked-by: Vivek Goyal <vgoyal@redhat.com>
+
+Thanks
+Vivek
+
+> ---
+>  block/cfq-iosched.c |   32 ++++++++++++++++++++++----------
+>  1 files changed, 22 insertions(+), 10 deletions(-)
 > 
-
-and that is exported to userspace.. how?
-
-... that has nothing to do with an irq, and also falls flat for a driver that
-supports multiple irqs, and assigns one to each numa node.
-
-
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 373e80f..d44f8a4 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -172,6 +172,7 @@ struct cfq_data {
+>  	enum wl_prio_t serving_prio;
+>  	enum wl_type_t serving_type;
+>  	unsigned long workload_expires;
+> +	bool noidle_tree_requires_idle;
+>  
+>  	/*
+>  	 * Each priority tree is sorted by next_request position.  These
+> @@ -1249,9 +1250,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+>  		return;
+>  
+>  	/*
+> -	 * still requests with the driver, don't idle
+> +	 * still active requests from this queue, don't idle
+>  	 */
+> -	if (rq_in_driver(cfqd))
+> +	if (cfqq->dispatched)
+>  		return;
+>  
+>  	/*
+> @@ -1487,6 +1488,7 @@ static void choose_service_tree(struct cfq_data *cfqd)
+>  
+>  	slice = max_t(unsigned, slice, CFQ_MIN_TT);
+>  	cfqd->workload_expires = jiffies + slice;
+> +	cfqd->noidle_tree_requires_idle = false;
+>  }
+>  
+>  /*
+> @@ -2606,17 +2608,27 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+>  			cfq_clear_cfqq_slice_new(cfqq);
+>  		}
+>  		/*
+> -		 * If there are no requests waiting in this queue, and
+> -		 * there are other queues ready to issue requests, AND
+> -		 * those other queues are issuing requests within our
+> -		 * mean seek distance, give them a chance to run instead
+> -		 * of idling.
+> +		 * Idling is not enabled on:
+> +		 * - expired queues
+> +		 * - idle-priority queues
+> +		 * - async queues
+> +		 * - queues with still some requests queued
+> +		 * - when there is a close cooperator
+>  		 */
+>  		if (cfq_slice_used(cfqq) || cfq_class_idle(cfqq))
+>  			cfq_slice_expired(cfqd, 1);
+> -		else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq) &&
+> -			 sync && !rq_noidle(rq))
+> -			cfq_arm_slice_timer(cfqd);
+> +		else if (sync && cfqq_empty &&
+> +			 !cfq_close_cooperator(cfqd, cfqq)) {
+> +			cfqd->noidle_tree_requires_idle |= !rq_noidle(rq);
+> +			/*
+> +			 * Idling is enabled for SYNC_WORKLOAD.
+> +			 * SYNC_NOIDLE_WORKLOAD idles at the end of the tree
+> +			 * only if we processed at least one !rq_noidle request
+> +			 */
+> +			if (cfqd->serving_type == SYNC_WORKLOAD
+> +			    || cfqd->noidle_tree_requires_idle)
+> +				cfq_arm_slice_timer(cfqd);
+> +		}
+>  	}
+>  
+>  	if (!rq_in_driver(cfqd))
+> -- 
+> 1.6.2.5
+> 
