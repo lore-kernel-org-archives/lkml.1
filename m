@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933411AbZKXVAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933150AbZKXUx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933411AbZKXVAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932746AbZKXVAN
+	id S933150AbZKXUx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 15:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbZKXUx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:00:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51420 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 15:53:56 -0500
+Received: from waste.org ([173.11.57.241]:57897 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932855AbZKXVAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:00:12 -0500
-Date: Tue, 24 Nov 2009 21:49:43 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Roland McGrath <roland@redhat.com>, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH -tip v3 1/3] tracepoint: Move signal sending tracepoint
-	to events/signal.h
-Message-ID: <20091124204943.GA11300@redhat.com>
-References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com> <20091120213115.14708.55068.stgit@dhcp-100-2-132.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120213115.14708.55068.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1757320AbZKXUxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 15:53:55 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <1259095580.4531.1788.camel@laptop>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx>  <1259086459.4531.1752.camel@laptop>
+	 <1259090615.17871.696.camel@calx>  <1259095580.4531.1788.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 14:53:24 -0600
+Message-ID: <1259096004.17871.716.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/20, Masami Hiramatsu wrote:
->
-> +TRACE_EVENT(signal_generate,
-> +
-> +	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task),
-> +
-> +	TP_ARGS(sig, info, p),
-                          ^^^
-s/p/task/ ?
+On Tue, 2009-11-24 at 21:46 +0100, Peter Zijlstra wrote:
+> On Tue, 2009-11-24 at 13:23 -0600, Matt Mackall wrote:
+> 
+> > My understanding of the current state of play is:
+> > 
+> > SLUB: default allocator
+> > SLAB: deep maintenance, will be removed if SLUB ever covers remaining
+> > performance regressions
+> > SLOB: useful for low-end (but high-volume!) embedded 
+> > SLQB: sitting in slab.git#for-next for months, has some ground to cover
+> > 
+> > SLQB and SLUB have pretty similar target audiences, so I agree we should
+> > eventually have only one of them. But I strongly expect performance
+> > results to be mixed, just as they have been comparing SLUB/SLAB.
+> > Similarly, SLQB still has of room for tuning left compared to SLUB, as
+> > SLUB did compared to SLAB when it first emerged. It might be a while
+> > before a clear winner emerges.
+> 
+> And as long as we drag out this madness nothing will change I suspect.
 
-Oleg.
+If there's a proposal here, it's not clear what it is.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
 
