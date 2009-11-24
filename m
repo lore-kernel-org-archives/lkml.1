@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbZKXSWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbZKXSWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933883AbZKXSWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933798AbZKXSWL
+	id S933862AbZKXSWD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:22:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZKXSWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:22:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41579 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933773AbZKXSWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:22:08 -0500
-Date: Tue, 24 Nov 2009 19:20:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091124182059.GB11894@elte.hu>
-References: <20091120211139.GB19106@sgi.com>
- <m1r5rrr9v5.fsf@fess.ebiederm.org>
- <20091122011457.GA16910@sgi.com>
- <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
- <1259069986.4531.1453.camel@laptop>
- <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
- <20091124065022.6933be1a@infradead.org>
- <m1ws1f6csh.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ws1f6csh.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Tue, 24 Nov 2009 13:22:00 -0500
+Received: from mail.gmx.net ([213.165.64.20]:39874 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932929AbZKXSV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:21:58 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/kcPcKfGvk2Ob6IniuNFtINEnC6NJcG53pCWzQLs
+	tYgnBTWDqE0IN3
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259085280.4531.1730.camel@laptop>
+References: <1258891664.14325.30.camel@marge.simson.net>
+	 <1259070683.4531.1476.camel@laptop>
+	 <1259082449.15249.90.camel@marge.simson.net>
+	 <1259084140.4531.1710.camel@laptop>  <1259085280.4531.1730.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 24 Nov 2009 19:21:41 +0100
+Message-Id: <1259086901.15249.121.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> Currently the irq code treats /proc/irq/N/smp_affinity as a strong 
-> hint on where we would like interrupts to be delivered, and we don't 
-> have good feedback from there to architecture specific code that knows 
-> what we really can do.  It is going to take some effort and some work 
-> to make that happen.
+On Tue, 2009-11-24 at 18:54 +0100, Peter Zijlstra wrote:
+> On Tue, 2009-11-24 at 18:35 +0100, Peter Zijlstra wrote:
+> > On Tue, 2009-11-24 at 18:07 +0100, Mike Galbraith wrote:
+> > > >       if (p->sched_class->task_new) {
+> > > >               /* can detect migration through: task_cpu(p) != smp_processor_id() */
+> > > 
+> > > What if the parent was migrated before we got here?
+> > 
+> > Well, the only case it really matters for is the child_runs_first crap,
+> > which is basically broken on SMP anyway, so I don't think we care too
+> > much if we race here.
+> > 
+> > Unless I missed some detail that is ;-)
 > 
-> I think the irq scheduler is the only scheduler (except for batch 
-> jobs) that we don't put in the kernel.  It seems to me that if we are 
-> going to go to all of the trouble to rewrite the generic code to 
-> better support irqbalance because we are having serious irqbalance 
-> problems, it will be less effort to suck irqbalance into the kernel 
-> along with everything else.
 > 
-> I really think irqbalancing belongs in the kernel. [...]
+> Also, we're running all this from the parent context, and we have
+> preemption disabled, we're not going anywhere.
 
-Interesting. I've yet to see a solution that is maintainable and works 
-well, without putting too much policy into the kernel. Our previous 
-solutions didnt really work all that well.
+In sched_fork() and wake_up_new_process(), but in between?
 
-What would your model be, and can it be implemented reasonably?
+	-Mike
 
-	Ingo
