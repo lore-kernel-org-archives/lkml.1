@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZKXIAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbZKXIAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbZKXIAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbZKXIAS
+	id S1757998AbZKXIAE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:00:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757860AbZKXIAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:00:18 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:36234 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758006AbZKXIAO (ORCPT
+	Tue, 24 Nov 2009 03:00:03 -0500
+Received: from mga10.intel.com ([192.55.52.92]:46087 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757301AbZKXIAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:00:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=DRnOSGRuyC/ONGPRKIj9963VcT9mZLAsmZu8cuWNnhPtdmL97kjhntBRJUHZje3Dmo
-         psy3VWkoar0oxXLZMXx6zPSl74P/OLojdV4LPRb/+BV09nRoAQgcoFU5EhA/R74y1mOr
-         SROEvfm6Ly8abpLCSe7LJqQ3CH0HkwgBNHvRI=
-Date: Tue, 24 Nov 2009 10:00:06 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Ang Way Chuang <wcang79@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dvb-core: Fix ULE decapsulation bug when less than 4
-	bytes of ULE SNDU is packed into the remaining bytes of a MPEG2-TS
-	frame
-Message-ID: <20091124080006.GB14488@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Ang Way Chuang <wcang79@gmail.com>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
-	linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Nov 2009 03:00:02 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,275,1257148800"; 
+   d="scan'208";a="516812524"
+Subject: Re: [MM] Make mm counters per cpu instead of atomic
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <alpine.DEB.2.00.0911230830300.26432@router.home>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
+	 <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost>
+	 <1258450465.11321.36.camel@localhost>
+	 <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
+	 <1258966270.29789.45.camel@localhost>
+	 <alpine.DEB.2.00.0911230830300.26432@router.home>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 24 Nov 2009 16:02:33 +0800
+Message-Id: <1259049753.29789.49.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 05:37:57PM +0800, Ang Way Chuang wrote:
-> --- a/drivers/media/dvb/dvb-core/dvb_net.c
-> +++ b/drivers/media/dvb/dvb-core/dvb_net.c
-> @@ -458,8 +458,9 @@ static void dvb_net_ule( struct net_device *dev,
-> const u8 *buf, size_t buf_len )
+On Mon, 2009-11-23 at 08:31 -0600, Christoph Lameter wrote:
+> On Mon, 23 Nov 2009, Zhang, Yanmin wrote:
+> 
+> > Another theoretic issue is below scenario:
+> > Process A get the read lock on cpu 0 and is scheduled to cpu 2 to unlock. Then
+> > it's scheduled back to cpu 0 to repeat the step. eventually, the reader counter
+> > will overflow. Considering multiple thread cases, it might be faster to
+> > overflow than what we imagine. When it overflows, processes will hang there.
+> 
+> True.... We need to find some alternative to per cpu data to scale mmap
+> sem then.
+I ran lots of benchmarks such like specjbb2005/hackbench/tbench/dbench/iozone
+/sysbench_oltp(mysql)/aim7 against percpu tree(based on 2.6.32-rc7) on a 4*8*2 logical
+cpu machine, and didn't find big result difference between with your patch and without
+your patch.
 
-Your email client line broke the line starting with @@ into 2 lines so
-the patch doesn't apply.
 
-Could you resend the patch without line wrapping?
-
-regards,
-dan carpenter
 
