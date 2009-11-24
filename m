@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbZKXJ5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932584AbZKXKDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932578AbZKXJ5N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932528AbZKXJ5M
+	id S932584AbZKXKDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932528AbZKXKDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:57:12 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35285 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932481AbZKXJ5L (ORCPT
+	Tue, 24 Nov 2009 05:03:50 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:62797 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932371AbZKXKDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:57:11 -0500
-Date: Tue, 24 Nov 2009 09:57:16 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: mfd tree build failure
-Message-ID: <20091124095715.GA20505@rakim.wolfsonmicro.main>
-References: <20091124163753.381d9a83.sfr@canb.auug.org.au>
+	Tue, 24 Nov 2009 05:03:49 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+Date: Tue, 24 Nov 2009 10:02:20 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-2-git-send-email-arnd@arndb.de> <4B0BAC97.6010000@trash.net>
+In-Reply-To: <4B0BAC97.6010000@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124163753.381d9a83.sfr@canb.auug.org.au>
-X-Cookie: The people rule.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911241002.20904.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+kFr4mD15/7C3jE/DIKKqroOqpH13MwUtAkf9
+ mnTMkwZzXScQmooyijsTqg3kYAnLJSllD2AwbuNPFg8P9lMTlG
+ XJyzmGUvXdi5PNTHwN94w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 04:37:53PM +1100, Stephen Rothwell wrote:
+On Tuesday 24 November 2009 09:51:19 Patrick McHardy wrote:
+> > +     skb_dst_drop(skb);
+> > +     skb->tstamp.tv64 = 0;
+> > +     skb->pkt_type = PACKET_HOST;
+> > +     skb->protocol = eth_type_trans(skb, dev);
+> > +     skb->mark = 0;
+> 
+> skb->mark clearing should stay private to veth since its usually
+> supposed to stay intact. The only exception is packets crossing
+> namespaces, where they should appear like a freshly received skbs.
 
-> drivers/built-in.o: In function `wm831x_i2c_remove':
-> wm831x-core.c:(.text+0xd108b): undefined reference to `mfd_remove_devices'
-> drivers/built-in.o: In function `wm831x_i2c_write_device':
-> wm831x-core.c:(.text+0xd119c): undefined reference to `i2c_master_send'
-> drivers/built-in.o: In function `wm831x_i2c_read_device':
-> wm831x-core.c:(.text+0xd1208): undefined reference to `i2c_master_send'
-> wm831x-core.c:(.text+0xd1237): undefined reference to `i2c_master_recv'
+But isn't that what we want in macvlan as well when we're
+forwarding from one downstream interface to another?
 
-> Caused by commit 4f7231a3ff624ad8a0fdace424b10a8b262071cf ("mfd: Don't
-> allow wm831x to be built as a module").  CONFIG_MFD_CORE is "m" and
-> CONFIG_I2C is "m" while CONFIG_MFD_WM831X is "y".  "select" is a real
-> problem :-(
+I did all my testing with macvlan interfaces in separate namespaces
+communicating with each other, so I'd assume that we should always
+clear skb->mark and skb->dst in this function. Maybe I should make
+the documentation clearer?
 
-There's something more seriously wrong than the select with your config
-here - the driver depends on (rather than selecting) I2C and you're also
-seeing undefined references to the I2C API.  The select on MFD_CORE
-should also be forcing that to be built in (it does normally).
+---
+net: clarify documentation of dev_forward_skb
 
-Could you please post the actual configuration you're using?  I suspect
-some Kbuild bug has been triggered here...
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1433,6 +1433,10 @@ static inline void net_timestamp(struct sk_buff *skb)
+  * dev_forward_skb can be used for injecting an skb from the
+  * start_xmit function of one device into the receive queue
+  * of another device.
++ *
++ * The receiving device may be in another namespace, so
++ * we have to clear all information in the skb that could
++ * impact namespace isolation.
+  */
+ int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
+ {
