@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933881AbZKXStc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZKXSvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933881AbZKXStc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933839AbZKXStc
+	id S933938AbZKXSvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933864AbZKXSvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:49:32 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:57765 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933807AbZKXStb (ORCPT
+	Tue, 24 Nov 2009 13:51:38 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:39640 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933852AbZKXSvh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:49:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i6K795niD/51gvaRlxwMGAxOMaqWPexNu5a4A/zSTNudO2lzhe4N3vnW4pA6KFFEUF
-         UCMONy59+54CiCbN62kMPOQf8u/nTxdgWK4ft6iEwy8hjvCjnj8tOJieOJzzRZztl+nl
-         K9ZGSZmfI519BrVnl9C/0NDpe8obwF7qqjI6w=
-Date: Tue, 24 Nov 2009 19:49:35 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more
-	statistics
-Message-ID: <20091124184927.GA4994@nowhere>
-References: <4B0B6E44.6090106@cn.fujitsu.com> <20091124090425.GF21991@elte.hu> <4B0BA99D.5020602@cn.fujitsu.com> <20091124100724.GA5570@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124100724.GA5570@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Nov 2009 13:51:37 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Date: Tue, 24 Nov 2009 11:51:34 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [patch 0/5] Journal guided resync and support
+In-reply-to: <20091124114319.GA1397@ucw.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: scjody@sun.com, linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-id: <856BC3CD-F483-4899-BCFE-0ACB59CED9BE@sun.com>
+X-Mailer: Apple Mail (2.936)
+References: <20091119212241.283629302@sun.com> <20091124114319.GA1397@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 11:07:24AM +0100, Ingo Molnar wrote:
-> 
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
-> > > 3)
-> > > 
-> > > it doesnt seem to be working on one of my boxes, which has perf and kmem 
-> > > events as well:
-> > > 
-> > > aldebaran:~/linux/linux/tools/perf> perf kmem record
-> > > ^C[ perf record: Woken up 1 times to write data ]
-> > > [ perf record: Captured and wrote 0.050 MB perf.data (~2172 samples) ]
-> > > 
-> > 
-> > Seems no kmem event is recorded. No sure what happened here.
-> > 
-> > Might be that the parameters that perf-kmem passes to perf-record
-> > are not properly selected?
-> > 
-> > Do perf-sched and perf-timechart work on this box?
-> 
-> yeah:
-> 
-> aldebaran:~> perf sched record sleep 1
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.017 MB perf.data (~758 samples) ]
-> aldebaran:~> perf trace | tail -5
->          distccd-20944 [010]  1792.787376: sched_stat_runtime: comm=distccd pid=20944 runtime=11196 [ns] vruntime=696395420043 [ns]
->             init-0     [009]  1792.914837: sched_stat_wait: comm=x86_64-linux-gc pid=881 delay=10686 [ns]
->             init-0     [009]  1792.915082: sched_stat_sleep: comm=events/9 pid=44 delay=2183651362 [ns]
->               as-889   [013]  1793.008008: sched_stat_runtime: comm=as pid=889 runtime=156807 [ns] vruntime=1553569219042 [ns]
->             init-0     [004]  1793.154400: sched_stat_wait: comm=events/4 pid=39 delay=12155 [ns]
-> 
-> aldebaran:~> perf kmem record sleep 1
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.078 MB perf.data (~3398 samples) ]
-> aldebaran:~> perf trace | tail -5
-> aldebaran:~> 
-> 
-> the perf.data has mmap and exit events - but no kmem events.
-> 
-> I've attached the config, in case it matters. It runs latest -tip, with 
-> your latest series applied as well.
-> 
-> 	Ingo
+On 2009-11-24, at 04:43, Pavel Machek wrote:
+>> This is an updated implementation of journal guided resync,  
+>> intended to be suitable for production systems.  This feature  
+>> addresses the problem with RAID arrays that take too long to resync  
+>> - similar to the existing MD write-intent bitmap feature, we resync  
+>> only the stripes that were undergoing writes at the time of the  
+>> crash.  Unlike write-intent bitmaps, our testing shows very little  
+>> performance degredation as a result of the feature - around 3-5% vs  
+>> around 30%
+>> for bitmaps.
+>
+> Good. Now when fs know about raid and wise versa... perhaps it is time
+> to journal surrounding data on stripe so that power fails do not
+> destroy data on degraded raid5?
 
 
+That's an interesting idea.  I suspect this could be done more  
+efficiently by only journaling the parity block update, but there is  
+no way for the journal to address this block.
 
-I think this is a problem external to kmem events. It's about
-trace events/perf in general. It looks like we have some losses.
-Steve and Arjan have reported similar things.
+That said, unfortunately Jody has no more time to work on these  
+patches (due to data ordering requirements Lustre can't use them), and  
+while they are functionally complete for RHEL5 + ext3, they need to be  
+ported to 2.6.current and ext4 by someone or they will die a silent  
+death.
 
-I'll investigate this way.
 
-Thanks.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
