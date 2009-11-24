@@ -1,32 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933890AbZKXScM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933887AbZKXSdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933890AbZKXScM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933802AbZKXScL
+	id S933887AbZKXSdE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:33:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933788AbZKXSdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:32:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59333 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932974AbZKXScK (ORCPT
+	Tue, 24 Nov 2009 13:33:03 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52728 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933769AbZKXSdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:32:10 -0500
-Subject: Re: lockdep complaints in slab allocator
+	Tue, 24 Nov 2009 13:33:02 -0500
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
 From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, cl@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20091124182506.GG6831@linux.vnet.ibm.com>
-References: <1258714328.11284.522.camel@laptop>
-	 <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop>
-	 <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx>
-	 <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop>
-	 <20091124170032.GC6831@linux.vnet.ibm.com>
-	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
-	 <20091124182506.GG6831@linux.vnet.ibm.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4B0C259A.5020303@kernel.org>
+References: <20091120211139.GB19106@sgi.com>
+	 <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>
+	 <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
+	 <1259069986.4531.1453.camel@laptop>
+	 <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+	 <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
+	 <20091124182059.GB11894@elte.hu>  <4B0C259A.5020303@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 19:31:51 +0100
-Message-ID: <1259087511.4531.1775.camel@laptop>
+Date: Tue, 24 Nov 2009 19:32:43 +0100
+Message-ID: <1259087563.4531.1776.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -34,15 +41,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 10:25 -0800, Paul E. McKenney wrote:
+On Tue, 2009-11-24 at 10:27 -0800, Yinghai Lu wrote:
 
-> Well, I suppose I could make my scripts randomly choose the memory
-> allocator, but I would rather not.  ;-)
+> we already have dev numa node, so could just make irqblance to some smart to use
+> that device node corresponding for irq that is binding to the device.
 
-Which is why I hope we'll soon be down to 2, SLOB for tiny systems and
-SLQB for the rest of us, having 3 in-tree and 1 pending is pure and
-simple insanity.
-
-Preferably SLQB will be small enough to also be able to get rid of SLOB,
-but I've not recently seen any data on that particular issue.
+The argument is that a single device can have multiple IRQs and
+therefore numa nodes.
 
