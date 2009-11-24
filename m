@@ -1,276 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZKXLlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932694AbZKXLmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZKXLlF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbZKXLlE
+	id S932694AbZKXLmT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbZKXLmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:41:04 -0500
-Received: from ukmta3.baesystems.com ([20.133.40.55]:16742 "EHLO
-	ukmta3.baesystems.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932270AbZKXLlB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:41:01 -0500
-X-IronPort-AV: E=Sophos;i="4.47,277,1257120000"; 
-   d="scan'208";a="34672459"
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 24 Nov 2009 06:42:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45354 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932251AbZKXLmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 06:42:18 -0500
+Date: Tue, 24 Nov 2009 12:42:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 3/5] slab.c: remove branch hint
+Message-ID: <20091124114218.GA24396@elte.hu>
+References: <cover.1259059549.git.tim@klingt.org>
+ <4B0BBBA8.2090604@klingt.org>
+ <20091124112058.GA23765@elte.hu>
+ <84144f020911240328l3d36d347o6c91b2b1a0f50f2a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
-Date: Tue, 24 Nov 2009 11:41:05 -0000
-Message-ID: <FEBDE48FB0344846BAE4FB976A42642802BDA2F0@GLKMS2101.GREENLNK.NET>
-In-Reply-To: <FEBDE48FB0344846BAE4FB976A42642802BD9F28@GLKMS2101.GREENLNK.NET>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock freq/speed/ticks
-Thread-Index: AcppEi7wIIY+PkoxSNiMBwUwvkw6kwAAYeKQAC8e46AAnrV5QAAr+sXA
-References: <d0ced6d70911190416w3a354a50jcb0e93934805ca07@mail.gmail.com> <FEBDE48FB0344846BAE4FB976A42642802BA8271@GLKMS2101.GREENLNK.NET> <FEBDE48FB0344846BAE4FB976A42642802BD9877@GLKMS2101.GREENLNK.NET> <FEBDE48FB0344846BAE4FB976A42642802BD9F28@GLKMS2101.GREENLNK.NET>
-From: "Ahmed, Subhan (UK)" <Subhan.Ahmed@baesystems.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 24 Nov 2009 11:41:06.0412 (UTC) FILETIME=[024492C0:01CA6CFB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020911240328l3d36d347o6c91b2b1a0f50f2a@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is anyone getting this message at all. 
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Ahmed, Subhan
-(UK)
-Sent: 23 November 2009 14:47
-To: linux-kernel@vger.kernel.org
-Subject: RE: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU
-Clock freq/speed/ticks
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
+> On Tue, Nov 24, 2009 at 1:20 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > (Pekka Cc:-ed)
+> >
+> > * Tim Blechmann <tim@klingt.org> wrote:
+> >
+> >> branch profiling on my nehalem machine showed 99% incorrect branch hints:
+> >>
+> >> ? ?28459 ?7678524 ?99 __cache_alloc_node ? ? ? ? ? ? slab.c
+> >> ? 3551
+> >>
+> >> Signed-off-by: Tim Blechmann <tim@klingt.org>
+> >> ---
+> >> ?mm/slab.c | ? ?2 +-
+> >> ?1 files changed, 1 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/mm/slab.c b/mm/slab.c
+> >> index f70b326..4125fcd 100644
+> >> --- a/mm/slab.c
+> >> +++ b/mm/slab.c
+> >> @@ -3548,7 +3548,7 @@ __cache_alloc_node(struct kmem_cache *cachep,
+> >> gfp_t flags, int nodeid,
+> >> ? ? ? slab_irq_save(save_flags, this_cpu);
+> >> ? ? ? this_node = cpu_to_node(this_cpu);
+> >> - ? ? if (unlikely(nodeid == -1))
+> >> + ? ? if (nodeid == -1)
+> >> ? ? ? ? ? ? ? nodeid = this_node;
+> >> ? ? ? if (unlikely(!cachep->nodelists[nodeid])) {
+> 
+> That sounds odd to me. Can you see where the incorrectly predicted
+> calls are coming from? Calling kmem_cache_alloc_node() with node set
+> to -1 most of the time could be a real bug somewhere.
 
-                    *** WARNING ***
+I think it could occur in too limited tests - the branch prediction 
+looks 'wrong' in certain tests - while it's OK in general.
 
-  This message has originated outside your organisation,
-  either from an external partner or the Global Internet. 
-      Keep this in mind if you answer this message.
+Is there some easy to run workload you consider more or less 
+representative of typical SLAB patterns?
 
+<plug> You might want to pull even with the scheduler subsystem and in 
+       addition to 'perf bench sched', add a 'perf bench slab' set of 
+       interesting testcases for SLAB performance testing. :-) 
+</plug>
 
-Hi All,
-
-I have requested response on below, I can hold on and wait if someone
-can help on this but do let me know if this is not the right place to
-ask such questions. Thanks for help.
-
-Subhan
-
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Ahmed, Subhan
-(UK)
-Sent: 20 November 2009 10:58
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.27.7-9 for Suse 11.1 help required with CPU Clock
-freq/speed/ticks
-
-
-                    *** WARNING ***
-
-  This message has originated outside your organisation,
-  either from an external partner or the Global Internet. 
-      Keep this in mind if you answer this message.
-
-
-Hi All,
-
-I know this is not email list for programming questions but it relates
-to Kernel as well, in fact relying on kernel. Could someone please
-through a light or guide me to the right direction.
-
-
-Problem Statement:	High CPU clock speed/freq
-Requirement:		Obtain a stable CPU clock ticks/speed/freq on
-Suse 11.1 with kernel 2.6.27.7-9
-Questions:			Please refer to the bottom of this page
-Artifacts in Use:
------------------------------------
-OS:					Suse 11.1
-GCC Version:		4.3.2 (Suse Linux) [gcc_4_3-brach revision
-141291]
-Kernel:				2.6.27.7-9
-Kernel Mods:		
-					* Un-check the Tickless option
-					* Timer Frequency - 1000Hz
-					* Preempt kernel
-
-Others 1
------------
-OS:					Suse 10.2
-GCC Version:		4.1.2 20061115 (prerelease)(SUSE Linux)
-Kernel:				2.6.18.2-34-default
-Kernel Mods:
-					* Preemptible Kernel
-(Low-Latency Desktop) (NEW)
-					* Preempt The Big Kernel Lock
-(NEW)
-					* Timer frequency (NEW) - 1000
-Hz (NEW)
-
-Others 2
------------
-OS:					Suse 9.3
-GCC Version:		3.3.5 20050117 (prerelease)(SUSE Linux)
-Kernel				2.6.11.4-20a-default
-Kernel Mods:		None
-
-I executed the following c++ code on the above stated builds
-
-CODE - file name test.cpp
-#include <signal.h>
-#include <sys/time.h>
-#include <iostream>
-#include <cstdlib>
-
-
-using namespace std;
-
-long long int counter = 0;
-struct timeval last_time;
-struct timeval curr_time;
-double dif = 0.0;
-double freq_sum = 0.0;
-double reps = 0.0;
-double freq_min = 99999.0;
-double freq_max = 0.0;
-long long int num_too_low = 0;
-
-void time_check(int data)
-{
-    // work out the frequecy of the SIGALRMs
-    ++counter;
-    if (counter >= 1000)
-    {
-
-        // need to work out time since last 1000 ticks
-	gettimeofday(&curr_time, NULL);
-	dif = ((curr_time.tv_usec + curr_time.tv_sec * 1000000)
-		- (last_time.tv_usec + last_time.tv_sec * 1000000));
-        double freq = (counter / dif)  * 1000000;
-
-        freq_sum = ((freq_sum * reps) + freq) / (reps + 1) ;
-
-        ++reps;
-        cout << "Frequency = " << freq << " reps= " << dif / 1000000 <<
-endl;
-        if (freq_min > freq) freq_min = freq;
-        if (freq_max < freq) freq_max = freq;
-        if (freq < 950) 
-            ++num_too_low;
-        last_time = curr_time;
-        counter = 0;
-    }
-}
-
-int main (int argc, char * argv[])
-{
-    cout << "go" /* << "\a \a \a" */ << endl;
-	
-    int res;
-    gettimeofday(&last_time, NULL);
-    struct sigaction action;
-
-    struct itimerval timer_value;
-
-    timer_value.it_value.tv_sec = 0;
-    timer_value.it_value.tv_usec = 1;
-    timer_value.it_interval.tv_sec = 0;
-    timer_value.it_interval.tv_usec = 1;
-
-    action.sa_handler = time_check;
-    action.sa_flags = SA_NOMASK;
-    sigemptyset(&action.sa_mask);
-
-    sigaction( SIGALRM, &action, NULL);
-    res = setitimer( ITIMER_REAL, &timer_value, NULL );
-    if (res == -1)
-        cout << "error in setitimer" << endl;
-
-    cout << "Starting CPU Test program" << endl;
-    // loop for a long time
-
-    while (reps < 3000.0)
-    {
-        sleep(1);
-    }
-    cout << "average CPU frequency = " << freq_sum << endl;
-    cout << "reps = " << reps << endl;
-    cout << "Min = " << freq_min << "  Max = " << freq_max << endl;
-    cout << "number of low = " << num_too_low << endl;
-    return 0;
-}
-
-Compiled the above code with 	"g++ -o test test.cpp"
-Run the above code with 		"./test"
-
-Observations:
-SUSE Version    AVG. Frequency        		AVG. REPS
-Suse 9.3  		999.xxx to 990.xxx  			reps > 1
-(on average)
-Suse 10.2 		999.xxx to 998.xxx  			reps (1
-- 1.001)
-Suse 10.3     	1000.xxx to 912.xxx  			reps (1 - 1.090)
-Suse 11.1       0 to  324263.xxx  				reps
-(-2e-0.6 upto 0.005112)
-
-Suse 11.1 - Options:
-
-- Turn off ACPI in options when booting with clock=tsc | clock=pit
-
-Observations for suse 11.1 with options acpi=off and clock=tsc |
-clock=pit
-
-SUSE Version    AVG. Frequency        		AVG. REPS
-Suse 11.1 		710.xxx to 999.xxx      		reps
-(1.37xx to 1.0002)
-
-Hardware used for Suse 11.1 - HP Pavilion Slimline s3821uk Desktop PC
-(NQ808AA) specifications - HP Home & Home Office products
-http://h10010.www1.hp.com/wwpc/uk/en/ho/WF10a/12454-12454-3329740-64546-
-64546-3884669.html?jumpid=in_r2515_uk/en/hho/ipg/psc404redirect-ot-xx-xx
--/chev/
-
-While testing no other application/s were running.
-
-Question:
-
-* Is my c++ code correct?
-* Am I using the correct way to get the clock ticks or is there more
-reliable tchnique avaliable to do this?
-* Is that a problem with new Kernel if so is it a known issue ?
-* Do I need to modify the Kernel to obtain regular and stable clock tick
-at 1000 Hz ?
-* Do I have to upgrade the Kernel ?
-* Would be great, if pointed to the right direction for solution (e.g.
-another forum) if no solution at hand.
-
-Thanks
-
-Subhan
-
-********************************************************************
-This email and any attachments are confidential to the intended
-recipient and may also be privileged. If you are not the intended
-recipient please delete it from your system and notify the sender.
-You should not copy it or use it for any purpose nor disclose or
-distribute its contents to any other person.
-********************************************************************
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in the body of a message to majordomo@vger.kernel.org More majordomo
-info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in the body of a message to majordomo@vger.kernel.org More majordomo
-info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+	Ingo
