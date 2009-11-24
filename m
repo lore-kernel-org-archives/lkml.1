@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933817AbZKXSCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbZKXSQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933817AbZKXSCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbZKXSCT
+	id S933844AbZKXSQq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:16:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933727AbZKXSQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:02:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50168
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933580AbZKXSCS (ORCPT
+	Tue, 24 Nov 2009 13:16:39 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:33713 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932866AbZKXSQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:02:18 -0500
-Date: Tue, 24 Nov 2009 10:02:36 -0800 (PST)
-Message-Id: <20091124.100236.135630809.davem@davemloft.net>
-To: florian@openwrt.org
-Cc: ralf@linux-mips.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, a.beregalov@gmail.com,
-       linux-mips@linux-mips.org, manuel.lauss@googlemail.com
-Subject: Re: linux-next: manual merge of the mips tree with the net-current
- tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200911241230.22370.florian@openwrt.org>
-References: <20091124011958.GA8105@linux-mips.org>
-	<20091123.194343.232255103.davem@davemloft.net>
-	<200911241230.22370.florian@openwrt.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 24 Nov 2009 13:16:37 -0500
+X-Greylist: delayed 917 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:16:36 EST
+Message-ID: <4B0C1FE0.8040105@panasas.com>
+Date: Tue, 24 Nov 2009 20:03:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@citi.umich.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       pNFS Mailing List <pnfs@linux-nfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 4/5] lockd: Remove unused nfsd headers #includes
+References: <4B0C1EB7.50508@panasas.com>
+In-Reply-To: <4B0C1EB7.50508@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Nov 2009 18:03:14.0918 (UTC) FILETIME=[64B8F060:01CA6D30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Florian Fainelli <florian@openwrt.org>
-Date: Tue, 24 Nov 2009 12:30:22 +0100
 
-> On Tuesday 24 November 2009 04:43:43 David Miller wrote:
->> From: Ralf Baechle <ralf@linux-mips.org>
->> Date: Tue, 24 Nov 2009 01:19:58 +0000
->> 
->> > On Tue, Nov 24, 2009 at 11:37:17AM +1100, Stephen Rothwell wrote:
->> >> Hi Ralf,
->> >>
->> >> Today's linux-next merge of the mips tree got a conflict in
->> >> drivers/net/au1000_eth.c between commit
->> >> 63edaf647607795a065e6956a79c47f500dc8447 ("Au1x00: fix crash when trying
->> >> register_netdev()") from the net-current tree and commit
->> >> 6cdbc95856e7f4ab4e7b2f2bdab5c3844537ad83 ("NET: au1000-eth: convert to
->> >> platform_driver model") from the mips tree.
->> >>
->> >> It looks to me that the mips tree change supercedes the net-current one
->> >> (since it moves the register_netdev() call much later), so I just used
->> >> this file from the mips tree.
->> >
->> > I agree.  David, can you just drop the net-current patch then?  This fix
->> > is still needed for -stable however.
->> 
->> Why would I do that?  The bug fix is necessary for 2.6.32 too.
-> 
-> Ok, it is, but the platform_driver conversion patch is heavier, so the bugfix 
-> is way easier to apply on thom of the conversion.
+In what history where these ever needed? Well not
+any more.
 
-But the conversion is not appropriate for 2.6.32, and since I have to push
-the bug fix into 2.6.32 anyways you have to live with resolving the conflict
-somehow since the bug fix by itself is going to go to Linus for 2.6.32 but
-your conversion is not.
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ fs/lockd/svc4proc.c |    4 ----
+ fs/lockd/svcproc.c  |    4 ----
+ 2 files changed, 0 insertions(+), 8 deletions(-)
+
+diff --git a/fs/lockd/svc4proc.c b/fs/lockd/svc4proc.c
+index bd173a6..a7966ee 100644
+--- a/fs/lockd/svc4proc.c
++++ b/fs/lockd/svc4proc.c
+@@ -11,10 +11,6 @@
+ #include <linux/time.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+-#include <linux/in.h>
+-#include <linux/sunrpc/svc.h>
+-#include <linux/sunrpc/clnt.h>
+-#include <linux/nfsd/nfsd.h>
+ #include <linux/lockd/lockd.h>
+ #include <linux/lockd/share.h>
+ 
+diff --git a/fs/lockd/svcproc.c b/fs/lockd/svcproc.c
+index e1d28dd..56c9519 100644
+--- a/fs/lockd/svcproc.c
++++ b/fs/lockd/svcproc.c
+@@ -11,10 +11,6 @@
+ #include <linux/time.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+-#include <linux/in.h>
+-#include <linux/sunrpc/svc.h>
+-#include <linux/sunrpc/clnt.h>
+-#include <linux/nfsd/nfsd.h>
+ #include <linux/lockd/lockd.h>
+ #include <linux/lockd/share.h>
+ 
+-- 
+1.6.5.2
+
+
