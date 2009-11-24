@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbZKXVIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934235AbZKXVQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934118AbZKXVIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934092AbZKXVIx
+	id S934235AbZKXVQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933957AbZKXVIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:53 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44760 "EHLO
+	Tue, 24 Nov 2009 16:08:24 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44562 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934054AbZKXVIn (ORCPT
+	with ESMTP id S933657AbZKXVIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:43 -0500
+	Tue, 24 Nov 2009 16:08:21 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       Yang Hongyang <yanghy@cn.fujitsu.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-scsi@vger.kernel.org
-Subject: [PATCH 19/38] move snirm710_driver_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:14 +0100
-Message-Id: <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Wolfgang Ocker <weo@reccoware.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       spi-devel-general@lists.sourceforge.net,
+       Mike Frysinger <vapier@gentoo.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH 20/38] move spidev_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:15 +0100
+Message-Id: <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -42,6 +42,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -53,35 +54,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function snirm710_driver_remove is used only wrapped by __devexit_p
-so define it using __devexit.
+The function spidev_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-Cc: Yang Hongyang <yanghy@cn.fujitsu.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Wolfgang Ocker <weo@reccoware.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: spi-devel-general@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- drivers/scsi/sni_53c710.c |    2 +-
+ drivers/spi/spidev.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
-index 37b3359..c941a00 100644
---- a/drivers/scsi/sni_53c710.c
-+++ b/drivers/scsi/sni_53c710.c
-@@ -116,7 +116,7 @@ static int __init snirm710_probe(struct platform_device *dev)
- 	return -ENODEV;
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index 5d23983..5471bfc 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -610,7 +610,7 @@ static int spidev_probe(struct spi_device *spi)
+ 	return status;
  }
  
--static int __exit snirm710_driver_remove(struct platform_device *dev)
-+static int __devexit snirm710_driver_remove(struct platform_device *dev)
+-static int spidev_remove(struct spi_device *spi)
++static int __devexit spidev_remove(struct spi_device *spi)
  {
- 	struct Scsi_Host *host = dev_get_drvdata(&dev->dev);
- 	struct NCR_700_Host_Parameters *hostdata =
+ 	struct spidev_data	*spidev = spi_get_drvdata(spi);
+ 
 -- 
 1.6.5.2
 
