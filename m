@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933601AbZKXR2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbZKXRaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933601AbZKXR2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933501AbZKXR2e
+	id S933623AbZKXRaf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933578AbZKXRaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:28:34 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:48124 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933481AbZKXR2d convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 12:30:35 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42958 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933519AbZKXRae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:28:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=No9PnKJ6nuu3TKKd7mby/YftaIzmvhF2GO6WIU4DeqqtkiC7BB0fFf5cpHqBvMSBnk
-         QKimu6TCzR/Ku3VTaMFGlHW4ad7T+oqKrg7p74+BTDIrivHFAjsptgSPc6phLliBKEMW
-         ruTV/TysfvKQoEJtvTrcx+EsWXCSSOD9OcGbY=
-MIME-Version: 1.0
-In-Reply-To: <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
-References: <4B0BBB93.3080307@klingt.org>
-	 <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
-Date: Tue, 24 Nov 2009 12:28:18 -0500
-Message-ID: <73c1f2160911240928j69cbf65dx4a2747a06c7ca43d@mail.gmail.com>
-Subject: Re: [tip:sched/core] sched, x86: Optimize branch hint in 
-	__switch_to()
-From: Brian Gerst <brgerst@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       tim@klingt.org, mingo@elte.hu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 24 Nov 2009 12:30:34 -0500
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect
+ GCC messing with mcount prologue
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Andrew Haley <aph@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jakub Jelinek <jakub@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H.J. Lu" <hjl.tools@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <4B0C13F4.5090106@redhat.com>
+References: <1258694593.22249.1012.camel@gandalf.stny.rr.com>
+	 <1258736456.22249.1032.camel@gandalf.stny.rr.com>
+	 <4B06EF6F.2050507@redhat.com>
+	 <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+	 <4B0972C9.302@redhat.com>
+	 <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
+	 <4B0BF119.4070704@redhat.com>
+	 <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain>
+	 <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com>
+	 <4B0BFC84.7070806@redhat.com>
+	 <20091124153634.GK22813@hs20-bc2-1.build.redhat.com>
+	 <4B0BFFD0.2080203@redhat.com> <4B0C0C12.7040907@zytor.com>
+	 <4B0C13F4.5090106@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 24 Nov 2009 12:30:39 -0500
+Message-Id: <1259083839.22249.1117.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 11:57 AM, tip-bot for Tim Blechmann
-<tim@klingt.org> wrote:
-> Commit-ID:  a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
-> Gitweb:     http://git.kernel.org/tip/a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
-> Author:     Tim Blechmann <tim@klingt.org>
-> AuthorDate: Tue, 24 Nov 2009 11:55:15 +0100
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Tue, 24 Nov 2009 12:20:04 +0100
->
-> sched, x86: Optimize branch hint in __switch_to()
->
-> Branch hint profiling on my nehalem machine showed 96%
-> incorrect branch hints:
->
->  6548732 174664120  96 __switch_to                    process_64.c
->    406
->  6548745 174565593  96 __switch_to                    process_64.c
->    410
->
-> Signed-off-by: Tim Blechmann <tim@klingt.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> LKML-Reference: <4B0BBB93.3080307@klingt.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/process_64.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-> index ad535b6..d9db104 100644
-> --- a/arch/x86/kernel/process_64.c
-> +++ b/arch/x86/kernel/process_64.c
-> @@ -406,11 +406,10 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
->         * This won't pick up thread selector changes, but I guess that is ok.
->         */
->        savesegment(es, prev->es);
-> -       if (unlikely(next->es | prev->es))
-> +       if (next->es | prev->es)
->                loadsegment(es, next->es);
-> -
->        savesegment(ds, prev->ds);
-> -       if (unlikely(next->ds | prev->ds))
-> +       if (next->ds | prev->ds)
->                loadsegment(ds, next->ds);
->
->
+On Tue, 2009-11-24 at 17:12 +0000, Andrew Haley wrote:
+> H. Peter Anvin wrote:
 
-64-bit tasks should have %ds and %es set to null selectors.  The only
-time they should be different is for 32-bit tasks.  It lookx like some
-versions of GCC just aren't using the hint.  I've tested it with 4.4.2
-and the generated assembly is the same with or without the hint.
+> > If we're changing gcc anyway, then let's add the option of intercepting
+> > the function at the point where the machine state is well-defined by
+> > ABI, which is before the function stack frame is set up.
+> 
+> Hmm.  On the x86 I suppose we could just inject a naked call instruction,
+> but not all aeches allow us to call anything before we've saved the return
+> address.  Or are you talking x86 only?
 
---
-Brian Gerst
+Earlier in the GCC BUG thread we talked about this. Adding a __fentry__
+call at the beginning of the function. This could be done for other
+archs as well, but yes, the return address must be stored. For x86 it is
+the easiest because it automatically stores the return address on the
+stack (Andi already has a working patch I believe).
+
+For other archs, Linus showed some examples:
+
+http://lkml.org/lkml/2009/11/19/349
+
+-- Steve
+
+
