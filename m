@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934026AbZKXVIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbZKXVIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934026AbZKXVIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934012AbZKXVIc
+	id S934041AbZKXVIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933394AbZKXVIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:32 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44580 "EHLO
+	Tue, 24 Nov 2009 16:08:34 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44634 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933394AbZKXVIX (ORCPT
+	with ESMTP id S933549AbZKXVIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:23 -0500
+	Tue, 24 Nov 2009 16:08:30 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Paul Mundt <lethal@linux-sh.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>, rtc-linux@googlegroups.com
-Subject: [PATCH 28/38] don't use __exit_p to wrap ds1302_rtc_remove
-Date: Tue, 24 Nov 2009 22:07:23 +0100
-Message-Id: <1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org,
+       =?UTF-8?q?Richard=20R=C3=B6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Subject: [PATCH 29/38] move mc33880_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:24 +0100
+Message-Id: <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-27-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -48,6 +48,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-26-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-27-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -59,32 +60,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function ds1302_rtc_remove is defined using __devexit, so don't use
-__exit_p but __devexit_p to wrap it.
+The function mc33880_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Richard Röjfors" <richard.rojfors.ext@mocean-labs.com>
 Cc: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: rtc-linux@googlegroups.com
 ---
- drivers/rtc/rtc-ds1302.c |    2 +-
+ drivers/gpio/mc33880.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/rtc/rtc-ds1302.c b/drivers/rtc/rtc-ds1302.c
-index d490628..1e73c8f 100644
---- a/drivers/rtc/rtc-ds1302.c
-+++ b/drivers/rtc/rtc-ds1302.c
-@@ -201,7 +201,7 @@ static struct platform_driver ds1302_platform_driver = {
- 		.name	= DRV_NAME,
- 		.owner	= THIS_MODULE,
- 	},
--	.remove		= __exit_p(ds1302_rtc_remove),
-+	.remove		= __devexit_p(ds1302_rtc_remove),
- };
+diff --git a/drivers/gpio/mc33880.c b/drivers/gpio/mc33880.c
+index e7d01bd..6e82bc6 100644
+--- a/drivers/gpio/mc33880.c
++++ b/drivers/gpio/mc33880.c
+@@ -145,7 +145,7 @@ exit_destroy:
+ 	return ret;
+ }
  
- static int __init ds1302_rtc_init(void)
+-static int mc33880_remove(struct spi_device *spi)
++static int __devexit mc33880_remove(struct spi_device *spi)
+ {
+ 	struct mc33880 *mc;
+ 	int ret;
 -- 
 1.6.5.2
 
