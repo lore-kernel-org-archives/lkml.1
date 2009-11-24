@@ -1,101 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933821AbZKXSBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933725AbZKXRuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933821AbZKXSBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbZKXSBc
+	id S933725AbZKXRuo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZKXRun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:01:32 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:4489 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933787AbZKXSBX (ORCPT
+	Tue, 24 Nov 2009 12:50:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:20934 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933700AbZKXRun convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:01:23 -0500
-X-Greylist: delayed 853 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:01:23 EST
-Message-ID: <4B0C1C20.2080901@panasas.com>
-Date: Tue, 24 Nov 2009 19:47:12 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+	Tue, 24 Nov 2009 12:50:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JTjxrhybq7eysot7Xn3HNDWLSy7k13EwxeO8qbomSsp6HWr/2lnVObjjs0HPmztN+U
+         mBZ7/u4kO+8dESGNUpJHdgqIDBmsDZiu0O/L6ceprJj64eYxSmHjBAOVglqTrb39814m
+         f3P1udUCz59TgLM2qp5Koj89ClER9V+GNhTbw=
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: tmhikaru@gmail.com, Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-References: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+In-Reply-To: <4B0BBB83.2020604@klingt.org>
+References: <4B0BBB83.2020604@klingt.org>
+Date: Tue, 24 Nov 2009 12:50:48 -0500
+Message-ID: <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
+Subject: Re: [PATCH 0/5] branch hint tweaks
+From: Brian Gerst <brgerst@gmail.com>
+To: Tim Blechmann <tim@klingt.org>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2009 17:47:16.0050 (UTC) FILETIME=[29314B20:01CA6D2E]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/24/2009 07:16 PM, Alan Stern wrote:
-> On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
-> 
->> Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
->> don't think I'm allowed to send attachments here, nor do I know what I'm
->> supposed to be looking for in this output. So, instead I'm putting the
->> (compressed) file up on my home computer. If you've got suggestions for what
->> I should use instead, let me know.
->>
->> http://hikaru.no-ip.info:3000/1.mon.out.xz
->>
->> Although I don't think you'll need it, I've included the dmesg output of
->> what happened when I ran my backup script, just in case it helps at all.
-> 
-> Here's an annotated example of one of those hiccups:
-> 
-> f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
-> f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
-> 
-> The computer issued a READ command for 8 blocks (4096 bytes) starting
-> at block number 0x0000aeef = 44783.
-> 
-> d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
-> d2588b00 2416019428 C Bi:1:003:2 -32 0
-> f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
-> f1aa1f00 2416019554 C Co:1:003:0 0 0
-> 
-> The drive returned 0 bytes of data.
-> 
-> f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
-> f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
-> 
-> And then it returned a status indicating no error but 4096 bytes
-> residue (i.e., incorrect or undelivered data).  This caused the
-> usb-storage driver to send the SCSI layer a result code of DID_ERROR
-> with no sense data.
-> 
->> sd 0:0:0:0: [sda] Unhandled error code
->> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 44783
-> 
-> The DID_ERROR code caused the SCSI layer to display this error message.  
-> 
->> sd 0:0:0:0: [sda] Unhandled error code
->> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
->> end_request: I/O error, dev sda, sector 51823
-> 
-> I would have expected the READ to be retried, but in these two cases 
-> it wasn't.  The usbmon log contained five instances of this error 
-> sequence; the other three were retried successfully.  I don't know what 
-> the difference was.
-> 
+On Tue, Nov 24, 2009 at 5:54 AM, Tim Blechmann <tim@klingt.org> wrote:
+> hi all,
+>
+> doing some branch hint profiling of 2.6.31 on my nehalem machine showed
+> a few
+> incorrect branch hints.
+> these patches remove or change the branch hints
+>
+> Tim Blechmann (5):
+>  process_64: remove branch hint
+>  sched.c: change branch hint
+>  slab.c: remove branch hint
+>  sched_fair.c: remove branch hint
+>  workqueue.c: remove branch hint
+>
+>  arch/x86/kernel/process_64.c |    4 ++--
+>  kernel/sched.c               |    4 ++--
+>  kernel/sched_fair.c          |    2 +-
+>  kernel/workqueue.c           |    2 +-
+>  mm/slab.c                    |    2 +-
+>  5 files changed, 7 insertions(+), 7 deletions(-)
 
-Perhaps the time it took to complete.
+Did you run profiling tests again after making these changes to see if
+they had any effect?  likely() and unlikely() are only hints.  GCC
+doesn't have to follow them, or it could be broken in recent GCC
+versions.
 
-I have a very old IDE disk connected to a USB box here, and some bad sectors take ages
-to return. One thing I wanted to investigate is why the complete Linux system is frozen
-for minutes when I "cp" one of these bad-sectors and then every thing is back to normal.
-It's just an inserted external box. Swap system and everything is on an another healthy HD.
-As if the USB controller actually locks the PCI bus, or the interrupts are off for a long
-while. (Or is it the BKL?)
+I'm not sure what version of GCC added this, but I wonder if this
+option will fix the problem:
 
-Do you have time stamps on these?
+-fno-guess-branch-probability
+    Do not guess branch probabilities using heuristics.
 
-> Alan Stern
-> 
+    GCC will use heuristics to guess branch probabilities if they are
+not provided by profiling feedback (-fprofile-arcs). These heuristics
+are based on the control flow graph. If some branch probabilities are
+specified by `__builtin_expect', then the heuristics will be used to
+guess branch probabilities for the rest of the control flow graph,
+taking the `__builtin_expect' info into account. The interactions
+between the heuristics and `__builtin_expect' can be complex, and in
+some cases, it may be useful to disable the heuristics so that the
+effects of `__builtin_expect' are easier to understand.
 
-Boaz
+    The default is -fguess-branch-probability at levels -O, -O2, -O3, -Os.
+
+--
+Brian Gerst
