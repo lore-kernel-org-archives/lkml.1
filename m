@@ -1,102 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbZKXPJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933339AbZKXPIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbZKXPJJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 10:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933280AbZKXPHx
+	id S933339AbZKXPIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 10:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933295AbZKXPHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 10:07:53 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:45503 "EHLO relay.sgi.com"
+	Tue, 24 Nov 2009 10:07:54 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:45506 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933250AbZKXPHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933243AbZKXPHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Nov 2009 10:07:47 -0500
-Message-Id: <20091124150753.531315000@sgi.com>
+Message-Id: <20091124150753.925553000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Tue, 24 Nov 2009 09:06:09 -0600
+Date: Tue, 24 Nov 2009 09:06:10 -0600
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [Patch 12/29] GRU - Add debug option for cache flushing
+Subject: [Patch 13/29] GRU - Add test for gru_copy_gpa
 References: <20091124150557.082648000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_grudump_flush
+Content-Disposition: inline; filename=uv_gru_add_ktest_for_copy_gpa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Add a debug option to the SGI GRU driver for flushing GRU cache lines from memory.
-In theory this is not needed but it is useful for debugging. This
-has no use by end users.
+Improve existing driver self-tests. Add a new debugging test to the SGI GRU driver
+for verifying the global GRU copy function.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/grukdump.c |   13 ++++++++-----
- drivers/misc/sgi-gru/grulib.h   |    2 ++
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/misc/sgi-gru/grukservices.c |   48 +++++++++++++++++++++++++++++-------
+ 1 file changed, 39 insertions(+), 9 deletions(-)
 
-Index: linux/drivers/misc/sgi-gru/grukdump.c
+Index: linux/drivers/misc/sgi-gru/grukservices.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukdump.c	2009-11-20 09:32:14.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grukdump.c	2009-11-20 09:32:32.000000000 -0600
-@@ -44,7 +44,8 @@ static int gru_user_copy_handle(void __u
+--- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-11-20 09:32:29.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grukservices.c	2009-11-20 09:32:32.000000000 -0600
+@@ -1004,6 +1004,7 @@ static int quicktest2(unsigned long arg)
+ 	int ret = 0;
+ 	unsigned long *buf;
+ 	void *cb0, *cb;
++	struct gru_control_block_status *gen;
+ 	int i, k, istatus, bytes;
  
- static int gru_dump_context_data(void *grubase,
- 			struct gru_context_configuration_handle *cch,
--			void __user *ubuf, int ctxnum, int dsrcnt)
-+			void __user *ubuf, int ctxnum, int dsrcnt,
-+			int flush_cbrs)
- {
- 	void *cb, *cbe, *tfh, *gseg;
- 	int i, scr;
-@@ -55,6 +56,8 @@ static int gru_dump_context_data(void *g
- 	tfh = grubase + GRU_TFH_BASE;
+ 	bytes = numcb * 4 * 8;
+@@ -1023,20 +1024,30 @@ static int quicktest2(unsigned long arg)
+ 				XTYPE_DW, 4, 1, IMA_INTERRUPT);
  
- 	for_each_cbr_in_allocation_map(i, &cch->cbr_allocation_map, scr) {
-+		if (flush_cbrs)
-+			gru_flush_cache(cb);
- 		if (gru_user_copy_handle(&ubuf, cb))
- 			goto fail;
- 		if (gru_user_copy_handle(&ubuf, tfh + i * GRU_HANDLE_STRIDE))
-@@ -115,7 +118,7 @@ fail:
+ 	ret = 0;
+-	for (k = 0; k < numcb; k++) {
++	k = numcb;
++	do {
+ 		gru_wait_async_cbr(han);
+ 		for (i = 0; i < numcb; i++) {
+ 			cb = cb0 + i * GRU_HANDLE_STRIDE;
+ 			istatus = gru_check_status(cb);
+-			if (istatus == CBS_ACTIVE)
+-				continue;
+-			if (istatus == CBS_EXCEPTION)
+-				ret = -EFAULT;
+-			else if (buf[i] || buf[i + 1] || buf[i + 2] ||
+-					buf[i + 3])
+-				ret = -EIO;
++			if (istatus != CBS_ACTIVE && istatus != CBS_CALL_OS)
++				break;
+ 		}
+-	}
++		if (i == numcb)
++			continue;
++		if (istatus != CBS_IDLE) {
++			printk(KERN_DEBUG "GRU:%d quicktest2: cb %d, exception\n", smp_processor_id(), i);
++			ret = -EFAULT;
++		} else if (buf[4 * i] || buf[4 * i + 1] || buf[4 * i + 2] ||
++				buf[4 * i + 3]) {
++			printk(KERN_DEBUG "GRU:%d quicktest2:cb %d,  buf 0x%lx, 0x%lx, 0x%lx, 0x%lx\n",
++			       smp_processor_id(), i, buf[4 * i], buf[4 * i + 1], buf[4 * i + 2], buf[4 * i + 3]);
++			ret = -EIO;
++		}
++		k--;
++		gen = cb;
++		gen->istatus = CBS_CALL_OS; /* don't handle this CBR again */
++	} while (k);
+ 	BUG_ON(cmp.done);
  
- static int gru_dump_context(struct gru_state *gru, int ctxnum,
- 		void __user *ubuf, void __user *ubufend, char data_opt,
--		char lock_cch)
-+		char lock_cch, char flush_cbrs)
- {
- 	struct gru_dump_context_header hdr;
- 	struct gru_dump_context_header __user *uhdr = ubuf;
-@@ -159,8 +162,7 @@ static int gru_dump_context(struct gru_s
- 			ret = -EFBIG;
- 		else
- 			ret = gru_dump_context_data(grubase, cch, ubuf, ctxnum,
--							dsrcnt);
--
-+							dsrcnt, flush_cbrs);
- 	}
- 	if (cch_locked)
- 		unlock_cch_handle(cch);
-@@ -215,7 +217,8 @@ int gru_dump_chiplet_request(unsigned lo
- 	for (ctxnum = 0; ctxnum < GRU_NUM_CCH; ctxnum++) {
- 		if (req.ctxnum == ctxnum || req.ctxnum < 0) {
- 			ret = gru_dump_context(gru, ctxnum, ubuf, ubufend,
--						req.data_opt, req.lock_cch);
-+						req.data_opt, req.lock_cch,
-+						req.flush_cbrs);
- 			if (ret < 0)
- 				goto fail;
- 			ubuf += ret;
-Index: linux/drivers/misc/sgi-gru/grulib.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grulib.h	2009-11-20 09:32:28.000000000 -0600
-+++ linux/drivers/misc/sgi-gru/grulib.h	2009-11-20 09:32:32.000000000 -0600
-@@ -125,6 +125,8 @@ struct gru_dump_chiplet_state_req {
- 	int		ctxnum;
- 	char		data_opt;
- 	char		lock_cch;
-+	char		flush_cbrs;
-+	char		fill[10];
- 	pid_t		pid;
- 	void		*buf;
- 	size_t		buflen;
+ 	gru_unlock_async_resource(han);
+@@ -1046,6 +1057,22 @@ done:
+ 	return ret;
+ }
+ 
++#define BUFSIZE 200
++static int quicktest3(unsigned long arg)
++{
++	char buf1[BUFSIZE], buf2[BUFSIZE];
++	int ret = 0;
++
++	memset(buf2, 0, sizeof(buf2));
++	memset(buf1, get_cycles() & 255, sizeof(buf1));
++	gru_copy_gpa(uv_gpa(buf2), uv_gpa(buf1), BUFSIZE);
++	if (memcmp(buf1, buf2, BUFSIZE)) {
++		printk(KERN_DEBUG "GRU quicktest3 error\n");
++		ret = -EIO;
++	}
++	return ret;
++}
++
+ /*
+  * Debugging only. User hook for various kernel tests
+  * of driver & gru.
+@@ -1064,6 +1091,9 @@ int gru_ktest(unsigned long arg)
+ 	case 2:
+ 		ret = quicktest2(arg);
+ 		break;
++	case 3:
++		ret = quicktest3(arg);
++		break;
+ 	case 99:
+ 		ret = gru_free_kernel_contexts();
+ 		break;
 
