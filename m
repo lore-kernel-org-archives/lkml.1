@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZKXSAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbZKXSAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933766AbZKXSAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933737AbZKXSAj
+	id S933793AbZKXSAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbZKXSAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:00:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50777 "EHLO mx2.suse.de"
+	Tue, 24 Nov 2009 13:00:48 -0500
+Received: from mga01.intel.com ([192.55.52.88]:3680 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933603AbZKXSAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:00:38 -0500
-Date: Tue, 24 Nov 2009 19:00:37 +0100
-From: Jan Kara <jack@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tmhikaru@gmail.com, Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-Message-ID: <20091124180036.GB16662@quack.suse.cz>
-References: <20091123234234.GA22126@roll>
- <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S933769AbZKXSAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:00:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,280,1257148800"; 
+   d="scan'208";a="516968703"
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dimitri Sivanich <sivanich@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <m1ws1f6csh.fsf@fess.ebiederm.org>
+References: <20091120211139.GB19106@sgi.com>
+	 <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>
+	 <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
+	 <1259069986.4531.1453.camel@laptop>
+	 <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+	 <20091124065022.6933be1a@infradead.org>  <m1ws1f6csh.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Tue, 24 Nov 2009 10:00:56 -0800
+Message-Id: <1259085656.2631.50.camel@ppwaskie-mobl2>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-11-09 12:16:17, Alan Stern wrote:
-> On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
+On Tue, 2009-11-24 at 09:41 -0800, Eric W. Biederman wrote:
+> Arjan van de Ven <arjan@infradead.org> writes:
 > 
-> > Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
-> > don't think I'm allowed to send attachments here, nor do I know what I'm
-> > supposed to be looking for in this output. So, instead I'm putting the
-> > (compressed) file up on my home computer. If you've got suggestions for what
-> > I should use instead, let me know.
-> > 
-> > http://hikaru.no-ip.info:3000/1.mon.out.xz
-> > 
-> > Although I don't think you'll need it, I've included the dmesg output of
-> > what happened when I ran my backup script, just in case it helps at all.
+> > On Tue, 24 Nov 2009 14:55:15 +0100 (CET)
+> >> > Furthermore, the /sysfs topology information should include IRQ
+> >> > routing data in this case.
+> >> 
+> >> Hmm, not sure about that. You'd need to scan through all the nodes to
+> >> find the set of CPUs where an irq can be routed to. I prefer to have
+> >> the information exposed by the irq enumeration (which is currently in
+> >> /proc/irq though).
+> >
+> > yes please.
+> >
+> > one device can have multiple irqs
+> > one irq can be servicing multiple devices
+> >
+> > expressing that in sysfs is a nightmare, while
+> > sticking it in /proc/irq *where the rest of the info is* is
+> > much nicer for apps like irqbalance
 > 
-> Here's an annotated example of one of those hiccups:
+> Oii.
 > 
-> f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
-> f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
+> I don't think it is bad to export information to applications like irqbalance.
 > 
-> The computer issued a READ command for 8 blocks (4096 bytes) starting
-> at block number 0x0000aeef = 44783.
+> I think it pretty horrible that one of the standard ways I have heard
+> to improve performance on 10G nics is to kill irqbalance.
 > 
-> d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
-> d2588b00 2416019428 C Bi:1:003:2 -32 0
-> f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
-> f1aa1f00 2416019554 C Co:1:003:0 0 0
-> 
-> The drive returned 0 bytes of data.
-> 
-> f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
-> f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
-> 
-> And then it returned a status indicating no error but 4096 bytes
-> residue (i.e., incorrect or undelivered data).  This caused the
-> usb-storage driver to send the SCSI layer a result code of DID_ERROR
-> with no sense data.
-> 
-> > sd 0:0:0:0: [sda] Unhandled error code
-> > sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
-> > end_request: I/O error, dev sda, sector 44783
-> 
-> The DID_ERROR code caused the SCSI layer to display this error message.  
-> 
-> > sd 0:0:0:0: [sda] Unhandled error code
-> > sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
-> > end_request: I/O error, dev sda, sector 51823
-> 
-> I would have expected the READ to be retried, but in these two cases 
-> it wasn't.  The usbmon log contained five instances of this error 
-> sequence; the other three were retried successfully.  I don't know what 
-> the difference was.
-  My naive guess would be that those non-retried reads were actually
-readahead. That's not retried if I remember correctly. Later, when we
-really needed the data, we sent another read request...
 
-								Honza
+This is something I'm actively trying to fix (see thread "irq: Add
+node_affinity CPU masks for smarter irqbalance hints").  That patch may
+not be the final answer, but whatever comes of it will fix the
+recommendation of "killall irqbalance" for performance boosts.
+
+Cheers,
+-PJ
+
