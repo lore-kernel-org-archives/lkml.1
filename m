@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934296AbZKXVwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934347AbZKXV4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934296AbZKXVwt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933979AbZKXVws
+	id S934347AbZKXV4r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934232AbZKXV4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:52:48 -0500
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:41385 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933974AbZKXVws (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:52:48 -0500
-Date: Tue, 24 Nov 2009 14:52:53 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: xfs-masters@oss.sgi.com
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: [PATCH XFS] Fix error return for fallocate() on XFS
-Message-ID: <20091124215253.GA10693@obsidianresearch.com>
+	Tue, 24 Nov 2009 16:56:46 -0500
+Received: from www.tglx.de ([62.245.132.106]:49062 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934319AbZKXV4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:56:45 -0500
+Date: Tue, 24 Nov 2009 22:56:29 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Miller <davem@davemloft.net>
+cc: peter.p.waskiewicz.jr@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.jf.intel.com, mingo@elte.hu, yong.zhang0@gmail.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v2] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+In-Reply-To: <20091124.095703.107687163.davem@davemloft.net>
+Message-ID: <alpine.LFD.2.00.0911242252190.24119@localhost.localdomain>
+References: <20091124093518.3909.16435.stgit@ppwaskie-hc2.jf.intel.com> <alpine.LFD.2.00.0911241151360.24119@localhost.localdomain> <20091124.095703.107687163.davem@davemloft.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed that through glibc fallocate would return 28 rather than -1
-and errno = 28 for ENOSPC. The xfs routines uses XFS_ERROR format
-positive return error codes while the syscalls use negative return codes.
-Fixup the two cases in xfs_vn_fallocate syscall to convert to negative.
+On Tue, 24 Nov 2009, David Miller wrote:
 
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
----
- fs/xfs/linux-2.6/xfs_iops.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Tue, 24 Nov 2009 12:07:35 +0100 (CET)
+> 
+> > And what does the kernel do with this information and why are we not
+> > using the existing device/numa_node information ?
+> 
+> It's a different problem space Thomas.
+> 
+> If the device lives on NUMA node X, we still end up wanting to
+> allocate memory resources (RX ring buffers) on other NUMA nodes on a
+> per-queue basis.
+> 
+> Otherwise a network card's forwarding performance is limited by the
+> memory bandwidth of a single NUMA node, and on a multiqueue cards we
+> therefore fare much better by allocating each device RX queue's memory
+> resources on a different NUMA node.
+> 
+> It is this NUMA usage that PJ is trying to export somehow to userspace
+> so that irqbalanced and friends can choose the IRQ cpu masks more
+> intelligently.
 
-diff --git a/fs/xfs/linux-2.6/xfs_iops.c b/fs/xfs/linux-2.6/xfs_iops.c
-index cd42ef7..1f3b4b8 100644
---- a/fs/xfs/linux-2.6/xfs_iops.c
-+++ b/fs/xfs/linux-2.6/xfs_iops.c
-@@ -573,8 +573,8 @@ xfs_vn_fallocate(
- 	bf.l_len = len;
- 
- 	xfs_ilock(ip, XFS_IOLOCK_EXCL);
--	error = xfs_change_file_space(ip, XFS_IOC_RESVSP, &bf,
--				      0, XFS_ATTR_NOLOCK);
-+	error = -xfs_change_file_space(ip, XFS_IOC_RESVSP, &bf,
-+				       0, XFS_ATTR_NOLOCK);
- 	if (!error && !(mode & FALLOC_FL_KEEP_SIZE) &&
- 	    offset + len > i_size_read(inode))
- 		new_size = offset + len;
-@@ -585,7 +585,7 @@ xfs_vn_fallocate(
- 
- 		iattr.ia_valid = ATTR_SIZE;
- 		iattr.ia_size = new_size;
--		error = xfs_setattr(ip, &iattr, XFS_ATTR_NOLOCK);
-+		error = -xfs_setattr(ip, &iattr, XFS_ATTR_NOLOCK);
- 	}
- 
- 	xfs_iunlock(ip, XFS_IOLOCK_EXCL);
--- 
-1.5.4.2
+So you need a preferred irq mask information on a per IRQ basis and
+that mask is not restricted to the CPUs of a single NUMA node, right ?
+
+Thanks,
+
+	tglx
+
+
 
