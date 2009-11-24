@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbZKXOs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933180AbZKXOwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933146AbZKXOs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972AbZKXOsz
+	id S933180AbZKXOwh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbZKXOwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:48:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55275 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932208AbZKXOsz (ORCPT
+	Tue, 24 Nov 2009 09:52:37 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49431 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932706AbZKXOwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:48:55 -0500
-Date: Tue, 24 Nov 2009 06:50:22 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dimitri Sivanich <sivanich@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091124065022.6933be1a@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
-References: <20091120211139.GB19106@sgi.com>
-	<m1r5rrr9v5.fsf@fess.ebiederm.org>
-	<20091122011457.GA16910@sgi.com>
-	<alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
-	<1259069986.4531.1453.camel@laptop>
-	<alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Tue, 24 Nov 2009 09:52:36 -0500
+Subject: Re: cannot compile linux-2.6-tip tree
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: mingo@elte.hu, fweisbec@gmail.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20091124124107.GA1975@jolsa.lab.eng.brq.redhat.com>
+References: <20091124124107.GA1975@jolsa.lab.eng.brq.redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 24 Nov 2009 09:52:41 -0500
+Message-Id: <1259074361.22249.1069.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 14:55:15 +0100 (CET)
-> > Furthermore, the /sysfs topology information should include IRQ
-> > routing data in this case.
+On Tue, 2009-11-24 at 13:41 +0100, Jiri Olsa wrote:
+
+> [jolsa@jolsa linux-2.6-tip]$ git checkout -b test-bad 2e7c0e0cafee5f04a029f06e71e22f9af69ae472
+> Switched to a new branch 'test-bad'
+> [jolsa@jolsa linux-2.6-tip]$ find drivers/pnp/ -name *.o | xargs rm
+> [jolsa@jolsa linux-2.6-tip]$ make drivers/pnp/
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-x86
+>   CC      arch/x86/kernel/asm-offsets.s
+>   GEN     include/asm/asm-offsets.h
+>   CALL    scripts/checksyscalls.sh
+>   CC      drivers/pnp/core.o
+>   CC      drivers/pnp/card.o
+> objdump: drivers/pnp/.tmp_card.o: File truncated
+> nm: drivers/pnp/card.o: File truncated
+> objdump: drivers/pnp/card.o: File truncated
+
+
+That's a strange error. Are you sure you didn't run out of diskspace or
+something?
+
+-- Steve
+
+>   CC      drivers/pnp/driver.o
+>   CC      drivers/pnp/resource.o
+>   CC      drivers/pnp/manager.o
+>   CC      drivers/pnp/support.o
+>   CC      drivers/pnp/interface.o
+>   CC      drivers/pnp/quirks.o
+>   CC      drivers/pnp/pnpacpi/core.o
+>   CC      drivers/pnp/pnpacpi/rsparser.o
+>   LD      drivers/pnp/pnpacpi/built-in.o
+>   CC      drivers/pnp/system.o
+>   LD      drivers/pnp/built-in.o
+> drivers/pnp/card.o: file not recognized: File format not recognized
+> make[1]: *** [drivers/pnp/built-in.o] Error 1
+> make: *** [drivers/pnp/] Error 2
+> [jolsa@jolsa linux-2.6-tip]$ 
 > 
-> Hmm, not sure about that. You'd need to scan through all the nodes to
-> find the set of CPUs where an irq can be routed to. I prefer to have
-> the information exposed by the irq enumeration (which is currently in
-> /proc/irq though).
-
-yes please.
-
-one device can have multiple irqs
-one irq can be servicing multiple devices
-
-expressing that in sysfs is a nightmare, while
-sticking it in /proc/irq *where the rest of the info is* is
-much nicer for apps like irqbalance
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
