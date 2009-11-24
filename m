@@ -1,49 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934217AbZKXVlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934226AbZKXVmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934217AbZKXVlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbZKXVlV
+	id S934226AbZKXVmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934013AbZKXVmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:41:21 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:57664 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933922AbZKXVlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:41:20 -0500
-Date: Tue, 24 Nov 2009 15:41:21 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091124214121.GA15182@sgi.com>
-References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ws1f6csh.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 24 Nov 2009 16:42:38 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:34081 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933995AbZKXVmh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:42:37 -0500
+MIME-Version: 1.0
+In-Reply-To: <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-26-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-27-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de> 
+	<1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 14:42:22 -0700
+X-Google-Sender-Auth: 1c44dede3dd1d9d6
+Message-ID: <fa686aa40911241342we68d831n4bd6e637ff21f939@mail.gmail.com>
+Subject: Re: [PATCH 32/38] don't use __exit_p to wrap plat_mpc8xxx_spi_remove
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       devicetree-discuss@lists.ozlabs.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       spi-devel-general@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 09:41:18AM -0800, Eric W. Biederman wrote:
-> As for the UV code, what we are looking at is a fundamental irq
-> routing property.  Those irqs cannot be routed to some cpus.  That is
-> something the code that sets up the routes needs to be aware of.
+2009/11/24 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
+> The function plat_mpc8xxx_spi_remove is defined using __devexit, so don't
+> use __exit_p but __devexit_p to wrap it.
+>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Correct.  We can't allow an interrupt to be routed to an invalid node.
+Obviously correct.
 
-> Dimitri could you put your the extra code in assign_irq_vector instead
-> of in the callers of assign_irq_vector?  Since the probably is not
-> likely to stay unique we probably want to put the information you base
-> things on in struct irq_desc, but the logic I seems to live best in
-> in assign_irq_vector.
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-So you're saying continue to use the node value in irq_desc, or add a cpumask there (which will add some size to that structure)?  I'll have to take another look at assign_irq_vector, but as things are currently structured, we don't return any sort of valid cpumask that we'd need for further processing in the caller functions.  One would need to pass that back or store that cpumask someplace, like irq_desc?
+g.
+
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: spi-devel-general@lists.sourceforge.net
+> ---
+>  drivers/spi/spi_mpc8xxx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+> index 0fd0ec4..1d98be9 100644
+> --- a/drivers/spi/spi_mpc8xxx.c
+> +++ b/drivers/spi/spi_mpc8xxx.c
+> @@ -900,7 +900,7 @@ static int __devexit plat_mpc8xxx_spi_remove(struct platform_device *pdev)
+>  MODULE_ALIAS("platform:mpc8xxx_spi");
+>  static struct platform_driver mpc8xxx_spi_driver = {
+>        .probe = plat_mpc8xxx_spi_probe,
+> -       .remove = __exit_p(plat_mpc8xxx_spi_remove),
+> +       .remove = __devexit_p(plat_mpc8xxx_spi_remove),
+>        .driver = {
+>                .name = "mpc8xxx_spi",
+>                .owner = THIS_MODULE,
+> --
+> 1.6.5.2
+>
+>
+
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
