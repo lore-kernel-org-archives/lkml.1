@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZKXH6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZKXIAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbZKXH6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 02:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932180AbZKXH6n
+	id S1758027AbZKXIAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:00:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbZKXIAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 02:58:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57495 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932151AbZKXH6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 02:58:43 -0500
-Date: Tue, 24 Nov 2009 18:58:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       xen-devel@lists.xensource.com, Mark McLoughlin <markmc@redhat.com>
-Subject: linux-next: alacrity tree build failure
-Message-Id: <20091124185843.d2cab90c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M"
+	Tue, 24 Nov 2009 03:00:18 -0500
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:36234 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758006AbZKXIAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:00:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=DRnOSGRuyC/ONGPRKIj9963VcT9mZLAsmZu8cuWNnhPtdmL97kjhntBRJUHZje3Dmo
+         psy3VWkoar0oxXLZMXx6zPSl74P/OLojdV4LPRb/+BV09nRoAQgcoFU5EhA/R74y1mOr
+         SROEvfm6Ly8abpLCSe7LJqQ3CH0HkwgBNHvRI=
+Date: Tue, 24 Nov 2009 10:00:06 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Ang Way Chuang <wcang79@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dvb-core: Fix ULE decapsulation bug when less than 4
+	bytes of ULE SNDU is packed into the remaining bytes of a MPEG2-TS
+	frame
+Message-ID: <20091124080006.GB14488@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Ang Way Chuang <wcang79@gmail.com>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Nov 23, 2009 at 05:37:57PM +0800, Ang Way Chuang wrote:
+> --- a/drivers/media/dvb/dvb-core/dvb_net.c
+> +++ b/drivers/media/dvb/dvb-core/dvb_net.c
+> @@ -458,8 +458,9 @@ static void dvb_net_ule( struct net_device *dev,
+> const u8 *buf, size_t buf_len )
 
-Hi Gregory,
+Your email client line broke the line starting with @@ into 2 lines so
+the patch doesn't apply.
 
-Today's linux-next build (x86_6 _allmodconfig) failed like this:
+Could you resend the patch without line wrapping?
 
-drivers/vbus/built-in.o:(.data+0x0): multiple definition of `dev_attr_modal=
-ias'
-drivers/xen/built-in.o:(.data+0x46d0): first defined here
+regards,
+dan carpenter
 
-Caused by commit 59aa8f441d27c8470764a513dafa46a77f33e953 ("vbus: add
-autoprobe capability to guest").  The DEVICE_ATTR(modalias ...) should
-probably be static.  I should probably be static in
-drivers/xen/xenbus/xenbus_probe.c as well.
-
-I have used the version of the alacrity tree from next-20091123 for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksLkjMACgkQjjKRsyhoI8xdggCghmFC4DHrTZW/9QyDMftzfJ9M
-d6AAoIKUXSdMo61pFLMqBVytODhlIUGU
-=Q9Ck
------END PGP SIGNATURE-----
-
---Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M--
