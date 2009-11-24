@@ -1,105 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbZKXI7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbZKXI7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374AbZKXI7J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:59:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbZKXI7I
+	id S932380AbZKXI7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932311AbZKXI7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:59:08 -0500
-Received: from mga09.intel.com ([134.134.136.24]:22054 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932277AbZKXI7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:59:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,276,1257148800"; 
-   d="scan'208";a="572574456"
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
- irqbalance hints
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1259051902.4531.1053.camel@laptop>
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
-	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
-	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
-	 <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
-	 <1259051902.4531.1053.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 24 Nov 2009 00:59:16 -0800
-Message-Id: <1259053156.2631.21.camel@ppwaskie-mobl2>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 03:59:53 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:49438 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932317AbZKXI7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:59:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=q3ne9V9+roFn6ZUEM9d6nrtPwapq4yTvgGPHHv3HwOPvbWciYkVKdyIQ2c77IKLPX2
+         YMhCITcidIWp74xgGFRu7WpVLichKeoiL4gAdZxrf1egouL82u8Z5D7hNjtTaKyKTo/B
+         XKo8OeEgVg7fupS9BRozvpQIepcYfLXLEwtIY=
+MIME-Version: 1.0
+In-Reply-To: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
+References: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
+Date: Tue, 24 Nov 2009 03:59:57 -0500
+Message-ID: <806dafc20911240059r49b2b3b8o703b8d054cc913f4@mail.gmail.com>
+Subject: Re: PATCH: fix multiple eMagic 6|2m regressions introduced in 2.6.27
+From: Monty Montgomery <xiphmont@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 01:38 -0700, Peter Zijlstra wrote:
-> On Mon, 2009-11-23 at 15:32 -0800, Waskiewicz Jr, Peter P wrote:
-> 
-> > Unfortunately, a driver can't.  The irq_set_affinity() function isn't 
-> > exported.  I proposed a patch on netdev to export it, and then to tie down 
-> > an interrupt using IRQF_NOBALANCING, so irqbalance won't touch it.  That 
-> > was rejected, since the driver is enforcing policy of the interrupt 
-> > balancing, not irqbalance.
-> 
-> Why would a patch touching the irq subsystem go to netdev?
+I should mention that when I first started strated working on this
+problem tonight, I saw Clemens Ladisch's patch from a few days ago.
+His reported bug and patch is identical to my 'bug 1' and the first
+change in my patch.  Unfortunately, this fix only prevented the oops,
+it was not enough to make the eMagic actually function.  The other two
+bugfixes were absolutely necessary as well.
 
-The only change to the IRQ subsystem was:
+I included the fix in my patch as well as I was uncertain if it had
+yet been applied to the kernel tree, and it is important not to miss
+it.
 
-EXPORT_SYMBOL(irq_set_affinity);
-
-The majority of the changeset was for the ixgbe driver.
-
-> What is wrong with exporting irq_set_affinity(), and wtf do you need
-> IRQF_NOBALANCING for?
-> 
-
-Again, the pushback I received was with allowing anything other than
-irqbalance to dictate interrupt affinity policy.
-
-And if I set interrupt affinity from the driver or from /proc,
-irqbalance will happily rebalance the interrupt elsewhere.  The
-IRQF_NOBALANCING flag will prevent irqbalance from being able to move
-the interrupt.
-
-> > I and Jesse Brandeburg had a meeting with Arjan about this.  What we came 
-> > up with was this interface, so drivers can set what they'd like to see, if 
-> > irqbalance decides to honor it.  That way interrupt affinity policies are 
-> > set only by irqbalance, but this interface gives us a mechanism to hint to 
-> > irqbalance what we'd like it to do.
-> 
-> If all you want is to expose policy to userspace then you don't need any
-> of this, simply expose the NICs home node through a sysfs device thingy
-> (I was under the impression its already there somewhere, but I can't
-> ever find anything in /sys).
-> 
-> No need what so ever to poke at the IRQ subsystem.
-
-The point is we need something common that the kernel side (whether a
-driver or /proc can modify) that irqbalance can use.
-
-> > Also, if you use the /proc interface to change smp_affinity on an 
-> > interrupt without any of these changes, irqbalance will override it on its 
-> > next poll interval.  This also is not desirable.
-> 
-> This all sounds backwards.. we've got a perfectly functional interface
-> for affinity -- which people object to being used for some reason. So
-> you add another interface on top, and that is ok?
-> 
-
-But it's not functional.  If I set the affinity in smp_affinity, then
-irqbalance will override it 10 seconds later.
-
-> All the while not CC'ing the IRQ folks,.. brilliant approach.
-
-If I knew who I should CC, I'd be happy to add them.  Can you provide
-email addresses please?
-
-Cheers,
--PJ Waskiewicz
-
+Monty
