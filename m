@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932665AbZKXKcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932666AbZKXKdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932665AbZKXKcF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656AbZKXKcE
+	id S932666AbZKXKdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbZKXKda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:32:04 -0500
-Received: from sh.osrg.net ([192.16.179.4]:55157 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932617AbZKXKcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:32:00 -0500
-Date: Tue, 24 Nov 2009 19:31:00 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0BAC06.1000905@kernel.org>
-References: <4B0BA519.9090100@kernel.org>
-	<20091124183439J.fujita.tomonori@lab.ntt.co.jp>
-	<4B0BAC06.1000905@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 24 Nov 2009 05:33:30 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:60619 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932629AbZKXKd3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 05:33:29 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH] serial: 8250: Add ns16550a to OF compatible list
+Date: Tue, 24 Nov 2009 10:33:27 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       grant.likely@secretlab.ca, john.williams@petalogix.com,
+       stable@kernel.org, chrisw@sous-sol.org, greg@kroah.com,
+       alonz@discretix.com
+References: <1259054502-28284-1-git-send-email-monstr@monstr.eu> <200911240953.52204.arnd@arndb.de> <4B0BB393.4050302@monstr.eu>
+In-Reply-To: <4B0BB393.4050302@monstr.eu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091124193031P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 24 Nov 2009 19:31:00 +0900 (JST)
+Message-Id: <200911241033.27938.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/qFRMNj9Ypp9GfoAtyhNMPpM3Lf9OC7NLK8vr
+ NJL6F8SaJ0rjcLD4Ajb9KU7XNCPBlQ36YNdBI9krB91GsyXQPH
+ fYluDUwQjPXuZgA7K50OQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 01:48:54 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> FUJITA Tomonori wrote:
-> > On Tue, 24 Nov 2009 01:19:21 -0800
-> > Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> FUJITA Tomonori wrote:
-> >>> On Sat, 21 Nov 2009 20:24:52 -0800
-> >>> Yinghai Lu <yinghai@kernel.org> wrote:
-> >>>
-> >>>> amd 64 systems that
-> >>>> 1. do not have  AGP
-> >>>> 2. do not have IOMMU
-> >>>> 3. mem > 4g
-> >>>> 4. BIOS do not allocate  correct gart in NB.
-> >>>> will leave them to use SWIOTLB forcely.
-> >>> Sorry, I forgot about this GART workaround.
-> >>>
-> >>>
-> >>>> Index: linux-2.6/arch/x86/kernel/pci-dma.c
-> >>>> ===================================================================
-> >>>> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
-> >>>> +++ linux-2.6/arch/x86/kernel/pci-dma.c
-> >>>> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
-> >>>>  	/* free the range so iommu could get some range less than 4G */
-> >>>>  	dma32_free_bootmem();
-> >>>>  #endif
-> >>>> +	if (!swiotlb_force)
-> >>>> +		gart_iommu_hole_init();
-> >>>> +
-> >>>>  	if (pci_swiotlb_init())
-> >>>>  		return;
-> >>>>  
-> >>>> -	gart_iommu_hole_init();
-> >>>> -
-> >>>>  	detect_calgary();
-> >>>>  
-> >>>>  	detect_intel_iommu();
-> >>> I prefer to detect all the IOMMU drivers in a consistent way;
-> >>> detecting only GART before swioltb doesn't look nice.
-> >>>
-> >>> As we did before, we could detect all the IOMMU driver before
-> >>> swiotlb. However, I think that it's better to simply change
-> >>> pci_swiotlb_init() not to steal the preallocate GART workaround memory.
-> >>>
-> >>> btw, initializing swiotlb before IOMMU detection is useful to GART
-> >>> too? If GART can't allocate the workaround memory, then the kernel
-> >>> panic now. We can use swiotlb instead in that case?
-> >>>
-> >>> =
-> >>> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> >>> Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
-> >>>
-> >>> swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
-> >>> dma32_reserv_bootmem allocates. We need to initialize swiotlb before
-> >>> dma32_free_bootmem().
-> >>>
-> >>> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> >>> ---
-> >>>  arch/x86/kernel/pci-dma.c |    6 +++++-
-> >>>  1 files changed, 5 insertions(+), 1 deletions(-)
-> >>>
-> >>> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> >>> index afcc58b..26fe2cd 100644
-> >>> --- a/arch/x86/kernel/pci-dma.c
-> >>> +++ b/arch/x86/kernel/pci-dma.c
-> >>> @@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
-> >>>  
-> >>>  void __init pci_iommu_alloc(void)
-> >>>  {
-> >>> +	int use_swiotlb;
-> >>> +
-> >>> +	use_swiotlb = pci_swiotlb_init();
-> >>> +
-> >>>  #ifdef CONFIG_X86_64
-> >>>  	/* free the range so iommu could get some range less than 4G */
-> >>>  	dma32_free_bootmem();
-> >>>  #endif
-> >>> -	if (pci_swiotlb_init())
-> >>> +	if (use_swiotlb)
-> >>>  		return;
-> >>>  
-> >>>  	gart_iommu_hole_init();
-> >> pci_swiotlb_init need be called after dma32_free_bootmem
-> >> otherwise it could fail for system with lots of memory and numa=off
-> > 
-> > Why? swiotlb needs just 64MB (and some) in DMA32.
-> > 
-> > swiotlb had been worked fine without that hack until 2.6.26?
-> > 
-> > Only broken GART needs that hack (and I think that it's better to move
-> > that hack to GART code).
+On Tuesday 24 November 2009 10:21:07 Michal Simek wrote:
+> Arnd Bergmann wrote:
 > 
-> gart iommu workaround will allocate 64M by default.
+> it is simple almost trivial patch but if you like I can write there some 
+> background.
+
+Already submitted again with some text
+ 
+> > 
+> > * You did not cc me. Ok, I just noticed I'm missing an entry in the MAINTAINERS
+> > file, but scripts/get_maintainer.pl would have given you a good indication of
+> > who feels responsible. You also didn't cc Alon, who submitted a similar patch
+> > [1] just days ago, which I assume prompted you to send this. If you didn't see
+> > his patch, nevermind.
 > 
-> fail config: like system with 512g and sparse mem, and vmmap.
+> you are not there. I have never used get_maintainer.pl script - will do.
+> 
+> I haven't seen his patch in LKML. Which subject?
 
-Well, some systems could fail but they can use swiotlb. If users
-configures their systems not to use swioltb by boot option, it's fair
-that systems don't work.
+see the link at the bottom of my mail, referenced through "[1]" above.
+It was cross-posted on some mailing lists, but unfortunately not on lkml.
 
-We are talking about a rare broken GART BIOS issue. I think that it's
-much better to remove this hack completely. As VT-d does, we can use
-swiotlb instead of this GART specific hack. I think that that's saner
-approach to handle broken IOMMU hardware.
+> $ ./scripts/get_maintainer.pl -f drivers/serial/8250.c
+> Alan Cox <alan@linux.intel.com>
+> Andrew Morton <akpm@linux-foundation.org>
+> David Daney <ddaney@caviumnetworks.com>
+> Tomaso Paoletti <tpaoletti@caviumnetworks.com>
+> Greg Kroah-Hartman <gregkh@suse.de>
+> linux-serial@vger.kernel.org
+> linux-kernel@vger.kernel.org
+ 
+wrong file: 
+./scripts/get_maintainer.pl -f drivers/serial/of_serial.c
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Arnd Bergmann <arnd@arndb.de>
+Matthias Fuchs <mfuchs@ma-fu.de>
+Dave Mitchell <dmitchell@amcc.com>
+Andrew Morton <akpm@linux-foundation.org>
+Grant Likely <grant.likely@secretlab.ca>
+linux-kernel@vger.kernel.org
+devicetree-discuss@lists.ozlabs.org
+
+> > [1] http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg39015.html
+> > [2] http://lkml.indiana.edu/hypermail/linux/kernel/0504.3/1369.html
+
+	Arnd <>< 
