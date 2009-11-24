@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbZKXQz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933599AbZKXQ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933551AbZKXQz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932859AbZKXQz0
+	id S933599AbZKXQ42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbZKXQ4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:55:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57964 "EHLO hera.kernel.org"
+	Tue, 24 Nov 2009 11:56:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58027 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932846AbZKXQzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:55:25 -0500
-Date: Tue, 24 Nov 2009 16:54:37 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       acme@ghostprotocols.net, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
-References: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
+	id S933573AbZKXQ4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:56:21 -0500
+Date: Tue, 24 Nov 2009 16:54:52 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, lizf@cn.fujitsu.com, peterz@infradead.org,
+       eduard.munteanu@linux360.ro, fweisbec@gmail.com, tglx@linutronix.de,
+       linux-mm@kvack.org, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, lizf@cn.fujitsu.com, penberg@cs.helsinki.fi,
+       peterz@infradead.org, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       linux-mm@kvack.org, mingo@elte.hu
+In-Reply-To: <4B0B6E5C.4080900@cn.fujitsu.com>
+References: <4B0B6E5C.4080900@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Fix compilation on powerpc
-Message-ID: <tip-ee3d250446f1c1be4eceab48f3a23794d9a6564c@git.kernel.org>
-Git-Commit-ID: ee3d250446f1c1be4eceab48f3a23794d9a6564c
+Subject: [tip:perf/core] perf kmem: Add new option to show raw ip
+Message-ID: <tip-7707b6b6f8d9188b612f9fc88c65411264b1ed57@git.kernel.org>
+Git-Commit-ID: 7707b6b6f8d9188b612f9fc88c65411264b1ed57
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,51 +33,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ee3d250446f1c1be4eceab48f3a23794d9a6564c
-Gitweb:     http://git.kernel.org/tip/ee3d250446f1c1be4eceab48f3a23794d9a6564c
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Tue, 24 Nov 2009 15:19:43 +1100
+Commit-ID:  7707b6b6f8d9188b612f9fc88c65411264b1ed57
+Gitweb:     http://git.kernel.org/tip/7707b6b6f8d9188b612f9fc88c65411264b1ed57
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 24 Nov 2009 13:25:48 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Nov 2009 08:35:10 +0100
+CommitDate: Tue, 24 Nov 2009 08:49:49 +0100
 
-perf tools: Fix compilation on powerpc
+perf kmem: Add new option to show raw ip
 
-Currently, perf fails to compile on powerpc with this error:
+Add option "--raw-ip" to show raw ip instead of symbols:
 
-     CC util/header.o
- In file included from util/../perf.h:17,
-                  from util/header.c:9:
- util/../../../arch/powerpc/include/asm/unistd.h:360:27: error:
- linux/linkage.h: No such file or directory make: ***
- [util/header.o] Error 1
+ # ./perf kmem --stat caller --raw-ip
+ ------------------------------------------------------------------------------
+ Callsite                    |Total_alloc/Per | Total_req/Per | Hit  | Frag
+ ------------------------------------------------------------------------------
+ 0xc05301aa                  |  733184/4096   |  733184/4096  |   179|   0.000%
+ 0xc0542ba0                  |  483328/4096   |  483328/4096  |   118|   0.000%
+ ...
 
-The reason is that we still have a #define __KERNEL__ in effect
-at the point where <asm/unistd.h> gets included, which means we
-get extra stuff that we don't need or want.
+Also show symbols with format sym+offset instead of sym/offset.
 
-This fixes the problem by undefining __KERNEL__ once we have
-included the file for which we need __KERNEL__ defined.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <19211.24287.453183.78836@cargo.ozlabs.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-mm@kvack.org <linux-mm@kvack.org>
+LKML-Reference: <4B0B6E5C.4080900@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/util/include/linux/bitops.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ tools/perf/builtin-kmem.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/tools/perf/util/include/linux/bitops.h b/tools/perf/util/include/linux/bitops.h
-index ace57c3..8d63116 100644
---- a/tools/perf/util/include/linux/bitops.h
-+++ b/tools/perf/util/include/linux/bitops.h
-@@ -7,6 +7,8 @@
- #define CONFIG_GENERIC_FIND_FIRST_BIT
- #include "../../../../include/linux/bitops.h"
+diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
+index 256d18f..1ef43c2 100644
+--- a/tools/perf/builtin-kmem.c
++++ b/tools/perf/builtin-kmem.c
+@@ -32,15 +32,14 @@ sort_fn_t			caller_sort_fn;
+ static int			alloc_lines = -1;
+ static int			caller_lines = -1;
  
-+#undef __KERNEL__
++static bool			raw_ip;
 +
- static inline void set_bit(int nr, unsigned long *addr)
- {
- 	addr[nr / BITS_PER_LONG] |= 1UL << (nr % BITS_PER_LONG);
+ static char			*cwd;
+ static int			cwdlen;
+ 
+ struct alloc_stat {
+ 	union {
+-		struct {
+-			char	*name;
+-			u64	call_site;
+-		};
++		u64	call_site;
+ 		u64	ptr;
+ 	};
+ 	u64	bytes_req;
+@@ -323,12 +322,14 @@ static void __print_result(struct rb_root *root, int n_lines, int is_caller)
+ 
+ 		if (is_caller) {
+ 			addr = data->call_site;
+-			sym = kernel_maps__find_symbol(addr, NULL, NULL);
++			if (!raw_ip)
++				sym = kernel_maps__find_symbol(addr,
++							       NULL, NULL);
+ 		} else
+ 			addr = data->ptr;
+ 
+ 		if (sym != NULL)
+-			snprintf(bf, sizeof(bf), "%s/%Lx", sym->name,
++			snprintf(bf, sizeof(bf), "%s+%Lx", sym->name,
+ 				 addr - sym->start);
+ 		else
+ 			snprintf(bf, sizeof(bf), "%#Lx", addr);
+@@ -345,9 +346,9 @@ static void __print_result(struct rb_root *root, int n_lines, int is_caller)
+ 	}
+ 
+ 	if (n_lines == -1)
+-		printf(" ...               | ...             | ...             | ...    | ...   \n");
++		printf(" ...                        | ...            | ...           | ...    | ...   \n");
+ 
+-	printf(" ------------------------------------------------------------------------------\n");
++	printf("%.78s\n", graph_dotted_line);
+ }
+ 
+ static void print_summary(void)
+@@ -558,6 +559,7 @@ static const struct option kmem_options[] = {
+ 	OPT_CALLBACK('l', "line", NULL, "num",
+ 		     "show n lins",
+ 		     parse_line_opt),
++	OPT_BOOLEAN(0, "raw-ip", &raw_ip, "show raw ip instead of symbol"),
+ 	OPT_END()
+ };
+ 
