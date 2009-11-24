@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbZKXOtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbZKXOs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933177AbZKXOtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbZKXOtu
+	id S933146AbZKXOs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972AbZKXOsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:49:50 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:28149 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933069AbZKXOtt (ORCPT
+	Tue, 24 Nov 2009 09:48:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55275 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932208AbZKXOsz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:49:49 -0500
-Subject: Re: [PATCH 0/1] Correct sorting problem in cfq_service_tree_add
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <4e5e476b0911240603q7df022bx5b5915aab6279537@mail.gmail.com>
-References: <1259068293.3019.15.camel@cail>
-	 <4e5e476b0911240603q7df022bx5b5915aab6279537@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 09:49:54 -0500
-Message-ID: <1259074194.3019.106.camel@cail>
+	Tue, 24 Nov 2009 09:48:55 -0500
+Date: Tue, 24 Nov 2009 06:50:22 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dimitri Sivanich <sivanich@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+Message-ID: <20091124065022.6933be1a@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+References: <20091120211139.GB19106@sgi.com>
+	<m1r5rrr9v5.fsf@fess.ebiederm.org>
+	<20091122011457.GA16910@sgi.com>
+	<alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
+	<1259069986.4531.1453.camel@laptop>
+	<alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 15:03 +0100, Corrado Zoccolo wrote:
-> On Tue, Nov 24, 2009 at 2:11 PM, Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
-> > Found this whilst reviewing the CFQ I/O scheduler code: Currently, this
-> > routine only sorts using the I/O priority class - it does not properly
-> > sort prioritized queues within a specific class. The patch changes the
-> > sort to utilize the full I/O priority (class & priority).
+On Tue, 24 Nov 2009 14:55:15 +0100 (CET)
+> > Furthermore, the /sysfs topology information should include IRQ
+> > routing data in this case.
 > 
-> This changes mixes the interpretation of classes and levels within class.
-> In the original code, those different things have different meanings:
-> * priority class decides who can use the disk
-> * priority level within a class determines how much of the disk time
-> each queue will obtain
-> In your case. instead, you completely remove the second meaning, and
-> provide a larger number of levels to just decide the first.
+> Hmm, not sure about that. You'd need to scan through all the nodes to
+> find the set of CPUs where an irq can be routed to. I prefer to have
+> the information exposed by the irq enumeration (which is currently in
+> /proc/irq though).
 
-Having read the ioprio.txt I had thought that the priorities within a
-class should still be honored and that the time slice calculations in
-cfq_prio_slice would be left as is. "ioprio" is probably the wrong field
-name in the code (and text) then, as it is not meant as a priority but
-as a time slice indicator?! The text in ioprio.txt and in the man page
-for ionice are very inconsistent here: For example, the ionice man page
-states: "This [best effort] class takes a priority argument from 0-7,
-with lower number being higher priority. Programs running at the same
-best effort priority are served in a round-robin fashion." Which implies
-a secondary sort-order for priority within a class. Of course, both
-ioprio.txt and the ionice man page also talk about class levels in a way
-that may indicate it is not priority based. Hm...
+yes please.
 
-Regards,
-Alan
+one device can have multiple irqs
+one irq can be servicing multiple devices
 
+expressing that in sysfs is a nightmare, while
+sticking it in /proc/irq *where the rest of the info is* is
+much nicer for apps like irqbalance
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
