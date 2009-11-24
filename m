@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbZKXPW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbZKXPYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933260AbZKXPW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 10:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758079AbZKXPW4
+	id S1758093AbZKXPYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 10:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbZKXPYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 10:22:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53570 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758077AbZKXPWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 10:22:55 -0500
-Date: Tue, 24 Nov 2009 16:22:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] ring-buffer benchmark: Run producer/consumer
- threads at nice +19
-Message-ID: <20091124152245.GB21821@elte.hu>
-References: <new-submission>
- <tip-98e4833ba3c314c99dc364012fba6ac894230ad0@git.kernel.org>
- <1259072207.22249.1066.camel@gandalf.stny.rr.com>
- <20091124143923.GA17934@elte.hu>
- <1259074860.22249.1071.camel@gandalf.stny.rr.com>
+	Tue, 24 Nov 2009 10:24:20 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:36705 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756463AbZKXPYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 10:24:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=FF0pasXSjnusyil/qgLBhT4uVADLyOPAPu6yhFWAKzzB42kRLTWlpny/xzeKIrsU2J
+         guiK6C50epA53OV7xIY2+mdO+YawzoTTJqdUdSCcWRy18pkuU1yOx3GopzKQVoLG4IKn
+         4euexO5UbhtvPYGw85/hQfG/NslCxevNDFP7s=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259074860.22249.1071.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091124143340.GA9595@redhat.com>
+References: <200911241449.20715.czoccolo@gmail.com>
+	 <20091124143340.GA9595@redhat.com>
+Date: Tue, 24 Nov 2009 16:24:23 +0100
+Message-ID: <4e5e476b0911240724x42346177t5d2335cf5171dd15@mail.gmail.com>
+Subject: Re: [PATCH 3/4] cfq-iosched: idling on deep seeky sync queues
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Vivek,
+On Tue, Nov 24, 2009 at 3:33 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> Hi Corrado,
+>
+> Thinking more about it. This clearing of flag when idle expires might
+> create issues with queues which sent down requests with a burst initially
+> forcing to set "deep" flag and then fall back to low depth. In that case,
+> enable_idle will continue to be 1 and we will be driving queue depth as 1.
+>
+> This is a theoritical explanation looking at the patch. I don't know if
+> in real life we have workloads who do this frequently. At least for my
+> testing, this patch did make sure we don't switch between workload type
+> of queue very frequently.
+>
+I thought at this scenario when developing the patch, but considered
+it too infrequent (and not so costly) to justify the added complexity
+of having a moving average.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+For me, wasting an idle time is something to be punished for, while
+driving the queue at lower depth is not, if the requests are coming
+timely.
 
-> On Tue, 2009-11-24 at 15:39 +0100, Ingo Molnar wrote:
-> 
-> > > This module is not made to be run all the time. I know you do it 
-> > > for testing. But running it at lowest priority kills the reason 
-> > > this module was made in the first place!
-> > 
-> > Well, it also found quite a few bugs in the ring-buffer code, beyond 
-> > benchmarking so i'd like to use it even without looking at the 
-> > numbers.
-> 
-> OK, then lets make a module option (and command line) that will allow 
-> the setting of the priority of the threads. Either nice or even fifo 
-> (use at your own risk ;-)
+> May be keeping a track of average queue depth of a seeky process might
+> help here like thinktime. If average queue depth is less over a period of
+> time, we move the queue to sync-noidle group to achieve better throughput
+> overall and if average queue depth is high, make is sync-idle.
+>
+> Currently we seem to be taking queue depth into account only for enabling
+> the flag. We don't want too frequent switching of "deep" flag, so some
+> kind of slow moving average might help.
+>
+Averages can still change in the middle of a slice.
+A simpler way could be to reset the deep flag after a full slice, if
+the depth never reached the threshold during that slice.
 
-Yeah, that's fine to me - as long as the default is unintrusive. (i.e. 
-like the rcutorture threads, which run at nice +19 too - and kmemcheck 
-which runs at +19 as well.)
+> Thanks
+> Vivek
+>
 
-We still have the perl overhead in function-tracing kernel builds btw
-:-/
 
-	Ingo
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
