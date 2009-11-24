@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbZKXGO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZKXGRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbZKXGO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 01:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZKXGO5
+	id S1757633AbZKXGRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 01:17:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZKXGRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 01:14:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37454 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbZKXGO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 01:14:56 -0500
-Date: Tue, 24 Nov 2009 17:14:59 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?UTF-8?B?IkFuZHLDqSBHb2RkYXJkIFJvc2Ei?= <andre.goddard@gmail.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: manual merge of the trivial tree with the net tree
-Message-Id: <20091124171459.88cb0c0d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 01:17:05 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:62526 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753920AbZKXGRE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 01:17:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZnfXJUzO9sjaDsO5UlzZXPohg76FOxTIziMgYrBJYabS8zwJyhT1HUjHFLzlsGRKJr
+         +1TUEMXdWx71yPLfFW7rn4wKyPoKgR/AlLwnPXfyz1YhfYRtJvY5hwFXASIidh231+5g
+         Ls1aWdjkIHzZnF2lF6XEoJPDs1lBhqKlG13oE=
+MIME-Version: 1.0
+In-Reply-To: <20091122205054.GA7361@ami.dom.local>
+References: <81bfc67a0911120546g26627ac5q5860d85f446b29bb@mail.gmail.com>
+	 <81bfc67a0911130825o6d9b93b2he70677157ad889f2@mail.gmail.com>
+	 <20091113211640.GA2540@ami.dom.local>
+	 <81bfc67a0911180159g45a45675k44ce3f251c6bddea@mail.gmail.com>
+	 <20091118135136.GA9224@ff.dom.local>
+	 <81bfc67a0911181021n1b969565y4a39b181360b5e92@mail.gmail.com>
+	 <20091118201034.GA3060@ami.dom.local>
+	 <20091118223851.GA5191@ami.dom.local>
+	 <81bfc67a0911221135y300841f2i8e78417600528cd5@mail.gmail.com>
+	 <20091122205054.GA7361@ami.dom.local>
+Date: Tue, 24 Nov 2009 01:17:09 -0500
+Message-ID: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
+Subject: Re: large packet loss take2 2.6.31.x
+From: Caleb Cushing <xenoterracide@gmail.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+> Btw, currently I don't consider this dropping means there has to be
+> a bug. It could be otherwise - a feature... e.g. when a new kernel
+> can transmit faster (then dropping in some other, slower place can
+> happen).
 
-Today's linux-next merge of the trivial tree got a conflict in
-drivers/net/e1000e/lib.c between commit
-3bb99fe226ead584a4db674dab546689f705201f ("e1000e: consolidate two dbug
-macros into one simpler one") from the net tree and commit
-52692d35d013e221137b2fbe800e3e6776111821 ("tree-wide: fix assorted typos
-all over the place") from the trivial tree.
+um... where would it be dropping that we wouldn't have a bug? I mean
+sure faster is great... but if it makes my network not work right...
 
-I fixed it up (see below) and can carry the fix as necessary.
+I've added all (I think) information you've asked for to the bug
+http://bugzilla.kernel.org/show_bug.cgi?id=13835 except for ethtool
+and netstat on the router side. ethtool complains about not having
+driver or capability (maybe because it's a 2.4 kernel?) and the
+version of netstat doesn't support -s. I disabled everything that I
+can think of that would send/receive packets before doing the test
+client side, except dhcp/dns windows box's were probably sending some
+broadcasts too. but the traffic should be pretty low. I did remember
+to set the txqueuelen didn't seem to make a difference
+
+only error in dmesg I see is
+
+e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+
+but it's in working versions too.
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Caleb Cushing
 
-diff --cc drivers/net/e1000e/lib.c
-index f690a10,b065ba4..0000000
---- a/drivers/net/e1000e/lib.c
-+++ b/drivers/net/e1000e/lib.c
-@@@ -563,11 -570,11 +563,11 @@@ s32 e1000e_check_for_serdes_link(struc
-  			if (rxcw & E1000_RXCW_SYNCH) {
-  				if (!(rxcw & E1000_RXCW_IV)) {
-  					mac->serdes_has_link = true;
- -					hw_dbg(hw, "SERDES: Link up - autoneg "
- +					e_dbg("SERDES: Link up - autoneg "
-- 					   "completed sucessfully.\n");
-+ 					   "completed successfully.\n");
-  				} else {
-  					mac->serdes_has_link = false;
- -					hw_dbg(hw, "SERDES: Link down - invalid"
- +					e_dbg("SERDES: Link down - invalid"
-  					   "codewords detected in autoneg.\n");
-  				}
-  			} else {
+http://xenoterracide.blogspot.com
