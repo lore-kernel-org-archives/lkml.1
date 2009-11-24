@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934219AbZKXVOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbZKXVKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934219AbZKXVOw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934034AbZKXVOt
+	id S934098AbZKXVKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934080AbZKXVIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:14:49 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44614 "EHLO
+	Tue, 24 Nov 2009 16:08:49 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44745 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933993AbZKXVI2 (ORCPT
+	with ESMTP id S934047AbZKXVIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:28 -0500
+	Tue, 24 Nov 2009 16:08:42 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       devel@driverdev.osuosl.org
-Subject: [PATCH 25/38] move sca3000_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:20 +0100
-Message-Id: <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Florian Fainelli <florian@openwrt.org>,
+       Eugene Konev <ejka@imfi.kspu.ru>, Julia Lawall <julia@diku.dk>,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       openwrt-devel@lists.openwrt.org
+Subject: [PATCH 26/38] move vlynq_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:21 +0100
+Message-Id: <1259096853-18909-26-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -44,6 +46,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -55,31 +58,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function sca3000_remove is used only wrapped by __devexit_p so define
+The function vlynq_remove is used only wrapped by __devexit_p so define
 it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Florian Fainelli <florian@openwrt.org>
+Cc: Eugene Konev <ejka@imfi.kspu.ru>
+Cc: Julia Lawall <julia@diku.dk>
+Cc: Robert P. J. Day <rpjday@crashcourse.ca>
 Cc: linux-kernel@vger.kernel.org
-Cc: devel@driverdev.osuosl.org
+Cc: openwrt-devel@lists.openwrt.org
 ---
- drivers/staging/iio/accel/sca3000_core.c |    2 +-
+ drivers/vlynq/vlynq.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/iio/accel/sca3000_core.c b/drivers/staging/iio/accel/sca3000_core.c
-index e27e3b7..5ea736a 100644
---- a/drivers/staging/iio/accel/sca3000_core.c
-+++ b/drivers/staging/iio/accel/sca3000_core.c
-@@ -1393,7 +1393,7 @@ error_ret:
- 
+diff --git a/drivers/vlynq/vlynq.c b/drivers/vlynq/vlynq.c
+index 9554ad5..3ae6e86 100644
+--- a/drivers/vlynq/vlynq.c
++++ b/drivers/vlynq/vlynq.c
+@@ -756,7 +756,7 @@ fail_request:
+ 	return result;
  }
  
--static int sca3000_remove(struct spi_device *spi)
-+static int __devexit sca3000_remove(struct spi_device *spi)
+-static int vlynq_remove(struct platform_device *pdev)
++static int __devexit vlynq_remove(struct platform_device *pdev)
  {
- 	struct sca3000_state *st =  spi_get_drvdata(spi);
- 	struct iio_dev *indio_dev = st->indio_dev;
+ 	struct vlynq_device *dev = platform_get_drvdata(pdev);
+ 
 -- 
 1.6.5.2
 
