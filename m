@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbZKXSQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933851AbZKXSQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933844AbZKXSQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933727AbZKXSQj
+	id S933851AbZKXSQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933786AbZKXSQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:16:39 -0500
+	Tue, 24 Nov 2009 13:16:41 -0500
 Received: from daytona.panasas.com ([67.152.220.89]:33713 "EHLO
 	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932866AbZKXSQh (ORCPT
+	with ESMTP id S933231AbZKXSQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:16:37 -0500
+	Tue, 24 Nov 2009 13:16:38 -0500
 X-Greylist: delayed 917 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:16:36 EST
-Message-ID: <4B0C1FE0.8040105@panasas.com>
-Date: Tue, 24 Nov 2009 20:03:12 +0200
+Message-ID: <4B0C201C.4040400@panasas.com>
+Date: Tue, 24 Nov 2009 20:04:12 +0200
 From: Boaz Harrosh <bharrosh@panasas.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
 MIME-Version: 1.0
@@ -24,56 +24,39 @@ To: "J. Bruce Fields" <bfields@citi.umich.edu>,
        NFS list <linux-nfs@vger.kernel.org>,
        pNFS Mailing List <pnfs@linux-nfs.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/5] lockd: Remove unused nfsd headers #includes
+Subject: [PATCH 5/5] vfs: nfsctl.c unused nfsd #includes
 References: <4B0C1EB7.50508@panasas.com>
 In-Reply-To: <4B0C1EB7.50508@panasas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2009 18:03:14.0918 (UTC) FILETIME=[64B8F060:01CA6D30]
+X-OriginalArrivalTime: 24 Nov 2009 18:04:15.0670 (UTC) FILETIME=[88EEF560:01CA6D30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-In what history where these ever needed? Well not
-any more.
+Only linux/nfsd/syscall.h is actually used. Remove the
+other nfsd #includes, so they can be moved to source
+directory.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 ---
- fs/lockd/svc4proc.c |    4 ----
- fs/lockd/svcproc.c  |    4 ----
- 2 files changed, 0 insertions(+), 8 deletions(-)
+ fs/nfsctl.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/fs/lockd/svc4proc.c b/fs/lockd/svc4proc.c
-index bd173a6..a7966ee 100644
---- a/fs/lockd/svc4proc.c
-+++ b/fs/lockd/svc4proc.c
-@@ -11,10 +11,6 @@
- #include <linux/time.h>
- #include <linux/slab.h>
- #include <linux/smp_lock.h>
--#include <linux/in.h>
+diff --git a/fs/nfsctl.c b/fs/nfsctl.c
+index 8f9a205..d3854d9 100644
+--- a/fs/nfsctl.c
++++ b/fs/nfsctl.c
+@@ -7,8 +7,6 @@
+ #include <linux/types.h>
+ #include <linux/file.h>
+ #include <linux/fs.h>
 -#include <linux/sunrpc/svc.h>
--#include <linux/sunrpc/clnt.h>
 -#include <linux/nfsd/nfsd.h>
- #include <linux/lockd/lockd.h>
- #include <linux/lockd/share.h>
- 
-diff --git a/fs/lockd/svcproc.c b/fs/lockd/svcproc.c
-index e1d28dd..56c9519 100644
---- a/fs/lockd/svcproc.c
-+++ b/fs/lockd/svcproc.c
-@@ -11,10 +11,6 @@
- #include <linux/time.h>
- #include <linux/slab.h>
- #include <linux/smp_lock.h>
--#include <linux/in.h>
--#include <linux/sunrpc/svc.h>
--#include <linux/sunrpc/clnt.h>
--#include <linux/nfsd/nfsd.h>
- #include <linux/lockd/lockd.h>
- #include <linux/lockd/share.h>
- 
+ #include <linux/nfsd/syscall.h>
+ #include <linux/cred.h>
+ #include <linux/sched.h>
 -- 
 1.6.5.2
 
