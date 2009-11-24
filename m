@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbZKXL3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932841AbZKXLbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbZKXL3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694AbZKXL3V
+	id S932841AbZKXLbX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbZKXLbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:29:21 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:39304 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756205AbZKXL3U (ORCPT
+	Tue, 24 Nov 2009 06:31:22 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:25097 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757628AbZKXLbU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:29:20 -0500
+	Tue, 24 Nov 2009 06:31:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=fbipq95zX9gyjDpyJry53PnYzvEJyq7bJx+7tldeu45qI8S+TtMxGVt85js0ps6xfE
-         n4bcLMcWiIVy1v17cDstnqGVrWv5wLM+wXZusKn8YuHBkYBBT8WmkUw/mq1M9lLV9HzZ
-         TRpjDp9uF3DFNYjak1hPrskYBilbh08JLFxqs=
+        h=sender:from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=E/r6QiN3reCbBBd8oLGJeZhujH49ltWHTl608nKHSxLqgki4hsSrtONIqa5YoOhJ0M
+         qnhv8BRXKnvEEvqUBx4w031NCsmk6Uq8sdKKSkSc58igapzbx6n+ix0rU9mr5napZikS
+         qVXw6m81IzwlUIais8wFj9kVHVT4aqVjoZuhE=
+From: Florian Fainelli <florian@openwrt.org>
+Organization: OpenWrt
+To: David Miller <davem@davemloft.net>
+Subject: Re: linux-next: manual merge of the mips tree with the net-current tree
+Date: Tue, 24 Nov 2009 12:30:22 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-server; KDE/4.3.2; x86_64; ; )
+Cc: ralf@linux-mips.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, a.beregalov@gmail.com,
+       linux-mips@linux-mips.org, manuel.lauss@googlemail.com
+References: <20091124113717.c5d86d41.sfr@canb.auug.org.au> <20091124011958.GA8105@linux-mips.org> <20091123.194343.232255103.davem@davemloft.net>
+In-Reply-To: <20091123.194343.232255103.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <4B0B36F0.30109@gmail.com>
-References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com>
-	 <20091123134002.bac1e664.akpm@linux-foundation.org>
-	 <4B0B1B62.2030302@gmail.com>
-	 <be7a9f3d0911231601p4dcfa519q4d1504a8ee37fdad@mail.gmail.com>
-	 <4B0B36F0.30109@gmail.com>
-Date: Tue, 24 Nov 2009 09:29:25 -0200
-X-Google-Sender-Auth: 36e1969eba00f32a
-Message-ID: <be7a9f3d0911240329r50ddb22dvd933f01d296295c1@mail.gmail.com>
-Subject: Re: Vortex86SX: only works with irqpoll
-From: Otavio Salvador <otavio@ossystems.com.br>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911241230.22370.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Robert,
+On Tuesday 24 November 2009 04:43:43 David Miller wrote:
+> From: Ralf Baechle <ralf@linux-mips.org>
+> Date: Tue, 24 Nov 2009 01:19:58 +0000
+> 
+> > On Tue, Nov 24, 2009 at 11:37:17AM +1100, Stephen Rothwell wrote:
+> >> Hi Ralf,
+> >>
+> >> Today's linux-next merge of the mips tree got a conflict in
+> >> drivers/net/au1000_eth.c between commit
+> >> 63edaf647607795a065e6956a79c47f500dc8447 ("Au1x00: fix crash when trying
+> >> register_netdev()") from the net-current tree and commit
+> >> 6cdbc95856e7f4ab4e7b2f2bdab5c3844537ad83 ("NET: au1000-eth: convert to
+> >> platform_driver model") from the mips tree.
+> >>
+> >> It looks to me that the mips tree change supercedes the net-current one
+> >> (since it moves the register_netdev() call much later), so I just used
+> >> this file from the mips tree.
+> >
+> > I agree.  David, can you just drop the net-current patch then?  This fix
+> > is still needed for -stable however.
+> 
+> Why would I do that?  The bug fix is necessary for 2.6.32 too.
 
-On Mon, Nov 23, 2009 at 11:29 PM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> Looking at the BIOS manual on their web site:
->
-> ftp://download@ftp.dmp.com.tw/vortex86sx/Vortex86SX_BIOS_Manual.pdf
->
-> you can try toggling a few of the options: Try switching OnBoard IDE Operate
-> Mode between Legacy Mode and Native Mode. If the kernel and the actual
-> device disagree here, that could cause IRQ delivery problems. You can also
-> try playing with the "Plug & Play OS" setting.
-
-The machine with me has no "OnBoard IDE Operate Mode" option. "Plug &
-Play OS" has been tried with "Yes" and "No".
-
-If the kernel and the actual device disagree, could it  also "break"
-the ethernet adaptor? This also doesn't work.
-
--- 
-Otavio Salvador                  O.S. Systems
-E-mail: otavio@ossystems.com.br  http://www.ossystems.com.br
-Mobile: +55 53 9981-7854         http://projetos.ossystems.com.br
+Ok, it is, but the platform_driver conversion patch is heavier, so the bugfix 
+is way easier to apply on thom of the conversion.
+--
+WBR, Florian
