@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933804AbZKXSBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933752AbZKXR6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933804AbZKXSBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933737AbZKXSBU
+	id S933752AbZKXR6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbZKXR6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:01:20 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:4489 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933760AbZKXSBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:01:19 -0500
-X-Greylist: delayed 849 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:01:18 EST
-Message-ID: <4B0C1EB7.50508@panasas.com>
-Date: Tue, 24 Nov 2009 19:58:15 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+	Tue, 24 Nov 2009 12:58:17 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:49229 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933693AbZKXR6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 12:58:17 -0500
+Date: Tue, 24 Nov 2009 09:58:20 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       cl@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091124175820.GE6831@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop> <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCHSET 0-5] remove unneeded nfsd #includes
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Nov 2009 17:58:18.0770 (UTC) FILETIME=[B4345720:01CA6D2F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259082756.17871.607.camel@calx>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some arch files had unneeded #includes directives from linux/nfsd/*.
-Some vfs files had unneeded #includes directives from linux/nfsd/*.
+On Tue, Nov 24, 2009 at 11:12:36AM -0600, Matt Mackall wrote:
+> On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
+> > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
+> > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
+> > > > Matt Mackall wrote:
+> > > > > This seems like a lot of work to paper over a lockdep false positive in
+> > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
+> > > > > rather the fix or papering over happen in lockdep.
+> > > > 
+> > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
+> > > > state is pretty invasive because of the kmem_cache_free() call in 
+> > > > slab_destroy(). We re-enter the slab allocator from the outer edges 
+> > > > which makes spin_lock_nested() very inconvenient.
+> > > 
+> > > I'm perfectly fine with letting the thing be as it is, its apparently
+> > > not something that triggers very often, and since slab will be killed
+> > > off soon, who cares.
+> > 
+> > Which of the alternatives to slab should I be testing with, then?
+> 
+> I'm guessing your system is in the minority that has more than $10 worth
+> of RAM, which means you should probably be evaluating SLUB.
 
-In an effort to move some of the now public nfsd headers to the source
-directory, submitted a cleanup.
+I have one nomination for SLUB.  I have started a short test run.
 
-I have cross compiled sparc64 and s390, parsic needs testing. Please ARCH
-people sends ACKs, or take these patches through your trees.
-
-patches:
-[PATCH 1/5] parsic: remove unused nfsd #includes
-	Some kind soul, please compile with this patch? compile
-	is all that's needed.
-
-[PATCH 2/5] sparc: remove unused nfsd #includes
-[PATCH 3/5] s390: remove unused nfsd #includes
-	These two were cross compiled. Should we submit them through
-	nfsd tree or the ARCH trees?
-
-[PATCH 4/5] vfs: nfsctl.c unused nfsd #includes
-[PATCH 5/5] lockd: Remove unused nfsd headers #includes
-	Can these patches go through the nfsd tree?
-	Who's ACKs should we collect? Andrew?
-
-Bruce Hi
-With this set applied, the only nfsd files used publicly are:
-	const.h	export.h nfsfh.h stats.h syscall.h
-
-These files can be moved to source folder:
-	cache.h  debug.h  nfsd.h  state.h xdr3.h  xdr4.h  xdr.h
-
-Why is debug.h exported from Kernel? (include/linux/nfsd/Kbuild)
-
-So just to see how this move might look like see last patch:
-[RFC] nfsd: Move private headers to source directory
-	This patch was compiled, as well, on x86(32/64), sparc64, s390
-
-Thanks
-Boaz
+							Thanx, Paul
