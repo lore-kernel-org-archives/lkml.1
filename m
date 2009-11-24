@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbZKXVWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934244AbZKXV2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933978AbZKXVWt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933394AbZKXVWs
+	id S934244AbZKXV2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZKXV2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:22:48 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:42766 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933179AbZKXVWr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:22:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Jn7LDFeKUwrN1uY/J+QTC7UT7OjKc2yBGEbsMmYG/02BzaxzSDKMThmVOZGxNzw+j2
-         lviiXke83twG/KROhJUDBRoHHixnkDZeIORd22WaRf9WnzAdgQt952uXSV4Eeo/fuDas
-         ngcW6YaxRAHiJAM4KBA6fLUh7CXlIy+ZwJYYw=
+	Tue, 24 Nov 2009 16:28:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10330 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934038AbZKXV2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:28:45 -0500
+Date: Tue, 24 Nov 2009 22:22:47 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Jason Baron <jbaron@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip v3 0/3] tracepoint: Add signal events
+Message-ID: <20091124212247.GA11773@redhat.com>
+References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com> <20091123175740.GA15594@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-12-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-13-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-14-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de> 
-	<1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 24 Nov 2009 16:22:33 -0500
-Message-ID: <8bd0f97a0911241322g7816359u177aa35a36c24356@mail.gmail.com>
-Subject: Re: [PATCH 20/38] move spidev_remove to .devexit.text
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Wolfgang Ocker <weo@reccoware.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       spi-devel-general@lists.sourceforge.net,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123175740.GA15594@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/24 Uwe Kleine-König
-> The function spidev_remove is used only wrapped by __devexit_p so define
-> it using __devexit.
+On 11/23, Ingo Molnar wrote:
+>
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>
+> > Hi,
+> >
+> > These patches add signal related tracepoints including
+> > signal generation, delivery, and loss. First patch also
+> > moves signal-sending tracepoint from events/sched.h to
+> > events/signal.h.
+> >
+> > Changes in v3
+> > - Add Docbook style comments
+> >
+> > Changes in v2
+> > - Add siginfo arguments
+> >
+> > Thank you,
+> >
+> > ---
+> >
+> > Masami Hiramatsu (3):
+> >       tracepoint: Add signal loss events
+> >       tracepoint: Add signal deliver event
+> >       tracepoint: Move signal sending tracepoint to events/signal.h
+> >
+> >
+> >  Documentation/DocBook/tracepoint.tmpl |    5 +
+> >  include/trace/events/sched.h          |   25 -----
+> >  include/trace/events/signal.h         |  173 +++++++++++++++++++++++++++++++++
+> >  kernel/signal.c                       |   27 ++++-
+> >  4 files changed, 198 insertions(+), 32 deletions(-)
+> >  create mode 100644 include/trace/events/signal.h
+>
+> Would be nice to have Roland's and Oleg's Acked-by tags in the patches -
+> to show that this is a representative and useful looking set of signal
+> events.
 
-this doesnt go far enough to address actual section mismatch issues in
-the driver.  i posted a more complete one here:
-http://lkml.org/lkml/2009/10/13/76
+Sorry, I can't really comment these patches.
 
-and akpm has picked that up
--mike
+I mean, I do not know which info is useful and which is not.
+For example, I am a bit surprized we report trace_signal_lose_info()
+but please do not consider this as if I think we shouldn't. Just I
+do not know.
+
+OTOH, we do not report if __send_signal() fails just because the
+legacy signal is already queued. We do not report who sends the signal,
+we do not report if it was private or shared. zap_process, complete_signal
+can "send" SIGKILL via sigaddset, this won't be noticed. But again, it is
+not that I think this should be reported.
+
+In short: I think any info may be useful, and these patches can help.
+But I do not understand what exactly should be reported to userspace.
+
+Oleg.
+
