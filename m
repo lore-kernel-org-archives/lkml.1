@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbZKXB3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757717AbZKXBeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbZKXB3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 20:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZKXB3V
+	id S1757717AbZKXBeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 20:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbZKXBd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 20:29:21 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:46676 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZKXB3U (ORCPT
+	Mon, 23 Nov 2009 20:33:59 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47523 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757570AbZKXBd6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 20:29:20 -0500
+	Mon, 23 Nov 2009 20:33:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=M5xbZKfEDDolnQPR13WM7Z31FW/JrPo6xj6TOJCpljgPQZSs7zQFi7T7vgoZ+rtlIn
-         kDKVIOjuZUTznosU1pAKt7cjRrAwVLnPS2RW+MG07t2oD7wMFewrGUpN0pVZlV9PDtI2
-         LBAziWwIOLgb0VE1+fRR1sgMaHna/H7+iZyUA=
-Message-ID: <4B0B36F0.30109@gmail.com>
-Date: Mon, 23 Nov 2009 19:29:20 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=hMzpviaptLliIUydbjwdkvkKnhJl9D6PMlZ6dJMLCmf7f4UZkijjusrCXRF26PDlLl
+         029OUVVpkbIE/Bi55hQjC4suVzrcXQCkGL+518xTweDHzG54n9zFeU3h39jbQkCg6m7D
+         91WLvX4lQeOXNjhi7EOBq3SSJ5Qg8LpMCVM6g=
 MIME-Version: 1.0
-To: Otavio Salvador <otavio@ossystems.com.br>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Vortex86SX: only works with irqpoll
-References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com>	 <20091123134002.bac1e664.akpm@linux-foundation.org>	 <4B0B1B62.2030302@gmail.com> <be7a9f3d0911231601p4dcfa519q4d1504a8ee37fdad@mail.gmail.com>
-In-Reply-To: <be7a9f3d0911231601p4dcfa519q4d1504a8ee37fdad@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
+References: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
+Date: Tue, 24 Nov 2009 09:34:04 +0800
+Message-ID: <51d384e10911231734g744d4f6av8b393d99fee92105@mail.gmail.com>
+Subject: [PATCH] dvb-core: Fix ULE decapsulation bug when less than 4 bytes of 
+	ULE SNDU is packed into the remaining bytes of a MPEG2-TS frame
+From: Ang Way Chuang <wcang79@gmail.com>
+To: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23/2009 06:01 PM, Otavio Salvador wrote:
-> Hello,
->
-> On Mon, Nov 23, 2009 at 9:31 PM, Robert Hancock<hancockrwd@gmail.com>  wrote:
->> On 11/23/2009 03:40 PM, Andrew Morton wrote:
->>>> [    0.000000] ACPI Error: A valid RSDP was not found
->>>> (20090903/tbxfroot-219)
->>>
->>> No ACPI.
->>>
->>> Please raise a report against acpi_bios@kernel-bugs.osdl.org at
->>> bugzilla.kernel.org, thanks.
->>
->> I believe that just means the machine doesn't support ACPI at all..
->
-> Yes; same as me.
->
-> Andrew should I report it anyway?
->
->  From Alan message I understand that he believes it is a firmware
-> issue. I tried (without success) to contact DM&P about it asking for a
-> newer BIOS but nothing yet.
->
-> If I could workaround it, it would be nice since it could avoid issues
-> for users of those devices. I did research on Internet and found a lot
-> of users having the network adaptor not work and like and those
-> problems mostly looks like same issue I'm having.
+ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
+code has a bug that incorrectly treats ULE SNDU packed into the
+remaining 2 or 3 bytes of a MPEG2-TS frame as having invalid pointer
+field on the subsequent MPEG2-TS frame.
 
-Looking at the BIOS manual on their web site:
+This patch was generated and tested against v2.6.32-rc8. Similar patch
+was applied and tested using 2.6.27 which is similar to the latest
+dvb_net.c, except for network device statistical data structure. I
+suspect that this bug was introduced in kernel version 2.6.15, but had
+not verified it.
 
-ftp://download@ftp.dmp.com.tw/vortex86sx/Vortex86SX_BIOS_Manual.pdf
+Care has been taken not to introduce more bug by fixing this bug, but
+please scrutinize the code for I always produces buggy code.
 
-you can try toggling a few of the options: Try switching OnBoard IDE 
-Operate Mode between Legacy Mode and Native Mode. If the kernel and the 
-actual device disagree here, that could cause IRQ delivery problems. You 
-can also try playing with the "Plug & Play OS" setting.
+Signed-off-by: Ang Way Chuang <wcang@nav6.org>
+---
+diff --git a/drivers/media/dvb/dvb-core/dvb_net.c
+b/drivers/media/dvb/dvb-core/dvb_net.c
+index 0241a7c..7e0db86 100644
+--- a/drivers/media/dvb/dvb-core/dvb_net.c
++++ b/drivers/media/dvb/dvb-core/dvb_net.c
+@@ -458,8 +458,9 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+                                                      "field: %u.\n",
+priv->ts_count, *from_where);
+
+                                               /* Drop partly decoded
+SNDU, reset state, resync on PUSI. */
+-                                               if (priv->ule_skb) {
+-                                                       dev_kfree_skb(
+priv->ule_skb );
++                                               if (priv->ule_skb ||
+priv->ule_sndu_remain) {
++                                                       if (priv->ule_skb)
++
+dev_kfree_skb( priv->ule_skb );
+                                                       dev->stats.rx_errors++;
+
+dev->stats.rx_frame_errors++;
+                                               }
+@@ -533,6 +534,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+                               from_where += 2;
+                       }
+
++                       priv->ule_sndu_remain = priv->ule_sndu_len + 2;
+                       /*
+                        * State of current TS:
+                        *   ts_remain (remaining bytes in the current TS cell)
+@@ -542,6 +544,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+                        */
+                       switch (ts_remain) {
+                               case 1:
++                                       priv->ule_sndu_remain--;
+                                       priv->ule_sndu_type = from_where[0] << 8;
+                                       priv->ule_sndu_type_1 = 1; /*
+first byte of ule_type is set. */
+                                       ts_remain -= 1; from_where += 1;
+@@ -555,6 +558,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+                               default: /* complete ULE header is
+present in current TS. */
+                                       /* Extract ULE type field. */
+                                       if (priv->ule_sndu_type_1) {
++                                               priv->ule_sndu_type_1 = 0;
+                                               priv->ule_sndu_type |=
+from_where[0];
+                                               from_where += 1; /*
+points to payload start. */
+                                               ts_remain -= 1;
