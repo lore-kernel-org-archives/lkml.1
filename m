@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZKXTYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbZKXT2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbZKXTYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZKXTYD
+	id S932649AbZKXT2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 14:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZKXT2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:24:03 -0500
-Received: from waste.org ([173.11.57.241]:59849 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758088AbZKXTYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:24:03 -0500
-Subject: Re: lockdep complaints in slab allocator
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: paulmck@linux.vnet.ibm.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, cl@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <1259086459.4531.1752.camel@laptop>
-References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-	 <1258709153.11284.429.camel@laptop>
-	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
-	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
-	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
-	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
-	 <1259080406.4531.1645.camel@laptop>
-	 <20091124170032.GC6831@linux.vnet.ibm.com>
-	 <1259082756.17871.607.camel@calx>  <1259086459.4531.1752.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 13:23:35 -0600
-Message-ID: <1259090615.17871.696.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 14:28:35 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:49237 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757935AbZKXT2e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 14:28:34 -0500
+Date: Tue, 24 Nov 2009 14:28:35 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jan Kara <jack@suse.cz>, Boaz Harrosh <bharrosh@panasas.com>
+cc: tmhikaru@gmail.com, Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       <linux-ext4@vger.kernel.org>
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+In-Reply-To: <4B0C1C20.2080901@panasas.com>
+Message-ID: <Pine.LNX.4.44L0.0911241418440.2881-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 19:14 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 11:12 -0600, Matt Mackall wrote:
-> > On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
-> > > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
-> > > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
-> > > > > Matt Mackall wrote:
-> > > > > > This seems like a lot of work to paper over a lockdep false positive in
-> > > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
-> > > > > > rather the fix or papering over happen in lockdep.
-> > > > > 
-> > > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
-> > > > > state is pretty invasive because of the kmem_cache_free() call in 
-> > > > > slab_destroy(). We re-enter the slab allocator from the outer edges 
-> > > > > which makes spin_lock_nested() very inconvenient.
-> > > > 
-> > > > I'm perfectly fine with letting the thing be as it is, its apparently
-> > > > not something that triggers very often, and since slab will be killed
-> > > > off soon, who cares.
-> > > 
-> > > Which of the alternatives to slab should I be testing with, then?
+On Tue, 24 Nov 2009, Boaz Harrosh wrote:
+
+> > I would have expected the READ to be retried, but in these two cases 
+> > it wasn't.  The usbmon log contained five instances of this error 
+> > sequence; the other three were retried successfully.  I don't know what 
+> > the difference was.
 > > 
-> > I'm guessing your system is in the minority that has more than $10 worth
-> > of RAM, which means you should probably be evaluating SLUB.
 > 
-> Well, I was rather hoping that'd die too ;-)
+> Perhaps the time it took to complete.
 > 
-> Weren't we going to go with SLQB?
+> I have a very old IDE disk connected to a USB box here, and some bad sectors take ages
+> to return. One thing I wanted to investigate is why the complete Linux system is frozen
+> for minutes when I "cp" one of these bad-sectors and then every thing is back to normal.
+> It's just an inserted external box. Swap system and everything is on an another healthy HD.
+> As if the USB controller actually locks the PCI bus, or the interrupts are off for a long
+> while. (Or is it the BKL?)
+> 
+> Do you have time stamps on these?
 
-News to me. Perhaps it was discussed at KS.
+Yes.  Each of the unsuccessful reads, whether retried or not, lasted
+less than one millisecond.  So that's probably not the reason.
 
-My understanding of the current state of play is:
 
-SLUB: default allocator
-SLAB: deep maintenance, will be removed if SLUB ever covers remaining
-performance regressions
-SLOB: useful for low-end (but high-volume!) embedded 
-SLQB: sitting in slab.git#for-next for months, has some ground to cover
+On Tue, 24 Nov 2009, Jan Kara wrote:
 
-SLQB and SLUB have pretty similar target audiences, so I agree we should
-eventually have only one of them. But I strongly expect performance
-results to be mixed, just as they have been comparing SLUB/SLAB.
-Similarly, SLQB still has of room for tuning left compared to SLUB, as
-SLUB did compared to SLAB when it first emerged. It might be a while
-before a clear winner emerges.
+>   My naive guess would be that those non-retried reads were actually
+> readahead. That's not retried if I remember correctly. Later, when we
+> really needed the data, we sent another read request...
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+That would be my guess too.  I don't know how to verify it, though.
 
+If you're interested in pursuing this farther, I can show you how to 
+generate equivalent errors on demand using an emulated USB drive.  
+At this point it's not clear how much more one could learn by doing 
+this, however.
+
+Alan Stern
 
