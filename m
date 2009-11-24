@@ -1,107 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934445AbZKXXuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934473AbZKXXvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934445AbZKXXuL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 18:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934386AbZKXXuK
+	id S934473AbZKXXvl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 18:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934407AbZKXXvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 18:50:10 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:50590 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934380AbZKXXuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 18:50:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nqn7IcODykb64T2fzSEGqXATWg6M83S5WgWmhSJwstYKUal7XosJwvgtPwgiQqCbKG
-         VHWW6hfmDpzc4SLwsY0/qQXr1OE7ubwf10aHWHl6q1DjtZGujaWTfkJxz3npVUjTjFiK
-         P9DjTs9Wut700YpA49el4PvAVspYObUdifObo=
-Subject: Plan for adding XD support in mtd layer
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alex Dubov <oakad@yahoo.com>,
-       arnd@arndb.de, tglx@linutronix.de
-In-Reply-To: <1258894713.4127.4.camel@maxim-laptop>
-References: <1258763144.4997.12.camel@maxim-laptop>
-	 <20091121102542.GA21136@logfs.org>  <1258894713.4127.4.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 01:50:10 +0200
-Message-ID: <1259106610.28219.34.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 24 Nov 2009 18:51:40 -0500
+Received: from ozlabs.org ([203.10.76.45]:49911 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934402AbZKXXvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 18:51:39 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
+Date: Wed, 25 Nov 2009 10:21:44 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Takashi Iwai <tiwai@suse.de>, Ondrej Zary <linux@rainbow-software.org>,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
+References: <200911222201.59471.linux@rainbow-software.org> <200911240821.40563.rusty@rustcorp.com.au> <ac3eb2510911240053n593317b0qe60043988d89810f@mail.gmail.com>
+In-Reply-To: <ac3eb2510911240053n593317b0qe60043988d89810f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911251021.44295.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is my plan for adding the XD format into MTD subsystem.
-Please review.
+On Tue, 24 Nov 2009 07:23:51 pm Kay Sievers wrote:
+> On Mon, Nov 23, 2009 at 22:51, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > On Mon, 23 Nov 2009 07:10:22 pm Takashi Iwai wrote:
+> >> At Mon, 23 Nov 2009 13:59:53 +1030, Rusty Russell wrote:
+> >> > Two things are required:
+> >> > 1) Modify file2alias to add aliases for isapnp.  This is pretty easy.
+> >> > 2) Expose the isapnp devices in sysfs where udev will match them up
+> >> >    (/sys/bus/isa/devices/<dev>/modalias I guess?)
+> >>
+> >> There is non-pnp ISA bus, so I'm afraid "isa" may conflict.
+> >> I suppose "isapnp" would be a safer choice.
+> >
+> > Without pnp, I don't think you can enumerate the ISA bus. Hence I chose
+> > "isa:" in the hope that udev would "just work" if isapnp created the
+> > modalias under /sys/bus/isa...
+> >
+> > But Kay says there's a pnp bus (who knew?).  I don't know what he means
+> > by unfixable aliases tho, since it's all in the kernel source so we can
+> > change it at any time?
+> 
+> Here's a bit of the background:
+> 
+> The aliases in the modules can only match a single value, but PNP
+> devices often have vendor specific IDs and usual IDs describing the
+> function.
 
-New additions are marked with '->'
+I'm confused.  You can have multiple aliases in a module.  Many do.
 
+> Like here, where the interesting ID is only the second one of the two
+> for a single device:
+>   $ grep . /sys/bus/pnp/devices/*/id
+>   /sys/bus/pnp/devices/00:09/id:LEN0006
+>   /sys/bus/pnp/devices/00:09/id:PNP0f13
+> 
+> So the kernel device would need to compose a "modalias" string with
+> all IDs in a single line. But the in-module aliases can unfortunately
+> match only on a single value, like:
+>   alias pnp:dPNP0700* floppy
+> 
+> For that reason, a while ago udev switched to acpi aliases entirely,
+> and dropped all pnp: usage. The acpi aliases can handle multi-values
+> just fine with single strings like:
+>   $ cat /sys/bus/acpi/devices/LEN0006:00/modalias
+>   acpi:LEN0006:PNP0F13:
+> 
+>   alias acpi*:PNP0700:* floppy
 
-Chip driver:
+Then why didn't you change the pnp modalias format to be more like the ACPI
+one?
 
-no problems with that, in fact ricoh controller I reverse engineered is
-very similar conceptually
-to jmicron.
-I can take original jmicron driver almost verbatim.
-This will live in new sub folder of mtd and call into base XD driver
+(I know nothing about ACPI or PNP, so maybe I'm missing something fundamental).
 
-
-Base XD mtd driver:
-
-* No way to tell that readsize = 512, but write & erase size isn't.
-Not such a big deal, since higher level FTL driver can hardcode that
-assumption, and access via mtdblk isn't necessary, since FTL will
-replace it for XD, and the raw access will be done through mtdchar.
-
-* it is possible to export 'extra' via oob. FTL will use that, and will
-be available to user via char device
-
-* No need to export CIF block, it will be available for user via char
-device by scanning the device (using a new utility)
-
-
--> I need new mtd_info member for at least for card identification, and
-will be nice to have zone/block/page size
-This will be used by FTL and mtdchar to be exported to user space
-
-
-FTL driver:
-
-I will write new XD/smartmedia FTL driver.
-
-* Will read ID/type from device and do all the work based on that,
-(figure page size/zone count/block size, etc...) or will get that info
-from mtd driver 
-
-* Will cache read/writes (this will overlap with mtdblk)
-
-* Will provide normal block level access to filesystems, and user.
-(using common block device of course)
-
-* No debugging information or/and device specific ioctls.
-
-
-Char driver:
-
-* Already exists, and I will need to modify it, so I could read ID/media
-type
-Also would be nice to pass info about sizes (zones/pages/blocks) to
-userspace 
-If not, I will put translation table to userspace utility based on media
-ID
-
-
-Userspace utility:
-* Will allow user to read FTL maps (based on oob), Media ID, CIF, all
-using char device
-* Will also allow low level format.
-
-
-
-Best regards,
-Maxim Levitsky
-
+Thanks,
+Rusty.
