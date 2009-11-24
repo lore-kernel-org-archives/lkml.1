@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934168AbZKXWXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934272AbZKXWYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934168AbZKXWXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 17:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933799AbZKXWXc
+	id S934272AbZKXWYI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 17:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934105AbZKXWYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 17:23:32 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:64562 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933798AbZKXWXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 17:23:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YqEtf6iVU49KnTieW418fcIZ+8dexrj5m38Ayg9lxs3xzRRnR6REqfC56TD4AIBL8V
-         NLZJ3F3lFtgvN8v6+HYS0sY6P+gIV47kZoGHhMHfzSfGjry2ZhTimm6hPrbD7X7pyquU
-         Na3C3DSP8CB9mnrFkXLIapwtpQ5elQAm/mbnE=
-Date: Tue, 24 Nov 2009 17:23:34 -0500
-From: tmhikaru@gmail.com
-To: tmhikaru@gmail.com
-Cc: Jan Kara <jack@suse.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
-Message-ID: <20091124222334.GB20245@roll>
-References: <20091124195607.GC16662@quack.suse.cz> <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org> <20091124203944.GD16662@quack.suse.cz> <20091124215044.GA20245@roll>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124215044.GA20245@roll>
-User-Agent: Mutt/1.4.2.3i
+	Tue, 24 Nov 2009 17:24:07 -0500
+Received: from www.tglx.de ([62.245.132.106]:51177 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934074AbZKXWYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 17:24:05 -0500
+Date: Tue, 24 Nov 2009 23:23:44 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+cc: David Miller <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "yong.zhang0@gmail.com" <yong.zhang0@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [PATCH v2] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+In-Reply-To: <1259100343.2631.78.camel@ppwaskie-mobl2>
+Message-ID: <alpine.LFD.2.00.0911242317280.24119@localhost.localdomain>
+References: <20091124093518.3909.16435.stgit@ppwaskie-hc2.jf.intel.com>  <alpine.LFD.2.00.0911241151360.24119@localhost.localdomain>  <20091124.095703.107687163.davem@davemloft.net>  <alpine.LFD.2.00.0911242252190.24119@localhost.localdomain>
+ <1259100343.2631.78.camel@ppwaskie-mobl2>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 04:50:44PM -0500, tmhikaru@gmail.com wrote:
-> On Tue, Nov 24, 2009 at 09:39:44PM +0100, Jan Kara wrote:
-> > On Tue 24-11-09 15:13:01, Alan Stern wrote:
-> > > On Tue, 24 Nov 2009, Jan Kara wrote:
-> > > 
-> > > >   After digging in block layer code, it's as we suspected:
-> > > > In case of host error DID_ERROR (which is our case), scsi request is
-> > > > retried iff it is not a FAILFAST request which is set if bio is doing
-> > > > readahead... So this is explained and everything behaves as it should.
-> > > > Thanks everybody involved :).
-> > > 
-> > > Okay, very good.  There remains the question of the disturbing error
-> > > messages in the system log.  Should they be supressed for FAILFAST
-> > > requests?
-> >   I think it's useful they are there because ultimately, something really
-> > went wrong and you should better investigate. BTW, "end_request: I/O error"
-> > messages are in the log even for requests where we retried and succeeded...
+On Tue, 24 Nov 2009, Peter P Waskiewicz Jr wrote:
+> On Tue, 2009-11-24 at 13:56 -0800, Thomas Gleixner wrote:
+> > On Tue, 24 Nov 2009, David Miller wrote:
 > > 
-> > 								Honza
-> 
-> While I agree it is useful information, I think that if the error messages
-> are going to be printed, you should *also* print that this is a NON FATAL
-> error and that it's going to be retried. It'd help diagnosing the path it's
-> following through the failure code IMHO as well as not making users
-> completely freak out like I did in my case. It is *not* particularly obvious
-> given the message printed to syslog what is going wrong or why.
-> 
-> 	Just my opinion,
-> 	Tim McGrath
+> > > From: Thomas Gleixner <tglx@linutronix.de>
+> > > Date: Tue, 24 Nov 2009 12:07:35 +0100 (CET)
+> > > 
+> > > > And what does the kernel do with this information and why are we not
+> > > > using the existing device/numa_node information ?
+> > > 
+> > > It's a different problem space Thomas.
+> > > 
+> > > If the device lives on NUMA node X, we still end up wanting to
+> > > allocate memory resources (RX ring buffers) on other NUMA nodes on a
+> > > per-queue basis.
+> > > 
+> > > Otherwise a network card's forwarding performance is limited by the
+> > > memory bandwidth of a single NUMA node, and on a multiqueue cards we
+> > > therefore fare much better by allocating each device RX queue's memory
+> > > resources on a different NUMA node.
+> > > 
+> > > It is this NUMA usage that PJ is trying to export somehow to userspace
+> > > so that irqbalanced and friends can choose the IRQ cpu masks more
+> > > intelligently.
+> > 
+> > So you need a preferred irq mask information on a per IRQ basis and
+> > that mask is not restricted to the CPUs of a single NUMA node, right ?
+> > 
+> Just to clarify, I need a preferred CPU mask on a per IRQ basis.  And
+> yes, that mask may not be restricted to the CPUs of a single NUMA node.
+> But in the normal case, the mask will be restricted to CPUs of a single
+> node.
 
-	I should have asked since I'm here at the moment - do you need any
-more information out of the buggy USB enclosure at the moment, or can I work
-on trying to fix/replace it now?
+Right, but the normal case does not help much if we need to consider
+the special case of multiple nodes affected which requires another
+cpumask in irq_desc. That's what I really want to avoid.
 
-Tim McGrath
+I at least understand the exact problem you guys want to solve. Will
+think more about it.
+
+Thanks,
+
+	tglx
