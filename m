@@ -1,190 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbZKXWxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934415AbZKXXWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934352AbZKXWxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 17:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934329AbZKXWxl
+	id S934415AbZKXXWz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 18:22:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934372AbZKXXWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 17:53:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:23070 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934328AbZKXWxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 17:53:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dfow5ZjTyUGBMq6365vgZgK4PUUlpGaMoxfZnI6ORTBqbH/Km2zRqVzmLGZ3YKxW1j
-         4wBrMqDqAnnCFZPkKRQ5247nN4hC4V5YUTOIv/uj2vuwicjLhQo5vbl08wxNwC/enSn/
-         u95jCzu11gYnUgnC3OSozguD+2nsfi1HRxnvw=
-Date: Tue, 24 Nov 2009 23:53:45 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jiri Olsa <jolsa@redhat.com>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing - fix function graph trace to properly display
-	failed entries
-Message-ID: <20091124225342.GB5208@nowhere>
-References: <1259067458-27143-1-git-send-email-jolsa@redhat.com> <1259082845.22249.1110.camel@gandalf.stny.rr.com> <20091124211423.GE5071@nowhere> <20091124221748.GA5208@nowhere> <1259101602.22249.1122.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259101602.22249.1122.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Nov 2009 18:22:54 -0500
+Received: from waste.org ([173.11.57.241]:38526 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934366AbZKXXWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 18:22:53 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <peterz@infradead.org>, paulmck@linux.vnet.ibm.com,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
+	 <1259090615.17871.696.camel@calx>
+	 <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 16:55:15 -0600
+Message-ID: <1259103315.17871.895.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 05:26:42PM -0500, Steven Rostedt wrote:
-> > But it happens with trace_pipe reading.
+On Tue, 2009-11-24 at 23:07 +0200, Pekka Enberg wrote:
+> On Tue, Nov 24, 2009 at 9:23 PM, Matt Mackall <mpm@selenic.com> wrote:
+> > On Tue, 2009-11-24 at 19:14 +0100, Peter Zijlstra wrote:
+> >> On Tue, 2009-11-24 at 11:12 -0600, Matt Mackall wrote:
+> >> > On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
+> >> > > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
+> >> > > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
+> >> > > > > Matt Mackall wrote:
+> >> > > > > > This seems like a lot of work to paper over a lockdep false positive in
+> >> > > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
+> >> > > > > > rather the fix or papering over happen in lockdep.
+> >> > > > >
+> >> > > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the
+> >> > > > > state is pretty invasive because of the kmem_cache_free() call in
+> >> > > > > slab_destroy(). We re-enter the slab allocator from the outer edges
+> >> > > > > which makes spin_lock_nested() very inconvenient.
+> >> > > >
+> >> > > > I'm perfectly fine with letting the thing be as it is, its apparently
+> >> > > > not something that triggers very often, and since slab will be killed
+> >> > > > off soon, who cares.
+> >> > >
+> >> > > Which of the alternatives to slab should I be testing with, then?
+> >> >
+> >> > I'm guessing your system is in the minority that has more than $10 worth
+> >> > of RAM, which means you should probably be evaluating SLUB.
+> >>
+> >> Well, I was rather hoping that'd die too ;-)
+> >>
+> >> Weren't we going to go with SLQB?
+> >
+> > News to me. Perhaps it was discussed at KS.
 > 
-> Yep, but I think we should be able to handle it without modifying
-> trace_seq.
-
-
-
-Yeah. I guess now that the bug window is isolated to the
-trace_pipe case, the fix will probably (hopefully) be easier.
-
-
- 
-> > 
-> > There is another bug. Here is a sample from
-> > trace reading:
-> > 
-> >  0)               |  sys_newfstat() {
-> >  0)               |    vfs_fstat() {
-> >  0)   1.187 us    |      fget();
-> >  0)               |      vfs_getattr() {
-> >  0)               |        security_inode_getattr() {
-> >  0)   0.608 us    |              }
-> >  0)   2.951 us    |            }
-> >  0) + 65.349 us   |          }
-> >  0)               |          path_put() {
-> >  0)   0.608 us    |            dput();
-> >  0)   0.548 us    |            mntput_no_expire();
-> >  0)   2.748 us    |          }
-> >  0) + 74.472 us   |        }
-> > 
-> > 
-> > I think we are loosing some traces here, between security_inode_getattr()
-> > and path_put().
+> Yes, we discussed this at KS. The plan was to merge SLQB to mainline
+> so people can test it more easily but unfortunately it hasn't gotten
+> any loving from Nick recently which makes me think it's going to miss
+> the merge window for .33 as well.
 > 
-> Sure the buffer didn't just wrap there? Is this a trace_pipe output?
-
-
-No it didn't wrapped, and it's trace output, not trace_pipe.
-
-
-> Also note, with the reader page of the ring buffer there could also be
-> another symptom. Once the writer is off the reader page, it will never
-> come back on it (unless a reader swaps where the writer is, but that
-> only happens on a lightly filled buffer).
+> > My understanding of the current state of play is:
+> >
+> > SLUB: default allocator
+> > SLAB: deep maintenance, will be removed if SLUB ever covers remaining
+> > performance regressions
+> > SLOB: useful for low-end (but high-volume!) embedded
+> > SLQB: sitting in slab.git#for-next for months, has some ground to cover
+> >
+> > SLQB and SLUB have pretty similar target audiences, so I agree we should
+> > eventually have only one of them. But I strongly expect performance
+> > results to be mixed, just as they have been comparing SLUB/SLAB.
+> > Similarly, SLQB still has of room for tuning left compared to SLUB, as
+> > SLUB did compared to SLAB when it first emerged. It might be a while
+> > before a clear winner emerges.
 > 
-> Thus, even if we freeze recording, when the reader finishes its reader
-> page and goes off into the main buffer, there may be a gap between the
-> last read and the next (main buffer) due to the writer wrapping it.
+> Yeah, something like that. I don't think we were really able to decide
+> anything at the KS. IIRC Christoph was in favor of having multiple
+> slab allocators in the tree whereas I, for example, would rather have
+> only one. The SLOB allocator is bit special here because it's for
+> embedded. However, I also talked to some embedded folks at the summit
+> and none of them were using SLOB because the gains weren't big enough.
+> So I don't know if it's being used that widely.
 
+I'm afraid I have only anecdotal reports from SLOB users, and embedded
+folks are notorious for lack of feedback, but I only need a few people
+to tell me they're shipping 100k units/mo to be confident that SLOB is
+in use in millions of devices.
 
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-You mean the writer could have eaten what we are supposed to read next?
-Yeah that could explain the problem.
-
-
-
-> If you are using the trace_pipe while the function tracer is on, you
-> will probably see this a lot.
-
-
-That's perhaps the problem. I was tracing while reading (too lazy
-to echo 0 > tracing_on)
-
-
-> > 
-> > I'm not sure why. The problem related by Olsa would explain such
-> > symptoms, and what olsa reported is a real bug, but only
-> > in trace_pipe. There is also something else, probably more
-> > related to the fast path.
-> 
-> Are you looking at this while the function_graph tracer is running? Or
-> do you disable tracing (tracing_on = 0)
-
-
-Yeah it is running.
-But I just tried after setting tracing_on to 0 and I found that:
-
-
- 0)               |          raw_notifier_call_chain() {
- 0)               |            tick_notify() {
- 0)               |              tick_broadcast_oneshot_control() {
- 0)   2.072 us    |                _spin_lock_irqsave();
- 0)               |                clockevents_set_mode() {
- 0)               |                  lapic_timer_setup() {
- 0)   0.976 us    |                    native_apic_mem_read();
- 0)   2.223 us    |                    native_apic_mem_write();
- 0)   0.946 us    |                    native_apic_mem_write();
- 0)   7.959 us    |                  }
- 0)   9.844 us    |                }
- 0) + 46.074 us   |      }
- 0) ! 172.995 us  |    }
- 0)   1.178 us    |    menu_reflect();
- 0) ! 190.040 us  |  }
-
-The whole trace looks globally reliable but there is this little
-corner case. Looks like we are loosing some return entries.
-
-Or that:
-
- 0)               |                clockevents_set_mode() {
- 0)               |                  lapic_timer_setup() {
- 0)               |                    __setup_APIC_LVTT() {
- 0)   0.946 us    |                      native_apic_mem_write();
- 0)   0.969 us    |                      native_apic_mem_read();
- 0)               |                      native_apic_mem_write() {
- 0)   6.487 us    |                    }
- 0)   1.096 us    |                    }
- 0)   0.946 us    |                    native_apic_mem_write();
- 0)   6.781 us    |                  }
- 0)   8.657 
-
-This one looks more strange. As if the return trace of
-native_apic_mem_write() had a wrong depth.
-
-Sometimes also the depth seems to go too far:
-
- 0)               |    acpi_idle_enter_simple() {
- 0)   1.900 us    |                _spin_lock_irqsave();
- 0)               |                clockevents_set_mode() {
- 0)               |                  lapic_timer_setup() {
- 0)               |                    __setup_APIC_LVTT() {
- 0)   0.939 us    |                      native_apic_mem_write();
- 0)   0.939 us    |                      native_apic_mem_read();
- 0)   1.164 us    |                      native_apic_mem_write();
- 0)   6.706 us    |                    }
- 0)   8.725 us    |                  }
- 0) + 10.737 us   |                }
- 0)               |        
-
-
-And to finish, a special gift :-)
-
- 0)               |            tick_notify() {
- 0)               |              tick_broadcast_oneshot_control() {
- 0)   1.855 us    |                _spin_lock_irqsave();
- 0)               |                clockevents_set_mode() {
- 0)               |                  lapic_timer_setup() {
- 0)               |                    __setup_APIC_LVTT() {
- 0)   0.894 us    |                      native_apic_mem_write();
- 0)   0.939 us    |                      native_apic_mem_read();
- 0)   0.901 us    |                      native_apic_mem_write();
- 0)   6.503 us    |                    }
- 0)   8.463 us    |                  }
- 0)   0.938 us    |                    }
- 0)   6.652 us    |                  }
- 0)   8.515 us    |                }
- 0)   1.637 us    |                _spin_unlock_irqrestore();
- 0) + 15.904 us   |              }
- 0) + 17.78
-
-
-I'll try to fix these issues...
 
