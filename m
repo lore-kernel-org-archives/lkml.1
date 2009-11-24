@@ -1,158 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZKXNIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932868AbZKXNLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932862AbZKXNIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbZKXNID
+	id S932868AbZKXNLa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbZKXNL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:08:03 -0500
-Received: from lucidpixels.com ([75.144.35.66]:60873 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932514AbZKXNIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:08:01 -0500
-Date: Tue, 24 Nov 2009 08:08:07 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: Which kernel options should be enabled to find the root cause of
- this bug?
-In-Reply-To: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0911240805490.25676@p34.internal.lan>
-References: <alpine.DEB.2.00.0910171825270.16781@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 24 Nov 2009 08:11:29 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:44331 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932659AbZKXNL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 08:11:29 -0500
+Subject: [PATCH 0/1] Correct sorting problem in cfq_service_tree_add
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 08:11:33 -0500
+Message-ID: <1259068293.3019.15.camel@cail>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Found this whilst reviewing the CFQ I/O scheduler code: Currently, this
+routine only sorts using the I/O priority class - it does not properly
+sort prioritized queues within a specific class. The patch changes the
+sort to utilize the full I/O priority (class & priority).
 
+A simple test shows the problem & fixed results: on a 16-way box, for
+each of 12 attached disks I started up 17 processes (one process at each
+possible class/priority). Each process operated on a separate file in
+the file system. I then did two types of tests: (a) direct/synchronous
+and (b) direct/asynchronous w/ an 80/20 read/write split.
 
-On Sat, 17 Oct 2009, Justin Piszcz wrote:
+I then tabulated the overall I/O performed per task: (first column is
+priority class (1==RT, 2==BE, 3==IDLE), second column is the I/O
+priority (0==highest), then two groupings of read/write data moved
+(total KiBs over a span of 120 seconds):
 
-> Hello,
->
-> I have a system I recently upgraded from 2.6.30.x and after approximately 
-> 24-48 hours--sometimes longer, the system cannot write any more files to disk 
-> (luckily though I can still write to /dev/shm) -- to which I have
-> saved the sysrq-t and sysrq-w output:
->
-> http://home.comcast.net/~jpiszcz/20091017/sysrq-w.txt
-> http://home.comcast.net/~jpiszcz/20091017/sysrq-t.txt
->
-> Configuration:
->
-> $ cat /proc/mdstat Personalities : [raid1] [raid6] [raid5] [raid4] md1 : 
-> active raid1 sdb2[1] sda2[0]
->      136448 blocks [2/2] [UU]
->
-> md2 : active raid1 sdb3[1] sda3[0]
->      129596288 blocks [2/2] [UU]
->
-> md3 : active raid5 sdj1[7] sdi1[6] sdh1[5] sdf1[3] sdg1[4] sde1[2] sdd1[1] 
-> sdc1[0]
->      5128001536 blocks level 5, 1024k chunk, algorithm 2 [8/8] [UUUUUUUU]
->
-> md0 : active raid1 sdb1[1] sda1[0]
->      16787776 blocks [2/2] [UU]
->
-> $ mount
-> /dev/md2 on / type xfs (rw,noatime,nobarrier,logbufs=8,logbsize=262144)
-> tmpfs on /lib/init/rw type tmpfs (rw,nosuid,mode=0755)
-> proc on /proc type proc (rw,noexec,nosuid,nodev)
-> sysfs on /sys type sysfs (rw,noexec,nosuid,nodev)
-> udev on /dev type tmpfs (rw,mode=0755)
-> tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
-> devpts on /dev/pts type devpts (rw,noexec,nosuid,gid=5,mode=620)
-> /dev/md1 on /boot type ext3 (rw,noatime)
-> /dev/md3 on /r/1 type xfs (rw,noatime,nobarrier,logbufs=8,logbsize=262144)
-> rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
-> nfsd on /proc/fs/nfsd type nfsd (rw)
->
-> Distribution: Debian Testing
-> Arch: x86_64
->
-> The problem occurs with 2.6.31 and I upgraded to 2.6.31.4 and the problem
-> persists.
->
-> Here is a snippet of two processes in D-state, the first was not doing 
-> anything, the second was mrtg.
->
-> [121444.684000] pickup        D 0000000000000003     0 18407   4521 
-> 0x00000000
-> [121444.684000]  ffff880231dd2290 0000000000000086 0000000000000000 
-> 0000000000000000
-> [121444.684000]  000000000000ff40 000000000000c8c8 ffff880176794d10 
-> ffff880176794f90
-> [121444.684000]  000000032266dd08 ffff8801407a87f0 ffff8800280878d8 
-> ffff880176794f90
-> [121444.684000] Call Trace:
-> [121444.684000]  [<ffffffff810a742d>] ? free_pages_and_swap_cache+0x9d/0xc0
-> [121444.684000]  [<ffffffff81454866>] ? __mutex_lock_slowpath+0xd6/0x160
-> [121444.684000]  [<ffffffff814546ba>] ? mutex_lock+0x1a/0x40
-> [121444.684000]  [<ffffffff810b26ef>] ? generic_file_llseek+0x2f/0x70
-> [121444.684000]  [<ffffffff810b119e>] ? sys_lseek+0x7e/0x90
-> [121444.684000]  [<ffffffff8109ffd2>] ? sys_munmap+0x52/0x80
-> [121444.684000]  [<ffffffff8102c52b>] ? system_call_fastpath+0x16/0x1b
->
-> [121444.684000] rateup        D 0000000000000000     0 18538  18465 
-> 0x00000000
-> [121444.684000]  ffff88023f8a8c10 0000000000000082 0000000000000000 
-> ffff88023ea09ec8
-> [121444.684000]  000000000000ff40 000000000000c8c8 ffff88023faace50 
-> ffff88023faad0d0
-> [121444.684000]  0000000300003e00 000000010720cc78 0000000000003e00 
-> ffff88023faad0d0
-> [121444.684000] Call Trace:
-> [121444.684000]  [<ffffffff811f42e2>] ? xfs_buf_iorequest+0x42/0x90
-> [121444.684000]  [<ffffffff811dd66d>] ? xlog_bdstrat_cb+0x3d/0x50
-> [121444.684000]  [<ffffffff811db05b>] ? xlog_sync+0x20b/0x4e0
-> [121444.684000]  [<ffffffff811dc44c>] ? xlog_state_sync+0x26c/0x2a0
-> [121444.684000]  [<ffffffff810513e0>] ? default_wake_function+0x0/0x10
-> [121444.684000]  [<ffffffff811dc4d1>] ? _xfs_log_force+0x51/0x80
-> [121444.684000]  [<ffffffff811dc50b>] ? xfs_log_force+0xb/0x40
-> [121444.684000]  [<ffffffff811a7223>] ? xfs_alloc_ag_vextent+0x123/0x130
-> [121444.684000]  [<ffffffff811a7aa8>] ? xfs_alloc_vextent+0x368/0x4b0
-> [121444.684000]  [<ffffffff811b41e8>] ? xfs_bmap_btalloc+0x598/0xa40
-> [121444.684000]  [<ffffffff811b6a42>] ? xfs_bmapi+0x9e2/0x11a0
-> [121444.684000]  [<ffffffff811dd7f0>] ? xlog_grant_push_ail+0x30/0xf0
-> [121444.684000]  [<ffffffff811e8fd8>] ? xfs_trans_reserve+0xa8/0x220
-> [121444.684000]  [<ffffffff811d805e>] ? xfs_iomap_write_allocate+0x23e/0x3b0
-> [121444.684000]  [<ffffffff811f0daf>] ? __xfs_get_blocks+0x8f/0x220
-> [121444.684000]  [<ffffffff811d8c00>] ? xfs_iomap+0x2c0/0x300
-> [121444.684000]  [<ffffffff810d5b76>] ? __set_page_dirty+0x66/0xd0
-> [121444.684000]  [<ffffffff811f0d15>] ? xfs_map_blocks+0x25/0x30
-> [121444.684000]  [<ffffffff811f1e04>] ? xfs_page_state_convert+0x414/0x6c0
-> [121444.684000]  [<ffffffff811f23b7>] ? xfs_vm_writepage+0x77/0x130
-> [121444.684000]  [<ffffffff8108b21a>] ? __writepage+0xa/0x40
-> [121444.684000]  [<ffffffff8108baff>] ? write_cache_pages+0x1df/0x3c0
-> [121444.684000]  [<ffffffff8108b210>] ? __writepage+0x0/0x40
-> [121444.684000]  [<ffffffff810b1533>] ? do_sync_write+0xe3/0x130
-> [121444.684000]  [<ffffffff8108bd30>] ? do_writepages+0x20/0x40
-> [121444.684000]  [<ffffffff81085abd>] ? __filemap_fdatawrite_range+0x4d/0x60
-> [121444.684000]  [<ffffffff811f54dd>] ? xfs_flush_pages+0xad/0xc0
-> [121444.684000]  [<ffffffff811ee907>] ? xfs_release+0x167/0x1d0
-> [121444.684000]  [<ffffffff811f52b0>] ? xfs_file_release+0x10/0x20
-> [121444.684000]  [<ffffffff810b2c0d>] ? __fput+0xcd/0x1e0
-> [121444.684000]  [<ffffffff810af556>] ? filp_close+0x56/0x90
-> [121444.684000]  [<ffffffff810af636>] ? sys_close+0xa6/0x100
-> [121444.684000]  [<ffffffff8102c52b>] ? system_call_fastpath+0x16/0x1b
->
-> Anyone know what is going on here?
->
-> Justin.
->
+Synchronous:
+         2.6.32-rc8     2.6.32-rc8+patch
+        Read    Write     Read    Write
+     ----------------   ----------------
+1 0 |  311164  310760 |  424260  424116 | 
+1 1 |  129712  129792 |  390208  393232 | 
+1 2 |   72312   71284 |     448     420 | 
+1 3 |   40364   41052 |      28      20 | 
+1 4 |   26788   26352 |      28      24 | 
+1 5 |   16936   16940 |      52      32 | 
+1 6 |   11196   11140 |      28      20 | 
+1 7 |    6476    6648 |      20      28 | 
 
-In addition to using netconsole, which kernel options should be enabled
-to better diagnose this issue?
+2 0 |      24      24 |      40       8 | 
+2 1 |      24      24 |      12      36 | 
+2 2 |      20      28 |      20      28 | 
+2 3 |      28      20 |      24      24 | 
+2 4 |      28      20 |      28      20 | 
+2 5 |      28      20 |      20      28 | 
+2 6 |      24      24 |      20      28 | 
+2 7 |      24      24 |      36      12 | 
 
-Should I enable these to help track down this bug?
+3   |      36      12 |      28      20 |
+     ----------------   ----------------
+Sum    615184  614164    815300  818096
 
-[ ]   XFS Debugging support (EXPERIMENTAL)
-[ ] Compile the kernel with frame pointers
+You can see that due to the "random" nature of the unpatched kernel
+lower priority real-time processes get elevated I/O amounts. With the
+patched kernel, real-time priorities 0&1 get the vast majority of the
+available throughput (as expected). [Basically: priority 0 & 1
+flip-flop: when priority 0's I/O finishes, priority 1's gets inserted
+then priority 0 comes back with another I/O quick enough (most of the
+time) and bumps all the other queues out of the way.]
 
-Are there any other options that will help determine the root cause of this
-bug that are recommended?
+More I/O is performed with the patched kernel (most likely) because
+there is much less thrashing/seeking on the disk.
 
-Justin.
+Asynchronous:
+         2.6.32-rc8     2.6.32-rc8+patch
+        Read    Write     Read    Write
+     ----------------   ----------------
+1 0 | 1969220 1967036 | 2272660 2266220 | 
+1 1 |   65880   66216 |   71552   71424 | 
+1 2 |   30760   30808 |    3532    3508 | 
+1 3 |   17352   17336 |    2996    3148 | 
+1 4 |   11496   11288 |    3028    3116 | 
+1 5 |    7836    8036 |    3008    3136 | 
+1 6 |    5432    5448 |    2992    3152 | 
+1 7 |    3692    3860 |    3068    3076 | 
 
+2 0 |    3172    2972 |    3052    3092 | 
+2 1 |    3100    3044 |    3000    3144 | 
+2 2 |    3140    3004 |    3056    3088 | 
+2 3 |    3108    3036 |    3084    3060 | 
+2 4 |    3116    3028 |    2968    3176 | 
+2 5 |    3068    3076 |    3096    3048 | 
+2 6 |    2884    3260 |    3084    3060 | 
+2 7 |    3112    3032 |    3208    2936 | 
+
+3   |    3172    2972 |    2968    3176 | 
+     ----------------   ----------------
+Sum   2139540 2137452   2390352  2384560
+
+With Asynch I/O priority 0 gets the vast (vast!) majority of the
+bandwidth because it is issuing more I/Os in one go (128 asynch I/Os at
+a time).
 
