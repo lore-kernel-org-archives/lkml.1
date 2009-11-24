@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933675AbZKXRfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933709AbZKXRjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933675AbZKXRfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933596AbZKXRfm
+	id S933709AbZKXRjj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933471AbZKXRjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:35:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53077 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933582AbZKXRfl (ORCPT
+	Tue, 24 Nov 2009 12:39:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50375
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933671AbZKXRji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:35:41 -0500
-Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259082449.15249.90.camel@marge.simson.net>
-References: <1258891664.14325.30.camel@marge.simson.net>
-	 <1259070683.4531.1476.camel@laptop>
-	 <1259082449.15249.90.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 18:35:40 +0100
-Message-ID: <1259084140.4531.1710.camel@laptop>
+	Tue, 24 Nov 2009 12:39:38 -0500
+Date: Tue, 24 Nov 2009 09:39:56 -0800 (PST)
+Message-Id: <20091124.093956.247147202.davem@davemloft.net>
+To: peterz@infradead.org
+Cc: arjan@linux.intel.com, peter.p.waskiewicz.jr@intel.com,
+       yong.zhang0@gmail.com, linux-kernel@vger.kernel.org,
+       arjan@linux.jf.intel.com, netdev@vger.kernel.org
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1259051986.4531.1057.camel@laptop>
+References: <1258995923.4531.715.camel@laptop>
+	<4B0B782A.4030901@linux.intel.com>
+	<1259051986.4531.1057.camel@laptop>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 18:07 +0100, Mike Galbraith wrote:
-> >       if (p->sched_class->task_new) {
-> >               /* can detect migration through: task_cpu(p) != smp_processor_id() */
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Tue, 24 Nov 2009 09:39:46 +0100
+
+> On Mon, 2009-11-23 at 22:07 -0800, Arjan van de Ven wrote:
+>> the problem is that there is no way currently that the driver can communicate
+>> "I allocated all my metadata on THIS numa node". irqbalance and sysadmins need
+>> that to not make really stupid decisions.....
 > 
-> What if the parent was migrated before we got here?
+> And what exactly is struct device::numa_node good for then?
 
-Well, the only case it really matters for is the child_runs_first crap,
-which is basically broken on SMP anyway, so I don't think we care too
-much if we race here.
+device->numa_node just says where the device is.
 
-Unless I missed some detail that is ;-)
+For better performance, it can make sense to, for example, allocate the ring
+buffers for different device queues on other NUMA nodes.
 
+That's the kind of thing PJ is trying to make available.
