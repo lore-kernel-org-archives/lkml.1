@@ -1,99 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbZKXKxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932793AbZKXKyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932781AbZKXKxc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932316AbZKXKxc
+	id S932793AbZKXKyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932750AbZKXKyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:53:32 -0500
-Received: from stinky.trash.net ([213.144.137.162]:65198 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932131AbZKXKxb (ORCPT
+	Tue, 24 Nov 2009 05:54:18 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:36089 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932316AbZKXKyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:53:31 -0500
-Message-ID: <4B0BBB2E.8020502@trash.net>
-Date: Tue, 24 Nov 2009 11:53:34 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Tue, 24 Nov 2009 05:54:16 -0500
+Message-ID: <4B0BBB54.5090201@petalogix.com>
+Date: Tue, 24 Nov 2009 11:54:12 +0100
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>
-Subject: Re: [PATCH 4/4] macvlan: export macvlan mode through netlink
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-5-git-send-email-arnd@arndb.de>
-In-Reply-To: <1259024166-28158-5-git-send-email-arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 24
+References: <20091124212255.87e083ce.sfr@canb.auug.org.au>
+In-Reply-To: <20091124212255.87e083ce.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> @@ -600,6 +594,18 @@ static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
->  		if (!is_valid_ether_addr(nla_data(tb[IFLA_ADDRESS])))
->  			return -EADDRNOTAVAIL;
->  	}
-> +
-> +	if (data && data[IFLA_MACVLAN_MODE]) {
-> +		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
-> +		switch (mode) {
-> +		case MACVLAN_MODE_PRIVATE:
-> +		case MACVLAN_MODE_VEPA:
-> +		case MACVLAN_MODE_BRIDGE:
-> +			break;
-> +		default:
-> +			return -EINVAL;
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20091123:
+> 
+> New trees:
+> 	samsung
+> 	bjdooks-i2c
+> 
+> The microblaze tree still has a build failure for which I reverted a
+> commit.
 
-EINVAL is quite unspecific. In this case I think EOPNOTSUPP would
-be fine and provide more information.
+I fixed it - tomorrow should be ok. I added 4 mips commit to my branch 
+and I will wait with my request till mips patches are in mainline.
 
-> +		}
-> +	}
->  	return 0;
->  }
-> @@ -664,6 +670,13 @@ static int macvlan_newlink(struct net *src_net, struct net_device *dev,
->  	vlan->dev      = dev;
->  	vlan->port     = port;
->  
-> +	vlan->mode     = MACVLAN_MODE_VEPA;
-> +	if (data && data[IFLA_MACVLAN_MODE]) {
-> +		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
-> +
-> +		vlan->mode     = mode;
+Thanks,
+Michal
 
-This looks a bit strange, like cut-and-paste without reformatting :)
-I'd suggest to simply use "vlan->mode = nla_get_u32(...)".
+> 
+> The mips tree gained a conflict against the net-current tree.
+> 
+> The ubifs tree gained a build failure for which I reverted a commit.
+> 
+> The net tree gained 2 conflicts against the net-current tree.
+> 
+> The wireless tree gained a conflict against the wireless-current tree.
+> 
+> The mfd tree lost its build failures but gained another so I used the
+> version from next-20091120.
+> 
+> The trivial tree gained a conflicts against the net tree.
+> 
+> The alacrity tree gained a build failure so I used the version from
+> next-20091123.
+> 
+> ----------------------------------------------------------------------------
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+> (patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+> are tracking the linux-next tree using git, you should not use "git pull"
+> to do so as that will try to merge the new linux-next release with the
+> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+> (see below).
+> 
+> You can see which trees have been included by looking in the Next/Trees
+> file in the source.  There are also quilt-import.log and merge.log files
+> in the Next directory.  Between each merge, the tree was built with
+> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+> final fixups (if any), it is also built with powerpc allnoconfig (32 and
+> 64 bit), ppc44x_defconfig and allyesconfig (minus
+> CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+> and sparc64 defconfig. These builds also have
+> CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+> CONFIG_DEBUG_INFO disabled when necessary.
+> 
+> Below is a summary of the state of the merge.
+> 
+> We are up to 153 trees (counting Linus' and 22 trees of patches pending for
+> Linus' tree), more are welcome (even if they are currently empty).
+> Thanks to those who have contributed, and to those who haven't, please do.
+> 
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
+> 
+> Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+> at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+> Dunlap for doing many randconfig builds.
+> 
+> There is a wiki covering stuff to do with linux-next at
+> http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+> 
 
-> +	}
-> +
->  	err = register_netdevice(dev);
->  	if (err < 0)
->  		return err;
-> @@ -685,6 +698,39 @@ static void macvlan_dellink(struct net_device *dev, struct list_head *head)
->  		macvlan_port_destroy(port->dev);
->  }
->  
-> +static int macvlan_changelink(struct net_device *dev,
-> +		struct nlattr *tb[], struct nlattr *data[])
-> +{
-> +	struct macvlan_dev *vlan = netdev_priv(dev);
-> +	if (data && data[IFLA_MACVLAN_MODE]) {
-> +		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
-> +		vlan->mode     = mode;
 
-Same here.
-
-> +	}
-> +
-> +	return 0;
-> +}
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
