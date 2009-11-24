@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbZKXQCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbZKXQGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbZKXQCA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758187AbZKXQB6
+	id S933450AbZKXQGk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933435AbZKXQGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:01:58 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:55999 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758186AbZKXQB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:01:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=l+Ze3pEtzM40JiaUs1haTSQaSDZaY+T9GUfYs45yCUDO+vjp6ywJzrOSUvp9Tq8tt5
-         NQ8TZswPz+p1xo9KEPhDoHXcCzZNYg4qMfXmyMqycekEz2+ko3OIrHdDYekX41Oc6W9V
-         3m3OgGlB38lIKFXN5F5MJlvyohTtFE6QrkiVg=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: [PATCH] cfq-iosched: cleanup unreachable code
-Date: Tue, 24 Nov 2009 17:01:49 +0100
-User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
+	Tue, 24 Nov 2009 11:06:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32633 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933356AbZKXQGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:06:37 -0500
+Date: Tue, 24 Nov 2009 18:04:00 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Shirley Ma <mashirle@us.ibm.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
+	and big packets in virtio_net
+Message-ID: <20091124160359.GA6737@redhat.com>
+References: <1258697745.7416.20.camel@localhost.localdomain> <200911231138.30755.rusty@rustcorp.com.au> <1258992421.5022.19.camel@localhost.localdomain> <200911240854.24054.rusty@rustcorp.com.au> <20091124113754.GB2405@redhat.com> <4B0BEF70.5070104@codemonkey.ws>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200911241701.49677.czoccolo@gmail.com>
+In-Reply-To: <4B0BEF70.5070104@codemonkey.ws>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cfq_should_idle returns false for no-idle queues that are not the last,
-so the control flow will never reach the removed code in a state that
-satisfies the if condition.
-The unreachable code was added to emulate previous cfq behaviour for
-non-NCQ rotational devices. My tests show that even without it, the
-performances and fairness are comparable with previous cfq, thanks to
-the fact that all seeky queues are grouped together, and that we idle at
-the end of the tree.
+On Tue, Nov 24, 2009 at 08:36:32AM -0600, Anthony Liguori wrote:
+> Michael S. Tsirkin wrote:
+>> On Tue, Nov 24, 2009 at 08:54:23AM +1030, Rusty Russell wrote:
+>>   
+>>> On Tue, 24 Nov 2009 02:37:01 am Shirley Ma wrote:
+>>>     
+>>>>>> +             skb = (struct sk_buff *)buf;
+>>>>>>           
+>>>>> This cast is unnecessary, but a comment would be nice:
+>>>>>         
+>>>> Without this cast there is a compile warning.       
+>>> Hi Shirley,
+>>>
+>>>    Looks like buf is a void *, so no cast should be necessary.  But I could
+>>> be reading the patch wrong.
+>>>
+>>>     
+>>>>> However, I question whether making it 16 byte is the right thing: the
+>>>>> ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
+>>>>>         
+>>>> Because in QEMU it requires 10 bytes header in a separately, so one page
+>>>> is used to share between virtio_net_hdr header which is 10 bytes head
+>>>> and rest of data. So I put 6 bytes offset here between two buffers. I
+>>>> didn't look at the reason why a seperate buf is used for virtio_net_hdr
+>>>> in QEMU.
+>>>>       
+>>> It's a qemu bug.  It insists the header be an element in the scatterlist by
+>>> itself.  Unfortunately we have to accommodate it.
+>>>     
+>>
+>> We do?  Let's just fix this?
+>>   
+>
+> So does lguest.  It's been that way since the beginning.  Fixing this  
+> would result in breaking older guests.
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
- block/cfq-iosched.c |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
+The patch you are replying to fixes this in a way that does not break older guests.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index d44f8a4..7144649 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1274,19 +1274,6 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	cfq_mark_cfqq_wait_request(cfqq);
- 
- 	sl = cfqd->cfq_slice_idle;
--	/* are we servicing noidle tree, and there are more queues?
--	 * non-rotational or NCQ: no idle
--	 * non-NCQ rotational : very small idle, to allow
--	 *     fair distribution of slice time for a process doing back-to-back
--	 *     seeks.
--	 */
--	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD &&
--	    service_tree_for(cfqd->serving_prio, SYNC_NOIDLE_WORKLOAD, cfqd)
--		->count > 0) {
--		if (blk_queue_nonrot(cfqd->queue) || cfqd->hw_tag)
--			return;
--		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
--	}
- 
- 	mod_timer(&cfqd->idle_slice_timer, jiffies + sl);
- 	cfq_log_cfqq(cfqd, cfqq, "arm_idle: %lu", sl);
+> We really need to introduce a feature bit if we want to change this.
+
 -- 
-1.6.2.5
-
-
+MST
