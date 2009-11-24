@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbZKXGHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbZKXGO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbZKXGHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 01:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZKXGHd
+	id S1757489AbZKXGO6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 01:14:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZKXGO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 01:07:33 -0500
-Received: from mga09.intel.com ([134.134.136.24]:24336 "EHLO mga09.intel.com"
+	Tue, 24 Nov 2009 01:14:57 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37454 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZKXGHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 01:07:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,276,1257148800"; 
-   d="scan'208";a="470030343"
-Message-ID: <4B0B782A.4030901@linux.intel.com>
-Date: Mon, 23 Nov 2009 22:07:38 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
-In-Reply-To: <1258995923.4531.715.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751853AbZKXGO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 01:14:56 -0500
+Date: Tue, 24 Nov 2009 17:14:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?UTF-8?B?IkFuZHLDqSBHb2RkYXJkIFJvc2Ei?= <andre.goddard@gmail.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: manual merge of the trivial tree with the net tree
+Message-Id: <20091124171459.88cb0c0d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2009-11-23 at 01:36 -0800, Peter P Waskiewicz Jr wrote:
-> 
->> This mechanism isn't going to be used by any internal kernel mechanism
->> for determining interrupt placement or operation.  It's purely something
->> that either a driver can modify, or external script (through /proc),
->> that irqbalance will make use of.  If irqbalance isn't running, or the
->> current version of irqbalance doesn't support reading node_affinity,
->> then it won't affect the system's operation.
->>
->> If irqbalance does support it, it'll read whatever the supplied mask is,
->> and then will try and balance interrupts within that mask.  It will bail
->> if the mask is invalid, or won't apply to the running system, just like
->> how putting a bogus mask into smp_affinity is ignored.
->>
->> If there's something I'm missing beyond this with the two suggestions
->> you've made (I looked into those two parameters and tried to draw
->> conclusions), please let me know.
-> 
-> I don't see the point in adding it, if the driver wants to set a node
-> cpu mask it can already do that using the regular smp affinity settings.
-> 
-> Same for userspace.
+Hi Jiri,
 
-the problem is that there is no way currently that the driver can communicate
-"I allocated all my metadata on THIS numa node". irqbalance and sysadmins need
-that to not make really stupid decisions.....
+Today's linux-next merge of the trivial tree got a conflict in
+drivers/net/e1000e/lib.c between commit
+3bb99fe226ead584a4db674dab546689f705201f ("e1000e: consolidate two dbug
+macros into one simpler one") from the net tree and commit
+52692d35d013e221137b2fbe800e3e6776111821 ("tree-wide: fix assorted typos
+all over the place") from the trivial tree.
+
+I fixed it up (see below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/net/e1000e/lib.c
+index f690a10,b065ba4..0000000
+--- a/drivers/net/e1000e/lib.c
++++ b/drivers/net/e1000e/lib.c
+@@@ -563,11 -570,11 +563,11 @@@ s32 e1000e_check_for_serdes_link(struc
+  			if (rxcw & E1000_RXCW_SYNCH) {
+  				if (!(rxcw & E1000_RXCW_IV)) {
+  					mac->serdes_has_link = true;
+ -					hw_dbg(hw, "SERDES: Link up - autoneg "
+ +					e_dbg("SERDES: Link up - autoneg "
+- 					   "completed sucessfully.\n");
++ 					   "completed successfully.\n");
+  				} else {
+  					mac->serdes_has_link = false;
+ -					hw_dbg(hw, "SERDES: Link down - invalid"
+ +					e_dbg("SERDES: Link down - invalid"
+  					   "codewords detected in autoneg.\n");
+  				}
+  			} else {
