@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbZKXSAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbZKXSBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933793AbZKXSAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbZKXSAs
+	id S933826AbZKXSBu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933780AbZKXSBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:00:48 -0500
-Received: from mga01.intel.com ([192.55.52.88]:3680 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933769AbZKXSAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:00:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,280,1257148800"; 
-   d="scan'208";a="516968703"
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dimitri Sivanich <sivanich@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <m1ws1f6csh.fsf@fess.ebiederm.org>
-References: <20091120211139.GB19106@sgi.com>
-	 <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>
-	 <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
-	 <1259069986.4531.1453.camel@laptop>
-	 <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
-	 <20091124065022.6933be1a@infradead.org>  <m1ws1f6csh.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Tue, 24 Nov 2009 10:00:56 -0800
-Message-Id: <1259085656.2631.50.camel@ppwaskie-mobl2>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Tue, 24 Nov 2009 13:01:47 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:4489 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933739AbZKXSBW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:01:22 -0500
+X-Greylist: delayed 849 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:01:18 EST
+Message-ID: <4B0C1F5C.9090903@panasas.com>
+Date: Tue, 24 Nov 2009 20:01:00 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@citi.umich.edu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       pNFS Mailing List <pnfs@linux-nfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 2/5] sparc: remove unused nfsd #includes
+References: <4B0C1EB7.50508@panasas.com>
+In-Reply-To: <4B0C1EB7.50508@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Nov 2009 18:01:03.0368 (UTC) FILETIME=[16500080:01CA6D30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 09:41 -0800, Eric W. Biederman wrote:
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > On Tue, 24 Nov 2009 14:55:15 +0100 (CET)
-> >> > Furthermore, the /sysfs topology information should include IRQ
-> >> > routing data in this case.
-> >> 
-> >> Hmm, not sure about that. You'd need to scan through all the nodes to
-> >> find the set of CPUs where an irq can be routed to. I prefer to have
-> >> the information exposed by the irq enumeration (which is currently in
-> >> /proc/irq though).
-> >
-> > yes please.
-> >
-> > one device can have multiple irqs
-> > one irq can be servicing multiple devices
-> >
-> > expressing that in sysfs is a nightmare, while
-> > sticking it in /proc/irq *where the rest of the info is* is
-> > much nicer for apps like irqbalance
-> 
-> Oii.
-> 
-> I don't think it is bad to export information to applications like irqbalance.
-> 
-> I think it pretty horrible that one of the standard ways I have heard
-> to improve performance on 10G nics is to kill irqbalance.
-> 
 
-This is something I'm actively trying to fix (see thread "irq: Add
-node_affinity CPU masks for smarter irqbalance hints").  That patch may
-not be the final answer, but whatever comes of it will fix the
-recommendation of "killall irqbalance" for performance boosts.
+Some unused includes removed.
 
-Cheers,
--PJ
+In an effort to cleanup nfsd headers and move private
+definitions to source directory.
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ arch/sparc/kernel/sys_sparc32.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/arch/sparc/kernel/sys_sparc32.c b/arch/sparc/kernel/sys_sparc32.c
+index 04e28b2..0a68fdf 100644
+--- a/arch/sparc/kernel/sys_sparc32.c
++++ b/arch/sparc/kernel/sys_sparc32.c
+@@ -26,11 +26,6 @@
+ #include <linux/nfs_fs.h>
+ #include <linux/quota.h>
+ #include <linux/module.h>
+-#include <linux/sunrpc/svc.h>
+-#include <linux/nfsd/nfsd.h>
+-#include <linux/nfsd/cache.h>
+-#include <linux/nfsd/xdr.h>
+-#include <linux/nfsd/syscall.h>
+ #include <linux/poll.h>
+ #include <linux/personality.h>
+ #include <linux/stat.h>
+-- 
+1.6.5.2
+
 
