@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbZKXVkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934217AbZKXVlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934198AbZKXVkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:40:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbZKXVkF
+	id S934217AbZKXVlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933995AbZKXVlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:40:05 -0500
-Received: from outbound-mail-117.bluehost.com ([69.89.22.17]:35560 "HELO
-	outbound-mail-117.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933736AbZKXVkE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:40:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=inOM7QeJFD2sgXu2y5JL6txBqMV5X0PAukEtt+Jxa4K2ADkCzqB4YcpXQqE8ru9ofmns1J2yQcacnMAe1AP2TP7zlENJyW/eBFT0LxEPaGpEEF4g5eQpdVjq4vA9lDSV;
-Date: Tue, 24 Nov 2009 13:40:08 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Yu Zhao <yu.zhao@intel.com>, Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH] x86/pci: claim SR-IOV bar in pcibios_allocate_resource
-Message-ID: <20091124134008.0050a339@jbarnes-piketon>
-In-Reply-To: <4B0C4E69.4090402@kernel.org>
-References: <4AFFB1E6.9040300@kernel.org>
-	<20091124131912.2aabb852@jbarnes-piketon>
-	<4B0C4E69.4090402@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Tue, 24 Nov 2009 16:41:21 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:57664 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933922AbZKXVlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:41:20 -0500
+Date: Tue, 24 Nov 2009 15:41:21 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+Message-ID: <20091124214121.GA15182@sgi.com>
+References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ws1f6csh.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 13:21:45 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+On Tue, Nov 24, 2009 at 09:41:18AM -0800, Eric W. Biederman wrote:
+> As for the UV code, what we are looking at is a fundamental irq
+> routing property.  Those irqs cannot be routed to some cpus.  That is
+> something the code that sets up the routes needs to be aware of.
 
-> Jesse Barnes wrote:
-> > On Sat, 14 Nov 2009 23:46:46 -0800
-> > Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> so use correct allocation from BIOS, instead of later assign
-> >> another one.
-> >>
-> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>
-> >> ---
-> >>  arch/x86/pci/i386.c |    4 +++-
-> >>  1 file changed, 3 insertions(+), 1 deletion(-)
-> >>
-> >> Index: linux-2.6/arch/x86/pci/i386.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/arch/x86/pci/i386.c
-> >> +++ linux-2.6/arch/x86/pci/i386.c
-> >> @@ -155,7 +155,9 @@ static void __init pcibios_allocate_reso
-> >>  
-> >>  	for_each_pci_dev(dev) {
-> >>  		pci_read_config_word(dev, PCI_COMMAND, &command);
-> >> -		for (idx = 0; idx < PCI_ROM_RESOURCE; idx++) {
-> >> +		for (idx = 0; idx < PCI_BRIDGE_RESOURCES; idx++) {
-> >> +			if (idx == PCI_ROM_RESOURCE)
-> >> +				continue;
-> >>  			r = &dev->resource[idx];
-> >>  			if (r->parent)		/* Already
-> >> allocated */ continue;
-> > 
-> > I'm worried this might have side effects beyond just allocating
-> > SR-IOV BARs, since it looks like we'll walk through all the bridge
-> > resources all the time?
-> 
-> /*
->  *  For PCI devices, the region numbers are assigned this way:
->  */
-> enum {
->         /* #0-5: standard PCI resources */
->         PCI_STD_RESOURCES,
->         PCI_STD_RESOURCE_END = 5,
-> 
->         /* #6: expansion ROM resource */
->         PCI_ROM_RESOURCE,
-> 
->         /* device specific resources */
-> #ifdef CONFIG_PCI_IOV
->         PCI_IOV_RESOURCES,
->         PCI_IOV_RESOURCE_END = PCI_IOV_RESOURCES + PCI_SRIOV_NUM_BARS
-> - 1, #endif
-> 
->         /* resources assigned to buses behind the bridge */
-> #define PCI_BRIDGE_RESOURCE_NUM 4
-> 
->         PCI_BRIDGE_RESOURCES,
-> 
-> so will only add IOV BAR related.
+Correct.  We can't allow an interrupt to be routed to an invalid node.
 
-Oh right, *up to* bridge resources...  Still we should probably add a
-comment about that.  SR-IOV is still somewhat new.
+> Dimitri could you put your the extra code in assign_irq_vector instead
+> of in the callers of assign_irq_vector?  Since the probably is not
+> likely to stay unique we probably want to put the information you base
+> things on in struct irq_desc, but the logic I seems to live best in
+> in assign_irq_vector.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+So you're saying continue to use the node value in irq_desc, or add a cpumask there (which will add some size to that structure)?  I'll have to take another look at assign_irq_vector, but as things are currently structured, we don't return any sort of valid cpumask that we'd need for further processing in the caller functions.  One would need to pass that back or store that cpumask someplace, like irq_desc?
