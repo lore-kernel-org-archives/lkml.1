@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbZKXLNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZKXLQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbZKXLNB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbZKXLNA
+	id S932803AbZKXLQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZKXLQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:13:00 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:50570 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932706AbZKXLM7 (ORCPT
+	Tue, 24 Nov 2009 06:16:40 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44033 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932077AbZKXLQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:12:59 -0500
-Message-ID: <4B0BBFB1.20802@ru.mvista.com>
-Date: Tue, 24 Nov 2009 14:12:49 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Hemant Pedanekar <hemantp@ti.com>
-Cc: linux-ide@vger.kernel.org, davem@davemloft.net, bzolnier@gmail.com,
-       petkovbb@gmail.com, christian.engelmayer@frequentis.com,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com
-Subject: Re: [PATCH] ide: fix ioctl to pass requested transfer mode to ide_find_dma_mode
- instead of UDMA6
-References: <1259036188-11598-1-git-send-email-hemantp@ti.com>
-In-Reply-To: <1259036188-11598-1-git-send-email-hemantp@ti.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 06:16:39 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Remove build time warning for WM835x register default tables
+Date: Tue, 24 Nov 2009 11:16:45 +0000
+Message-Id: <1259061405-24442-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Systems using the WM835x need to choose which of the default register
+settings are required on the system.  Currently there is a compile time
+warning as well as a runtime error intended to flag up to users that
+this is required but this also triggers for people building the driver
+in order to obtain build coverage.
 
-Hemant Pedanekar wrote:
-> Currently, ide_cmd_ioctl when invoked for setting DMA transfer mode calls
-> ide_find_dma_mode with requested mode as XFER_UDMA_6. This prevents setting DMA
-> mode to any other value than the default (maximum) supported by the device (or
-> UDMA6, if supported) irrespective of the actual requested transfer mode and
-> returns error.
->
-> For example, setting mode to UDMA2 using hdparm, where UDMA4 is the default
-> transfer mode gives following error:
-> 	# ./hdparm -d1 -Xudma2  /dev/hda
-> 	 /dev/hda:hda: UDMA/66 mode selected
-> 	 setting using_dma to 1 (on)
-> 	 hda: UDMA/66 mode selected
-> 	 setting xfermode to 66 (UltraDMA mode2)
-> 	 HDIO_DRIVE_CMD(setxfermode) failed: Invalid argument
-> 	 using_dma     =  1 (on)
->
-> This patch fixes the issue.
->
-> Signed-off-by: Hemant Pedanekar <hemantp@ti.com>
-> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Remove the build warning, leaving only the runtime error, in order to
+reduce noise for people doing generic kernel work.
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-regmap.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-MBR, Sergei
-
+diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+index 7ccc1ea..e965139 100644
+--- a/drivers/mfd/wm8350-regmap.c
++++ b/drivers/mfd/wm8350-regmap.c
+@@ -3170,14 +3170,6 @@ const u16 wm8352_mode3_defaults[] = {
+ };
+ #endif
+ 
+-/* The register defaults for the config mode used must be compiled in but
+- * due to the impact on kernel size it is possible to disable
+- */
+-#ifndef WM8350_HAVE_CONFIG_MODE
+-#warning No WM8350 config modes supported - select at least one of the
+-#warning MFD_WM8350_CONFIG_MODE_n options from the board driver.
+-#endif
+-
+ /*
+  * Access masks.
+  */
+-- 
+1.6.3.3
 
