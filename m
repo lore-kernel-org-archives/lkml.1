@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbZKXQGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933462AbZKXQH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933450AbZKXQGk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:06:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933435AbZKXQGi
+	id S933462AbZKXQH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933433AbZKXQHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:06:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32633 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 11:07:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50548 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933356AbZKXQGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:06:37 -0500
-Date: Tue, 24 Nov 2009 18:04:00 +0200
+	id S933403AbZKXQHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:07:24 -0500
+Date: Tue, 24 Nov 2009 18:04:39 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Anthony Liguori <anthony@codemonkey.ws>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, Shirley Ma <mashirle@us.ibm.com>,
@@ -18,7 +18,7 @@ Cc: Rusty Russell <rusty@rustcorp.com.au>, Shirley Ma <mashirle@us.ibm.com>,
        linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
 Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
 	and big packets in virtio_net
-Message-ID: <20091124160359.GA6737@redhat.com>
+Message-ID: <20091124160439.GC6737@redhat.com>
 References: <1258697745.7416.20.camel@localhost.localdomain> <200911231138.30755.rusty@rustcorp.com.au> <1258992421.5022.19.camel@localhost.localdomain> <200911240854.24054.rusty@rustcorp.com.au> <20091124113754.GB2405@redhat.com> <4B0BEF70.5070104@codemonkey.ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -62,12 +62,22 @@ On Tue, Nov 24, 2009 at 08:36:32AM -0600, Anthony Liguori wrote:
 >> We do?  Let's just fix this?
 >>   
 >
-> So does lguest.  It's been that way since the beginning.  Fixing this  
+> So does lguest.
+
+It does? All I see it doing is writev/readv,
+and this passes things to tap which handles
+this correctly.
+
+
+>  It's been that way since the beginning.  Fixing this  
 > would result in breaking older guests.
 
-The patch you are replying to fixes this in a way that does not break older guests.
+If you look at my patch, it handles old guests just fine :).
 
 > We really need to introduce a feature bit if we want to change this.
+
+I am not sure I agree: we can't add feature bits
+for all bugs, can we?
 
 -- 
 MST
