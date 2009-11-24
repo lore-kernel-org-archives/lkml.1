@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933659AbZKXRON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933561AbZKXRN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933659AbZKXRON (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933623AbZKXROL
+	id S933561AbZKXRN5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933492AbZKXRN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:14:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54751 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 12:13:57 -0500
+Received: from waste.org ([173.11.57.241]:38863 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933581AbZKXROI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:14:08 -0500
-Message-ID: <4B0C13F4.5090106@redhat.com>
-Date: Tue, 24 Nov 2009 17:12:20 +0000
-From: Andrew Haley <aph@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jakub Jelinek <jakub@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H.J. Lu" <hjl.tools@gmail.com>, rostedt@goodmis.org,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
-  messing with mcount prologue
-References: <1258694593.22249.1012.camel@gandalf.stny.rr.com> <1258736456.22249.1032.camel@gandalf.stny.rr.com> <4B06EF6F.2050507@redhat.com> <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com> <4B0972C9.302@redhat.com> <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com> <4B0BF119.4070704@redhat.com> <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain> <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com> <4B0BFC84.7070806@redhat.com> <20091124153634.GK22813@hs20-bc2-1.build.redhat.com> <4B0BFFD0.2080203@redhat.com> <4B0C0C12.7040907@zytor.com>
-In-Reply-To: <4B0C0C12.7040907@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	id S932383AbZKXRN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 12:13:57 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       cl@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20091124170032.GC6831@linux.vnet.ibm.com>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 11:12:36 -0600
+Message-ID: <1259082756.17871.607.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 11/24/2009 07:46 AM, Andrew Haley wrote:
->>> Yes, a lot.  The difference is that -maccumulate-outgoing-args allocates
->>> space for arguments of the callee with most arguments in the prologue, using
->>> subtraction from sp, then to pass arguments uses movl XXX, 4(%esp) etc.
->>> and the stack pointer doesn't usually change within the function (except for
->>> alloca/VLAs).
->>> With -mno-accumulate-outgoing-args args are pushed using push instructions
->>> and stack pointer is constantly changing.
->> Alright.  So, it is possible in theory for gcc to generate code that
->> only uses -maccumulate-outgoing-args when it needs to realign SP.
->> And, therefore, we could have a nice option for the kernel: one with
->> (mostly) good code density and never generates the bizarre code
->> sequence in the prologue.
+On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
+> On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
+> > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
+> > > Matt Mackall wrote:
+> > > > This seems like a lot of work to paper over a lockdep false positive in
+> > > > code that should be firmly in the maintenance end of its lifecycle? I'd
+> > > > rather the fix or papering over happen in lockdep.
+> > > 
+> > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
+> > > state is pretty invasive because of the kmem_cache_free() call in 
+> > > slab_destroy(). We re-enter the slab allocator from the outer edges 
+> > > which makes spin_lock_nested() very inconvenient.
+> > 
+> > I'm perfectly fine with letting the thing be as it is, its apparently
+> > not something that triggers very often, and since slab will be killed
+> > off soon, who cares.
 > 
-> If we're changing gcc anyway, then let's add the option of intercepting
-> the function at the point where the machine state is well-defined by
-> ABI, which is before the function stack frame is set up.
+> Which of the alternatives to slab should I be testing with, then?
 
-Hmm.  On the x86 I suppose we could just inject a naked call instruction,
-but not all aeches allow us to call anything before we've saved the return
-address.  Or are you talking x86 only?
+I'm guessing your system is in the minority that has more than $10 worth
+of RAM, which means you should probably be evaluating SLUB.
 
-Andrew.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
 
