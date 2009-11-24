@@ -1,111 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbZKXIrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbZKXIsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932312AbZKXIrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZKXIre
+	id S932319AbZKXIsE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZKXIsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:47:34 -0500
-Received: from sh.osrg.net ([192.16.179.4]:53790 "EHLO sh.osrg.net"
+	Tue, 24 Nov 2009 03:48:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43017 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932272AbZKXIre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:47:34 -0500
-Date: Tue, 24 Nov 2009 17:46:33 +0900
-To: yinghai@kernel.org
-Cc: mingo@elte.hu, hpa@zytor.com, fujita.tomonori@lab.ntt.co.jp,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B08BD14.9060102@kernel.org>
-References: <1257849980-22640-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<tip-75f1cdf1dda92cae037ec848ae63690d91913eac@git.kernel.org>
-	<4B08BD14.9060102@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091124174608Y.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 24 Nov 2009 17:46:33 +0900 (JST)
+	id S932278AbZKXIsC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:48:02 -0500
+Message-ID: <4B0B9E6A.2000000@redhat.com>
+Date: Tue, 24 Nov 2009 16:50:50 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+MIME-Version: 1.0
+To: Dan Carpenter <error27@gmail.com>, Amerigo Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@redhat.com>
+Subject: Re: [Resend Patch] kexec: allow to shrink reserved memory
+References: <20091123093958.4963.38592.sendpatchset@localhost.localdomain> <20091124075813.GA14488@bicker>
+In-Reply-To: <20091124075813.GA14488@bicker>
+Content-Type: multipart/mixed;
+ boundary="------------000307060008070005080003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Nov 2009 20:24:52 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+This is a multi-part message in MIME format.
+--------------000307060008070005080003
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-> amd 64 systems that
-> 1. do not have  AGP
-> 2. do not have IOMMU
-> 3. mem > 4g
-> 4. BIOS do not allocate  correct gart in NB.
-> will leave them to use SWIOTLB forcely.
+Dan Carpenter wrote:
+> On Mon, Nov 23, 2009 at 04:37:02AM -0500, Amerigo Wang wrote:
+> [snip]
+>> +size_t crash_get_memory_size(void);
+> [snip]
+>> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
+>> +				       struct kobj_attribute *attr, char *buf)
+>> +{
+>> +	return sprintf(buf, "%lu\n", crash_get_memory_size());
+>> +}
+> 
+>   CC      kernel/ksysfs.o
+> kernel/ksysfs.c: In function ‘kexec_crash_size_show’:
+> kernel/ksysfs.c:106: warning: format ‘%lu’ expects type ‘long unsigned int’, but argument 3 has type ‘size_t’
+> 
 
-Sorry, I forgot about this GART workaround.
+Patch below fixes this.
+
+Andrew, could you please fold it in? Thanks!
 
 
-> Index: linux-2.6/arch/x86/kernel/pci-dma.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
-> +++ linux-2.6/arch/x86/kernel/pci-dma.c
-> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
->  	/* free the range so iommu could get some range less than 4G */
->  	dma32_free_bootmem();
->  #endif
-> +	if (!swiotlb_force)
-> +		gart_iommu_hole_init();
-> +
->  	if (pci_swiotlb_init())
->  		return;
->  
-> -	gart_iommu_hole_init();
-> -
->  	detect_calgary();
->  
->  	detect_intel_iommu();
+--------------000307060008070005080003
+Content-Type: text/plain;
+ name="kexec-free-reserved-memory-delta-fix.diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="kexec-free-reserved-memory-delta-fix.diff"
 
-I prefer to detect all the IOMMU drivers in a consistent way;
-detecting only GART before swioltb doesn't look nice.
-
-As we did before, we could detect all the IOMMU driver before
-swiotlb. However, I think that it's better to simply change
-pci_swiotlb_init() not to steal the preallocate GART workaround memory.
-
-btw, initializing swiotlb before IOMMU detection is useful to GART
-too? If GART can't allocate the workaround memory, then the kernel
-panic now. We can use swiotlb instead in that case?
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
-
-swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
-dma32_reserv_bootmem allocates. We need to initialize swiotlb before
-dma32_free_bootmem().
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/pci-dma.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index afcc58b..26fe2cd 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
- 
- void __init pci_iommu_alloc(void)
- {
-+	int use_swiotlb;
-+
-+	use_swiotlb = pci_swiotlb_init();
-+
- #ifdef CONFIG_X86_64
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
- #endif
--	if (pci_swiotlb_init())
-+	if (use_swiotlb)
- 		return;
- 
- 	gart_iommu_hole_init();
--- 
-1.5.6.5
-
+ZGlmZiAtLWdpdCBhL2tlcm5lbC9rc3lzZnMuYyBiL2tlcm5lbC9rc3lzZnMuYwppbmRleCA1
+YjkyNzZiLi4zZmVhZjVhIDEwMDY0NAotLS0gYS9rZXJuZWwva3N5c2ZzLmMKKysrIGIva2Vy
+bmVsL2tzeXNmcy5jCkBAIC0xMDMsNyArMTAzLDcgQEAgS0VSTkVMX0FUVFJfUk8oa2V4ZWNf
+Y3Jhc2hfbG9hZGVkKTsKIHN0YXRpYyBzc2l6ZV90IGtleGVjX2NyYXNoX3NpemVfc2hvdyhz
+dHJ1Y3Qga29iamVjdCAqa29iaiwKIAkJCQkgICAgICAgc3RydWN0IGtvYmpfYXR0cmlidXRl
+ICphdHRyLCBjaGFyICpidWYpCiB7Ci0JcmV0dXJuIHNwcmludGYoYnVmLCAiJWx1XG4iLCBj
+cmFzaF9nZXRfbWVtb3J5X3NpemUoKSk7CisJcmV0dXJuIHNwcmludGYoYnVmLCAiJXp1XG4i
+LCBjcmFzaF9nZXRfbWVtb3J5X3NpemUoKSk7CiB9CiBzdGF0aWMgc3NpemVfdCBrZXhlY19j
+cmFzaF9zaXplX3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLAogCQkJCSAgIHN0cnVjdCBr
+b2JqX2F0dHJpYnV0ZSAqYXR0ciwK
+--------------000307060008070005080003--
