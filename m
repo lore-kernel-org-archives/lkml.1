@@ -1,140 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZKXGAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZKXGAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbZKXGAE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 01:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZKXGAE
+	id S1755692AbZKXGAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 01:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZKXGAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 01:00:04 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:42966 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752974AbZKXGAC (ORCPT
+	Tue, 24 Nov 2009 01:00:47 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:42748 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753364AbZKXGAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 01:00:02 -0500
-Date: Tue, 24 Nov 2009 14:57:59 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       stable <stable@kernel.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task in
- case of use_hierarchy
-Message-Id: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 01:00:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=KS6003yrAyeMHmisG4OboVSMq36ZTcByDqc359xZ4PpRQYSbmfNHtI2CeKmMx/8JWy
+         DJf8LhvYp5JBMwpiw4RsmZwld+sSwx8ztNIiTanaEnFBYXvfckCPadDs5PulHP7Ac8rB
+         Om4hoq4kFT/2XUSjVOJRBxTt6Z+6sPsakxV9s=
+MIME-Version: 1.0
+In-Reply-To: <200911240456.nAO4uAlB002080@deneb.dwf.com>
+References: <200911240456.nAO4uAlB002080@deneb.dwf.com>
+Date: Tue, 24 Nov 2009 14:00:52 +0800
+Message-ID: <2375c9f90911232200m475cc2b2v9cfd355591ba2153@mail.gmail.com>
+Subject: Re: Kernel options.
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Reg Clemens <reg@dwf.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-a task can be a candidate for being oom-killed from memcg's limit, checks
-"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+On Tue, Nov 24, 2009 at 12:56 PM, Reg Clemens <reg@dwf.com> wrote:
+> I have a pre-compiled 64bit kernel from Fedora11, and I can execute
+> both 32 and 64bit executables with it.
+>
+> I have just built a new kernel (to test some PPS code), and I CANT
+> execute 32bit executables with it.
+>
+> There must be some option I didnt check.
+> What is it?????
 
-But this check return true(it's false positive) when:
-
-	<some path>/00		use_hierarchy == 0	<- hitting limit
-	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
-
-This leads to killing an innocent task in 00/aa. This patch is a fix for this
-bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-should print information of mem_cgroup which the task being killed, not current,
-belongs to.
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
-The bug exists and should be fixed in 2.6.31.y too.
-I'll post a patch for -stable later.
-
- mm/memcontrol.c |    4 ++--
- mm/oom_kill.c   |   13 +++++++------
- 2 files changed, 9 insertions(+), 8 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index ea00a93..d02f9f8 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -783,7 +783,7 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
- 	task_unlock(task);
- 	if (!curr)
- 		return 0;
--	if (curr->use_hierarchy)
-+	if (mem->use_hierarchy)
- 		ret = css_is_ancestor(&curr->css, &mem->css);
- 	else
- 		ret = (curr == mem);
-@@ -1032,7 +1032,7 @@ void mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
- 	static char memcg_name[PATH_MAX];
- 	int ret;
- 
--	if (!memcg)
-+	if (!memcg || !p)
- 		return;
- 
- 
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index ab04537..be56461 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -356,7 +356,8 @@ static void dump_tasks(const struct mem_cgroup *mem)
- 	} while_each_thread(g, p);
- }
- 
--static void dump_header(gfp_t gfp_mask, int order, struct mem_cgroup *mem)
-+static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
-+							struct mem_cgroup *mem)
- {
- 	pr_warning("%s invoked oom-killer: gfp_mask=0x%x, order=%d, "
- 		"oom_adj=%d\n",
-@@ -365,7 +366,7 @@ static void dump_header(gfp_t gfp_mask, int order, struct mem_cgroup *mem)
- 	cpuset_print_task_mems_allowed(current);
- 	task_unlock(current);
- 	dump_stack();
--	mem_cgroup_print_oom_info(mem, current);
-+	mem_cgroup_print_oom_info(mem, p);
- 	show_mem();
- 	if (sysctl_oom_dump_tasks)
- 		dump_tasks(mem);
-@@ -440,7 +441,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 	struct task_struct *c;
- 
- 	if (printk_ratelimit())
--		dump_header(gfp_mask, order, mem);
-+		dump_header(p, gfp_mask, order, mem);
- 
- 	/*
- 	 * If the task is already exiting, don't alarm the sysadmin or kill
-@@ -576,7 +577,7 @@ retry:
- 	/* Found nothing?!?! Either we hang forever, or we panic. */
- 	if (!p) {
- 		read_unlock(&tasklist_lock);
--		dump_header(gfp_mask, order, NULL);
-+		dump_header(NULL, gfp_mask, order, NULL);
- 		panic("Out of memory and no killable processes...\n");
- 	}
- 
-@@ -644,7 +645,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
- 		return;
- 
- 	if (sysctl_panic_on_oom == 2) {
--		dump_header(gfp_mask, order, NULL);
-+		dump_header(NULL, gfp_mask, order, NULL);
- 		panic("out of memory. Compulsory panic_on_oom is selected.\n");
- 	}
- 
-@@ -663,7 +664,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
- 
- 	case CONSTRAINT_NONE:
- 		if (sysctl_panic_on_oom) {
--			dump_header(gfp_mask, order, NULL);
-+			dump_header(NULL, gfp_mask, order, NULL);
- 			panic("out of memory. panic_on_oom is selected\n");
- 		}
- 		/* Fall-through */
--- 
-1.5.6.1
-
+I am assuming you are using an Intel processor, have you enabled
+CONFIG_IA32_EMULATION?
