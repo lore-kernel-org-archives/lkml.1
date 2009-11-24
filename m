@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933479AbZKXQgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbZKXQh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933479AbZKXQgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZKXQgP
+	id S933496AbZKXQh6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZKXQh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:36:15 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:44747 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758123AbZKXQgO convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 11:37:58 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:26840 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933342AbZKXQh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:36:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=G++1syJruY7teA9gao7c0bgX4pULrfB4NEQJi6c9hAuwPXAvTAwWPIs02uLguZFqad
-         1vXRQzpL8wmIK0KOr07n0uL/rJ8uhfmin9vdgLXxtB0A/geeGKezO0J+XvznC0qc5bKC
-         /EaECk21xZxZM24eTJkg0z5zuEWIS9HfHCzuo=
+	Tue, 24 Nov 2009 11:37:57 -0500
+X-Trace: 295540424/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.56.48
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwBAP2aC0tPRTgw/2dsb2JhbAAIkD4BxXCEOQSDGQ
+X-IronPort-AV: E=Sophos;i="4.47,280,1257120000"; 
+   d="scan'208";a="295540424"
+Date: Tue, 24 Nov 2009 16:37:42 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 0/9] ksm: swapping
+Message-ID: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
 MIME-Version: 1.0
-In-Reply-To: <1259077143-25864-1-git-send-email-cliffcai.sh@gmail.com>
-References: <1259077143-25864-1-git-send-email-cliffcai.sh@gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 24 Nov 2009 11:35:56 -0500
-Message-ID: <8bd0f97a0911240835j1d360b39tda688e551052c5c7@mail.gmail.com>
-Subject: Re: [PATCH][mmc/host]:Blackfin SD Host Controller Driver
-To: cliffcai.sh@gmail.com
-Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       cliff.cai@analog.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 10:39,  <cliffcai.sh@gmail.com> wrote:
-> From: Cliff Cai <cliffcai.sh@gmail.com>
->
-> Signed-off-by: Cliff Cai <cliffcai.sh@gmail.com>
+Here is a series of nine patches against 2.6.32-rc7-mm1, at last making
+KSM's shared pages swappable.  The main patches, 2 3 and 4, have been
+around for over a month; but I underestimated the tail of the job,
+working out the right compromises to deal with the consequences of
+having ksm pages on the LRUs.
 
-you dropped some people's s-o-b tags
+ Documentation/vm/ksm.txt |   22 -
+ include/linux/ksm.h      |   71 ++++
+ include/linux/migrate.h  |    8 
+ include/linux/rmap.h     |   35 ++
+ mm/Kconfig               |    2 
+ mm/internal.h            |    3 
+ mm/ksm.c                 |  567 ++++++++++++++++++++++++++++---------
+ mm/memcontrol.c          |    7 
+ mm/memory.c              |    6 
+ mm/memory_hotplug.c      |    2 
+ mm/mempolicy.c           |   19 -
+ mm/migrate.c             |  112 ++-----
+ mm/mlock.c               |    4 
+ mm/rmap.c                |  151 +++++++--
+ mm/swapfile.c            |   11 
+ 15 files changed, 741 insertions(+), 279 deletions(-)
 
-> +out4:
-> +       free_irq(host->irq, host);
-
-you didnt address the feedback given last time here:
-    You need a mmc_remove_host() here.
--mike
+Thanks!
+Hugh
