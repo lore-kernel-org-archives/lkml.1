@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbZKXOhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbZKXOj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbZKXOhG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933016AbZKXOhE
+	id S933097AbZKXOj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933060AbZKXOjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:37:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13380 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933007AbZKXOhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:37:03 -0500
-Date: Tue, 24 Nov 2009 09:37:05 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [PATCH 2/4] cfq-iosched: fix no-idle preemption logic
-Message-ID: <20091124143705.GB9595@redhat.com>
-References: <200911241449.02473.czoccolo@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911241449.02473.czoccolo@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 24 Nov 2009 09:39:25 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:53769 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933038AbZKXOjY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 09:39:24 -0500
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Subject: [PATCH 0/3] perf bench: Add new benchmark for futex subsystem
+Date: Tue, 24 Nov 2009 23:39:12 +0900
+Message-Id: <1259073555-7312-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091118033741.GB23808@google.com>
+References: <20091118033741.GB23808@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 02:49:02PM +0100, Corrado Zoccolo wrote:
-> An incoming no-idle queue should preempt the active no-idle queue
-> only if the active queue is idling due to service tree empty.
-> Previous code was buggy in two ways:
-> * it relied on service_tree field to be set on the active queue, while
->   it is not set when the code is idling for a new request
-> * it didn't check for the service tree empty condition, so could lead to
->   LIFO behaviour if multiple queues with depth > 1 were preempting each
->   other on an non-NCQ device.
-> 
-> Reported-by: Vivek Goyal <vgoyal@redhat.com>
-> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
-> ---
->  block/cfq-iosched.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 6925ab9..2a304f4 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -2401,8 +2401,9 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
->  	if (cfq_class_idle(cfqq))
->  		return true;
->  
-> -	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD
-> -	    && new_cfqq->service_tree == cfqq->service_tree)
-> +	if (cfqd->serving_type == SYNC_NOIDLE_WORKLOAD &&
-> +	    cfqq_type(new_cfqq) == SYNC_NOIDLE_WORKLOAD &&
-> +	    new_cfqq->service_tree->count == 1)
->  		return true;
->  
+Hi folks, sorry for my very slow response...
 
-Looks good to me.
+I found that Darren's futextest contains Michel's test program now.
+So I added it to 'perf bench' as sample.
+If you like this style, I'd like to add rest part of futextest.
 
-Acked-by: Vivek Goyal <vgoyal@redhat.com>
+Example of use:
+| % ./perf bench futex wait -t 48 -l 100000000
+| # Running futex/wait benchmark...
+| # Running 48 threads
+| # Total number of iteration: 100000000
+|    16233.763636 Kiter/sec
+|        6.100000 user sec
+|        0.000000 system sec
+|        6.160000 wall sec
+|        0.990260 cores
+| % perf bench --format=simple futex wait
+| 16207.455429
 
-Thanks
-Vivek
+This patch series contains two typedefs (and one volatile).
+I know typedef and volatile is not a thing to welcome.
+But I judged these are not problematic things,
+could you review this?
+
+Hitoshi Mitake (3):
+  perf bench: Add wrappers for atomic operation of GCC
+  perf bench: Add new files for futex performance test
+  perf bench: Fix misc files to build files related to futex
+
+ tools/perf/Makefile                  |    1 +
+ tools/perf/bench/bench.h             |    3 +-
+ tools/perf/bench/futex-wait.c        |  218 ++++++++++++++++++++++++++
+ tools/perf/bench/futextest.h         |  280 ++++++++++++++++++++++++++++++++++
+ tools/perf/builtin-bench.c           |   16 ++-
+ tools/perf/util/include/asm/atomic.h |   91 +++++++++++
+ 6 files changed, 606 insertions(+), 3 deletions(-)
+ create mode 100644 tools/perf/bench/futex-wait.c
+ create mode 100644 tools/perf/bench/futextest.h
+ create mode 100644 tools/perf/util/include/asm/atomic.h
+
