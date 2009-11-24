@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933615AbZKXRBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbZKXREG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933615AbZKXRBf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933594AbZKXRBe
+	id S933697AbZKXREG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933662AbZKXREF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:01:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63847 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933478AbZKXRBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:01:34 -0500
-Message-ID: <4B0C116C.5010106@redhat.com>
-Date: Tue, 24 Nov 2009 19:01:32 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 24 Nov 2009 12:04:05 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:36139 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933627AbZKXRED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 12:04:03 -0500
+Date: Tue, 24 Nov 2009 22:34:02 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
+	in case of use_hierarchy
+Message-ID: <20091124170402.GB3365@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp> <661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com> <20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: The -next kernel no longer boots on kvm in 32bit mode
-References: <20091124145855.2b73892e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091124145855.2b73892e@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/24/2009 04:58 PM, Alan Cox wrote:
-> 64bit Intel host system
-> Fedora host environment
->
-> 32bit guest built with CPU i686 and no PAE support
->
-> This now momentarily flickers up something then reboots back to the BIOS.
->
->    
+* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
 
-Any chance of a bisect to find out where this was introduced?
+> On Tue, 24 Nov 2009 19:01:54 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
+> > <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> > > a task can be a candidate for being oom-killed from memcg's limit, checks
+> > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+> > >
+> > > But this check return true(it's false positive) when:
+> > >
+> > >        <some path>/00          use_hierarchy == 0      <- hitting limit
+> > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
+> > >
+> > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> > > should print information of mem_cgroup which the task being killed, not current,
+> > > belongs to.
+> > >
+> > 
+> > Quick Question: What happens if <some path>/00 has no tasks in it
+> > after your patches?
+> > 
+> Nothing would happen because <some path>/00 never hit its limit.
 
-It's worth upgrading to at least F12 in case this is a kvm bug.
+Why not? I am talking of a scenario where <some path>/00 is set to a
+limit (similar to your example) and hits its limit, but the groups
+under it have no limits, but tasks. Shouldn't we be scanning
+<some path>/00/aa as well?
+
+> 
+> The bug that this patch fixes is:
+> 
+> - create a dir <some path>/00 and set some limits.
+> - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
+> - run some programs in both in 00 and 00/aa. programs in 00 should be
+>   big enough to cause oom by its limit.
+> - when oom happens by 00's limit, tasks in 00/aa can also be killed.
+>
+
+To be honest, the last part is fair, specifically if 00/aa has a task
+that is really the heaviest task as per the oom logic. no? Are you
+suggesting that only tasks in <some path>/00 should be selected by the
+oom logic? 
 
 -- 
-error compiling committee.c: too many arguments to function
-
+	Balbir
