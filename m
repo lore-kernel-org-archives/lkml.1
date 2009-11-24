@@ -1,81 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933920AbZKXWSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934033AbZKXWTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933920AbZKXWSF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 17:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbZKXWSE
+	id S934033AbZKXWTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 17:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758089AbZKXWTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 17:18:04 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:55606 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757935AbZKXWSC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 17:18:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nxfVGmP2cgTBJuq4PSxZJsch58drbXfE/nfl7eow3J9CEaqcWN43CfZN9Ik0ZqAb7K
-         X6JJs55qa6EXZVg9R4yKwRec7LPyfY4dLY16yPcbcO50Wwly/lSRs7Qk3G2XPCtY1TBE
-         xYNQtLOctHslvt9b7Gr+eTtD+bGtGWDqC0PqA=
-Date: Tue, 24 Nov 2009 23:17:51 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jiri Olsa <jolsa@redhat.com>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing - fix function graph trace to properly display
-	failed entries
-Message-ID: <20091124221748.GA5208@nowhere>
-References: <1259067458-27143-1-git-send-email-jolsa@redhat.com> <1259082845.22249.1110.camel@gandalf.stny.rr.com> <20091124211423.GE5071@nowhere>
+	Tue, 24 Nov 2009 17:19:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39245 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758084AbZKXWTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 17:19:16 -0500
+Date: Tue, 24 Nov 2009 22:18:57 GMT
+From: tip-bot for Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de
+In-Reply-To: <4B0BB9A3.5020908@kernel.org>
+References: <4B0BB9A3.5020908@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mm] x86, mtrr: Fix sorting of mtrr after subtracting
+Message-ID: <tip-5bf65b9ba67226eae9ffc398a0369fc4da35c259@git.kernel.org>
+Git-Commit-ID: 5bf65b9ba67226eae9ffc398a0369fc4da35c259
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091124211423.GE5071@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 10:14:36PM +0100, Frederic Weisbecker wrote:
-> But I guess it doesn't happen because the function graph tracer
-> has too large entries, or it would do an endless loop while
-> reading the trace file.
+Commit-ID:  5bf65b9ba67226eae9ffc398a0369fc4da35c259
+Gitweb:     http://git.kernel.org/tip/5bf65b9ba67226eae9ffc398a0369fc4da35c259
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Tue, 24 Nov 2009 02:46:59 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 24 Nov 2009 13:06:16 -0800
 
+x86, mtrr: Fix sorting of mtrr after subtracting
 
-Ah actually it won't as we don't check the return value
-of trace_print_line() from the seq show handler.
-There is no retry.
+In some cases we can coalesce MTRR entries after cleanup; this may
+allow us to have more entries.  As such, introduce clean_sort_range to
+to sort and coaelsce the MTRR entries.
 
-And also there is no need to retry. The buffer gets never
-entirely filled in the trace file reading path, as it
-is flushed after each entry. And no single trace fills the
-whole buffer. I just made some tests and we never reach that
-point (no TRACE_TYPE_PARTIAL_LINE) returned. So no overflow
-as far as I tested (there might be rare corner cases).
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <4B0BB9A3.5020908@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/cpu/mtrr/cleanup.c |   49 +++++++++++++++++++++++++++++------
+ 1 files changed, 40 insertions(+), 9 deletions(-)
 
-But it happens with trace_pipe reading.
-
-There is another bug. Here is a sample from
-trace reading:
-
- 0)               |  sys_newfstat() {
- 0)               |    vfs_fstat() {
- 0)   1.187 us    |      fget();
- 0)               |      vfs_getattr() {
- 0)               |        security_inode_getattr() {
- 0)   0.608 us    |              }
- 0)   2.951 us    |            }
- 0) + 65.349 us   |          }
- 0)               |          path_put() {
- 0)   0.608 us    |            dput();
- 0)   0.548 us    |            mntput_no_expire();
- 0)   2.748 us    |          }
- 0) + 74.472 us   |        }
-
-
-I think we are loosing some traces here, between security_inode_getattr()
-and path_put().
-
-I'm not sure why. The problem related by Olsa would explain such
-symptoms, and what olsa reported is a real bug, but only
-in trace_pipe. There is also something else, probably more
-related to the fast path.
-
+diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
+index 6e49f6f..6987af7 100644
+--- a/arch/x86/kernel/cpu/mtrr/cleanup.c
++++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
+@@ -170,6 +170,41 @@ static int __init cmp_range(const void *x1, const void *x2)
+ 	return start1 - start2;
+ }
+ 
++static int __init clean_sort_range(struct res_range *range, int az)
++{
++	int i, j, k = az - 1, nr_range = 0;
++
++	for (i = 0; i < k; i++) {
++		if (range[i].end)
++			continue;
++		for (j = k; j > i; j--) {
++			if (range[j].end) {
++				k = j;
++				break;
++			}
++		}
++		if (j == i)
++			break;
++		range[i].start = range[k].start;
++		range[i].end   = range[k].end;
++		range[k].start = 0;
++		range[k].end   = 0;
++		k--;
++	}
++	/* count it */
++	for (i = 0; i < az; i++) {
++		if (!range[i].end) {
++			nr_range = i;
++			break;
++		}
++	}
++
++	/* sort them */
++	sort(range, nr_range, sizeof(struct res_range), cmp_range, NULL);
++
++	return nr_range;
++}
++
+ #define BIOS_BUG_MSG KERN_WARNING \
+ 	"WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
+ 
+@@ -223,22 +258,18 @@ x86_get_mtrr_mem_range(struct res_range *range, int nr_range,
+ 		subtract_range(range, extra_remove_base,
+ 				 extra_remove_base + extra_remove_size  - 1);
+ 
+-	/* get new range num */
+-	nr_range = 0;
+-	for (i = 0; i < RANGE_NUM; i++) {
+-		if (!range[i].end)
+-			continue;
+-		nr_range++;
+-	}
+ 	if  (debug_print) {
+ 		printk(KERN_DEBUG "After UC checking\n");
+-		for (i = 0; i < nr_range; i++)
++		for (i = 0; i < RANGE_NUM; i++) {
++			if (!range[i].end)
++				continue;
+ 			printk(KERN_DEBUG "MTRR MAP PFN: %016lx - %016lx\n",
+ 				 range[i].start, range[i].end + 1);
++		}
+ 	}
+ 
+ 	/* sort the ranges */
+-	sort(range, nr_range, sizeof(struct res_range), cmp_range, NULL);
++	nr_range = clean_sort_range(range, RANGE_NUM);
+ 	if  (debug_print) {
+ 		printk(KERN_DEBUG "After sorting\n");
+ 		for (i = 0; i < nr_range; i++)
