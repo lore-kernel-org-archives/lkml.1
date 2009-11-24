@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbZKXOka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbZKXOge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933138AbZKXOka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbZKXOk0
+	id S933082AbZKXOge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933022AbZKXOga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:40:26 -0500
-Received: from kroah.org ([198.145.64.141]:46095 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933107AbZKXOkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:40:22 -0500
-Date: Tue, 24 Nov 2009 06:35:35 -0800
-From: Greg KH <greg@kroah.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: monstr@monstr.eu, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
-       grant.likely@secretlab.ca, alonz@discretix.com,
-       linux-serial@vger.kernel.org, stable@kernel.org,
-       john.williams@petalogix.com
-Subject: Re: [stable] [PATCH] serial: 8250: Add ns16550a to OF compatible
-	list
-Message-ID: <20091124143535.GA30711@kroah.com>
-References: <1259054502-28284-1-git-send-email-monstr@monstr.eu> <1259054502-28284-2-git-send-email-monstr@monstr.eu> <200911240953.52204.arnd@arndb.de>
+	Tue, 24 Nov 2009 09:36:30 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:63616 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933005AbZKXOg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 09:36:29 -0500
+Message-ID: <4B0BEF70.5070104@codemonkey.ws>
+Date: Tue, 24 Nov 2009 08:36:32 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911240953.52204.arnd@arndb.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Shirley Ma <mashirle@us.ibm.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers and
+ big packets in virtio_net
+References: <1258697745.7416.20.camel@localhost.localdomain> <200911231138.30755.rusty@rustcorp.com.au> <1258992421.5022.19.camel@localhost.localdomain> <200911240854.24054.rusty@rustcorp.com.au> <20091124113754.GB2405@redhat.com>
+In-Reply-To: <20091124113754.GB2405@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 09:53:52AM +0000, Arnd Bergmann wrote:
-> On Tuesday 24 November 2009 09:21:42 monstr@monstr.eu wrote:
-> > From: Michal Simek <monstr@monstr.eu>
-> > 
-> > Signed-off-by: Michal Simek <monstr@monstr.eu>
-> 
-> I was holding off on that patch to make sure the discussion had ended,
-> but this part certainly looks good.
-> 
-> Some points on form though:
-> 
-> * The patch is missing a changelog, which is always required, but especially
-> important if you're changing code that you want in -stable!
-> 
-> * You did not cc me. Ok, I just noticed I'm missing an entry in the MAINTAINERS
-> file, but scripts/get_maintainer.pl would have given you a good indication of
-> who feels responsible. You also didn't cc Alon, who submitted a similar patch
-> [1] just days ago, which I assume prompted you to send this. If you didn't see
-> his patch, nevermind.
-> 
-> * Patches go into mainline first, then into stable [2]. Asking for inclusion into
-> -stable for a patch that is still being discussed for inclusion in -next is
-> the wrong order, no matter how obvious and trivial the patch is.
+Michael S. Tsirkin wrote:
+> On Tue, Nov 24, 2009 at 08:54:23AM +1030, Rusty Russell wrote:
+>   
+>> On Tue, 24 Nov 2009 02:37:01 am Shirley Ma wrote:
+>>     
+>>>>> +             skb = (struct sk_buff *)buf;
+>>>>>           
+>>>> This cast is unnecessary, but a comment would be nice:
+>>>>         
+>>> Without this cast there is a compile warning. 
+>>>       
+>> Hi Shirley,
+>>
+>>    Looks like buf is a void *, so no cast should be necessary.  But I could
+>> be reading the patch wrong.
+>>
+>>     
+>>>> However, I question whether making it 16 byte is the right thing: the
+>>>> ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
+>>>>         
+>>> Because in QEMU it requires 10 bytes header in a separately, so one page
+>>> is used to share between virtio_net_hdr header which is 10 bytes head
+>>> and rest of data. So I put 6 bytes offset here between two buffers. I
+>>> didn't look at the reason why a seperate buf is used for virtio_net_hdr
+>>> in QEMU.
+>>>       
+>> It's a qemu bug.  It insists the header be an element in the scatterlist by
+>> itself.  Unfortunately we have to accommodate it.
+>>     
+>
+> We do?  Let's just fix this?
+>   
 
-The easiest way to do this is to add:
-	cc: stable <stable@kernel.org>
-to the signed-off-by area of the patch.  Then, when it goes into Linus's
-tree the stable developers will be automatically notified of it and suck
-it into their tree as well, no additional work needs to be done by you
-at all.
+So does lguest.  It's been that way since the beginning.  Fixing this 
+would result in breaking older guests.
 
-thanks,
+We really need to introduce a feature bit if we want to change this.
 
-greg k-h
+Regards,
+
+Anthony Liguori
