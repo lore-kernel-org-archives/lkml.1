@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZKXHGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZKXHJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbZKXHGd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 02:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZKXHGc
+	id S1758049AbZKXHJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 02:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbZKXHJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 02:06:32 -0500
-Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:60597 "EHLO
-	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756912AbZKXHGc (ORCPT
+	Tue, 24 Nov 2009 02:09:04 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39493 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757957AbZKXHJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 02:06:32 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: Q, slab, kmemleak_erase() and redzone? 
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020911220135l466247c5i9612386fcc30a28c@mail.gmail.com>
-References: <15109.1258733696@jrobl> <84144f020911220135l466247c5i9612386fcc30a28c@mail.gmail.com>
-Date: Tue, 24 Nov 2009 16:06:22 +0900
-Message-ID: <6801.1259046382@jrobl>
+	Tue, 24 Nov 2009 02:09:04 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B0B8683.6020104@jp.fujitsu.com>
+Date: Tue, 24 Nov 2009 16:08:51 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH tip/sched/core] introduce task_times() to replace	task_[us]time()
+ pair
+References: <4B061E9A.8040100@jp.fujitsu.com> <20091123102806.GD25978@dhcp-lab-161.englab.brq.redhat.com> <4B0B714C.9080607@jp.fujitsu.com>
+In-Reply-To: <4B0B714C.9080607@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hidetoshi Seto wrote:
+> And just now I noticed that using msecs_to_cputime() is problematic,
+> since the type of its return value is "unsigned long" so not 64bit.
+> I'll make and post a patch to fix this asap.
 
-Pekka Enberg:
-> We are setting an element in the per CPU array to NULL so the the
-> kmemleak code in ____cache_alloc() is safe. Red-zoning is done at the
-> _object_ which is not touched by kmemleak. Looking at the oops, it
-> does seem likely that you have a bug in your module (or in some other
-> part of the kernel).
+Sorry, I was confused.  Please ignore the above.
 
-Thanks for reply.
-In ____cache_alloc(), the variable 'ac' is assigned before
-cache_alloc_refill() call, and it is used for the parameter of
-kmemleak_erase(). The value may be changed by cache_alloc_refill(),
-isn't it?
-In this case, kmemleak_erase() receives the incorrect pointer and sets
-NULL to somewhere else which may be redzone?
+The problem is that since the type of msecs_to_cputime() argument is
+unsigned int, it would be wrong if calculated msecs is greater than
+UINT_MAX.
 
-How about this fix?
-If cpu_cache_get() call is heavy and we cannot ignore it when KMEMLEAK
-is disabled, then a new wrapper may be necessary.
+Another problem is that msecs_to_jiffies() returns MAX_JIFFY_OFFSET
+if msecs > INT_MAX. 
 
-diff --git a/mm/slab.c b/mm/slab.c
-index 71e0a1f..3f3e018 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3104,6 +3104,7 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
- 	} else {
- 		STATS_INC_ALLOCMISS(cachep);
- 		objp = cache_alloc_refill(cachep, flags);
-+		ac = cpu_cache_get(cachep);
- 	}
- 	/*
- 	 * To avoid a false negative, if an object that is in one of the
+   5168 #ifndef nsecs_to_cputime
+   5169 # define nsecs_to_cputime(__nsecs) \
+   5170         msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
+   5171 #endif
 
+    452 unsigned long msecs_to_jiffies(const unsigned int m)
+    453 {
+    454         /*
+    455          * Negative value, means infinite timeout:
+    456          */
+    457         if ((int)m < 0)
+    458                 return MAX_JIFFY_OFFSET;
+     :
+
+What I need here is a simple function can convert 64bit nsecs to
+cputime_t, which is unsigned long in asm-generic/cputime.h.
+Humm...
 
 
-J. R. Okajima
+Thanks,
+H.Seto
+
