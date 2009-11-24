@@ -1,79 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbZKXJQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZKXJU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932438AbZKXJQn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932405AbZKXJQn
+	id S1757945AbZKXJU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932285AbZKXJUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:16:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35994 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Nov 2009 04:20:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39228 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932404AbZKXJQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:16:42 -0500
-Date: Tue, 24 Nov 2009 10:16:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: newidle balancing in NUMA domain?
-Message-ID: <20091124091630.GH21991@elte.hu>
-References: <20091123112228.GA2287@wotan.suse.de>
- <1258987059.6193.73.camel@marge.simson.net>
- <20091123151152.GA19175@wotan.suse.de>
- <1258989704.4531.574.camel@laptop>
- <20091123152931.GD19175@wotan.suse.de>
- <20091123170445.GA29058@elte.hu>
- <20091124065910.GE20981@wotan.suse.de>
+	id S1751674AbZKXJUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 04:20:54 -0500
+Message-ID: <4B0BA519.9090100@kernel.org>
+Date: Tue, 24 Nov 2009 01:19:21 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124065910.GE20981@wotan.suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
+References: <1257849980-22640-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>	<tip-75f1cdf1dda92cae037ec848ae63690d91913eac@git.kernel.org>	<4B08BD14.9060102@kernel.org> <20091124174608Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091124174608Y.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> On Mon, Nov 23, 2009 at 06:04:45PM +0100, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > > .32 is kind of closed, with us being at -rc8.
-> > > 
-> > > It's a bad regression though.
-> > 
-> > It's about 3 months too late for that. Ideally we want performance 
+FUJITA Tomonori wrote:
+> On Sat, 21 Nov 2009 20:24:52 -0800
+> Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> Too late for what?  Reporting and reverting a regression?
+>> amd 64 systems that
+>> 1. do not have  AGP
+>> 2. do not have IOMMU
+>> 3. mem > 4g
+>> 4. BIOS do not allocate  correct gart in NB.
+>> will leave them to use SWIOTLB forcely.
+> 
+> Sorry, I forgot about this GART workaround.
+> 
+> 
+>> Index: linux-2.6/arch/x86/kernel/pci-dma.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
+>> +++ linux-2.6/arch/x86/kernel/pci-dma.c
+>> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
+>>  	/* free the range so iommu could get some range less than 4G */
+>>  	dma32_free_bootmem();
+>>  #endif
+>> +	if (!swiotlb_force)
+>> +		gart_iommu_hole_init();
+>> +
+>>  	if (pci_swiotlb_init())
+>>  		return;
+>>  
+>> -	gart_iommu_hole_init();
+>> -
+>>  	detect_calgary();
+>>  
+>>  	detect_intel_iommu();
+> 
+> I prefer to detect all the IOMMU drivers in a consistent way;
+> detecting only GART before swioltb doesn't look nice.
+> 
+> As we did before, we could detect all the IOMMU driver before
+> swiotlb. However, I think that it's better to simply change
+> pci_swiotlb_init() not to steal the preallocate GART workaround memory.
+> 
+> btw, initializing swiotlb before IOMMU detection is useful to GART
+> too? If GART can't allocate the workaround memory, then the kernel
+> panic now. We can use swiotlb instead in that case?
+> 
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
+> 
+> swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
+> dma32_reserv_bootmem allocates. We need to initialize swiotlb before
+> dma32_free_bootmem().
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  arch/x86/kernel/pci-dma.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index afcc58b..26fe2cd 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
+>  
+>  void __init pci_iommu_alloc(void)
+>  {
+> +	int use_swiotlb;
+> +
+> +	use_swiotlb = pci_swiotlb_init();
+> +
+>  #ifdef CONFIG_X86_64
+>  	/* free the range so iommu could get some range less than 4G */
+>  	dma32_free_bootmem();
+>  #endif
+> -	if (pci_swiotlb_init())
+> +	if (use_swiotlb)
+>  		return;
+>  
+>  	gart_iommu_hole_init();
 
-Yes, the revert would be too intrusive so late in the release cycle, 
-sorry. For such types of scheduler reverts we rarely go beyond -rc5 - 
-the risks of breaking something are too big.
+pci_swiotlb_init need be called after dma32_free_bootmem
+otherwise it could fail for system with lots of memory and numa=off
 
-Note that we have queued up a fix for that about two weeks ago for 
-v2.6.33 - that fix could be forwarded to stable@kernel.org for 2.6.32.1 
-merging.
+so dma32_free_bootmem will work for gart_iommu_hole_init and pci_swiotlb_init..
+make sure they can get RAM < 4g.
 
-> [...] I don't think so. It is not my problem if patches aren't tested 
-> well enough before being merged.
+also in gart_iommu_hole_init we need check swiotlb and !valid_agp...
+-       } else if (!valid_agp) {
++       } else if (swiotlb && !valid_agp) {
 
-There's certainly a wide performance testing being done for scheduler 
-relevant workloads all the time. If you dont like the end result you are 
-welcome to help out testing and fixing things (and certainly both).
+otherwise the the workaround will be skipped...
 
-I'd also welcome help from you to extend 'perf bench sched' with new 
-testcases. (it has only two so far - the tool just got started so 
-there's lots of low hanging fruits.) 'perf bench sched numa-cost' would 
-certainly be usefulful to have.
-
-Thanks,
-
-	Ingo
+YH
