@@ -1,111 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933707AbZKXRld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbZKXRtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933707AbZKXRld (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933661AbZKXRlc
+	id S933718AbZKXRtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933692AbZKXRtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:41:32 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:54732 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933618AbZKXRlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:41:32 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dimitri Sivanich <sivanich@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20091120211139.GB19106@sgi.com>
-	<m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>
-	<alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
-	<1259069986.4531.1453.camel@laptop>
-	<alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
-	<20091124065022.6933be1a@infradead.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 24 Nov 2009 09:41:18 -0800
-In-Reply-To: <20091124065022.6933be1a@infradead.org> (Arjan van de Ven's message of "Tue\, 24 Nov 2009 06\:50\:22 -0800")
-Message-ID: <m1ws1f6csh.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 24 Nov 2009 12:49:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46953 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933688AbZKXRtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 12:49:21 -0500
+Message-ID: <4B0C1BF8.9060408@redhat.com>
+Date: Tue, 24 Nov 2009 12:46:32 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+To: Jason Baron <jbaron@redhat.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH -tip v5 07/10] kprobes/x86: Support kprobes jump	optimization
+ on x86
+References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com> <20091123232211.22071.58974.stgit@dhcp-100-2-132.bos.redhat.com> <20091124162708.GA29995@redhat.com>
+In-Reply-To: <20091124162708.GA29995@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
-
-> On Tue, 24 Nov 2009 14:55:15 +0100 (CET)
->> > Furthermore, the /sysfs topology information should include IRQ
->> > routing data in this case.
->> 
->> Hmm, not sure about that. You'd need to scan through all the nodes to
->> find the set of CPUs where an irq can be routed to. I prefer to have
->> the information exposed by the irq enumeration (which is currently in
->> /proc/irq though).
+Jason Baron wrote:
+[...]
+>> +/*
+>> + * Cross-modifying kernel text with stop_machine().
+>> + * This code originally comes from immediate value.
+>> + * This does _not_ protect against NMI and MCE. However,
+>> + * since kprobes can't probe NMI/MCE handler, it is OK for kprobes.
+>> + */
+>> +static atomic_t stop_machine_first;
+>> +static int wrote_text;
+>> +
+>> +struct text_poke_param {
+>> +	void *addr;
+>> +	const void *opcode;
+>> +	size_t len;
+>> +};
+>> +
+>> +static int __kprobes stop_machine_multibyte_poke(void *data)
+>> +{
+>> +	struct text_poke_param *tpp = data;
+>> +
+>> +	if (atomic_dec_and_test(&stop_machine_first)) {
+>> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
+>> +		smp_wmb();	/* Make sure other cpus see that this has run */
+>> +		wrote_text = 1;
+>> +	} else {
+>> +		while (!wrote_text)
+>> +			smp_rmb();
+>> +		sync_core();
+>> +	}
+>> +
+>> +	flush_icache_range((unsigned long)tpp->addr,
+>> +			   (unsigned long)tpp->addr + tpp->len);
+>> +	return 0;
+>> +}
+>> +
+>> +static void *__kprobes __multibyte_poke(void *addr, const void *opcode,
+>> +					size_t len)
+>> +{
+>> +	struct text_poke_param tpp;
+>> +
+>> +	tpp.addr = addr;
+>> +	tpp.opcode = opcode;
+>> +	tpp.len = len;
+>> +	atomic_set(&stop_machine_first, 1);
+>> +	wrote_text = 0;
+>> +	stop_machine(stop_machine_multibyte_poke, (void *)&tpp, NULL);
+>> +	return addr;
+>> +}
 >
-> yes please.
->
-> one device can have multiple irqs
-> one irq can be servicing multiple devices
->
-> expressing that in sysfs is a nightmare, while
-> sticking it in /proc/irq *where the rest of the info is* is
-> much nicer for apps like irqbalance
+> As you know, I'd like to have the jump label optimization for
+> tracepoints, make use of this '__multibyte_poke()' interface. So perhaps
+> it can be moved to arch/x86/kernel/alternative.c. This is where 'text_poke()'
+> and friends currently live.
 
-Oii.
+Hmm, maybe current text_poke needs to have singlebyte_poke() wrapper
+for avoiding confusion.
 
-I don't think it is bad to export information to applications like irqbalance.
+> Also, with multiple users we don't want to trample over each others code
+> patching. Thus, if each sub-system could register some type of
+> 'is_reserved()' callback, and then we can call all these call backs from
+> the '__multibyte_poke()' routine before we do any patching to make sure
+> that we aren't trampling on each others code. After a successful
+> patching, each sub-system can update its reserved set of code as
+> appropriate. I can code a prototype here, if this makes sense.
 
-I think it pretty horrible that one of the standard ways I have heard
-to improve performance on 10G nics is to kill irqbalance.
+Hmm, we have to implement it carefully, because here kprobes already
+inserted int3 and optprobe rewrites the int3 again. If is_reserved()
+returns 1 and multibyte_poke returns error, we can't optimize it anymore.
 
-Guys.  Migrating an irq from one cpu to another while the device is
-running without dropping interrupts is hard.
+Thank you,
 
-At the point we start talking about limiting what a process with
-CAP_SYS_ADMIN can do because it makes bad decisions I think something
-is really broken.
+-- 
+Masami Hiramatsu
 
-Currently the irq code treats /proc/irq/N/smp_affinity as a strong hint
-on where we would like interrupts to be delivered, and we don't have good
-feedback from there to architecture specific code that knows what we really
-can do.  It is going to take some effort and some work to make that happen.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-I think the irq scheduler is the only scheduler (except for batch jobs) that we
-don't put in the kernel.  It seems to me that if we are going to go to all of the
-trouble to rewrite the generic code to better support irqbalance because we
-are having serious irqbalance problems, it will be less effort to suck irqbalance
-into the kernel along with everything else.
+e-mail: mhiramat@redhat.com
 
-I really think irqbalancing belongs in the kernel.  It is hard to
-export all of the information we need to user space and the
-information that we need to export keeps changing.  Until we master
-this new trend of exponentially increasing core counts that
-information is going to keep changing.  Today we barely know how to balance
-flows across cpus.  So because of the huge communication problem and
-the fact that there appears to be no benefit in keeping irqbalance in
-user space (there is no config file) if we are going to rework all of the
-interfaces let's pull irqbalance into the kernel.
-
-
-As for the UV code, what we are looking at is a fundamental irq
-routing property.  Those irqs cannot be routed to some cpus.  That is
-something the code that sets up the routes needs to be aware of.
-Dimitri could you put your the extra code in assign_irq_vector instead
-of in the callers of assign_irq_vector?  Since the probably is not
-likely to stay unique we probably want to put the information you base
-things on in struct irq_desc, but the logic I seems to live best in
-in assign_irq_vector.
-
-Eric
