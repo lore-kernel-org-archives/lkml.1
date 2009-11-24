@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbZKXO4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbZKXO6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbZKXO4I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbZKXO4H
+	id S933203AbZKXO6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933165AbZKXO6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:56:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47844 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZKXO4G (ORCPT
+	Tue, 24 Nov 2009 09:58:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:51381 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933133AbZKXO6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:56:06 -0500
-Date: Tue, 24 Nov 2009 06:57:53 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more
- statistics
-Message-ID: <20091124065753.6a08435b@infradead.org>
-In-Reply-To: <20091124083423.GE21991@elte.hu>
-References: <4B0B6E44.6090106@cn.fujitsu.com>
-	<84144f020911232315h7c8b7348u9ad97f585f54a014@mail.gmail.com>
-	<20091124073426.GA21991@elte.hu>
-	<4B0B937F.4080906@cn.fujitsu.com>
-	<20091124083423.GE21991@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 24 Nov 2009 09:58:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lF3hMwZyjgi2SDdP80Ycuf1iSzL4bjR8gryVXGeMjp5HbAFJYPb0FqW3Y/0VsiwlVb
+         SN02jqDL5XDPsPNxQrKP4G1975xottREIzaPQ2/5RNRbbJ11wLR1vefFGdlV872gvTtA
+         L2Fdf89PnHvm+X4mTurIeNgwqUyll6SJgGV5w=
+Date: Tue, 24 Nov 2009 22:58:10 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: David Newall <davidn@davidnewall.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Helight.Xu" <helight.xu@gmail.com>,
+       Am??rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: non-english on list
+Message-ID: <20091124145810.GA2425@hack>
+References: <4B06384C.2080703@gmail.com> <20091122163700.GC3476@hack> <4B09DF29.8020003@gmail.com> <20091124120304.GC1397@ucw.cz> <4B0BE93D.2020104@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0BE93D.2020104@davidnewall.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 09:34:23 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-> > It would be great if perf can be used for boot time tracing. This 
-> > needs pretty big work on kernel side.
-> 
-> What would be needed is to open per cpu events right after perf
-> events initializes, and allocate memory for output buffers to them.
-> 
-> They would round-robin after that point, and we could use 
-> perf_event_open() (with a special flag) to 'attach' to them and
-> mmap() them - at which point they'd turn into regular objects with a
-> lot of boot time data in them.
+On Wed, Nov 25, 2009 at 12:40:05AM +1030, David Newall wrote:
+> Pavel Machek wrote:
+>> Could we keep the list english-only?
+>
+> I thought that was the rule, but then concluded that there was probably  
+> good reason for using Chinese--perhaps insufficient skill in  
+> English--and why shouldn't people be allowed to post in a language they  
+> understand? Certainly less people can answer in other languages, but as  
+> we've seen, it's more than zero, and I gather a satisfactory result was  
+> achieved. If you don't understand the language just skip the thread and  
+> move on.
 
-I'm not too worried about this btw;
-we can start the userland trace early enough in the boot (the kernel is
-done after 0.6 seconds after all) to capture the relevant stuff.
-The actual kernel mostly gets captured with scripts/bootgraph.pl
-already.
+Hi, sorry about this.
 
-Yes it would be nice to do a timechart earlier, but if it's extremely
-hard...
-Also unless it starts before the drivers (eg the normal driver
-initcall level), it is not useful.
+It was proved to be a mistake, I checked this with Helight, he wanted
+to send to a Chinese lkml.
+
+Don't worry, none of us has problems to write English emails. ;)
+
+Thanks for your care.
+
+
+-- 
+Live like a child, think like the god.
+ 
