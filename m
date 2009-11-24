@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZKXAvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZKXA4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757514AbZKXAvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 19:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZKXAvc
+	id S1756579AbZKXA4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 19:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZKXA4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 19:51:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55010 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752254AbZKXAvc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 19:51:32 -0500
-Message-ID: <4B0B2DF1.1010603@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 08:50:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       =?UTF-8?B?RnLDqQ==?= =?UTF-8?B?ZMOpcmljIFdlaXNiZWNrZXI=?= 
-	<fweisbec@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/2] perf kmem: resolve symbols
-References: <1259005869-13487-1-git-send-email-acme@infradead.org> <1259005869-13487-2-git-send-email-acme@infradead.org>
-In-Reply-To: <1259005869-13487-2-git-send-email-acme@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 19:56:08 -0500
+Received: from mail1.radix.net ([207.192.128.31]:46383 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751475AbZKXA4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 19:56:07 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Andy Walls <awalls@radix.net>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Cc: khc@pm.waw.pl, dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <BDRae8rZjFB@christoph>
+References: <BDRae8rZjFB@christoph>
+Content-Type: text/plain
+Date: Mon, 23 Nov 2009 19:53:57 -0500
+Message-Id: <1259024037.3871.36.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
+> Czesc Krzysztof,
 > 
-> E.g.
+> on 23 Nov 09 at 15:14, Krzysztof Halasa wrote:
+> [...]
+> > I think we shouldn't at this time worry about IR transmitters.
 > 
-> [root@doppio linux-2.6-tip]# perf kmem record sleep 3s
-> [ perf record: Woken up 2 times to write data ]
-> [ perf record: Captured and wrote 0.804 MB perf.data (~35105 samples) ]
-> [root@doppio linux-2.6-tip]# perf kmem --stat caller | head -10
-> ------------------------------------------------------------------------------
-> Callsite                    |Total_alloc/Per | Total_req/Per | Hit  | Frag
-> ------------------------------------------------------------------------------
-> getname/40                  | 1519616/4096   | 1519616/4096  |   371|   0.000%
-> seq_read/a2                 |  987136/4096   |  987136/4096  |   241|   0.000%
-> __netdev_alloc_skb/43       |  260368/1049   |  259968/1048  |   248|   0.154%
-> __alloc_skb/5a              |   77312/256    |   77312/256   |   302|   0.000%
-> proc_alloc_inode/33         |   76480/632    |   76472/632   |   121|   0.010%
-> get_empty_filp/8d           |   70272/192    |   70272/192   |   366|   0.000%
-> split_vma/8e                |   42064/176    |   42064/176   |   239|   0.000%
-> [root@doppio linux-2.6-tip]#
-> 
-> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: linux-mm@kvack.org <linux-mm@kvack.org>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/builtin-kmem.c |   37 +++++++++++++++++++++++--------------
->  1 files changed, 23 insertions(+), 14 deletions(-)
+> Sorry, but I have to disagree strongly.
+> Any interface without transmitter support would be absolutely unacceptable  
+> for many LIRC users, including myself.
 
-I was about to send out my version. Any, thanks for doing this!
+I agree with Christoph.  
+
+Is it that the input subsystem is better developed and seen as a
+leverage point for development and thus an "easier" place to get results
+earlier?  If so, then one should definitely deal with transmitters early
+in the design, as that is where the most unknowns lie.
+
+With the end of analog TV, people will have STBs feeding analog only
+video cards.  Being able to change the channel on the STB with an IR
+transmitter controlled by applications like MythTV is essential.
+
+
+And on some different notes:
+
+I generally don't understand the LIRC aversion I perceive in this thread
+(maybe I just have a skewed perception).  Aside for a video card's
+default remote setup, the suggestions so far don't strike me as any
+simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
+already works for both transmit and receive and has existing support in
+applications such as MythTV and mplayer.
+
+I believe Jarod's intent is to have the LIRC components, that need to be
+in kernel modules, moved into kernel mainline to avoid the headaches of
+out of kernel driver maintenance.  I'm not sure it is time well spent
+for developers, or end users, to develop yet another IR receive
+implementation in addition to the ones we suffer with now.
+
+
+I would also note that RC-6 Mode 6A, used by most MCE remotes, was
+developed by Philips, but Microsoft has some sort of licensing interest
+in it and it is almost surely encumbered somwhow:
+
+http://download.microsoft.com/download/9/8/f/98f3fe47-dfc3-4e74-92a3-088782200fe7/TWEN05007_WinHEC05.ppt
+
+"Microsoft recommends the Microsoft-Philips IR protocol (based on RC6)
+              * You can become a licensee at no charge to you
+[...]
+  * How to license RC6
+      * Contact RemoteMC @ microsoft.com for license agreement"
+
+
+I would much rather that RC-6 be handled as much as possible in user
+space than in the kernel.  LIRC userspace components already handle it,
+IIRC.
+
+
+Regards,
+Andy "LIRC Fan-Boy" Walls
+
 
