@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbZKXF0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZKXFZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088AbZKXF0H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 00:26:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZKXF0G
+	id S1752546AbZKXFZu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 00:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZKXFZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 00:26:06 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53211 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbZKXF0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 00:26:00 -0500
-Message-ID: <4B0B6E44.6090106@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 13:25:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 24 Nov 2009 00:25:50 -0500
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51871 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbZKXFZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 00:25:49 -0500
+Date: Tue, 24 Nov 2009 10:55:43 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v5 0/4] pseries: Add cede support for cpu-offline
+Message-ID: <20091124052543.GA28097@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20091030052106.25493.42109.stgit@sofia.in.ibm.com>
+ <1259033709.16367.110.camel@pasglop>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 0/5] perf kmem: Add more functions and show more statistics
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1259033709.16367.110.camel@pasglop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-List of new things:
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2009-11-24 14:35:09]:
 
-- Add option "--raw-ip", to print raw ip instead of symbols.
+> On Fri, 2009-10-30 at 10:52 +0530, Gautham R Shenoy wrote:
+> > Hi,
+> > 
+> > This is version 5 of patch series that provides a framework to choose the
+> > state a pseries CPU must be put to when it is offlined.
+> > 
+> > Previous versions can be found here:
+> > Version 4: http://lkml.org/lkml/2009/10/9/59
+> > Version 3: http://lkml.org/lkml/2009/9/15/164
+> > Version 2: http://lkml.org/lkml/2009/8/28/102
+> > Version 1: http://lkml.org/lkml/2009/8/6/236
+> > 
+> > Changes from the previous version include:
+> > - Rebased against Nathan Fontenot's latest "pseries kernel handling of dynamic
+> >   logical paritioning v4" patches found here:
+> >   http://lkml.org/lkml/2009/10/21/98
+> 
+> I can't merge them right now because afaik, Nathan patches are still not
+> quite ready. So we need to either get a final version of Nathan patches
+> something like tomorrow or you need to rebase your series on current
+> -next by the end of the week, or I'm afraid it's going to miss the next
+> merge window.
 
-- Sort the output by fragmentation by default, and support
-  multi keys.
+Hi Ben,
 
-- Collect and show cross node allocation stats.
+I had checked with Nathan earlier and he mentioned that he is working
+on an update.  We can post a rebase to -next tomorrow, but this series
+depends on Nathan's patch, hence will work with him. This feature is
+important for the next merge window.
 
-- Collect and show alloc/free ping-pong stats.
-
-- And help file.
-
----
- tools/perf/Documentation/perf-kmem.txt |   44 ++++
- tools/perf/builtin-kmem.c              |  353 ++++++++++++++++++++++++++------
- tools/perf/command-list.txt            |    1 +
- 3 files changed, 331 insertions(+), 67 deletions(-)
-
-
-Pekka, do you think we can remove kmemtrace now?
-
-With kmem trace events, low-level analyzing can be done using
-ftrace, and high-level analyzing can be done using perf-kmem.
-
-And chance is, more people may use and improve perf-kmem, and it
-will be well-maintained within the perf infrastructure. On the
-other hand, I guess few people use and contribute to kmemtrace-user.
-
-BTW, seems kmemtrace-user doesn't work with ftrace. I got setfault:
-
-	# ./kmemtraced
-	Copying /proc/kallsyms...
-	Logging... Press Control-C to stop.
-	^CSegmentation fault
-
-
+Thanks,
+Vaidy
