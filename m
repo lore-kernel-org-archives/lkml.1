@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934244AbZKXV2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbZKXVXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934244AbZKXV2q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZKXV2p
+	id S934059AbZKXVXk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbZKXVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:28:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10330 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934038AbZKXV2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:28:45 -0500
-Date: Tue, 24 Nov 2009 22:22:47 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
-       Jason Baron <jbaron@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip v3 0/3] tracepoint: Add signal events
-Message-ID: <20091124212247.GA11773@redhat.com>
-References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com> <20091123175740.GA15594@elte.hu>
+	Tue, 24 Nov 2009 16:23:39 -0500
+Received: from mail1-out1.atlantis.sk ([80.94.52.55]:47287 "EHLO
+	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933423AbZKXVXj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:23:39 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
+Date: Tue, 24 Nov 2009 22:23:30 +0100
+User-Agent: KMail/1.9.10
+Cc: Takashi Iwai <tiwai@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
+References: <200911222201.59471.linux@rainbow-software.org> <200911240829.23067.linux@rainbow-software.org> <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com>
+In-Reply-To: <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20091123175740.GA15594@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911242223.33206.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23, Ingo Molnar wrote:
+On Tuesday 24 November 2009 09:57:28 Kay Sievers wrote:
+> On Tue, Nov 24, 2009 at 08:29, Ondrej Zary <linux@rainbow-software.org> 
+wrote:
+> > On Monday 23 November 2009, Kay Sievers wrote:
+> >> On Mon, Nov 23, 2009 at 09:40, Takashi Iwai <tiwai@suse.de> wrote:
+> >> > At Mon, 23 Nov 2009 13:59:53 +1030,
+> >> >
+> >> > Rusty Russell wrote:
+> >> >> On Mon, 23 Nov 2009 07:31:57 am Ondrej Zary wrote:
+> >> >> > The problem is that
+> >> >> > scripts/mod/file2alias.c simply ignores isapnp.
+> >> >>
+> >> >> AFAICT it always has, and noone has complained until now.  Perhaps
+> >> >> something was still reading /lib/modules/`uname
+> >> >> -r`/modules.isapnpmap?
+> >> >
+> >> > I don't think modules.isapnpmap is needed again.
+> >> > The question came from the fact that the isapnp device wasn't loaded
+> >> > automatically.
+> >>
+> >> All the map files are not uses for anything these days. Ideally,
+> >> depmod should just stop creating these dead files.
+> >>
+> >> > But, I thought Kay already added isapnp support sometime ago, but it
+> >> > didn't seem to get in...  Kay?
+> >>
+> >> No, we don't even have proper modaliases for the pnp bus
+> >> (/sys/bus/pnp) and the alias string for pnp in the modules have a
+> >> broken and unfixable format. PNP autoloading is all handled by the
+> >> acpi modaliases these days. This is the first time in years I hear
+> >> anybody asking for hotplug setups of plain old pnp devices. :)
+> >
+> > Added these two lines to modules.alias (and deleted modules.alias.bin):
+> > alias acpi*:RTL8019:* ne
+> > alias pnp:dRTL8019* ne
+> >
+> > and it works. This works too:
+> > alias acpi*:PNP80d6:* ne
+> > alias pnp:dPNP80d6* ne
 >
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> Oh, your box has acpi mapped pnp aliases for this device? You can see
+> your ID string somewhere in this list?
+>   grep . /sys/bus/acpi/devices/*/modalias
 >
-> > Hi,
-> >
-> > These patches add signal related tracepoints including
-> > signal generation, delivery, and loss. First patch also
-> > moves signal-sending tracepoint from events/sched.h to
-> > events/signal.h.
-> >
-> > Changes in v3
-> > - Add Docbook style comments
-> >
-> > Changes in v2
-> > - Add siginfo arguments
-> >
-> > Thank you,
-> >
-> > ---
-> >
-> > Masami Hiramatsu (3):
-> >       tracepoint: Add signal loss events
-> >       tracepoint: Add signal deliver event
-> >       tracepoint: Move signal sending tracepoint to events/signal.h
-> >
-> >
-> >  Documentation/DocBook/tracepoint.tmpl |    5 +
-> >  include/trace/events/sched.h          |   25 -----
-> >  include/trace/events/signal.h         |  173 +++++++++++++++++++++++++++++++++
-> >  kernel/signal.c                       |   27 ++++-
-> >  4 files changed, 198 insertions(+), 32 deletions(-)
-> >  create mode 100644 include/trace/events/signal.h
->
-> Would be nice to have Roland's and Oleg's Acked-by tags in the patches -
-> to show that this is a representative and useful looking set of signal
-> events.
+> If not, is it in the pnp bus list?
+>   grep . /sys/bus/pnp/devices/*/id
 
-Sorry, I can't really comment these patches.
+It's listen in the pnp bus only:
 
-I mean, I do not know which info is useful and which is not.
-For example, I am a bit surprized we report trace_signal_lose_info()
-but please do not consider this as if I think we shouldn't. Just I
-do not know.
+$ grep -i 80d6 /sys/bus/acpi/devices/*/modalias
+$ grep -i 80d6 /sys/bus/pnp/devices/*/id
+/sys/bus/pnp/devices/01:01.00/id:PNP80d6
+$ cat /sys/bus/pnp/devices/01\:01.00/id
+RTL8019
+PNP80d6
 
-OTOH, we do not report if __send_signal() fails just because the
-legacy signal is already queued. We do not report who sends the signal,
-we do not report if it was private or shared. zap_process, complete_signal
-can "send" SIGKILL via sigaddset, this won't be noticed. But again, it is
-not that I think this should be reported.
+So the acpi alias was useless (I just copied another entry). This alone works:
+alias pnp:dPNP80d6* ne
 
-In short: I think any info may be useful, and these patches can help.
-But I do not understand what exactly should be reported to userspace.
-
-Oleg.
-
+-- 
+Ondrej Zary
