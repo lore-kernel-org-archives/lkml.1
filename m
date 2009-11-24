@@ -1,652 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbZKXQmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933548AbZKXQmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504AbZKXQmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933427AbZKXQmb
+	id S933548AbZKXQmv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbZKXQmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:42:31 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:5953 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933407AbZKXQma (ORCPT
+	Tue, 24 Nov 2009 11:42:49 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:33718 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933521AbZKXQmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:42:30 -0500
-X-Trace: 296037713/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgBAO6bC0tPRTgw/2dsb2JhbAAI1iOCMwKCBASBcItL
-X-IronPort-AV: E=Sophos;i="4.47,280,1257120000"; 
-   d="scan'208";a="296037713"
-Date: Tue, 24 Nov 2009 16:42:15 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH 2/9] ksm: let shared pages be swappable
-In-Reply-To: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+	Tue, 24 Nov 2009 11:42:45 -0500
+To: Patrick McHardy <kaber@trash.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       David Miller <davem@davemloft.net>
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de>
+	<200911241002.20904.arnd@arndb.de> <4B0BB2A7.5040707@trash.net>
+	<200911241034.43961.arnd@arndb.de> <4B0BB818.6090509@trash.net>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 24 Nov 2009 08:42:34 -0800
+In-Reply-To: <4B0BB818.6090509@trash.net> (Patrick McHardy's message of "Tue\, 24 Nov 2009 11\:40\:24 +0100")
+Message-ID: <m1aaybc1s5.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initial implementation for swapping out KSM's shared pages: add
-page_referenced_ksm() and try_to_unmap_ksm(), which rmap.c calls
-when faced with a PageKsm page.
+Patrick McHardy <kaber@trash.net> writes:
 
-Most of what's needed can be got from the rmap_items listed from
-the stable_node of the ksm page, without discovering the actual vma:
-so in this patch just fake up a struct vma for page_referenced_one()
-or try_to_unmap_one(), then refine that in the next patch.
+>>>> I did all my testing with macvlan interfaces in separate namespaces
+>>>> communicating with each other, so I'd assume that we should always
+>>>> clear skb->mark and skb->dst in this function.
+>>> Good point, in that case we probably should clear it as well. But
+>>> in the non-namespace case the TC classification currently works and
+>>> this is consistent with any other virtual device driver, so it
+>>> should continue to work.
+>> 
+>> Do you think we should be able to use TC to direct traffic between
+>> macvlans on the same underlying device in bridge mode? It does sound
+>> useful, but I'm not sure how to implement that or if you'd expect
+>> it to work with the current code. If we support that, it should probably
+>> also work with namespaces, by consuming the mark in the macvlan
+>> and veth drivers.
+>
+> I don't think its necessary, we bypass outgoing queuing anyways.
+> But if you'd want to add it, just keeping the skb->mark clearing
+> in veth should work from what I can tell.
 
-Add VM_NONLINEAR to ksm_madvise()'s list of exclusions: it has always
-been implicit there (being only set with VM_SHARED, already excluded),
-but let's make it explicit, to help justify the lack of nonlinear unmap.
+veth doesn't have an outgoing queue.  The reason we clear skb->mark
+in veth is because when reentering the networking stack the packet
+needs to be reclassified.  At the point of loopback we are talking
+a packet that has at least logically gone out of the machine on a
+wire and come back into the machine on another physical interface.
 
-Rely on the page lock to protect against concurrent modifications to
-that page's node of the stable tree.
+So it seems to me we should have consistent handling for macvlans,
+veth, for the cases where we are looping packets back around.  In
+practice I expect all of those cases are going to be cross namespace
+as otherwise we would have intercepted the packet before going
+out a physical interface.
 
-The awkward part is not swapout but swapin: do_swap_page() and
-page_add_anon_rmap() now have to allow for new possibilities - perhaps
-a ksm page still in swapcache, perhaps a swapcache page associated with
-one location in one anon_vma now needed for another location or anon_vma.
-(And the vma might even be no longer VM_MERGEABLE when that happens.)
+Eric
 
-ksm_might_need_to_copy() checks for that case, and supplies a duplicate
-page when necessary, simply leaving it to a subsequent pass of ksmd to
-rediscover the identity and merge them back into one ksm page.
-Disappointingly primitive: but the alternative would have to accumulate
-unswappable info about the swapped out ksm pages, limiting swappability.
 
-Remove page_add_ksm_rmap(): page_add_anon_rmap() now has to allow for
-the particular case it was handling, so just use it instead.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
 
- include/linux/ksm.h  |   54 +++++++++++-
- include/linux/rmap.h |    5 +
- mm/ksm.c             |  172 +++++++++++++++++++++++++++++++++++++----
- mm/memory.c          |    6 +
- mm/rmap.c            |   65 +++++++++------
- mm/swapfile.c        |   11 ++
- 6 files changed, 264 insertions(+), 49 deletions(-)
-
---- ksm1/include/linux/ksm.h	2009-11-14 10:17:02.000000000 +0000
-+++ ksm2/include/linux/ksm.h	2009-11-22 20:40:04.000000000 +0000
-@@ -9,10 +9,12 @@
- 
- #include <linux/bitops.h>
- #include <linux/mm.h>
-+#include <linux/pagemap.h>
-+#include <linux/rmap.h>
- #include <linux/sched.h>
--#include <linux/vmstat.h>
- 
- struct stable_node;
-+struct mem_cgroup;
- 
- #ifdef CONFIG_KSM
- int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-@@ -57,11 +59,36 @@ static inline void set_page_stable_node(
- 				(PAGE_MAPPING_ANON | PAGE_MAPPING_KSM);
- }
- 
--static inline void page_add_ksm_rmap(struct page *page)
-+/*
-+ * When do_swap_page() first faults in from swap what used to be a KSM page,
-+ * no problem, it will be assigned to this vma's anon_vma; but thereafter,
-+ * it might be faulted into a different anon_vma (or perhaps to a different
-+ * offset in the same anon_vma).  do_swap_page() cannot do all the locking
-+ * needed to reconstitute a cross-anon_vma KSM page: for now it has to make
-+ * a copy, and leave remerging the pages to a later pass of ksmd.
-+ *
-+ * We'd like to make this conditional on vma->vm_flags & VM_MERGEABLE,
-+ * but what if the vma was unmerged while the page was swapped out?
-+ */
-+struct page *ksm_does_need_to_copy(struct page *page,
-+			struct vm_area_struct *vma, unsigned long address);
-+static inline struct page *ksm_might_need_to_copy(struct page *page,
-+			struct vm_area_struct *vma, unsigned long address)
- {
--	if (atomic_inc_and_test(&page->_mapcount))
--		__inc_zone_page_state(page, NR_ANON_PAGES);
-+	struct anon_vma *anon_vma = page_anon_vma(page);
-+
-+	if (!anon_vma ||
-+	    (anon_vma == vma->anon_vma &&
-+	     page->index == linear_page_index(vma, address)))
-+		return page;
-+
-+	return ksm_does_need_to_copy(page, vma, address);
- }
-+
-+int page_referenced_ksm(struct page *page,
-+			struct mem_cgroup *memcg, unsigned long *vm_flags);
-+int try_to_unmap_ksm(struct page *page, enum ttu_flags flags);
-+
- #else  /* !CONFIG_KSM */
- 
- static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-@@ -84,7 +111,22 @@ static inline int PageKsm(struct page *p
- 	return 0;
- }
- 
--/* No stub required for page_add_ksm_rmap(page) */
-+static inline struct page *ksm_might_need_to_copy(struct page *page,
-+			struct vm_area_struct *vma, unsigned long address)
-+{
-+	return page;
-+}
-+
-+static inline int page_referenced_ksm(struct page *page,
-+			struct mem_cgroup *memcg, unsigned long *vm_flags)
-+{
-+	return 0;
-+}
-+
-+static inline int try_to_unmap_ksm(struct page *page, enum ttu_flags flags)
-+{
-+	return 0;
-+}
- #endif /* !CONFIG_KSM */
- 
--#endif
-+#endif /* __LINUX_KSM_H */
---- ksm1/include/linux/rmap.h	2009-11-14 10:17:02.000000000 +0000
-+++ ksm2/include/linux/rmap.h	2009-11-22 20:40:04.000000000 +0000
-@@ -89,6 +89,9 @@ static inline void page_dup_rmap(struct
-  */
- int page_referenced(struct page *, int is_locked,
- 			struct mem_cgroup *cnt, unsigned long *vm_flags);
-+int page_referenced_one(struct page *, struct vm_area_struct *,
-+	unsigned long address, unsigned int *mapcount, unsigned long *vm_flags);
-+
- enum ttu_flags {
- 	TTU_UNMAP = 0,			/* unmap mode */
- 	TTU_MIGRATION = 1,		/* migration mode */
-@@ -102,6 +105,8 @@ enum ttu_flags {
- #define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
- 
- int try_to_unmap(struct page *, enum ttu_flags flags);
-+int try_to_unmap_one(struct page *, struct vm_area_struct *,
-+			unsigned long address, enum ttu_flags flags);
- 
- /*
-  * Called from mm/filemap_xip.c to unmap empty zero page
---- ksm1/mm/ksm.c	2009-11-22 20:39:56.000000000 +0000
-+++ ksm2/mm/ksm.c	2009-11-22 20:40:04.000000000 +0000
-@@ -196,6 +196,13 @@ static DECLARE_WAIT_QUEUE_HEAD(ksm_threa
- static DEFINE_MUTEX(ksm_thread_mutex);
- static DEFINE_SPINLOCK(ksm_mmlist_lock);
- 
-+/*
-+ * Temporary hack for page_referenced_ksm() and try_to_unmap_ksm(),
-+ * later we rework things a little to get the right vma to them.
-+ */
-+static DEFINE_SPINLOCK(ksm_fallback_vma_lock);
-+static struct vm_area_struct ksm_fallback_vma;
-+
- #define KSM_KMEM_CACHE(__struct, __flags) kmem_cache_create("ksm_"#__struct,\
- 		sizeof(struct __struct), __alignof__(struct __struct),\
- 		(__flags), NULL)
-@@ -445,14 +452,20 @@ static void remove_rmap_item_from_tree(s
- {
- 	if (rmap_item->address & STABLE_FLAG) {
- 		struct stable_node *stable_node;
-+		struct page *page;
- 
- 		stable_node = rmap_item->head;
-+		page = stable_node->page;
-+		lock_page(page);
-+
- 		hlist_del(&rmap_item->hlist);
--		if (stable_node->hlist.first)
-+		if (stable_node->hlist.first) {
-+			unlock_page(page);
- 			ksm_pages_sharing--;
--		else {
--			set_page_stable_node(stable_node->page, NULL);
--			put_page(stable_node->page);
-+		} else {
-+			set_page_stable_node(page, NULL);
-+			unlock_page(page);
-+			put_page(page);
- 
- 			rb_erase(&stable_node->node, &root_stable_tree);
- 			free_stable_node(stable_node);
-@@ -710,7 +723,7 @@ static int replace_page(struct vm_area_s
- 	}
- 
- 	get_page(kpage);
--	page_add_ksm_rmap(kpage);
-+	page_add_anon_rmap(kpage, vma, addr);
- 
- 	flush_cache_page(vma, addr, pte_pfn(*ptep));
- 	ptep_clear_flush(vma, addr, ptep);
-@@ -763,8 +776,16 @@ static int try_to_merge_one_page(struct
- 	    pages_identical(page, kpage))
- 		err = replace_page(vma, page, kpage, orig_pte);
- 
--	if ((vma->vm_flags & VM_LOCKED) && !err)
-+	if ((vma->vm_flags & VM_LOCKED) && !err) {
- 		munlock_vma_page(page);
-+		if (!PageMlocked(kpage)) {
-+			unlock_page(page);
-+			lru_add_drain();
-+			lock_page(kpage);
-+			mlock_vma_page(kpage);
-+			page = kpage;		/* for final unlock */
-+		}
-+	}
- 
- 	unlock_page(page);
- out:
-@@ -841,7 +862,11 @@ static struct page *try_to_merge_two_pag
- 
- 	copy_user_highpage(kpage, page, rmap_item->address, vma);
- 
-+	SetPageDirty(kpage);
-+	__SetPageUptodate(kpage);
-+	SetPageSwapBacked(kpage);
- 	set_page_stable_node(kpage, NULL);	/* mark it PageKsm */
-+	lru_cache_add_lru(kpage, LRU_ACTIVE_ANON);
- 
- 	err = try_to_merge_one_page(vma, page, kpage);
- up:
-@@ -1071,7 +1096,9 @@ static void cmp_and_merge_page(struct pa
- 			 * The page was successfully merged:
- 			 * add its rmap_item to the stable tree.
- 			 */
-+			lock_page(kpage);
- 			stable_tree_append(rmap_item, stable_node);
-+			unlock_page(kpage);
- 		}
- 		put_page(kpage);
- 		return;
-@@ -1112,11 +1139,13 @@ static void cmp_and_merge_page(struct pa
- 		if (kpage) {
- 			remove_rmap_item_from_tree(tree_rmap_item);
- 
-+			lock_page(kpage);
- 			stable_node = stable_tree_insert(kpage);
- 			if (stable_node) {
- 				stable_tree_append(tree_rmap_item, stable_node);
- 				stable_tree_append(rmap_item, stable_node);
- 			}
-+			unlock_page(kpage);
- 			put_page(kpage);
- 
- 			/*
-@@ -1285,14 +1314,6 @@ static void ksm_do_scan(unsigned int sca
- 			return;
- 		if (!PageKsm(page) || !in_stable_tree(rmap_item))
- 			cmp_and_merge_page(page, rmap_item);
--		else if (page_mapcount(page) == 1) {
--			/*
--			 * Replace now-unshared ksm page by ordinary page.
--			 */
--			break_cow(rmap_item);
--			remove_rmap_item_from_tree(rmap_item);
--			rmap_item->oldchecksum = calc_checksum(page);
--		}
- 		put_page(page);
- 	}
- }
-@@ -1337,7 +1358,7 @@ int ksm_madvise(struct vm_area_struct *v
- 		if (*vm_flags & (VM_MERGEABLE | VM_SHARED  | VM_MAYSHARE   |
- 				 VM_PFNMAP    | VM_IO      | VM_DONTEXPAND |
- 				 VM_RESERVED  | VM_HUGETLB | VM_INSERTPAGE |
--				 VM_MIXEDMAP  | VM_SAO))
-+				 VM_NONLINEAR | VM_MIXEDMAP | VM_SAO))
- 			return 0;		/* just ignore the advice */
- 
- 		if (!test_bit(MMF_VM_MERGEABLE, &mm->flags)) {
-@@ -1435,6 +1456,127 @@ void __ksm_exit(struct mm_struct *mm)
- 	}
- }
- 
-+struct page *ksm_does_need_to_copy(struct page *page,
-+			struct vm_area_struct *vma, unsigned long address)
-+{
-+	struct page *new_page;
-+
-+	unlock_page(page);	/* any racers will COW it, not modify it */
-+
-+	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
-+	if (new_page) {
-+		copy_user_highpage(new_page, page, address, vma);
-+
-+		SetPageDirty(new_page);
-+		__SetPageUptodate(new_page);
-+		SetPageSwapBacked(new_page);
-+		__set_page_locked(new_page);
-+
-+		if (page_evictable(new_page, vma))
-+			lru_cache_add_lru(new_page, LRU_ACTIVE_ANON);
-+		else
-+			add_page_to_unevictable_list(new_page);
-+	}
-+
-+	page_cache_release(page);
-+	return new_page;
-+}
-+
-+int page_referenced_ksm(struct page *page, struct mem_cgroup *memcg,
-+			unsigned long *vm_flags)
-+{
-+	struct stable_node *stable_node;
-+	struct rmap_item *rmap_item;
-+	struct hlist_node *hlist;
-+	unsigned int mapcount = page_mapcount(page);
-+	int referenced = 0;
-+	struct vm_area_struct *vma;
-+
-+	VM_BUG_ON(!PageKsm(page));
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	stable_node = page_stable_node(page);
-+	if (!stable_node)
-+		return 0;
-+
-+	/*
-+	 * Temporary hack: really we need anon_vma in rmap_item, to
-+	 * provide the correct vma, and to find recently forked instances.
-+	 * Use zalloc to avoid weirdness if any other fields are involved.
-+	 */
-+	vma = kmem_cache_zalloc(vm_area_cachep, GFP_ATOMIC);
-+	if (!vma) {
-+		spin_lock(&ksm_fallback_vma_lock);
-+		vma = &ksm_fallback_vma;
-+	}
-+
-+	hlist_for_each_entry(rmap_item, hlist, &stable_node->hlist, hlist) {
-+		if (memcg && !mm_match_cgroup(rmap_item->mm, memcg))
-+			continue;
-+
-+		vma->vm_mm = rmap_item->mm;
-+		vma->vm_start = rmap_item->address;
-+		vma->vm_end = vma->vm_start + PAGE_SIZE;
-+
-+		referenced += page_referenced_one(page, vma,
-+				rmap_item->address, &mapcount, vm_flags);
-+		if (!mapcount)
-+			goto out;
-+	}
-+out:
-+	if (vma == &ksm_fallback_vma)
-+		spin_unlock(&ksm_fallback_vma_lock);
-+	else
-+		kmem_cache_free(vm_area_cachep, vma);
-+	return referenced;
-+}
-+
-+int try_to_unmap_ksm(struct page *page, enum ttu_flags flags)
-+{
-+	struct stable_node *stable_node;
-+	struct hlist_node *hlist;
-+	struct rmap_item *rmap_item;
-+	int ret = SWAP_AGAIN;
-+	struct vm_area_struct *vma;
-+
-+	VM_BUG_ON(!PageKsm(page));
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	stable_node = page_stable_node(page);
-+	if (!stable_node)
-+		return SWAP_FAIL;
-+
-+	/*
-+	 * Temporary hack: really we need anon_vma in rmap_item, to
-+	 * provide the correct vma, and to find recently forked instances.
-+	 * Use zalloc to avoid weirdness if any other fields are involved.
-+	 */
-+	if (TTU_ACTION(flags) != TTU_UNMAP)
-+		return SWAP_FAIL;
-+
-+	vma = kmem_cache_zalloc(vm_area_cachep, GFP_ATOMIC);
-+	if (!vma) {
-+		spin_lock(&ksm_fallback_vma_lock);
-+		vma = &ksm_fallback_vma;
-+	}
-+
-+	hlist_for_each_entry(rmap_item, hlist, &stable_node->hlist, hlist) {
-+		vma->vm_mm = rmap_item->mm;
-+		vma->vm_start = rmap_item->address;
-+		vma->vm_end = vma->vm_start + PAGE_SIZE;
-+
-+		ret = try_to_unmap_one(page, vma, rmap_item->address, flags);
-+		if (ret != SWAP_AGAIN || !page_mapped(page))
-+			goto out;
-+	}
-+out:
-+	if (vma == &ksm_fallback_vma)
-+		spin_unlock(&ksm_fallback_vma_lock);
-+	else
-+		kmem_cache_free(vm_area_cachep, vma);
-+	return ret;
-+}
-+
- #ifdef CONFIG_SYSFS
- /*
-  * This all compiles without CONFIG_SYSFS, but is a waste of space.
---- ksm1/mm/memory.c	2009-11-14 10:17:02.000000000 +0000
-+++ ksm2/mm/memory.c	2009-11-22 20:40:04.000000000 +0000
-@@ -2563,6 +2563,12 @@ static int do_swap_page(struct mm_struct
- 	lock_page(page);
- 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 
-+	page = ksm_might_need_to_copy(page, vma, address);
-+	if (!page) {
-+		ret = VM_FAULT_OOM;
-+		goto out;
-+	}
-+
- 	if (mem_cgroup_try_charge_swapin(mm, page, GFP_KERNEL, &ptr)) {
- 		ret = VM_FAULT_OOM;
- 		goto out_page;
---- ksm1/mm/rmap.c	2009-11-14 10:17:02.000000000 +0000
-+++ ksm2/mm/rmap.c	2009-11-22 20:40:04.000000000 +0000
-@@ -49,6 +49,7 @@
- #include <linux/swapops.h>
- #include <linux/slab.h>
- #include <linux/init.h>
-+#include <linux/ksm.h>
- #include <linux/rmap.h>
- #include <linux/rcupdate.h>
- #include <linux/module.h>
-@@ -336,9 +337,9 @@ int page_mapped_in_vma(struct page *page
-  * Subfunctions of page_referenced: page_referenced_one called
-  * repeatedly from either page_referenced_anon or page_referenced_file.
-  */
--static int page_referenced_one(struct page *page, struct vm_area_struct *vma,
--			       unsigned long address, unsigned int *mapcount,
--			       unsigned long *vm_flags)
-+int page_referenced_one(struct page *page, struct vm_area_struct *vma,
-+			unsigned long address, unsigned int *mapcount,
-+			unsigned long *vm_flags)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	pte_t *pte;
-@@ -507,28 +508,33 @@ int page_referenced(struct page *page,
- 		    unsigned long *vm_flags)
- {
- 	int referenced = 0;
-+	int we_locked = 0;
- 
- 	if (TestClearPageReferenced(page))
- 		referenced++;
- 
- 	*vm_flags = 0;
- 	if (page_mapped(page) && page_rmapping(page)) {
--		if (PageAnon(page))
-+		if (!is_locked && (!PageAnon(page) || PageKsm(page))) {
-+			we_locked = trylock_page(page);
-+			if (!we_locked) {
-+				referenced++;
-+				goto out;
-+			}
-+		}
-+		if (unlikely(PageKsm(page)))
-+			referenced += page_referenced_ksm(page, mem_cont,
-+								vm_flags);
-+		else if (PageAnon(page))
- 			referenced += page_referenced_anon(page, mem_cont,
- 								vm_flags);
--		else if (is_locked)
-+		else if (page->mapping)
- 			referenced += page_referenced_file(page, mem_cont,
- 								vm_flags);
--		else if (!trylock_page(page))
--			referenced++;
--		else {
--			if (page->mapping)
--				referenced += page_referenced_file(page,
--							mem_cont, vm_flags);
-+		if (we_locked)
- 			unlock_page(page);
--		}
- 	}
--
-+out:
- 	if (page_test_and_clear_young(page))
- 		referenced++;
- 
-@@ -620,14 +626,7 @@ static void __page_set_anon_rmap(struct
- 	BUG_ON(!anon_vma);
- 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
- 	page->mapping = (struct address_space *) anon_vma;
--
- 	page->index = linear_page_index(vma, address);
--
--	/*
--	 * nr_mapped state can be updated without turning off
--	 * interrupts because it is not modified via interrupt.
--	 */
--	__inc_zone_page_state(page, NR_ANON_PAGES);
- }
- 
- /**
-@@ -665,14 +664,21 @@ static void __page_check_anon_rmap(struc
-  * @vma:	the vm area in which the mapping is added
-  * @address:	the user virtual address mapped
-  *
-- * The caller needs to hold the pte lock and the page must be locked.
-+ * The caller needs to hold the pte lock, and the page must be locked in
-+ * the anon_vma case: to serialize mapping,index checking after setting.
-  */
- void page_add_anon_rmap(struct page *page,
- 	struct vm_area_struct *vma, unsigned long address)
- {
-+	int first = atomic_inc_and_test(&page->_mapcount);
-+	if (first)
-+		__inc_zone_page_state(page, NR_ANON_PAGES);
-+	if (unlikely(PageKsm(page)))
-+		return;
-+
- 	VM_BUG_ON(!PageLocked(page));
- 	VM_BUG_ON(address < vma->vm_start || address >= vma->vm_end);
--	if (atomic_inc_and_test(&page->_mapcount))
-+	if (first)
- 		__page_set_anon_rmap(page, vma, address);
- 	else
- 		__page_check_anon_rmap(page, vma, address);
-@@ -694,6 +700,7 @@ void page_add_new_anon_rmap(struct page
- 	VM_BUG_ON(address < vma->vm_start || address >= vma->vm_end);
- 	SetPageSwapBacked(page);
- 	atomic_set(&page->_mapcount, 0); /* increment count (starts at -1) */
-+	__inc_zone_page_state(page, NR_ANON_PAGES);
- 	__page_set_anon_rmap(page, vma, address);
- 	if (page_evictable(page, vma))
- 		lru_cache_add_lru(page, LRU_ACTIVE_ANON);
-@@ -760,8 +767,8 @@ void page_remove_rmap(struct page *page)
-  * Subfunctions of try_to_unmap: try_to_unmap_one called
-  * repeatedly from either try_to_unmap_anon or try_to_unmap_file.
-  */
--static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
--			    unsigned long address, enum ttu_flags flags)
-+int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
-+		     unsigned long address, enum ttu_flags flags)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	pte_t *pte;
-@@ -1152,7 +1159,9 @@ int try_to_unmap(struct page *page, enum
- 
- 	BUG_ON(!PageLocked(page));
- 
--	if (PageAnon(page))
-+	if (unlikely(PageKsm(page)))
-+		ret = try_to_unmap_ksm(page, flags);
-+	else if (PageAnon(page))
- 		ret = try_to_unmap_anon(page, flags);
- 	else
- 		ret = try_to_unmap_file(page, flags);
-@@ -1173,15 +1182,17 @@ int try_to_unmap(struct page *page, enum
-  *
-  * SWAP_AGAIN	- no vma is holding page mlocked, or,
-  * SWAP_AGAIN	- page mapped in mlocked vma -- couldn't acquire mmap sem
-+ * SWAP_FAIL	- page cannot be located at present
-  * SWAP_MLOCK	- page is now mlocked.
-  */
- int try_to_munlock(struct page *page)
- {
- 	VM_BUG_ON(!PageLocked(page) || PageLRU(page));
- 
--	if (PageAnon(page))
-+	if (unlikely(PageKsm(page)))
-+		return try_to_unmap_ksm(page, TTU_MUNLOCK);
-+	else if (PageAnon(page))
- 		return try_to_unmap_anon(page, TTU_MUNLOCK);
- 	else
- 		return try_to_unmap_file(page, TTU_MUNLOCK);
- }
--
---- ksm1/mm/swapfile.c	2009-11-14 10:17:02.000000000 +0000
-+++ ksm2/mm/swapfile.c	2009-11-22 20:40:04.000000000 +0000
-@@ -22,6 +22,7 @@
- #include <linux/seq_file.h>
- #include <linux/init.h>
- #include <linux/module.h>
-+#include <linux/ksm.h>
- #include <linux/rmap.h>
- #include <linux/security.h>
- #include <linux/backing-dev.h>
-@@ -649,6 +650,8 @@ int reuse_swap_page(struct page *page)
- 	int count;
- 
- 	VM_BUG_ON(!PageLocked(page));
-+	if (unlikely(PageKsm(page)))
-+		return 0;
- 	count = page_mapcount(page);
- 	if (count <= 1 && PageSwapCache(page)) {
- 		count += page_swapcount(page);
-@@ -657,7 +660,7 @@ int reuse_swap_page(struct page *page)
- 			SetPageDirty(page);
- 		}
- 	}
--	return count == 1;
-+	return count <= 1;
- }
- 
- /*
-@@ -1184,6 +1187,12 @@ static int try_to_unuse(unsigned int typ
- 		 * read from disk into another page.  Splitting into two
- 		 * pages would be incorrect if swap supported "shared
- 		 * private" pages, but they are handled by tmpfs files.
-+		 *
-+		 * Given how unuse_vma() targets one particular offset
-+		 * in an anon_vma, once the anon_vma has been determined,
-+		 * this splitting happens to be just what is needed to
-+		 * handle where KSM pages have been swapped out: re-reading
-+		 * is unnecessarily slow, but we can fix that later on.
- 		 */
- 		if (swap_count(*swap_map) &&
- 		     PageDirty(page) && PageSwapCache(page)) {
