@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbZKXVIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbZKXVMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933963AbZKXVIY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbZKXVIW
+	id S934061AbZKXVMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934020AbZKXVIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:22 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44560 "EHLO
+	Tue, 24 Nov 2009 16:08:35 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44630 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933946AbZKXVIV (ORCPT
+	with ESMTP id S933999AbZKXVI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:21 -0500
+	Tue, 24 Nov 2009 16:08:29 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Russell King <linux@arm.linux.org.uk>,
-       Ben Dooks <ben-linux@fluff.org>, Peter Korsgaard <jacmet@sunsite.dk>,
-       linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 16/38] move s3c_pwm_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:11 +0100
-Message-Id: <1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 17/38] move sc26xx_driver_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:12 +0100
+Message-Id: <1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -36,6 +35,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-13-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-14-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -47,32 +47,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function s3c_pwm_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+The function sc26xx_driver_remove is used only wrapped by __devexit_p so
+define it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alan Cox <alan@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
 ---
- arch/arm/plat-s3c/pwm.c |    2 +-
+ drivers/serial/sc26xx.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/plat-s3c/pwm.c b/arch/arm/plat-s3c/pwm.c
-index 4fdc5b3..ef019f2 100644
---- a/arch/arm/plat-s3c/pwm.c
-+++ b/arch/arm/plat-s3c/pwm.c
-@@ -368,7 +368,7 @@ static int s3c_pwm_probe(struct platform_device *pdev)
- 	return ret;
+diff --git a/drivers/serial/sc26xx.c b/drivers/serial/sc26xx.c
+index 75038ad..ca9bddc 100644
+--- a/drivers/serial/sc26xx.c
++++ b/drivers/serial/sc26xx.c
+@@ -709,7 +709,7 @@ out_free_port:
  }
  
--static int s3c_pwm_remove(struct platform_device *pdev)
-+static int __devexit s3c_pwm_remove(struct platform_device *pdev)
+ 
+-static int __exit sc26xx_driver_remove(struct platform_device *dev)
++static int __devexit sc26xx_driver_remove(struct platform_device *dev)
  {
- 	struct pwm_device *pwm = platform_get_drvdata(pdev);
+ 	struct uart_sc26xx_port *up = dev_get_drvdata(&dev->dev);
  
 -- 
 1.6.5.2
