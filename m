@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbZKXVI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934137AbZKXVJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933982AbZKXVI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933934AbZKXVIT
+	id S934137AbZKXVJE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:09:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934120AbZKXVIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:19 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44545 "EHLO
+	Tue, 24 Nov 2009 16:08:55 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35803 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933381AbZKXVIS (ORCPT
+	with ESMTP id S934106AbZKXVIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:18 -0500
+	Tue, 24 Nov 2009 16:08:53 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Kumar Gala <galak@kernel.crashing.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       devicetree-discuss@lists.ozlabs.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net
-Subject: [PATCH 32/38] don't use __exit_p to wrap plat_mpc8xxx_spi_remove
-Date: Tue, 24 Nov 2009 22:07:27 +0100
-Message-Id: <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Magnus Damm <damm@igel.co.jp>,
+       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: [PATCH 33/38] don't use __exit_p to wrap sh_mobile_ceu_remove
+Date: Tue, 24 Nov 2009 22:07:28 +0100
+Message-Id: <1259096853-18909-33-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -55,6 +55,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -66,35 +67,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function plat_mpc8xxx_spi_remove is defined using __devexit, so don't
+The function sh_mobile_ceu_remove is defined using __devexit, so don't
 use __exit_p but __devexit_p to wrap it.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Magnus Damm <damm@igel.co.jp>
+Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>
 Cc: linux-kernel@vger.kernel.org
-Cc: devicetree-discuss@lists.ozlabs.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: spi-devel-general@lists.sourceforge.net
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media@vger.kernel.org
 ---
- drivers/spi/spi_mpc8xxx.c |    2 +-
+ drivers/media/video/sh_mobile_ceu_camera.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-index 0fd0ec4..1d98be9 100644
---- a/drivers/spi/spi_mpc8xxx.c
-+++ b/drivers/spi/spi_mpc8xxx.c
-@@ -900,7 +900,7 @@ static int __devexit plat_mpc8xxx_spi_remove(struct platform_device *pdev)
- MODULE_ALIAS("platform:mpc8xxx_spi");
- static struct platform_driver mpc8xxx_spi_driver = {
- 	.probe = plat_mpc8xxx_spi_probe,
--	.remove = __exit_p(plat_mpc8xxx_spi_remove),
-+	.remove = __devexit_p(plat_mpc8xxx_spi_remove),
- 	.driver = {
- 		.name = "mpc8xxx_spi",
- 		.owner = THIS_MODULE,
+diff --git a/drivers/media/video/sh_mobile_ceu_camera.c b/drivers/media/video/sh_mobile_ceu_camera.c
+index 2f78b4f..e3e1ef2 100644
+--- a/drivers/media/video/sh_mobile_ceu_camera.c
++++ b/drivers/media/video/sh_mobile_ceu_camera.c
+@@ -1778,7 +1778,7 @@ static struct platform_driver sh_mobile_ceu_driver = {
+ 		.pm	= &sh_mobile_ceu_dev_pm_ops,
+ 	},
+ 	.probe		= sh_mobile_ceu_probe,
+-	.remove		= __exit_p(sh_mobile_ceu_remove),
++	.remove		= __devexit_p(sh_mobile_ceu_remove),
+ };
+ 
+ static int __init sh_mobile_ceu_init(void)
 -- 
 1.6.5.2
 
