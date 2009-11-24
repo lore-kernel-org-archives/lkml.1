@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933975AbZKXTDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933972AbZKXTBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933975AbZKXTDE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933903AbZKXTDD
+	id S933972AbZKXTBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 14:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933946AbZKXTBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:03:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48713 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933872AbZKXTDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:03:02 -0500
-Message-ID: <4B0C2D11.80008@kernel.org>
-Date: Tue, 24 Nov 2009 10:59:29 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 24 Nov 2009 14:01:36 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:54369 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933922AbZKXTBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 14:01:35 -0500
+Message-ID: <4B0C2D85.7020200@gmail.com>
+Date: Tue, 24 Nov 2009 20:01:25 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-References: <20091120211139.GB19106@sgi.com>	 <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>	 <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>	 <1259069986.4531.1453.camel@laptop>	 <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>	 <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>	 <20091124182059.GB11894@elte.hu>  <4B0C259A.5020303@kernel.org> <1259087563.4531.1776.camel@laptop>
-In-Reply-To: <1259087563.4531.1776.camel@laptop>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+CC: David Miller <davem@davemloft.net>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "yong.zhang0@gmail.com" <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+References: <1258995923.4531.715.camel@laptop>	 <4B0B782A.4030901@linux.intel.com>	<1259051986.4531.1057.camel@laptop>	 <20091124.093956.247147202.davem@davemloft.net>	 <1259085412.2631.48.camel@ppwaskie-mobl2>  <4B0C2547.8030408@gmail.com> <1259087601.2631.56.camel@ppwaskie-mobl2>
+In-Reply-To: <1259087601.2631.56.camel@ppwaskie-mobl2>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 24 Nov 2009 20:01:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 10:27 -0800, Yinghai Lu wrote:
+Peter P Waskiewicz Jr a écrit :
+
+> That's exactly what we're doing in our 10GbE driver right now (isn't
+> pushed upstream yet, still finalizing our testing).  We spread to all
+> NUMA nodes in a semi-intelligent fashion when allocating our rings and
+> buffers.  The last piece is ensuring the interrupts tied to the various
+> queues all route to the NUMA nodes those CPUs belong to.  irqbalance
+> needs some kind of hint to make sure it does the right thing, which
+> today it does not.
+
+sk_buff allocations should be done on the node of the cpu handling rx interrupts.
+
+For rings, I am ok for irqbalance and driver cooperation, in case admin
+ doesnt want to change the defaults.
+
 > 
->> we already have dev numa node, so could just make irqblance to some smart to use
->> that device node corresponding for irq that is binding to the device.
-> 
-> The argument is that a single device can have multiple IRQs and
-> therefore numa nodes.
+> I don't see how this is complex though.  Driver loads, allocates across
+> the NUMA nodes for optimal throughput, then writes CPU masks for the
+> NUMA nodes each interrupt belongs to.  irqbalance comes along and looks
+> at the new mask "hint," and then balances that interrupt within that
+> hinted mask.
 
-one node could have 8 cores or 16 threads, so should be right.
+So NUMA policy is given by the driver at load time ?
 
-other case the intel new 4 sockets system will have two IOHs, and one for socket0 and socket 1
-and one for socket2 and socet3
+An admin might chose to direct all NIC trafic to a given node, because
+its machine has mixed workload. 3 nodes out of 4 for database workload,
+one node for network IO...
 
-acpi root bus _PXM only can return one.
-so wonder if ACPI spec need to be extended to support two nodes there.
-
-after that, we need to extend numa_node to support that.
-
-YH
+So if an admin changes smp_affinity, is your driver able to reconfigure itself
+and re-allocate all its rings to be on NUMA node chosen by admin ? This is
+what I qualify as complex.
