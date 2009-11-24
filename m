@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbZKXJPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbZKXJVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbZKXJPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbZKXJPi
+	id S932416AbZKXJVt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbZKXJVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:15:38 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60398 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402AbZKXJPf (ORCPT
+	Tue, 24 Nov 2009 04:21:48 -0500
+Received: from baikonur.stro.at ([213.239.196.228]:48382 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932222AbZKXJVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:15:35 -0500
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
- irqbalance hints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Cc: Yong Zhang <yong.zhang0@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1259053156.2631.21.camel@ppwaskie-mobl2>
-References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
-	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
-	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
-	 <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
-	 <1259051902.4531.1053.camel@laptop>
-	 <1259053156.2631.21.camel@ppwaskie-mobl2>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 10:15:38 +0100
-Message-ID: <1259054138.4531.1109.camel@laptop>
+	Tue, 24 Nov 2009 04:21:47 -0500
+Date: Tue, 24 Nov 2009 10:15:47 +0100
+From: maximilian attems <max@stro.at>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       =?iso-8859-1?Q?An=EDbal?= Monsalve Salazar <anibal@debian.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Michal Marek <mmarek@suse.cz>
+Subject: Re: [PATCH] kbuild: Steppeing down as Maintainer
+Message-ID: <20091124091547.GW25768@baikonur.stro.at>
+References: <20091120182249.GA28251@merkur.ravnborg.org> <20091120182613.GA28307@merkur.ravnborg.org> <20091123150524.5bd37f6b.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123150524.5bd37f6b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 00:59 -0800, Peter P Waskiewicz Jr wrote:
+On Mon, Nov 23, 2009 at 03:05:24PM -0800, Andrew Morton wrote:
 > 
-> > All the while not CC'ing the IRQ folks,.. brilliant approach.
+> The current queue is:
 > 
-> If I knew who I should CC, I'd be happy to add them.  Can you provide
-> email addresses please? 
+> kbuild-generate-modulesbuiltin.patch
+> kbuild-rebuild-fix-for-makefilemodbuiltin.patch
+> kbuild-generate-modulesbuiltin-fix-2.patch
+> kbuild-generate-modulesbuiltin-fix-2-checkpatch-fixes.patch
+> kconfig-cross_compile-option.patch
+> kbuild-clean-up-marker.patch
+> kbuild-clear-marker-out-of-modpost.patch
+> kbuild-genksyms-properly-consider-export_unused_symbol_gpl.patch
+> 
+> 
 
-Since most people can't seen to read a simple MAINTAINERS file, some
-other people wrote a script to read it for you:
+please add the following fakeroot usage to -next for 2.6.33 as
+package target enhancement:
+http://marc.info/?l=linux-kbuild&m=125561337922614&w=2
+http://marc.info/?l=linux-kbuild&m=125561358622933&w=2
 
-# scripts/get_maintainer.pl -f kernel/irq/manage.c
-Ingo Molnar <mingo@elte.hu>
-Thomas Gleixner <tglx@linutronix.de>
-linux-kernel@vger.kernel.org
+patch got tested inbetween and with both acks:
+Acked-by: Frans Pop <elendil@planet.nl>
+Acked-by: maximilian attems <max@stro.at>
+see http://marc.info/?l=linux-kbuild&m=125551864712151&w=2
 
-
-Another option is to do something like:
-
-# git log kernel/irq/manage.c | grep Author | head -30 | awk
-'{ t[$0]++; } END { for (i in t) { print t[i] " " i; }}' | sort -rn
-
-10 Author: Thomas Gleixner <tglx@linutronix.de>
-9 Author: Ingo Molnar <mingo@elte.hu>
-3 Author: Magnus Damm <damm@igel.co.jp>
-2 Author: Linus Torvalds <torvalds@linux-foundation.org>
-...
-
+thanks
