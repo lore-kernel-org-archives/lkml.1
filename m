@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbZKXVXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbZKXV0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934059AbZKXVXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbZKXVXj
+	id S934088AbZKXV0P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933497AbZKXV0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:23:39 -0500
-Received: from mail1-out1.atlantis.sk ([80.94.52.55]:47287 "EHLO
-	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933423AbZKXVXj convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 16:26:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38784 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933487AbZKXV0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:23:39 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
-Date: Tue, 24 Nov 2009 22:23:30 +0100
-User-Agent: KMail/1.9.10
-Cc: Takashi Iwai <tiwai@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
-References: <200911222201.59471.linux@rainbow-software.org> <200911240829.23067.linux@rainbow-software.org> <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com>
-In-Reply-To: <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Tue, 24 Nov 2009 16:26:13 -0500
+Date: Tue, 24 Nov 2009 22:26:19 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo@firstfloor.org,
+       "Molnar <mingo"@firstfloor.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 14/14] utrace core
+Message-ID: <20091124212619.GB29096@one.firstfloor.org>
+References: <20091124200220.GA5828@redhat.com> <87my2bwtno.fsf@basil.nowhere.org> <20091124204152.GA9131@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200911242223.33206.linux@rainbow-software.org>
+In-Reply-To: <20091124204152.GA9131@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009 09:57:28 Kay Sievers wrote:
-> On Tue, Nov 24, 2009 at 08:29, Ondrej Zary <linux@rainbow-software.org> 
-wrote:
-> > On Monday 23 November 2009, Kay Sievers wrote:
-> >> On Mon, Nov 23, 2009 at 09:40, Takashi Iwai <tiwai@suse.de> wrote:
-> >> > At Mon, 23 Nov 2009 13:59:53 +1030,
-> >> >
-> >> > Rusty Russell wrote:
-> >> >> On Mon, 23 Nov 2009 07:31:57 am Ondrej Zary wrote:
-> >> >> > The problem is that
-> >> >> > scripts/mod/file2alias.c simply ignores isapnp.
-> >> >>
-> >> >> AFAICT it always has, and noone has complained until now.  Perhaps
-> >> >> something was still reading /lib/modules/`uname
-> >> >> -r`/modules.isapnpmap?
-> >> >
-> >> > I don't think modules.isapnpmap is needed again.
-> >> > The question came from the fact that the isapnp device wasn't loaded
-> >> > automatically.
-> >>
-> >> All the map files are not uses for anything these days. Ideally,
-> >> depmod should just stop creating these dead files.
-> >>
-> >> > But, I thought Kay already added isapnp support sometime ago, but it
-> >> > didn't seem to get in...  Kay?
-> >>
-> >> No, we don't even have proper modaliases for the pnp bus
-> >> (/sys/bus/pnp) and the alias string for pnp in the modules have a
-> >> broken and unfixable format. PNP autoloading is all handled by the
-> >> acpi modaliases these days. This is the first time in years I hear
-> >> anybody asking for hotplug setups of plain old pnp devices. :)
+On Tue, Nov 24, 2009 at 09:41:52PM +0100, Oleg Nesterov wrote:
+> On 11/24, Andi Kleen wrote:
 > >
-> > Added these two lines to modules.alias (and deleted modules.alias.bin):
-> > alias acpi*:RTL8019:* ne
-> > alias pnp:dRTL8019* ne
+> > Oleg Nesterov <oleg@redhat.com> writes:
 > >
-> > and it works. This works too:
-> > alias acpi*:PNP80d6:* ne
-> > alias pnp:dPNP80d6* ne
->
-> Oh, your box has acpi mapped pnp aliases for this device? You can see
-> your ID string somewhere in this list?
->   grep . /sys/bus/acpi/devices/*/modalias
->
-> If not, is it in the pnp bus list?
->   grep . /sys/bus/pnp/devices/*/id
+> > > From: Roland McGrath <roland@redhat.com>
+> > >
+> > > This adds the utrace facility, a new modular interface in the kernel
+> > > for implementing user thread tracing and debugging.  This fits on top
+> > > of the tracehook_* layer, so the new code is well-isolated.
+> >
+> > Could we just drop the tracehook layer if this finally merged
+> > and call the low level functions directly?
+> 
+> Not sure I understand. Tracehooks are trivial inline wrappers on
+> top utrace calls,
 
-It's listen in the pnp bus only:
+Yes that's the problem -- they are unnecessary obfuscation
+when you can just call directly.
 
-$ grep -i 80d6 /sys/bus/acpi/devices/*/modalias
-$ grep -i 80d6 /sys/bus/pnp/devices/*/id
-/sys/bus/pnp/devices/01:01.00/id:PNP80d6
-$ cat /sys/bus/pnp/devices/01\:01.00/id
-RTL8019
-PNP80d6
+> 
+> > It might have been reasonably early on when it was still out of tree,
+> > but longer term when it's integrated having strange opaque hooks
+> > like that just makes the coder harder to read and maintain.
+> 
+> Well, I don't think the code will be better if we remove tracehooks.
+> 
+> For example. tracehook_report_syscall_entry() has a lot of callers
+> in arch/, each callsite should be changed to do
+> 
+> 	if ((task_utrace_flags(current) & UTRACE_EVENT(SYSCALL_ENTRY)) &&
+> 		utrace_report_syscall_entry(regs))
+> 		ret = -1; // this depends on machine
+> 
+> instead of simply calling tracehook_report_syscall_entry().
 
-So the acpi alias was useless (I just copied another entry). This alone works:
-alias pnp:dPNP80d6* ne
+That should be in the utrace code?
 
+I don't have a problem with having common code somewhere,
+just not a whole layer whose only purpose seems to be obfuscation.
+
+
+> What is the point?
+
+Less code obfuscation.
+
+When it's a utrace call, call it a utrace call, not something else.
+
+-Andi
 -- 
-Ondrej Zary
+ak@linux.intel.com -- Speaking for myself only.
