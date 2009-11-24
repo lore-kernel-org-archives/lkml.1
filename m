@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933940AbZKXVIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbZKXVIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933940AbZKXVIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933657AbZKXVIR
+	id S934011AbZKXVIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934002AbZKXVIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:17 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44533 "EHLO
+	Tue, 24 Nov 2009 16:08:30 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44573 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933278AbZKXVIN (ORCPT
+	with ESMTP id S932823AbZKXVIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:13 -0500
+	Tue, 24 Nov 2009 16:08:22 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Paul Mundt <lethal@linux-sh.org>,
-       Magnus Damm <damm@opensource.se>
-Subject: [PATCH 37/38] don't use __devexit_p to wrap sci_remove
-Date: Tue, 24 Nov 2009 22:07:32 +0100
-Message-Id: <1259096853-18909-37-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Bryan Wu <cooloney@kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>,
+       linux-usb@vger.kernel.org
+Subject: [PATCH 38/38] don't use __exit_p to wrap composite_unbind
+Date: Tue, 24 Nov 2009 22:07:33 +0100
+Message-Id: <1259096853-18909-38-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-36-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-37-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -56,6 +58,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-34-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-35-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-36-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-37-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -67,30 +70,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function sci_remove is defined without any section modifier, so
-don't use __devexit_p to wrap it.
+The function composite_unbind is defined without any section modifier,
+so don't use __exit_p to wrap it.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Magnus Damm <damm@opensource.se>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>
 Cc: linux-kernel@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
 ---
- drivers/serial/sh-sci.c |    2 +-
+ drivers/usb/gadget/composite.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
-index 6498bd1..89421fa 100644
---- a/drivers/serial/sh-sci.c
-+++ b/drivers/serial/sh-sci.c
-@@ -1370,7 +1370,7 @@ static struct dev_pm_ops sci_dev_pm_ops = {
+diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
+index d05397e..c9d6833 100644
+--- a/drivers/usb/gadget/composite.c
++++ b/drivers/usb/gadget/composite.c
+@@ -1054,7 +1054,7 @@ static struct usb_gadget_driver composite_driver = {
+ 	.speed		= USB_SPEED_HIGH,
  
- static struct platform_driver sci_driver = {
- 	.probe		= sci_probe,
--	.remove		= __devexit_p(sci_remove),
-+	.remove		= sci_remove,
- 	.driver		= {
- 		.name	= "sh-sci",
- 		.owner	= THIS_MODULE,
+ 	.bind		= composite_bind,
+-	.unbind		= __exit_p(composite_unbind),
++	.unbind		= composite_unbind,
+ 
+ 	.setup		= composite_setup,
+ 	.disconnect	= composite_disconnect,
 -- 
 1.6.5.2
 
