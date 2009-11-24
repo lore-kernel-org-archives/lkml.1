@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934260AbZKXVsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934300AbZKXVuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934260AbZKXVsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:48:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933841AbZKXVsL
+	id S934300AbZKXVuv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934288AbZKXVut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:48:11 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38591 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933754AbZKXVsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:48:10 -0500
-Date: Tue, 24 Nov 2009 13:48:14 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-Message-ID: <20091124214814.GK6831@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1259080406.4531.1645.camel@laptop> <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop> <1259090615.17871.696.camel@calx> <1259095580.4531.1788.camel@laptop> <1259096004.17871.716.camel@calx> <1259096519.4531.1809.camel@laptop> <alpine.DEB.2.00.0911241302370.6593@chino.kir.corp.google.com> <1259097150.4531.1822.camel@laptop>
-MIME-Version: 1.0
+	Tue, 24 Nov 2009 16:50:49 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55406 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933801AbZKXVun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:50:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=I0fbH8nHopQcJT1bbeGdGH2h3AkLHRS/5RqPdXM9kYA6oF+I5Wo/Qp7BV/hAIJCvvA
+         17DANqlbM6+H87yvw4rNPKs7ntDYbn21Ex5944uBuudn7QaziuToIDeNocJHNQRh3d+J
+         1PtZIU6nv0u/EAgoAWrbyBoPP/3sUxT7R8ODU=
+Date: Tue, 24 Nov 2009 16:50:44 -0500
+From: tmhikaru@gmail.com
+To: Jan Kara <jack@suse.cz>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>, tmhikaru@gmail.com,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
+Message-ID: <20091124215044.GA20245@roll>
+References: <20091124195607.GC16662@quack.suse.cz> <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org> <20091124203944.GD16662@quack.suse.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259097150.4531.1822.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20091124203944.GD16662@quack.suse.cz>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 10:12:30PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 13:03 -0800, David Rientjes wrote:
-> > On Tue, 24 Nov 2009, Peter Zijlstra wrote:
+On Tue, Nov 24, 2009 at 09:39:44PM +0100, Jan Kara wrote:
+> On Tue 24-11-09 15:13:01, Alan Stern wrote:
+> > On Tue, 24 Nov 2009, Jan Kara wrote:
 > > 
-> > > Merge SLQB and rm mm/sl[ua]b.c include/linux/sl[ua]b.h for .33-rc1
-> > > 
+> > >   After digging in block layer code, it's as we suspected:
+> > > In case of host error DID_ERROR (which is our case), scsi request is
+> > > retried iff it is not a FAILFAST request which is set if bio is doing
+> > > readahead... So this is explained and everything behaves as it should.
+> > > Thanks everybody involved :).
 > > 
-> > slqb still has a 5-10% performance regression compared to slab for 
-> > benchmarks such as netperf TCP_RR on machines with high cpu counts, 
-> > forcing that type of regression isn't acceptable.
+> > Okay, very good.  There remains the question of the disturbing error
+> > messages in the system log.  Should they be supressed for FAILFAST
+> > requests?
+>   I think it's useful they are there because ultimately, something really
+> went wrong and you should better investigate. BTW, "end_request: I/O error"
+> messages are in the log even for requests where we retried and succeeded...
 > 
-> Having _4_ slab allocators is equally unacceptable.
+> 								Honza
 
-I completely agree.  We need at least ten.  ;-)
+While I agree it is useful information, I think that if the error messages
+are going to be printed, you should *also* print that this is a NON FATAL
+error and that it's going to be retried. It'd help diagnosing the path it's
+following through the failure code IMHO as well as not making users
+completely freak out like I did in my case. It is *not* particularly obvious
+given the message printed to syslog what is going wrong or why.
 
-							Thanx, Paul
+	Just my opinion,
+	Tim McGrath
