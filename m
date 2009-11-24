@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbZKXT4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbZKXULu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbZKXT4Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbZKXT4J
+	id S933182AbZKXULu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 15:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbZKXULt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:56:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:32972 "EHLO mx1.suse.de"
+	Tue, 24 Nov 2009 15:11:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:25559 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757361AbZKXT4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:56:07 -0500
-Date: Tue, 24 Nov 2009 20:56:08 +0100
-From: Jan Kara <jack@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jan Kara <jack@suse.cz>, Boaz Harrosh <bharrosh@panasas.com>,
-       tmhikaru@gmail.com,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-Message-ID: <20091124195607.GC16662@quack.suse.cz>
-References: <4B0C1C20.2080901@panasas.com>
- <Pine.LNX.4.44L0.0911241418440.2881-100000@iolanthe.rowland.org>
+	id S933084AbZKXULt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 15:11:49 -0500
+Date: Tue, 24 Nov 2009 21:01:27 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, utrace-devel@redhat.com
+Subject: [RFC,PATCH 0/14] utrace/ptrace
+Message-ID: <20091124200127.GA5751@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0911241418440.2881-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-11-09 14:28:35, Alan Stern wrote:
-> On Tue, 24 Nov 2009, Jan Kara wrote:
-> 
-> >   My naive guess would be that those non-retried reads were actually
-> > readahead. That's not retried if I remember correctly. Later, when we
-> > really needed the data, we sent another read request...
-> 
-> That would be my guess too.  I don't know how to verify it, though.
-> 
-> If you're interested in pursuing this farther, I can show you how to 
-> generate equivalent errors on demand using an emulated USB drive.  
-> At this point it's not clear how much more one could learn by doing 
-> this, however.
-  After digging in block layer code, it's as we suspected:
-In case of host error DID_ERROR (which is our case), scsi request is
-retried iff it is not a FAILFAST request which is set if bio is doing
-readahead... So this is explained and everything behaves as it should.
-Thanks everybody involved :).
+Hello.
 
-								Honza
+This is the new iteration of Roland's utrace patch, this time
+with "rewrite-ptrace-via-utrace" + cleanups in utrace core.
+
+1-7 are already in -mm tree, I am sending them to simplify the
+review.
+
+8-12 don not change the behaviour, simple preparations.
+
+13-14 add utrace-ptrace and utrace
+
+Please review.
+
+Oleg.
+
