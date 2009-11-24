@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZKXAUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZKXArJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbZKXAUY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 19:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZKXAUX
+	id S1757516AbZKXArJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 19:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbZKXArI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 19:20:23 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:8459 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZKXAUX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 19:20:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=aSFvIk/QsvE4iYGu4YaI/JuxTyjKzDUWiflG4HX+Di4LbdG/Z1fyTHSc3gQhJXxEMQ
-         kpQaw4yOQYxV+3kbg1rGuWxHBr3eQNb3qBDlzaqBFth5gEv3Xm30QZroShbsT+1F0Ojp
-         N1RlfWqK7cO6zWG0EsqJGrihUXAJcmHmQm5r8=
-MIME-Version: 1.0
-Date: Mon, 23 Nov 2009 19:20:26 -0500
-Message-ID: <525c5a6c0911231620u6d23810fu9fed3605617fe421@mail.gmail.com>
-Subject: Toshiba Satellite ACPI problems
-From: Mike Smith <scgtrp@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Nov 2009 19:47:08 -0500
+Received: from usul.overt.org ([204.11.33.43]:59405 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757487AbZKXArI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 19:47:08 -0500
+X-Greylist: delayed 1544 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Nov 2009 19:47:07 EST
+Date: Mon, 23 Nov 2009 16:21:19 -0800
+From: Philip Langdale <philipl@overt.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, philipl@alumni.utexas.net
+Subject: Re: The work of ricoh_mmc isn't detected by pci core
+Message-ID: <20091123162119.3777e14d@fido2.homeip.net>
+In-Reply-To: <1259021583.16650.9.camel@maxim-laptop>
+References: <1259021583.16650.9.camel@maxim-laptop>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a brand new Satellite L505D-S5983 which I'm trying to install
-Linux on. Whenever I boot a Linux kernel on it with no special
-parameters it enters an in(de)finite loop dumping messages like this:
+On Tue, 24 Nov 2009 02:13:03 +0200
+Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-ACPI Error (uteval-0313): Return object type is incorrect
-[\_SB_.HSB1._STA] (Node ffff8800af8121a0), AE_TYPE
-ACPI Error: Type returned from _STA was incorrect: Device, expected
-Btypes: 1 20090521 uteval-319
-ACPI Error (psargs-0359): [DR ] Namespace lookup failure, AE_NOT_FOUND
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.VALZ._STA] (Node ffff8800af812540), AE_NOT_FOUND
-ACPI Error: Found unknown opcode 39 at AML address ffffc900000132cd
-offset 0, ignoring 20090521 psloop-137
-[...]
+> Hi,
+> 
+> I noticed that usage of ricoh_mmc will lead to this
+> 
+> 
+> 07:00.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro
+> Host Adapter (rev 22) 07:00.2 System peripheral: Ricoh Co Ltd R5C843
+> MMC Host Controller (rev 12) 07:00.3 System peripheral: Ricoh Co Ltd
+> R5C592 Memory Stick Bus Host Adapter (rev 12) 07:00.4 System
+> peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
+> 
+> 
+> I don't have yet an MMC card to test if the driver itself working, 
+> but what happens is that once disabled, all pci functions shift 
+> one level, but kernel doesn't pick that up.
+> 
+> If one implements drivers for XD and memstick parts, this would break
+> everything. (And I have some plans for XD part)
+> 
+> ricoh_mmc is built-in, but this doesn't help.
+> 
+> Best regards,
+> Maxim Levitsky
 
-If I boot with acpi=noirq these messages only continue for a few
-seconds, although they cause a couple of initscripts to hang later on.
-With ACPI fully enabled they keep appearing forever and the system
-doesn't finish booting. With acpi=off they don't appear at all (but
-the fan stays at low speed and the laptop gets quite hot if run for
-more than a few minutes).
+Hmm, yes, that's true (and if you do a warn reboot, the effect is
+sticky and then MMC is missing). I don't know how to make the pci
+core re-enumerate devices, but maybe there is a way. I'm not in
+a position to do this myself in the near future; so I'm afraid
+that if you need this fixed, you'll have to do the digging.
 
-I've found only one other mention of this problem on the internet
-(http://ubuntuforums.org/showthread.php?p=8358864#post8358864) from
-someone with the same laptop as mine, but there was no working fix
-posted to that thread beyond completely disabling ACPI. More research
-told me that there used to be a way of fixing up the DSDT and having
-it loaded from the initrd but the new policy is to just ask the
-manufacturer to fix it and the kernel developers to work around it,
-so... here it is. (Angry emails to Toshiba and Best Buy pending.)
+Is it sufficient to call pci_rescan_bus at the end of the disable/enable
+routine in ricoh_mmc?
 
-Full dmesg output can be found at http://slexy.org/view/s25zU08AKJ
-(By the way, what's the correct way to include dmesg output in a lkml
-message if you don't know for sure which parts are relevant? Dumping
-all 50k or so of it into the email seems like the wrong thing to
-do...)
+--phil
