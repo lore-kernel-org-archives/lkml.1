@@ -1,291 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932969AbZKXNvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932957AbZKXN4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932969AbZKXNvU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932904AbZKXNvT
+	id S932957AbZKXN4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932377AbZKXN4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:51:19 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37900 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932899AbZKXNvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:51:18 -0500
-Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1258891664.14325.30.camel@marge.simson.net>
-References: <1258891664.14325.30.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 14:51:23 +0100
-Message-ID: <1259070683.4531.1476.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 08:56:21 -0500
+Received: from www.tglx.de ([62.245.132.106]:39494 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932187AbZKXN4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 08:56:20 -0500
+Date: Tue, 24 Nov 2009 14:55:15 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Dimitri Sivanich <sivanich@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+In-Reply-To: <1259069986.4531.1453.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+References: <20091120211139.GB19106@sgi.com>  <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>  <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-22 at 13:07 +0100, Mike Galbraith wrote:
-> sched: fix b5d9d734 blunder in task_new_fair()
+On Tue, 24 Nov 2009, Peter Zijlstra wrote:
+> On Tue, 2009-11-24 at 14:20 +0100, Thomas Gleixner wrote:
+> > On Sat, 21 Nov 2009, Dimitri Sivanich wrote:
+> > 
+> > > On Sat, Nov 21, 2009 at 10:49:50AM -0800, Eric W. Biederman wrote:
+> > > > Dimitri Sivanich <sivanich@sgi.com> writes:
+> > > > 
+> > > > > This patch allows for hard numa restrictions to irq affinity on x86 systems.
+> > > > >
+> > > > > Affinity is masked to allow only those cpus which the subarchitecture
+> > > > > deems accessible by the given irq.
+> > > > >
+> > > > > On some UV systems, this domain will be limited to the nodes accessible
+> > > > > to the irq's node.  Initially other X86 systems will not mask off any cpus
+> > > > > so non-UV systems will remain unaffected.
+> > > > 
+> > > > Is this a hardware restriction you are trying to model?
+> > > > If not this seems wrong.
+> > > 
+> > > Yes, it's a hardware restriction.
+> > 
+> > Nevertheless I think that this is the wrong approach.
+> > 
+> > What we really want is a notion in the irq descriptor which tells us:
+> > this interrupt is restricted to numa node N.
+> > 
+> > The solution in this patch is just restricted to x86 and hides that
+> > information deep in the arch code. 
+> > 
+> > Further the patch adds code which should be in the generic interrupt
+> > management code as it is useful for other purposes as well:
+> > 
+> > Driver folks are looking for a way to restrict irq balancing to a
+> > given numa node when they have all the driver data allocated on that
+> > node. That's not a hardware restriction as in the UV case but requires
+> > a similar infrastructure.
+> > 
+> > One possible solution would be to have a new flag:
+> >  IRQF_NODE_BOUND    - irq is bound to desc->node
+> > 
+> > When an interrupt is set up we would query with a new irq_chip
+> > function chip->get_node_affinity(irq) which would default to an empty
+> > implementation returning -1. The arch code can provide its own
+> > function to return the numa affinity which would express the hardware
+> > restriction.
+> > 
+> > The core code would restrict affinity settings to the cpumask of that
+> > node without any need for the arch code to check it further.
+> > 
+> > That same infrastructure could be used for the software restriction of
+> > interrupts to a node on which the device is bound.
+> > 
+> > Having it in the core code also allows us to expose this information
+> > to user space so that the irq balancer knows about it and does not try
+> > to randomly move the affinity to cpus which are not in the allowed set
+> > of the node.
 > 
-> b5d9d734 fixed the problem of a forking task's child gaining vruntime..
-> IFF the child/parent shared a runqueue.  In the other case, it broke
-> fairness all to pieces by setting the child's vruntime to whatever task
-> happened to be current on the child's runqueue at wakeup time.  Fix this
-> by adding a sched_class::task_new parameter to give the class a chance to
-> prepare the child for wakeup.
+> I think we should not combine these two cases.
 > 
-> At child wakeup time, call task_new() with the parent's rq locked as the
-> comment in task new states, update the parent's stats (which must be done
-> with the rq locked), call task_new() to prepare the child, unlock parent rq,
-> select a runqueue a runqueue for the child, _then_ set_task_cpu() with the
-> child's vruntime set properly and both runqueue clocks updated to get the
-> current offset.  Lock child's rq and proceed with wakeup.
+> Node-bound devices simply prefer the IRQ to be routed to a cpu 'near'
+> that node, hard-limiting them to that node is policy and is not
+> something we should do.
 > 
-> Also, since setting scheduling policy requires the tasklist lock, move
-> sched_fork() under the tasklist lock in copy_process();
+> Defaulting to the node-mask is debatable, but is, I think, something we
+> could do. But I think we should allow user-space to write any mask as
+> long as the hardware can indeed route the IRQ that way, even when
+> clearly stupid.
 
-OK, so hopefully I managed to untangle this...
+Fair enough, but I can imagine that we want a tunable know which
+prevents that. I'm not against giving sys admins enough rope to hang
+themself, but at least we want to give them a helping hand to fight
+off crappy user space applications which do not care about stupidity
+at all.
 
->  include/linux/sched.h |    2 +-
->  kernel/fork.c         |    6 +++---
->  kernel/sched.c        |   43 ++++++++++++++++++++++++++++---------------
->  kernel/sched_fair.c   |   17 +++++++++++------
->  4 files changed, 43 insertions(+), 25 deletions(-)
-> 
-> Index: linux-2.6/kernel/sched_fair.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched_fair.c
-> +++ linux-2.6/kernel/sched_fair.c
-> @@ -1925,20 +1925,23 @@ static void task_tick_fair(struct rq *rq
->   * Share the fairness runtime between parent and child, thus the
->   * total amount of pressure for CPU stays equal - new tasks
->   * get a chance to run but frequent forkers are not allowed to
-> - * monopolize the CPU. Note: the parent runqueue is locked,
-> - * the child is not running yet.
-> + * monopolize the CPU. Note: the parent runqueue is locked at
-> + * prep time, the child is not running yet.  At wakeup time,
-> + * the clild's runqueue is locked.
->   */
-> -static void task_new_fair(struct rq *rq, struct task_struct *p)
-> +static void task_new_fair(struct rq *rq, struct task_struct *p, int prep)
->  {
->  	struct cfs_rq *cfs_rq = task_cfs_rq(p);
->  	struct sched_entity *se = &p->se, *curr = cfs_rq->curr;
->  	int this_cpu = smp_processor_id();
->  
-> -	sched_info_queued(p);
-> -
->  	update_curr(cfs_rq);
-> -	if (curr)
-> +
-> +	if (prep && curr) {
->  		se->vruntime = curr->vruntime;
-> +		return;
-> +	}
-> +
->  	place_entity(cfs_rq, se, 1);
->  
->  	/* 'curr' will be NULL if the child belongs to a different group */
-> @@ -1953,6 +1956,8 @@ static void task_new_fair(struct rq *rq,
->  	}
->  
->  	enqueue_task_fair(rq, p, 0);
-> +
-> +	sched_info_queued(p);
->  }
+> Which is where the UV case comes in, they cannot route IRQs to every
+> CPU, so it makes sense to limit the possible masks being written. I do
+> however fully agree that that should be done in generic code, as I can
+> quite imagine more hardware than UV having limitations in this regard.
 
-I don't think we need to call this twice, but see below.
+That's why I want to see it in the generic code.
+ 
+> Furthermore, the /sysfs topology information should include IRQ routing
+> data in this case.
 
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -2558,7 +2558,6 @@ static void __sched_fork(struct task_str
->  void sched_fork(struct task_struct *p, int clone_flags)
->  {
->  	int cpu = get_cpu();
-> -	unsigned long flags;
->  
->  	__sched_fork(p);
->  
-> @@ -2566,7 +2565,7 @@ void sched_fork(struct task_struct *p, i
->  	 * Revert to default priority/policy on fork if requested.
->  	 */
->  	if (unlikely(p->sched_reset_on_fork)) {
-> -		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR) {
-> +		if (task_has_rt_policy(p)) {
->  			p->policy = SCHED_NORMAL;
->  			p->normal_prio = p->static_prio;
->  		}
+Hmm, not sure about that. You'd need to scan through all the nodes to
+find the set of CPUs where an irq can be routed to. I prefer to have
+the information exposed by the irq enumeration (which is currently in
+/proc/irq though).
 
-While a nice change, it shouldn't have been mixed in I think.
+Thanks,
 
-> @@ -2589,16 +2588,10 @@ void sched_fork(struct task_struct *p, i
->  	 */
->  	p->prio = current->normal_prio;
->  
-> -	if (!rt_prio(p->prio))
-> +	if (!task_has_rt_policy(p))
->  		p->sched_class = &fair_sched_class;
-
-And I suspect this one is actually buggy, see how rt_mutex_setprio()
-only changes ->prio and ->sched_class, but leaves ->policy to the
-original value?
-
-> -#ifdef CONFIG_SMP
-> -	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
-> -#endif
-> -	local_irq_save(flags);
-> -	update_rq_clock(cpu_rq(cpu));
-> -	set_task_cpu(p, cpu);
-> -	local_irq_restore(flags);
-> +	__set_task_cpu(p, cpu);
->  
->  #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
->  	if (likely(sched_info_on()))
-
-Remove cpu selection from sched_fork(), seems the sane thing to do.
-
-> @@ -2625,21 +2618,40 @@ void sched_fork(struct task_struct *p, i
->   */
->  void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
->  {
-> +	int cpu = get_cpu();
->  	unsigned long flags;
-> -	struct rq *rq;
-> +	struct task_struct *parent = current;
-> +	struct rq *rq, *orig_rq;
->  
-> -	rq = task_rq_lock(p, &flags);
-> +	smp_wmb();
-> +	rq = orig_rq = task_rq_lock(parent, &flags);
->  	BUG_ON(p->state != TASK_RUNNING);
-> -	update_rq_clock(rq);
-> +	update_rq_clock(orig_rq);
->  
-> -	if (!p->sched_class->task_new || !current->se.on_rq) {
-> +	if (p->sched_class->task_new)
-> +		p->sched_class->task_new(orig_rq, p, 1);
-> +#ifdef CONFIG_SMP
-> +	p->state = TASK_WAKING;
-> +	__task_rq_unlock(orig_rq);
-> +	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
-> +	rq = cpu_rq(cpu);
-> +	if (rq != orig_rq) {
-> +		update_rq_clock(rq);
-> +		set_task_cpu(p, cpu);
-> +	}
-> +	__task_rq_lock(p);
-
-[ should've been: rq == __task_rq_lock(p), because as we didn't hold the
-rq->lock the task could have actually been migrated again after
-set_task_cpu() ]
-
-> +	WARN_ON(p->state != TASK_WAKING);
-> +	p->state = TASK_RUNNING;
-> +#endif
-> +
-> +	if (!p->sched_class->task_new || !parent->se.on_rq) {
->  		activate_task(rq, p, 0);
->  	} else {
->  		/*
->  		 * Let the scheduling class do new task startup
->  		 * management (if any):
->  		 */
-> -		p->sched_class->task_new(rq, p);
-> +		p->sched_class->task_new(rq, p, 0);
->  		inc_nr_running(rq);
->  	}
->  	trace_sched_wakeup_new(rq, p, 1);
-> @@ -2649,6 +2661,7 @@ void wake_up_new_task(struct task_struct
->  		p->sched_class->task_wake_up(rq, p);
->  #endif
->  	task_rq_unlock(rq, &flags);
-> +	put_cpu();
->  }
-
-OK, so the general idea seems to be to call task_new(.prep=1) to update
-and copy vruntime from the parent to the child _before_ we muck about
-and move the child over to another cpu.
-
-Then we muck about and move the thing to another cpu.
-
-Then we call it again with .prep=0 to actually enqueue the thing.
-
-So, the whole point of ->task_new() was to be able to poke at ->vruntime
-before the regular enqueue, I think we folded the enqueue in in order to
-avoid two class calls. But if you're going to do two calls, we might as
-well use ->task_new() and ->enqueue_task() aka activate_task().
-
-This leaves the problem that task_new() behaviour depends on knowing the
-target cpu, could we solve that by relying on the fact that we're
-executing on the original cpu, something like:
-
-void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
-{
-	unsigned long flags;
-	struct rq *rq, *orig_rq;
-	int cpu = get_cpu();
-
-	rq = task_rq_lock(p, &flags);
-	BUG_ON(p->state != TASK_RUNNING);
-	update_rq_clock(rq);
-
-#ifdef CONFIG_SMP
-	p->state = TASK_WAKING;
-	__task_rq_unlock(rq);
-	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
-	rq = cpu_rq(cpu);
-	if (rq != orig_rq) {
-		update_rq_clock(rq);
-		set_task_cpu(p, cpu);
-	}
-	rq = __task_rq_lock(p);
-	WARN_ON(p->state != TASK_WAKING);
-	p->state = TASK_RUNNING;
-#endif
-
-	if (p->sched_class->task_new) {
-		/* can detect migration through: task_cpu(p) != smp_processor_id() */
-		p->sched_class->task_new(rq, p);
-	}
-
-	activate_task(rq, p, 0);
-
-	trace_sched_wakeup_new(rq, p, 1);
-	check_preempt_curr(rq, p, WF_FORK);
-#ifdef CONFIG_SMP
-	if (p->sched_class->task_wake_up)
-		p->sched_class->task_wake_up(rq, p);
-#endif
-	task_rq_unlock(rq, &flags);
-	put_cpu()
-}
-
-> Index: linux-2.6/kernel/fork.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/fork.c
-> +++ linux-2.6/kernel/fork.c
-> @@ -1125,9 +1125,6 @@ static struct task_struct *copy_process(
->  
->  	p->stack_start = stack_start;
->  
-> -	/* Perform scheduler related setup. Assign this task to a CPU. */
-> -	sched_fork(p, clone_flags);
-> -
->  	retval = perf_event_init_task(p);
->  	if (retval)
->  		goto bad_fork_cleanup_policy;
-> @@ -1229,6 +1226,9 @@ static struct task_struct *copy_process(
->  	/* Need tasklist lock for parent etc handling! */
->  	write_lock_irq(&tasklist_lock);
->  
-> +	/* Perform scheduler related setup. Assign this task to a CPU. */
-> +	sched_fork(p, clone_flags);
-> +
-
-You just invalidated that comment ;-)
-
-
+	tglx
