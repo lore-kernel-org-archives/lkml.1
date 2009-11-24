@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933910AbZKXTFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZKXTYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933910AbZKXTFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933730AbZKXTFU
+	id S1758194AbZKXTYE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 14:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZKXTYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:05:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48790 "EHLO hera.kernel.org"
+	Tue, 24 Nov 2009 14:24:03 -0500
+Received: from waste.org ([173.11.57.241]:59849 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932866AbZKXTFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:05:19 -0500
-Date: Tue, 24 Nov 2009 19:03:36 GMT
-From: tip-bot for Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4b0bdf36.1818d00a.07cc.25ae@mx.google.com>
-References: <4b0bdf36.1818d00a.07cc.25ae@mx.google.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_events, x86: Fix validate_event bug
-Message-ID: <tip-1261a02a0c0ab8e643125705f0d1d83e5090e4d1@git.kernel.org>
-Git-Commit-ID: 1261a02a0c0ab8e643125705f0d1d83e5090e4d1
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1758088AbZKXTYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 14:24:03 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: paulmck@linux.vnet.ibm.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <1259086459.4531.1752.camel@laptop>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx>  <1259086459.4531.1752.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 13:23:35 -0600
+Message-ID: <1259090615.17871.696.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1261a02a0c0ab8e643125705f0d1d83e5090e4d1
-Gitweb:     http://git.kernel.org/tip/1261a02a0c0ab8e643125705f0d1d83e5090e4d1
-Author:     Stephane Eranian <eranian@google.com>
-AuthorDate: Tue, 24 Nov 2009 05:27:18 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Nov 2009 19:23:48 +0100
+On Tue, 2009-11-24 at 19:14 +0100, Peter Zijlstra wrote:
+> On Tue, 2009-11-24 at 11:12 -0600, Matt Mackall wrote:
+> > On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
+> > > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
+> > > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
+> > > > > Matt Mackall wrote:
+> > > > > > This seems like a lot of work to paper over a lockdep false positive in
+> > > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
+> > > > > > rather the fix or papering over happen in lockdep.
+> > > > > 
+> > > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
+> > > > > state is pretty invasive because of the kmem_cache_free() call in 
+> > > > > slab_destroy(). We re-enter the slab allocator from the outer edges 
+> > > > > which makes spin_lock_nested() very inconvenient.
+> > > > 
+> > > > I'm perfectly fine with letting the thing be as it is, its apparently
+> > > > not something that triggers very often, and since slab will be killed
+> > > > off soon, who cares.
+> > > 
+> > > Which of the alternatives to slab should I be testing with, then?
+> > 
+> > I'm guessing your system is in the minority that has more than $10 worth
+> > of RAM, which means you should probably be evaluating SLUB.
+> 
+> Well, I was rather hoping that'd die too ;-)
+> 
+> Weren't we going to go with SLQB?
 
-perf_events, x86: Fix validate_event bug
+News to me. Perhaps it was discussed at KS.
 
-The validate_event() was failing on valid event combinations. The
-function was assuming that if x86_schedule_event() returned 0, it
-meant error. But x86_schedule_event() returns the counter index and
-0 is a perfectly valid value. An error is returned if the function
-returns a negative value.
+My understanding of the current state of play is:
 
-Furthermore, validate_event() was also failing for event groups
-because the event->pmu was not set until after
-hw_perf_event_init().
+SLUB: default allocator
+SLAB: deep maintenance, will be removed if SLUB ever covers remaining
+performance regressions
+SLOB: useful for low-end (but high-volume!) embedded 
+SLQB: sitting in slab.git#for-next for months, has some ground to cover
 
-Signed-off-by: Stephane Eranian <eranian@google.com>
-Cc: peterz@infradead.org
-Cc: paulus@samba.org
-Cc: perfmon2-devel@lists.sourceforge.net
-Cc: eranian@gmail.com
-LKML-Reference: <4b0bdf36.1818d00a.07cc.25ae@mx.google.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
---
- arch/x86/kernel/cpu/perf_event.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
----
- arch/x86/kernel/cpu/perf_event.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+SLQB and SLUB have pretty similar target audiences, so I agree we should
+eventually have only one of them. But I strongly expect performance
+results to be mixed, just as they have been comparing SLUB/SLAB.
+Similarly, SLQB still has of room for tuning left compared to SLUB, as
+SLUB did compared to SLAB when it first emerged. It might be a while
+before a clear winner emerges.
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index bd87430..c1bbed1 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2229,10 +2229,10 @@ validate_event(struct cpu_hw_events *cpuc, struct perf_event *event)
- {
- 	struct hw_perf_event fake_event = event->hw;
- 
--	if (event->pmu != &pmu)
-+	if (event->pmu && event->pmu != &pmu)
- 		return 0;
- 
--	return x86_schedule_event(cpuc, &fake_event);
-+	return x86_schedule_event(cpuc, &fake_event) >= 0;
- }
- 
- static int validate_group(struct perf_event *event)
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
