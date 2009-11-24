@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933629AbZKXQ5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbZKXQ4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933629AbZKXQ5U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbZKXQ5S
+	id S933570AbZKXQ4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbZKXQ4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:57:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60284 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933574AbZKXQ5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 11:57:14 -0500
-Date: Tue, 24 Nov 2009 16:56:07 GMT
-From: tip-bot for Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, eranian@google.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4b0b71e1.0508d00a.075e.ffff84a3@mx.google.com>
-References: <4b0b71e1.0508d00a.075e.ffff84a3@mx.google.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_events: Fix bogus copy_to_user() in perf_event_read_group()
-Message-ID: <tip-184d3da8ef0ca552dffa0fdd35c046e058a2cf9a@git.kernel.org>
-Git-Commit-ID: 184d3da8ef0ca552dffa0fdd35c046e058a2cf9a
-X-Mailer: tip-git-log-daemon
+	Tue, 24 Nov 2009 11:56:17 -0500
+Received: from stinky.trash.net ([213.144.137.162]:40158 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933471AbZKXQ4O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 11:56:14 -0500
+Message-ID: <4B0C1031.4050803@trash.net>
+Date: Tue, 24 Nov 2009 17:56:17 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de>	<200911241002.20904.arnd@arndb.de> <4B0BB2A7.5040707@trash.net>	<200911241034.43961.arnd@arndb.de> <4B0BB818.6090509@trash.net> <m1aaybc1s5.fsf@fess.ebiederm.org>
+In-Reply-To: <m1aaybc1s5.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  184d3da8ef0ca552dffa0fdd35c046e058a2cf9a
-Gitweb:     http://git.kernel.org/tip/184d3da8ef0ca552dffa0fdd35c046e058a2cf9a
-Author:     Stephane Eranian <eranian@google.com>
-AuthorDate: Mon, 23 Nov 2009 21:40:49 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Nov 2009 08:55:27 +0100
+Eric W. Biederman wrote:
+> Patrick McHardy <kaber@trash.net> writes:
+> 
+>>>>> I did all my testing with macvlan interfaces in separate namespaces
+>>>>> communicating with each other, so I'd assume that we should always
+>>>>> clear skb->mark and skb->dst in this function.
+>>>> Good point, in that case we probably should clear it as well. But
+>>>> in the non-namespace case the TC classification currently works and
+>>>> this is consistent with any other virtual device driver, so it
+>>>> should continue to work.
+>>> Do you think we should be able to use TC to direct traffic between
+>>> macvlans on the same underlying device in bridge mode? It does sound
+>>> useful, but I'm not sure how to implement that or if you'd expect
+>>> it to work with the current code. If we support that, it should probably
+>>> also work with namespaces, by consuming the mark in the macvlan
+>>> and veth drivers.
+>> I don't think its necessary, we bypass outgoing queuing anyways.
+>> But if you'd want to add it, just keeping the skb->mark clearing
+>> in veth should work from what I can tell.
+> 
+> veth doesn't have an outgoing queue.  The reason we clear skb->mark
+> in veth is because when reentering the networking stack the packet
+> needs to be reclassified.  At the point of loopback we are talking
+> a packet that has at least logically gone out of the machine on a
+> wire and come back into the machine on another physical interface.
+> 
+> So it seems to me we should have consistent handling for macvlans,
+> veth, for the cases where we are looping packets back around.  In
+> practice I expect all of those cases are going to be cross namespace
+> as otherwise we would have intercepted the packet before going
+> out a physical interface.
 
-perf_events: Fix bogus copy_to_user() in perf_event_read_group()
+Agreed on the looping case, that's what we're doing now.
 
-When using an event group, the value and id for non leaders events
-were wrong due to invalid offset into the outgoing buffer.
-
-Signed-off-by: Stephane Eranian <eranian@google.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: paulus@samba.org
-Cc: perfmon2-devel@lists.sourceforge.net
-LKML-Reference: <4b0b71e1.0508d00a.075e.ffff84a3@mx.google.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/perf_event.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 9425c96..accfd7b 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1831,7 +1831,7 @@ static int perf_event_read_group(struct perf_event *event,
- 
- 		size = n * sizeof(u64);
- 
--		if (copy_to_user(buf + size, values, size)) {
-+		if (copy_to_user(buf + ret, values, size)) {
- 			ret = -EFAULT;
- 			goto unlock;
- 		}
+In the layered case (macvlan -> eth0) its common behaviour to
+keep the mark however. But in case of different namespaces,
+I think macvlan should also clear the mark on the dev_queue_xmit()
+path since this is just a shortcut to looping the packets
+through veth. In fact probably both of them should also clear
+skb->priority so other namespaces don't accidentally misclassify
+packets.
