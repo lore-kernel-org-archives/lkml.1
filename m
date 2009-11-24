@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934066AbZKXVIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934219AbZKXVOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934066AbZKXVIp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbZKXVIn
+	id S934219AbZKXVOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934034AbZKXVOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:43 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44727 "EHLO
+	Tue, 24 Nov 2009 16:14:49 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44614 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934045AbZKXVIl (ORCPT
+	with ESMTP id S933993AbZKXVI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:41 -0500
+	Tue, 24 Nov 2009 16:08:28 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
        devel@driverdev.osuosl.org
-Subject: [PATCH 24/38] move lis3l02dq_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:19 +0100
-Message-Id: <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 25/38] move sca3000_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:20 +0100
+Message-Id: <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -43,6 +43,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,8 +55,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function lis3l02dq_remove is used only wrapped by __devexit_p so
-define it using __devexit.
+The function sca3000_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
@@ -63,22 +64,22 @@ Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org
 Cc: devel@driverdev.osuosl.org
 ---
- drivers/staging/iio/accel/lis3l02dq_core.c |    2 +-
+ drivers/staging/iio/accel/sca3000_core.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/iio/accel/lis3l02dq_core.c b/drivers/staging/iio/accel/lis3l02dq_core.c
-index f008837..80e89a6 100644
---- a/drivers/staging/iio/accel/lis3l02dq_core.c
-+++ b/drivers/staging/iio/accel/lis3l02dq_core.c
-@@ -871,7 +871,7 @@ err_ret:
+diff --git a/drivers/staging/iio/accel/sca3000_core.c b/drivers/staging/iio/accel/sca3000_core.c
+index e27e3b7..5ea736a 100644
+--- a/drivers/staging/iio/accel/sca3000_core.c
++++ b/drivers/staging/iio/accel/sca3000_core.c
+@@ -1393,7 +1393,7 @@ error_ret:
+ 
  }
  
- /* fixme, confirm ordering in this function */
--static int lis3l02dq_remove(struct spi_device *spi)
-+static int __devexit lis3l02dq_remove(struct spi_device *spi)
+-static int sca3000_remove(struct spi_device *spi)
++static int __devexit sca3000_remove(struct spi_device *spi)
  {
- 	int ret;
- 	struct lis3l02dq_state *st = spi_get_drvdata(spi);
+ 	struct sca3000_state *st =  spi_get_drvdata(spi);
+ 	struct iio_dev *indio_dev = st->indio_dev;
 -- 
 1.6.5.2
 
