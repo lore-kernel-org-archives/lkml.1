@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbZKXJvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZKXJwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932540AbZKXJvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932465AbZKXJvR
+	id S932545AbZKXJwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932495AbZKXJwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:51:17 -0500
-Received: from stinky.trash.net ([213.144.137.162]:63668 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932460AbZKXJvQ (ORCPT
+	Tue, 24 Nov 2009 04:52:54 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.31.37]:58808 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932473AbZKXJwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:51:16 -0500
-Message-ID: <4B0BAC97.6010000@trash.net>
-Date: Tue, 24 Nov 2009 10:51:19 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Tue, 24 Nov 2009 04:52:53 -0500
+Message-ID: <4B0BACFA.90801@ladisch.de>
+Date: Tue, 24 Nov 2009 10:52:58 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>
-Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-2-git-send-email-arnd@arndb.de>
-In-Reply-To: <1259024166-28158-2-git-send-email-arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Monty Montgomery <xiphmont@gmail.com>,
+       Linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH: fix multiple eMagic 6|2m regressions introduced in 2.6.27
+References: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>	 <4B0BA71B.8040800@ladisch.de> <1259055721.29729.277.camel@macbook.infradead.org>
+In-Reply-To: <1259055721.29729.277.camel@macbook.infradead.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> +int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
-> +{
-> +	skb_orphan(skb);
-> +
-> +	if (!(dev->flags & IFF_UP))
-> +		return NET_RX_DROP;
-> +
-> +	if (skb->len > (dev->mtu + dev->hard_header_len))
-> +		return NET_RX_DROP;
-> +
-> +	skb_dst_drop(skb);
-> +	skb->tstamp.tv64 = 0;
-> +	skb->pkt_type = PACKET_HOST;
-> +	skb->protocol = eth_type_trans(skb, dev);
-> +	skb->mark = 0;
+David Woodhouse wrote:
+> Where did the new firmware come from?
 
-skb->mark clearing should stay private to veth since its usually
-supposed to stay intact. The only exception is packets crossing
-namespaces, where they should appear like a freshly received skbs.
-
-> +	secpath_reset(skb);
-> +	nf_reset(skb);
-> +	return netif_rx(skb);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_forward_skb);
+Sorry, I snipped that part of Monty's mail:
+> > This problem can be traced to the
+> > linux/firmware/emi62/bistream.HEX file, which is loading different
+> > FPGA firmware as compared to the driver pre-2.6.27.  In fact, it is
+> > loading an exact copy of the bistream firmware file that belongs to
+> > the emi26 driver rather than the firmware that previously belonged to
+> > the emi62. A new firmware/emi62/bitstream.HEX file generated from the
+> > old driver's header corrects the problem and the 6|2 works as it did
+> > before.
+> > 
+> > Note that the current firmware/emi62/bitstream.HEX mistakenly
+> > identifies itself as:
+> > 
+> > // VERSION= 1.0.0.191
+> > // DATE= 2002oct28
+> > 
+> > ...this is incorrect and apparently cut out of the old emi62 driver's
+> > firmware header and pasted onto the other firmware file.
