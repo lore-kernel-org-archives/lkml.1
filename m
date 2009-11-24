@@ -1,126 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934276AbZKXVou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934278AbZKXVpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934276AbZKXVou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934195AbZKXVot
+	id S934278AbZKXVpZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZKXVpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:44:49 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54341 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933729AbZKXVos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:44:48 -0500
-Date: Tue, 24 Nov 2009 22:44:52 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] mfd/mc13783: near complete rewrite
-Message-ID: <20091124214452.GC21466@pengutronix.de>
-References: <20091105235349.GA22519@pengutronix.de> <1257465368-24012-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091106002847.GC22366@sortiz.org>
+	Tue, 24 Nov 2009 16:45:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3811 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934015AbZKXVpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 16:45:24 -0500
+Message-ID: <4B0C53ED.8060808@redhat.com>
+Date: Tue, 24 Nov 2009 16:45:17 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091106002847.GC22366@sortiz.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH -tip v3 0/3] tracepoint: Add signal events
+References: <20091120213108.14708.97871.stgit@dhcp-100-2-132.bos.redhat.com> <20091123175740.GA15594@elte.hu> <20091124212247.GA11773@redhat.com>
+In-Reply-To: <20091124212247.GA11773@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
+Oleg Nesterov wrote:
+> On 11/23, Ingo Molnar wrote:
+>>
+>> * Masami Hiramatsu<mhiramat@redhat.com>  wrote:
+>>
+>>> Hi,
+>>>
+>>> These patches add signal related tracepoints including
+>>> signal generation, delivery, and loss. First patch also
+>>> moves signal-sending tracepoint from events/sched.h to
+>>> events/signal.h.
+>>>
+>>> Changes in v3
+>>> - Add Docbook style comments
+>>>
+>>> Changes in v2
+>>> - Add siginfo arguments
+>>>
+>>> Thank you,
+>>>
+>>> ---
+>>>
+>>> Masami Hiramatsu (3):
+>>>        tracepoint: Add signal loss events
+>>>        tracepoint: Add signal deliver event
+>>>        tracepoint: Move signal sending tracepoint to events/signal.h
+>>>
+>>>
+>>>   Documentation/DocBook/tracepoint.tmpl |    5 +
+>>>   include/trace/events/sched.h          |   25 -----
+>>>   include/trace/events/signal.h         |  173 +++++++++++++++++++++++++++++++++
+>>>   kernel/signal.c                       |   27 ++++-
+>>>   4 files changed, 198 insertions(+), 32 deletions(-)
+>>>   create mode 100644 include/trace/events/signal.h
+>>
+>> Would be nice to have Roland's and Oleg's Acked-by tags in the patches -
+>> to show that this is a representative and useful looking set of signal
+>> events.
+>
+> Sorry, I can't really comment these patches.
+>
+> I mean, I do not know which info is useful and which is not.
+> For example, I am a bit surprized we report trace_signal_lose_info()
+> but please do not consider this as if I think we shouldn't. Just I
+> do not know.
+>
+> OTOH, we do not report if __send_signal() fails just because the
+> legacy signal is already queued. We do not report who sends the signal,
+> we do not report if it was private or shared. zap_process, complete_signal
+> can "send" SIGKILL via sigaddset, this won't be noticed. But again, it is
+> not that I think this should be reported.
+>
+> In short: I think any info may be useful, and these patches can help.
+> But I do not understand what exactly should be reported to userspace.
 
-On Fri, Nov 06, 2009 at 01:28:50AM +0100, Samuel Ortiz wrote:
-> On Fri, Nov 06, 2009 at 12:56:08AM +0100, Uwe Kleine-König wrote:
-> > This fixes several things while still providing the old API:
-> > 
-> >  - simplify and fix locking
-> >  - better error handling
-> >  - don't ack all irqs making it impossible to detect a reset of the
-> >    rtc
-> >  - use a timeout variant to wait for completion of ADC conversion
-> >  - provide platform-data to regulator subdevice (This allows making
-> >    struct mc13783 opaque for other drivers after the regulator driver is
-> >    updated to use its platform_data.)
-> >  - expose all interrupts
-> >  - use threaded irq
-> Thanks Uwe, patch applied to my for-next branch.
+Yeah, any comments are welcome:-) IMHO, these tracepoints are just for
+providing options for users who care about who sent the signal, etc.
 
-I now worked on the touch interface for the mc13783 and found some
-non-critical but non-nice things in the mc13783_adc_do_conversion
-function.
-
-If it looks OK for you, can you please squash the patch below into the
-original commit?  I think the changes are not worth to be mentioned in
-the commit log.
-
-Intensions are:
- - Request and ack irq before provoking the next to behave if there was
-   already an ADCDONE irq pending.
-
- - restore TSMOD only after conversions are read out
-
- - assert return value is 0 or -E...
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/mfd/mc13783-core.c |   20 ++++++++++++--------
- 1 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/mfd/mc13783-core.c b/drivers/mfd/mc13783-core.c
-index 99267ed..dc1add0 100644
---- a/drivers/mfd/mc13783-core.c
-+++ b/drivers/mfd/mc13783-core.c
-@@ -483,12 +483,13 @@ int mc13783_adc_do_conversion(struct mc13783 *mc13783, unsigned int mode,
- 		return -EINVAL;
- 	}
- 
--	mc13783_reg_write(mc13783, MC13783_REG_ADC_0, adc0);
--	mc13783_reg_write(mc13783, MC13783_REG_ADC_1, adc1);
--
- 	dev_dbg(&mc13783->spidev->dev, "%s: request irq\n", __func__);
- 	mc13783_irq_request(mc13783, MC13783_IRQ_ADCDONE,
- 			mc13783_handler_adcdone, __func__, &adcdone_data);
-+	mc13783_ackirq(mc13783, MC13783_IRQ_ADCDONE);
-+
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_0, adc0);
-+	mc13783_reg_write(mc13783, MC13783_REG_ADC_1, adc1);
- 
- 	mc13783_unlock(mc13783);
- 
-@@ -501,15 +502,18 @@ int mc13783_adc_do_conversion(struct mc13783 *mc13783, unsigned int mode,
- 
- 	mc13783_irq_free(mc13783, MC13783_IRQ_ADCDONE, &adcdone_data);
- 
-+	if (ret > 0)
-+		for (i = 0; i < 4; ++i) {
-+			ret = mc13783_reg_read(mc13783,
-+					MC13783_REG_ADC_2, &sample[i]);
-+			if (ret)
-+				break;
-+		}
-+
- 	if (mode == MC13783_ADC_MODE_TS)
- 		/* restore TSMOD */
- 		mc13783_reg_write(mc13783, MC13783_REG_ADC_0, old_adc0);
- 
--	if (ret > 0)
--		for (i = 0; i < 4; ++i)
--			mc13783_reg_read(mc13783,
--					MC13783_REG_ADC_2, &sample[i]);
--
- 	mc13783->flags &= ~MC13783_ADC_WORKING;
- out:
- 	mc13783_unlock(mc13783);
--- 
-1.6.5.2
-
+Thank you,
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
