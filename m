@@ -1,74 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbZKXJ2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbZKXJ3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932472AbZKXJ2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbZKXJ2R
+	id S932470AbZKXJ3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbZKXJ3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:28:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:5477 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932455AbZKXJ2E (ORCPT
+	Tue, 24 Nov 2009 04:29:21 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:55665 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932357AbZKXJ3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:28:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=gbfJrxV7M+eOm+WtyoPas8cFqqnwspK/WqGJ/aQgEeje2Sx1ugQhzeCruIzR1K4MgQ
-         WzYwNsHJdoI2YCzOtTE4Cyb37WEp8YCwhbYZy85xVb8tUk+GTPIWfZFwjrV/+wYHPyoP
-         GujEp0hhWiMK/vOZcR86DEvxCRBjO2GPV5Muo=
-Message-ID: <4B0BA725.2050604@tuffmail.co.uk>
-Date: Tue, 24 Nov 2009 09:28:05 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 24 Nov 2009 04:29:19 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 2/4] macvlan: cleanup rx statistics
+Date: Tue, 24 Nov 2009 09:28:43 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       David Miller <davem@davemloft.net>
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <4B0B9639.4070607@gmail.com> <200911240845.14454.arnd@arndb.de>
+In-Reply-To: <200911240845.14454.arnd@arndb.de>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Alex Chiang <achiang@hp.com>,
-       Tony Luck <tony.luck@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, greg@kroah.com,
-       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, deller@gmx.de,
-       jejb@parisc-linux.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
-Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the
- kernel (__ksymtab)
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>	 <4B072E31.4000906@tuffmail.co.uk> <20091123195320.GD26810@ldl.fc.hp.com>	 <200911241127.18013.rusty@rustcorp.com.au> <1259041182.2433.945.camel@mulgrave.site>
-In-Reply-To: <1259041182.2433.945.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200911240928.43901.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/UMHpEImZp6ZcpO2vQ8KnoGZ+xsT9+Ig0xiI1
+ VZ2xFdIKcyR9RAchMSv8h3RVz+QdzQrIacSXc0mZ5/6lwDP2cH
+ Dr80Xh6VGt4nmGL5+vq+A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2009-11-24 at 11:27 +1030, Rusty Russell wrote:
->   
->> On Tue, 24 Nov 2009 06:23:20 am Alex Chiang wrote:
->>     
->>> Hi Alan, Rusty,
->>>       
->> Hi Alex,
->>
->>     
->>> In the meantime, while Alan is deciding the proper way to fix
->>> this, would it be possible to drop the offending patch series
->>> from linux-next?
->>>       
->> Done.  That takes the pressure off Alan, and makes sure he has time to get
->> it right.
->>     
->
-> That probably suits us on parisc too.  I just checked out our build in
-> linux-next: we don't pass __modpost ... it looks like we have all the
-> module symbols undefined.  Will investigate more.
->
-> James
->   
+On Tuesday 24 November 2009 08:45:14 Arnd Bergmann wrote:
+> On Tuesday 24 November 2009 08:15:53 Eric Dumazet wrote:
+> > Arnd Bergmann a écrit :
+> > I find following more readable, it probably generates more branches,
+> > but avoid dirtying rx_errors if it is in another cache line.
+> > 
+> > if (likely(success)) {
+> > 	rx_stats->rx_packets++;
+> > 	rx_stats->rx_bytes += length;
+> > 	if (multicast)
+> > 		rx_stats->multicast++;
+> > } else {
+> > 	rx_stats->rx_errors++;
+> > }
+> 
+> Given that the structure only has four members and alloc_percpu requests
+> cache aligned data, it is rather likely to be in the same cache line.
+> 
+> I'll have a look at what gcc generates on x86-64 for both versions
+> and use the version you suggested unless it looks significantly more
+> expensive.
 
-I think parisc wants P'printk where ia64 uses @fptr(printk).
+Ok, that's what I got for trying to be clever. My version did not avoid
+any branches, just created more code. I'll fold this update into my
+patches then:
+---
+macvlan: cleanups
 
-It may also need ".import printk,code" or similar.
+Use bool instead of int for flags, don't misoptimize rx counters,
+avoid accessing a NULL skb.
 
-Thanks
-Alan
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
+diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
+index 3db96b9..ff5f0b0 100644
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -119,19 +119,23 @@ static int macvlan_addr_busy(const struct macvlan_port *port,
+ }
+ 
+ static inline void macvlan_count_rx(const struct macvlan_dev *vlan, int length,
+-			     int success, int multicast)
++			     bool success, bool multicast)
+ {
+ 	struct macvlan_rx_stats *rx_stats;
+ 
+ 	rx_stats = per_cpu_ptr(vlan->rx_stats, smp_processor_id());
+-	rx_stats->rx_packets += success != 0;
+-	rx_stats->rx_bytes   += success ? length : 0;
+-	rx_stats->multicast  += success && multicast;
+-	rx_stats->rx_errors  += !success;
++	if (likely(success)) {
++		rx_stats->rx_packets++;;
++		rx_stats->rx_bytes += length;
++		if (multicast)
++			rx_stats->multicast++;
++	} else {
++		rx_stats->rx_errors++;
++	}
+ }
+ 
+ static int macvlan_broadcast_one(struct sk_buff *skb, struct net_device *dev,
+-				 const struct ethhdr *eth, int local)
++				 const struct ethhdr *eth, bool local)
+ {
+ 	if (!skb)
+ 		return NET_RX_DROP;
+@@ -173,7 +177,7 @@ static void macvlan_broadcast(struct sk_buff *skb,
+ 			err = macvlan_broadcast_one(nskb, vlan->dev, eth,
+ 					 mode == MACVLAN_MODE_BRIDGE);
+ 			macvlan_count_rx(vlan, skb->len + ETH_HLEN,
+-					 likely(err == NET_RX_SUCCESS), 1);
++					 err == NET_RX_SUCCESS, 1);
+ 		}
+ 	}
+ }
+@@ -186,6 +190,7 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
+ 	const struct macvlan_dev *vlan;
+ 	const struct macvlan_dev *src;
+ 	struct net_device *dev;
++	int len;
+ 
+ 	port = rcu_dereference(skb->dev->macvlan_port);
+ 	if (port == NULL)
+@@ -218,8 +223,11 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
+ 		kfree_skb(skb);
+ 		return NULL;
+ 	}
++	len = skb->len + ETH_HLEN;
+ 	skb = skb_share_check(skb, GFP_ATOMIC);
+-	macvlan_count_rx(vlan, skb->len + ETH_HLEN, likely(skb != NULL), 0);
++	macvlan_count_rx(vlan, len, skb != NULL, 0);
++	if (!skb)
++		return NULL;
+ 
+ 	skb->dev = dev;
+ 	skb->pkt_type = PACKET_HOST;
+@@ -248,7 +256,7 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			int length = skb->len + ETH_HLEN;
+ 			int ret = dev_forward_skb(dest->dev, skb);
+ 			macvlan_count_rx(dest, length,
+-					 likely(ret == NET_RX_SUCCESS), 0);
++					 ret == NET_RX_SUCCESS, 0);
+ 
+ 			return NET_XMIT_SUCCESS;
+ 		}
