@@ -1,171 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbZKXVyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbZKYAoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934335AbZKXVyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934326AbZKXVyW
+	id S933679AbZKYAoE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 19:44:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbZKYAoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:54:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32446 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 19:44:03 -0500
+Received: from ozlabs.org ([203.10.76.45]:47780 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934323AbZKXVyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:54:20 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v4 3/3] tracepoint: Add signal loss events
-To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Cc: Jason Baron <jbaron@redhat.com>, Roland McGrath <roland@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Date: Tue, 24 Nov 2009 16:56:58 -0500
-Message-ID: <20091124215658.30449.9934.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20091124215638.30449.3838.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091124215638.30449.3838.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
+	id S933455AbZKYAoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 19:44:02 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19212.22371.633313.129961@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Nov 2009 09:00:03 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: eranian@gmail.com
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, perfmon2-devel@lists.sf.net, eranian@google.com
+Subject: Re: [PATCH] perf_events: fix validate_event bug
+In-Reply-To: <7c86c4470911240518qe0c3e87k589437ef43f4a3d4@mail.gmail.com>
+References: <1256223091-6002-1-git-send-email-eranian@gmail.com>
+	<1258562785.3918.685.camel@laptop>
+	<7c86c4470911230534i4119734k1478550567852220@mail.gmail.com>
+	<1258983953.4531.456.camel@laptop>
+	<7c86c4470911240518qe0c3e87k589437ef43f4a3d4@mail.gmail.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add signal_overflow_fail and signal_lose_info tracepoints
-for signal-lost events.
+stephane eranian writes:
 
-Changes in v3:
- - Add docbook style comments
+> That means we can drop is_software_event() in this code and instead
+> define locally
+> in x86 a is_hw_pmu_event() function as event->pmu == &pmu.
 
-Changes in v2:
- - Use siginfo string macro
+I'd have to see the patch, but that doesn't feel entirely right,
+because there is a unique characteristic of software events, compared
+to hardware or breakpoint events: they are never capacity
+constrained.  In the past, only hardware events were capacity
+constrained, which meant that all the decisions about whether a group
+could go on could be done in the hardware PMU backend.  Now we have
+two sources of capacity constraints, so it may be that a group can't
+go on even if the hardware PMU has capacity.  That's going to be
+somewhat interesting to get completely right, I think.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Suggested-by: Roland McGrath <roland@redhat.com>
-Reviewed-by: Jason Baron <jbaron@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-
- include/trace/events/signal.h |   68 +++++++++++++++++++++++++++++++++++++++++
- kernel/signal.c               |   19 ++++++++---
- 2 files changed, 82 insertions(+), 5 deletions(-)
-
-diff --git a/include/trace/events/signal.h b/include/trace/events/signal.h
-index a6d71de..a510b75 100644
---- a/include/trace/events/signal.h
-+++ b/include/trace/events/signal.h
-@@ -99,6 +99,74 @@ TRACE_EVENT(signal_deliver,
- 		  __entry->sig, __entry->errno, __entry->code,
- 		  __entry->sa_handler, __entry->sa_flags)
- );
-+
-+/**
-+ * signal_overflow_fail - called when signal queue is overflow
-+ * @sig: signal number
-+ * @group: signal to process group or not (bool)
-+ * @info: pointer to struct siginfo
-+ *
-+ * Kernel fails to generate 'sig' signal with 'info' siginfo, because
-+ * siginfo queue is overflow, and the signal is dropped.
-+ * 'group' is not 0 if the signal will be sent to a process group.
-+ * 'sig' is always one of RT signals.
-+ */
-+TRACE_EVENT(signal_overflow_fail,
-+
-+	TP_PROTO(int sig, int group, struct siginfo *info),
-+
-+	TP_ARGS(sig, group, info),
-+
-+	TP_STRUCT__entry(
-+		__field(	int,	sig	)
-+		__field(	int,	group	)
-+		__field(	int,	errno	)
-+		__field(	int,	code	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->sig	= sig;
-+		__entry->group	= group;
-+		TP_STORE_SIGINFO(__entry, info);
-+	),
-+
-+	TP_printk("sig=%d group=%d errno=%d code=%d",
-+		  __entry->sig, __entry->group, __entry->errno, __entry->code)
-+);
-+
-+/**
-+ * signal_lose_info - called when siginfo is lost
-+ * @sig: signal number
-+ * @group: signal to process group or not (bool)
-+ * @info: pointer to struct siginfo
-+ *
-+ * Kernel generates 'sig' signal but loses 'info' siginfo, because siginfo
-+ * queue is overflow.
-+ * 'group' is not 0 if the signal will be sent to a process group.
-+ * 'sig' is always one of non-RT signals.
-+ */
-+TRACE_EVENT(signal_lose_info,
-+
-+	TP_PROTO(int sig, int group, struct siginfo *info),
-+
-+	TP_ARGS(sig, group, info),
-+
-+	TP_STRUCT__entry(
-+		__field(	int,	sig	)
-+		__field(	int,	group	)
-+		__field(	int,	errno	)
-+		__field(	int,	code	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->sig	= sig;
-+		__entry->group	= group;
-+		TP_STORE_SIGINFO(__entry, info);
-+	),
-+
-+	TP_printk("sig=%d group=%d errno=%d code=%d",
-+		  __entry->sig, __entry->group, __entry->errno, __entry->code)
-+);
- #endif /* _TRACE_SIGNAL_H */
- 
- /* This part must be outside protection */
-diff --git a/kernel/signal.c b/kernel/signal.c
-index d518984..6b982f2 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -919,12 +919,21 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
- 			break;
- 		}
- 	} else if (!is_si_special(info)) {
--		if (sig >= SIGRTMIN && info->si_code != SI_USER)
--		/*
--		 * Queue overflow, abort.  We may abort if the signal was rt
--		 * and sent by user using something other than kill().
--		 */
-+		if (sig >= SIGRTMIN && info->si_code != SI_USER) {
-+			/*
-+			 * Queue overflow, abort.  We may abort if the
-+			 * signal was rt and sent by user using something
-+			 * other than kill().
-+			 */
-+			trace_signal_overflow_fail(sig, group, info);
- 			return -EAGAIN;
-+		} else {
-+			/*
-+			 * This is a silent loss of information.  We still
-+			 * send the signal, but the *info bits are lost.
-+			 */
-+			trace_signal_lose_info(sig, group, info);
-+		}
- 	}
- 
- out_set:
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Paul.
