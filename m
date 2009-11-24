@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZKXA1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZKXAaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbZKXA1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 19:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZKXA1p
+	id S1753579AbZKXAaF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 19:30:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZKXAaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 19:27:45 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41145 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbZKXA1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 19:27:44 -0500
-Date: Tue, 24 Nov 2009 11:27:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mips@linux-mips.org
-Subject: Re: linux-next: failed to fetch the mips tree
-Message-Id: <20091124112739.dd1ba1f7.sfr@canb.auug.org.au>
-In-Reply-To: <20091124000929.GA7223@linux-mips.org>
-References: <20091124105303.512479aa.sfr@canb.auug.org.au>
-	<20091124000929.GA7223@linux-mips.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__24_Nov_2009_11_27_39_+1100_nlMtMNEaWOnI5tua"
+	Mon, 23 Nov 2009 19:30:04 -0500
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:46223 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbZKXAaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 19:30:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=j/yzoRXCEy9UxoyCLqYjqMklH6iLUe8R1IBorccnvzzgllJBoE3pjiIBfst+TZkpcs
+         U6o7049b2ZZyDaLDYcT0KKiPFz+bZLtP6unjOSBq+ZcywkWatKcPpruE9WwZtzr6LxWa
+         OQXGU7GbEV1hp2yNLY8+IJP9KO5k4ooBSYU00=
+MIME-Version: 1.0
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901EE5BF5@mi8nycmail19.Mi8.com>
+References: <AcpsZyWcnPwxPJjOTguzevF7zf1RpA==>
+	 <BD79186B4FD85F4B8E60E381CAEE190901EE5BF5@mi8nycmail19.Mi8.com>
+Date: Mon, 23 Nov 2009 17:30:07 -0700
+X-Google-Sender-Auth: e5548e44a4043d79
+Message-ID: <e9c3a7c20911231630q511c2ecap86a70d81c50414e0@mail.gmail.com>
+Subject: Re: drivers/dma/mv_xor.c: use resource_size()
+From: Dan Williams <dan.j.williams@intel.com>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__24_Nov_2009_11_27_39_+1100_nlMtMNEaWOnI5tua
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ralf,
-
-On Tue, 24 Nov 2009 00:09:29 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
+On Mon, Nov 23, 2009 at 11:02 AM, H Hartley Sweeten
+<hartleys@visionengravers.com> wrote:
+> Use resource_size() for devm_ioremap.
 >
-> On Tue, Nov 24, 2009 at 10:53:03AM +1100, Stephen Rothwell wrote:
->=20
-> > git.linux-mips.org[0: 78.24.191.183]: errno=3DConnection refused
-> > fatal: unable to connect a socket (Connection refused)
->=20
-> Thanks.  I upgraded the machine from Fedora 10 to Fedora 12 and the
-> removal of the git "dash-commands" resulted in this failure.  Fixed.
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+>
+> ---
 
-All good now, thanks.
+Hi,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I just happened to see this.  Please cc me on any patches that touch
+drivers/dma/.  In general scripts/get_maintainer.pl is your friend.
 
---Signature=_Tue__24_Nov_2009_11_27_39_+1100_nlMtMNEaWOnI5tua
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksLKHsACgkQjjKRsyhoI8wmuACdH0/k57CcVyFkTBtU34iHniu5
-eQQAoLe2iX1HG8JeJH6337HCwRF6mo+8
-=HjN+
------END PGP SIGNATURE-----
-
---Signature=_Tue__24_Nov_2009_11_27_39_+1100_nlMtMNEaWOnI5tua--
+Thanks,
+Dan
