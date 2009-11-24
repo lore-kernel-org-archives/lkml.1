@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbZKXLFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbZKXLGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932588AbZKXLFE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbZKXLFD
+	id S932733AbZKXLGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZKXLF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:05:03 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62975 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932177AbZKXLFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:05:02 -0500
-Message-ID: <4B0BBDBF.6050806@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 19:04:31 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 24 Nov 2009 06:05:59 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:49866 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932202AbZKXLF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 06:05:59 -0500
+Date: Tue, 24 Nov 2009 11:06:01 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: mfd tree build warning
+Message-ID: <20091124110601.GA26097@sirena.org.uk>
+References: <20091124164219.c5d54461.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more statistics
-References: <4B0B6E44.6090106@cn.fujitsu.com> <20091124090425.GF21991@elte.hu> <4B0BA99D.5020602@cn.fujitsu.com> <20091124100724.GA5570@elte.hu>
-In-Reply-To: <20091124100724.GA5570@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124164219.c5d54461.sfr@canb.auug.org.au>
+X-Cookie: Your code should be more efficient!
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Do perf-sched and perf-timechart work on this box?
-> 
-> yeah:
-> 
-> aldebaran:~> perf sched record sleep 1
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.017 MB perf.data (~758 samples) ]
-> aldebaran:~> perf trace | tail -5
->          distccd-20944 [010]  1792.787376: sched_stat_runtime: comm=distccd pid=20944 runtime=11196 [ns] vruntime=696395420043 [ns]
->             init-0     [009]  1792.914837: sched_stat_wait: comm=x86_64-linux-gc pid=881 delay=10686 [ns]
->             init-0     [009]  1792.915082: sched_stat_sleep: comm=events/9 pid=44 delay=2183651362 [ns]
->               as-889   [013]  1793.008008: sched_stat_runtime: comm=as pid=889 runtime=156807 [ns] vruntime=1553569219042 [ns]
->             init-0     [004]  1793.154400: sched_stat_wait: comm=events/4 pid=39 delay=12155 [ns]
-> 
-> aldebaran:~> perf kmem record sleep 1
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.078 MB perf.data (~3398 samples) ]
-> aldebaran:~> perf trace | tail -5
-> aldebaran:~> 
-> 
-> the perf.data has mmap and exit events - but no kmem events.
-> 
+On Tue, Nov 24, 2009 at 04:42:19PM +1100, Stephen Rothwell wrote:
 
-I was using yesterday's -tip tree, and I just updated to the latest -tip,
-and I found perf tools are not working:
+> I have been getting these warnings from the x86_64 allmodconfig build for
+> a long time:
 
-# ./perf kmem record sleep 3
-...
-# ./perf trace
-            perf-1805  [001]    66.239160: kmem_cache_free: ...
-            perf-1806  [000]    66.403561: kmem_cache_alloc: ...
-         swapper-0     [000]    66.420099: kmem_cache_free: ...
-# ./perf kmem record sleep 3
-...
-# ./perf trace
-# ./perf sched record sleep 3
-.../
-# ./perf trace
-            perf-1825  [000]   103.543014: sched_stat_runtime: ...
-# ./perf sched record sleep 3
-...
-# ./perf trace
-#
+> drivers/mfd/wm8350-regmap.c:3177:2: warning: #warning No WM8350 config modes supported - select at least one of the
+> drivers/mfd/wm8350-regmap.c:3178:2: warning: #warning MFD_WM8350_CONFIG_MODE_n options from the board driver.
 
-So I think some new updates on kernel perf_event break.
+> This may not be a problem, I just thought I should let you know.
 
+It's not a real problem.  Any actual system using the driver will need
+to have explicit code which registers the I2C device for the WM8350,
+that code will need to set up the particular build for the board.  The
+build time warning is there to try to make it a bit more obvious what's
+needed.
 
+Allowing the driver to be built without one of these defined provides
+build coverage which is helpful for subsystem maintainers.
+
+I might send a patch taking away the compile time warning, I'm not sure
+how likely it is that people will notice it.
