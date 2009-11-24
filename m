@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933854AbZKXSRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933837AbZKXSTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933854AbZKXSRL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933875AbZKXSRH
+	id S933837AbZKXSTD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:19:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933680AbZKXSTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:17:07 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:34390 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933867AbZKXSRE convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 13:19:02 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:55641 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933553AbZKXSTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:17:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=HKXS+SBsTAkYKFZFuA42SIk0meK/tSuPZWutLwYh5QvpP34uO3v03bjkSXZedJ2x/Z
-         V7loKQB8BcQ21R3vFwoTI5EzqSTpWFqIUq7zN5DZQertJ8YW/SGvrQLIi35Q4qKIKEvm
-         76Lw66Ud5WWQvQDRJ5qHOp+gy+BVUMswZCSD0=
+	Tue, 24 Nov 2009 13:19:00 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Gernot Hillier <gernot@hillier.de>
+Subject: Re: [PATCH] Add support for Mobilcom Debitel USB UMTS Surf-Stick to option driver
+Date: Tue, 24 Nov 2009 19:19:10 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Matthias Urlichs <smurf@smurf.noris.de>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <4B08F18C.3040904@hillier.de> <200911220920.16717.oliver@neukum.org> <4B0C1F41.2060101@hillier.de>
+In-Reply-To: <4B0C1F41.2060101@hillier.de>
 MIME-Version: 1.0
-Reply-To: aaron@assonance.org
-In-Reply-To: <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
-References: <4B0BBB83.2020604@klingt.org>
-	 <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
-Date: Tue, 24 Nov 2009 13:17:09 -0500
-Message-ID: <727e50150911241017h4bb1c0aex800e8c0ef7eee9fd@mail.gmail.com>
-Subject: Re: [PATCH 0/5] branch hint tweaks
-From: Aaron Cohen <remleduff@gmail.com>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911241919.10895.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 12:50 PM, Brian Gerst <brgerst@gmail.com> wrote:
-> On Tue, Nov 24, 2009 at 5:54 AM, Tim Blechmann <tim@klingt.org> wrote:
->> hi all,
->>
->> doing some branch hint profiling of 2.6.31 on my nehalem machine showed
->> a few
->> incorrect branch hints.
->> these patches remove or change the branch hints
->
-> I'm not sure what version of GCC added this, but I wonder if this
-> option will fix the problem:
->
-> -fno-guess-branch-probability
->    Do not guess branch probabilities using heuristics.
->
->    GCC will use heuristics to guess branch probabilities if they are
-> not provided by profiling feedback (-fprofile-arcs). These heuristics
-> are based on the control flow graph. If some branch probabilities are
+Am Dienstag, 24. November 2009 19:00:33 schrieb Gernot Hillier:
+> As you might have expected, I have no detailed spec about the device 
+> which could explain this. I can only say that the device reacts on AT 
+> commands on ttyUSB1 and ttyUSB2 while ttyUSB0 seems to serve other
+>  purposes.
+> 
+> What do you think - shall I disable sending the usb control message 
+> depending on bInterfaceNumber? Any better ideas?
 
-Is the kernel's use of unlikely typically intended to mean "I consider
-the following unlikely so please optimize with that expectation" or is
-meant to indicate "the following is a slow-path so please pessimize
-it" or both?
+I have no better idea.
+
+	Regards
+		Oliver
+
