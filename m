@@ -1,209 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbZKXM6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932725AbZKXM7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932679AbZKXM6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 07:58:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbZKXM6M
+	id S932725AbZKXM7X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 07:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbZKXM7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 07:58:12 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:58987 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932480AbZKXM6L (ORCPT
+	Tue, 24 Nov 2009 07:59:22 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36642 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932521AbZKXM7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 07:58:11 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 4/4] macvlan: export macvlan mode through netlink
-Date: Tue, 24 Nov 2009 13:57:46 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Patrick McHardy <kaber@trash.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       David Miller <davem@davemloft.net>
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-5-git-send-email-arnd@arndb.de> <4B0BBB2E.8020502@trash.net>
-In-Reply-To: <4B0BBB2E.8020502@trash.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911241357.46690.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/k6hcnmCpkEcB68HkHeytLaHDL9hurkWr0e6C
- jcHgSrk0Gt3gG93ZMs3/srbAAte/6ihR5ovc1p4HGc7URuBGk6
- +ftSNwRn+Fi5RdKhSlqFg==
+	Tue, 24 Nov 2009 07:59:22 -0500
+To: Pavel Machek <pavel@ucw.cz>
+CC: miklos@szeredi.hu, jlayton@redhat.com, jamie@shareable.org,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+In-reply-to: <20091124120906.GA1700@ucw.cz> (message from Pavel Machek on Tue,
+	24 Nov 2009 13:09:06 +0100)
+Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
+	and file bind mounts (try #5)
+References: <1258998084-26797-1-git-send-email-jlayton@redhat.com> <m1my2cdhi3.fsf@fess.ebiederm.org> <20091123173616.75c3f600@tlielax.poochiereds.net> <20091123224948.GB5598@shareable.org> <20091123181545.05ad004d@tlielax.poochiereds.net> <m1ljhwbyr3.fsf@fess.ebiederm.org> <20091123193426.55f1530a@tlielax.poochiereds.net> <20091124012027.GA14645@shareable.org> <20091124062621.744beddb@tlielax.poochiereds.net> <E1NCtxF-0000rn-1z@pomaz-ex.szeredi.hu> <20091124120906.GA1700@ucw.cz>
+Message-Id: <E1NCuz4-00010e-Ch@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 24 Nov 2009 13:59:06 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009, Patrick McHardy wrote:
-> Arnd Bergmann wrote:
-> > @@ -600,6 +594,18 @@ static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
-> >  		if (!is_valid_ether_addr(nla_data(tb[IFLA_ADDRESS])))
-> >  			return -EADDRNOTAVAIL;
-> >  	}
-> > +
-> > +	if (data && data[IFLA_MACVLAN_MODE]) {
-> > +		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
-> > +		switch (mode) {
-> > +		case MACVLAN_MODE_PRIVATE:
-> > +		case MACVLAN_MODE_VEPA:
-> > +		case MACVLAN_MODE_BRIDGE:
-> > +			break;
-> > +		default:
-> > +			return -EINVAL;
-> 
-> EINVAL is quite unspecific. In this case I think EOPNOTSUPP would
-> be fine and provide more information.
+On Tue, 24 Nov 2009, Pavel Machek wrote:
+> I believe that current semantics is ugly enough that 'documenting' it
+> is not enough... and people want to port from other systems, too, not
+> expecting nasty surprises like this...
 
-ok
+This hasn't been a problem for the last 12 years, and still we don't
+see script kiddies exploiting this hole and sysadmins hurrying to
+secure their system, even though it has been public for quite a while.
 
-> > +		}
-> > +	}
-> >  	return 0;
-> >  }
-> > @@ -664,6 +670,13 @@ static int macvlan_newlink(struct net *src_net, struct net_device *dev,
-> >  	vlan->dev      = dev;
-> >  	vlan->port     = port;
-> >  
-> > +	vlan->mode     = MACVLAN_MODE_VEPA;
-> > +	if (data && data[IFLA_MACVLAN_MODE]) {
-> > +		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
-> > +
-> > +		vlan->mode     = mode;
-> 
-> This looks a bit strange, like cut-and-paste without reformatting :)
-> I'd suggest to simply use "vlan->mode = nla_get_u32(...)".
+Why?
 
-Yep.
+The reason might be, that there *is no* violation of security.
 
-Thanks for the review. Combined changes below.
+See this: the surprise isn't that an inode can be reached from
+multiple paths, that has been possible with hard links for as long as
+unix lived.  The suprise is that the inode can be reached through
+proc.  So this "hole" that has been opened about 12 years ago in linux
+is quite well known.  Only this particular aspect of it isn't well
+known, but that doesn't mean it's not right, does it?
 
-	Arnd <><
----
-
- drivers/net/macvlan.c |   47 +++++++++++++++++++++++------------------------
- 1 files changed, 23 insertions(+), 24 deletions(-)
-
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -118,15 +118,16 @@ static int macvlan_addr_busy(const struct macvlan_port *port,
- 	return 0;
- }
- 
--static inline void macvlan_count_rx(const struct macvlan_dev *vlan, int length,
--			     bool success, bool multicast)
-+static inline void macvlan_count_rx(const struct macvlan_dev *vlan,
-+				    unsigned int len, bool success,
-+				    bool multicast)
- {
- 	struct macvlan_rx_stats *rx_stats;
- 
- 	rx_stats = per_cpu_ptr(vlan->rx_stats, smp_processor_id());
- 	if (likely(success)) {
- 		rx_stats->rx_packets++;;
--		rx_stats->rx_bytes += length;
-+		rx_stats->rx_bytes += len;
- 		if (multicast)
- 			rx_stats->multicast++;
- 	} else {
-@@ -170,7 +171,7 @@ static void macvlan_broadcast(struct sk_buff *skb,
- 
- 	for (i = 0; i < MACVLAN_HASH_SIZE; i++) {
- 		hlist_for_each_entry_rcu(vlan, n, &port->vlan_hash[i], hlist) {
--			if ((vlan->dev == src) || !(vlan->mode & mode))
-+			if (vlan->dev == src || !(vlan->mode & mode))
- 				continue;
- 
- 			nskb = skb_clone(skb, GFP_ATOMIC);
-@@ -190,7 +191,7 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
- 	const struct macvlan_dev *vlan;
- 	const struct macvlan_dev *src;
- 	struct net_device *dev;
--	int len;
-+	unsigned int len;
- 
- 	port = rcu_dereference(skb->dev->macvlan_port);
- 	if (port == NULL)
-@@ -200,17 +201,22 @@ static struct sk_buff *macvlan_handle_frame(struct sk_buff *skb)
- 		src = macvlan_hash_lookup(port, eth->h_source);
- 		if (!src)
- 			/* frame comes from an external address */
--			macvlan_broadcast(skb, port, NULL, MACVLAN_MODE_PRIVATE
--				| MACVLAN_MODE_VEPA | MACVLAN_MODE_BRIDGE);
-+			macvlan_broadcast(skb, port, NULL,
-+					  MACVLAN_MODE_PRIVATE |
-+					  MACVLAN_MODE_VEPA    |
-+					  MACVLAN_MODE_BRIDGE);
- 		else if (src->mode == MACVLAN_MODE_VEPA)
- 			/* flood to everyone except source */
- 			macvlan_broadcast(skb, port, src->dev,
--				MACVLAN_MODE_VEPA | MACVLAN_MODE_BRIDGE);
-+					  MACVLAN_MODE_VEPA |
-+					  MACVLAN_MODE_BRIDGE);
- 		else if (src->mode == MACVLAN_MODE_BRIDGE)
--			/* flood only to VEPA ports, bridge ports
--			   already saw the frame */
-+			/*
-+			 * flood only to VEPA ports, bridge ports
-+			 * already saw the frame on the way out.
-+			 */
- 			macvlan_broadcast(skb, port, src->dev,
--				MACVLAN_MODE_VEPA);
-+					  MACVLAN_MODE_VEPA);
- 		return skb;
- 	}
- 
-@@ -253,7 +259,7 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 		dest = macvlan_hash_lookup(port, eth->h_dest);
- 		if (dest && dest->mode == MACVLAN_MODE_BRIDGE) {
--			int length = skb->len + ETH_HLEN;
-+			unsigned int length = skb->len + ETH_HLEN;
- 			int ret = dev_forward_skb(dest->dev, skb);
- 			macvlan_count_rx(dest, length,
- 					 ret == NET_RX_SUCCESS, 0);
-@@ -604,8 +610,7 @@ static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
- 	}
- 
- 	if (data && data[IFLA_MACVLAN_MODE]) {
--		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
--		switch (mode) {
-+		switch (nla_get_u32(data[IFLA_MACVLAN_MODE])) {
- 		case MACVLAN_MODE_PRIVATE:
- 		case MACVLAN_MODE_VEPA:
- 		case MACVLAN_MODE_BRIDGE:
-@@ -679,11 +684,8 @@ static int macvlan_newlink(struct net *src_net, struct net_device *dev,
- 	vlan->port     = port;
- 
- 	vlan->mode     = MACVLAN_MODE_VEPA;
--	if (data && data[IFLA_MACVLAN_MODE]) {
--		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
--
--		vlan->mode     = mode;
--	}
-+	if (data && data[IFLA_MACVLAN_MODE])
-+		vlan->mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
- 
- 	err = register_netdevice(dev);
- 	if (err < 0)
-@@ -710,11 +712,8 @@ static int macvlan_changelink(struct net_device *dev,
- 		struct nlattr *tb[], struct nlattr *data[])
- {
- 	struct macvlan_dev *vlan = netdev_priv(dev);
--	if (data && data[IFLA_MACVLAN_MODE]) {
--		u32 mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
--		vlan->mode     = mode;
--	}
--
-+	if (data && data[IFLA_MACVLAN_MODE])
-+		vlan->mode = nla_get_u32(data[IFLA_MACVLAN_MODE]);
- 	return 0;
- }
- 
+Thanks,
+Miklos
