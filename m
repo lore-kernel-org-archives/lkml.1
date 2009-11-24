@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbZKXIyC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbZKXIyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327AbZKXIyC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:54:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbZKXIyB
+	id S932347AbZKXIyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbZKXIyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:54:01 -0500
+	Tue, 24 Nov 2009 03:54:12 -0500
 Received: from mail-bw0-f223.google.com ([209.85.218.223]:38048 "EHLO
 	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932238AbZKXIyA convert rfc822-to-8bit (ORCPT
+	with ESMTP id S932331AbZKXIyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:54:00 -0500
+	Tue, 24 Nov 2009 03:54:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=dI9OAAgFRdb6Zmjo8NgxZGSjVuwGClokchxirH3AHUczV/zALploelcRa+zNye14rg
+         W1qEfefAtCOfmFOh4s0tyx4A1XbH6ymg4JkRYoVhc5m83Z+GNWRUWGlC5aV4gz+lAU+t
+         McY6nM4Nnrdu22zpwhftr6Qdz+2+xXOnc6aSU=
 MIME-Version: 1.0
-In-Reply-To: <200911240821.40563.rusty@rustcorp.com.au>
-References: <200911222201.59471.linux@rainbow-software.org> 
-	<200911231359.54544.rusty@rustcorp.com.au> <s5h8wdxab2h.wl%tiwai@suse.de> 
-	<200911240821.40563.rusty@rustcorp.com.au>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 24 Nov 2009 09:53:51 +0100
-Message-ID: <ac3eb2510911240053n593317b0qe60043988d89810f@mail.gmail.com>
-Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Takashi Iwai <tiwai@suse.de>, Ondrej Zary <linux@rainbow-software.org>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Date: Tue, 24 Nov 2009 03:54:15 -0500
+Message-ID: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
+Subject: PATCH: fix multiple eMagic 6|2m regressions introduced in 2.6.27
+From: Monty Montgomery <xiphmont@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, tapio.laxstrom@iptime.fi,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 22:51, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Mon, 23 Nov 2009 07:10:22 pm Takashi Iwai wrote:
->> At Mon, 23 Nov 2009 13:59:53 +1030, Rusty Russell wrote:
->> > Two things are required:
->> > 1) Modify file2alias to add aliases for isapnp.  This is pretty easy.
->> > 2) Expose the isapnp devices in sysfs where udev will match them up
->> >    (/sys/bus/isa/devices/<dev>/modalias I guess?)
->>
->> There is non-pnp ISA bus, so I'm afraid "isa" may conflict.
->> I suppose "isapnp" would be a safer choice.
->
-> Without pnp, I don't think you can enumerate the ISA bus. Hence I chose
-> "isa:" in the hope that udev would "just work" if isapnp created the
-> modalias under /sys/bus/isa...
->
-> But Kay says there's a pnp bus (who knew?).  I don't know what he means
-> by unfixable aliases tho, since it's all in the kernel source so we can
-> change it at any time?
+Hello folks,
 
-Here's a bit of the background:
+The eMagic driver code cleanup from 2.6.26->2.6.27 introduces three
+new bugs that prevent the emi62 usb audio device from working.  2.6.31
+continues to be identically broken. Note that this is the 6|2, not the
+2|6; the 2|6 works properly. The 6|2 does not function at all and will
+oops the kernel when plugged in.
 
-The aliases in the modules can only match a single value, but PNP
-devices often have vendor specific IDs and usual IDs describing the
-function.
+Bug 1: a mirror of the loop termination bug that was fixed in the 2|6
+driver last January, causing a similar oops as the 2|6 did in 2.6.27.
 
-Like here, where the interesting ID is only the second one of the two
-for a single device:
-  $ grep . /sys/bus/pnp/devices/*/id
-  /sys/bus/pnp/devices/00:09/id:LEN0006
-  /sys/bus/pnp/devices/00:09/id:PNP0f13
+Bug 2: the firmware load loop that is supposed to load the firmware
+section that sits in the device's RAM mistakenly uses
+ANCHOR_LOAD_EXTERNAL instead of ANCHOR_LOAD_INTERNAL, a bug from
+copy/pasting out of the preceeding loop.  This is clearly a regression
+from the 2.6.26 source which uses the proper target.
 
-So the kernel device would need to compose a "modalias" string with
-all IDs in a single line. But the in-module aliases can unfortunately
-match only on a single value, like:
-  alias pnp:dPNP0700* floppy
+Bug 3: Fixing the first two problems prevents the oops and allows the
+USB stack to successfully allocate an endpoint without crashing the
+eMagic.  However, the eMagic crashes and lights its red INTERNAL ERROR
+led later as it tries to start up.  This problem can be traced to the
+linux/firmware/emi62/bistream.HEX file, which is loading different
+FPGA firmware as compared to the driver pre-2.6.27.  In fact, it is
+loading an exact copy of the bistream firmware file that belongs to
+the emi26 driver rather than the firmware that previously belonged to
+the emi62. A new firmware/emi62/bitstream.HEX file generated from the
+old driver's header corrects the problem and the 6|2 works as it did
+before.
 
-For that reason, a while ago udev switched to acpi aliases entirely,
-and dropped all pnp: usage. The acpi aliases can handle multi-values
-just fine with single strings like:
-  $ cat /sys/bus/acpi/devices/LEN0006:00/modalias
-  acpi:LEN0006:PNP0F13:
+Note that the current firmware/emi62/bitstream.HEX mistakenly
+identifies itself as:
 
-  alias acpi*:PNP0700:* floppy
+// VERSION= 1.0.0.191
+// DATE= 2002oct28
 
-Udev does not use any pnp: or /sys/bus/pnp/ values since a while. But
-there might be still distros who use the (broken) pnp: aliases and
-ship the (also broken) shell scripts to iterate over the sysfs devices
-and call modprobe for all they find.
+...this is incorrect and apparently cut out of the old emi62 driver's
+firmware header and pasted onto the other firmware file.
 
-Thanks,
-Kay
+Due to the size of the patch (the replacement firmware file is 250kB),
+I've not attached it but rather stashed it at:
+
+http://web.mit.edu/xiphmont/Public/emi/emi62.patch
+
+Though it was generated against 2.6.29.4, I've tested it with 2.6.31.6.
+
+(not currently subbed to the kernel list, please make sure I'm CCed on
+replies.  Thanks!)
+
+Monty
