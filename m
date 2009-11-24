@@ -1,94 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZKXTuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932557AbZKXTxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbZKXTuG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 14:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbZKXTuF
+	id S932557AbZKXTxH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 14:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbZKXTxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 14:50:05 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39187 "EHLO e1.ny.us.ibm.com"
+	Tue, 24 Nov 2009 14:53:05 -0500
+Received: from mga11.intel.com ([192.55.52.93]:28420 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758054AbZKXTuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 14:50:03 -0500
-Date: Tue, 24 Nov 2009 11:50:07 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       cl@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-Message-ID: <20091124195007.GI6831@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop> <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop> <1259090615.17871.696.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259090615.17871.696.camel@calx>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1758229AbZKXTxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 14:53:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,280,1257148800"; 
+   d="scan'208";a="750050904"
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: David Miller <davem@davemloft.net>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "yong.zhang0@gmail.com" <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+In-Reply-To: <4B0C2D85.7020200@gmail.com>
+References: <1258995923.4531.715.camel@laptop>
+	 <4B0B782A.4030901@linux.intel.com>	<1259051986.4531.1057.camel@laptop>
+	 <20091124.093956.247147202.davem@davemloft.net>
+	 <1259085412.2631.48.camel@ppwaskie-mobl2>  <4B0C2547.8030408@gmail.com>
+	 <1259087601.2631.56.camel@ppwaskie-mobl2>  <4B0C2D85.7020200@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 11:53:14 -0800
+Message-Id: <1259092394.2631.64.camel@ppwaskie-mobl2>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 01:23:35PM -0600, Matt Mackall wrote:
-> On Tue, 2009-11-24 at 19:14 +0100, Peter Zijlstra wrote:
-> > On Tue, 2009-11-24 at 11:12 -0600, Matt Mackall wrote:
-> > > On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
-> > > > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
-> > > > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
-> > > > > > Matt Mackall wrote:
-> > > > > > > This seems like a lot of work to paper over a lockdep false positive in
-> > > > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
-> > > > > > > rather the fix or papering over happen in lockdep.
-> > > > > > 
-> > > > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
-> > > > > > state is pretty invasive because of the kmem_cache_free() call in 
-> > > > > > slab_destroy(). We re-enter the slab allocator from the outer edges 
-> > > > > > which makes spin_lock_nested() very inconvenient.
-> > > > > 
-> > > > > I'm perfectly fine with letting the thing be as it is, its apparently
-> > > > > not something that triggers very often, and since slab will be killed
-> > > > > off soon, who cares.
-> > > > 
-> > > > Which of the alternatives to slab should I be testing with, then?
-> > > 
-> > > I'm guessing your system is in the minority that has more than $10 worth
-> > > of RAM, which means you should probably be evaluating SLUB.
+On Tue, 2009-11-24 at 11:01 -0800, Eric Dumazet wrote:
+> Peter P Waskiewicz Jr a écrit :
+> 
+> > That's exactly what we're doing in our 10GbE driver right now (isn't
+> > pushed upstream yet, still finalizing our testing).  We spread to all
+> > NUMA nodes in a semi-intelligent fashion when allocating our rings and
+> > buffers.  The last piece is ensuring the interrupts tied to the various
+> > queues all route to the NUMA nodes those CPUs belong to.  irqbalance
+> > needs some kind of hint to make sure it does the right thing, which
+> > today it does not.
+> 
+> sk_buff allocations should be done on the node of the cpu handling rx interrupts.
+
+Yes, but we preallocate the buffers to minimize overhead when running
+our interrupt routines.  Regardless, whatever queue we're filling with
+those sk_buff's has an interrupt vector attached.  So wherever the
+descriptor ring/queue and its associated buffers were allocated, that is
+where the interrupt's affinity needs to be set to.
+
+> For rings, I am ok for irqbalance and driver cooperation, in case admin
+>  doesnt want to change the defaults.
+> 
 > > 
-> > Well, I was rather hoping that'd die too ;-)
-> > 
-> > Weren't we going to go with SLQB?
+> > I don't see how this is complex though.  Driver loads, allocates across
+> > the NUMA nodes for optimal throughput, then writes CPU masks for the
+> > NUMA nodes each interrupt belongs to.  irqbalance comes along and looks
+> > at the new mask "hint," and then balances that interrupt within that
+> > hinted mask.
 > 
-> News to me. Perhaps it was discussed at KS.
+> So NUMA policy is given by the driver at load time ?
+
+I think it would have to.  Nobody else has insight how the driver
+allocated its resources.  So the driver can be told where to allocate
+(see below), or the driver needs to indicate upwards how it allocated
+resources.
+
+> An admin might chose to direct all NIC trafic to a given node, because
+> its machine has mixed workload. 3 nodes out of 4 for database workload,
+> one node for network IO...
 > 
-> My understanding of the current state of play is:
-> 
-> SLUB: default allocator
+> So if an admin changes smp_affinity, is your driver able to reconfigure itself
+> and re-allocate all its rings to be on NUMA node chosen by admin ? This is
+> what I qualify as complex.
 
-Not on all architectures, it appears.
+No, we don't want to go this route of reallocation.  This, I agree, is
+very complex, and can be very devastating.  We'd basically be resetting
+the driver whenever an interrupt moved, so this could be a terrible DoS
+vulnerability.
 
-> SLAB: deep maintenance, will be removed if SLUB ever covers remaining
-> performance regressions
+Jesse Brandeburg has a set of patches he's working on that will allow us
+to bind an interface to a single node.  So in your example of 3 nodes
+for DB workload and 1 for network I/O, the driver can be loaded and
+directly bound to that 4th node.  Then the node_affinity mask would be
+set by the driver for the CPU mask of that single node.  But in these
+deployments, a sysadmin changing affinity that will fly directly in the
+face of how resources are laid out is poor system administration.  I
+know it will happen, but I don't know how far we need to protect the
+sysadmin from shooting themselves in the foot in terms of performance
+tuning.
 
-;-)
+Cheers,
+-PJ
 
-> SLOB: useful for low-end (but high-volume!) embedded 
-
-And unfortunately also depends on CONFIG_EMBEDDED, making it difficult
-for me to test on the available machines.  My usual workaround is to
-patch Kconfig to remove the dependency.
-
-> SLQB: sitting in slab.git#for-next for months, has some ground to cover
-
-I will hold off testing this until it hits mainline, especially if it is
-where KS decided to go.
-
-> SLQB and SLUB have pretty similar target audiences, so I agree we should
-> eventually have only one of them. But I strongly expect performance
-> results to be mixed, just as they have been comparing SLUB/SLAB.
-> Similarly, SLQB still has of room for tuning left compared to SLUB, as
-> SLUB did compared to SLAB when it first emerged. It might be a while
-> before a clear winner emerges.
-
-Those how live by the heuristic, die by the heuristic!!!  ;-)
-
-							Thanx, Paul
