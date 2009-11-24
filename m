@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbZKXJyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbZKXJ5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932569AbZKXJyw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbZKXJyv
+	id S932578AbZKXJ5N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932528AbZKXJ5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:54:51 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:61551 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932504AbZKXJyu (ORCPT
+	Tue, 24 Nov 2009 04:57:12 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35285 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932481AbZKXJ5L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:54:50 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: [PATCH] serial: 8250: Add ns16550a to OF compatible list
-Date: Tue, 24 Nov 2009 09:53:52 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       grant.likely@secretlab.ca, john.williams@petalogix.com,
-       stable@kernel.org, chrisw@sous-sol.org, greg@kroah.com,
-       alonz@discretix.com
-References: <1259054502-28284-1-git-send-email-monstr@monstr.eu> <1259054502-28284-2-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1259054502-28284-2-git-send-email-monstr@monstr.eu>
+	Tue, 24 Nov 2009 04:57:11 -0500
+Date: Tue, 24 Nov 2009 09:57:16 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: mfd tree build failure
+Message-ID: <20091124095715.GA20505@rakim.wolfsonmicro.main>
+References: <20091124163753.381d9a83.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911240953.52204.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/BdwGxwKHGqgPTM1cJUe01ZE/+vqxwItYJatU
- ab2r9cDmsPnjC5TtiuKYbXMwd35ptn2/wGb5B5jR9QA7sCaKgK
- sYJ1oXfw3x44nXG4vHaZg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124163753.381d9a83.sfr@canb.auug.org.au>
+X-Cookie: The people rule.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009 09:21:42 monstr@monstr.eu wrote:
-> From: Michal Simek <monstr@monstr.eu>
-> 
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
+On Tue, Nov 24, 2009 at 04:37:53PM +1100, Stephen Rothwell wrote:
 
-I was holding off on that patch to make sure the discussion had ended,
-but this part certainly looks good.
+> drivers/built-in.o: In function `wm831x_i2c_remove':
+> wm831x-core.c:(.text+0xd108b): undefined reference to `mfd_remove_devices'
+> drivers/built-in.o: In function `wm831x_i2c_write_device':
+> wm831x-core.c:(.text+0xd119c): undefined reference to `i2c_master_send'
+> drivers/built-in.o: In function `wm831x_i2c_read_device':
+> wm831x-core.c:(.text+0xd1208): undefined reference to `i2c_master_send'
+> wm831x-core.c:(.text+0xd1237): undefined reference to `i2c_master_recv'
 
-Some points on form though:
+> Caused by commit 4f7231a3ff624ad8a0fdace424b10a8b262071cf ("mfd: Don't
+> allow wm831x to be built as a module").  CONFIG_MFD_CORE is "m" and
+> CONFIG_I2C is "m" while CONFIG_MFD_WM831X is "y".  "select" is a real
+> problem :-(
 
-* The patch is missing a changelog, which is always required, but especially
-important if you're changing code that you want in -stable!
+There's something more seriously wrong than the select with your config
+here - the driver depends on (rather than selecting) I2C and you're also
+seeing undefined references to the I2C API.  The select on MFD_CORE
+should also be forcing that to be built in (it does normally).
 
-* You did not cc me. Ok, I just noticed I'm missing an entry in the MAINTAINERS
-file, but scripts/get_maintainer.pl would have given you a good indication of
-who feels responsible. You also didn't cc Alon, who submitted a similar patch
-[1] just days ago, which I assume prompted you to send this. If you didn't see
-his patch, nevermind.
-
-* Patches go into mainline first, then into stable [2]. Asking for inclusion into
--stable for a patch that is still being discussed for inclusion in -next is
-the wrong order, no matter how obvious and trivial the patch is.
-
-Anyway, thanks for the patch. I'll follow up with a new version with a better
-changelog for the tty tree. Any suggestions about what to do on 2.6.32?
-Should it go in there now, or would this go into a -stable release since
-it's not a regression?
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-
-[1] http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg39015.html
-[2] http://lkml.indiana.edu/hypermail/linux/kernel/0504.3/1369.html
-
-> ---
->  drivers/serial/of_serial.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-> index 02406ba..b047c38 100644
-> --- a/drivers/serial/of_serial.c
-> +++ b/drivers/serial/of_serial.c
-> @@ -161,6 +161,7 @@ static int of_platform_serial_remove(struct of_device *ofdev)
->  static struct of_device_id __devinitdata of_platform_serial_table[] = {
->  	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
->  	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
-> +	{ .type = "serial", .compatible = "ns16550a",  .data = (void *)PORT_16550A, },
->  	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
->  	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
->  	{ .type = "serial", .compatible = "ns16850",  .data = (void *)PORT_16850, },
-> 
+Could you please post the actual configuration you're using?  I suspect
+some Kbuild bug has been triggered here...
