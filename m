@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbZKXSVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933819AbZKXSZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933830AbZKXSVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZKXSVy
+	id S933819AbZKXSZE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:25:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932974AbZKXSZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:21:54 -0500
-Received: from mail.klingt.org ([86.59.21.178]:60522 "EHLO klingt.org"
+	Tue, 24 Nov 2009 13:25:03 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45405 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933680AbZKXSVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:21:53 -0500
-Message-ID: <4B0C2445.2000008@klingt.org>
-Date: Tue, 24 Nov 2009 19:21:57 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6pre) Gecko/20091121 Lightning/1.0pre Shredder/3.0.1pre
+	id S932929AbZKXSZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:25:01 -0500
+Date: Tue, 24 Nov 2009 10:25:06 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mm@kvack.org, cl@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091124182506.GG6831@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop> <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] branch hint tweaks
-References: <4B0BBB83.2020604@klingt.org> <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
-In-Reply-To: <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig90376EF18A6C81F43926C3D9"
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [86.59.21.178]); Tue, 24 Nov 2009 19:21:58 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259086459.4531.1752.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig90376EF18A6C81F43926C3D9
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 24, 2009 at 07:14:19PM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-11-24 at 11:12 -0600, Matt Mackall wrote:
+> > On Tue, 2009-11-24 at 09:00 -0800, Paul E. McKenney wrote:
+> > > On Tue, Nov 24, 2009 at 05:33:26PM +0100, Peter Zijlstra wrote:
+> > > > On Mon, 2009-11-23 at 21:13 +0200, Pekka Enberg wrote:
+> > > > > Matt Mackall wrote:
+> > > > > > This seems like a lot of work to paper over a lockdep false positive in
+> > > > > > code that should be firmly in the maintenance end of its lifecycle? I'd
+> > > > > > rather the fix or papering over happen in lockdep.
+> > > > > 
+> > > > > True that. Is __raw_spin_lock() out of question, Peter?-) Passing the 
+> > > > > state is pretty invasive because of the kmem_cache_free() call in 
+> > > > > slab_destroy(). We re-enter the slab allocator from the outer edges 
+> > > > > which makes spin_lock_nested() very inconvenient.
+> > > > 
+> > > > I'm perfectly fine with letting the thing be as it is, its apparently
+> > > > not something that triggers very often, and since slab will be killed
+> > > > off soon, who cares.
+> > > 
+> > > Which of the alternatives to slab should I be testing with, then?
+> > 
+> > I'm guessing your system is in the minority that has more than $10 worth
+> > of RAM, which means you should probably be evaluating SLUB.
+> 
+> Well, I was rather hoping that'd die too ;-)
+> 
+> Weren't we going to go with SLQB?
 
-> Did you run profiling tests again after making these changes to see if
-> they had any effect?  likely() and unlikely() are only hints.  GCC
-> doesn't have to follow them, or it could be broken in recent GCC
-> versions.
+Well, I suppose I could make my scripts randomly choose the memory
+allocator, but I would rather not.  ;-)
 
-i know, the compiler doesn't have to follow the hint ... but with the
-likely/unlikely profiling, not the execution time is profiled, but
-whether the branch hint is pointing to the right direction on my machine
-=2E.. if the assembly is actually affected does probably depend on the
-compiler version, instruction set, cpu tuning ...
+More seriously, I do have a number of configurations that I test, and I
+suppose I can chose different allocators for the different configurations.
 
-tim
-
---=20
-tim@klingt.org
-http://tim.klingt.org
-
-The aim of education is the knowledge, not of facts, but of values
-  William S. Burroughs
-
-
---------------enig90376EF18A6C81F43926C3D9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksMJEUACgkQdL+4qsZfVsu0lgCdFIt7HZA/0jit0d5b0LBtYdsY
-eNMAn3tN28GRyZZrR+uci4a7LQFCGiSh
-=zSc2
------END PGP SIGNATURE-----
-
---------------enig90376EF18A6C81F43926C3D9--
+							Thanx, Paul
