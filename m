@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbZKXQ55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933676AbZKXQ6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbZKXQ55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 11:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933566AbZKXQ54
+	id S933676AbZKXQ6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 11:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933658AbZKXQ5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 11:57:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60347 "EHLO hera.kernel.org"
+	Tue, 24 Nov 2009 11:57:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60345 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933652AbZKXQ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933566AbZKXQ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Nov 2009 11:57:51 -0500
-Date: Tue, 24 Nov 2009 16:57:05 GMT
-From: tip-bot for Tim Blechmann <tim@klingt.org>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, tim@klingt.org, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       tim@klingt.org, mingo@elte.hu
-In-Reply-To: <4B0BBB93.3080307@klingt.org>
-References: <4B0BBB93.3080307@klingt.org>
+Date: Tue, 24 Nov 2009 16:57:19 GMT
+From: tip-bot for John Kacur <jkacur@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jkacur@redhat.com, fweisbec@gmail.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1259073301-11506-2-git-send-email-jkacur@redhat.com>
+References: <1259073301-11506-2-git-send-email-jkacur@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched, x86: Optimize branch hint in __switch_to()
-Message-ID: <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
-Git-Commit-ID: a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
+Subject: [tip:perf/core] perf tools: Add perf.data to .gitignore
+Message-ID: <tip-c9c7ccaf3a2686ed3a44d69bb1f8b55eeead8a4e@git.kernel.org>
+Git-Commit-ID: c9c7ccaf3a2686ed3a44d69bb1f8b55eeead8a4e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,50 +31,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
-Gitweb:     http://git.kernel.org/tip/a3a1de0c34de6f5f8332cd6151c46af7813c0fcb
-Author:     Tim Blechmann <tim@klingt.org>
-AuthorDate: Tue, 24 Nov 2009 11:55:15 +0100
+Commit-ID:  c9c7ccaf3a2686ed3a44d69bb1f8b55eeead8a4e
+Gitweb:     http://git.kernel.org/tip/c9c7ccaf3a2686ed3a44d69bb1f8b55eeead8a4e
+Author:     John Kacur <jkacur@redhat.com>
+AuthorDate: Tue, 24 Nov 2009 15:35:00 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Nov 2009 12:20:04 +0100
+CommitDate: Tue, 24 Nov 2009 16:37:01 +0100
 
-sched, x86: Optimize branch hint in __switch_to()
+perf tools: Add perf.data to .gitignore
 
-Branch hint profiling on my nehalem machine showed 96%
-incorrect branch hints:
-
-  6548732 174664120  96 __switch_to                    process_64.c
-    406
-  6548745 174565593  96 __switch_to                    process_64.c
-    410
-
-Signed-off-by: Tim Blechmann <tim@klingt.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: John Kacur <jkacur@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4B0BBB93.3080307@klingt.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: acme@redhat.com
+LKML-Reference: <1259073301-11506-2-git-send-email-jkacur@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/process_64.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ tools/perf/.gitignore |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ad535b6..d9db104 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -406,11 +406,10 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * This won't pick up thread selector changes, but I guess that is ok.
- 	 */
- 	savesegment(es, prev->es);
--	if (unlikely(next->es | prev->es))
-+	if (next->es | prev->es)
- 		loadsegment(es, next->es);
--
- 	savesegment(ds, prev->ds);
--	if (unlikely(next->ds | prev->ds))
-+	if (next->ds | prev->ds)
- 		loadsegment(ds, next->ds);
- 
- 
+diff --git a/tools/perf/.gitignore b/tools/perf/.gitignore
+index 0854f11..fe08660 100644
+--- a/tools/perf/.gitignore
++++ b/tools/perf/.gitignore
+@@ -12,6 +12,7 @@ perf*.1
+ perf*.xml
+ perf*.html
+ common-cmds.h
++perf.data
+ tags
+ TAGS
+ cscope*
