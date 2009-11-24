@@ -1,151 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbZKXROF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbZKXRQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933612AbZKXROF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933581AbZKXROE
+	id S933632AbZKXRQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933531AbZKXRQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:14:04 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63523 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933492AbZKXROA (ORCPT
+	Tue, 24 Nov 2009 12:16:13 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:40669 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933501AbZKXRQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:14:00 -0500
-Subject: Re: [PATCH] tracing - fix function graph trace to properly display
- failed entries
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: mingo@elte.hu, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1259067458-27143-1-git-send-email-jolsa@redhat.com>
-References: <1259067458-27143-1-git-send-email-jolsa@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 24 Nov 2009 12:14:05 -0500
-Message-Id: <1259082845.22249.1110.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 12:16:12 -0500
+Date: Tue, 24 Nov 2009 12:16:17 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: tmhikaru@gmail.com
+cc: Jan Kara <jack@suse.cz>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       <linux-scsi@vger.kernel.org>, <linux-ext4@vger.kernel.org>
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+In-Reply-To: <20091123234234.GA22126@roll>
+Message-ID: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 13:57 +0100, Jiri Olsa wrote:
-> Hi,
-> 
-> there's a case where the graph tracer might get confused and omits
-> display of a single record.  This applies for both destructive
-> (trace_pipe) and nondestructive (trace) cases.
-> 
-> 
-> <issue description>
-> 
-> The issue description for nondestructive case (trace) follows:
-> 
-> As the function_graph tracer goes through the trace entries (using "trace" file)
-> it keeps pointer to the current record and the next one:
-> 
-> current ->  func1 ENTRY
->    next ->  func2 ENTRY
->             func2 RETURN
->             func1 RETURN
-> 
-> If it spots adjacent ENTRY and RETURN trace entries of the same function
-> and pid, it displays the "func2();" trace
-> 
->             func1 ENTRY
-> current ->  func2 ENTRY 
->    next ->  func2 RETURN
->             func1 RETURN
-> 
-> and moves the next trace entry pointer behind the RETURN entry
-> 
->             func1 ENTRY
-> current ->  func2 ENTRY 
->             func2 RETURN
->    next ->  func1 RETURN
-> 
-> so the next record peek will skip the RETURN entry and continue with
-> whatever is next.
-> 
-> It works ok but for one case. 
-> 
-> If the "func2()" trace does not make it to the seq_file read buffer, it needs
+On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
 
-In the trace_pipe it may be possible to fill the trace_seq buffer if the
-buffer passed into userspace is larger than the trace_seq buffer. But
-the trace_seq buffer should never overflow on the "trace" case. If it
-is, then there's probably another bug.
-
-
-> to be processed again in the next read.  And here comes the issue: 
-> the next read will see following pointers setup for func2 processing:
+> Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
+> don't think I'm allowed to send attachments here, nor do I know what I'm
+> supposed to be looking for in this output. So, instead I'm putting the
+> (compressed) file up on my home computer. If you've got suggestions for what
+> I should use instead, let me know.
 > 
->             func1 ENTRY
-> current ->  func2 ENTRY 
->             func2 RETURN
->    next ->  func1 RETURN
+> http://hikaru.no-ip.info:3000/1.mon.out.xz
 > 
-> which will turn to displaying the func2 entry like: "func2() {", since the
-> next entry is not RETURN of the same type.  Generaly it is whatever entry 
-> that follows, but definitelly not the RETURN entry of the same function.
-> 
-> The destructive case (trace_pipe) suffers from the similar issue,
-> although it keeps only the current pointer.
-> 
-> </issue description>
-> 
-> 
-> The following patch propose generic solution for both cases.
-> It keeps the last read entry/return in the tracer private
-> iterator storage and keeps track of the failed output.
-> Whenever the output fails, next read will output previous
-> 'not displayed' entry before processing next entry.
+> Although I don't think you'll need it, I've included the dmesg output of
+> what happened when I ran my backup script, just in case it helps at all.
 
-Have you added tests to make sure that the trace_seq buffer is indeed
-filling up?  In the trace_pipe, this could happen when the user buffer
-gets full.
+Here's an annotated example of one of those hiccups:
 
-What I think you are seeing, is a buffer overflow during a run. If the
-trace buffer overflows, it will leave gaps in the trace. Those abandoned
-leaf functions are probably a result of a trace buffer wrap.
+f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
+f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
 
-I don't thing this is the proper solution to the problem.
+The computer issued a READ command for 8 blocks (4096 bytes) starting
+at block number 0x0000aeef = 44783.
 
-> 
+d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
+d2588b00 2416019428 C Bi:1:003:2 -32 0
+f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
+f1aa1f00 2416019554 C Co:1:003:0 0 0
 
+The drive returned 0 bytes of data.
 
->  static inline ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 874f289..ca52715 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -3049,10 +3049,14 @@ waitagain:
+f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
+f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
 
-(side note)
+And then it returned a status indicating no error but 4096 bytes
+residue (i.e., incorrect or undelivered data).  This caused the
+usb-storage driver to send the SCSI layer a result code of DID_ERROR
+with no sense data.
 
-This is why I like to have spaces in front of labels (not a comment on
-this patch). I hate trying to figure out what function this is for :-p
-Luckily, in this case, there's only one function with "waitagain" label.
+> sd 0:0:0:0: [sda] Unhandled error code
+> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+> end_request: I/O error, dev sda, sector 44783
 
->  	if (cnt >= PAGE_SIZE)
->  		cnt = PAGE_SIZE - 1;
->  
-> -	/* reset all but tr, trace, and overruns */
-> -	memset(&iter->seq, 0,
-> +	/*
-> +	 * Reset all but tr, trace, and overruns. Preserve 'failed'
-> +	 * field in the trace_seq structure.
-> +	 */
-> +	trace_seq_init(&iter->seq);
-> +	memset(&iter->ent, 0,
->  	       sizeof(struct trace_iterator) -
-> -	       offsetof(struct trace_iterator, seq));
-> +	       offsetof(struct trace_iterator, ent));
->  	iter->pos = -1;
->  
->  	trace_event_read_lock();
+The DID_ERROR code caused the SCSI layer to display this error message.  
 
+> sd 0:0:0:0: [sda] Unhandled error code
+> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+> end_request: I/O error, dev sda, sector 51823
 
--- Steve
+I would have expected the READ to be retried, but in these two cases 
+it wasn't.  The usbmon log contained five instances of this error 
+sequence; the other three were retried successfully.  I don't know what 
+the difference was.
 
+Alan Stern
 
