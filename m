@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbZKXEV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbZKXENS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbZKXEV5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 23:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZKXEV4
+	id S1757976AbZKXENS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 23:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757948AbZKXENR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 23:21:56 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57881 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754782AbZKXEVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 23:21:55 -0500
-From: Hemant Pedanekar <hemantp@ti.com>
-To: linux-ide@vger.kernel.org
-Cc: davem@davemloft.net, bzolnier@gmail.com, sshtylyov@ru.mvista.com,
-       petkovbb@gmail.com, christian.engelmayer@frequentis.com,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com, hemantp@ti.com
-Subject: [PATCH] ide: fix ioctl to pass requested transfer mode to ide_find_dma_mode instead of UDMA6
-Date: Tue, 24 Nov 2009 09:46:28 +0530
-Message-Id: <1259036188-11598-1-git-send-email-hemantp@ti.com>
-X-Mailer: git-send-email 1.6.2.4
+	Mon, 23 Nov 2009 23:13:17 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:44394
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757946AbZKXENQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 23:13:16 -0500
+Message-ID: <4B0B5E84.1030305@wilsonet.com>
+Date: Mon, 23 Nov 2009 23:18:12 -0500
+From: Jarod Wilson <jarod@wilsonet.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRabhTZjFB@christoph>
+In-Reply-To: <BDRabhTZjFB@christoph>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, ide_cmd_ioctl when invoked for setting DMA transfer mode calls
-ide_find_dma_mode with requested mode as XFER_UDMA_6. This prevents setting DMA
-mode to any other value than the default (maximum) supported by the device (or
-UDMA6, if supported) irrespective of the actual requested transfer mode and
-returns error.
+On 11/23/2009 04:10 PM, Christoph Bartelmus wrote:
+> Hi Jarod,
+>
+> on 23 Nov 09 at 14:17, Jarod Wilson wrote:
+>>> Krzysztof Halasa wrote:
+> [...]
+>>> If you see patch 3/3, of the lirc submission series, you'll notice a driver
+>>> that has hardware decoding, but, due to lirc interface, the driver
+>>> generates pseudo pulse/space code for it to work via lirc interface.
+>
+>> Historically, this is true.
+>
+> No, it's not.
+> I think you misunderstood the code. The comment may be a bit misleading,
+> too.
+> Early iMON devices did not decode in hardware and the part of the driver
+> that Krzystof is referring to is translating a bit-stream of the sampled
+> input data into pulse/space durations.
 
-For example, setting mode to UDMA2 using hdparm, where UDMA4 is the default
-transfer mode gives following error:
-	# ./hdparm -d1 -Xudma2  /dev/hda
-	 /dev/hda:hda: UDMA/66 mode selected
-	 setting using_dma to 1 (on)
-	 hda: UDMA/66 mode selected
-	 setting xfermode to 66 (UltraDMA mode2)
-	 HDIO_DRIVE_CMD(setxfermode) failed: Invalid argument
-	 using_dma     =  1 (on)
+Sorry, no, I know the newer devices don't actually send pulse/data info 
+out to userspace, just hex codes that correspond to key presses. What I 
+meant was "onboard decoding devices can operate as pure input devices or 
+in classic lirc mode", leaving out the details on exactly what they were 
+sending out to userspace. :)
 
-This patch fixes the issue.
-
-Signed-off-by: Hemant Pedanekar <hemantp@ti.com>
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-ioctls.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/ide/ide-ioctls.c b/drivers/ide/ide-ioctls.c
-index d3440b5..6e7ae2b 100644
---- a/drivers/ide/ide-ioctls.c
-+++ b/drivers/ide/ide-ioctls.c
-@@ -162,7 +162,7 @@ static int ide_cmd_ioctl(ide_drive_t *drive, unsigned long arg)
- 	if (tf->command == ATA_CMD_SET_FEATURES &&
- 	    tf->feature == SETFEATURES_XFER &&
- 	    tf->nsect >= XFER_SW_DMA_0) {
--		xfer_rate = ide_find_dma_mode(drive, XFER_UDMA_6);
-+		xfer_rate = ide_find_dma_mode(drive, tf->nsect);
- 		if (xfer_rate != tf->nsect) {
- 			err = -EINVAL;
- 			goto abort;
 -- 
-1.6.2.4
-
+Jarod Wilson
+jarod@wilsonet.com
