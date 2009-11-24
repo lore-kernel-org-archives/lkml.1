@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbZKXUMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbZKXUMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933230AbZKXUMQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 15:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932915AbZKXUMP
+	id S933335AbZKXUMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 15:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933131AbZKXUMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 15:12:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11205 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 15:12:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43900 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932909AbZKXUMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 15:12:14 -0500
-Date: Tue, 24 Nov 2009 21:01:52 +0100
+	id S933119AbZKXUM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 15:12:29 -0500
+Date: Tue, 24 Nov 2009 21:01:56 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Alexey Dobriyan <adobriyan@gmail.com>,
        Ananth Mavinakayanahalli <ananth@in.ibm.com>,
@@ -18,9 +18,8 @@ To: Alexey Dobriyan <adobriyan@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Roland McGrath <roland@redhat.com>
 Cc: linux-kernel@vger.kernel.org, utrace-devel@redhat.com
-Subject: [RFC,PATCH 07/14] ptrace: x86: change syscall_trace_leave() to
-	rely on tracehook when stepping
-Message-ID: <20091124200152.GA5789@redhat.com>
+Subject: [RFC,PATCH 08/14] tracehooks: kill some PT_PTRACED checks
+Message-ID: <20091124200156.GA5793@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,63 +28,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(already in mm: ptrace-x86-change-syscall_trace_leave-to-rely-on-tracehook-when-stepping.patch)
+No functional changes, preparation for utrace-ptrace.
 
-Suggested by Roland.
+task_ptrace() != 0 if and only if PT_PTRACED bit is set, kill
+some PT_PTRACED checks in tracehook.h to ensure the result is
+the same with or without utrace which doesn't set PT_PTRACED.
 
-Unlike powepc, x86 always calls tracehook_report_syscall_exit(step)
-with step = 0, and sends the trap by hand.
-
-This results in unnecessary SIGTRAP when PTRACE_SINGLESTEP follows
-the syscall-exit stop.
-
-Change syscall_trace_leave() to pass the correct "step" argument to
-tracehook and remove the send_sigtrap() logic.
-
+Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Roland McGrath <roland@redhat.com>
 ---
 
- arch/x86/kernel/ptrace.c |   21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+ include/linux/tracehook.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- V1/arch/x86/kernel/ptrace.c~7_X86_CONVERT_SYSCALL_LEAVE	2009-11-24 19:52:11.000000000 +0100
-+++ V1/arch/x86/kernel/ptrace.c	2009-11-24 19:52:12.000000000 +0100
-@@ -1528,29 +1528,22 @@ asmregparm long syscall_trace_enter(stru
- 
- asmregparm void syscall_trace_leave(struct pt_regs *regs)
+--- V1/include/linux/tracehook.h~8_TRACEHOOK_KILL_PTRACED_CHECKS	2009-11-24 19:52:10.000000000 +0100
++++ V1/include/linux/tracehook.h	2009-11-24 20:29:07.000000000 +0100
+@@ -156,7 +156,7 @@ static inline int tracehook_unsafe_exec(
  {
-+	bool step;
-+
- 	if (unlikely(current->audit_context))
- 		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
- 		trace_sys_exit(regs, regs->ax);
- 
--	if (test_thread_flag(TIF_SYSCALL_TRACE))
--		tracehook_report_syscall_exit(regs, 0);
--
- 	/*
- 	 * If TIF_SYSCALL_EMU is set, we only get here because of
- 	 * TIF_SINGLESTEP (i.e. this is PTRACE_SYSEMU_SINGLESTEP).
- 	 * We already reported this syscall instruction in
--	 * syscall_trace_enter(), so don't do any more now.
--	 */
--	if (unlikely(test_thread_flag(TIF_SYSCALL_EMU)))
--		return;
--
--	/*
--	 * If we are single-stepping, synthesize a trap to follow the
--	 * system call instruction.
-+	 * syscall_trace_enter().
- 	 */
--	if (test_thread_flag(TIF_SINGLESTEP) &&
--	    tracehook_consider_fatal_signal(current, SIGTRAP))
--		send_sigtrap(current, regs, 0, TRAP_BRKPT);
-+	step = unlikely(test_thread_flag(TIF_SINGLESTEP)) &&
-+			!test_thread_flag(TIF_SYSCALL_EMU);
-+	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
-+		tracehook_report_syscall_exit(regs, step);
+ 	int unsafe = 0;
+ 	int ptrace = task_ptrace(task);
+-	if (ptrace & PT_PTRACED) {
++	if (ptrace) {
+ 		if (ptrace & PT_PTRACE_CAP)
+ 			unsafe |= LSM_UNSAFE_PTRACE_CAP;
+ 		else
+@@ -178,7 +178,7 @@ static inline int tracehook_unsafe_exec(
+  */
+ static inline struct task_struct *tracehook_tracer_task(struct task_struct *tsk)
+ {
+-	if (task_ptrace(tsk) & PT_PTRACED)
++	if (task_ptrace(tsk))
+ 		return rcu_dereference(tsk->parent);
+ 	return NULL;
  }
+@@ -492,7 +492,7 @@ static inline int tracehook_get_signal(s
+  */
+ static inline int tracehook_notify_jctl(int notify, int why)
+ {
+-	return notify ?: (current->ptrace & PT_PTRACED) ? why : 0;
++	return notify ?: task_ptrace(current) ? why : 0;
+ }
+ 
+ /**
 
