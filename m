@@ -1,94 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932976AbZKXODm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbZKXOFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932976AbZKXODm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932916AbZKXODl
+	id S933003AbZKXOFX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbZKXOFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:03:41 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:40390 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932179AbZKXODk convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 09:05:22 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52536 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932926AbZKXOFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:03:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sZD4F2EmUzne34uVV4Wi73MmU9+PeSURiBwajFkJyB+qUqAmUlkKpLuEn+bt7BTgR3
-         aHReXsf4rGNj6rBQCeKWXI17NtjuiIjpq+CjqmkpNIf0MI6nnP/xD2nGv3m2dNR7ObXl
-         9OGxPBC8F0HrcF9Kv48vDmNEGmaMwkje97ePY=
+	Tue, 24 Nov 2009 09:05:22 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/4] perf top: Always show the DSO column, even if its all the same
+Date: Tue, 24 Nov 2009 12:05:14 -0200
+Message-Id: <1259071517-3242-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
 MIME-Version: 1.0
-In-Reply-To: <1259068293.3019.15.camel@cail>
-References: <1259068293.3019.15.camel@cail>
-Date: Tue, 24 Nov 2009 15:03:46 +0100
-Message-ID: <4e5e476b0911240603q7df022bx5b5915aab6279537@mail.gmail.com>
-Subject: Re: [PATCH 0/1] Correct sorting problem in cfq_service_tree_add
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 2:11 PM, Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
-> Found this whilst reviewing the CFQ I/O scheduler code: Currently, this
-> routine only sorts using the I/O priority class - it does not properly
-> sort prioritized queues within a specific class. The patch changes the
-> sort to utilize the full I/O priority (class & priority).
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-This changes mixes the interpretation of classes and levels within class.
-In the original code, those different things have different meanings:
-* priority class decides who can use the disk
-* priority level within a class determines how much of the disk time
-each queue will obtain
-In your case. instead, you completely remove the second meaning, and
-provide a larger number of levels to just decide the first.
+Ingo found it confusing, and I agree with that, for 'perf report' its OK
+because it is static, but for a tool refreshing it the eventual switch
+from column to summary at the top may seem confusing.
 
->
-> A simple test shows the problem & fixed results: on a 16-way box, for
-> each of 12 attached disks I started up 17 processes (one process at each
-> possible class/priority). Each process operated on a separate file in
-> the file system. I then did two types of tests: (a) direct/synchronous
-> and (b) direct/asynchronous w/ an 80/20 read/write split.
->
-> I then tabulated the overall I/O performed per task: (first column is
-> priority class (1==RT, 2==BE, 3==IDLE), second column is the I/O
-> priority (0==highest), then two groupings of read/write data moved
-> (total KiBs over a span of 120 seconds):
->
-> Synchronous:
->         2.6.32-rc8     2.6.32-rc8+patch
->        Read    Write     Read    Write
->     ----------------   ----------------
-> 1 0 |  311164  310760 |  424260  424116 |
-> 1 1 |  129712  129792 |  390208  393232 |
-> 1 2 |   72312   71284 |     448     420 |
-> 1 3 |   40364   41052 |      28      20 |
-> 1 4 |   26788   26352 |      28      24 |
-> 1 5 |   16936   16940 |      52      32 |
-> 1 6 |   11196   11140 |      28      20 |
-> 1 7 |    6476    6648 |      20      28 |
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-top.c |   38 +++++++++++---------------------------
+ 1 files changed, 11 insertions(+), 27 deletions(-)
 
-The numbers for the patched kernel are bad.
-All priority levels > 2 are starved. They can complete an amount of
-I/O comparable with lower priority class:
-> 2 0 |      24      24 |      40       8 |
-> 2 1 |      24      24 |      12      36 |
-> 2 2 |      20      28 |      20      28 |
-> 2 3 |      28      20 |      24      24 |
-> 2 4 |      28      20 |      28      20 |
-> 2 5 |      28      20 |      20      28 |
-> 2 6 |      24      24 |      20      28 |
-> 2 7 |      24      24 |      36      12 |
->
-> 3   |      36      12 |      28      20 |
->     ----------------   ----------------
-> Sum    615184  614164    815300  818096
->
-This is not the intended behaviour, and you don't need 14 priority
-levels to get only one use the disk.
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 6a5de90..b9a321f 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -451,9 +451,8 @@ static void print_sym_table(void)
+ 	struct sym_entry *syme, *n;
+ 	struct rb_root tmp = RB_ROOT;
+ 	struct rb_node *nd;
+-	int sym_width = 0, dso_width = 0;
++	int sym_width = 0, dso_width = 0, max_dso_width;
+ 	const int win_width = winsize.ws_col - 1;
+-	struct dso *unique_dso = NULL, *first_dso = NULL;
+ 
+ 	samples = userspace_samples = 0;
+ 
+@@ -539,11 +538,6 @@ static void print_sym_table(void)
+ 		    (int)syme->snap_count < count_filter)
+ 			continue;
+ 
+-		if (first_dso == NULL)
+-			unique_dso = first_dso = syme->map->dso;
+-		else if (syme->map->dso != first_dso)
+-			unique_dso = NULL;
+-
+ 		if (syme->map->dso->long_name_len > dso_width)
+ 			dso_width = syme->map->dso->long_name_len;
+ 
+@@ -553,14 +547,10 @@ static void print_sym_table(void)
+ 
+ 	printed = 0;
+ 
+-	if (unique_dso)
+-		printf("DSO: %s\n", unique_dso->long_name);
+-	else {
+-		int max_dso_width = winsize.ws_col - sym_width - 29;
+-		if (dso_width > max_dso_width)
+-			dso_width = max_dso_width;
+-		putchar('\n');
+-	}
++	max_dso_width = winsize.ws_col - sym_width - 29;
++	if (dso_width > max_dso_width)
++		dso_width = max_dso_width;
++	putchar('\n');
+ 	if (nr_counters == 1)
+ 		printf("             samples  pcnt");
+ 	else
+@@ -568,17 +558,13 @@ static void print_sym_table(void)
+ 
+ 	if (verbose)
+ 		printf("         RIP       ");
+-	printf(" %-*.*s", sym_width, sym_width, "function");
+-	if (!unique_dso)
+-		printf(" DSO");
+-	putchar('\n');
++	printf(" %-*.*s DSO\n", sym_width, sym_width, "function");
+ 	printf("   %s    _______ _____",
+ 	       nr_counters == 1 ? "      " : "______");
+ 	if (verbose)
+ 		printf(" ________________");
+ 	printf(" %-*.*s", sym_width, sym_width, graph_line);
+-	if (!unique_dso)
+-		printf(" %-*.*s", dso_width, dso_width, graph_line);
++	printf(" %-*.*s", dso_width, dso_width, graph_line);
+ 	puts("\n");
+ 
+ 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
+@@ -603,12 +589,10 @@ static void print_sym_table(void)
+ 		if (verbose)
+ 			printf(" %016llx", sym->start);
+ 		printf(" %-*.*s", sym_width, sym_width, sym->name);
+-		if (!unique_dso)
+-			printf(" %-*.*s", dso_width, dso_width,
+-			       dso_width >= syme->map->dso->long_name_len ?
+-						syme->map->dso->long_name :
+-						syme->map->dso->short_name);
+-		printf("\n");
++		printf(" %-*.*s\n", dso_width, dso_width,
++		       dso_width >= syme->map->dso->long_name_len ?
++					syme->map->dso->long_name :
++					syme->map->dso->short_name);
+ 	}
+ }
+ 
+-- 
+1.6.2.5
 
-Cheers,
-Corrado
