@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932467AbZKXJWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbZKXJ1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932467AbZKXJWU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZKXJWE
+	id S932444AbZKXJ1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932357AbZKXJ1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:22:04 -0500
-Received: from gw.wifiinternet.cz ([89.31.42.6]:32820 "EHLO monstr.eu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932429AbZKXJWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:22:02 -0500
-From: monstr@monstr.eu
-To: linux-kernel@vger.kernel.org
-Cc: linux-serial@vger.kernel.org, grant.likely@secretlab.ca,
-       john.williams@petalogix.com, stable@kernel.org, chrisw@sous-sol.org,
-       greg@kroah.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH] serial: 8250: Add ns16550a to OF compatible list
-Date: Tue, 24 Nov 2009 10:21:42 +0100
-Message-Id: <1259054502-28284-2-git-send-email-monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1259054502-28284-1-git-send-email-monstr@monstr.eu>
-References: <1259054502-28284-1-git-send-email-monstr@monstr.eu>
+	Tue, 24 Nov 2009 04:27:53 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.31.27]:47026 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932340AbZKXJ1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 04:27:52 -0500
+Message-ID: <4B0BA71B.8040800@ladisch.de>
+Date: Tue, 24 Nov 2009 10:27:55 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Monty Montgomery <xiphmont@gmail.com>
+CC: Linux kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Der Mickster <retroeffective@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: PATCH: fix multiple eMagic 6|2m regressions introduced in 2.6.27
+References: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
+In-Reply-To: <806dafc20911240054p74bd4d67h97430a02ba86b468@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+Monty Montgomery wrote:
+> The eMagic driver code cleanup from 2.6.26->2.6.27 introduces three
+> new bugs that prevent the emi62 usb audio device from working.  2.6.31
+> continues to be identically broken. Note that this is the 6|2, not the
+> 2|6; the 2|6 works properly. The 6|2 does not function at all and will
+> oops the kernel when plugged in.
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- drivers/serial/of_serial.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+This has been discussed in this thread:
+http://lists.linuxaudio.org/pipermail/linux-audio-user/2009-November/064931.html
 
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index 02406ba..b047c38 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -161,6 +161,7 @@ static int of_platform_serial_remove(struct of_device *ofdev)
- static struct of_device_id __devinitdata of_platform_serial_table[] = {
- 	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
- 	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
-+	{ .type = "serial", .compatible = "ns16550a",  .data = (void *)PORT_16550A, },
- 	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
- 	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
- 	{ .type = "serial", .compatible = "ns16850",  .data = (void *)PORT_16850, },
--- 
-1.5.5.1
+> Bug 1: a mirror of the loop termination bug that was fixed in the 2|6
+> driver last January, causing a similar oops as the 2|6 did in 2.6.27.
 
+My patch for this has already been picked up by akpm.
+
+> Bug 2: the firmware load loop that is supposed to load the firmware
+> section that sits in the device's RAM mistakenly uses
+> ANCHOR_LOAD_EXTERNAL instead of ANCHOR_LOAD_INTERNAL, a bug from
+> copy/pasting out of the preceeding loop.  This is clearly a regression
+> from the 2.6.26 source which uses the proper target.
+> 
+> Bug 3: Fixing the first two problems prevents the oops and allows the
+> USB stack to successfully allocate an endpoint without crashing the
+> eMagic.  However, the eMagic crashes and lights its red INTERNAL ERROR
+> led later as it tries to start up.  This problem can be traced to the
+> linux/firmware/emi62/bistream.HEX file, which is loading different
+> FPGA firmware as compared to the driver pre-2.6.27.
+> [...]
+> Due to the size of the patch (the replacement firmware file is 250kB),
+> I've not attached it but rather stashed it at:
+> 
+> http://web.mit.edu/xiphmont/Public/emi/emi62.patch
+
+I don't have much time; David, please handle this.
+
+
+Clemens
