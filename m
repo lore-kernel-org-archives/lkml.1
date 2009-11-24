@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbZKXIsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbZKXIyC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbZKXIsE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:48:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZKXIsD
+	id S932327AbZKXIyC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:54:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbZKXIyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:48:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43017 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932278AbZKXIsC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:48:02 -0500
-Message-ID: <4B0B9E6A.2000000@redhat.com>
-Date: Tue, 24 Nov 2009 16:50:50 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	Tue, 24 Nov 2009 03:54:01 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:38048 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932238AbZKXIyA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:54:00 -0500
 MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, Amerigo Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@redhat.com>
-Subject: Re: [Resend Patch] kexec: allow to shrink reserved memory
-References: <20091123093958.4963.38592.sendpatchset@localhost.localdomain> <20091124075813.GA14488@bicker>
-In-Reply-To: <20091124075813.GA14488@bicker>
-Content-Type: multipart/mixed;
- boundary="------------000307060008070005080003"
+In-Reply-To: <200911240821.40563.rusty@rustcorp.com.au>
+References: <200911222201.59471.linux@rainbow-software.org> 
+	<200911231359.54544.rusty@rustcorp.com.au> <s5h8wdxab2h.wl%tiwai@suse.de> 
+	<200911240821.40563.rusty@rustcorp.com.au>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 24 Nov 2009 09:53:51 +0100
+Message-ID: <ac3eb2510911240053n593317b0qe60043988d89810f@mail.gmail.com>
+Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Takashi Iwai <tiwai@suse.de>, Ondrej Zary <linux@rainbow-software.org>,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000307060008070005080003
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+On Mon, Nov 23, 2009 at 22:51, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Mon, 23 Nov 2009 07:10:22 pm Takashi Iwai wrote:
+>> At Mon, 23 Nov 2009 13:59:53 +1030, Rusty Russell wrote:
+>> > Two things are required:
+>> > 1) Modify file2alias to add aliases for isapnp.  This is pretty easy.
+>> > 2) Expose the isapnp devices in sysfs where udev will match them up
+>> >    (/sys/bus/isa/devices/<dev>/modalias I guess?)
+>>
+>> There is non-pnp ISA bus, so I'm afraid "isa" may conflict.
+>> I suppose "isapnp" would be a safer choice.
+>
+> Without pnp, I don't think you can enumerate the ISA bus. Hence I chose
+> "isa:" in the hope that udev would "just work" if isapnp created the
+> modalias under /sys/bus/isa...
+>
+> But Kay says there's a pnp bus (who knew?).  I don't know what he means
+> by unfixable aliases tho, since it's all in the kernel source so we can
+> change it at any time?
 
-Dan Carpenter wrote:
-> On Mon, Nov 23, 2009 at 04:37:02AM -0500, Amerigo Wang wrote:
-> [snip]
->> +size_t crash_get_memory_size(void);
-> [snip]
->> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
->> +				       struct kobj_attribute *attr, char *buf)
->> +{
->> +	return sprintf(buf, "%lu\n", crash_get_memory_size());
->> +}
-> 
->   CC      kernel/ksysfs.o
-> kernel/ksysfs.c: In function ‘kexec_crash_size_show’:
-> kernel/ksysfs.c:106: warning: format ‘%lu’ expects type ‘long unsigned int’, but argument 3 has type ‘size_t’
-> 
+Here's a bit of the background:
 
-Patch below fixes this.
+The aliases in the modules can only match a single value, but PNP
+devices often have vendor specific IDs and usual IDs describing the
+function.
 
-Andrew, could you please fold it in? Thanks!
+Like here, where the interesting ID is only the second one of the two
+for a single device:
+  $ grep . /sys/bus/pnp/devices/*/id
+  /sys/bus/pnp/devices/00:09/id:LEN0006
+  /sys/bus/pnp/devices/00:09/id:PNP0f13
 
+So the kernel device would need to compose a "modalias" string with
+all IDs in a single line. But the in-module aliases can unfortunately
+match only on a single value, like:
+  alias pnp:dPNP0700* floppy
 
---------------000307060008070005080003
-Content-Type: text/plain;
- name="kexec-free-reserved-memory-delta-fix.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="kexec-free-reserved-memory-delta-fix.diff"
+For that reason, a while ago udev switched to acpi aliases entirely,
+and dropped all pnp: usage. The acpi aliases can handle multi-values
+just fine with single strings like:
+  $ cat /sys/bus/acpi/devices/LEN0006:00/modalias
+  acpi:LEN0006:PNP0F13:
 
-ZGlmZiAtLWdpdCBhL2tlcm5lbC9rc3lzZnMuYyBiL2tlcm5lbC9rc3lzZnMuYwppbmRleCA1
-YjkyNzZiLi4zZmVhZjVhIDEwMDY0NAotLS0gYS9rZXJuZWwva3N5c2ZzLmMKKysrIGIva2Vy
-bmVsL2tzeXNmcy5jCkBAIC0xMDMsNyArMTAzLDcgQEAgS0VSTkVMX0FUVFJfUk8oa2V4ZWNf
-Y3Jhc2hfbG9hZGVkKTsKIHN0YXRpYyBzc2l6ZV90IGtleGVjX2NyYXNoX3NpemVfc2hvdyhz
-dHJ1Y3Qga29iamVjdCAqa29iaiwKIAkJCQkgICAgICAgc3RydWN0IGtvYmpfYXR0cmlidXRl
-ICphdHRyLCBjaGFyICpidWYpCiB7Ci0JcmV0dXJuIHNwcmludGYoYnVmLCAiJWx1XG4iLCBj
-cmFzaF9nZXRfbWVtb3J5X3NpemUoKSk7CisJcmV0dXJuIHNwcmludGYoYnVmLCAiJXp1XG4i
-LCBjcmFzaF9nZXRfbWVtb3J5X3NpemUoKSk7CiB9CiBzdGF0aWMgc3NpemVfdCBrZXhlY19j
-cmFzaF9zaXplX3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLAogCQkJCSAgIHN0cnVjdCBr
-b2JqX2F0dHJpYnV0ZSAqYXR0ciwK
---------------000307060008070005080003--
+  alias acpi*:PNP0700:* floppy
+
+Udev does not use any pnp: or /sys/bus/pnp/ values since a while. But
+there might be still distros who use the (broken) pnp: aliases and
+ship the (also broken) shell scripts to iterate over the sysfs devices
+and call modprobe for all they find.
+
+Thanks,
+Kay
