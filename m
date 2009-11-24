@@ -1,120 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbZKXRtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933821AbZKXSBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933718AbZKXRtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933692AbZKXRtW
+	id S933821AbZKXSBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbZKXSBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:49:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46953 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933688AbZKXRtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:49:21 -0500
-Message-ID: <4B0C1BF8.9060408@redhat.com>
-Date: Tue, 24 Nov 2009 12:46:32 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Tue, 24 Nov 2009 13:01:32 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:4489 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933787AbZKXSBX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:01:23 -0500
+X-Greylist: delayed 853 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 13:01:23 EST
+Message-ID: <4B0C1C20.2080901@panasas.com>
+Date: Tue, 24 Nov 2009 19:47:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH -tip v5 07/10] kprobes/x86: Support kprobes jump	optimization
- on x86
-References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com> <20091123232211.22071.58974.stgit@dhcp-100-2-132.bos.redhat.com> <20091124162708.GA29995@redhat.com>
-In-Reply-To: <20091124162708.GA29995@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: tmhikaru@gmail.com, Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+References: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Nov 2009 17:47:16.0050 (UTC) FILETIME=[29314B20:01CA6D2E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Baron wrote:
-[...]
->> +/*
->> + * Cross-modifying kernel text with stop_machine().
->> + * This code originally comes from immediate value.
->> + * This does _not_ protect against NMI and MCE. However,
->> + * since kprobes can't probe NMI/MCE handler, it is OK for kprobes.
->> + */
->> +static atomic_t stop_machine_first;
->> +static int wrote_text;
->> +
->> +struct text_poke_param {
->> +	void *addr;
->> +	const void *opcode;
->> +	size_t len;
->> +};
->> +
->> +static int __kprobes stop_machine_multibyte_poke(void *data)
->> +{
->> +	struct text_poke_param *tpp = data;
->> +
->> +	if (atomic_dec_and_test(&stop_machine_first)) {
->> +		text_poke(tpp->addr, tpp->opcode, tpp->len);
->> +		smp_wmb();	/* Make sure other cpus see that this has run */
->> +		wrote_text = 1;
->> +	} else {
->> +		while (!wrote_text)
->> +			smp_rmb();
->> +		sync_core();
->> +	}
->> +
->> +	flush_icache_range((unsigned long)tpp->addr,
->> +			   (unsigned long)tpp->addr + tpp->len);
->> +	return 0;
->> +}
->> +
->> +static void *__kprobes __multibyte_poke(void *addr, const void *opcode,
->> +					size_t len)
->> +{
->> +	struct text_poke_param tpp;
->> +
->> +	tpp.addr = addr;
->> +	tpp.opcode = opcode;
->> +	tpp.len = len;
->> +	atomic_set(&stop_machine_first, 1);
->> +	wrote_text = 0;
->> +	stop_machine(stop_machine_multibyte_poke, (void *)&tpp, NULL);
->> +	return addr;
->> +}
->
-> As you know, I'd like to have the jump label optimization for
-> tracepoints, make use of this '__multibyte_poke()' interface. So perhaps
-> it can be moved to arch/x86/kernel/alternative.c. This is where 'text_poke()'
-> and friends currently live.
+On 11/24/2009 07:16 PM, Alan Stern wrote:
+> On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
+> 
+>> Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
+>> don't think I'm allowed to send attachments here, nor do I know what I'm
+>> supposed to be looking for in this output. So, instead I'm putting the
+>> (compressed) file up on my home computer. If you've got suggestions for what
+>> I should use instead, let me know.
+>>
+>> http://hikaru.no-ip.info:3000/1.mon.out.xz
+>>
+>> Although I don't think you'll need it, I've included the dmesg output of
+>> what happened when I ran my backup script, just in case it helps at all.
+> 
+> Here's an annotated example of one of those hiccups:
+> 
+> f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
+> f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
+> 
+> The computer issued a READ command for 8 blocks (4096 bytes) starting
+> at block number 0x0000aeef = 44783.
+> 
+> d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
+> d2588b00 2416019428 C Bi:1:003:2 -32 0
+> f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
+> f1aa1f00 2416019554 C Co:1:003:0 0 0
+> 
+> The drive returned 0 bytes of data.
+> 
+> f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
+> f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
+> 
+> And then it returned a status indicating no error but 4096 bytes
+> residue (i.e., incorrect or undelivered data).  This caused the
+> usb-storage driver to send the SCSI layer a result code of DID_ERROR
+> with no sense data.
+> 
+>> sd 0:0:0:0: [sda] Unhandled error code
+>> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+>> end_request: I/O error, dev sda, sector 44783
+> 
+> The DID_ERROR code caused the SCSI layer to display this error message.  
+> 
+>> sd 0:0:0:0: [sda] Unhandled error code
+>> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+>> end_request: I/O error, dev sda, sector 51823
+> 
+> I would have expected the READ to be retried, but in these two cases 
+> it wasn't.  The usbmon log contained five instances of this error 
+> sequence; the other three were retried successfully.  I don't know what 
+> the difference was.
+> 
 
-Hmm, maybe current text_poke needs to have singlebyte_poke() wrapper
-for avoiding confusion.
+Perhaps the time it took to complete.
 
-> Also, with multiple users we don't want to trample over each others code
-> patching. Thus, if each sub-system could register some type of
-> 'is_reserved()' callback, and then we can call all these call backs from
-> the '__multibyte_poke()' routine before we do any patching to make sure
-> that we aren't trampling on each others code. After a successful
-> patching, each sub-system can update its reserved set of code as
-> appropriate. I can code a prototype here, if this makes sense.
+I have a very old IDE disk connected to a USB box here, and some bad sectors take ages
+to return. One thing I wanted to investigate is why the complete Linux system is frozen
+for minutes when I "cp" one of these bad-sectors and then every thing is back to normal.
+It's just an inserted external box. Swap system and everything is on an another healthy HD.
+As if the USB controller actually locks the PCI bus, or the interrupts are off for a long
+while. (Or is it the BKL?)
 
-Hmm, we have to implement it carefully, because here kprobes already
-inserted int3 and optprobe rewrites the int3 again. If is_reserved()
-returns 1 and multibyte_poke returns error, we can't optimize it anymore.
+Do you have time stamps on these?
 
-Thank you,
+> Alan Stern
+> 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Boaz
