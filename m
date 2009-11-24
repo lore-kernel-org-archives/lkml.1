@@ -1,101 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZKXJHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZKXJI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932362AbZKXJHA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZKXJHA
+	id S932394AbZKXJI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932300AbZKXJIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:07:00 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:54371 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbZKXJG6 (ORCPT
+	Tue, 24 Nov 2009 04:08:55 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47069 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932285AbZKXJIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:06:58 -0500
-Message-ID: <4B0BA234.6020905@monstr.eu>
-Date: Tue, 24 Nov 2009 10:07:00 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
-MIME-Version: 1.0
-CC: benh@kernel.crashing.org, dmitchell@amcc.com,
-       Grant Likely <grant.likely@secretlab.ca>,
-       John Williams <john.williams@petalogix.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Add UPF_FIXED_TYPE flag - eedacbf02df462d6c915d8d642b23fb450d485c7
-References: <4B0ABE01.3030901@monstr.eu>
-In-Reply-To: <4B0ABE01.3030901@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Nov 2009 04:08:54 -0500
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Cc: Yong Zhang <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1259053156.2631.21.camel@ppwaskie-mobl2>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
+	 <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
+	 <1259051902.4531.1053.camel@laptop>
+	 <1259053156.2631.21.camel@ppwaskie-mobl2>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 10:08:56 +0100
+Message-ID: <1259053736.4531.1097.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2009-11-24 at 00:59 -0800, Peter P Waskiewicz Jr wrote:
+> > This all sounds backwards.. we've got a perfectly functional interface
+> > for affinity -- which people object to being used for some reason. So
+> > you add another interface on top, and that is ok?
+> > 
+> 
+> But it's not functional.  If I set the affinity in smp_affinity, then
+> irqbalance will override it 10 seconds later. 
 
-I found where the problem was. We have uart16550a compatible device not 
-only uart16550.
-I will send patch for extension of compatible list.
+And here I was thinking the kernel round-robins IRQ delivery on the mask
+specified there. Are you talking about some daft userspace thing that
+writes into the irq smp_affinity to effect irq balancing?
 
-Regards,
-Michal
-
-Michal Simek wrote:
-> Hi Ben and David,
-> 
-> I have found one problem with input overrun. My problem is of course on 
-> Microblaze with uart16550.
-> 
-> Here is the behavior - I just pressed left arrow.
-> 
-> ~ # fdasfdakjsdhfkajsdhfkjadklasdjfhajksdhfkahsdfjkahsdkjfhjkattyS0: 3 
-> input overrun(s)
-> [[DttyS0: 3 input overrun(s)
-> [[[[[DDDahsdk[[[[D[DDjfhjka[D          [[[DttyS0: 6 input 
-> overrun(s)jk[[D[D[[D[[
-> [[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[ 
-> 
-> D[[[[DDDahsdk[[[[D[DDjfhjka[D
-> -sh: 
-> fdasfdakjsdhfkajsdhfkjadklasdjfhajk[[D[[[D[Dsd[[Dhfkah[[[[DD[[DDsdfjk[[D[D[[D[[[[DDDahsdk[[[[D[DDjfhjka[D: 
-> not found
-> 
-> 
-> I bisected it and yours Subject patch caused my problems. It is really 
-> old patch and I was surprised how old it is.
-> 
-> 
-> Here is your diff
-> diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-> index 02406ba..54483cd 100644
-> --- a/drivers/serial/of_serial.c
-> +++ b/drivers/serial/of_serial.c
-> @@ -67,7 +67,7 @@ static int __devinit of_platform_serial_setup(struct 
-> of_device *ofdev,
->         port->type = type;
->         port->uartclk = *clk;
->         port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
-> -               | UPF_FIXED_PORT | UPF_FIXED_TYPE;
-> +               | UPF_FIXED_PORT;
->         port->dev = &ofdev->dev;
->         /* If current-speed was set, then try not to change it. */
->         if (spd)
-> 
-> 
-> If I trace port->type I am getting 3. (drivers/serial/8250.c:3089 
-> serial8250_register_port func 3118 - serial8250_register_port)
-> Grant: Could you please print that value on ppc?
-> 
-> Can you give me any hints what could be wrong? I will continue on it 
-> tomorrow.
-> 
-> Thanks,
-> Michal
-> 
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
