@@ -1,108 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZKXIea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbZKXIek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbZKXIea (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbZKXIe3
+	id S932252AbZKXIek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbZKXIej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:34:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35801 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Nov 2009 03:34:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9016 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932200AbZKXIe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:34:29 -0500
-Date: Tue, 24 Nov 2009 09:34:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more
- statistics
-Message-ID: <20091124083423.GE21991@elte.hu>
-References: <4B0B6E44.6090106@cn.fujitsu.com>
- <84144f020911232315h7c8b7348u9ad97f585f54a014@mail.gmail.com>
- <20091124073426.GA21991@elte.hu>
- <4B0B937F.4080906@cn.fujitsu.com>
+	id S932239AbZKXIei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:34:38 -0500
+Message-ID: <4B0B9B44.1010206@redhat.com>
+Date: Tue, 24 Nov 2009 16:37:24 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0B937F.4080906@cn.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Dan Carpenter <error27@gmail.com>, Amerigo Wang <amwang@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@redhat.com>
+Subject: Re: [Resend Patch] kexec: allow to shrink reserved memory
+References: <20091123093958.4963.38592.sendpatchset@localhost.localdomain> <20091124075813.GA14488@bicker>
+In-Reply-To: <20091124075813.GA14488@bicker>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Ingo Molnar wrote:
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> >> Hi Li,
-> >>
-> >> On Tue, Nov 24, 2009 at 7:25 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> >>> Pekka, do you think we can remove kmemtrace now?
-> >> One more use case I forgot to mention: boot time tracing. Much of the 
-> >> persistent kernel memory footprint comes from the boot process which 
-> >> is why it's important to be able to trace memory allocations 
-> >> immediately after kmem_cache_init() has run. Can we make "perf kmem" 
-> >> do that? Eduard put most of his efforts into making that work for 
-> >> kmemtrace.
-> > 
-> > Would be lovely if someone looked at perf from that angle (and extended 
-> > it).
-> > 
-> > Another interesting area would be to allow a capture session without a 
-> > process context running immediately. (i.e. pre-allocate all the buffers, 
-> > use them, for a later 'perf save' to pick it up.)
-> > 
-> > The two are kind of the same thing conceptually: a boot time trace is a 
-> > preallocated 'process context less' recording, to be picked up after 
-> > bootup.
-> > 
-> > [ It also brings us 'stability/persistency of event logging' - i.e. a 
-> >   capture session could be started and guaranteed by the kernel to be 
-> >   underway, regardless of what user-space does. ]
-> > 
-> > Btw., Arjan is doing a _lot_ of boot time tracing for Moblin, and he 
-> > indicated it in the past that starting a perf recording session from 
-> > an initrd is a pretty practical substitute as well. (I've Cc:-ed 
-> > Arjan.)
+Dan Carpenter wrote:
+> On Mon, Nov 23, 2009 at 04:37:02AM -0500, Amerigo Wang wrote:
+> [snip]
+>> +size_t crash_get_memory_size(void);
+> [snip]
+>> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
+>> +				       struct kobj_attribute *attr, char *buf)
+>> +{
+>> +	return sprintf(buf, "%lu\n", crash_get_memory_size());
+>> +}
 > 
-> It would be great if perf can be used for boot time tracing. This 
-> needs pretty big work on kernel side.
+>   CC      kernel/ksysfs.o
+> kernel/ksysfs.c: In function ‘kexec_crash_size_show’:
+> kernel/ksysfs.c:106: warning: format ‘%lu’ expects type ‘long unsigned int’, but argument 3 has type ‘size_t’
+> 
+> Could we get suppress this gcc warning?
 
-What would be needed is to open per cpu events right after perf events 
-initializes, and allocate memory for output buffers to them.
+Oops! Try to replace '%lu' with '%zu'...
 
-They would round-robin after that point, and we could use 
-perf_event_open() (with a special flag) to 'attach' to them and mmap() 
-them - at which point they'd turn into regular objects with a lot of 
-boot time data in them.
+I didn't see this warning, will cook a delta patch.
 
-Perhaps it should be possible to attach/detach from events in a flexible 
-way, not just during bootup. (bootup tracing is just a special case of 
-it.)
-
-For example a 'flight recorder' could be started by creating the events 
-and then detaching from them. Whenever some exception is flagged the 
-monitoring context (whatever task that might be at that time - at 
-whatever point in the future) could attach to it and save it to a file 
-(or send it over any other transport of choice).
-
-This would IMO mix the best of ftrace with the best of perf, for these 
-usecases.
-
-[ Certainly not a feature for the faint hearted :-) ]
-
-	Ingo
+Thanks!
