@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZKXBNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbZKXBN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbZKXBNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 20:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757570AbZKXBNW
+	id S932093AbZKXBN0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 20:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbZKXBNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 20:13:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59109 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 20:13:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59135 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754332AbZKXBNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 20:13:21 -0500
-Date: Tue, 24 Nov 2009 01:13:00 GMT
+	id S1757599AbZKXBNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 20:13:23 -0500
+Date: Tue, 24 Nov 2009 01:13:15 GMT
 From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de
+       tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, tglx@linutronix.de
+       tglx@linutronix.de
 In-Reply-To: <20091119202341.GA4420@sgi.com>
 References: <20091119202341.GA4420@sgi.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86, mm: is_untracked_pat_range() takes a normal semiclosed range
-Message-ID: <tip-8a27138924f64d2f30c1022f909f74480046bc3f@git.kernel.org>
-Git-Commit-ID: 8a27138924f64d2f30c1022f909f74480046bc3f
+Subject: [tip:x86/mm] x86: Change is_ISA_range() into an inline function
+Message-ID: <tip-65f116f5f16dc3371fce24fb24bc4843b5380ba5@git.kernel.org>
+Git-Commit-ID: 65f116f5f16dc3371fce24fb24bc4843b5380ba5
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,72 +29,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8a27138924f64d2f30c1022f909f74480046bc3f
-Gitweb:     http://git.kernel.org/tip/8a27138924f64d2f30c1022f909f74480046bc3f
+Commit-ID:  65f116f5f16dc3371fce24fb24bc4843b5380ba5
+Gitweb:     http://git.kernel.org/tip/65f116f5f16dc3371fce24fb24bc4843b5380ba5
 Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Mon, 23 Nov 2009 14:49:20 -0800
+AuthorDate: Mon, 23 Nov 2009 14:44:39 -0800
 Committer:  H. Peter Anvin <hpa@zytor.com>
 CommitDate: Mon, 23 Nov 2009 17:09:59 -0800
 
-x86, mm: is_untracked_pat_range() takes a normal semiclosed range
+x86: Change is_ISA_range() into an inline function
 
-is_untracked_pat_range() -- like its components, is_ISA_range() and
-is_GRU_range(), takes a normal semiclosed interval (>=, <) whereas the
-PAT code called it as if it took a closed range (>=, <=).  Fix.
-
-Although this is a bug, I believe it is non-manifest, simply because
-none of the callers will call this with non-page-aligned addresses.
+Change is_ISA_range() from a macro to an inline function.  This makes
+it type safe, and also allows it to be assigned to a function pointer
+if necessary.
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 LKML-Reference: <20091119202341.GA4420@sgi.com>
 ---
- arch/x86/include/asm/pgtable.h |    2 +-
- arch/x86/mm/pat.c              |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/e820.h |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 1de2094..a34c785 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -274,7 +274,7 @@ static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
- 	/*
- 	 * PAT type is always WB for untracked ranges, so no need to check.
- 	 */
--	if (x86_platform.is_untracked_pat_range(paddr, paddr + size - 1))
-+	if (x86_platform.is_untracked_pat_range(paddr, paddr + size))
- 		return 1;
+diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
+index 40b4e61..68b4e0e 100644
+--- a/arch/x86/include/asm/e820.h
++++ b/arch/x86/include/asm/e820.h
+@@ -61,6 +61,12 @@ struct e820map {
+ 	struct e820entry map[E820_X_MAX];
+ };
  
- 	/*
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 38a66ef..b5bc08c 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -394,7 +394,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 	}
++#define ISA_START_ADDRESS	0xa0000
++#define ISA_END_ADDRESS		0x100000
++
++#define BIOS_BEGIN		0x000a0000
++#define BIOS_END		0x00100000
++
+ #ifdef __KERNEL__
+ /* see comment in arch/x86/kernel/e820.c */
+ extern struct e820map e820;
+@@ -126,15 +132,14 @@ extern void e820_reserve_resources(void);
+ extern void e820_reserve_resources_late(void);
+ extern void setup_memory_map(void);
+ extern char *default_machine_specific_memory_setup(void);
+-#endif /* __KERNEL__ */
+-#endif /* __ASSEMBLY__ */
  
- 	/* Low ISA region is always mapped WB in page table. No need to track */
--	if (x86_platform.is_untracked_pat_range(start, end - 1)) {
-+	if (x86_platform.is_untracked_pat_range(start, end)) {
- 		if (new_type)
- 			*new_type = _PAGE_CACHE_WB;
- 		return 0;
-@@ -505,7 +505,7 @@ int free_memtype(u64 start, u64 end)
- 		return 0;
+-#define ISA_START_ADDRESS	0xa0000
+-#define ISA_END_ADDRESS		0x100000
+-#define is_ISA_range(s, e) ((s) >= ISA_START_ADDRESS && (e) < ISA_END_ADDRESS)
++static inline bool is_ISA_range(u64 s, u64 e)
++{
++	return s >= ISA_START_ADDRESS && e < ISA_END_ADDRESS;
++}
  
- 	/* Low ISA region is always mapped WB. No need to track */
--	if (x86_platform.is_untracked_pat_range(start, end - 1))
-+	if (x86_platform.is_untracked_pat_range(start, end))
- 		return 0;
+-#define BIOS_BEGIN		0x000a0000
+-#define BIOS_END		0x00100000
++#endif /* __KERNEL__ */
++#endif /* __ASSEMBLY__ */
  
- 	is_range_ram = pat_pagerange_is_ram(start, end);
-@@ -588,7 +588,7 @@ static unsigned long lookup_memtype(u64 paddr)
- 	int rettype = _PAGE_CACHE_WB;
- 	struct memtype *entry;
- 
--	if (x86_platform.is_untracked_pat_range(paddr, paddr + PAGE_SIZE - 1))
-+	if (x86_platform.is_untracked_pat_range(paddr, paddr + PAGE_SIZE))
- 		return rettype;
- 
- 	if (pat_pagerange_is_ram(paddr, paddr + PAGE_SIZE)) {
+ #ifdef __KERNEL__
+ #include <linux/ioport.h>
