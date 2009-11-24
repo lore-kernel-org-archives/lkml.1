@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbZKXUil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933078AbZKXUjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932891AbZKXUil (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 15:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932646AbZKXUik
+	id S933078AbZKXUjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 15:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbZKXUjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 15:38:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33174 "EHLO hera.kernel.org"
+	Tue, 24 Nov 2009 15:39:46 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34947 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932508AbZKXUij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 15:38:39 -0500
-Date: Tue, 24 Nov 2009 20:36:39 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, lizf@cn.fujitsu.com,
-       peterz@infradead.org, arjan@infradead.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
-       arjan@infradead.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1259091502-5171-1-git-send-email-fweisbec@gmail.com>
-References: <1259091502-5171-1-git-send-email-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_events: Fix bad software/trace event recursion counting
-Message-ID: <tip-fe6126722718e51fba4879517c11ac12d9775bcc@git.kernel.org>
-Git-Commit-ID: fe6126722718e51fba4879517c11ac12d9775bcc
-X-Mailer: tip-git-log-daemon
+	id S932611AbZKXUjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 15:39:45 -0500
+Date: Tue, 24 Nov 2009 21:39:44 +0100
+From: Jan Kara <jack@suse.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jan Kara <jack@suse.cz>, Boaz Harrosh <bharrosh@panasas.com>,
+       tmhikaru@gmail.com,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+Message-ID: <20091124203944.GD16662@quack.suse.cz>
+References: <20091124195607.GC16662@quack.suse.cz>
+ <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fe6126722718e51fba4879517c11ac12d9775bcc
-Gitweb:     http://git.kernel.org/tip/fe6126722718e51fba4879517c11ac12d9775bcc
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Tue, 24 Nov 2009 20:38:22 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Nov 2009 21:34:00 +0100
+On Tue 24-11-09 15:13:01, Alan Stern wrote:
+> On Tue, 24 Nov 2009, Jan Kara wrote:
+> 
+> >   After digging in block layer code, it's as we suspected:
+> > In case of host error DID_ERROR (which is our case), scsi request is
+> > retried iff it is not a FAILFAST request which is set if bio is doing
+> > readahead... So this is explained and everything behaves as it should.
+> > Thanks everybody involved :).
+> 
+> Okay, very good.  There remains the question of the disturbing error
+> messages in the system log.  Should they be supressed for FAILFAST
+> requests?
+  I think it's useful they are there because ultimately, something really
+went wrong and you should better investigate. BTW, "end_request: I/O error"
+messages are in the log even for requests where we retried and succeeded...
 
-perf_events: Fix bad software/trace event recursion counting
-
-Commit 4ed7c92d68a5387ba5f7030dc76eab03558e27f5
-(perf_events: Undo some recursion damage) has introduced a bad
-reference counting of the recursion context. putting the context
-behaves like getting it, dropping every software/trace events
-after the first one in a context.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arjan van de Ven <arjan@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1259091502-5171-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/perf_event.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index accfd7b..35df94e 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -3914,7 +3914,7 @@ void perf_swevent_put_recursion_context(int rctx)
- {
- 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	barrier();
--	cpuctx->recursion[rctx]++;
-+	cpuctx->recursion[rctx]--;
- 	put_cpu_var(perf_cpu_context);
- }
- EXPORT_SYMBOL_GPL(perf_swevent_put_recursion_context);
+								Honza
