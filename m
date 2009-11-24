@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbZKXNNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbZKXNN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932876AbZKXNNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbZKXNNl
+	id S932890AbZKXNN4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbZKXNNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:13:41 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:45940 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932548AbZKXNNk (ORCPT
+	Tue, 24 Nov 2009 08:13:54 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:54206 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932671AbZKXNNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:13:40 -0500
-Subject: [PATCH 1/1] Correct sorting problem in cfq_service_tree_add
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1259068293.3019.15.camel@cail>
-References: <1259068293.3019.15.camel@cail>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 24 Nov 2009 08:13:45 -0500
-Message-ID: <1259068425.3019.19.camel@cail>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Nov 2009 08:13:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=qQMk5XqcbhJc0Pp64nJ9/atUe0i/hvDgsThUBv4qyQvyZ8tCbJ23jUC0vDGMFj2yN7
+         Lk40TgxQEy3Eldun1RhFqbZoOAeZGpap+CgRD4l+RxWtjKS1Rt1tyeCW7C/gs1NZ0sgG
+         dAg3HM+psYD025S1Vr1+ql25KkQJJFV6lcCB0=
+MIME-Version: 1.0
+In-Reply-To: <20091124120906.GA1700@ucw.cz>
+References: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
+	 <20091123173616.75c3f600@tlielax.poochiereds.net>
+	 <20091123224948.GB5598@shareable.org>
+	 <20091123181545.05ad004d@tlielax.poochiereds.net>
+	 <m1ljhwbyr3.fsf@fess.ebiederm.org>
+	 <20091123193426.55f1530a@tlielax.poochiereds.net>
+	 <20091124012027.GA14645@shareable.org>
+	 <20091124062621.744beddb@tlielax.poochiereds.net>
+	 <E1NCtxF-0000rn-1z@pomaz-ex.szeredi.hu> <20091124120906.GA1700@ucw.cz>
+Date: Tue, 24 Nov 2009 13:13:58 +0000
+X-Google-Sender-Auth: f9798914fb23a648
+Message-ID: <e9e943910911240513g31e633ffg2e878a874f1110ba@mail.gmail.com>
+Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks and 
+	file bind mounts (try #5)
+From: Duane Griffin <duaneg@dghda.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Jeff Layton <jlayton@redhat.com>,
+       jamie@shareable.org, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sort order was being incorrectly calculated using just the class, this
-patch includes the priority within the classes when deciding sort order.
+2009/11/24 Pavel Machek <pavel@ucw.cz>:
+> On Tue 2009-11-24 12:53:09, Miklos Szeredi wrote:
+>> I still believe leaving the current semantics and documenting them is
+>> the best option.
+>
+> I believe that current semantics is ugly enough that 'documenting' it
+> is not enough... and people want to port from other systems, too, not
+> expecting nasty surprises like this...
 
-Note: IOPRIO_CLASS_NONE classes are converted to IOPRIO_CLASS_BE before
-getting to this function, hence the WARN_ON in the added function
-cfq_class_prio.
+Solaris 10 works the same way as Linux does now, so I don't think the
+porting argument gets you anywhere.
 
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- block/cfq-iosched.c |   27 ++++++++++++++++-----------
- 1 files changed, 16 insertions(+), 11 deletions(-)
+>                                                                Pavel
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index aa1e953..7b9ca4d 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -226,6 +226,12 @@ CFQ_CFQQ_FNS(coop);
- CFQ_CFQQ_FNS(coop_preempt);
- #undef CFQ_CFQQ_FNS
- 
-+static inline int cfq_class_prio(struct cfq_queue *cfqq)
-+{
-+	WARN_ON(cfqq->ioprio_class == IOPRIO_CLASS_NONE);
-+	return IOPRIO_PRIO_VALUE(cfqq->ioprio_class, cfqq->ioprio);
-+}
-+
- #define cfq_log_cfqq(cfqd, cfqq, fmt, args...)	\
- 	blk_add_trace_msg((cfqd)->queue, "cfq%d " fmt, (cfqq)->pid, ##args)
- #define cfq_log(cfqd, fmt, args...)	\
-@@ -536,30 +542,29 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	p = &cfqd->service_tree.rb.rb_node;
- 	while (*p) {
- 		struct rb_node **n;
-+		int cfqq_prio, __cfqq_prio;
- 
- 		parent = *p;
- 		__cfqq = rb_entry(parent, struct cfq_queue, rb_node);
- 
-+		cfqq_prio = cfq_class_prio(cfqq);
-+		__cfqq_prio = cfq_class_prio(__cfqq);
-+
- 		/*
- 		 * sort RT queues first, we always want to give
- 		 * preference to them. IDLE queues goes to the back.
- 		 * after that, sort on the next service time.
-+		 * (Lower priority values represent higher priorities.)
- 		 */
--		if (cfq_class_rt(cfqq) > cfq_class_rt(__cfqq))
-+		if (cfqq_prio < __cfqq_prio)
- 			n = &(*p)->rb_left;
--		else if (cfq_class_rt(cfqq) < cfq_class_rt(__cfqq))
--			n = &(*p)->rb_right;
--		else if (cfq_class_idle(cfqq) < cfq_class_idle(__cfqq))
-+		else if (cfqq_prio == __cfqq_prio &&
-+			 time_before(rb_key, __cfqq->rb_key))
- 			n = &(*p)->rb_left;
--		else if (cfq_class_idle(cfqq) > cfq_class_idle(__cfqq))
--			n = &(*p)->rb_right;
--		else if (time_before(rb_key, __cfqq->rb_key))
--			n = &(*p)->rb_left;
--		else
-+		else {
- 			n = &(*p)->rb_right;
--
--		if (n == &(*p)->rb_right)
- 			left = 0;
-+		}
- 
- 		p = n;
- 	}
+Cheers,
+Duane.
+
 -- 
-1.6.3.3
-
-
-
+"I never could learn to drink that blood and call it wine" - Bob Dylan
