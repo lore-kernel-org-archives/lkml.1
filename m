@@ -1,141 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbZKXBNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbZKXBPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbZKXBNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 20:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbZKXBNt
+	id S1757708AbZKXBPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 20:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZKXBPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 20:13:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59174 "EHLO hera.kernel.org"
+	Mon, 23 Nov 2009 20:15:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59273 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757551AbZKXBNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 20:13:48 -0500
-Date: Tue, 24 Nov 2009 01:13:30 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       steiner@sgi.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, tglx@linutronix.de
-In-Reply-To: <20091119202341.GA4420@sgi.com>
-References: <20091119202341.GA4420@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86, platform: Change is_untracked_pat_range() to bool; cleanup init
-Message-ID: <tip-eb41c8be89dbe079f49202774e04a79ccac48a09@git.kernel.org>
-Git-Commit-ID: eb41c8be89dbe079f49202774e04a79ccac48a09
-X-Mailer: tip-git-log-daemon
+	id S1752187AbZKXBPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 20:15:30 -0500
+Message-ID: <4B0B335E.1070809@kernel.org>
+Date: Mon, 23 Nov 2009 17:14:06 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
+ big -v11
+References: <4ADEB601.8020200@kernel.org>	<4AE52B68.3070501@jp.fujitsu.com>	<4AE53883.3070709@kernel.org>	<4AE5545E.1020900@jp.fujitsu.com>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com>
+In-Reply-To: <4B0B321E.4010103@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eb41c8be89dbe079f49202774e04a79ccac48a09
-Gitweb:     http://git.kernel.org/tip/eb41c8be89dbe079f49202774e04a79ccac48a09
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Mon, 23 Nov 2009 14:46:07 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 23 Nov 2009 17:09:59 -0800
+Kenji Kaneshige wrote:
+> Hi,
+> 
+> I tried v11 patches. This version seems to fix the problem I
+> reported against previous version.
+> 
+> I have no objection against the idea of resource allocation
+> changes for PCI express hotplug slots.
 
-x86, platform: Change is_untracked_pat_range() to bool; cleanup init
+thanks
 
-- Change is_untracked_pat_range() to return bool.
-- Clean up the initialization of is_untracked_pat_range() -- by default,
-  we simply point it at is_ISA_range() directly.
-- Move is_untracked_pat_range to the end of struct x86_platform, since
-  it is the newest field.
+> 
+> But I still have concern about changing resource allocation for
+> other than PCI express hotplug slots. For example, some hotplug
+> controller other than PCI express can have multiple slots under
+> the same bus. If some hotplug slots are occupied and the others
+> are empty at the boot time, I think your code try to shrink the
+> bus resources for hotplug slots allocated by BIOS. It would break
+> the hot-add on the empty slots due to the resource allocation
+> failure.
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <20091119202341.GA4420@sgi.com>
----
- arch/x86/include/asm/pat.h         |    2 --
- arch/x86/include/asm/x86_init.h    |    4 ++--
- arch/x86/kernel/apic/x2apic_uv_x.c |    4 ++--
- arch/x86/kernel/x86_init.c         |    2 +-
- arch/x86/mm/pat.c                  |    5 -----
- 5 files changed, 5 insertions(+), 12 deletions(-)
+no,
+it will not touch bridge resources that already assigned by BIOS except
+some bridge resource is not big enough. and get big one for them.
 
-diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
-index 4c35dd0..e2c1668 100644
---- a/arch/x86/include/asm/pat.h
-+++ b/arch/x86/include/asm/pat.h
-@@ -24,6 +24,4 @@ int io_reserve_memtype(resource_size_t start, resource_size_t end,
- 
- void io_free_memtype(resource_size_t start, resource_size_t end);
- 
--int default_is_untracked_pat_range(u64 start, u64 end);
--
- #endif /* _ASM_X86_PAT_H */
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index 8112ed7..024cf3c 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -113,16 +113,16 @@ struct x86_cpuinit_ops {
- 
- /**
-  * struct x86_platform_ops - platform specific runtime functions
-- * @is_untracked_pat_range	exclude from PAT logic
-  * @calibrate_tsc:		calibrate TSC
-  * @get_wallclock:		get time from HW clock like RTC etc.
-  * @set_wallclock:		set time back to HW clock
-+ * @is_untracked_pat_range	exclude from PAT logic
-  */
- struct x86_platform_ops {
--	int (*is_untracked_pat_range)(u64 start, u64 end);
- 	unsigned long (*calibrate_tsc)(void);
- 	unsigned long (*get_wallclock)(void);
- 	int (*set_wallclock)(unsigned long nowtime);
-+	bool (*is_untracked_pat_range)(u64 start, u64 end);
- };
- 
- extern struct x86_init_ops x86_init;
-diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 2477c9f..597a47b 100644
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -37,12 +37,12 @@ DEFINE_PER_CPU(int, x2apic_extra_bits);
- static enum uv_system_type uv_system_type;
- static u64 gru_start_paddr, gru_end_paddr;
- 
--static int is_GRU_range(u64 start, u64 end)
-+static inline bool is_GRU_range(u64 start, u64 end)
- {
- 	return start >= gru_start_paddr && end < gru_end_paddr;
- }
- 
--static int uv_is_untracked_pat_range(u64 start, u64 end)
-+static bool uv_is_untracked_pat_range(u64 start, u64 end)
- {
- 	return is_ISA_range(start, end) || is_GRU_range(start, end);
- }
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index bcc749e..861b8b5 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -70,8 +70,8 @@ struct x86_cpuinit_ops x86_cpuinit __cpuinitdata = {
- };
- 
- struct x86_platform_ops x86_platform = {
--	.is_untracked_pat_range		= default_is_untracked_pat_range,
- 	.calibrate_tsc			= native_calibrate_tsc,
- 	.get_wallclock			= mach_get_cmos_time,
- 	.set_wallclock			= mach_set_rtc_mmss,
-+	.is_untracked_pat_range		= is_ISA_range,
- };
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index b5bc08c..ef71251 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -349,11 +349,6 @@ static int free_ram_pages_type(u64 start, u64 end)
- 	return 0;
- }
- 
--int default_is_untracked_pat_range(u64 start, u64 end)
--{
--	return is_ISA_range(start, end);
--}
--
- /*
-  * req_type typically has one of the:
-  * - _PAGE_CACHE_WB
+YH
