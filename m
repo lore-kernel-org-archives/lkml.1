@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934430AbZKXX0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934437AbZKXXaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934430AbZKXX0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 18:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934414AbZKXX0i
+	id S934437AbZKXXaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 18:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934420AbZKXXay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 18:26:38 -0500
-Received: from outbound-mail-138.bluehost.com ([67.222.39.28]:51814 "HELO
-	outbound-mail-138.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S934408AbZKXX0i (ORCPT
+	Tue, 24 Nov 2009 18:30:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41077 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934419AbZKXXay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 18:26:38 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=TnrzHq6JRIE6rSqH5IlylvntXls+h2jis/Bp3C6vhFF6EIwRxaivBJSx+6eQxNck0sqERjtzH2LCAI6sbJKd9oO4EQz7C1Ie9Lk+4AkuSajPYGSrFtdJIcpQgSVv5lPp;
-Date: Tue, 24 Nov 2009 15:26:41 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] x86/pci: seperate x86_pci_rootbus_res_quirks from
- amd_bus.c
-Message-ID: <20091124152641.0491e2fe@jbarnes-piketon>
-In-Reply-To: <4AFBAADC.4070801@kernel.org>
-References: <4AFBAADC.4070801@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Tue, 24 Nov 2009 18:30:54 -0500
+Date: Tue, 24 Nov 2009 15:29:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH 5/7] kfifo: add DEFINE_KFIFO and friends, add very tiny
+ functions
+Message-Id: <20091124152940.b515b8b3.akpm@linux-foundation.org>
+In-Reply-To: <1258705633.4426.16.camel@wall-e>
+References: <1258704942.4426.5.camel@wall-e>
+	<1258705633.4426.16.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Nov 2009 22:27:40 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+On Fri, 20 Nov 2009 09:27:13 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-> 
-> those functions are used by intel_bus.c
-> 
-> so seperate them to another file. and make amd_bus some smaller.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>  Add DECLARE_KFIFO - macro to declare a kfifo and the associated buffer inside a struct
+>  Add INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
+>  Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
+>  Add kfifo_size() - returns the size of the fifo in bytes
+>  Add kfifo_is_empty() - returns true if the fifo is empty
+>  Add kfifo_is_full() - returns true if the fifo is full
+>  Add kfifo_avail() - returns the number of bytes available in the FIFO
+>  Do some code cleanup
 
-Applied to my linux-next branch, thanks.
+Causes this:
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+drivers/scsi/libiscsi_tcp.c: In function 'iscsi_tcp_cleanup_task':
+drivers/scsi/libiscsi_tcp.c:449: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c:456: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c: In function 'iscsi_tcp_r2t_rsp':
+drivers/scsi/libiscsi_tcp.c:557: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c:573: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c:583: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c: In function 'iscsi_tcp_get_curr_r2t':
+drivers/scsi/libiscsi_tcp.c:985: warning: ignoring return value of 'kfifo_in', declared with attribute warn_unused_result
+drivers/scsi/libiscsi_tcp.c:993: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
