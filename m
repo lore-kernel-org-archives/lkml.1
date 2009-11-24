@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbZKXNnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbZKXNsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932947AbZKXNnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932912AbZKXNnc
+	id S932964AbZKXNsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbZKXNsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:43:32 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:65060 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932894AbZKXNnc (ORCPT
+	Tue, 24 Nov 2009 08:48:41 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:53626 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758030AbZKXNsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:43:32 -0500
+	Tue, 24 Nov 2009 08:48:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=j1UQAG/2PkNv7ZtyUqYALW5ve5bZ3ElNahDkHxBO3RpUhF/OYUzP2b7LMavPJLvgjf
-         8zn5MW+6C5eF8vlVTCa0h63Uaqo3IHmxVLfAUgE6K9rI0poWpij/4ajuVB+p6jfuMaSB
-         TbdmJ1fp0PR5qUOsPPWVzsGQVPHSGF0aYbR5Y=
-Date: Tue, 24 Nov 2009 21:47:54 +0800
-From: "Liuweni" <qingshenlwy@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "xgr178" <xgr178@163.com>, "Jiri Kosina" <jkosina@suse.cz>,
-       "qingshenlwy" <qingshenlwy@tom.com>
-Subject: [PATCH]irq/core:Add a length limitation
-Message-ID: <200911242147508598860@gmail.com>
-X-mailer: Foxmail 6, 15, 201, 22 [cn]
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+        h=from:to:subject:date:user-agent:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=vxTj7aFnzO2KOzJMPgxZiOZEC3ABf2jEvZOsJ6Wt5FY6tpnqLFWVIKZM5W4BZVjcFk
+         3iGGbF7/5tp3gFpEAwRBa12oqnl1HBv0stVQGC3/j+v3u78pF0C9Y+TIcOJngvNK6HFY
+         5eFM/F/8hW/UXvMe3+wK6i11N4bH4XpC4tItg=
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: [PATCH 0/4] cfq-iosched: policy fixes
+Date: Tue, 24 Nov 2009 14:48:29 +0100
+User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911241448.29871.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the register_handler_proc(), the max length of irqaction->name is MAX_NAMELEN.
-And this function will call name_unique() to compare name with other irqs'.
-There is no any code for limitation the length.
-I add a warning in the function to notice that the irqaction->name is too long.
+Hi Jens,
+I've collected some bugfixes to the for-2.6.33 branch.
+Excluding the NCQ policy fix, that I'm resending with improved changelog,
+the bugs were found by Vivek while investingating performance drops
+or unfairness while testing cgroups. Nevertheless, those fixes have
+general impact, so they should go in before cgroup code is merged:
+* no-idle preemption logic was both under/over preempting.
+   it should preempt only if the active queue is idling due to
+   no-idle service tree empty
+* seeky queues with large depth could steal too much bandwidth to
+   low depth ones, so they will be marked as idling, and have exclusive
+   access to disk for their time share
+* the idling logic had some corner cases in which idling was not enabled,
+  even if it should have been, caused by rq_noidle and rq_in_driver checks.
+  Those were adjusted to better match the original intention.
 
-Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
----
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index 0832145..9ab6e04 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -196,6 +196,9 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
- 	char name [MAX_NAMELEN];
- 	struct irq_desc *desc = irq_to_desc(irq);
- 
-+	if(strlen(action->name) >= MAX_NAMELEN)
-+		WARN_ON(1);
-+
- 	if (!desc->dir || action->dir || !action->name ||
- 					!name_unique(irq, action))
- 		return;
----
-
-Best Regards,
-Liuweni
-2009-11-24
-
+Corrado
