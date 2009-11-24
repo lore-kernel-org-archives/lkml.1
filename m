@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933352AbZKXUqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933390AbZKXUrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933352AbZKXUqn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 15:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933178AbZKXUqn
+	id S933390AbZKXUrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 15:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933150AbZKXUrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 15:46:43 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53924 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933280AbZKXUqm (ORCPT
+	Tue, 24 Nov 2009 15:47:52 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:45813 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933027AbZKXUrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 15:46:42 -0500
-Message-ID: <4B0C4624.9080607@gmail.com>
-Date: Tue, 24 Nov 2009 21:46:28 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 24 Nov 2009 15:47:51 -0500
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+From: Andi Kleen <andi@firstfloor.org>
+References: <20091123145409.GA29627@wotan.suse.de>
+Date: Tue, 24 Nov 2009 21:47:56 +0100
+In-Reply-To: <20091123145409.GA29627@wotan.suse.de> (Nick Piggin's message of "Mon, 23 Nov 2009 15:54:09 +0100")
+Message-ID: <87einnwsxv.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: David Miller <davem@davemloft.net>, peter.p.waskiewicz.jr@intel.com,
-       peterz@infradead.org, arjan@linux.intel.com, yong.zhang0@gmail.com,
-       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-References: <20091124.093956.247147202.davem@davemloft.net>	<1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com>	<20091124.105442.06273019.davem@davemloft.net>	<4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org>
-In-Reply-To: <87iqczwtia.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 24 Nov 2009 21:46:30 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> They are typically allocated with dma_alloc_coherent(), which does
-> allocate a continuous area.  In theory you could do interleaving
-> with IOMMus, but just putting it on the same node as the device
-> is probably better.
+Nick Piggin <npiggin@suse.de> writes:
 
-There are two parts, biggest one allocated with vmalloc()
-(to hold struct ixgbe_rx_buffer array, 32 bytes or more per entry),
-only used by driver (not adapter)
+> Hi,
+>
+> Last time this issue came up that I could see, I don't think
+> there were objections to making rwlocks fair, the main
+> difficulty seemed to be that we allow reentrant read locks
+> (so a write lock waiting must not block arbitrary read lockers).
+>
+> Nowadays our rwlock usage is smaller although still quite a
+> few, so it would make better sense to do a conversion by
+> introducing a new lock type and move them over I guess.
 
-and one allocated with pci_alloc_consistent() 
-(to hold ixgbe_adv_tx_desc array, 16 bytes per entry)
+You want to do a new lock type for potentially nested rwlocks?
 
-vmalloc() one could be spreaded on many nodes.
-I am not speaking about the pci_alloc_consistent() one :)
+>From the basic idea it sounds good, but according
+to grep the current tree has hundreds of rwlocks all over,
+and how would you reliably detect whether they are nestable
+or not?
 
+I assume it's not something that could be easily analyzed
+at compile time and relying on runtime would seem dangerous.
 
+Basically it sounds like quite a lot of work.
+
+A better plan might be to have new types which are non nestable
+and only move over audited code to fair rwlocks.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
