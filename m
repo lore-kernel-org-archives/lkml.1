@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbZKXJv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbZKXJvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932566AbZKXJv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:51:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932545AbZKXJv1
+	id S932540AbZKXJvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932465AbZKXJvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:51:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58615 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932491AbZKXJvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Nov 2009 04:51:17 -0500
-Message-ID: <4B0BAC76.3080202@redhat.com>
-Date: Tue, 24 Nov 2009 11:50:46 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+Received: from stinky.trash.net ([213.144.137.162]:63668 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932460AbZKXJvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 04:51:16 -0500
+Message-ID: <4B0BAC97.6010000@trash.net>
+Date: Tue, 24 Nov 2009 10:51:19 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: kvmmmu tracing
-References: <1258974375.7094.158.camel@johannes.local>
-In-Reply-To: <1258974375.7094.158.camel@johannes.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-2-git-send-email-arnd@arndb.de>
+In-Reply-To: <1259024166-28158-2-git-send-email-arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23/2009 01:06 PM, Johannes Berg wrote:
-> Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
-> the userspace interface for tracing because of the weird
-> KVM_MMU_PAGE_PRINTK macro.
->
->    
+Arnd Bergmann wrote:
+> +int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
+> +{
+> +	skb_orphan(skb);
+> +
+> +	if (!(dev->flags & IFF_UP))
+> +		return NET_RX_DROP;
+> +
+> +	if (skb->len > (dev->mtu + dev->hard_header_len))
+> +		return NET_RX_DROP;
+> +
+> +	skb_dst_drop(skb);
+> +	skb->tstamp.tv64 = 0;
+> +	skb->pkt_type = PACKET_HOST;
+> +	skb->protocol = eth_type_trans(skb, dev);
+> +	skb->mark = 0;
 
-Can you explain what is wrong with it?
+skb->mark clearing should stay private to veth since its usually
+supposed to stay intact. The only exception is packets crossing
+namespaces, where they should appear like a freshly received skbs.
 
-> Maybe we should have a "unsafe for export" flag for events, if they do
-> strange things like that?
->
-> As it stands, I can't use trace-cmd on an x86 machine that has kvm
-> enabled because it will try to read all the kvm stuff. Arguably, it
-> should only try to parse it when it needs it (i.e. not for me) but still
-> it's very inconvenient to export something to userspace that it cannot
-> possibly understand.
->    
-
-Is userspace reading mmutrace.h?  When the structure attributes can be 
-exported via /sys/kernel/debug/tracing?
-
-
--- 
-error compiling committee.c: too many arguments to function
-
+> +	secpath_reset(skb);
+> +	nf_reset(skb);
+> +	return netif_rx(skb);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_forward_skb);
