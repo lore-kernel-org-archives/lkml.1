@@ -1,237 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933783AbZKXSAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZKXSAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933783AbZKXSAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933772AbZKXSAu
+	id S933766AbZKXSAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933737AbZKXSAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:00:50 -0500
-Received: from h3281.serverkompetenz.net ([81.169.158.52]:57444 "EHLO
-	h3281.serverkompetenz.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933770AbZKXSAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:00:45 -0500
-Message-ID: <4B0C1F41.2060101@hillier.de>
-Date: Tue, 24 Nov 2009 19:00:33 +0100
-From: Gernot Hillier <gernot@hillier.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 24 Nov 2009 13:00:39 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50777 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933603AbZKXSAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:00:38 -0500
+Date: Tue, 24 Nov 2009 19:00:37 +0100
+From: Jan Kara <jack@suse.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: tmhikaru@gmail.com, Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+       linux-scsi@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+Message-ID: <20091124180036.GB16662@quack.suse.cz>
+References: <20091123234234.GA22126@roll>
+ <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Matthias Urlichs <smurf@smurf.noris.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add support for Mobilcom Debitel USB UMTS Surf-Stick
- to option driver
-References: <4B08F18C.3040904@hillier.de> <200911220920.16717.oliver@neukum.org>
-In-Reply-To: <200911220920.16717.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-Oliver Neukum schrieb:
-> Am Sonntag, 22. November 2009 09:08:44 schrieb Gernot Hillier:
->> In addition, this device seems to ignore setting of RTS/DTR by option_send_
->> setup and doesn't answer the usb_control_msg leading to a 5 s timeout
->> (USB_CTRL_SET_TIMEOUT) in userspace open() and other operations. As this
->> confused several impatient userspace applications like Minicom and
->>  ModemManager, I decided to reduce the timeout to more reasonable 1000 ms.
->>  I don't think the usual USB GSM stick needs longer, so this should be
->>  safe.
+On Tue 24-11-09 12:16:17, Alan Stern wrote:
+> On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
 > 
-> Unfortunately the 5s timeout comes from the USB spec for control
-> messages. So reducing it is a serious matter. In this case I'd prefer
-> if you introduce a special case for these devices and fail the operation
-> without doing any IO.
+> > Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
+> > don't think I'm allowed to send attachments here, nor do I know what I'm
+> > supposed to be looking for in this output. So, instead I'm putting the
+> > (compressed) file up on my home computer. If you've got suggestions for what
+> > I should use instead, let me know.
+> > 
+> > http://hikaru.no-ip.info:3000/1.mon.out.xz
+> > 
+> > Although I don't think you'll need it, I've included the dmesg output of
+> > what happened when I ran my backup script, just in case it helps at all.
+> 
+> Here's an annotated example of one of those hiccups:
+> 
+> f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
+> f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
+> 
+> The computer issued a READ command for 8 blocks (4096 bytes) starting
+> at block number 0x0000aeef = 44783.
+> 
+> d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
+> d2588b00 2416019428 C Bi:1:003:2 -32 0
+> f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
+> f1aa1f00 2416019554 C Co:1:003:0 0 0
+> 
+> The drive returned 0 bytes of data.
+> 
+> f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
+> f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
+> 
+> And then it returned a status indicating no error but 4096 bytes
+> residue (i.e., incorrect or undelivered data).  This caused the
+> usb-storage driver to send the SCSI layer a result code of DID_ERROR
+> with no sense data.
+> 
+> > sd 0:0:0:0: [sda] Unhandled error code
+> > sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+> > end_request: I/O error, dev sda, sector 44783
+> 
+> The DID_ERROR code caused the SCSI layer to display this error message.  
+> 
+> > sd 0:0:0:0: [sda] Unhandled error code
+> > sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
+> > end_request: I/O error, dev sda, sector 51823
+> 
+> I would have expected the READ to be retried, but in these two cases 
+> it wasn't.  The usbmon log contained five instances of this error 
+> sequence; the other three were retried successfully.  I don't know what 
+> the difference was.
+  My naive guess would be that those non-retried reads were actually
+readahead. That's not retried if I remember correctly. Later, when we
+really needed the data, we sent another read request...
 
-Thanks for the answer and suggestion. I looked into that - but 
-unfortunately (again), it isn't that easy. The device accepts the 
-option_set_setup triggered control message on *one* of its three 
-interfaces while it silently ignores it on the other two. :-(
-
-I do see /dev/ttyUSB[0-2] - and on /dev/ttyUSB2, everything works as 
-expected (i.e. the control message *is* handled correctly) while ttyUSB0 
-and ttyUSB1 exhibit this strange timeout issue.
-
-As you might have expected, I have no detailed spec about the device 
-which could explain this. I can only say that the device reacts on AT 
-commands on ttyUSB1 and ttyUSB2 while ttyUSB0 seems to serve other purposes.
-
-What do you think - shall I disable sending the usb control message 
-depending on bInterfaceNumber? Any better ideas?
-
-Here's the "lsusb -v" output in case this helps:
-
-Bus 002 Device 007: ID 1c9e:9603
-Device Descriptor:
-   bLength                18
-   bDescriptorType         1
-   bcdUSB               2.00
-   bDeviceClass            0 (Defined at Interface level)
-   bDeviceSubClass         0
-   bDeviceProtocol         0
-   bMaxPacketSize0        64
-   idVendor           0x1c9e
-   idProduct          0x9603
-   bcdDevice            0.00
-   iManufacturer           2 USB Modem
-   iProduct                1 Modem Configuration
-   iSerial                 3 1234567890ABCDEF
-   bNumConfigurations      1
-   Configuration Descriptor:
-     bLength                 9
-     bDescriptorType         2
-     wTotalLength          108
-     bNumInterfaces          4
-     bConfigurationValue     1
-     iConfiguration          1 Modem Configuration
-     bmAttributes         0xe0
-       Self Powered
-       Remote Wakeup
-     MaxPower              500mA
-     Interface Descriptor:
-       bLength                 9
-       bDescriptorType         4
-       bInterfaceNumber        0
-       bAlternateSetting       0
-       bNumEndpoints           2
-       bInterfaceClass       255 Vendor Specific Class
-       bInterfaceSubClass    255 Vendor Specific Subclass
-       bInterfaceProtocol    255 Vendor Specific Protocol
-       iInterface              0
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x81  EP 1 IN
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x01  EP 1 OUT
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-     Interface Descriptor:
-       bLength                 9
-       bDescriptorType         4
-       bInterfaceNumber        1
-       bAlternateSetting       0
-       bNumEndpoints           2
-       bInterfaceClass       255 Vendor Specific Class
-       bInterfaceSubClass    255 Vendor Specific Subclass
-       bInterfaceProtocol    255 Vendor Specific Protocol
-       iInterface              0
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x82  EP 2 IN
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x02  EP 2 OUT
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-     Interface Descriptor:
-       bLength                 9
-       bDescriptorType         4
-       bInterfaceNumber        2
-       bAlternateSetting       0
-       bNumEndpoints           3
-       bInterfaceClass       255 Vendor Specific Class
-       bInterfaceSubClass    255 Vendor Specific Subclass
-       bInterfaceProtocol    255 Vendor Specific Protocol
-       iInterface              0
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x83  EP 3 IN
-         bmAttributes            3
-           Transfer Type            Interrupt
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0040  1x 64 bytes
-         bInterval               5
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x84  EP 4 IN
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x03  EP 3 OUT
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval              32
-     Interface Descriptor:
-       bLength                 9
-       bDescriptorType         4
-       bInterfaceNumber        3
-       bAlternateSetting       0
-       bNumEndpoints           2
-       bInterfaceClass         8 Mass Storage
-       bInterfaceSubClass      6 SCSI
-       bInterfaceProtocol     80 Bulk (Zip)
-       iInterface              0
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x04  EP 4 OUT
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval               0
-       Endpoint Descriptor:
-         bLength                 7
-         bDescriptorType         5
-         bEndpointAddress     0x85  EP 5 IN
-         bmAttributes            2
-           Transfer Type            Bulk
-           Synch Type               None
-           Usage Type               Data
-         wMaxPacketSize     0x0200  1x 512 bytes
-         bInterval               0
-Device Qualifier (for other device speed):
-   bLength                10
-   bDescriptorType         6
-   bcdUSB               2.00
-   bDeviceClass            0 (Defined at Interface level)
-   bDeviceSubClass         0
-   bDeviceProtocol         0
-   bMaxPacketSize0        64
-   bNumConfigurations      1
-Device Status:     0x0000
-   (Bus Powered)
-
---
-Gernot
+								Honza
