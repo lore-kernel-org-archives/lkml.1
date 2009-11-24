@@ -1,81 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbZKXUNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934201AbZKXVOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347AbZKXUNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 15:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbZKXUNP
+	id S934201AbZKXVOH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:14:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933920AbZKXVOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 15:13:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:34696 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933136AbZKXUM5 convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 16:14:04 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:50185 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934196AbZKXVOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 15:12:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f8U/TsEmf6TTrx73SM/CncEbSAX0sCGsmjvScd4hAYIkdyXgg//b9zJB0T0sIyeBde
-         uikVXxK0iax+4IoAbfeCLVNrQD3V09X6lY3EGNLyIstJdOUUkd+cWrozXqDwyIBw4ZDz
-         5+CHMobCL/qXbxFa87MAJkx4b/VDDSNEeM2cw=
+	Tue, 24 Nov 2009 16:14:01 -0500
+Message-ID: <4B0C3E83.3060401@oracle.com>
+Date: Tue, 24 Nov 2009 12:13:55 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <4B0C2445.2000008@klingt.org>
-References: <4B0BBB83.2020604@klingt.org>
-	 <73c1f2160911240950u7256feedqc475fa915dda43ca@mail.gmail.com>
-	 <4B0C2445.2000008@klingt.org>
-Date: Tue, 24 Nov 2009 15:13:02 -0500
-Message-ID: <73c1f2160911241213r24f0b8fdt3a4f5d50017c96c4@mail.gmail.com>
-Subject: Re: [PATCH 0/5] branch hint tweaks
-From: Brian Gerst <brgerst@gmail.com>
-To: Tim Blechmann <tim@klingt.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, devel@driverdev.osuosl.org
+Subject: [PATCH -next] staging/rtl8192x: fix printk formats
+References: <20091124212255.87e083ce.sfr@canb.auug.org.au>
+In-Reply-To: <20091124212255.87e083ce.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B0C4C94.00DE:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 1:21 PM, Tim Blechmann <tim@klingt.org> wrote:
->> Did you run profiling tests again after making these changes to see if
->> they had any effect?  likely() and unlikely() are only hints.  GCC
->> doesn't have to follow them, or it could be broken in recent GCC
->> versions.
->
-> i know, the compiler doesn't have to follow the hint ... but with the
-> likely/unlikely profiling, not the execution time is profiled, but
-> whether the branch hint is pointing to the right direction on my machine
-> ... if the assembly is actually affected does probably depend on the
-> compiler version, instruction set, cpu tuning ...
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-The only branch "hint" in the final assembly output is whether a
-branch points forward or backward.  unlikely() should tell GCC to put
-the code at the end of the function, and use a forward branch to it.
+Fix printk format warnings in rtl8192[eu]:
 
-Take for instance the code in arch/x86/kernel/process_64.c:
+drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c:979: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c:385: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c:484: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c:614: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c:848: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c:343: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c:442: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
+drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c:572: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
 
-        savesegment(es, prev->es);
-        if (unlikely(next->es | prev->es))
-                loadsegment(es, next->es);
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c   |    2 +-
+ drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c |    6 +++---
+ drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c   |    2 +-
+ drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c |    6 +++---
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
- 5eb:   66 8c c1                mov    %es,%cx
- 5ee:   66 89 48 30             mov    %cx,0x30(%rax)
- 5f2:   66 83 bb a8 04 00 00    cmpw   $0x0,0x4a8(%rbx)
- 5f9:   00
- 5fa:   41 8b 8d a8 04 00 00    mov    0x4a8(%r13),%ecx
- 601:   75 05                   jne    608 <__switch_to+0x86>
- 603:   66 85 c9                test   %cx,%cx
- 606:   74 04                   je     60c <__switch_to+0x8a>
- 608:   31 f6                   xor    %esi,%esi
- 60a:   8e c1                   mov    %ecx,%es
-
-Both of those branches are forward, which will be statically predicted
-as not taken.  Removing the unlikely() did not change the generated
-code in this case with GCC 4.4.2.  So this patch does nothing for that
-compiler version, but will lead to worse code on compilers that do
-respect the hint.
-
-Note that there is some weirdness in how the actual test is generated.
- It's not doing a bitwise-or operation like the C code describes.
-This could be throwing off the optimizer.
-
---
-Brian Gerst
+--- linux-next-20091124.orig/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
++++ linux-next-20091124/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
+@@ -976,7 +976,7 @@ int ieee80211_wx_set_gen_ie(struct ieee8
+ 	{
+ 		if (len != ie[1]+2)
+ 		{
+-			printk("len:%d, ie:%d\n", len, ie[1]);
++			printk("len:%zu, ie:%d\n", len, ie[1]);
+ 			return -EINVAL;
+ 		}
+ 		buf = kmalloc(len, GFP_KERNEL);
+--- linux-next-20091124.orig/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c
++++ linux-next-20091124/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c
+@@ -382,7 +382,7 @@ int ieee80211_rx_ADDBAReq( struct ieee80
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 9)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BAREQ(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BAREQ(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
+ 		return -1;
+ 	}
+ 
+@@ -481,7 +481,7 @@ int ieee80211_rx_ADDBARsp( struct ieee80
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 9)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BARSP(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BARSP(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
+ 		return -1;
+ 	}
+ 	rsp = ( struct ieee80211_hdr_3addr*)skb->data;
+@@ -611,7 +611,7 @@ int ieee80211_rx_DELBA(struct ieee80211_
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 6)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in DELBA(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 6));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in DELBA(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 6));
+ 		return -1;
+ 	}
+ 
+--- linux-next-20091124.orig/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
++++ linux-next-20091124/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
+@@ -845,7 +845,7 @@ int ieee80211_wx_set_gen_ie(struct ieee8
+ 	{
+ 		if (len != ie[1]+2)
+ 		{
+-			printk("len:%d, ie:%d\n", len, ie[1]);
++			printk("len:%zu, ie:%d\n", len, ie[1]);
+ 			return -EINVAL;
+ 		}
+ 		buf = kmalloc(len, GFP_KERNEL);
+--- linux-next-20091124.orig/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c
++++ linux-next-20091124/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c
+@@ -340,7 +340,7 @@ int ieee80211_rx_ADDBAReq( struct ieee80
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 9)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BAREQ(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BAREQ(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
+ 		return -1;
+ 	}
+ 
+@@ -439,7 +439,7 @@ int ieee80211_rx_ADDBARsp( struct ieee80
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 9)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BARSP(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in BARSP(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 9));
+ 		return -1;
+ 	}
+ 	rsp = ( struct ieee80211_hdr_3addr*)skb->data;
+@@ -569,7 +569,7 @@ int ieee80211_rx_DELBA(struct ieee80211_
+ 
+ 	if (skb->len < sizeof( struct ieee80211_hdr_3addr) + 6)
+ 	{
+-		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in DELBA(%d / %d)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 6));
++		IEEE80211_DEBUG(IEEE80211_DL_ERR, " Invalid skb len in DELBA(%d / %zu)\n", skb->len, 	(sizeof( struct ieee80211_hdr_3addr) + 6));
+ 		return -1;
+ 	}
+ 
