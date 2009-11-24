@@ -1,118 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbZKXMqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbZKXMv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932567AbZKXMqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 07:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932439AbZKXMqb
+	id S932606AbZKXMv0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 07:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbZKXMvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 07:46:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:60464 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932422AbZKXMqa (ORCPT
+	Tue, 24 Nov 2009 07:51:25 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51564 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932437AbZKXMvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 07:46:30 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH 3/4] macvlan: implement bridge, VEPA and private mode
-Date: Tue, 24 Nov 2009 13:45:46 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-4-git-send-email-arnd@arndb.de> <4B0BB89F.7030605@trash.net>
-In-Reply-To: <4B0BB89F.7030605@trash.net>
+	Tue, 24 Nov 2009 07:51:25 -0500
+From: Juergen Beisert <jbe@pengutronix.de>
+Organization: Pengutronix - Linux Solutions for Science and Industry
+To: linux-kernel@vger.kernel.org
+Date: Tue, 24 Nov 2009 13:51:57 +0100
+User-Agent: KMail/1.9.9
+Cc: Otavio Salvador <otavio@ossystems.com.br>
+References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com> <be7a9f3d0911240331n61637196gf243af4e607403ff@mail.gmail.com> <be7a9f3d0911240355s5a85545amb32d25a7df7e09f0@mail.gmail.com>
+In-Reply-To: <be7a9f3d0911240355s5a85545amb32d25a7df7e09f0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911241345.46475.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19QOWs5MwqnWIZwHiss2+MudR7535UwWSt9NyG
- Iu78grZvyEe0si6Ka1+XH9SpFxC1v0UX5QTgoD3bDK/52uii/y
- dlArp1UVxRkkFXbMPJY3g==
+Content-Disposition: inline
+Message-Id: <200911241351.58032.jbe@pengutronix.de>
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: jbe@pengutronix.de
+Subject: Re: Vortex86SX: only works with irqpoll
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009, Patrick McHardy wrote:
-> Arnd Bergmann wrote:
+Otavio Salvador wrote:
+> On Tue, Nov 24, 2009 at 9:31 AM, Otavio Salvador
+>
+> <otavio@ossystems.com.br> wrote:
+> > I'll take a look on the dmesg output and see if I see something
+> > interesting :-)
+>
+> In fact I did find some interesting issues. First:
+> [...]
 
-> > @@ -29,9 +29,16 @@
-> >  #include <linux/if_link.h>
-> >  #include <linux/if_macvlan.h>
-> >  #include <net/rtnetlink.h>
-> > +#include <net/xfrm.h>
-> 
-> Do we really need this?
+Our kernel states:
+CPU: Vortex86 SoC 05/02 stepping 02
 
-Not any more. I originally did secpath_reset here, but that is now moved
-to dev_forward_skb() in net/core/dev.c so I'll remove the include here.
+Your kernel states:
+CPU: Cyrix Cx486SLC
 
-> > @@ -129,11 +137,14 @@ static inline void macvlan_count_rx(const struct macvlan_dev *vlan, int length,
-> >  }
-> >  
-> >  static int macvlan_broadcast_one(struct sk_buff *skb, struct net_device *dev,
-> > -				 const struct ethhdr *eth)
-> > +				 const struct ethhdr *eth, int local)
-> 
-> bool local?
+BTW: Try to enable the DEBUG macro in "arch/x86/include/asm/pci_x86.h" and 
+boot again this kernel. On earlier kernels this increases the verbosity of 
+the kernel when it tries to detect the IRQ routing.
 
-Already changed as a reply to Eric's comments
+jbe
 
-> > @@ -159,8 +172,12 @@ static void macvlan_broadcast(struct sk_buff *skb,
-> >  
-> >  	for (i = 0; i < MACVLAN_HASH_SIZE; i++) {
-> >  		hlist_for_each_entry_rcu(vlan, n, &port->vlan_hash[i], hlist) {
-> > +			if ((vlan->dev == src) || !(vlan->mode & mode))
-> 
-> Please remove those unnecessary parentheses around the
-> device comparison.
-
-Ok. I usually prefer to have some extra parentheses in places that not
-everyone finds obvious but these are pretty clear.
-
-> 
-> The '|' should go on the first line.
-
-> 
-> Multi-line comments should begin every line with '*'.
-
-> 
-> Please align the mode values (in all cases above) to the arguments
-> on the line above.
-
-ok
-
-> > +static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
-> > +{
-> > +	const struct macvlan_dev *vlan = netdev_priv(dev);
-> > +	const struct macvlan_port *port = vlan->port;
-> > +	const struct macvlan_dev *dest;
-> > +
-> > +	if (vlan->mode == MACVLAN_MODE_BRIDGE) {
-> > +		const struct ethhdr *eth = (void *)skb->data;
-> 
-> eth_hdr()?
-
-This is done before calling eth_type_trans and skb->mac_header
-appears to be uninitialized then, which gave me an instant kernel
-panic here.
- 
-> > +		dest = macvlan_hash_lookup(port, eth->h_dest);
-> > +		if (dest && dest->mode == MACVLAN_MODE_BRIDGE) {
-> > +			int length = skb->len + ETH_HLEN;
-> 
-> unsigned int for length values please.
-
-ok
-
-Thanks for the detailed review,
-
-	Arnd <><
+-- 
+Pengutronix e.K.                              | Juergen Beisert             |
+Linux Solutions for Science and Industry      | Phone: +49-8766-939 228     |
+Vertretung Sued/Muenchen, Germany             | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686              | http://www.pengutronix.de/  |
