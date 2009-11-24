@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbZKXFeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbZKXFhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbZKXFeK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 00:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZKXFeJ
+	id S1755629AbZKXFhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 00:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZKXFhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 00:34:09 -0500
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:63829 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751780AbZKXFeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 00:34:08 -0500
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Gertjan van Wingerde <gwingerde@gmail.com>
-Subject: [PATCH] .gitignore: Add bzip2 compressed files.
-Date: Tue, 24 Nov 2009 06:34:03 +0100
-Message-Id: <1259040843-15401-1-git-send-email-gwingerde@gmail.com>
-X-Mailer: git-send-email 1.6.5.3
-X-OriginalArrivalTime: 24 Nov 2009 05:34:13.0638 (UTC) FILETIME=[C1A1D260:01CA6CC7]
+	Tue, 24 Nov 2009 00:37:54 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41314 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752941AbZKXFhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 00:37:53 -0500
+Date: Tue, 24 Nov 2009 16:37:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: linux-next: mfd tree build failure
+Message-Id: <20091124163753.381d9a83.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_16_37_53_+1100_Zt2GNVQFs.ijk/XB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can have bzip2 compressed images nowadays.
+--Signature=_Tue__24_Nov_2009_16_37_53_+1100_Zt2GNVQFs.ijk/XB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
----
- .gitignore |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hi Samuel,
 
-diff --git a/.gitignore b/.gitignore
-index b93fb7e..946c7ec 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -25,6 +25,7 @@
- *.elf
- *.bin
- *.gz
-+*.bz2
- *.lzma
- *.patch
- *.gcno
--- 
-1.6.5.3
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+drivers/built-in.o: In function `wm831x_i2c_remove':
+wm831x-core.c:(.text+0xd108b): undefined reference to `mfd_remove_devices'
+drivers/built-in.o: In function `wm831x_i2c_write_device':
+wm831x-core.c:(.text+0xd119c): undefined reference to `i2c_master_send'
+drivers/built-in.o: In function `wm831x_i2c_read_device':
+wm831x-core.c:(.text+0xd1208): undefined reference to `i2c_master_send'
+wm831x-core.c:(.text+0xd1237): undefined reference to `i2c_master_recv'
+drivers/built-in.o: In function `wm831x_i2c_probe':
+wm831x-core.c:(.text+0xd2099): undefined reference to `mfd_add_devices'
+wm831x-core.c:(.text+0xd20cd): undefined reference to `mfd_add_devices'
+wm831x-core.c:(.text+0xd2105): undefined reference to `mfd_add_devices'
+wm831x-core.c:(.text+0xd2139): undefined reference to `mfd_add_devices'
+wm831x-core.c:(.text+0xd21dd): undefined reference to `mfd_add_devices'
+wm831x-core.c:(.text+0xd22c3): undefined reference to `mfd_remove_devices'
+drivers/built-in.o: In function `wm831x_i2c_init':
+wm831x-core.c:(.init.text+0xae6b): undefined reference to `i2c_register_dri=
+ver'
+drivers/built-in.o: In function `wm831x_i2c_exit':
+wm831x-core.c:(.exit.text+0x522): undefined reference to `i2c_del_driver'
+
+Caused by commit 4f7231a3ff624ad8a0fdace424b10a8b262071cf ("mfd: Don't
+allow wm831x to be built as a module").  CONFIG_MFD_CORE is "m" and
+CONFIG_I2C is "m" while CONFIG_MFD_WM831X is "y".  "select" is a real
+problem :-(
+
+I have used the version of the mfd tree from next-20091120 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__24_Nov_2009_16_37_53_+1100_Zt2GNVQFs.ijk/XB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksLcTEACgkQjjKRsyhoI8x/EwCgvD7+e0yd4ifJcJgvV0//wDWg
+6GIAnjBXM4YvOEbOID3hoVtx3Si4KbjM
+=FI8l
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Nov_2009_16_37_53_+1100_Zt2GNVQFs.ijk/XB--
