@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbZKXKF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbZKXKHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932591AbZKXKF7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932572AbZKXKF6
+	id S932615AbZKXKHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbZKXKHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:05:58 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:59420 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932562AbZKXKF6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:05:58 -0500
-Subject: Re: kvmmmu tracing
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <4B0BAC76.3080202@redhat.com>
-References: <1258974375.7094.158.camel@johannes.local>
-	 <4B0BAC76.3080202@redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Z+Vfo3GnVQTiRKDzfg3D"
-Date: Tue, 24 Nov 2009 11:05:30 +0100
-Message-ID: <1259057130.3985.1.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 24 Nov 2009 05:07:47 -0500
+Received: from www.tglx.de ([62.245.132.106]:54709 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932528AbZKXKHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 05:07:41 -0500
+Date: Tue, 24 Nov 2009 11:07:23 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+cc: Peter Zijlstra <peterz@infradead.org>, Yong Zhang <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+In-Reply-To: <1259053156.2631.21.camel@ppwaskie-mobl2>
+Message-ID: <alpine.LFD.2.00.0911241027140.24119@localhost.localdomain>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>  <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>  <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>  <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
+  <1259051902.4531.1053.camel@laptop> <1259053156.2631.21.camel@ppwaskie-mobl2>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 24 Nov 2009, Peter P Waskiewicz Jr wrote:
+> On Tue, 2009-11-24 at 01:38 -0700, Peter Zijlstra wrote:
+> > On Mon, 2009-11-23 at 15:32 -0800, Waskiewicz Jr, Peter P wrote:
+> > 
+> > > Unfortunately, a driver can't.  The irq_set_affinity() function isn't 
+> > > exported.  I proposed a patch on netdev to export it, and then to tie down 
+> > > an interrupt using IRQF_NOBALANCING, so irqbalance won't touch it.  That 
+> > > was rejected, since the driver is enforcing policy of the interrupt 
+> > > balancing, not irqbalance.
+> > 
+> > Why would a patch touching the irq subsystem go to netdev?
+> 
+> The only change to the IRQ subsystem was:
+> 
+> EXPORT_SYMBOL(irq_set_affinity);
 
---=-Z+Vfo3GnVQTiRKDzfg3D
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Which is still touching the generic irq subsystem and needs the ack of
+the relevant maintainer. If there is a need to expose such an
+interface to drivers then the maintainer wants to know exactly why and
+needs to be part of the discussion of alternative solutions. Otherwise
+you waste time on implementing stuff like the current patch which is
+definitely not going anywhere near the irq subsystem.
 
-On Tue, 2009-11-24 at 11:50 +0200, Avi Kivity wrote:
-> On 11/23/2009 01:06 PM, Johannes Berg wrote:
-> > Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
-> > the userspace interface for tracing because of the weird
-> > KVM_MMU_PAGE_PRINTK macro.
-> >
-> >   =20
->=20
-> Can you explain what is wrong with it?
+> > If all you want is to expose policy to userspace then you don't need any
+> > of this, simply expose the NICs home node through a sysfs device thingy
+> > (I was under the impression its already there somewhere, but I can't
+> > ever find anything in /sys).
+> > 
+> > No need what so ever to poke at the IRQ subsystem.
+> 
+> The point is we need something common that the kernel side (whether a
+> driver or /proc can modify) that irqbalance can use.
 
-It's a big C expression that trace-cmd can't parse :)
+/sys/class/net/ethX/device/numa_node 
+
+perhaps ?
+ 
+> > > Also, if you use the /proc interface to change smp_affinity on an 
+> > > interrupt without any of these changes, irqbalance will override it on its 
+> > > next poll interval.  This also is not desirable.
+> > 
+> > This all sounds backwards.. we've got a perfectly functional interface
+> > for affinity -- which people object to being used for some reason. So
+> > you add another interface on top, and that is ok?
+> > 
+> 
+> But it's not functional.  If I set the affinity in smp_affinity, then
+> irqbalance will override it 10 seconds later.
+
+And to work around the brain wreckage of irqbalanced you want to
+fiddle in the irq code instead of teaching irqbalanced to handle node
+affinities ?
+
+The only thing which is worth to investigate is whether the irq core
+code should honour the dev->numa_node setting and restrict the
+possible irq affinity settings to that node. If a device is tied to a
+node it makes a certain amount of sense to do that.
+
+But such a change would not need a new interface in the irq core and
+definitely not a new cpumask_t member in the irq_desc structure to
+store a node affinity which can be expressed with a simple
+integer.
+
+But this needs more thoughts and I want to know more about the
+background and the reasoning for such a change.
+
+Thanks,
+
+	tglx
 
 
-> Is userspace reading mmutrace.h?  When the structure attributes can be=20
-> exported via /sys/kernel/debug/tracing?
-
-Yes ... look
-at /sys/kernel/debug/tracing/events/kvmmmu/kvm_mmu_unsync_page/format
-for instance.
-
-johannes
-
---=-Z+Vfo3GnVQTiRKDzfg3D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLC6/mAAoJEODzc/N7+QmaqW0QAIM3uTLw9YsiN31K8RV8qhtx
-icAyqHEPTZW3y/9ZXGQ/BiWWynt7f3bRfJrE+69SZj/q3eBzYvBTRXDaMNb/TAG9
-0Uf8oq+WHQvgtx92WI0ojYwMeoo5zI5p4crxlxNdYgX/878dvlbOdZhjkc+W1ID+
-tsZ22+IZyqRhl20Hl8JlxOM5uT3MUbZR+Z91nNArgA8lYVFpU63dOJxkTYQeAe0/
-IKNiSD4P0/uzRjw6Ij1UKoEMawavK/r6QR9QrDTJ9jFiRegDZfY5/x4QXxJ4uEMh
-Q3SwDdgrIYkYj/NpdEfuKUeq8PaDQVl7eYj4GYh1Qw7xTqNJUxhvyuFazD+TH6gI
-DSJWVUdURqwnhv5yPKo9fasmJm6cQ5nTUM4N9MVel4W4dbGCdv63SAAIOrnOM7lu
-hUtOoP8Q3ww/jnGGEP5CEVBalpjkL+zcq3OYFgUXTUac4aGDRGbsJgP/q6KQmI1t
-AEXsGgQP3mn2u0nK6MEBZ53eLBPU9XomssRiEGmpaRNLhSgaGeFT0MFq2QINGkWk
-K5rqFzSrn9IJxOuAYcou8i6OZfJxYwrLpuipF5XqakrI6n0zO3bf5TJb2yMzSA2l
-wcjJa2+7seRHnF5KS+EyGHAsTX0ZSQ+/gy/eCZOTGZfG/L1fQFjenu8DtU7Dyglo
-uIvD6fXOlXJ/1QoAHVnU
-=NUqo
------END PGP SIGNATURE-----
-
---=-Z+Vfo3GnVQTiRKDzfg3D--
 
