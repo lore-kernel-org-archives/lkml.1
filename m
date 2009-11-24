@@ -1,59 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbZKXLbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZKXLko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891AbZKXLbE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbZKXLbD
+	id S932543AbZKXLko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZKXLkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:31:03 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:16488 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754787AbZKXLbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:31:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=PgahKXYXmc0m5Y6Wk5Oo0w6Hj6N3D67wxmJSIwqtPuFwV48clKUw13bNyWTD//BCj4
-         MJYXwHvfleZQzt+cgT9SDuzKpOL/212kzKIwGZQPJBf6qXa3vN9m5DGpTmpJPhvIaEXz
-         pSrj5m4MNvy4Zt2aYYg+DoLpCacnPPoVc/NHQ=
+	Tue, 24 Nov 2009 06:40:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39610 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757572AbZKXLkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 06:40:42 -0500
+Date: Tue, 24 Nov 2009 13:37:54 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Shirley Ma <mashirle@us.ibm.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Avi Kivity <avi@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers
+	and big packets in virtio_net
+Message-ID: <20091124113754.GB2405@redhat.com>
+References: <1258697745.7416.20.camel@localhost.localdomain> <200911231138.30755.rusty@rustcorp.com.au> <1258992421.5022.19.camel@localhost.localdomain> <200911240854.24054.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-In-Reply-To: <200911241032.29820.jbe@pengutronix.de>
-References: <be7a9f3d0911191311p45d4438bg84d55234eacdd320@mail.gmail.com>
-	 <200911241032.29820.jbe@pengutronix.de>
-Date: Tue, 24 Nov 2009 09:31:06 -0200
-X-Google-Sender-Auth: 6a773cb9ce1f1f0c
-Message-ID: <be7a9f3d0911240331n61637196gf243af4e607403ff@mail.gmail.com>
-Subject: Re: Vortex86SX: only works with irqpoll
-From: Otavio Salvador <otavio@ossystems.com.br>
-To: Juergen Beisert <jbe@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911240854.24054.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Juergen,
+On Tue, Nov 24, 2009 at 08:54:23AM +1030, Rusty Russell wrote:
+> On Tue, 24 Nov 2009 02:37:01 am Shirley Ma wrote:
+> > > > +             skb = (struct sk_buff *)buf;
+> > > This cast is unnecessary, but a comment would be nice:
+> > 
+> > Without this cast there is a compile warning. 
+> 
+> Hi Shirley,
+> 
+>    Looks like buf is a void *, so no cast should be necessary.  But I could
+> be reading the patch wrong.
+> 
+> > > However, I question whether making it 16 byte is the right thing: the
+> > > ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
+> > 
+> > Because in QEMU it requires 10 bytes header in a separately, so one page
+> > is used to share between virtio_net_hdr header which is 10 bytes head
+> > and rest of data. So I put 6 bytes offset here between two buffers. I
+> > didn't look at the reason why a seperate buf is used for virtio_net_hdr
+> > in QEMU.
+> 
+> It's a qemu bug.  It insists the header be an element in the scatterlist by
+> itself.  Unfortunately we have to accommodate it.
 
-On Tue, Nov 24, 2009 at 7:32 AM, Juergen Beisert <jbe@pengutronix.de> wrote:
-> On Donnerstag, 19. November 2009, Otavio Salvador wrote:
->> I got this machine working booting it with "irqpoll" parameter however
->> it drops the performance a lot and I'd like to try to fix the root
->> problem of it.
->>
->> Without 'irqpoll' the disk and network adaptor doesn't work.
->
-> What kernel revision do you are using?
+We do?  Let's just fix this?
+All we have to do is replace memcpy with proper iovec walk, correct?
+Something like the followng (untested) patch?  It's probably not too
+late to put this in the next qemu release...
 
-I tested it with 2.6.31 and 2.6.32-rc7.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 
-> We are using a Vortex86DX here and it works as expected. But I do not know the
-> differences in the SoCs of Vortex86SX and Vortex86DX (okay, SX lacks the
-> floating point unit). Find our dmesg output attached. Maybe it could help.
 
-I'll take a look on the dmesg output and see if I see something interesting :-)
-
--- 
-Otavio Salvador                  O.S. Systems
-E-mail: otavio@ossystems.com.br  http://www.ossystems.com.br
-Mobile: +55 53 9981-7854         http://projetos.ossystems.com.br
+diff --git a/hw/virtio-net.c b/hw/virtio-net.c
+index 2f147e5..06c5148 100644
+--- a/hw/virtio-net.c
++++ b/hw/virtio-net.c
+@@ -434,26 +434,59 @@ static int iov_fill(struct iovec *iov, int iovcnt, const void *buf, int count)
+     return offset;
+ }
+ 
++static int iov_skip(struct iovec *iov, int iovcnt, int count)
++{
++    int offset, i;
++
++    offset = i = 0;
++    while (offset < count && i < iovcnt) {
++        int len = MIN(iov[i].iov_len, count - offset);
++	iov[i].iov_base += len;
++	iov[i].iov_len -= len;
++        offset += len;
++        i++;
++    }
++
++    return offset;
++}
++
++static int iov_copy(struct iovec *to, struct iovec *from, int iovcnt, int count)
++{
++    int offset, i;
++
++    offset = i = 0;
++    while (offset < count && i < iovcnt) {
++        int len = MIN(from[i].iov_len, count - offset);
++	to[i].iov_base = from[i].iov_base;
++	to[i].iov_len = from[i].iov_len;
++        offset += len;
++        i++;
++    }
++
++    return i;
++}
++
+ static int receive_header(VirtIONet *n, struct iovec *iov, int iovcnt,
+                           const void *buf, size_t size, size_t hdr_len)
+ {
+-    struct virtio_net_hdr *hdr = (struct virtio_net_hdr *)iov[0].iov_base;
++    struct virtio_net_hdr hdr = {};
+     int offset = 0;
+ 
+-    hdr->flags = 0;
+-    hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
++    hdr.flags = 0;
++    hdr.gso_type = VIRTIO_NET_HDR_GSO_NONE;
+ 
+     if (n->has_vnet_hdr) {
+-        memcpy(hdr, buf, sizeof(*hdr));
+-        offset = sizeof(*hdr);
+-        work_around_broken_dhclient(hdr, buf + offset, size - offset);
++        memcpy(&hdr, buf, sizeof hdr);
++        offset = sizeof hdr;
++        work_around_broken_dhclient(&hdr, buf + offset, size - offset);
+     }
+ 
++    iov_fill(iov, iovcnt, &hdr, sizeof hdr);
++
+     /* We only ever receive a struct virtio_net_hdr from the tapfd,
+      * but we may be passing along a larger header to the guest.
+      */
+-    iov[0].iov_base += hdr_len;
+-    iov[0].iov_len  -= hdr_len;
++    iov_skip(iov, iovcnt, hdr_len);
+ 
+     return offset;
+ }
+@@ -514,7 +547,8 @@ static int receive_filter(VirtIONet *n, const uint8_t *buf, int size)
+ static ssize_t virtio_net_receive(VLANClientState *vc, const uint8_t *buf, size_t size)
+ {
+     VirtIONet *n = vc->opaque;
+-    struct virtio_net_hdr_mrg_rxbuf *mhdr = NULL;
++    struct iovec mhdr[VIRTQUEUE_MAX_SIZE];
++    int mhdrcnt = 0;
+     size_t hdr_len, offset, i;
+ 
+     if (!virtio_net_can_receive(n->vc))
+@@ -552,16 +586,13 @@ static ssize_t virtio_net_receive(VLANClientState *vc, const uint8_t *buf, size_
+             exit(1);
+         }
+ 
+-        if (!n->mergeable_rx_bufs && elem.in_sg[0].iov_len != hdr_len) {
+-            fprintf(stderr, "virtio-net header not in first element\n");
+-            exit(1);
+-        }
+-
+         memcpy(&sg, &elem.in_sg[0], sizeof(sg[0]) * elem.in_num);
+ 
+         if (i == 0) {
+-            if (n->mergeable_rx_bufs)
+-                mhdr = (struct virtio_net_hdr_mrg_rxbuf *)sg[0].iov_base;
++            if (n->mergeable_rx_bufs) {
++                mhdrcnt = iov_copy(mhdr, sg, elem.in_num,
++                                   sizeof(struct virtio_net_hdr_mrg_rxbuf));
++            }
+ 
+             offset += receive_header(n, sg, elem.in_num,
+                                      buf + offset, size - offset, hdr_len);
+@@ -579,8 +610,12 @@ static ssize_t virtio_net_receive(VLANClientState *vc, const uint8_t *buf, size_
+         offset += len;
+     }
+ 
+-    if (mhdr)
+-        mhdr->num_buffers = i;
++    if (mhdrcnt) {
++        uint16_t num = i;
++        iov_skip(mhdr, mhdrcnt,
++                 offsetof(struct virtio_net_hdr_mrg_rxbuf, num_buffers));
++        iov_fill(mhdr, mhdrcnt, &num, sizeof num);
++    }
+ 
+     virtqueue_flush(n->rx_vq, i);
+     virtio_notify(&n->vdev, n->rx_vq);
+@@ -627,20 +662,19 @@ static void virtio_net_flush_tx(VirtIONet *n, VirtQueue *vq)
+             sizeof(struct virtio_net_hdr_mrg_rxbuf) :
+             sizeof(struct virtio_net_hdr);
+ 
+-        if (out_num < 1 || out_sg->iov_len != hdr_len) {
+-            fprintf(stderr, "virtio-net header not in first element\n");
++        if (out_num < 1) {
++            fprintf(stderr, "virtio-net: no output element\n");
+             exit(1);
+         }
+ 
+         /* ignore the header if GSO is not supported */
+         if (!n->has_vnet_hdr) {
+-            out_num--;
+-            out_sg++;
++            iov_skip(out_sg, out_num, hdr_len);
+             len += hdr_len;
+         } else if (n->mergeable_rx_bufs) {
+             /* tapfd expects a struct virtio_net_hdr */
+             hdr_len -= sizeof(struct virtio_net_hdr);
+-            out_sg->iov_len -= hdr_len;
++            iov_skip(out_sg, out_num, hdr_len);
+             len += hdr_len;
+         }
+ 
