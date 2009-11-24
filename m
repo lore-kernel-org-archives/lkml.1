@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932584AbZKXKDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbZKXKF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932584AbZKXKDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932528AbZKXKDu
+	id S932591AbZKXKF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932572AbZKXKF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:03:50 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:62797 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932371AbZKXKDt (ORCPT
+	Tue, 24 Nov 2009 05:05:58 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:59420 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932562AbZKXKF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:03:49 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
-Date: Tue, 24 Nov 2009 10:02:20 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <1259024166-28158-2-git-send-email-arnd@arndb.de> <4B0BAC97.6010000@trash.net>
-In-Reply-To: <4B0BAC97.6010000@trash.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911241002.20904.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+kFr4mD15/7C3jE/DIKKqroOqpH13MwUtAkf9
- mnTMkwZzXScQmooyijsTqg3kYAnLJSllD2AwbuNPFg8P9lMTlG
- XJyzmGUvXdi5PNTHwN94w==
+	Tue, 24 Nov 2009 05:05:58 -0500
+Subject: Re: kvmmmu tracing
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <4B0BAC76.3080202@redhat.com>
+References: <1258974375.7094.158.camel@johannes.local>
+	 <4B0BAC76.3080202@redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Z+Vfo3GnVQTiRKDzfg3D"
+Date: Tue, 24 Nov 2009 11:05:30 +0100
+Message-ID: <1259057130.3985.1.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009 09:51:19 Patrick McHardy wrote:
-> > +     skb_dst_drop(skb);
-> > +     skb->tstamp.tv64 = 0;
-> > +     skb->pkt_type = PACKET_HOST;
-> > +     skb->protocol = eth_type_trans(skb, dev);
-> > +     skb->mark = 0;
-> 
-> skb->mark clearing should stay private to veth since its usually
-> supposed to stay intact. The only exception is packets crossing
-> namespaces, where they should appear like a freshly received skbs.
 
-But isn't that what we want in macvlan as well when we're
-forwarding from one downstream interface to another?
+--=-Z+Vfo3GnVQTiRKDzfg3D
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I did all my testing with macvlan interfaces in separate namespaces
-communicating with each other, so I'd assume that we should always
-clear skb->mark and skb->dst in this function. Maybe I should make
-the documentation clearer?
+On Tue, 2009-11-24 at 11:50 +0200, Avi Kivity wrote:
+> On 11/23/2009 01:06 PM, Johannes Berg wrote:
+> > Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
+> > the userspace interface for tracing because of the weird
+> > KVM_MMU_PAGE_PRINTK macro.
+> >
+> >   =20
+>=20
+> Can you explain what is wrong with it?
 
----
-net: clarify documentation of dev_forward_skb
+It's a big C expression that trace-cmd can't parse :)
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1433,6 +1433,10 @@ static inline void net_timestamp(struct sk_buff *skb)
-  * dev_forward_skb can be used for injecting an skb from the
-  * start_xmit function of one device into the receive queue
-  * of another device.
-+ *
-+ * The receiving device may be in another namespace, so
-+ * we have to clear all information in the skb that could
-+ * impact namespace isolation.
-  */
- int dev_forward_skb(struct net_device *dev, struct sk_buff *skb)
- {
+> Is userspace reading mmutrace.h?  When the structure attributes can be=20
+> exported via /sys/kernel/debug/tracing?
+
+Yes ... look
+at /sys/kernel/debug/tracing/events/kvmmmu/kvm_mmu_unsync_page/format
+for instance.
+
+johannes
+
+--=-Z+Vfo3GnVQTiRKDzfg3D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLC6/mAAoJEODzc/N7+QmaqW0QAIM3uTLw9YsiN31K8RV8qhtx
+icAyqHEPTZW3y/9ZXGQ/BiWWynt7f3bRfJrE+69SZj/q3eBzYvBTRXDaMNb/TAG9
+0Uf8oq+WHQvgtx92WI0ojYwMeoo5zI5p4crxlxNdYgX/878dvlbOdZhjkc+W1ID+
+tsZ22+IZyqRhl20Hl8JlxOM5uT3MUbZR+Z91nNArgA8lYVFpU63dOJxkTYQeAe0/
+IKNiSD4P0/uzRjw6Ij1UKoEMawavK/r6QR9QrDTJ9jFiRegDZfY5/x4QXxJ4uEMh
+Q3SwDdgrIYkYj/NpdEfuKUeq8PaDQVl7eYj4GYh1Qw7xTqNJUxhvyuFazD+TH6gI
+DSJWVUdURqwnhv5yPKo9fasmJm6cQ5nTUM4N9MVel4W4dbGCdv63SAAIOrnOM7lu
+hUtOoP8Q3ww/jnGGEP5CEVBalpjkL+zcq3OYFgUXTUac4aGDRGbsJgP/q6KQmI1t
+AEXsGgQP3mn2u0nK6MEBZ53eLBPU9XomssRiEGmpaRNLhSgaGeFT0MFq2QINGkWk
+K5rqFzSrn9IJxOuAYcou8i6OZfJxYwrLpuipF5XqakrI6n0zO3bf5TJb2yMzSA2l
+wcjJa2+7seRHnF5KS+EyGHAsTX0ZSQ+/gy/eCZOTGZfG/L1fQFjenu8DtU7Dyglo
+uIvD6fXOlXJ/1QoAHVnU
+=NUqo
+-----END PGP SIGNATURE-----
+
+--=-Z+Vfo3GnVQTiRKDzfg3D--
+
