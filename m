@@ -1,125 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZKXNtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbZKXNvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932998AbZKXNtp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbZKXNto
+	id S932995AbZKXNvZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932973AbZKXNvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:49:44 -0500
-Received: from mail-bw0-f223.google.com ([209.85.218.223]:53626 "EHLO
-	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932981AbZKXNtn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:49:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=L6575Clmm1t2ShxZCGSLIWTDG6zeiDgKl9YGnzfMcDoU9O/649qGxMhbC9xQ9Fso7S
-         +nqo/brs5NL9sHwB1UsAPOHlw3SVYZhGiaguEbKMbQ83W2+FkDJhWa2qkPI8AAnYSTWI
-         e5qPLPUxHCOpT9tDPboen/2VcKHejXq5+7m/s=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: [PATCH 4/4] cfq-iosched: fix corner cases in idling logic
-Date: Tue, 24 Nov 2009 14:49:36 +0100
-User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Tue, 24 Nov 2009 08:51:24 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49088 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932904AbZKXNvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 08:51:22 -0500
+Date: Tue, 24 Nov 2009 22:50:22 +0900
+To: yinghai@kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B0BB892.9080401@kernel.org>
+References: <4B0BAC06.1000905@kernel.org>
+	<20091124193031P.fujita.tomonori@lab.ntt.co.jp>
+	<4B0BB892.9080401@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911241449.36336.czoccolo@gmail.com>
+Message-Id: <20091124225000H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 24 Nov 2009 22:50:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Idling logic was disabled in some corner cases, leading to unfair share
-for noidle queues.
-* the idle timer was not armed if there were other requests in the
-  driver. unfortunately, those requests could come from other workloads,
-  or queues for which we don't enable idling. So we will check only
-  pending requests from the active queue
-* rq_noidle check on no-idle queue could disable the end of tree idle if
-  the last completed request was rq_noidle. Now, we will disable that
-  idle only if all the queues served in the no-idle tree had rq_noidle
-  requests.
+On Tue, 24 Nov 2009 02:42:26 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Reported-by: Vivek Goyal <vgoyal@redhat.com>
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
- block/cfq-iosched.c |   32 ++++++++++++++++++++++----------
- 1 files changed, 22 insertions(+), 10 deletions(-)
+> at GART iommu workaround : it is not rare. a lot of systems have this problem.
+> and that workaround works well for several years.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 373e80f..d44f8a4 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -172,6 +172,7 @@ struct cfq_data {
- 	enum wl_prio_t serving_prio;
- 	enum wl_type_t serving_type;
- 	unsigned long workload_expires;
-+	bool noidle_tree_requires_idle;
+swiotlb has worked too.
+
+
+> don't think user will like to use SWIOTLB instead of swiotlb.
+
+I doubt that users care about a way to fix their problems.
+
+
+> that gart iommu hardware is not broken, just those BIOS guys just forget to program it.
+> 
+> here intel vt-d is different, it seems can not make it work just program some hardware register...
+
+Because BIOS is broken, IIRC. Both cases are pretty similar.
+
+> please check my v2 patch, to see if it breaks your setup.
+
+As I said, adding another trick only for GART is not good. And using
+force_iommu in pci-dma.c is confusing since force_iommu should be used
+only in X86_64.
+
+The following patch works for you?
+
+
+diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+index 87ffcb1..8085277 100644
+--- a/arch/x86/include/asm/swiotlb.h
++++ b/arch/x86/include/asm/swiotlb.h
+@@ -5,13 +5,17 @@
  
- 	/*
- 	 * Each priority tree is sorted by next_request position.  These
-@@ -1249,9 +1250,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 		return;
+ #ifdef CONFIG_SWIOTLB
+ extern int swiotlb;
+-extern int pci_swiotlb_init(void);
++extern int __init pci_swiotlb_detect(void);
++extern void __init pci_swiotlb_init(void);
+ #else
+ #define swiotlb 0
+-static inline int pci_swiotlb_init(void)
++static inline int pci_swiotlb_detect(void)
+ {
+ 	return 0;
+ }
++static inline void pci_swiotlb_init(void)
++{
++}
+ #endif
  
- 	/*
--	 * still requests with the driver, don't idle
-+	 * still active requests from this queue, don't idle
- 	 */
--	if (rq_in_driver(cfqd))
-+	if (cfqq->dispatched)
- 		return;
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index e0dfb68..750dd8d 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -401,6 +401,7 @@ void __init gart_iommu_hole_init(void)
  
- 	/*
-@@ -1487,6 +1488,7 @@ static void choose_service_tree(struct cfq_data *cfqd)
+ 			iommu_detected = 1;
+ 			gart_iommu_aperture = 1;
++			swiotlb = 0;
+ 			x86_init.iommu.iommu_init = gart_iommu_init;
  
- 	slice = max_t(unsigned, slice, CFQ_MIN_TT);
- 	cfqd->workload_expires = jiffies + slice;
-+	cfqd->noidle_tree_requires_idle = false;
+ 			aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
+@@ -458,7 +459,7 @@ out:
+ 
+ 	if (aper_alloc) {
+ 		/* Got the aperture from the AGP bridge */
+-	} else if (!valid_agp) {
++	} else if (swiotlb && !valid_agp) {
+ 		/* Do nothing */
+ 	} else if ((!no_iommu && max_pfn > MAX_DMA32_PFN) ||
+ 		   force_iommu ||
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index afcc58b..75e14e2 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -124,8 +124,8 @@ void __init pci_iommu_alloc(void)
+ 	/* free the range so iommu could get some range less than 4G */
+ 	dma32_free_bootmem();
+ #endif
+-	if (pci_swiotlb_init())
+-		return;
++	if (pci_swiotlb_detect())
++		goto out;
+ 
+ 	gart_iommu_hole_init();
+ 
+@@ -135,6 +135,8 @@ void __init pci_iommu_alloc(void)
+ 
+ 	/* needs to be called after gart_iommu_hole_init */
+ 	amd_iommu_detect();
++out:
++	pci_swiotlb_init();
  }
  
- /*
-@@ -2606,17 +2608,27 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 			cfq_clear_cfqq_slice_new(cfqq);
- 		}
- 		/*
--		 * If there are no requests waiting in this queue, and
--		 * there are other queues ready to issue requests, AND
--		 * those other queues are issuing requests within our
--		 * mean seek distance, give them a chance to run instead
--		 * of idling.
-+		 * Idling is not enabled on:
-+		 * - expired queues
-+		 * - idle-priority queues
-+		 * - async queues
-+		 * - queues with still some requests queued
-+		 * - when there is a close cooperator
- 		 */
- 		if (cfq_slice_used(cfqq) || cfq_class_idle(cfqq))
- 			cfq_slice_expired(cfqd, 1);
--		else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq) &&
--			 sync && !rq_noidle(rq))
--			cfq_arm_slice_timer(cfqd);
-+		else if (sync && cfqq_empty &&
-+			 !cfq_close_cooperator(cfqd, cfqq)) {
-+			cfqd->noidle_tree_requires_idle |= !rq_noidle(rq);
-+			/*
-+			 * Idling is enabled for SYNC_WORKLOAD.
-+			 * SYNC_NOIDLE_WORKLOAD idles at the end of the tree
-+			 * only if we processed at least one !rq_noidle request
-+			 */
-+			if (cfqd->serving_type == SYNC_WORKLOAD
-+			    || cfqd->noidle_tree_requires_idle)
-+				cfq_arm_slice_timer(cfqd);
-+		}
- 	}
+ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index e6a0d40..2358409 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -847,7 +847,6 @@ int __init gart_iommu_init(void)
+ 	flush_gart();
+ 	dma_ops = &gart_dma_ops;
+ 	x86_platform.iommu_shutdown = gart_iommu_shutdown;
+-	swiotlb = 0;
  
- 	if (!rq_in_driver(cfqd))
--- 
-1.6.2.5
-
-
+ 	return 0;
+ }
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index e36e71d..6971ba5 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
+ };
+ 
+ /*
+- * pci_swiotlb_init - initialize swiotlb if necessary
++ * pci_swiotlb_init - set swiotlb to 1 if necessary
+  *
+  * This returns non-zero if we are forced to use swiotlb (by the boot
+  * option).
+  */
+-int __init pci_swiotlb_init(void)
++int __init pci_swiotlb_detect(void)
+ {
+ 	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
+ #ifdef CONFIG_X86_64
+@@ -58,10 +58,13 @@ int __init pci_swiotlb_init(void)
+ 	if (swiotlb_force)
+ 		swiotlb = 1;
+ 
++	return swiotlb_force;
++}
++
++void __init pci_swiotlb_init(void)
++{
+ 	if (swiotlb) {
+ 		swiotlb_init(0);
+ 		dma_ops = &swiotlb_dma_ops;
+ 	}
+-
+-	return swiotlb_force;
+ }
