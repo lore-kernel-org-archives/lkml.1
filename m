@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757717AbZKXBeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbZKXBjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757717AbZKXBeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 20:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbZKXBd7
+	id S1757673AbZKXBjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 20:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbZKXBjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 20:33:59 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47523 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757570AbZKXBd6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 20:33:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=hMzpviaptLliIUydbjwdkvkKnhJl9D6PMlZ6dJMLCmf7f4UZkijjusrCXRF26PDlLl
-         029OUVVpkbIE/Bi55hQjC4suVzrcXQCkGL+518xTweDHzG54n9zFeU3h39jbQkCg6m7D
-         91WLvX4lQeOXNjhi7EOBq3SSJ5Qg8LpMCVM6g=
-MIME-Version: 1.0
-In-Reply-To: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
-References: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
-Date: Tue, 24 Nov 2009 09:34:04 +0800
-Message-ID: <51d384e10911231734g744d4f6av8b393d99fee92105@mail.gmail.com>
-Subject: [PATCH] dvb-core: Fix ULE decapsulation bug when less than 4 bytes of 
-	ULE SNDU is packed into the remaining bytes of a MPEG2-TS frame
-From: Ang Way Chuang <wcang79@gmail.com>
-To: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Nov 2009 20:39:46 -0500
+Received: from relay3.sgi.com ([192.48.152.1]:34565 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755576AbZKXBjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 20:39:46 -0500
+Message-Id: <20091124013937.354595000@alcatraz.americas.sgi.com>
+User-Agent: quilt/0.47-1
+Date: Mon, 23 Nov 2009 19:39:37 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robin Holt <holt@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-mm@vger.kernel.org
+Subject: [patch 0/8] x86: UV - XPC fixes with related support functionality V2.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
-code has a bug that incorrectly treats ULE SNDU packed into the
-remaining 2 or 3 bytes of a MPEG2-TS frame as having invalid pointer
-field on the subsequent MPEG2-TS frame.
 
-This patch was generated and tested against v2.6.32-rc8. Similar patch
-was applied and tested using 2.6.27 which is similar to the latest
-dvb_net.c, except for network device statistical data structure. I
-suspect that this bug was introduced in kernel version 2.6.15, but had
-not verified it.
+The UV BIOS has been updated to implement some of our interface
+functionality differently than originally expected.  These patches update
+the kernel to the bios implementation and include a few minor bug fixes
+which prevent us from doing significant testing on real hardware.
 
-Care has been taken not to introduce more bug by fixing this bug, but
-please scrutinize the code for I always produces buggy code.
+Changes from V1:
 
-Signed-off-by: Ang Way Chuang <wcang@nav6.org>
+- Actually include the patch introducing the gru_read_gpa.  This
+  was missed in the V1 submission.
+
+- One additional BIOS change has the OS no longer passing blade
+  to the BIOS when registering a message queue watchlist.
+
 ---
-diff --git a/drivers/media/dvb/dvb-core/dvb_net.c
-b/drivers/media/dvb/dvb-core/dvb_net.c
-index 0241a7c..7e0db86 100644
---- a/drivers/media/dvb/dvb-core/dvb_net.c
-+++ b/drivers/media/dvb/dvb-core/dvb_net.c
-@@ -458,8 +458,9 @@ static void dvb_net_ule( struct net_device *dev,
-const u8 *buf, size_t buf_len )
-                                                      "field: %u.\n",
-priv->ts_count, *from_where);
 
-                                               /* Drop partly decoded
-SNDU, reset state, resync on PUSI. */
--                                               if (priv->ule_skb) {
--                                                       dev_kfree_skb(
-priv->ule_skb );
-+                                               if (priv->ule_skb ||
-priv->ule_sndu_remain) {
-+                                                       if (priv->ule_skb)
-+
-dev_kfree_skb( priv->ule_skb );
-                                                       dev->stats.rx_errors++;
-
-dev->stats.rx_frame_errors++;
-                                               }
-@@ -533,6 +534,7 @@ static void dvb_net_ule( struct net_device *dev,
-const u8 *buf, size_t buf_len )
-                               from_where += 2;
-                       }
-
-+                       priv->ule_sndu_remain = priv->ule_sndu_len + 2;
-                       /*
-                        * State of current TS:
-                        *   ts_remain (remaining bytes in the current TS cell)
-@@ -542,6 +544,7 @@ static void dvb_net_ule( struct net_device *dev,
-const u8 *buf, size_t buf_len )
-                        */
-                       switch (ts_remain) {
-                               case 1:
-+                                       priv->ule_sndu_remain--;
-                                       priv->ule_sndu_type = from_where[0] << 8;
-                                       priv->ule_sndu_type_1 = 1; /*
-first byte of ule_type is set. */
-                                       ts_remain -= 1; from_where += 1;
-@@ -555,6 +558,7 @@ static void dvb_net_ule( struct net_device *dev,
-const u8 *buf, size_t buf_len )
-                               default: /* complete ULE header is
-present in current TS. */
-                                       /* Extract ULE type field. */
-                                       if (priv->ule_sndu_type_1) {
-+                                               priv->ule_sndu_type_1 = 0;
-                                               priv->ule_sndu_type |=
-from_where[0];
-                                               from_where += 1; /*
-points to payload start. */
-                                               ts_remain -= 1;
+ arch/x86/include/asm/uv/bios.h          |   11 --------
+ arch/x86/include/asm/uv/uv_hub.h        |   20 +++++++++++++++
+ arch/x86/kernel/bios_uv.c               |    8 +-----
+ drivers/misc/sgi-gru/gru_instructions.h |   13 ++++++++++
+ drivers/misc/sgi-gru/grukservices.c     |   23 +++++++++++++++++
+ drivers/misc/sgi-gru/grukservices.h     |   14 ++++++++++
+ drivers/misc/sgi-gru/gruprocfs.c        |    1 
+ drivers/misc/sgi-gru/grutables.h        |    1 
+ drivers/misc/sgi-xp/xp.h                |    1 
+ drivers/misc/sgi-xp/xp_main.c           |    3 ++
+ drivers/misc/sgi-xp/xp_sn2.c            |   10 +++++++
+ drivers/misc/sgi-xp/xp_uv.c             |   33 +++++++++++++++++++++++++
+ drivers/misc/sgi-xp/xpc_partition.c     |   13 +++++++---
+ drivers/misc/sgi-xp/xpc_uv.c            |   41 +++++++++++++++++---------------
+ 14 files changed, 153 insertions(+), 39 deletions(-)
