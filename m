@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbZKXOpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbZKXOpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933160AbZKXOpJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 09:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933108AbZKXOpI
+	id S933167AbZKXOpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 09:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933121AbZKXOph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 09:45:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16244 "EHLO mx1.redhat.com"
+	Tue, 24 Nov 2009 09:45:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43895 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933116AbZKXOpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 09:45:06 -0500
-Message-ID: <4B0BF119.4070704@redhat.com>
-Date: Tue, 24 Nov 2009 14:43:37 +0000
-From: Andrew Haley <aph@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	id S933108AbZKXOph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 09:45:37 -0500
+Date: Tue, 24 Nov 2009 15:45:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Liuweni <qingshenlwy@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, xgr178 <xgr178@163.com>,
+       Jiri Kosina <jkosina@suse.cz>, qingshenlwy <qingshenlwy@tom.com>
+Subject: Re: [PATCH]irq/core:Add a length limitation
+Message-ID: <20091124144530.GB17934@elte.hu>
+References: <200911242147508598860@gmail.com>
 MIME-Version: 1.0
-To: "H.J. Lu" <hjl.tools@gmail.com>
-CC: rostedt@goodmis.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, jakub@redhat.com,
-       gcc <gcc@gcc.gnu.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
-  	messing with mcount prologue
-References: <alpine.LFD.2.00.0911181933540.24119@localhost.localdomain> 	 <tip-887a29f59b93cf54e21814869a4ab6e80b6fa623@git.kernel.org> 	 <20091119072040.GA23579@elte.hu> 	 <alpine.LFD.2.00.0911191053390.24119@localhost.localdomain> 	 <alpine.LFD.2.00.0911191423190.24119@localhost.localdomain> 	 <1258694593.22249.1012.camel@gandalf.stny.rr.com> 	 <1258736456.22249.1032.camel@gandalf.stny.rr.com> 	 <4B06EF6F.2050507@redhat.com> 	 <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com> 	 <4B0972C9.302@redhat.com> <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
-In-Reply-To: <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911242147508598860@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H.J. Lu wrote:
-> On Sun, Nov 22, 2009 at 9:20 AM, Andrew Haley <aph@redhat.com> wrote:
->> H.J. Lu wrote:
->>> On Fri, Nov 20, 2009 at 11:35 AM, Andrew Haley <aph@redhat.com> wrote:
->>>> Steven Rostedt wrote:
->>>>> Ingo, Thomas and Linus,
->>>>>
->>>>> I know Thomas did a patch to force the -mtune=generic, but just in case
->>>>> gcc decides to do something crazy again, this patch will catch it.
->>>>>
->>>>> Should we try to get this in now?
->>>> I'm sure this makes sense, but a gcc test case would be even better.
->>>> If this can be detected in the gcc test suite it'll be found and
->>>> fixed long before y'all in kernel land get to see it.  That's the
->>>> only way to guarantee this never bothers you again.
->>>>
->>>> H.J., who wrote the code in question, is hopefully looking at why
->>>> this odd code is being generated.  Once he's done I can put a
->>>> suitable test case in the gcc test suite.
->>>>
->>> See:
->>>
->>> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109#c7
->> I saw that, but does it mean you're going to investigate?  There is
->> no obvious reason why -mtune=generic should affect code generation
->> in this way, but it does.
+
+* Liuweni <qingshenlwy@gmail.com> wrote:
+
+> In the register_handler_proc(), the max length of irqaction->name is 
+> MAX_NAMELEN. And this function will call name_unique() to compare name 
+> with other irqs'.
+>
+> There is no any code for limitation the length. I add a warning in the 
+> function to notice that the irqaction->name is too long.
 > 
-> Why not, there is
-> 
-> static const unsigned int x86_accumulate_outgoing_args
->   = m_AMD_MULTIPLE | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
->     | m_GENERIC;
-> 
-> -mtune=generic turns on -maccumulate-outgoing-args.
+> Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
+> ---
+> diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+> index 0832145..9ab6e04 100644
+> --- a/kernel/irq/proc.c
+> +++ b/kernel/irq/proc.c
+> @@ -196,6 +196,9 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
+>  	char name [MAX_NAMELEN];
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  
+> +	if(strlen(action->name) >= MAX_NAMELEN)
+> +		WARN_ON(1);
+> +
 
-Alright, so let's at least try to give the kernel people the information
-that they need.
+Has this situation happened in the past that requires this check to be 
+added? The current limit of 128 chars is quite generous. Also, the check 
+is buggy, it's off by 1.
 
-What you're saying is, to avoid this:
+( Also, please use scripts/checkpatch.pl on patches and please use 
+  'scripts/get_maintainer.pl -f kernel/irq/proc.c' when constructing Cc: 
+  lines. )
 
-  000005f0 <timer_stats_update_stats>:
- 5f0:   57                      push   %edi
- 5f1:   8d 7c 24 08             lea    0x8(%esp),%edi
- 5f5:   83 e4 f0                and    $0xfffffff0,%esp
- 5f8:   ff 77 fc                pushl  -0x4(%edi)
- 5fb:   55                      push   %ebp
- 5fc:   89 e5                   mov    %esp,%ebp
+Thanks,
 
-you should compile your code with -maccumulate-outgoing-args, and there's
-no need to use -mtune=generic.  Is that right?
-
-Andrew.
-
+	Ingo
