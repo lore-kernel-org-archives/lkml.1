@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbZKXLTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbZKXLWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbZKXLTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbZKXLTt
+	id S932835AbZKXLWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbZKXLWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:19:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:1146 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932764AbZKXLTs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:19:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=iKV+O20/2oJY+LWVgm+6PTHVLCZU4MqfR2TWZt+hh6ZlqP3C7/v6wu5HTqDesuomVL
-         V4yrTbzWuyR0QCm66JBpLBtExqWBGdxYBcC8zoVhi16g1aqyyun0qc8t98SL6ttGwW0M
-         VkUpZ9QQqglWCWRviJPRo4CicAOQ5Xf7He9jM=
-Date: Tue, 24 Nov 2009 11:19:46 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091124111946.GA7883@ff.dom.local>
+	Tue, 24 Nov 2009 06:22:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46865 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932219AbZKXLWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 06:22:06 -0500
+Date: Tue, 24 Nov 2009 12:20:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tim Blechmann <tim@klingt.org>, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] slab.c: remove branch hint
+Message-ID: <20091124112058.GA23765@elte.hu>
+References: <cover.1259059549.git.tim@klingt.org>
+ <4B0BBBA8.2090604@klingt.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B0BBBA8.2090604@klingt.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 01:17:09AM -0500, Caleb Cushing wrote:
-> > Btw, currently I don't consider this dropping means there has to be
-> > a bug. It could be otherwise - a feature... e.g. when a new kernel
-> > can transmit faster (then dropping in some other, slower place can
-> > happen).
+
+(Pekka Cc:-ed)
+
+* Tim Blechmann <tim@klingt.org> wrote:
+
+> branch profiling on my nehalem machine showed 99% incorrect branch hints:
 > 
-> um... where would it be dropping that we wouldn't have a bug? I mean
-> sure faster is great... but if it makes my network not work right...
-
-E.g. if it were dropped because of a queue overflow (but it doesn't
-seem to be the case, at least at your box) or because of memory
-problems while handling a lot of traffic.
-
+>    28459  7678524  99 __cache_alloc_node             slab.c
+>   3551
 > 
-> I've added all (I think) information you've asked for to the bug
-> http://bugzilla.kernel.org/show_bug.cgi?id=13835 except for ethtool
-> and netstat on the router side. ethtool complains about not having
-> driver or capability (maybe because it's a 2.4 kernel?) and the
-> version of netstat doesn't support -s. I disabled everything that I
-> can think of that would send/receive packets before doing the test
-> client side, except dhcp/dns windows box's were probably sending some
-> broadcasts too. but the traffic should be pretty low. I did remember
-> to set the txqueuelen didn't seem to make a difference
-
-Alas it's not all information I asked. E.g. "netstat -s before faulty
-kernel" and "netstat -s after faulty kernel" seem to be the same file:
-netstat_after.slave4.log.gz. Anyway, since there are problems with
-getting stats from the router we still can't compare them, or check
-for the dropped stats. (Btw, could you check for /proc/net/softnet_stat
-yet?)
-
-So, it might be the kernel problem you reported, but there is not
-enough data to prove it. Then my proposal is to try to repeat this
-problem in more "testing friendly" conditions - preferably against
-some other, more up-to-date linux box, if possible?
-
-> only error in dmesg I see is
+> Signed-off-by: Tim Blechmann <tim@klingt.org>
+> ---
+>  mm/slab.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+> diff --git a/mm/slab.c b/mm/slab.c
+> index f70b326..4125fcd 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3548,7 +3548,7 @@ __cache_alloc_node(struct kmem_cache *cachep,
+> gfp_t flags, int nodeid,
+>  	slab_irq_save(save_flags, this_cpu);
+>   	this_node = cpu_to_node(this_cpu);
+> -	if (unlikely(nodeid == -1))
+> +	if (nodeid == -1)
+>  		nodeid = this_node;
+>   	if (unlikely(!cachep->nodelists[nodeid])) {
+> -- 
+> 1.6.4.2
+> 
+> 
 
-I added e1000e maintainers to CC to have a look at this warning.
 
-Jarek P.
