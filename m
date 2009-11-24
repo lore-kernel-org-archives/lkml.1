@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbZKXVNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934147AbZKXVMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934180AbZKXVNp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933532AbZKXVNm
+	id S934147AbZKXVMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:12:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934038AbZKXVL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:13:42 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44650 "EHLO
+	Tue, 24 Nov 2009 16:11:58 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44693 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932823AbZKXVIb (ORCPT
+	with ESMTP id S934022AbZKXVIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:31 -0500
+	Tue, 24 Nov 2009 16:08:35 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       "Brian G. Merrell" <bgmerrell@novell.com>,
-       Shan Wei <shanwei@cn.fujitsu.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       devel@driverdev.osuosl.org
-Subject: [PATCH 22/38] move vhci_hcd_remove to .devexit.text
-Date: Tue, 24 Nov 2009 22:07:17 +0100
-Message-Id: <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: akpm@linux-foundation.org,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, Kay Sievers <kay.sievers@vrfy.org>,
+       Helge Deller <deller@gmx.de>, linux-scsi@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 23/38] move zalon_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:18 +0100
+Message-Id: <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -43,6 +45,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,33 +57,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function vhci_hcd_remove is used only wrapped by __devexit_p so define
+The function zalon_remove is used only wrapped by __devexit_p so define
 it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Brian G. Merrell <bgmerrell@novell.com>
-Cc: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: devel@driverdev.osuosl.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-scsi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/usbip/vhci_hcd.c |    2 +-
+ drivers/scsi/zalon.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/usbip/vhci_hcd.c b/drivers/staging/usbip/vhci_hcd.c
-index 6e91fc2..22b1c6c 100644
---- a/drivers/staging/usbip/vhci_hcd.c
-+++ b/drivers/staging/usbip/vhci_hcd.c
-@@ -1131,7 +1131,7 @@ static int vhci_hcd_probe(struct platform_device *pdev)
- }
+diff --git a/drivers/scsi/zalon.c b/drivers/scsi/zalon.c
+index 27e84e4..1f8c03d 100644
+--- a/drivers/scsi/zalon.c
++++ b/drivers/scsi/zalon.c
+@@ -167,7 +167,7 @@ static struct parisc_device_id zalon_tbl[] = {
  
+ MODULE_DEVICE_TABLE(parisc, zalon_tbl);
  
--static int vhci_hcd_remove(struct platform_device *pdev)
-+static int __devexit vhci_hcd_remove(struct platform_device *pdev)
+-static int __exit zalon_remove(struct parisc_device *dev)
++static int __devexit zalon_remove(struct parisc_device *dev)
  {
- 	struct usb_hcd	*hcd;
+ 	struct Scsi_Host *host = dev_get_drvdata(&dev->dev);
  
 -- 
 1.6.5.2
