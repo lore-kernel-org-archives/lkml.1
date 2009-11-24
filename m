@@ -1,103 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbZKXF1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZKXFeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752032AbZKXF1p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 00:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZKXF1n
+	id S1754754AbZKXFeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 00:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZKXFeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 00:27:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56944 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752627AbZKXF1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 00:27:42 -0500
-Message-ID: <4B0B6EAF.80802@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 13:27:11 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 24 Nov 2009 00:34:17 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35106 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbZKXFeM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 00:34:12 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B0B7036.3080803@jp.fujitsu.com>
+Date: Tue, 24 Nov 2009 14:33:42 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 5/5] perf kmem: Add help file
-References: <4B0B6E44.6090106@cn.fujitsu.com>
-In-Reply-To: <4B0B6E44.6090106@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH] fix granularity of task_u/stime(), v2
+References: <4AFB8C21.6080404@jp.fujitsu.com> <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop> <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com> <4B05F835.10401@jp.fujitsu.com> <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com>
+In-Reply-To: <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Documentation/perf-kmem.txt
+Stanislaw Gruszka wrote:
+> On Fri, Nov 20, 2009 at 11:00:21AM +0900, Hidetoshi Seto wrote:
+>> E.g. assume that there are 2 tasks:
+>>
+>> Task A: interrupted by timer few times
+>>    (utime, stime, se.sum_sched_runtime) = (50, 50, 1000000000)
+>>     => total of runtime is 1 sec, but utime + stime is 100 ms
+>>
+>> Task B: interrupted by timer many times
+>>    (utime, stime, se.sum_sched_runtime) = (50, 50, 10000000)
+>>     => total of runtime is 10 ms, but utime + stime is 100 ms
+> 
+> How tis is probable, that task is running very long, but not getting
+> the ticks ? I know this is possible, otherwise we will not see utime
+> decreasing after do_sys_times() siglock fix, but how probable?
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- tools/perf/Documentation/perf-kmem.txt |   44 ++++++++++++++++++++++++++++++++
- tools/perf/command-list.txt            |    1 +
- 2 files changed, 45 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/Documentation/perf-kmem.txt
+For example, assume a task like watchdog that calls sleep soon after
+its work.  Such task will be woken up by a timer interrupt on other
+task and queued to run queue.  Once it get a cpu it can finish its
+work before next tick.  So it can run long without getting any ticks
+on it.  I suppose you can find such tasks in monitoring tool which
+contains sampling threads that behaves like watchdog.
 
-diff --git a/tools/perf/Documentation/perf-kmem.txt b/tools/perf/Documentation/perf-kmem.txt
-new file mode 100644
-index 0000000..44b0ce3
---- /dev/null
-+++ b/tools/perf/Documentation/perf-kmem.txt
-@@ -0,0 +1,44 @@
-+perf-kmem(1)
-+==============
-+
-+NAME
-+----
-+perf-kmem - Tool to trace/measure kernel memory(slab) properties
-+
-+SYNOPSIS
-+--------
-+[verse]
-+'perf kmem' {record} [<options>]
-+
-+DESCRIPTION
-+-----------
-+There's two variants of perf kmem:
-+
-+  'perf kmem record <command>' to record the kmem events
-+  of an arbitrary workload.
-+
-+  'perf kmem' to report kernel memory statistics.
-+
-+OPTIONS
-+-------
-+-i <file>::
-+--input=<file>::
-+	Select the input file (default: perf.data)
-+
-+--stat=<caller|alloc>::
-+	Select per callsite or per allocation statistics
-+
-+-s <key[,key2...]>::
-+--sort=<key[,key2...]>::
-+	Sort the output (default: frag,hit,bytes)
-+
-+-l <num>::
-+--line=<num>::
-+	Print n lines only
-+
-+--raw-ip::
-+	Print raw ip instead of symbol
-+
-+SEE ALSO
-+--------
-+linkperf:perf-record[1]
-diff --git a/tools/perf/command-list.txt b/tools/perf/command-list.txt
-index d3a6e18..02b09ea 100644
---- a/tools/perf/command-list.txt
-+++ b/tools/perf/command-list.txt
-@@ -14,3 +14,4 @@ perf-timechart			mainporcelain common
- perf-top			mainporcelain common
- perf-trace			mainporcelain common
- perf-probe			mainporcelain common
-+perf-kmem			mainporcelain common
--- 
-1.6.3
+As the side effect, since such tasks tend to use cpu between tick
+period, they make other tasks to more likely be interrupted by ticks.
+
+>>>> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+>>>>>> index 5c9dc22..e065b8a 100644
+>>>>>> --- a/kernel/posix-cpu-timers.c
+>>>>>> +++ b/kernel/posix-cpu-timers.c
+>>>>>> @@ -248,8 +248,8 @@ void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times)
+>>>>>>  
+>>>>>>  	t = tsk;
+>>>>>>  	do {
+>>>>>> -		times->utime = cputime_add(times->utime, t->utime);
+>>>>>> -		times->stime = cputime_add(times->stime, t->stime);
+>>>>>> +		times->utime = cputime_add(times->utime, task_utime(t));
+>>>>>> +		times->stime = cputime_add(times->stime, task_stime(t));
+>>>>>>  		times->sum_exec_runtime += t->se.sum_exec_runtime;
+>>>>>>  
+>>>>>>  		t = next_thread(t);
+> 
+> That works for me and I agree that this is right fix. Peter had concerns
+> about p->prev_utime races and additional need for further propagation of
+> task_{s,u}time() to posix-cpu-timers code. However I do not understand
+> these problems.
+
+I think that one of our concerns is the cost of task_{s,u}time(), which
+might bring other problem if they are propagated.  But I found we can reduce
+the cost (about the half, or more), that is why I posted task_times() patch
+in other thread in LKML.
+
+
+Thanks,
+H.Seto
 
