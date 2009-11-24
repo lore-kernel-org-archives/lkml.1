@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZKXI4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbZKXI5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbZKXI4N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZKXI4N
+	id S932354AbZKXI5l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932277AbZKXI5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:56:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51010 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932254AbZKXI4M (ORCPT
+	Tue, 24 Nov 2009 03:57:40 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:43225 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932244AbZKXI5k convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:56:12 -0500
-Date: Tue, 24 Nov 2009 17:55:44 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: holzheu@linux.vnet.ibm.com
-Subject: Re: [PATCH] strstrip incorrectly marked __must_check
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@suse.de>, linux-scsi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1258981499.11269.6.camel@holzheu-laptop>
-References: <2f11576a0911031158r7fabb96fx8073bb4e86f4981e@mail.gmail.com> <1258981499.11269.6.camel@holzheu-laptop>
-Message-Id: <20091124175338.AFB6.A69D9226@jp.fujitsu.com>
+	Tue, 24 Nov 2009 03:57:40 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+In-Reply-To: <200911240829.23067.linux@rainbow-software.org>
+References: <200911222201.59471.linux@rainbow-software.org> 
+	<s5h8wdxab2h.wl%tiwai@suse.de> <ac3eb2510911230613w5543e98bg4203a1fbd7269931@mail.gmail.com> 
+	<200911240829.23067.linux@rainbow-software.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 24 Nov 2009 09:57:28 +0100
+Message-ID: <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com>
+Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Takashi Iwai <tiwai@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
-> 
-> I have several places in my code where the new __must_check of strstrip
-> will introduce unnecessary dummy variables to avoid the warnings.
-> 
-> Therefore I would like to have the suggested new strim() or
-> strstip_tail() function. Any chance to have this upstream soon?
+On Tue, Nov 24, 2009 at 08:29, Ondrej Zary <linux@rainbow-software.org> wrote:
+> On Monday 23 November 2009, Kay Sievers wrote:
+>> On Mon, Nov 23, 2009 at 09:40, Takashi Iwai <tiwai@suse.de> wrote:
+>> > At Mon, 23 Nov 2009 13:59:53 +1030,
+>> >
+>> > Rusty Russell wrote:
+>> >> On Mon, 23 Nov 2009 07:31:57 am Ondrej Zary wrote:
+>> >> > The problem is that
+>> >> > scripts/mod/file2alias.c simply ignores isapnp.
+>> >>
+>> >> AFAICT it always has, and noone has complained until now.  Perhaps
+>> >> something was still reading /lib/modules/`uname -r`/modules.isapnpmap?
+>> >
+>> > I don't think modules.isapnpmap is needed again.
+>> > The question came from the fact that the isapnp device wasn't loaded
+>> > automatically.
+>>
+>> All the map files are not uses for anything these days. Ideally,
+>> depmod should just stop creating these dead files.
+>>
+>> > But, I thought Kay already added isapnp support sometime ago, but it
+>> > didn't seem to get in...  Kay?
+>>
+>> No, we don't even have proper modaliases for the pnp bus
+>> (/sys/bus/pnp) and the alias string for pnp in the modules have a
+>> broken and unfixable format. PNP autoloading is all handled by the
+>> acpi modaliases these days. This is the first time in years I hear
+>> anybody asking for hotplug setups of plain old pnp devices. :)
+>
+>
+> Added these two lines to modules.alias (and deleted modules.alias.bin):
+> alias acpi*:RTL8019:* ne
+> alias pnp:dRTL8019* ne
+>
+> and it works. This works too:
+> alias acpi*:PNP80d6:* ne
+> alias pnp:dPNP80d6* ne
 
-strim() is in mmotm now. I expect it will merge mainline soon.
+Oh, your box has acpi mapped pnp aliases for this device? You can see
+your ID string somewhere in this list?
+  grep . /sys/bus/acpi/devices/*/modalias
 
-Thanks.
+If not, is it in the pnp bus list?
+  grep . /sys/bus/pnp/devices/*/id
 
-
-> 
-> Michael
-> 
-> On Wed, 2009-11-04 at 04:58 +0900, KOSAKI Motohiro wrote:
-> > 2009/11/4 Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> > >> static inline void strsrip_tail(char *str)
-> > >> {
-> > >>       char *x __used;
-> > >>       x = strstrip(str);
-> > >> }
-> > >
-> > > Bikeshed time but its cleaner to do
-> > >
-> > > static inline __must_check void strstrip(char *str)
-> > > {
-> > >        return strim(str);
-> > > }
-> > >
-> > > and make strim() the old strstrip function without the check requirement
-> > 
-> > Okey...
-> > 
-> > [quick hack and compile check]
-> > 
-> > done :)
-> > sorry for attached file. I'm under poor mail environment now.
-> 
-
-
-
+Thanks,
+Kay
