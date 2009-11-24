@@ -1,64 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933926AbZKXSiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbZKXSvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933926AbZKXSiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933852AbZKXSiZ
+	id S933924AbZKXSvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933852AbZKXSvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:38:25 -0500
-Received: from stinky.trash.net ([213.144.137.162]:42158 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933799AbZKXSiY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:38:24 -0500
-Message-ID: <4B0C2824.5010502@trash.net>
-Date: Tue, 24 Nov 2009 19:38:28 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Tue, 24 Nov 2009 13:51:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43400 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933846AbZKXSvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:51:01 -0500
+Message-ID: <4B0C2A80.5090609@kernel.org>
+Date: Tue, 24 Nov 2009 10:48:32 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Edge Virtual Bridging <evb@yahoogroups.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de>	<200911241002.20904.arnd@arndb.de> <4B0BB2A7.5040707@trash.net>	<200911241034.43961.arnd@arndb.de> <4B0BB818.6090509@trash.net>	<m1aaybc1s5.fsf@fess.ebiederm.org> <4B0C1031.4050803@trash.net> <m1aayb6bfg.fsf@fess.ebiederm.org>
-In-Reply-To: <m1aayb6bfg.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
+References: <4B0BAC06.1000905@kernel.org>	<20091124193031P.fujita.tomonori@lab.ntt.co.jp>	<4B0BB892.9080401@kernel.org> <20091124225000H.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091124225000H.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Patrick McHardy <kaber@trash.net> writes:
+FUJITA Tomonori wrote:
+> On Tue, 24 Nov 2009 02:42:26 -0800
+> Yinghai Lu <yinghai@kernel.org> wrote:
 > 
->> In the layered case (macvlan -> eth0) its common behaviour to
->> keep the mark however. But in case of different namespaces,
->> I think macvlan should also clear the mark on the dev_queue_xmit()
->> path since this is just a shortcut to looping the packets
->> through veth. In fact probably both of them should also clear
->> skb->priority so other namespaces don't accidentally misclassify
->> packets.
+>> at GART iommu workaround : it is not rare. a lot of systems have this problem.
+>> and that workaround works well for several years.
 > 
-> That is why I pushed for what is becoming dev_forward_skb.  So that
-> we have one place where we can make all of those tweaks.  It seems
-> like in every review we find another field that should be cleared/handled
-> specially.
+> swiotlb has worked too.
 > 
-> I don't quite follow what you intend with dev_queue_xmit when the macvlan
-> is in one namespace and the real physical device is in another.  Are
-> you mentioning that the packet classifier runs in the namespace where
-> the primary device lives with packets from a different namespace?
+> 
+>> don't think user will like to use SWIOTLB instead of swiotlb.
+> 
+> I doubt that users care about a way to fix their problems.
+> 
+> 
+>> that gart iommu hardware is not broken, just those BIOS guys just forget to program it.
+>>
+>> here intel vt-d is different, it seems can not make it work just program some hardware register...
+> 
+> Because BIOS is broken, IIRC. Both cases are pretty similar.
+> 
+>> please check my v2 patch, to see if it breaks your setup.
+> 
+> As I said, adding another trick only for GART is not good. And using
+> force_iommu in pci-dma.c is confusing since force_iommu should be used
+> only in X86_64.
+> 
+> The following patch works for you?
+> 
+> 
+> diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+> index 87ffcb1..8085277 100644
+> --- a/arch/x86/include/asm/swiotlb.h
+> +++ b/arch/x86/include/asm/swiotlb.h
+> @@ -5,13 +5,17 @@
+>  
+>  #ifdef CONFIG_SWIOTLB
+>  extern int swiotlb;
+> -extern int pci_swiotlb_init(void);
+> +extern int __init pci_swiotlb_detect(void);
+> +extern void __init pci_swiotlb_init(void);
+>  #else
+>  #define swiotlb 0
+> -static inline int pci_swiotlb_init(void)
+> +static inline int pci_swiotlb_detect(void)
+>  {
+>  	return 0;
+>  }
+> +static inline void pci_swiotlb_init(void)
+> +{
+> +}
+>  #endif
+>  
+>  static inline void dma_mark_clean(void *addr, size_t size) {}
+> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> index e0dfb68..750dd8d 100644
+> --- a/arch/x86/kernel/aperture_64.c
+> +++ b/arch/x86/kernel/aperture_64.c
+> @@ -401,6 +401,7 @@ void __init gart_iommu_hole_init(void)
+>  
+>  			iommu_detected = 1;
+>  			gart_iommu_aperture = 1;
+> +			swiotlb = 0;
+>  			x86_init.iommu.iommu_init = gart_iommu_init;
+>  
+>  			aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
+> @@ -458,7 +459,7 @@ out:
+>  
+>  	if (aper_alloc) {
+>  		/* Got the aperture from the AGP bridge */
+> -	} else if (!valid_agp) {
+> +	} else if (swiotlb && !valid_agp) {
+>  		/* Do nothing */
 
-Exactly. And I think we should make sure that the namespace of
-the macvlan device can't (deliberately or accidentally) cause
-misclassification.
+still have some problem here.
+because you set swiotlb to 0 before. it will break
+iommu=soft
+
+when amd 64bit system, ram > 4g, and no AGP bridge, and BIOS doesn't set gart.
+if the user set iommu=soft.
+old way, kernel will use swiotlb.
+
+so instead set swiotlb before, it seems you should restore
+ 			iommu_detected
+ 			gart_iommu_aperture
+			swiotlb = 0;
+ 			x86_init.iommu.iommu_init
+to make swiotlb happy later.
+
+>  	} else if ((!no_iommu && max_pfn > MAX_DMA32_PFN) ||
+>  		   force_iommu ||
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index afcc58b..75e14e2 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -124,8 +124,8 @@ void __init pci_iommu_alloc(void)
+>  	/* free the range so iommu could get some range less than 4G */
+>  	dma32_free_bootmem();
+>  #endif
+> -	if (pci_swiotlb_init())
+> -		return;
+> +	if (pci_swiotlb_detect())
+> +		goto out;
+>  
+>  	gart_iommu_hole_init();
+>  
+> @@ -135,6 +135,8 @@ void __init pci_iommu_alloc(void)
+>  
+>  	/* needs to be called after gart_iommu_hole_init */
+>  	amd_iommu_detect();
+> +out:
+> +	pci_swiotlb_init();
+>  }
+>  
+>  void *dma_generic_alloc_coherent(struct device *dev, size_t size,
+> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+> index e6a0d40..2358409 100644
+> --- a/arch/x86/kernel/pci-gart_64.c
+> +++ b/arch/x86/kernel/pci-gart_64.c
+> @@ -847,7 +847,6 @@ int __init gart_iommu_init(void)
+>  	flush_gart();
+>  	dma_ops = &gart_dma_ops;
+>  	x86_platform.iommu_shutdown = gart_iommu_shutdown;
+> -	swiotlb = 0;
+>  
+>  	return 0;
+>  }
+> diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+> index e36e71d..6971ba5 100644
+> --- a/arch/x86/kernel/pci-swiotlb.c
+> +++ b/arch/x86/kernel/pci-swiotlb.c
+> @@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
+>  };
+>  
+>  /*
+> - * pci_swiotlb_init - initialize swiotlb if necessary
+> + * pci_swiotlb_init - set swiotlb to 1 if necessary
+
+pci_swiotlb_detect ?
+
+YH
