@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934137AbZKXVJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934090AbZKXVIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934137AbZKXVJE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934120AbZKXVIz
+	id S934090AbZKXVIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933966AbZKXVIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:08:55 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35803 "EHLO
+	Tue, 24 Nov 2009 16:08:47 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44741 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934106AbZKXVIx (ORCPT
+	with ESMTP id S934044AbZKXVIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:08:53 -0500
+	Tue, 24 Nov 2009 16:08:42 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Magnus Damm <damm@igel.co.jp>,
-       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
+Cc: akpm@linux-foundation.org, Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Alexey Klimov <klimov.linux@gmail.com>,
+       Muralidharan Karicheri <m-karicheri2@ti.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Hans Verkuil <hverkuil@xs4all.nl>,
        Mauro Carvalho Chehab <mchehab@infradead.org>,
        linux-media@vger.kernel.org
-Subject: [PATCH 33/38] don't use __exit_p to wrap sh_mobile_ceu_remove
-Date: Tue, 24 Nov 2009 22:07:28 +0100
-Message-Id: <1259096853-18909-33-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 34/38] move vpfe_remove to .devexit.text
+Date: Tue, 24 Nov 2009 22:07:29 +0100
+Message-Id: <1259096853-18909-34-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-33-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -56,6 +57,7 @@ References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-31-git-send-email-u.kleine-koenig@pengutronix.de>
  <1259096853-18909-32-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259096853-18909-33-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -67,34 +69,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function sh_mobile_ceu_remove is defined using __devexit, so don't
-use __exit_p but __devexit_p to wrap it.
+The function vpfe_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Laurent Pinchart <laurent.pinchart@skynet.be>
+Cc: Alexey Klimov <klimov.linux@gmail.com>
+Cc: Muralidharan Karicheri <m-karicheri2@ti.com>
 Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Magnus Damm <damm@igel.co.jp>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
 Cc: linux-kernel@vger.kernel.org
 Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: linux-media@vger.kernel.org
 ---
- drivers/media/video/sh_mobile_ceu_camera.c |    2 +-
+ drivers/media/video/davinci/vpfe_capture.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/sh_mobile_ceu_camera.c b/drivers/media/video/sh_mobile_ceu_camera.c
-index 2f78b4f..e3e1ef2 100644
---- a/drivers/media/video/sh_mobile_ceu_camera.c
-+++ b/drivers/media/video/sh_mobile_ceu_camera.c
-@@ -1778,7 +1778,7 @@ static struct platform_driver sh_mobile_ceu_driver = {
- 		.pm	= &sh_mobile_ceu_dev_pm_ops,
- 	},
- 	.probe		= sh_mobile_ceu_probe,
--	.remove		= __exit_p(sh_mobile_ceu_remove),
-+	.remove		= __devexit_p(sh_mobile_ceu_remove),
- };
- 
- static int __init sh_mobile_ceu_init(void)
+diff --git a/drivers/media/video/davinci/vpfe_capture.c b/drivers/media/video/davinci/vpfe_capture.c
+index 402ce43..902c59c 100644
+--- a/drivers/media/video/davinci/vpfe_capture.c
++++ b/drivers/media/video/davinci/vpfe_capture.c
+@@ -2054,7 +2054,7 @@ probe_free_dev_mem:
+ /*
+  * vpfe_remove : It un-register device from V4L2 driver
+  */
+-static int vpfe_remove(struct platform_device *pdev)
++static int __devexit vpfe_remove(struct platform_device *pdev)
+ {
+ 	struct vpfe_device *vpfe_dev = platform_get_drvdata(pdev);
+ 	struct resource *res;
 -- 
 1.6.5.2
 
