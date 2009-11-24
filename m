@@ -1,175 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbZKXNvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932969AbZKXNvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbZKXNvZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932973AbZKXNvY
+	id S932969AbZKXNvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932904AbZKXNvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:51:24 -0500
-Received: from sh.osrg.net ([192.16.179.4]:49088 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932904AbZKXNvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:51:22 -0500
-Date: Tue, 24 Nov 2009 22:50:22 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0BB892.9080401@kernel.org>
-References: <4B0BAC06.1000905@kernel.org>
-	<20091124193031P.fujita.tomonori@lab.ntt.co.jp>
-	<4B0BB892.9080401@kernel.org>
+	Tue, 24 Nov 2009 08:51:19 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37900 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932899AbZKXNvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 08:51:18 -0500
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1258891664.14325.30.camel@marge.simson.net>
+References: <1258891664.14325.30.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 14:51:23 +0100
+Message-ID: <1259070683.4531.1476.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091124225000H.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 24 Nov 2009 22:50:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 02:42:26 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> at GART iommu workaround : it is not rare. a lot of systems have this problem.
-> and that workaround works well for several years.
-
-swiotlb has worked too.
-
-
-> don't think user will like to use SWIOTLB instead of swiotlb.
-
-I doubt that users care about a way to fix their problems.
-
-
-> that gart iommu hardware is not broken, just those BIOS guys just forget to program it.
+On Sun, 2009-11-22 at 13:07 +0100, Mike Galbraith wrote:
+> sched: fix b5d9d734 blunder in task_new_fair()
 > 
-> here intel vt-d is different, it seems can not make it work just program some hardware register...
+> b5d9d734 fixed the problem of a forking task's child gaining vruntime..
+> IFF the child/parent shared a runqueue.  In the other case, it broke
+> fairness all to pieces by setting the child's vruntime to whatever task
+> happened to be current on the child's runqueue at wakeup time.  Fix this
+> by adding a sched_class::task_new parameter to give the class a chance to
+> prepare the child for wakeup.
+> 
+> At child wakeup time, call task_new() with the parent's rq locked as the
+> comment in task new states, update the parent's stats (which must be done
+> with the rq locked), call task_new() to prepare the child, unlock parent rq,
+> select a runqueue a runqueue for the child, _then_ set_task_cpu() with the
+> child's vruntime set properly and both runqueue clocks updated to get the
+> current offset.  Lock child's rq and proceed with wakeup.
+> 
+> Also, since setting scheduling policy requires the tasklist lock, move
+> sched_fork() under the tasklist lock in copy_process();
 
-Because BIOS is broken, IIRC. Both cases are pretty similar.
+OK, so hopefully I managed to untangle this...
 
-> please check my v2 patch, to see if it breaks your setup.
+>  include/linux/sched.h |    2 +-
+>  kernel/fork.c         |    6 +++---
+>  kernel/sched.c        |   43 ++++++++++++++++++++++++++++---------------
+>  kernel/sched_fair.c   |   17 +++++++++++------
+>  4 files changed, 43 insertions(+), 25 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched_fair.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_fair.c
+> +++ linux-2.6/kernel/sched_fair.c
+> @@ -1925,20 +1925,23 @@ static void task_tick_fair(struct rq *rq
+>   * Share the fairness runtime between parent and child, thus the
+>   * total amount of pressure for CPU stays equal - new tasks
+>   * get a chance to run but frequent forkers are not allowed to
+> - * monopolize the CPU. Note: the parent runqueue is locked,
+> - * the child is not running yet.
+> + * monopolize the CPU. Note: the parent runqueue is locked at
+> + * prep time, the child is not running yet.  At wakeup time,
+> + * the clild's runqueue is locked.
+>   */
+> -static void task_new_fair(struct rq *rq, struct task_struct *p)
+> +static void task_new_fair(struct rq *rq, struct task_struct *p, int prep)
+>  {
+>  	struct cfs_rq *cfs_rq = task_cfs_rq(p);
+>  	struct sched_entity *se = &p->se, *curr = cfs_rq->curr;
+>  	int this_cpu = smp_processor_id();
+>  
+> -	sched_info_queued(p);
+> -
+>  	update_curr(cfs_rq);
+> -	if (curr)
+> +
+> +	if (prep && curr) {
+>  		se->vruntime = curr->vruntime;
+> +		return;
+> +	}
+> +
+>  	place_entity(cfs_rq, se, 1);
+>  
+>  	/* 'curr' will be NULL if the child belongs to a different group */
+> @@ -1953,6 +1956,8 @@ static void task_new_fair(struct rq *rq,
+>  	}
+>  
+>  	enqueue_task_fair(rq, p, 0);
+> +
+> +	sched_info_queued(p);
+>  }
 
-As I said, adding another trick only for GART is not good. And using
-force_iommu in pci-dma.c is confusing since force_iommu should be used
-only in X86_64.
+I don't think we need to call this twice, but see below.
 
-The following patch works for you?
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -2558,7 +2558,6 @@ static void __sched_fork(struct task_str
+>  void sched_fork(struct task_struct *p, int clone_flags)
+>  {
+>  	int cpu = get_cpu();
+> -	unsigned long flags;
+>  
+>  	__sched_fork(p);
+>  
+> @@ -2566,7 +2565,7 @@ void sched_fork(struct task_struct *p, i
+>  	 * Revert to default priority/policy on fork if requested.
+>  	 */
+>  	if (unlikely(p->sched_reset_on_fork)) {
+> -		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR) {
+> +		if (task_has_rt_policy(p)) {
+>  			p->policy = SCHED_NORMAL;
+>  			p->normal_prio = p->static_prio;
+>  		}
+
+While a nice change, it shouldn't have been mixed in I think.
+
+> @@ -2589,16 +2588,10 @@ void sched_fork(struct task_struct *p, i
+>  	 */
+>  	p->prio = current->normal_prio;
+>  
+> -	if (!rt_prio(p->prio))
+> +	if (!task_has_rt_policy(p))
+>  		p->sched_class = &fair_sched_class;
+
+And I suspect this one is actually buggy, see how rt_mutex_setprio()
+only changes ->prio and ->sched_class, but leaves ->policy to the
+original value?
+
+> -#ifdef CONFIG_SMP
+> -	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+> -#endif
+> -	local_irq_save(flags);
+> -	update_rq_clock(cpu_rq(cpu));
+> -	set_task_cpu(p, cpu);
+> -	local_irq_restore(flags);
+> +	__set_task_cpu(p, cpu);
+>  
+>  #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+>  	if (likely(sched_info_on()))
+
+Remove cpu selection from sched_fork(), seems the sane thing to do.
+
+> @@ -2625,21 +2618,40 @@ void sched_fork(struct task_struct *p, i
+>   */
+>  void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+>  {
+> +	int cpu = get_cpu();
+>  	unsigned long flags;
+> -	struct rq *rq;
+> +	struct task_struct *parent = current;
+> +	struct rq *rq, *orig_rq;
+>  
+> -	rq = task_rq_lock(p, &flags);
+> +	smp_wmb();
+> +	rq = orig_rq = task_rq_lock(parent, &flags);
+>  	BUG_ON(p->state != TASK_RUNNING);
+> -	update_rq_clock(rq);
+> +	update_rq_clock(orig_rq);
+>  
+> -	if (!p->sched_class->task_new || !current->se.on_rq) {
+> +	if (p->sched_class->task_new)
+> +		p->sched_class->task_new(orig_rq, p, 1);
+> +#ifdef CONFIG_SMP
+> +	p->state = TASK_WAKING;
+> +	__task_rq_unlock(orig_rq);
+> +	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+> +	rq = cpu_rq(cpu);
+> +	if (rq != orig_rq) {
+> +		update_rq_clock(rq);
+> +		set_task_cpu(p, cpu);
+> +	}
+> +	__task_rq_lock(p);
+
+[ should've been: rq == __task_rq_lock(p), because as we didn't hold the
+rq->lock the task could have actually been migrated again after
+set_task_cpu() ]
+
+> +	WARN_ON(p->state != TASK_WAKING);
+> +	p->state = TASK_RUNNING;
+> +#endif
+> +
+> +	if (!p->sched_class->task_new || !parent->se.on_rq) {
+>  		activate_task(rq, p, 0);
+>  	} else {
+>  		/*
+>  		 * Let the scheduling class do new task startup
+>  		 * management (if any):
+>  		 */
+> -		p->sched_class->task_new(rq, p);
+> +		p->sched_class->task_new(rq, p, 0);
+>  		inc_nr_running(rq);
+>  	}
+>  	trace_sched_wakeup_new(rq, p, 1);
+> @@ -2649,6 +2661,7 @@ void wake_up_new_task(struct task_struct
+>  		p->sched_class->task_wake_up(rq, p);
+>  #endif
+>  	task_rq_unlock(rq, &flags);
+> +	put_cpu();
+>  }
+
+OK, so the general idea seems to be to call task_new(.prep=1) to update
+and copy vruntime from the parent to the child _before_ we muck about
+and move the child over to another cpu.
+
+Then we muck about and move the thing to another cpu.
+
+Then we call it again with .prep=0 to actually enqueue the thing.
+
+So, the whole point of ->task_new() was to be able to poke at ->vruntime
+before the regular enqueue, I think we folded the enqueue in in order to
+avoid two class calls. But if you're going to do two calls, we might as
+well use ->task_new() and ->enqueue_task() aka activate_task().
+
+This leaves the problem that task_new() behaviour depends on knowing the
+target cpu, could we solve that by relying on the fact that we're
+executing on the original cpu, something like:
+
+void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+{
+	unsigned long flags;
+	struct rq *rq, *orig_rq;
+	int cpu = get_cpu();
+
+	rq = task_rq_lock(p, &flags);
+	BUG_ON(p->state != TASK_RUNNING);
+	update_rq_clock(rq);
+
+#ifdef CONFIG_SMP
+	p->state = TASK_WAKING;
+	__task_rq_unlock(rq);
+	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+	rq = cpu_rq(cpu);
+	if (rq != orig_rq) {
+		update_rq_clock(rq);
+		set_task_cpu(p, cpu);
+	}
+	rq = __task_rq_lock(p);
+	WARN_ON(p->state != TASK_WAKING);
+	p->state = TASK_RUNNING;
+#endif
+
+	if (p->sched_class->task_new) {
+		/* can detect migration through: task_cpu(p) != smp_processor_id() */
+		p->sched_class->task_new(rq, p);
+	}
+
+	activate_task(rq, p, 0);
+
+	trace_sched_wakeup_new(rq, p, 1);
+	check_preempt_curr(rq, p, WF_FORK);
+#ifdef CONFIG_SMP
+	if (p->sched_class->task_wake_up)
+		p->sched_class->task_wake_up(rq, p);
+#endif
+	task_rq_unlock(rq, &flags);
+	put_cpu()
+}
+
+> Index: linux-2.6/kernel/fork.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/fork.c
+> +++ linux-2.6/kernel/fork.c
+> @@ -1125,9 +1125,6 @@ static struct task_struct *copy_process(
+>  
+>  	p->stack_start = stack_start;
+>  
+> -	/* Perform scheduler related setup. Assign this task to a CPU. */
+> -	sched_fork(p, clone_flags);
+> -
+>  	retval = perf_event_init_task(p);
+>  	if (retval)
+>  		goto bad_fork_cleanup_policy;
+> @@ -1229,6 +1226,9 @@ static struct task_struct *copy_process(
+>  	/* Need tasklist lock for parent etc handling! */
+>  	write_lock_irq(&tasklist_lock);
+>  
+> +	/* Perform scheduler related setup. Assign this task to a CPU. */
+> +	sched_fork(p, clone_flags);
+> +
+
+You just invalidated that comment ;-)
 
 
-diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
-index 87ffcb1..8085277 100644
---- a/arch/x86/include/asm/swiotlb.h
-+++ b/arch/x86/include/asm/swiotlb.h
-@@ -5,13 +5,17 @@
- 
- #ifdef CONFIG_SWIOTLB
- extern int swiotlb;
--extern int pci_swiotlb_init(void);
-+extern int __init pci_swiotlb_detect(void);
-+extern void __init pci_swiotlb_init(void);
- #else
- #define swiotlb 0
--static inline int pci_swiotlb_init(void)
-+static inline int pci_swiotlb_detect(void)
- {
- 	return 0;
- }
-+static inline void pci_swiotlb_init(void)
-+{
-+}
- #endif
- 
- static inline void dma_mark_clean(void *addr, size_t size) {}
-diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-index e0dfb68..750dd8d 100644
---- a/arch/x86/kernel/aperture_64.c
-+++ b/arch/x86/kernel/aperture_64.c
-@@ -401,6 +401,7 @@ void __init gart_iommu_hole_init(void)
- 
- 			iommu_detected = 1;
- 			gart_iommu_aperture = 1;
-+			swiotlb = 0;
- 			x86_init.iommu.iommu_init = gart_iommu_init;
- 
- 			aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
-@@ -458,7 +459,7 @@ out:
- 
- 	if (aper_alloc) {
- 		/* Got the aperture from the AGP bridge */
--	} else if (!valid_agp) {
-+	} else if (swiotlb && !valid_agp) {
- 		/* Do nothing */
- 	} else if ((!no_iommu && max_pfn > MAX_DMA32_PFN) ||
- 		   force_iommu ||
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index afcc58b..75e14e2 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -124,8 +124,8 @@ void __init pci_iommu_alloc(void)
- 	/* free the range so iommu could get some range less than 4G */
- 	dma32_free_bootmem();
- #endif
--	if (pci_swiotlb_init())
--		return;
-+	if (pci_swiotlb_detect())
-+		goto out;
- 
- 	gart_iommu_hole_init();
- 
-@@ -135,6 +135,8 @@ void __init pci_iommu_alloc(void)
- 
- 	/* needs to be called after gart_iommu_hole_init */
- 	amd_iommu_detect();
-+out:
-+	pci_swiotlb_init();
- }
- 
- void *dma_generic_alloc_coherent(struct device *dev, size_t size,
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index e6a0d40..2358409 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -847,7 +847,6 @@ int __init gart_iommu_init(void)
- 	flush_gart();
- 	dma_ops = &gart_dma_ops;
- 	x86_platform.iommu_shutdown = gart_iommu_shutdown;
--	swiotlb = 0;
- 
- 	return 0;
- }
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index e36e71d..6971ba5 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
- };
- 
- /*
-- * pci_swiotlb_init - initialize swiotlb if necessary
-+ * pci_swiotlb_init - set swiotlb to 1 if necessary
-  *
-  * This returns non-zero if we are forced to use swiotlb (by the boot
-  * option).
-  */
--int __init pci_swiotlb_init(void)
-+int __init pci_swiotlb_detect(void)
- {
- 	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
- #ifdef CONFIG_X86_64
-@@ -58,10 +58,13 @@ int __init pci_swiotlb_init(void)
- 	if (swiotlb_force)
- 		swiotlb = 1;
- 
-+	return swiotlb_force;
-+}
-+
-+void __init pci_swiotlb_init(void)
-+{
- 	if (swiotlb) {
- 		swiotlb_init(0);
- 		dma_ops = &swiotlb_dma_ops;
- 	}
--
--	return swiotlb_force;
- }
