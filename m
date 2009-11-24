@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934187AbZKXVMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934175AbZKXVMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934187AbZKXVMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 16:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbZKXVMu
+	id S934175AbZKXVMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 16:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbZKXVMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 16:12:50 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37326 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934178AbZKXVMs (ORCPT
+	Tue, 24 Nov 2009 16:12:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44570 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934157AbZKXVMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 16:12:48 -0500
-Message-ID: <4B0C4B37.5030904@zytor.com>
-Date: Tue, 24 Nov 2009 13:08:07 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH -tip v5 03/10] kprobes: Introduce kprobes jump	optimization
-References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com> <20091123232141.22071.53317.stgit@dhcp-100-2-132.bos.redhat.com> <20091124024417.GA6752@nowhere> <20091124033135.GE6752@nowhere> <4B0BFCF8.4060905@redhat.com> <20091124201357.GB5071@nowhere>
-In-Reply-To: <20091124201357.GB5071@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 24 Nov 2009 16:12:37 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Matt Mackall <mpm@selenic.com>, paulmck@linux.vnet.ibm.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <alpine.DEB.2.00.0911241302370.6593@chino.kir.corp.google.com>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258709153.11284.429.camel@laptop>
+	 <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com>
+	 <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
+	 <1259090615.17871.696.camel@calx>  <1259095580.4531.1788.camel@laptop>
+	 <1259096004.17871.716.camel@calx> <1259096519.4531.1809.camel@laptop>
+	 <alpine.DEB.2.00.0911241302370.6593@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 22:12:30 +0100
+Message-ID: <1259097150.4531.1822.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/24/2009 12:14 PM, Frederic Weisbecker wrote:
+On Tue, 2009-11-24 at 13:03 -0800, David Rientjes wrote:
+> On Tue, 24 Nov 2009, Peter Zijlstra wrote:
 > 
-> PS: hmm btw I remember about a patch that
-> tagged refrigerator() as __cold but it looks like it hasn't been
-> applied....
+> > Merge SLQB and rm mm/sl[ua]b.c include/linux/sl[ua]b.h for .33-rc1
+> > 
 > 
+> slqb still has a 5-10% performance regression compared to slab for 
+> benchmarks such as netperf TCP_RR on machines with high cpu counts, 
+> forcing that type of regression isn't acceptable.
 
-Groan!  That hurt!
-
-	-hpa
+Having _4_ slab allocators is equally unacceptable.
 
