@@ -1,82 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbZKXRQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933538AbZKXRWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933632AbZKXRQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 12:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933531AbZKXRQN
+	id S933538AbZKXRWk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 12:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933492AbZKXRWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 12:16:13 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40669 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933501AbZKXRQM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 12:16:12 -0500
-Date: Tue, 24 Nov 2009 12:16:17 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: tmhikaru@gmail.com
-cc: Jan Kara <jack@suse.cz>, <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       <linux-scsi@vger.kernel.org>, <linux-ext4@vger.kernel.org>
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-In-Reply-To: <20091123234234.GA22126@roll>
-Message-ID: <Pine.LNX.4.44L0.0911241111410.2881-100000@iolanthe.rowland.org>
+	Tue, 24 Nov 2009 12:22:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12530 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932655AbZKXRWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 12:22:39 -0500
+Date: Tue, 24 Nov 2009 18:22:08 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: rostedt@goodmis.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: cannot compile linux-2.6-tip tree
+Message-ID: <20091124172208.GG1975@jolsa.lab.eng.brq.redhat.com>
+References: <20091124124107.GA1975@jolsa.lab.eng.brq.redhat.com>
+ <20091124154511.GG21821@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124154511.GG21821@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009 tmhikaru@gmail.com wrote:
-
-> Thank you. I've gotten output of it screwing up, but it's a 62MB file. I
-> don't think I'm allowed to send attachments here, nor do I know what I'm
-> supposed to be looking for in this output. So, instead I'm putting the
-> (compressed) file up on my home computer. If you've got suggestions for what
-> I should use instead, let me know.
+On Tue, Nov 24, 2009 at 04:45:11PM +0100, Ingo Molnar wrote:
 > 
-> http://hikaru.no-ip.info:3000/1.mon.out.xz
+> * Jiri Olsa <jolsa@redhat.com> wrote:
 > 
-> Although I don't think you'll need it, I've included the dmesg output of
-> what happened when I ran my backup script, just in case it helps at all.
+> > drivers/pnp/card.o: file not recognized: File format not recognized
+> > make[1]: *** [drivers/pnp/built-in.o] Error 1
+> 
+> that typically happens if you Ctrl-C a parallel kernel build, and GCC 
+> leaves around an empty .o file.
+> 
+> It's rare but happens. 'make clean' will cure that.
+> 
+> 	Ingo
 
-Here's an annotated example of one of those hiccups:
+I tried make clean and it did not help..
 
-f1aa1f00 2416018820 S Bo:1:003:1 -115 31 = 55534243 07050100 00100000 80000a28 000000ae ef000008 00000000 000000
-f1aa1f00 2416018929 C Bo:1:003:1 0 31 >
+I'm not sure if I'm not overlooking something obvious or am getting
+crazy, but this is what I've done so far:
 
-The computer issued a READ command for 8 blocks (4096 bytes) starting
-at block number 0x0000aeef = 44783.
+I took gcc command line for drivers/pnp/card.o and drivers/pnp/core.o
+from make V=1 and run it manually ending up with this:
 
-d2588b00 2416019342 S Bi:1:003:2 -115 4096 <
-d2588b00 2416019428 C Bi:1:003:2 -32 0
-f1aa1f00 2416019435 S Co:1:003:0 s 02 01 0000 0082 0000 0
-f1aa1f00 2416019554 C Co:1:003:0 0 0
 
-The drive returned 0 bytes of data.
+compile:
+[jolsa@jolsa linux-2.6-tip]$ gcc -Wp,-MD,drivers/pnp/.card.o.d
+-nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.4.2/include
+-Iinclude  -I/mnt/sda5/data/upstream/linux-2.6-tip/arch/x86/include
+-include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef
+-Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-Werror-implicit-function-declaration -Wno-format-security
+-fno-delete-null-pointer-checks -O2 -m64 -mtune=generic -mno-red-zone
+-mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args
+-DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare
+-fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow
+-Wframe-larger-than=2048 -fno-stack-protector -fno-omit-frame-pointer
+-fno-optimize-sibling-calls -g -pg -Wdeclaration-after-statement
+-Wno-pointer-sign -fno-strict-overflow -fno-dwarf2-cfi-asm
+-fconserve-stack   -D"KBUILD_STR(s)=#s"
+-D"KBUILD_BASENAME=KBUILD_STR(card)"
+-D"KBUILD_MODNAME=KBUILD_STR(card)"  -c -o drivers/pnp/.tmp_card.o
+drivers/pnp/card.c
+[jolsa@jolsa linux-2.6-tip]$ gcc -Wp,-MD,drivers/pnp/.core.o.d
+-nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.4.2/include
+-Iinclude  -I/mnt/sda5/data/upstream/linux-2.6-tip/arch/x86/include
+-include include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef
+-Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-Werror-implicit-function-declaration -Wno-format-security
+-fno-delete-null-pointer-checks -O2 -m64 -mtune=generic -mno-red-zone
+-mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args
+-DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare
+-fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow
+-Wframe-larger-than=2048 -fno-stack-protector -fno-omit-frame-pointer
+-fno-optimize-sibling-calls -g -pg -Wdeclaration-after-statement
+-Wno-pointer-sign -fno-strict-overflow -fno-dwarf2-cfi-asm
+-fconserve-stack   -D"KBUILD_STR(s)=#s"
+-D"KBUILD_BASENAME=KBUILD_STR(core)"
+-D"KBUILD_MODNAME=KBUILD_STR(core)"  -c -o drivers/pnp/.tmp_core.o
+drivers/pnp/core.c
 
-f1aa1f00 2416019560 S Bi:1:003:2 -115 13 <
-f1aa1f00 2416019678 C Bi:1:003:2 0 13 = 55534253 07050100 00100000 00
 
-And then it returned a status indicating no error but 4096 bytes
-residue (i.e., incorrect or undelivered data).  This caused the
-usb-storage driver to send the SCSI layer a result code of DID_ERROR
-with no sense data.
+run objdump:
+[jolsa@jolsa linux-2.6-tip]$ objdump -R drivers/pnp/.tmp_core.o 
 
-> sd 0:0:0:0: [sda] Unhandled error code
-> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
-> end_request: I/O error, dev sda, sector 44783
+drivers/pnp/.tmp_core.o:     file format elf64-x86-64
 
-The DID_ERROR code caused the SCSI layer to display this error message.  
+objdump: drivers/pnp/.tmp_core.o: not a dynamic object
+objdump: drivers/pnp/.tmp_core.o: Invalid operation
+[jolsa@jolsa linux-2.6-tip]$ objdump -R drivers/pnp/.tmp_card.o
+objdump: drivers/pnp/.tmp_card.o: File truncated
 
-> sd 0:0:0:0: [sda] Unhandled error code
-> sd 0:0:0:0: [sda] Result: hostbyte=0x07 driverbyte=0x00
-> end_request: I/O error, dev sda, sector 51823
 
-I would have expected the READ to be retried, but in these two cases 
-it wasn't.  The usbmon log contained five instances of this error 
-sequence; the other three were retried successfully.  I don't know what 
-the difference was.
+run file:
+[jolsa@jolsa linux-2.6-tip]$ file drivers/pnp/.tmp_card.o 
+drivers/pnp/.tmp_card.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), stripped
+[jolsa@jolsa linux-2.6-tip]$ file drivers/pnp/.tmp_core.o 
+drivers/pnp/.tmp_core.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped
 
-Alan Stern
 
+I checked other objects in drivers/pnp/ and for some reason the file command shows 
+card.o (the object which is failing) as "stripped" and others as "not stripped" ... no idea why :)
+
+
+I'm probably going to clone new tree... :)
+
+jirka
