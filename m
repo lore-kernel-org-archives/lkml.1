@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751159AbZKXFAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZKXFgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751159AbZKXFAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 00:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbZKXFAL
+	id S1753657AbZKXFgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 00:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZKXFgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 00:00:11 -0500
-Received: from tundra.namei.org ([65.99.196.166]:44212 "EHLO tundra.namei.org"
+	Tue, 24 Nov 2009 00:36:42 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43645 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbZKXFAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 00:00:10 -0500
-Date: Tue, 24 Nov 2009 15:59:00 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       "Andrew G. Morgan" <morgan@kernel.org>, Steve Grubb <sgrubb@redhat.com>,
-       linux-security-module@vger.kernel.org,
-       Kees Cook <kees.cook@canonical.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       George Wilson <gcwilson@us.ibm.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH] remove CONFIG_SECURITY_FILE_CAPABILITIES compile
- option
-In-Reply-To: <20091123222130.GA11325@us.ibm.com>
-Message-ID: <alpine.LRH.2.00.0911241558420.30118@tundra.namei.org>
-References: <20091123222130.GA11325@us.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751430AbZKXFgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 00:36:41 -0500
+Subject: Re: [PATCH 7/8] spi_mpc8xxx: Turn qe_mode into flags
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <3E303C4F-CE29-470F-B34A-3413F31BC23C@kernel.crashing.org>
+References: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
+	 <20091012164925.GG4578@oksana.dev.rtsoft.ru>
+	 <3E303C4F-CE29-470F-B34A-3413F31BC23C@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 16:03:36 +1100
+Message-ID: <1259039016.16367.118.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009, Serge E. Hallyn wrote:
-
-> So this patch removes the SECURITY_FILE_CAPABILITIES compile
-> option.  It drops the kernel size by about 50k over the stock
-> SECURITY_FILE_CAPABILITIES=y kernel, by removing the
-> cap_limit_ptraced_target() function.
+On Thu, 2009-11-05 at 07:47 -0600, Kumar Gala wrote:
+> On Oct 12, 2009, at 11:49 AM, Anton Vorontsov wrote:
 > 
-> Changelog:
-> 	Nov 20: remove cap_limit_ptraced_target() as it's logic
-> 		was ifndef'ed.
+> > Soon there will be more flags introduced in subsequent patches, so
+> > let's turn qe_mode into flags.
+> >
+> > Also introduce mpc8xxx_spi_strmode() and print current SPI mode.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> > ---
+> > drivers/spi/spi_mpc8xxx.c   |   30 +++++++++++++++++++-----------
+> > include/linux/fsl_devices.h |    2 +-
+> > 2 files changed, 20 insertions(+), 12 deletions(-)
 > 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> Acked-by: Andrew G. Morgan" <morgan@kernel.org>
+> applied to next
 
+This patch breaks my 6xx config:
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+/home/benh/linux-powerpc-test/arch/powerpc/platforms/83xx/mpc832x_rdb.c: In function ‘of_fsl_spi_probe’:
+/home/benh/linux-powerpc-test/arch/powerpc/platforms/83xx/mpc832x_rdb.c:77: error: ‘struct fsl_spi_platform_data’ has no member named ‘qe_
 
+The reason is that the mpc832x_rdb.c code still uses the legacy probing
+method. The fix is not totally trivial as the new flags are defined inside
+spi_mpc8xxx.c so either the flags need to be moved to fsl_devices.h or
+mpc832x_rdb.c needs to be converted to new style stuff.
 
--- 
-James Morris
-<jmorris@namei.org>
+I'll commit (will be up later today in my next branch) a fix moving the
+flags over for now so the tree doesn't break building.
+
+If you are going to keep the flags in the .c file you probably also want
+to remove the platform device definition from fsl_devices.h anyways as
+there's no point exposing to the world a structure with a "flags" member
+if the definition of those flags isn't also exposed.
+
+Cheers,
+Ben.
+
