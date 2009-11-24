@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbZKXH6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZKXH6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbZKXH6Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 02:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757848AbZKXH6X
+	id S932195AbZKXH6o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 02:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932180AbZKXH6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 02:58:23 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:49608 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757840AbZKXH6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 02:58:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=QRjYaZfKWNUyAkFwhP606ph+bSezoD81L0JTC9SFLpxdo1hyfYUHfEZfAO66KpnSwV
-         92fKRTu5m5JvJcLF5a8TRU8X2NGiypB2+W2LI+R2sNPWVjq5IrlflKRfr3KjVTCG1AmV
-         F98B9iQ0iC38hW8GB8zXrJ13FFubkA2AjhaWM=
-Date: Tue, 24 Nov 2009 09:58:13 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: [Resend Patch] kexec: allow to shrink reserved memory
-Message-ID: <20091124075813.GA14488@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
-	Neil Horman <nhorman@redhat.com>
-References: <20091123093958.4963.38592.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091123093958.4963.38592.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Nov 2009 02:58:43 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57495 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932151AbZKXH6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 02:58:43 -0500
+Date: Tue, 24 Nov 2009 18:58:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       xen-devel@lists.xensource.com, Mark McLoughlin <markmc@redhat.com>
+Subject: linux-next: alacrity tree build failure
+Message-Id: <20091124185843.d2cab90c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 04:37:02AM -0500, Amerigo Wang wrote:
-[snip]
-> +size_t crash_get_memory_size(void);
-[snip]
-> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
-> +				       struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%lu\n", crash_get_memory_size());
-> +}
+--Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  CC      kernel/ksysfs.o
-kernel/ksysfs.c: In function ‘kexec_crash_size_show’:
-kernel/ksysfs.c:106: warning: format ‘%lu’ expects type ‘long unsigned int’, but argument 3 has type ‘size_t’
+Hi Gregory,
 
-Could we get suppress this gcc warning?
+Today's linux-next build (x86_6 _allmodconfig) failed like this:
 
-regards,
-dan carpenter
+drivers/vbus/built-in.o:(.data+0x0): multiple definition of `dev_attr_modal=
+ias'
+drivers/xen/built-in.o:(.data+0x46d0): first defined here
+
+Caused by commit 59aa8f441d27c8470764a513dafa46a77f33e953 ("vbus: add
+autoprobe capability to guest").  The DEVICE_ATTR(modalias ...) should
+probably be static.  I should probably be static in
+drivers/xen/xenbus/xenbus_probe.c as well.
+
+I have used the version of the alacrity tree from next-20091123 for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksLkjMACgkQjjKRsyhoI8xdggCghmFC4DHrTZW/9QyDMftzfJ9M
+d6AAoIKUXSdMo61pFLMqBVytODhlIUGU
+=Q9Ck
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Nov_2009_18_58_43_+1100_/qYMZDtrdJOxZk=M--
