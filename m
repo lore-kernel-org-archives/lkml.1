@@ -1,52 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932871AbZKXNCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbZKXPQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932871AbZKXNCg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:02:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbZKXNCf
+	id S933289AbZKXPQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 10:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933229AbZKXPQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:02:35 -0500
-Received: from mx1.alphion.com ([75.147.97.34]:34862 "EHLO mx1.alphion.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932667AbZKXNCe convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 10:16:50 -0500
+Received: from spandex.richmond.edu ([141.166.24.59]:54707 "EHLO
+	spandex.richmond.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933224AbZKXPQt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:02:34 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Need Info about IDE driver
-Date: Tue, 24 Nov 2009 08:02:35 -0500
-Message-ID: <846629303ABF174A9EA5BB26D6965A594D5465@MX2.AlphionCorp.local>
+	Tue, 24 Nov 2009 10:16:49 -0500
+X-Greylist: delayed 7557 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 10:16:49 EST
+From: "Wren, Tom" <twren@richmond.edu>
+To: "info@imf.com" <info@imf.com>
+Date: Tue, 24 Nov 2009 08:07:53 -0500
+Subject: You Have Been Awarded the sum of $250.000.00 USD
+Thread-Topic: You Have Been Awarded the sum of $250.000.00 USD
+Thread-Index: AQHKbQdbItK7l3H2O02bmiFsttD/aQ==
+Message-ID: <55CC5C4EA1F0AD4DA46C1767F92B954AFBEEC56186@UREXCHANGESCC.richmond.edu>
+Accept-Language: en-US
+Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: Need Info about IDE driver
-Thread-Index: AcptA45Ef2JhdUFWTuaQKdZdlFRn8AAASa+QAABSz2A=
-From: "Sachin Rane" <SRane@alphion.com>
-To: <linux-kernel@vger.kernel.org>
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
+X-Spam-Detail: 0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Hi,
- 
-I am new to  'IDE' Linux driver.
-Before writing this mail I tried to get information from internet but
-couldn't hit the website which can give developer point of view
-information.
- 
-I am going through the code '
-kernel-2.6.16.1-ts.amcc440gx.basic.1/drivers/ide/pci/siimage.c' and user
-manual for 'Sil0680' to understand how the IDE driver works.
-
-I have very basic questions:
-1. What does mean the value '2' i.e. 'Custom' which has been set for
-'hwif->mmio'
- 
-2. Where I can find details about 'TaskFile'?
-
-  
-Regards,
-Sachin Rane
+Your Email Address Was Tagged The Owner Of $250.000.00 USD contact: Western Union Solicitors Fund
+Transfer Department Mr.David Mark E-mail: fund-transfer-unit09@live.com<mailto:fund-transfer-unit09@live.com>
