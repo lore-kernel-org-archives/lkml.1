@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbZKXXxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934495AbZKXX4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934477AbZKXXxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 18:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934407AbZKXXxq
+	id S934495AbZKXX4e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 18:56:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934452AbZKXX4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 18:53:46 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37957 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934386AbZKXXxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 18:53:45 -0500
-Date: Wed, 25 Nov 2009 08:48:41 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0C2A80.5090609@kernel.org>
-References: <4B0BB892.9080401@kernel.org>
-	<20091124225000H.fujita.tomonori@lab.ntt.co.jp>
-	<4B0C2A80.5090609@kernel.org>
+	Tue, 24 Nov 2009 18:56:33 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:54502 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934439AbZKXX4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 18:56:32 -0500
+Date: Wed, 25 Nov 2009 08:49:10 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
+ in case of use_hierarchy
+Message-Id: <20091125084910.16d9095d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20091124170402.GB3365@balbir.in.ibm.com>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+	<661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com>
+	<20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp>
+	<20091124170402.GB3365@balbir.in.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091125084827L.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 08:48:41 +0900 (JST)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 10:48:32 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> >  	if (aper_alloc) {
-> >  		/* Got the aperture from the AGP bridge */
-> > -	} else if (!valid_agp) {
-> > +	} else if (swiotlb && !valid_agp) {
-> >  		/* Do nothing */
+On Tue, 24 Nov 2009 22:34:02 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
 > 
-> still have some problem here.
-> because you set swiotlb to 0 before. it will break
-> iommu=soft
-
-Oops, thanks. However, it's not GART specific issue.
-
-'iommu=soft' is already broken on all the configurations. It should be
-fixed separately. I've just sent a fix.
-
-
-> >  void *dma_generic_alloc_coherent(struct device *dev, size_t size,
-> > diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> > index e6a0d40..2358409 100644
-> > --- a/arch/x86/kernel/pci-gart_64.c
-> > +++ b/arch/x86/kernel/pci-gart_64.c
-> > @@ -847,7 +847,6 @@ int __init gart_iommu_init(void)
-> >  	flush_gart();
-> >  	dma_ops = &gart_dma_ops;
-> >  	x86_platform.iommu_shutdown = gart_iommu_shutdown;
-> > -	swiotlb = 0;
-> >  
-> >  	return 0;
-> >  }
-> > diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-> > index e36e71d..6971ba5 100644
-> > --- a/arch/x86/kernel/pci-swiotlb.c
-> > +++ b/arch/x86/kernel/pci-swiotlb.c
-> > @@ -43,12 +43,12 @@ static struct dma_map_ops swiotlb_dma_ops = {
-> >  };
-> >  
-> >  /*
-> > - * pci_swiotlb_init - initialize swiotlb if necessary
-> > + * pci_swiotlb_init - set swiotlb to 1 if necessary
+> > On Tue, 24 Nov 2009 19:01:54 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
+> > > <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> > > > a task can be a candidate for being oom-killed from memcg's limit, checks
+> > > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+> > > >
+> > > > But this check return true(it's false positive) when:
+> > > >
+> > > >        <some path>/00          use_hierarchy == 0      <- hitting limit
+> > > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
+> > > >
+> > > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> > > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> > > > should print information of mem_cgroup which the task being killed, not current,
+> > > > belongs to.
+> > > >
+> > > 
+> > > Quick Question: What happens if <some path>/00 has no tasks in it
+> > > after your patches?
+> > > 
+> > Nothing would happen because <some path>/00 never hit its limit.
 > 
-> pci_swiotlb_detect ?
+> Why not? I am talking of a scenario where <some path>/00 is set to a
+> limit (similar to your example) and hits its limit, but the groups
+> under it have no limits, but tasks. Shouldn't we be scanning
+> <some path>/00/aa as well?
+> 
+> > 
+> > The bug that this patch fixes is:
+> > 
+> > - create a dir <some path>/00 and set some limits.
+> > - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
+> > - run some programs in both in 00 and 00/aa. programs in 00 should be
+> >   big enough to cause oom by its limit.
+> > - when oom happens by 00's limit, tasks in 00/aa can also be killed.
+> >
+> 
+> To be honest, the last part is fair, specifically if 00/aa has a task
+> that is really the heaviest task as per the oom logic. no? Are you
+> suggesting that only tasks in <some path>/00 should be selected by the
+> oom logic? 
+> 
+All of your comments would be rational if hierarchy is enabled in 00(it's
+also enabled in 00/aa automatically in this case).
+I'm saying about the case where it's disabled in 00 but enabled in 00/aa.
 
-I'll fix in the next version.
+In this scenario, charges by tasks in 00/aa is(and should not be) charged to 00.
+And oom caused by 00's limit should not affect the task in 00/aa.
+
+
+Regards,
+Daisuke Nishimura.
