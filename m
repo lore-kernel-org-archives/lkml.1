@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932676AbZKXKe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932684AbZKXKe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932676AbZKXKe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 05:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbZKXKe2
+	id S932684AbZKXKe6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 05:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932655AbZKXKe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 05:34:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57630 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932621AbZKXKe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 05:34:27 -0500
-Message-ID: <4B0BB6B1.5010302@redhat.com>
-Date: Tue, 24 Nov 2009 12:34:25 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 24 Nov 2009 05:34:58 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:50675 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932634AbZKXKe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 05:34:57 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+Date: Tue, 24 Nov 2009 10:34:43 +0000
+User-Agent: KMail/1.12.2 (Linux/2.6.31bisect; KDE/4.3.2; x86_64; ; )
+Cc: Patrick McHardy <kaber@trash.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       David Miller <davem@davemloft.net>
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <200911241002.20904.arnd@arndb.de> <4B0BB2A7.5040707@trash.net>
+In-Reply-To: <4B0BB2A7.5040707@trash.net>
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: kvmmmu tracing
-References: <1258974375.7094.158.camel@johannes.local>	 <4B0BAC76.3080202@redhat.com> <1259057130.3985.1.camel@johannes.local>
-In-Reply-To: <1259057130.3985.1.camel@johannes.local>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911241034.43961.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18qpREQZ/NC8zUKvldMFY5T230XogpkJew8ipe
+ i6JO/k30M29g5bltM4cE05GEwSsw3yZpn4sDKKxuW3SZkb/GSE
+ klnP8vjO2OAggQ4rmaFjw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/24/2009 12:05 PM, Johannes Berg wrote:
-> On Tue, 2009-11-24 at 11:50 +0200, Avi Kivity wrote:
->    
->> On 11/23/2009 01:06 PM, Johannes Berg wrote:
->>      
->>> Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
->>> the userspace interface for tracing because of the weird
->>> KVM_MMU_PAGE_PRINTK macro.
->>>
->>>
->>>        
->> Can you explain what is wrong with it?
->>      
-> It's a big C expression that trace-cmd can't parse :)
->    
+On Tuesday 24 November 2009 10:17:11 Patrick McHardy wrote:
+> Arnd Bergmann wrote:
+> > On Tuesday 24 November 2009 09:51:19 Patrick McHardy wrote:
+> >>> +     skb_dst_drop(skb);
+> >>> +     skb->tstamp.tv64 = 0;
+> >>> +     skb->pkt_type = PACKET_HOST;
+> >>> +     skb->protocol = eth_type_trans(skb, dev);
+> >>> +     skb->mark = 0;
+> >> skb->mark clearing should stay private to veth since its usually
+> >> supposed to stay intact. The only exception is packets crossing
+> >> namespaces, where they should appear like a freshly received skbs.
+> > 
+> > But isn't that what we want in macvlan as well when we're
+> > forwarding from one downstream interface to another?
+> 
+> In the TX direction you can use the mark for TC classification
+> on the underlying device.
 
-Um, C can be easily parsed with a C compiler.  I don't think you can 
-expect it to be a plain format string and argument list.
+I don't use dev_forward_skb for the case where the data is sent
+to the underlying device, so the TC classification should stay
+intact.
+ 
+> > I did all my testing with macvlan interfaces in separate namespaces
+> > communicating with each other, so I'd assume that we should always
+> > clear skb->mark and skb->dst in this function.
+> 
+> Good point, in that case we probably should clear it as well. But
+> in the non-namespace case the TC classification currently works and
+> this is consistent with any other virtual device driver, so it
+> should continue to work.
 
->> Is userspace reading mmutrace.h?  When the structure attributes can be
->> exported via /sys/kernel/debug/tracing?
->>      
-> Yes ... look
-> at /sys/kernel/debug/tracing/events/kvmmmu/kvm_mmu_unsync_page/format
-> for instance.
->    
+Do you think we should be able to use TC to direct traffic between
+macvlans on the same underlying device in bridge mode? It does sound
+useful, but I'm not sure how to implement that or if you'd expect
+it to work with the current code. If we support that, it should probably
+also work with namespaces, by consuming the mark in the macvlan
+and veth drivers.
 
-You can fall back to using the attributes to build your own format string.
-
--- 
-error compiling committee.c: too many arguments to function
-
+	Arnd <><
