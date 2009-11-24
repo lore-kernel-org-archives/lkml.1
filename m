@@ -1,98 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbZKXIEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbZKXIEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbZKXIEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZKXIEs
+	id S1756532AbZKXIEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbZKXIEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:04:48 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61997 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757628AbZKXIEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:04:47 -0500
-Message-ID: <4B0B937F.4080906@cn.fujitsu.com>
-Date: Tue, 24 Nov 2009 16:04:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 24 Nov 2009 03:04:36 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:65520 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753920AbZKXIEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:04:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=BMRnPy9NNAY5MAT79/hgaS+W5kBFZI5LxEiKS5r66ZzmYD0N2627j2DcNipZzdQG4H
+         JlYsWiaHFKwsvTXlqrIO2r6sEZY4jE3CgqI7K5HYe/i1vaWuStNgCsFor2ghBYBnWOqY
+         I/PzPPw/SbxgM47EV6uaciniiweyZlD2mVvNE=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more statistics
-References: <4B0B6E44.6090106@cn.fujitsu.com> <84144f020911232315h7c8b7348u9ad97f585f54a014@mail.gmail.com> <20091124073426.GA21991@elte.hu>
-In-Reply-To: <20091124073426.GA21991@elte.hu>
+In-Reply-To: <20091124080006.GB14488@bicker>
+References: <51d384e10911230137q7553b8c4x5ba3aca3e8edbc77@mail.gmail.com>
+	 <20091124080006.GB14488@bicker>
+Date: Tue, 24 Nov 2009 16:04:41 +0800
+Message-ID: <51d384e10911240004t47bb3d18g4e95e52d83b99e06@mail.gmail.com>
+Subject: Re: [PATCH] dvb-core: Fix ULE decapsulation bug when less than 4 
+	bytes of ULE SNDU is packed into the remaining bytes of a MPEG2-TS frame
+From: Ang Way Chuang <wcang79@gmail.com>
+To: Dan Carpenter <error27@gmail.com>, Ang Way Chuang <wcang79@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
->> Hi Li,
->>
->> On Tue, Nov 24, 2009 at 7:25 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>> Pekka, do you think we can remove kmemtrace now?
->> One more use case I forgot to mention: boot time tracing. Much of the 
->> persistent kernel memory footprint comes from the boot process which 
->> is why it's important to be able to trace memory allocations 
->> immediately after kmem_cache_init() has run. Can we make "perf kmem" 
->> do that? Eduard put most of his efforts into making that work for 
->> kmemtrace.
-> 
-> Would be lovely if someone looked at perf from that angle (and extended 
-> it).
-> 
-> Another interesting area would be to allow a capture session without a 
-> process context running immediately. (i.e. pre-allocate all the buffers, 
-> use them, for a later 'perf save' to pick it up.)
-> 
-> The two are kind of the same thing conceptually: a boot time trace is a 
-> preallocated 'process context less' recording, to be picked up after 
-> bootup.
-> 
-> [ It also brings us 'stability/persistency of event logging' - i.e. a 
->   capture session could be started and guaranteed by the kernel to be 
->   underway, regardless of what user-space does. ]
-> 
-> Btw., Arjan is doing a _lot_ of boot time tracing for Moblin, and he 
-> indicated it in the past that starting a perf recording session from an 
-> initrd is a pretty practical substitute as well. (I've Cc:-ed Arjan.)
-> 
+Okay, resending. Hope it won't do line wrapping.
 
-It would be great if perf can be used for boot time tracing. This needs
-pretty big work on kernel side.
+ULE (Unidirectional Lightweight Encapsulation RFC 4326) decapsulation
+code has a bug that incorrectly treats ULE SNDU packed into the
+remaining 2 or 3 bytes of a MPEG2-TS frame as having invalid pointer
+field on the subsequent MPEG2-TS frame.
 
->> On Tue, Nov 24, 2009 at 7:25 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>
->>> With kmem trace events, low-level analyzing can be done using 
->>> ftrace, and high-level analyzing can be done using perf-kmem.
->>>
->>> And chance is, more people may use and improve perf-kmem, and it 
->>> will be well-maintained within the perf infrastructure. On the other 
->>> hand, I guess few people use and contribute to kmemtrace-user.
->> Sure, I think "perf kmem" is the way forward. I'd love to hear 
->> Eduard's comments on this before we remove the code from kernel. Do we 
->> need to do that for 2.6.33 or can we postpone that for 2.6.34?
-> 
-> Certainly we can postpone it, as long as there's rough strategic 
-> consensus on the way forward. I'd hate to have two overlapping core 
-> kernel facilities and friction between the groups pursuing them and 
-> constant distraction from having two targets.
-> 
-> Such situations just rarely end with a good solution for the user - see 
-> security modules for a horror story ...
-> 
-> [ I dont think it will occur here, just wanted to mention it out of
->   abundance of caution that 1.5 decades of kernel hacking experience 
->   inflicts on me ;-) ]
-> 
+This patch was generated and tested against v2.6.32-rc8. Similar patch
+was applied and tested using 2.6.27 which is similar to the latest
+dvb_net.c, except for network device statistical data structure. I
+suspect that this bug was introduced in kernel version 2.6.15, but had
+not verified it.
 
-Yeah, so we'd like to remove most of tracers, but I'm not rushing to
-remove kmemtrace for .33.
+Care has been taken not to introduce more bug by fixing this bug, but
+please scrutinize the code for I always produces buggy code.
 
+Signed-off-by: Ang Way Chuang <wcang@nav6.org>
+---
+diff --git a/drivers/media/dvb/dvb-core/dvb_net.c
+b/drivers/media/dvb/dvb-core/dvb_net.c
+index 0241a7c..7e0db86 100644
+--- a/drivers/media/dvb/dvb-core/dvb_net.c
++++ b/drivers/media/dvb/dvb-core/dvb_net.c
+@@ -458,8 +458,9 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+ 						       "field: %u.\n", priv->ts_count, *from_where);
+
+ 						/* Drop partly decoded SNDU, reset state, resync on PUSI. */
+-						if (priv->ule_skb) {
+-							dev_kfree_skb( priv->ule_skb );
++						if (priv->ule_skb || priv->ule_sndu_remain) {
++							if (priv->ule_skb)
++								dev_kfree_skb( priv->ule_skb );
+ 							dev->stats.rx_errors++;
+ 							dev->stats.rx_frame_errors++;
+ 						}
+@@ -533,6 +534,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+ 				from_where += 2;
+ 			}
+
++			priv->ule_sndu_remain = priv->ule_sndu_len + 2;
+ 			/*
+ 			 * State of current TS:
+ 			 *   ts_remain (remaining bytes in the current TS cell)
+@@ -542,6 +544,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+ 			 */
+ 			switch (ts_remain) {
+ 				case 1:
++					priv->ule_sndu_remain--;
+ 					priv->ule_sndu_type = from_where[0] << 8;
+ 					priv->ule_sndu_type_1 = 1; /* first byte of ule_type is set. */
+ 					ts_remain -= 1; from_where += 1;
+@@ -555,6 +558,7 @@ static void dvb_net_ule( struct net_device *dev,
+const u8 *buf, size_t buf_len )
+ 				default: /* complete ULE header is present in current TS. */
+ 					/* Extract ULE type field. */
+ 					if (priv->ule_sndu_type_1) {
++						priv->ule_sndu_type_1 = 0;
+ 						priv->ule_sndu_type |= from_where[0];
+ 						from_where += 1; /* points to payload start. */
+ 						ts_remain -= 1;
