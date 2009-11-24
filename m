@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZKXDLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZKXDLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZKXDLc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Nov 2009 22:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757790AbZKXDLa
+	id S1757926AbZKXDLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Nov 2009 22:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbZKXDLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Nov 2009 22:11:30 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58103 "EHLO smtps.tip.net.au"
+	Mon, 23 Nov 2009 22:11:42 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58108 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757884AbZKXDL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Nov 2009 22:11:27 -0500
-Date: Tue, 24 Nov 2009 14:11:31 +1100
+	id S1757602AbZKXDLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Nov 2009 22:11:41 -0500
+Date: Tue, 24 Nov 2009 14:11:41 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: linux-next: manual merge of the net tree with the net-current tree
-Message-Id: <20091124141131.49b37eec.sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the wireless tree with the
+ wireless-current tree
+Message-Id: <20091124141141.5b6d3a8d.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__24_Nov_2009_14_11_41_+1100_fWDQk=cAr=Nvns1W"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+--Signature=_Tue__24_Nov_2009_14_11_41_+1100_fWDQk=cAr=Nvns1W
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/net/e1000e/phy.c between commit
-189983d469c6d98e64ddfb9f9ce76725cb082ee5 ("e1000e: remove unnecessary
-82577 workaround causing link issues") from the net-current tree and
-commit 94d8186a693284344ee5cb9734086c7a2370241a ("e1000e: cleanup ops
-function pointers") from the net tree.
+Hi John,
 
-I fixed it up (see below) and can carry the fix for a while.
--- 
+Today's linux-next merge of the wireless tree got a conflict in
+drivers/net/wireless/ath/ath9k/main.c between commit
+54ab040d24904d1fa2c0a6a27936b7c56a4efb24 ("ath9k: set ps_default as
+false") from the wireless-current tree and commit
+18b6c9a2213d3b6e0212e8b225abf95f7564206a ("ath9k: set ps_default as
+false") from the wireless tree.
+
+The commit message of the latter made me use just its version.
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-diff --cc drivers/net/e1000e/phy.c
-index 85f955f,99d53fa..0000000
---- a/drivers/net/e1000e/phy.c
-+++ b/drivers/net/e1000e/phy.c
-@@@ -658,7 -659,16 +658,7 @@@ s32 e1000_copper_link_setup_82577(struc
-  	/* Enable downshift */
-  	phy_data |= I82577_CFG_ENABLE_DOWNSHIFT;
-  
-- 	ret_val = phy->ops.write_phy_reg(hw, I82577_CFG_REG, phy_data);
-+ 	ret_val = phy->ops.write_reg(hw, I82577_CFG_REG, phy_data);
- -	if (ret_val)
- -		goto out;
- -
- -	/* Set number of link attempts before downshift */
- -	ret_val = phy->ops.read_reg(hw, I82577_CTRL_REG, &phy_data);
- -	if (ret_val)
- -		goto out;
- -	phy_data &= ~I82577_CTRL_DOWNSHIFT_MASK;
- -	ret_val = phy->ops.write_reg(hw, I82577_CTRL_REG, phy_data);
-  
-  out:
-  	return ret_val;
-@@@ -2667,10 -2678,10 +2667,10 @@@ static s32 __e1000_read_phy_reg_hv(stru
-  out:
-  	/* Revert to MDIO fast mode, if applicable */
-  	if ((hw->phy.type == e1000_phy_82577) && in_slow_mode)
- -		ret_val = e1000_set_mdio_slow_mode_hv(hw, false);
- +		ret_val |= e1000_set_mdio_slow_mode_hv(hw, false);
-  
-  	if (!locked)
-- 		hw->phy.ops.release_phy(hw);
-+ 		hw->phy.ops.release(hw);
-  
-  	return ret_val;
-  }
-@@@ -2793,10 -2805,10 +2793,10 @@@ static s32 __e1000_write_phy_reg_hv(str
-  out:
-  	/* Revert to MDIO fast mode, if applicable */
-  	if ((hw->phy.type == e1000_phy_82577) && in_slow_mode)
- -		ret_val = e1000_set_mdio_slow_mode_hv(hw, false);
- +		ret_val |= e1000_set_mdio_slow_mode_hv(hw, false);
-  
-  	if (!locked)
-- 		hw->phy.ops.release_phy(hw);
-+ 		hw->phy.ops.release(hw);
-  
-  	return ret_val;
-  }
+--Signature=_Tue__24_Nov_2009_14_11_41_+1100_fWDQk=cAr=Nvns1W
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksLTu0ACgkQjjKRsyhoI8x8AACfWTR3pTuqK1Q4wEEjFjZtxKuo
+MTUAn0nuH9aQSc2r+myZ6Ss8bA6trxnI
+=GVQ+
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__24_Nov_2009_14_11_41_+1100_fWDQk=cAr=Nvns1W--
