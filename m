@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933870AbZKXS1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933866AbZKXS3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933870AbZKXS1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933758AbZKXS1y
+	id S933866AbZKXS3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933758AbZKXS3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:27:54 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:44098 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933720AbZKXS1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:27:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i1XAjIaeZw3NLgoTWlzJJcUqF6/vANxlFyePv/ISazJqmY88OPNhYJaBUpCTdKteLd
-         oDWNuSkXuGUhI0BYJ2Hs7mDQvBjsLNIXOjWpfz8kXnL3+0IF2A3kOkP2zBUATNSQauyg
-         pXBmE/gofucq/HCAS3Jy/Fxo2PtSF6JCJTF0E=
-Date: Tue, 24 Nov 2009 19:27:25 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Allan, Bruce W" <bruce.w.allan@intel.com>
-Cc: Caleb Cushing <xenoterracide@gmail.com>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Subject: Re: [E1000-devel] large packet loss take2 2.6.31.x
-Message-ID: <20091124182725.GA2635@ami.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
- <20091124111946.GA7883@ff.dom.local>
- <8DD2590731AB5D4C9DBF71A877482A903E2AA445@orsmsx509.amr.corp.intel.com>
+	Tue, 24 Nov 2009 13:29:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43251 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933553AbZKXS3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:29:41 -0500
+Message-ID: <4B0C259A.5020303@kernel.org>
+Date: Tue, 24 Nov 2009 10:27:38 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8DD2590731AB5D4C9DBF71A877482A903E2AA445@orsmsx509.amr.corp.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091124182059.GB11894@elte.hu>
+In-Reply-To: <20091124182059.GB11894@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 07:57:41AM -0800, Allan, Bruce W wrote:
-> The "pci_enable_pcie_error_reporting failed" message is a non-fatal warning that has recently been removed.
+Ingo Molnar wrote:
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
 > 
+>> Currently the irq code treats /proc/irq/N/smp_affinity as a strong 
+>> hint on where we would like interrupts to be delivered, and we don't 
+>> have good feedback from there to architecture specific code that knows 
+>> what we really can do.  It is going to take some effort and some work 
+>> to make that happen.
+>>
+>> I think the irq scheduler is the only scheduler (except for batch 
+>> jobs) that we don't put in the kernel.  It seems to me that if we are 
+>> going to go to all of the trouble to rewrite the generic code to 
+>> better support irqbalance because we are having serious irqbalance 
+>> problems, it will be less effort to suck irqbalance into the kernel 
+>> along with everything else.
+>>
+>> I really think irqbalancing belongs in the kernel. [...]
+> 
+> Interesting. I've yet to see a solution that is maintainable and works 
+> well, without putting too much policy into the kernel. Our previous 
+> solutions didnt really work all that well.
+> 
+> What would your model be, and can it be implemented reasonably?
 
-Thanks for the explanation,
-Jarek P.
+we already have dev numa node, so could just make irqblance to some smart to use
+that device node corresponding for irq that is binding to the device.
+
+YH
