@@ -1,124 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932534AbZKXJt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbZKXJv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932534AbZKXJt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 04:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932452AbZKXJt4
+	id S932566AbZKXJv2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 04:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932545AbZKXJv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 04:49:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35397 "EHLO hera.kernel.org"
+	Tue, 24 Nov 2009 04:51:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58615 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932440AbZKXJtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 04:49:55 -0500
-Message-ID: <4B0BAC06.1000905@kernel.org>
-Date: Tue, 24 Nov 2009 01:48:54 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932491AbZKXJvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 04:51:17 -0500
+Message-ID: <4B0BAC76.3080202@redhat.com>
+Date: Tue, 24 Nov 2009 11:50:46 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-References: <4B08BD14.9060102@kernel.org>	<20091124174608Y.fujita.tomonori@lab.ntt.co.jp>	<4B0BA519.9090100@kernel.org> <20091124183439J.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091124183439J.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: kvm <kvm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: kvmmmu tracing
+References: <1258974375.7094.158.camel@johannes.local>
+In-Reply-To: <1258974375.7094.158.camel@johannes.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Tue, 24 Nov 2009 01:19:21 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> FUJITA Tomonori wrote:
->>> On Sat, 21 Nov 2009 20:24:52 -0800
->>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> amd 64 systems that
->>>> 1. do not have  AGP
->>>> 2. do not have IOMMU
->>>> 3. mem > 4g
->>>> 4. BIOS do not allocate  correct gart in NB.
->>>> will leave them to use SWIOTLB forcely.
->>> Sorry, I forgot about this GART workaround.
->>>
->>>
->>>> Index: linux-2.6/arch/x86/kernel/pci-dma.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/arch/x86/kernel/pci-dma.c
->>>> +++ linux-2.6/arch/x86/kernel/pci-dma.c
->>>> @@ -124,11 +124,12 @@ void __init pci_iommu_alloc(void)
->>>>  	/* free the range so iommu could get some range less than 4G */
->>>>  	dma32_free_bootmem();
->>>>  #endif
->>>> +	if (!swiotlb_force)
->>>> +		gart_iommu_hole_init();
->>>> +
->>>>  	if (pci_swiotlb_init())
->>>>  		return;
->>>>  
->>>> -	gart_iommu_hole_init();
->>>> -
->>>>  	detect_calgary();
->>>>  
->>>>  	detect_intel_iommu();
->>> I prefer to detect all the IOMMU drivers in a consistent way;
->>> detecting only GART before swioltb doesn't look nice.
->>>
->>> As we did before, we could detect all the IOMMU driver before
->>> swiotlb. However, I think that it's better to simply change
->>> pci_swiotlb_init() not to steal the preallocate GART workaround memory.
->>>
->>> btw, initializing swiotlb before IOMMU detection is useful to GART
->>> too? If GART can't allocate the workaround memory, then the kernel
->>> panic now. We can use swiotlb instead in that case?
->>>
->>> =
->>> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>> Subject: [PATCH] x86: stop swiotlb stealing the GART workaround memory
->>>
->>> swiotlb wrongly uses the GART workaround memory (for bad BIOS) that
->>> dma32_reserv_bootmem allocates. We need to initialize swiotlb before
->>> dma32_free_bootmem().
->>>
->>> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>> ---
->>>  arch/x86/kernel/pci-dma.c |    6 +++++-
->>>  1 files changed, 5 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
->>> index afcc58b..26fe2cd 100644
->>> --- a/arch/x86/kernel/pci-dma.c
->>> +++ b/arch/x86/kernel/pci-dma.c
->>> @@ -120,11 +120,15 @@ static void __init dma32_free_bootmem(void)
->>>  
->>>  void __init pci_iommu_alloc(void)
->>>  {
->>> +	int use_swiotlb;
->>> +
->>> +	use_swiotlb = pci_swiotlb_init();
->>> +
->>>  #ifdef CONFIG_X86_64
->>>  	/* free the range so iommu could get some range less than 4G */
->>>  	dma32_free_bootmem();
->>>  #endif
->>> -	if (pci_swiotlb_init())
->>> +	if (use_swiotlb)
->>>  		return;
->>>  
->>>  	gart_iommu_hole_init();
->> pci_swiotlb_init need be called after dma32_free_bootmem
->> otherwise it could fail for system with lots of memory and numa=off
-> 
-> Why? swiotlb needs just 64MB (and some) in DMA32.
-> 
-> swiotlb had been worked fine without that hack until 2.6.26?
-> 
-> Only broken GART needs that hack (and I think that it's better to move
-> that hack to GART code).
+On 11/23/2009 01:06 PM, Johannes Berg wrote:
+> Commit f691fe1da7e2715137d21ae5a80bec64db4625db is really broken wrt.
+> the userspace interface for tracing because of the weird
+> KVM_MMU_PAGE_PRINTK macro.
+>
+>    
 
-gart iommu workaround will allocate 64M by default.
+Can you explain what is wrong with it?
 
-fail config: like system with 512g and sparse mem, and vmmap.
+> Maybe we should have a "unsafe for export" flag for events, if they do
+> strange things like that?
+>
+> As it stands, I can't use trace-cmd on an x86 machine that has kvm
+> enabled because it will try to read all the kvm stuff. Arguably, it
+> should only try to parse it when it needs it (i.e. not for me) but still
+> it's very inconvenient to export something to userspace that it cannot
+> possibly understand.
+>    
 
-YH
+Is userspace reading mmutrace.h?  When the structure attributes can be 
+exported via /sys/kernel/debug/tracing?
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
