@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbZKXIek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZKXIi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbZKXIek (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 03:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbZKXIej
+	id S1757793AbZKXIi1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 03:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZKXIi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 03:34:39 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9016 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932239AbZKXIei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 03:34:38 -0500
-Message-ID: <4B0B9B44.1010206@redhat.com>
-Date: Tue, 24 Nov 2009 16:37:24 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, Amerigo Wang <amwang@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@redhat.com>
-Subject: Re: [Resend Patch] kexec: allow to shrink reserved memory
-References: <20091123093958.4963.38592.sendpatchset@localhost.localdomain> <20091124075813.GA14488@bicker>
-In-Reply-To: <20091124075813.GA14488@bicker>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Nov 2009 03:38:26 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54103 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZKXIiZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 03:38:25 -0500
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: Yong Zhang <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
+	 <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Nov 2009 09:38:22 +0100
+Message-ID: <1259051902.4531.1053.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Carpenter wrote:
-> On Mon, Nov 23, 2009 at 04:37:02AM -0500, Amerigo Wang wrote:
-> [snip]
->> +size_t crash_get_memory_size(void);
-> [snip]
->> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
->> +				       struct kobj_attribute *attr, char *buf)
->> +{
->> +	return sprintf(buf, "%lu\n", crash_get_memory_size());
->> +}
-> 
->   CC      kernel/ksysfs.o
-> kernel/ksysfs.c: In function ‘kexec_crash_size_show’:
-> kernel/ksysfs.c:106: warning: format ‘%lu’ expects type ‘long unsigned int’, but argument 3 has type ‘size_t’
-> 
-> Could we get suppress this gcc warning?
+On Mon, 2009-11-23 at 15:32 -0800, Waskiewicz Jr, Peter P wrote:
 
-Oops! Try to replace '%lu' with '%zu'...
+> Unfortunately, a driver can't.  The irq_set_affinity() function isn't 
+> exported.  I proposed a patch on netdev to export it, and then to tie down 
+> an interrupt using IRQF_NOBALANCING, so irqbalance won't touch it.  That 
+> was rejected, since the driver is enforcing policy of the interrupt 
+> balancing, not irqbalance.
 
-I didn't see this warning, will cook a delta patch.
+Why would a patch touching the irq subsystem go to netdev?
 
-Thanks!
+What is wrong with exporting irq_set_affinity(), and wtf do you need
+IRQF_NOBALANCING for?
+
+> I and Jesse Brandeburg had a meeting with Arjan about this.  What we came 
+> up with was this interface, so drivers can set what they'd like to see, if 
+> irqbalance decides to honor it.  That way interrupt affinity policies are 
+> set only by irqbalance, but this interface gives us a mechanism to hint to 
+> irqbalance what we'd like it to do.
+
+If all you want is to expose policy to userspace then you don't need any
+of this, simply expose the NICs home node through a sysfs device thingy
+(I was under the impression its already there somewhere, but I can't
+ever find anything in /sys).
+
+No need what so ever to poke at the IRQ subsystem.
+
+> Also, if you use the /proc interface to change smp_affinity on an 
+> interrupt without any of these changes, irqbalance will override it on its 
+> next poll interval.  This also is not desirable.
+
+This all sounds backwards.. we've got a perfectly functional interface
+for affinity -- which people object to being used for some reason. So
+you add another interface on top, and that is ok?
+
+All the while not CC'ing the IRQ folks,.. brilliant approach.
+
