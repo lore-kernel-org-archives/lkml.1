@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbZKXNSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932902AbZKXNVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932895AbZKXNSE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 08:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932541AbZKXNSE
+	id S932902AbZKXNVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 08:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbZKXNVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 08:18:04 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:62872 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932503AbZKXNSC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 08:18:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=fFmUWNHg48wQqOpnMg0t+qvHgL3QMj7XxkpO1Ho4flEcR93jJIEi9CIwMCOUmF0BUr
-         /ZaxU7d5cvgi0TvPqmGTig7yG5AyXQimrnO8MYUT7HLY/Qs/aVo/2xlbZuvwbN3K49Ex
-         aHlZvym8aQAW04rcGzyfJiZnQf/ro0OdQLa3U=
+	Tue, 24 Nov 2009 08:21:33 -0500
+Received: from www.tglx.de ([62.245.132.106]:43710 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757581AbZKXNVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 08:21:32 -0500
+Date: Tue, 24 Nov 2009 14:20:23 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dimitri Sivanich <sivanich@sgi.com>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+In-Reply-To: <20091122011457.GA16910@sgi.com>
+Message-ID: <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
+References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <1258983953.4531.456.camel@laptop>
-References: <1256223091-6002-1-git-send-email-eranian@gmail.com>
-	 <1258562785.3918.685.camel@laptop>
-	 <7c86c4470911230534i4119734k1478550567852220@mail.gmail.com>
-	 <1258983953.4531.456.camel@laptop>
-Date: Tue, 24 Nov 2009 14:18:07 +0100
-Message-ID: <7c86c4470911240518qe0c3e87k589437ef43f4a3d4@mail.gmail.com>
-Subject: Re: [PATCH] perf_events: fix validate_event bug
-From: stephane eranian <eranian@googlemail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       perfmon2-devel@lists.sf.net, eranian@google.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 2:45 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2009-11-23 at 14:34 +0100, stephane eranian wrote:
->
->> > Won't this give very funny results for mixed pmu groups?
->> >
->>
->> What do you mean by 'mixed pmu groups'?
->
-> We currently have a number of struct pmu objects:
->
->  perf_ops_generic
->  perf_ops_cpu_clock
->  perf_ops_task_clock
->
-> which are all software based PMUs, and one of:
->
->  pmu        (arch/x86/kernel/cpu/perf_event.c)
->  power_pmu  (arch/powerpc/kernel/perf_event.c)
->
-> To represent the hardware PMU.
->
-> Now say you mix software events and hardware events into a single group,
-> the loop in validate_group:
->
->  list_for_each_entry(sibling, &leader->sibling_list, group_entry) {
->        if (!validate_event(&fake_pmu, sibling))
->                        return -ENOSPC;
->  }
->
-> could pass a !hardware event into validate_event(), which currently
-> ignores it because event->pmu won't be &pmu, however if you remove that
-> check, it'll try and call x86 routines on a software event, which is
-> bound to go funny.
->
-Ok, so it seems the only valid test to check if the event is related to the
-HW PMU is to compare event->pmu with pmu (arch/x86/.../perf_event.c).
+On Sat, 21 Nov 2009, Dimitri Sivanich wrote:
 
-In that case you first suggestion is fine.
+> On Sat, Nov 21, 2009 at 10:49:50AM -0800, Eric W. Biederman wrote:
+> > Dimitri Sivanich <sivanich@sgi.com> writes:
+> > 
+> > > This patch allows for hard numa restrictions to irq affinity on x86 systems.
+> > >
+> > > Affinity is masked to allow only those cpus which the subarchitecture
+> > > deems accessible by the given irq.
+> > >
+> > > On some UV systems, this domain will be limited to the nodes accessible
+> > > to the irq's node.  Initially other X86 systems will not mask off any cpus
+> > > so non-UV systems will remain unaffected.
+> > 
+> > Is this a hardware restriction you are trying to model?
+> > If not this seems wrong.
+> 
+> Yes, it's a hardware restriction.
 
-> Now Frederic is going to make things more interesting by representing HW
-> breakpoints as another HW PMU (the distinction between hw/sw pmu is in
-> scheduling, you can always schedule a software event).
->
-> This weakens the !is_software_event(), in that !software doesn't tell
-> you which hardware event it is -- something which needs mending in your
-> more complex x86 constraints scheduling patch.
->
-That means we can drop is_software_event() in this code and instead
-define locally
-in x86 a is_hw_pmu_event() function as event->pmu == &pmu.
+Nevertheless I think that this is the wrong approach.
+
+What we really want is a notion in the irq descriptor which tells us:
+this interrupt is restricted to numa node N.
+
+The solution in this patch is just restricted to x86 and hides that
+information deep in the arch code. 
+
+Further the patch adds code which should be in the generic interrupt
+management code as it is useful for other purposes as well:
+
+Driver folks are looking for a way to restrict irq balancing to a
+given numa node when they have all the driver data allocated on that
+node. That's not a hardware restriction as in the UV case but requires
+a similar infrastructure.
+
+One possible solution would be to have a new flag:
+ IRQF_NODE_BOUND    - irq is bound to desc->node
+
+When an interrupt is set up we would query with a new irq_chip
+function chip->get_node_affinity(irq) which would default to an empty
+implementation returning -1. The arch code can provide its own
+function to return the numa affinity which would express the hardware
+restriction.
+
+The core code would restrict affinity settings to the cpumask of that
+node without any need for the arch code to check it further.
+
+That same infrastructure could be used for the software restriction of
+interrupts to a node on which the device is bound.
+
+Having it in the core code also allows us to expose this information
+to user space so that the irq balancer knows about it and does not try
+to randomly move the affinity to cpus which are not in the allowed set
+of the node.
+
+Thanks,
+
+	tglx
