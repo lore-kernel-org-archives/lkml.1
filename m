@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbZKXLIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbZKXLNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932755AbZKXLIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 06:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932219AbZKXLID
+	id S932812AbZKXLNB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 06:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbZKXLNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 06:08:03 -0500
-Received: from www.tglx.de ([62.245.132.106]:36841 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932202AbZKXLIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 06:08:02 -0500
-Date: Tue, 24 Nov 2009 12:07:35 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-cc: linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com, mingo@elte.hu,
-       yong.zhang0@gmail.com, davem@davemloft.net, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-In-Reply-To: <20091124093518.3909.16435.stgit@ppwaskie-hc2.jf.intel.com>
-Message-ID: <alpine.LFD.2.00.0911241151360.24119@localhost.localdomain>
-References: <20091124093518.3909.16435.stgit@ppwaskie-hc2.jf.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 24 Nov 2009 06:13:00 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:50570 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S932706AbZKXLM7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 06:12:59 -0500
+Message-ID: <4B0BBFB1.20802@ru.mvista.com>
+Date: Tue, 24 Nov 2009 14:12:49 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hemant Pedanekar <hemantp@ti.com>
+Cc: linux-ide@vger.kernel.org, davem@davemloft.net, bzolnier@gmail.com,
+       petkovbb@gmail.com, christian.engelmayer@frequentis.com,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com
+Subject: Re: [PATCH] ide: fix ioctl to pass requested transfer mode to ide_find_dma_mode
+ instead of UDMA6
+References: <1259036188-11598-1-git-send-email-hemantp@ti.com>
+In-Reply-To: <1259036188-11598-1-git-send-email-hemantp@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009, Peter P Waskiewicz Jr wrote:
+Hello.
 
-> This patchset adds a new CPU mask for SMP systems to the irq_desc
-> struct.  It also exposes an API for underlying device drivers to
-> assist irqbalance in making smarter decisions when balancing, especially
-> in a NUMA environment.  For example, an ethernet driver with MSI-X may
-> wish to limit the CPUs that an interrupt can be balanced within to
-> stay on a single NUMA node.  Current irqbalance operation can move the
-> interrupt off the node, resulting in cross-node memory accesses and
-> locks.
-> 
-> The API is a get/set API within the kernel, along with a /proc entry
-> for the interrupt.
+Hemant Pedanekar wrote:
+> Currently, ide_cmd_ioctl when invoked for setting DMA transfer mode calls
+> ide_find_dma_mode with requested mode as XFER_UDMA_6. This prevents setting DMA
+> mode to any other value than the default (maximum) supported by the device (or
+> UDMA6, if supported) irrespective of the actual requested transfer mode and
+> returns error.
+>
+> For example, setting mode to UDMA2 using hdparm, where UDMA4 is the default
+> transfer mode gives following error:
+> 	# ./hdparm -d1 -Xudma2  /dev/hda
+> 	 /dev/hda:hda: UDMA/66 mode selected
+> 	 setting using_dma to 1 (on)
+> 	 hda: UDMA/66 mode selected
+> 	 setting xfermode to 66 (UltraDMA mode2)
+> 	 HDIO_DRIVE_CMD(setxfermode) failed: Invalid argument
+> 	 using_dma     =  1 (on)
+>
+> This patch fixes the issue.
+>
+> Signed-off-by: Hemant Pedanekar <hemantp@ti.com>
+> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-And what does the kernel do with this information and why are we not
-using the existing device/numa_node information ?
- 
-> +extern int irq_set_node_affinity(unsigned int irq,
-> +                                 const struct cpumask *cpumask);
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-A node can be described with a single integer, right ?
+MBR, Sergei
 
-> +static int irq_node_affinity_proc_show(struct seq_file *m, void *v)
-> +{
-> +	struct irq_desc *desc = irq_to_desc((long)m->private);
-> +	const struct cpumask *mask = desc->node_affinity;
-> +
-> +	seq_cpumask(m, mask);
-> +	seq_putc(m, '\n');
-> +	return 0;
-> +}
-> +
->  #ifndef is_affinity_mask_valid
->  #define is_affinity_mask_valid(val) 1
->  #endif
-> @@ -78,11 +88,46 @@ free_cpumask:
->  	return err;
->  }
->  
-> +static ssize_t irq_node_affinity_proc_write(struct file *file,
-> +		const char __user *buffer, size_t count, loff_t *pos)
-> +{
-> +	unsigned int irq = (int)(long)PDE(file->f_path.dentry->d_inode)->data;
-> +	cpumask_var_t new_value;
-> +	int err;
-> +
-> +	if (no_irq_affinity || irq_balancing_disabled(irq))
-> +		return -EIO;
-
-Yikes. Why should user space be allowed to write to that file ? And
-the whole business is what for ? Storing that value in the irq_desc
-data structure for use space to read out again ?
-
-Cool design. We provide storage space for user space applications in
-the kernel now ?
-
-See also my earlier reply in the thread. This patch is just adding
-code and memory bloat while not solving anything at all. 
-
-Again, this is going nowhere else than into /dev/null.
-
-Thanks,
-
-	tglx
 
