@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbZKXWfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934290AbZKXWlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195AbZKXWfE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 17:35:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbZKXWfD
+	id S934290AbZKXWlm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 17:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934105AbZKXWlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 17:35:03 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35762 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933903AbZKXWfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 17:35:02 -0500
-Date: Tue, 24 Nov 2009 23:34:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 0/5] perf kmem: Add more functions and show more
- statistics
-Message-ID: <20091124223443.GA7189@elte.hu>
-References: <4B0B6E44.6090106@cn.fujitsu.com>
- <20091124090425.GF21991@elte.hu>
- <4B0BA99D.5020602@cn.fujitsu.com>
- <20091124100724.GA5570@elte.hu>
- <4B0BBDBF.6050806@cn.fujitsu.com>
- <20091124203559.GA450@elte.hu>
+	Tue, 24 Nov 2009 17:41:42 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:41713 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933988AbZKXWll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 17:41:41 -0500
+Message-ID: <4B0C60A1.6030509@nortel.com>
+Date: Tue, 24 Nov 2009 16:39:29 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124203559.GA450@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Eyal Lotem <eyal.lotem@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Using "page credits" as a solution for common thrashing
+  scenarios
+References: <b64f365b0911171252q42a0c102jddb2cd29af64a7a7@mail.gmail.com> <87aaybwrny.fsf@basil.nowhere.org>
+In-Reply-To: <87aaybwrny.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Nov 2009 22:41:35.0303 (UTC) FILETIME=[46ED7570:01CA6D57]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+On 11/24/2009 03:15 PM, Andi Kleen wrote:
+> Eyal Lotem <eyal.lotem@gmail.com> writes:
 > 
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Replying to an old email.
 > 
-> > So I think some new updates on kernel perf_event break.
+>>   * I think it is wrong for the kernel to evict the 15 pages of the bash,
+>>     xterm, X server's working set, as an example, in order for a
+>>     misbehaving process to have 1000015 instead of 1000000 pages in its
+>>     working set. EVEN if that misbehaving process is accessing its working
+>>     set far more aggressively.
 > 
-> yeah, you were right. This commit in latest -tip should fix it:
-> 
->  fe61267: perf_events: Fix bad software/trace event recursion counting
+> One problem in practice tends to be that it's hard to realiably detect
+> that a process is misbehaving. The 1000000 page process might be your
+> critical database, while the 15 page process is something very
+> unimportant.
 
-i tested perf kmem and it works fine now:
+Quite a while ago now I proposed the ability for an app (with suitable
+privileges) to register with the system the amount of memory it expected
+to use.  As long as it was under that amount it would be immune to the
+oom-killer.
 
- aldebaran:~> perf kmem
+We've been using this in production for some time now as we have several
+very large memory footprint apps that otherwise become quite attractive
+to the oom killer.
 
- SUMMARY
- =======
- Total bytes requested: 153166032
- Total bytes allocated: 188544080
- Total bytes wasted on internal fragmentation: 35378048
- Internal fragmentation: 18.763807%
- Cross CPU allocations: 61680/451425
+The oom_adj proc entry made this less of an issue so I never bothered
+pushing it to mainline.
 
-	Ingo
+Chris
