@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933959AbZKXSy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbZKXS63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933959AbZKXSy4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 13:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933864AbZKXSy4
+	id S933932AbZKXS63 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 13:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbZKXS63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 13:54:56 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:59626 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933859AbZKXSyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 13:54:55 -0500
-Date: Tue, 24 Nov 2009 10:54:59 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, cl@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-Message-ID: <20091124185459.GH6831@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop> <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop> <20091124182506.GG6831@linux.vnet.ibm.com> <1259087511.4531.1775.camel@laptop>
+	Tue, 24 Nov 2009 13:58:29 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:57258 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932790AbZKXS62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 13:58:28 -0500
+Message-ID: <4B0C2CCA.6030006@gmail.com>
+Date: Tue, 24 Nov 2009 19:58:18 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259087511.4531.1775.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: David Miller <davem@davemloft.net>
+CC: peter.p.waskiewicz.jr@intel.com, peterz@infradead.org,
+       arjan@linux.intel.com, yong.zhang0@gmail.com,
+       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+References: <20091124.093956.247147202.davem@davemloft.net>	<1259085412.2631.48.camel@ppwaskie-mobl2>	<4B0C2547.8030408@gmail.com> <20091124.105442.06273019.davem@davemloft.net>
+In-Reply-To: <20091124.105442.06273019.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 24 Nov 2009 19:58:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 07:31:51PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-11-24 at 10:25 -0800, Paul E. McKenney wrote:
+David Miller a écrit :
+> From: Eric Dumazet <eric.dumazet@gmail.com>
+> Date: Tue, 24 Nov 2009 19:26:15 +0100
 > 
-> > Well, I suppose I could make my scripts randomly choose the memory
-> > allocator, but I would rather not.  ;-)
+>> It seems complex to me, maybe optimal thing would be to use a NUMA policy to
+>> spread vmalloc() allocations to all nodes to get a good bandwidth...
 > 
-> Which is why I hope we'll soon be down to 2, SLOB for tiny systems and
-> SLQB for the rest of us, having 3 in-tree and 1 pending is pure and
-> simple insanity.
+> vmalloc() and sk_buff's don't currently mix and I really don't see us
+> every allowing them to :-)
 
-So I should start specifying SLOB for my TINY_RCU tests, then.
+I think Peter was referring to tx/rx rings buffers, not sk_buffs.
 
-> Preferably SLQB will be small enough to also be able to get rid of SLOB,
-> but I've not recently seen any data on that particular issue.
+They (ring buffers) are allocated with vmalloc() at driver init time.
 
-Given the existence of TINY_RCU, I would look pretty funny if I insisted
-on but a single implementation of core subsystems.  ;-)
+And Tom pointed out that our rx sk_buff allocation should be using the node
+of requester, no need to hardcode node number per rx queue (or per device as of today)
 
-							Thanx, Paul
+
