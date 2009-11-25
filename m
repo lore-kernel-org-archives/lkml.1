@@ -1,76 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934773AbZKYTAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934812AbZKYTAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934773AbZKYTAI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 14:00:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZKYTAE
+	id S934812AbZKYTAX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 14:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932892AbZKYTAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 14:00:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:6806 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759524AbZKYTAA (ORCPT
+	Wed, 25 Nov 2009 14:00:21 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:54598 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932331AbZKYTAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 14:00:00 -0500
-Message-ID: <4B0D7EB0.8090604@monstr.eu>
-Date: Wed, 25 Nov 2009 20:00:00 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Wed, 25 Nov 2009 14:00:19 -0500
+Date: Wed, 25 Nov 2009 11:00:17 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, hpa@zytor.com,
+       Nathan Lynch <nathanl@austin.ibm.com>, haveblue@us.ibm.com,
+       Matt Helsley <matthltc@us.ibm.com>, arnd@arndb.de, roland@redhat.com,
+       mtk.manpages@googlemail.com, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>
+Subject: [v13][PATCH 10/12] Implement sys_eclone for s390
+Message-ID: <20091125190017.GK30858@us.ibm.com>
+References: <20091125185543.GA30858@us.ibm.com>
 MIME-Version: 1.0
-To: graeme.smecher@mail.mcgill.ca
-CC: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [PATCH] microblaze: Add dev_archdata node accessors
-References: <1259175422-4628-1-git-send-email-graeme.smecher@mail.mcgill.ca>
-In-Reply-To: <1259175422-4628-1-git-send-email-graeme.smecher@mail.mcgill.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125185543.GA30858@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-graeme.smecher@mail.mcgill.ca wrote:
-> From: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
-> 
-> This syncs microblaze with powerpc and sparc architectures, which gained the
-> same accessors in Commit 3f3b1632022fcc8317fa3b3c1236471415b3a6b8.
 
-I have the same patch in my next branch. Will be add to mainline soon.
+From: Serge E. Hallyn <serue@us.ibm.com>
+Subject: [v13][PATCH 10/12] Implement sys_eclone for s390
 
-Thanks,
-Michal
+Implement the s390 hook for sys_eclone().
 
-> 
-> Signed-off-by: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
-> ---
->  arch/microblaze/include/asm/device.h |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
-> index 30286db..b8f654d 100644
-> --- a/arch/microblaze/include/asm/device.h
-> +++ b/arch/microblaze/include/asm/device.h
-> @@ -16,6 +16,18 @@ struct dev_archdata {
->  	struct device_node	*of_node;
->  };
->  
-> +static inline void dev_archdata_set_node(struct dev_archdata *ad,
-> +					 struct device_node *np)
-> +{
-> +	ad->of_node = np;
-> +}
-> +
-> +static inline struct device_node *
-> +dev_archdata_get_node(const struct dev_archdata *ad)
-> +{
-> +	return ad->of_node;
-> +}
-> +
->  struct pdev_archdata {
->  };
->  
+Changelog:
+	Nov 24: Removed user-space code from commit log. See user-cr git tree.
+	Nov 17: remove redundant flags_high check
+	Nov 13: As suggested by Heiko, convert eclone to take its
+		parameters via registers.
 
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ arch/s390/include/asm/unistd.h    |    3 ++-
+ arch/s390/kernel/compat_wrapper.S |    8 ++++++++
+ arch/s390/kernel/process.c        |   37 +++++++++++++++++++++++++++++++++++++
+ arch/s390/kernel/syscalls.S       |    1 +
+ 4 files changed, 48 insertions(+), 1 deletions(-)
 
+diff --git a/arch/s390/include/asm/unistd.h b/arch/s390/include/asm/unistd.h
+index cb5232d..cbf6c7c 100644
+--- a/arch/s390/include/asm/unistd.h
++++ b/arch/s390/include/asm/unistd.h
+@@ -269,7 +269,8 @@
+ #define	__NR_pwritev		329
+ #define __NR_rt_tgsigqueueinfo	330
+ #define __NR_perf_event_open	331
+-#define NR_syscalls 332
++#define __NR_eclone		332
++#define NR_syscalls 333
+ 
+ /* 
+  * There are some system calls that are not present on 64 bit, some
+diff --git a/arch/s390/kernel/compat_wrapper.S b/arch/s390/kernel/compat_wrapper.S
+index cbd9901..816ae61 100644
+--- a/arch/s390/kernel/compat_wrapper.S
++++ b/arch/s390/kernel/compat_wrapper.S
+@@ -1849,6 +1849,14 @@ sys_clone_wrapper:
+ 	llgtr	%r5,%r5			# int *
+ 	jg	sys_clone		# branch to system call
+ 
++	.globl	sys_eclone_wrapper
++sys_eclone_wrapper:
++	llgfr	%r2,%r2			# unsigned int
++	llgtr	%r3,%r3			# struct clone_args *
++	lgfr	%r4,%r4			# int
++	llgtr	%r5,%r5			# pid_t *
++	jg	sys_eclone		# branch to system call
++
+ 	.globl	sys32_execve_wrapper
+ sys32_execve_wrapper:
+ 	llgtr	%r2,%r2			# char *
+diff --git a/arch/s390/kernel/process.c b/arch/s390/kernel/process.c
+index 5417eb5..0a59317 100644
+--- a/arch/s390/kernel/process.c
++++ b/arch/s390/kernel/process.c
+@@ -241,6 +241,43 @@ SYSCALL_DEFINE4(clone, unsigned long, newsp, unsigned long, clone_flags,
+ 		       parent_tidptr, child_tidptr);
+ }
+ 
++SYSCALL_DEFINE4(eclone, unsigned int, flags_low, struct clone_args __user *,
++		uca, int, args_size, pid_t __user *, pids)
++{
++	int rc;
++	struct pt_regs *regs = task_pt_regs(current);
++	struct clone_args kca;
++	int __user *parent_tid_ptr;
++	int __user *child_tid_ptr;
++	unsigned long flags;
++	unsigned long __user child_stack;
++	unsigned long stack_size;
++
++	rc = fetch_clone_args_from_user(uca, args_size, &kca);
++	if (rc)
++		return rc;
++
++	flags = flags_low;
++	parent_tid_ptr = (int __user *) kca.parent_tid_ptr;
++	child_tid_ptr =  (int __user *) kca.child_tid_ptr;
++
++	stack_size = (unsigned long) kca.child_stack_size;
++	if (stack_size)
++		return -EINVAL;
++
++	child_stack = (unsigned long) kca.child_stack;
++	if (!child_stack)
++		child_stack = regs->gprs[15];
++
++	/*
++	 * TODO: On 32-bit systems, clone_flags is passed in as 32-bit value
++	 * 	 to several functions. Need to convert clone_flags to 64-bit.
++	 */
++	return do_fork_with_pids(flags, child_stack, regs, stack_size,
++				parent_tid_ptr, child_tid_ptr, kca.nr_pids,
++				pids);
++}
++
+ /*
+  * This is trivial, and on the face of it looks like it
+  * could equally well be done in user mode.
+diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
+index 30eca07..fb8708d 100644
+--- a/arch/s390/kernel/syscalls.S
++++ b/arch/s390/kernel/syscalls.S
+@@ -340,3 +340,4 @@ SYSCALL(sys_preadv,sys_preadv,compat_sys_preadv_wrapper)
+ SYSCALL(sys_pwritev,sys_pwritev,compat_sys_pwritev_wrapper)
+ SYSCALL(sys_rt_tgsigqueueinfo,sys_rt_tgsigqueueinfo,compat_sys_rt_tgsigqueueinfo_wrapper) /* 330 */
+ SYSCALL(sys_perf_event_open,sys_perf_event_open,sys_perf_event_open_wrapper)
++SYSCALL(sys_eclone,sys_eclone,sys_eclone_wrapper)
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+1.6.0.4
+
