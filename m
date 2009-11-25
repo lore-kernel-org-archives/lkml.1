@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZKYMc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbZKYMc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbZKYMc0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:32:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbZKYMc0
+	id S1758812AbZKYMc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758725AbZKYMcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:32:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59370 "EHLO hera.kernel.org"
+	Wed, 25 Nov 2009 07:32:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38315 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758725AbZKYMcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:32:25 -0500
-Message-ID: <4B0D23A6.8040902@kernel.org>
-Date: Wed, 25 Nov 2009 21:31:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1758732AbZKYMcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:32:54 -0500
+Message-ID: <4B0D23E8.3060508@redhat.com>
+Date: Wed, 25 Nov 2009 14:32:40 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: percpu tree build warning
-References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <20091125105004.GA18163@elte.hu>
-In-Reply-To: <20091125105004.GA18163@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Gleb Natapov <gleb@redhat.com>
+CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       hpa@zytor.com, riel@redhat.com
+Subject: Re: [PATCH v2 02/12] Add PV MSR to enable asynchronous page faults
+ delivery.
+References: <1258985167-29178-1-git-send-email-gleb@redhat.com> <1258985167-29178-3-git-send-email-gleb@redhat.com>
+In-Reply-To: <1258985167-29178-3-git-send-email-gleb@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 11/23/2009 04:05 PM, Gleb Natapov wrote:
+> Signed-off-by: Gleb Natapov<gleb@redhat.com>
+> ---
+>   arch/x86/include/asm/kvm_host.h |    3 ++
+>   arch/x86/include/asm/kvm_para.h |    2 +
+>   arch/x86/kvm/x86.c              |   42 +++++++++++++++++++++++++++++++++++++-
+>   include/linux/kvm.h             |    1 +
+>   4 files changed, 46 insertions(+), 2 deletions(-)
+>
+>   #define MSR_KVM_WALL_CLOCK  0x11
+>   #define MSR_KVM_SYSTEM_TIME 0x12
+> +#define MSR_KVM_ASYNC_PF_EN 0x13
+>    
 
-11/25/2009 07:50 PM, Ingo Molnar wrote:
-> Tejun, is it perhaps a problem of the percpu code getting confused 
-> between the local and file scope 'dr7' variable shadowing each other?
+Please use MSRs from the range 0x4b564dxx.  The numbers below are 
+reserved by Intel (and in fact used by the old Pentiums).
 
-Yes.
+Need documentation for the new MSR, say in Documentation/kvm/msr.txt.
 
-> If yes then that needs to be fixed in the percpu tree. per-cpu variables 
-> used to have a __per_cpu prefix and that should be maintained - the two 
-> namespaces are obviously separate on the logical space, so they should 
-> never overlap in the implementational space either.
+> +static int kvm_pv_enable_async_pf(struct kvm_vcpu *vcpu, u64 data)
+> +{
+> +	u64 gpa = data&  ~0x3f;
+> +	int offset = offset_in_page(gpa);
+> +	unsigned long addr;
+> +
+> +	addr = gfn_to_hva(vcpu->kvm, gpa>>  PAGE_SHIFT);
+> +	if (kvm_is_error_hva(addr))
+> +		return 1;
+> +
+> +	vcpu->arch.apf_data = (u32 __user*)(addr + offset);
+> +
+> +	/* check if address is mapped */
+> +	if (get_user(offset, vcpu->arch.apf_data)) {
+> +		vcpu->arch.apf_data = NULL;
+> +		return 1;
+> +	}
+>    
 
-If all we ever have are static variables, the prefix may be fine but
-with dynamic percpu variables now basically being the same first class
-citizen but prefix just doesn't cut it.  It just ends up adding more
-confusion.  The transition will be a bit painful (but not too much,
-how many of these reports have we had?  Only several) but after that
-it's just plain local/global symbol collision the compiler would have
-no problem warning about.  It behaves exactly like other global
-symbols.
+What if the memory slot arrangement changes?  This needs to be 
+revalidated (and gfn_to_hva() called again).
 
-Percpu symbols and variables belong to a different address space than
-normal symbols.  Unfortunately, C doesn't have support for such thing.
-Prefixing kind of works but simply breaks when the addresses are
-allowed to be handled as values.  We have had the exactly same problem
-and solution for years now - iomem.  Percpu memory isn't different
-from iomem at all.  Once the conversion is complete and annotations
-and code are upstream, it won't be painful at all.
+> +	return 0;
+> +}
+> +
+>   int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+>   {
+>   	switch (msr) {
+> @@ -1029,6 +1049,14 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
+>   		kvm_request_guest_time_update(vcpu);
+>   		break;
+>   	}
+> +	case MSR_KVM_ASYNC_PF_EN:
+> +		vcpu->arch.apf_msr_val = data;
+> +		if (data&  1) {
+> +			if (kvm_pv_enable_async_pf(vcpu, data))
+> +				return 1;
+>    
 
-Thanks.
+Need to check before setting the msr value, so subsequent reads return 
+the old value.
+
+> +		} else
+> +			vcpu->arch.apf_data = NULL;
+>    
+
+Need to check that bits 1:5 are zero.  I think it's cleaner to move all 
+of the code to kvm_pv_enable_async_pf(), to have everything in one place.
+
 
 -- 
-tejun
+error compiling committee.c: too many arguments to function
+
