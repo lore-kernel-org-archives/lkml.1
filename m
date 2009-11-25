@@ -1,122 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZKYPI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757732AbZKYPNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343AbZKYPI7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 10:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZKYPI6
+	id S1757732AbZKYPNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 10:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZKYPNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 10:08:58 -0500
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:57560 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751780AbZKYPI5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 10:08:57 -0500
-Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the
- kernel (__ksymtab)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Alex Chiang <achiang@hp.com>,
-       Tony Luck <tony.luck@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, greg@kroah.com,
-       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, deller@gmx.de,
-       jejb@parisc-linux.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
-In-Reply-To: <4B0CF5A6.7080908@tuffmail.co.uk>
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com>
-	 <4B072E31.4000906@tuffmail.co.uk> <20091123195320.GD26810@ldl.fc.hp.com>
-	 <200911241127.18013.rusty@rustcorp.com.au>
-	 <1259041182.2433.945.camel@mulgrave.site> <4B0BA725.2050604@tuffmail.co.uk>
-	 <1259102629.4549.842.camel@mulgrave.site> <4B0CF5A6.7080908@tuffmail.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 09:08:57 -0600
-Message-Id: <1259161737.2535.6.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Wed, 25 Nov 2009 10:13:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33593 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753093AbZKYPNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 10:13:12 -0500
+Message-ID: <4B0D4941.5010904@kernel.org>
+Date: Thu, 26 Nov 2009 00:12:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: percpu tree build warning
+References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <20091125105004.GA18163@elte.hu> <4B0D23A6.8040902@kernel.org> <20091125134058.GA9097@elte.hu>
+In-Reply-To: <20091125134058.GA9097@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 09:15 +0000, Alan Jenkins wrote:
-> James Bottomley wrote:
-> > On Tue, 2009-11-24 at 09:28 +0000, Alan Jenkins wrote:
-> >   
-> >> James Bottomley wrote:
-> >>     
-> >>> On Tue, 2009-11-24 at 11:27 +1030, Rusty Russell wrote:
-> >>>   
-> >>>       
-> >>>> On Tue, 24 Nov 2009 06:23:20 am Alex Chiang wrote:
-> >>>>     
-> >>>>         
-> >>>>> Hi Alan, Rusty,
-> >>>>>       
-> >>>>>           
-> >>>> Hi Alex,
-> >>>>
-> >>>>     
-> >>>>         
-> >>>>> In the meantime, while Alan is deciding the proper way to fix
-> >>>>> this, would it be possible to drop the offending patch series
-> >>>>> from linux-next?
-> >>>>>       
-> >>>>>           
-> >>>> Done.  That takes the pressure off Alan, and makes sure he has time to get
-> >>>> it right.
-> >>>>     
-> >>>>         
-> >>> That probably suits us on parisc too.  I just checked out our build in
-> >>> linux-next: we don't pass __modpost ... it looks like we have all the
-> >>> module symbols undefined.  Will investigate more.
-> >>>
-> >>> James
-> >>>   
-> >>>       
-> >> I think parisc wants P'printk where ia64 uses @fptr(printk).
-> >>
-> >> It may also need ".import printk,code" or similar.
-> >>     
-> >
-> > I think if you have to make modpost architecture specific, there's
-> > something a bit wrong in the patch series.
-> >
-> > I can confirm that reverting this particular patch allows the parisc
-> > build to work again.  It still won't boot because module symbols aren't
-> > resolved.
-> >
-> > James
-> >   
+Hello,
+
+11/25/2009 10:40 PM, Ingo Molnar wrote:
+> And look at your own 'cleanup' patch - it changes the percpu name to 
+> 'cpu_dr7'. That results in nonsensical repetition:
 > 
-> Yes, the series as a whole relies on that patch.  Rusty pulled the 
-> series from linux-next (thanks rusty!).
+>         dr7 = &__get_cpu_var(cpu_dr7);
 
-Not according to current linux-next:
+My whole argument can be compressed into "don't name a global symbol
+dr7, no matter what it is".
 
-jejb@ion> git log next-20091125|grep -3 'sort the list of symbols'
-Author: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Date:   Sat Nov 7 21:03:56 2009 +0000
+The key problem is the artificial difference between static and
+dynamic percpu variable accessors.  The old way of prefixing from
+accessors only works for symbol literals, so either we need another
+identical set for dynamic ones without auto-prefixing or we end up
+doing the repetition you mentioned above in much uglier way.
 
-    kbuild: sort the list of symbols exported by the kernel (__ksymtab)
-    
-    modpost of vmlinux.o now extracts the ksymtab sections and outputs
-    sorted versions of them as .tmp_exports-asm.S.  These sorted sections
+Option 1:
 
-Could we please have this removed so we can resume our testing of next?
+	this_cpu_static_OP(dr7, ARG);
+	this_cpu_dynamic_OP(*allocated_ptr, ARG);
+	this_cpu_dynamic_OP(per_cpu_var(dr7), ARG);
 
-> I'm working on alternatives now.  I can't promise to avoid architecture 
-> specific code, but if it's necessary then I understand I have to arrange 
-> to test it myself :-).  Sorry for the inconvenience caused by 
-> "arch-independent assembly code" that wasn't.
+Options 2:
 
-I'm not sure I understand what you're trying to do, but it seems to me
-that the way to do what you want is to introduce an arch macro for
-function pointer which we all define in our headers to be however our
-assemblers represent it ... for non fptr arches this would be an
-identity.
+	this_cpu_OP(per_cpu_var(dr7), ARG);
 
-We don't need there to be no arch changes ... but we do need any arch
-specificity confined to arch specific files.
+BTW, option 2 is what we've been doing before the change.  It's just
+ugly and the prefix no longer provides much protection because users
+outside of percpu code have to use per_cpu_var() which never was
+supposed to go outside of percpu internal code.  All it ends up doing
+is providing false sense of address space isolation when there is
+none.
 
-James
+DEFINE_*(NAME) defines a global symbol NAME in all other definition
+macros.  DEFINE_PER_CPU() does so too.
 
+Thanks.
 
+-- 
+tejun
