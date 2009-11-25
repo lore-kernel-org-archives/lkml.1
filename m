@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935149AbZKYXTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZKYXWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935149AbZKYXTK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 18:19:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935062AbZKYXTJ
+	id S1759939AbZKYXWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 18:22:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933745AbZKYXWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 18:19:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49498
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934886AbZKYXTH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 18:19:07 -0500
-Date: Wed, 25 Nov 2009 15:19:25 -0800 (PST)
-Message-Id: <20091125.151925.92362266.davem@davemloft.net>
-To: bharrosh@panasas.com
-Cc: bfields@citi.umich.edu, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-nfs@vger.kernel.org,
-       pnfs@linux-nfs.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/5] sparc: remove unused nfsd #includes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B0C1F5C.9090903@panasas.com>
-References: <4B0C1EB7.50508@panasas.com>
-	<4B0C1F5C.9090903@panasas.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 25 Nov 2009 18:22:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5521 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758914AbZKYXWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 18:22:33 -0500
+Message-ID: <4B0DBC2D.1010603@redhat.com>
+Date: Thu, 26 Nov 2009 00:22:21 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: awalls@radix.net, dheitmueller@kernellabs.com, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDZbPXRZjFB@christoph>
+In-Reply-To: <BDZbPXRZjFB@christoph>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Boaz Harrosh <bharrosh@panasas.com>
-Date: Tue, 24 Nov 2009 20:01:00 +0200
+>> (1) ir code (say rc5) ->  keycode conversion looses information.
+>>
+>> I think this can easily be addressed by adding a IR event type to the
+>> input layer, which could look like this:
+>>
+>>     input_event->type  = EV_IR
+>>     input_event->code  = IR_RC5
+>>     input_event->value =<rc5 value>
+>>
+>> In case the 32bit value is too small we might want send two events
+>> instead, with ->code being set to IR_<code>_1 and IR_<code>_2
+>>
+>> Advantages:
+>>     * Applications (including lircd) can get access to the unmodified
+>>       rc5/rc6/... codes.
+>
+> Unfortunately with most hardware decoders the code that you get is only
+> remotely related to the actual code sent. Most RC-5 decoders strip off
+> start bits.
 
-> 
-> Some unused includes removed.
-> 
-> In an effort to cleanup nfsd headers and move private
-> definitions to source directory.
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+I would include only the actual data bits in the payload anyway.
 
-Applied to sparc-next-2.6, thank you.
+> Toggle-bits are thrown away. NEC decoders usually don't pass
+> through the address part.
+
+Too bad.  But information which isn't provided by the hardware can't be 
+passed up anyway, no matter what kernel/userspace interface is used. 
+Gone is gone.
+
+> There is no common standard which bit is sent first, LSB or MSB.
+
+Input layer would have to define a bit order.  And drivers which get it 
+the other way from the hardware have to convert.  Or maybe signal the 
+order and the input core then will convert if needed.
+
+> Checksums are thrown away.
+
+Don't include them.
+
+> To sum it up: I don't think this information will be useful at all for
+> lircd or anyone else.
+
+Why not?  With RC5 remotes applications can get the device address bits 
+for example, which right now are simply get lost in the ir code -> 
+keycode conversion step.
+
+> Actually lircd does not even know anything about
+> actual protocols. We only distinguish between certain protocol types, like
+> Manchester encoded, space encoded, pulse encoded etc. Everything else like
+> the actual timing is fully configurable.
+
+I know that lircd does matching instead of decoding, which allows to 
+handle unknown encodings.  Thats why I think there will always be cases 
+which only lircd will be able to handle (using raw samples).
+
+That doesn't make attempts to actually decode the IR samples a useless 
+exercise though ;)
+
+cheers,
+   Gerd
+
