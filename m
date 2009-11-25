@@ -1,107 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZKYSjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbZKYSn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbZKYSjc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbZKYSjc
+	id S1759285AbZKYSn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbZKYSn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:39:32 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:49419 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753217AbZKYSja convert rfc822-to-8bit (ORCPT
+	Wed, 25 Nov 2009 13:43:26 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:39448
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758796AbZKYSnZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:39:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=gBF74VNILAcKSErMp/lcxa8tyJa2kfxkqLN3wId3U0hcb1oqYaUkW+lm/LEfFXINuh
-         QInxINuCXq38E9hvGpJ0OCPsVVj39hwUFLmiNEm3APSf1M/8rol+dID7vPhkxg9dj2xt
-         K705FYS1H6B4B0P947nl0Bs3RIGBHonxNBUgY=
-MIME-Version: 1.0
-In-Reply-To: <20091125114908.GA21778@shareable.org>
-References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> 
-	<20091125061640.GB17203@shareable.org> <4B0CCE4A.5000602@analog.com> 
-	<20091125114908.GA21778@shareable.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 25 Nov 2009 13:39:17 -0500
-Message-ID: <8bd0f97a0911251039v6d568229md62a93cd5abb716f@mail.gmail.com>
-Subject: Re: [uClinux-dev] [PATCH] NOMMU: use copy_*_user_page() in 
-	access_process_vm()
-To: uClinux development list <uclinux-dev@uclinux.org>
-Cc: Jie Zhang <jie.zhang@analog.com>, linux-kernel@vger.kernel.org,
-       Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Nov 2009 13:43:25 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ?
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+Date: Wed, 25 Nov 2009 13:43:24 -0500
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
 Content-Transfer-Encoding: 8BIT
+Message-Id: <E88E119C-BB86-4F01-8C2C-E514AC6BA5E2@wilsonet.com>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain> <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com> <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 06:49, Jamie Lokier wrote:
-> Jie Zhang wrote:
->> On 11/25/2009 02:16 PM, Jamie Lokier wrote:
->> >Mike Frysinger wrote:
->> >>From: Jie Zhang<jie.zhang@analog.com>
->> >>
->> >>The mmu code uses the copy_*_user_page() variants in access_process_vm()
->> >>rather than copy_*_user() as the former includes an icache flush.  This is
->> >>important when doing things like setting software breakpoints with gdb.
->> >>So switch the nommu code over to do the same.
->> >
->> >Reasonable, but it's a bit subtle don't you think?
->> >How about a one-line comment saying why it's using copy_*_user_page()?
->> >
->> >(If it was called copy_*_user_flush_icache() I wouldn't say anything,
->> >but it isn't).
->> >
->> But I think it's well known in Linux kernel developers that
->> copy_to_user_page and copy_from_user_page should do cache flushing. It's
->> documented in Documentation/cachetlb.txt. I don't think it's necessary
->> to replicate it here.
->
-> You're right, however I now think the commit message is misleading.
->
-> Since this is the *only place in the entire kernel* where these
-> functions are used (plus the mmu equivalent), I'm not sure I'd agree
-> about well known, and the name could be better (copy_*_user_ptrace()),
-> but I agree now, it doesn't need a comment.
->
-> It was the talk of icache flush which bothered me, as I (wrongly)
-> assumed copy_*_user_page() was used elsewhere, without knowledge of
-> icache vs non-icache differences - which are often the responsibility
-> of userspace to get right, so often the kernel does not care.
->
-> In fact, it's not just icache.  copy_*_user_page() has to do some
-> *data* cache flushing too, on some architecures.  For example, see
-> arch/sparc/include/asm/cacheflush_64.h:
->
->    #define copy_to_user_page(vma, page, vaddr, dst, src, len)              \
->            do {                                                            \
->                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
->                    memcpy(dst, src, len);                                  \
->                    flush_ptrace_access(vma, page, vaddr, src, len, 0);     \
->            } while (0)
->
->    #define copy_from_user_page(vma, page, vaddr, dst, src, len)            \
->            do {                                                            \
->                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
->                    memcpy(dst, src, len);                                  \
->                    flush_ptrace_access(vma, page, vaddr, dst, len, 1);     \
->            } while (0)
->
-> I'm not sure why I don't see the same dcache flushing on ARM, so I
-> wonder if the ARM implementation of these buggy.
->
-> Anyway, that means the commit message is a little misleading, saying
-> it's for the icache flush.  It is for whatever icache and dcache
-> flushes are needed for a ptrace access.
->
-> Which is why, given they are only used for ptrace (have just grepped),
-> I'm inclined to think it'd be clearer to rename the functions to
-> copy_*_user_ptrace().  And make your no-mmu change of course :-)
-> Any thoughts on the rename?
+On Nov 25, 2009, at 1:20 PM, Devin Heitmueller wrote:
 
-these are all good points, but i think unrelated to the patch in
-question ;).  they can be done as a follow up.
--mike
+> On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
+>> Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
+>> 
+>> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
+> 
+> This is one of the key use cases I would be very concerned with.  For
+> many users who have bought tuner products, the bundled remotes work
+> "out-of-the-box", regardless of whether lircd is installed.  I have no
+> objection so much as to saying "well, you have to install the lircd
+> service now", but there needs to be a way for the driver to
+> automatically tell lirc what the default remote control should be, to
+> avoid a regression in functionality.  We cannot go from a mode where
+> it worked automatically to a mode where now inexperienced users now
+> have to deal with the guts of getting lircd properly configured.
+
+Agreed. Auto-config of lircd for remotes bundled with receivers is definitely on the TODO list. It sorta kinda works using gnome-lirc-properties, but well, that's not an actual lirc project component, and from what I've seen, its fairly incomplete (and reproduces a device ID list within its own code, that has never been fully updated to match the list of stuff the lirc drivers actually support).
+
+> If such an interface were available, I would see to it that at least
+> all the devices I have added RC support for will continue to work
+> (converting the in-kernel RC profiles to lirc RC profiles as needed
+> and doing the associations with the driver).
+> 
+> The other key thing I don't think we have given much thought to is the
+> fact that in many tuners, the hardware does RC decoding and just
+> returns NEC/RC5/RC6 codes.  And in many of those cases, the hardware
+> has to be configured to know what format to receive.  We probably need
+> some kernel API such that the hardware can tell lirc what formats are
+> supported, and another API call to tell the hardware which mode to
+> operate in.
+
+Well, we've got a number of IOCTLs already, could extend those. (Although its been suggested elsewhere that we replace the IOCTLs with sysfs knobs). A simple sysfs attr that contains the name of the default config file for the bundled remote of a given receiver would seem simple enough to implement.
+
+> This is why I think we really should put together a list of use cases,
+> so that we can see how any given proposal addresses those use cases.
+> I offered to do such, but nobody seemed really interested in this.
+
+D'oh, sorry, I recall reading that email, but neglected to respond. Yes, I think that's useful, and would gladly contribute to the list.
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
