@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935104AbZKYVu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935138AbZKYV4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935104AbZKYVu3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935073AbZKYVu3
+	id S935138AbZKYV4k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759341AbZKYVz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:50:29 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39625 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934901AbZKYVu2 (ORCPT
+	Wed, 25 Nov 2009 16:55:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33321 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759004AbZKYVz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:50:28 -0500
-Date: Wed, 25 Nov 2009 16:50:18 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo@firstfloor.org,
-       "Molnar <mingo"@firstfloor.org, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 14/14] utrace core
-Message-ID: <20091125215018.GB4916@infradead.org>
-References: <20091124200220.GA5828@redhat.com> <87my2bwtno.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87my2bwtno.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 25 Nov 2009 16:55:57 -0500
+Message-Id: <20091125215529.492517040@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 25 Nov 2009 16:55:29 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/2] [GIT PULL] tracing/ring-buffer-benchmark: mods and fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 09:32:27PM +0100, Andi Kleen wrote:
-> Oleg Nesterov <oleg@redhat.com> writes:
-> 
-> > From: Roland McGrath <roland@redhat.com>
-> >
-> > This adds the utrace facility, a new modular interface in the kernel
-> > for implementing user thread tracing and debugging.  This fits on top
-> > of the tracehook_* layer, so the new code is well-isolated.
-> 
-> Could we just drop the tracehook layer if this finally merged
-> and call the low level functions directly?
-> 
-> It might have been reasonably early on when it was still out of tree,
-> but longer term when it's integrated having strange opaque hooks
-> like that just makes the coder harder to read and maintain.
 
-I agree that linux/tracehook.h as a separate layer is pretty annoying,
-but a lot of the helper actually are quite useful.  I'd suggest to throw
-a patch ontop of the series to rename all the useful macros to utrace_
-and move them into utrace.h and just remove those that are really
-trivial wrappers.
+Ingo,
 
+Please pull the latest tip/tracing/core tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
+
+
+Lai Jiangshan (1):
+      tracing: Separate raw syscall from syscall tracer
+
+Steven Rostedt (1):
+      ring-buffer-benchmark: Add parameters to set produce/consumer priorities
+
+----
+ include/trace/events/syscalls.h      |    3 +-
+ kernel/trace/ring_buffer_benchmark.c |   58 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 58 insertions(+), 3 deletions(-)
