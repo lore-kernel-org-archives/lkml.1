@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbZKYMZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZKYM1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbZKYMZR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbZKYMZP
+	id S1758758AbZKYM1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758698AbZKYM1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:25:15 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59952 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758698AbZKYMZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:25:14 -0500
-Date: Wed, 25 Nov 2009 23:25:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: linux-next: manual merge of the trivial tree with the ext4 tree
-Message-Id: <20091125232514.d607bd48.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LSU.2.00.0911251216270.6953@wotan.suse.de>
-References: <20091125183414.eb45acca.sfr@canb.auug.org.au>
-	<alpine.LSU.2.00.0911251216270.6953@wotan.suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Nov_2009_23_25_14_+1100_NO6VQntoA_GB4hbJ"
+	Wed, 25 Nov 2009 07:27:23 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:40854 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZKYM1X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:27:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=RoeLgQ6giEOX/iNr9rHorHtCKN934aTfUF9IMAHKaI40Cu6bf5lkxwZH6xNINOGRGl
+         wWY+YzlTXpE0NmyhuULq9PlbHYazleM3xaTZ/v1SnYnZn3zIXIfsboRipp0jCHsg1HAC
+         RZV//6/tsl1c9OSIDRDo2Rwpbktv7ky3Ubmac=
+MIME-Version: 1.0
+In-Reply-To: <5dcc4c8a0911241202s1d56354el9628763b05451fb9@mail.gmail.com>
+References: <5dcc4c8a0911241202s1d56354el9628763b05451fb9@mail.gmail.com>
+Date: Wed, 25 Nov 2009 15:27:28 +0300
+Message-ID: <5dcc4c8a0911250427g73f7a3a0y26eff2379fb86edf@mail.gmail.com>
+Subject: Kernel module, undefined symbol show_regs
+From: Tanya Gornak <errizo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Nov_2009_23_25_14_+1100_NO6VQntoA_GB4hbJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello. I can't solve problem that happens while I'm making my kernel module.
 
-Hi Jiri,
+part of my module:
+// ...
+#include <linux/sched.h>
+//....
+static u32 task_syscall_entry(enum utrace_resume_action action,
+                                struct utrace_engine *engine,
+                                struct task_struct *task,
+                                struct pt_regs *regs){
+    // ...
+        show_regs(regs);
 
-On Wed, 25 Nov 2009 12:16:43 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrot=
-e:
->
-> Dropped the mballoc hunk from my queue, thanks.
+}
+But, while making I get:
 
-OK, thanks.
+WARNING: "show_regs" [/home/tehhi/module/trace.ko] undefined!
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+extern void show_regs(struct pt_regs *);  define in header
+linux/sched.h, place of source code is
+linux/arch/x86/kernel/process_32.c
+It use extern void __show_regs(struct pt_regs *); and extern
+asmlinkage void __backtrace(void);
+I think that extern means that I can use it (and there are no static
+symbols in this function).
 
---Signature=_Wed__25_Nov_2009_23_25_14_+1100_NO6VQntoA_GB4hbJ
-Content-Type: application/pgp-signature
+When trying to insert module, it predictably complains of an unknown
+symbol show_regs.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+What am I missing here?
 
-iEYEARECAAYFAksNIioACgkQjjKRsyhoI8yQzQCgwFIAZfmv001pIgH2Kf5tvr47
-K2wAoKLQjTvumZzj0jwnW/1HRIPMKEmK
-=Ew+r
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Nov_2009_23_25_14_+1100_NO6VQntoA_GB4hbJ--
+Thanks in advance.
