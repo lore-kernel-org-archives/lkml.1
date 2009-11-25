@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934451AbZKYH4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934573AbZKYH50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934451AbZKYH4C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 02:56:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758423AbZKYH4B
+	id S934573AbZKYH50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 02:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934084AbZKYH5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 02:56:01 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35674 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758421AbZKYH4A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 02:56:00 -0500
-Subject: Re: [PATCH] perf_events: fix validate_event bug
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@gmail.com
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, perfmon2-devel@lists.sf.net, eranian@google.com
-In-Reply-To: <7c86c4470911242147u160008d4y50385cb348615df8@mail.gmail.com>
-References: <1256223091-6002-1-git-send-email-eranian@gmail.com>
-	 <1258562785.3918.685.camel@laptop>
-	 <7c86c4470911230534i4119734k1478550567852220@mail.gmail.com>
-	 <1258983953.4531.456.camel@laptop>
-	 <7c86c4470911240518qe0c3e87k589437ef43f4a3d4@mail.gmail.com>
-	 <19212.22371.633313.129961@cargo.ozlabs.ibm.com>
-	 <7c86c4470911242147u160008d4y50385cb348615df8@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 08:55:57 +0100
-Message-ID: <1259135757.4027.5.camel@laptop>
+	Wed, 25 Nov 2009 02:57:25 -0500
+Received: from sh.osrg.net ([192.16.179.4]:57351 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933842AbZKYH5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 02:57:25 -0500
+Date: Wed, 25 Nov 2009 16:56:32 +0900
+To: mingo@elte.hu
+Cc: fujita.tomonori@lab.ntt.co.jp, yinghai@kernel.org, hpa@zytor.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091125072504.GA6568@elte.hu>
+References: <20091124152645.GD21821@elte.hu>
+	<20091125085730S.fujita.tomonori@lab.ntt.co.jp>
+	<20091125072504.GA6568@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20091125165601R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 16:56:32 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 06:47 +0100, stephane eranian wrote:
-> It seems to me you have two ways of solving this:
->   1- push the algorithm to assign events to counters up in the generic code
->   2- have the generic code invoke all possible constraint sources on each group
+On Wed, 25 Nov 2009 08:25:04 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-2, is what it currently does. 
+> 
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> 
+> > On Tue, 24 Nov 2009 16:26:45 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > > 
+> > > > > don't think user will like to use SWIOTLB instead of swiotlb.
+> > > > 
+> > > > I doubt that users care about a way to fix their problems.
+> > > 
+> > > As far as swiotlb vs. GART goes, arguably a non-bouncing hw based 
+> > > solution (GART) is superior to a bouncing one (swiotlb), right?
+> > 
+> > Yeah, but GART is not a real IOMMU that always does address 
+> > translation. If users want performance, they need 64bit DMA capable 
+> > devices to skip GART. With such devices, GART and SWIOTLB are same.
+> > 
+> > So this hacky GART workaround is useful for only people who use non 
+> > 64bit DMA devices and broken BIOS with GART. IMO, it's not worth 
+> > having the workaround.
+> 
+> Well, what Yinghai is saying that for that (nonzero) subset of people 
+> this change is a regression, and his patch fixes that. We dont do 
+> regressions so this needs to be addressed.
 
-Since we can only add a single event to a group at a time, and we know
-the previous group was schedulable, we only need to validate the
-constraints on the pmu of the new event.
+OK, I guess that I have to wait until nobody cares about GART.
 
+Anyway, my patch fixes his issue without any regression:
+
+http://marc.info/?l=linux-kernel&m=125907069703595&w=2
+
+I'll post the second version of it after you merge the following fix:
+
+http://marc.info/?l=linux-kernel&m=125910650500523&w=2
+
+
+Thanks,
