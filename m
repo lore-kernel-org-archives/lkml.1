@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934518AbZKYLuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZKYMC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934518AbZKYLuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934274AbZKYLuR
+	id S1758762AbZKYMC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbZKYMC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:50:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49893 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934212AbZKYLuR (ORCPT
+	Wed, 25 Nov 2009 07:02:56 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:49865 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758639AbZKYMC4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:50:17 -0500
-Date: Wed, 25 Nov 2009 12:50:19 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       peter.p.waskiewicz.jr@intel.com, peterz@infradead.org,
-       arjan@linux.intel.com, yong.zhang0@gmail.com,
-       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance hints
-Message-ID: <20091125115019.GG29096@one.firstfloor.org>
-References: <20091124.093956.247147202.davem@davemloft.net> <1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com> <20091124.105442.06273019.davem@davemloft.net> <4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org> <4B0C4624.9080607@gmail.com> <4B0D0742.2050301@gmail.com> <20091125103713.GF29096@one.firstfloor.org> <4B0D1667.8050506@gmail.com>
+	Wed, 25 Nov 2009 07:02:56 -0500
+Subject: Re: linux-next: manual merge of the voltage tree with the mfd tree
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Haojian Zhuang <haojian.zhuang@marvell.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+In-Reply-To: <20091125175602.0e765187.sfr@canb.auug.org.au>
+References: <20091125175602.0e765187.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 11:56:32 +0000
+Message-ID: <1259150192.3697.63.camel@odin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0D1667.8050506@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 12:35:03PM +0100, Eric Dumazet wrote:
-> > You seem to only have 8 CPUs (one socket) Normally a dual socket nehalem
-> > should have 16 with HyperThreading enabled.
-> > 
-> > For some reason the BIOS is not reporting the other CPU.
-> > 
-> > You could double check with acpidmp / iasl -d if that's
-> > what the BIOS really reports, but normally it should work.
-> > 
+Hi Stephen,
+
+On Wed, 2009-11-25 at 17:56 +1100, Stephen Rothwell wrote:
+> Hi Liam,
 > 
-> Good Lord, I had a CONFIG_NR_CPUS=16 in my .config.
+> Today's linux-next merge of the voltage tree got a conflict in
+> drivers/mfd/Kconfig between commit
+> b60463644b8baea3c649faeb9d7c44c104f14588 ("mfd: Fix 88PM8607 I2C
+> dependency") from the mfd tree and commit
+> 258e3427f83a573d738344c2f5499da5e026e1df ("regulator: add 88PM8607 PMIC
+> driver") from the voltage tree.
+> 
+> I fixed it up using the mfd tree version. ("depends on I2C=y" v "depends
+> on I2C").
 
-That should be enough for a two socket (2S x 4C x 2T) today,
-but of course that will eventually change too.
+Thanks for letting me know and the fixup. Will you be carrying the fix ?
 
-> Changing to to 32 or 64 seems better :)
+Thanks
 
-That looks weird. It should have worked with CONFIG_NR_CPUS==16 too,
-because you only have 16 CPUs and the NR_CPUS should affect APIC
-ranges etc.
+Liam
 
-Something still fishy. I would properly report it.
-
-BTW kernel should give some error message in any case when
-there are not enough CPUs I guess. 
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
