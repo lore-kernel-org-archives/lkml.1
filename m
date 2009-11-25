@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934525AbZKYEJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934517AbZKYEkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934525AbZKYEJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 23:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934516AbZKYEJz
+	id S934517AbZKYEkS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 23:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934502AbZKYEkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 23:09:55 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:51735 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934498AbZKYEJy (ORCPT
+	Tue, 24 Nov 2009 23:40:17 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:59365 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934490AbZKYEkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 23:09:54 -0500
-Date: Wed, 25 Nov 2009 09:39:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
-	in case of use_hierarchy
-Message-ID: <20091125040933.GE3365@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 24 Nov 2009 23:40:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=Y2ATn+THogUFlLrkbudk/8LSd2NwmhJGi6+xff96Lavk6VgbVi9r2TJvfrGLYXYgUP
+         itwNeieGwxI9REUSqLoTIkV5a2oqV5d4SOh5WYz6o9QOoBHyhTGKbu3VBXJfjHi4W4oy
+         3tXyRzdS+e5vAjv/Nn/ab8tqDM7O8MDzV+iLY=
+Date: Wed, 25 Nov 2009 13:33:59 +0900
+From: Yoichi Yuasa <yuasa@linux-mips.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: yuasa@linux-mips.org, Florian Fainelli <florian@openwrt.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] leds-cobalt: use resource_size()
+Message-Id: <20091125133359.000d43c0.yuasa@linux-mips.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-11-24 14:57:59]:
 
-> task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-> a task can be a candidate for being oom-killed from memcg's limit, checks
-> "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
-> 
-> But this check return true(it's false positive) when:
-> 
-> 	<some path>/00		use_hierarchy == 0	<- hitting limit
-> 	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
-> 
-> This leads to killing an innocent task in 00/aa. This patch is a fix for this
-> bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-> should print information of mem_cgroup which the task being killed, not current,
-> belongs to.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: Yoichi Yuasa <yuasa@linux-mips.org>
+Cc: Florian Fainelli <florian@openwrt.org>
+---
+ drivers/leds/leds-cobalt-qube.c |    2 +-
+ drivers/leds/leds-cobalt-raq.c  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+diff --git a/drivers/leds/leds-cobalt-qube.c b/drivers/leds/leds-cobalt-qube.c
+index 8816806..de19753 100644
+--- a/drivers/leds/leds-cobalt-qube.c
++++ b/drivers/leds/leds-cobalt-qube.c
+@@ -43,7 +43,7 @@ static int __devinit cobalt_qube_led_probe(struct platform_device *pdev)
+ 	if (!res)
+ 		return -EBUSY;
+ 
+-	led_port = ioremap(res->start, res->end - res->start + 1);
++	led_port = ioremap(res->start, resource_size(res));
+ 	if (!led_port)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/leds/leds-cobalt-raq.c b/drivers/leds/leds-cobalt-raq.c
+index defc212..438d483 100644
+--- a/drivers/leds/leds-cobalt-raq.c
++++ b/drivers/leds/leds-cobalt-raq.c
+@@ -84,7 +84,7 @@ static int __devinit cobalt_raq_led_probe(struct platform_device *pdev)
+ 	if (!res)
+ 		return -EBUSY;
+ 
+-	led_port = ioremap(res->start, res->end - res->start + 1);
++	led_port = ioremap(res->start, resource_size(res));
+ 	if (!led_port)
+ 		return -ENOMEM;
  
 -- 
-	Balbir
+1.6.5.3
+
