@@ -1,43 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751280AbZKYI2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZKYIcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751280AbZKYI2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZKYI2Q
+	id S1752333AbZKYIcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbZKYIcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:28:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52971 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbZKYI2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:28:16 -0500
-Subject: Re: [RFC][PATCH 0/7] perf trace: general-purpose scripting
- support, v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, anton@samba.org, hch@infradead.org,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
-References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 09:28:15 +0100
-Message-ID: <1259137695.4027.45.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 03:32:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48043 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbZKYIck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:32:40 -0500
+Date: Wed, 25 Nov 2009 08:31:29 GMT
+From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, tzanussi@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, tzanussi@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1259133299-23594-2-git-send-email-tzanussi@gmail.com>
+References: <1259133299-23594-2-git-send-email-tzanussi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Add 'signed' flag setting back into trace-event-parse.c
+Message-ID: <tip-0d0bea5ea4a0e91feff22ac5e32e14ff3a682247@git.kernel.org>
+Git-Commit-ID: 0d0bea5ea4a0e91feff22ac5e32e14ff3a682247
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 01:15 -0600, Tom Zanussi wrote:
-> sched::sched_wakeup      0 01238.657997033     6183 firefox              comm=firefox, pid=6199, prio=120, success=1, target_cpu=1
-> sched::sched_switch      1 01238.657991740     7140 firefox              prev_comm=firefox, prev_pid=7140, prev_prio=120, prev_state=S, next_comm=firefox, next_pid=6199, next_prio=120
-> 
-> min_wakeup_latency: -5293 
+Commit-ID:  0d0bea5ea4a0e91feff22ac5e32e14ff3a682247
+Gitweb:     http://git.kernel.org/tip/0d0bea5ea4a0e91feff22ac5e32e14ff3a682247
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Wed, 25 Nov 2009 01:14:58 -0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 25 Nov 2009 09:06:09 +0100
 
-Looks like we missed a clock update on the cross cpu wakeup, Mike was
-busy plugging those holes -- I've been starting at a patch that might
-cure this (amongst other things).
+perf tools: Add 'signed' flag setting back into trace-event-parse.c
 
+Commit 13999e59343b042b0807be2df6ae5895d29782a0 (perf tools:
+Handle the case with and without the "signed" trace field)
+removed code to set the FIELD_IS_SIGNED flag that was originally
+added by commit 26a50744b21fff65bd754874072857bee8967f4d
+(tracing/events: Add 'signed' field to format files).
 
+This adds it back.
 
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1259133299-23594-2-git-send-email-tzanussi@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/trace-event-parse.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index eae5605..7021dc1 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -941,7 +941,8 @@ static int event_read_fields(struct event *event, struct format_field **fields)
+ 			if (read_expect_type(EVENT_ITEM, &token))
+ 				goto fail;
+ 
+-			/* add signed type */
++			if (strtoul(token, NULL, 0))
++				field->flags |= FIELD_IS_SIGNED;
+ 
+ 			free_token(token);
+ 			if (read_expected(EVENT_OP, ";") < 0)
