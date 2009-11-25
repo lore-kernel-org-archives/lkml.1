@@ -1,109 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbZKYAKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbZKYAMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933147AbZKYAKu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 19:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932848AbZKYAKt
+	id S933327AbZKYAMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 19:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932888AbZKYAME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 19:10:49 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53610 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932779AbZKYAKt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 19:10:49 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 25 Nov 2009 09:07:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
- in case of use_hierarchy
-Message-Id: <20091125090756.690d7a68.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091124170402.GB3365@balbir.in.ibm.com>
-References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-	<661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com>
-	<20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp>
-	<20091124170402.GB3365@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Nov 2009 19:12:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:47084 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932763AbZKYAMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 19:12:02 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers and big packets in virtio_net
+Date: Wed, 25 Nov 2009 10:42:06 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
+Cc: Shirley Ma <mashirle@us.ibm.com>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Avi Kivity <avi@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Hollis Blanchard <hollisb@us.ibm.com>
+References: <1258697745.7416.20.camel@localhost.localdomain> <200911240854.24054.rusty@rustcorp.com.au> <20091124113754.GB2405@redhat.com>
+In-Reply-To: <20091124113754.GB2405@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911251042.06368.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 22:34:02 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
-> 
-> > On Tue, 24 Nov 2009 19:01:54 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
-> > > <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-> > > > a task can be a candidate for being oom-killed from memcg's limit, checks
-> > > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
-> > > >
-> > > > But this check return true(it's false positive) when:
-> > > >
-> > > >        <some path>/00          use_hierarchy == 0      <- hitting limit
-> > > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
-> > > >
-> > > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
-> > > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-> > > > should print information of mem_cgroup which the task being killed, not current,
-> > > > belongs to.
-> > > >
+On Tue, 24 Nov 2009 10:07:54 pm Michael S. Tsirkin wrote:
+> On Tue, Nov 24, 2009 at 08:54:23AM +1030, Rusty Russell wrote:
+> > On Tue, 24 Nov 2009 02:37:01 am Shirley Ma wrote:
+> > > > > +             skb = (struct sk_buff *)buf;
+> > > > This cast is unnecessary, but a comment would be nice:
 > > > 
-> > > Quick Question: What happens if <some path>/00 has no tasks in it
-> > > after your patches?
+> > > Without this cast there is a compile warning. 
+> > 
+> > Hi Shirley,
+> > 
+> >    Looks like buf is a void *, so no cast should be necessary.  But I could
+> > be reading the patch wrong.
+> > 
+> > > > However, I question whether making it 16 byte is the right thing: the
+> > > > ethernet header is 14 bytes long, so don't we want 8 bytes of padding?
 > > > 
-> > Nothing would happen because <some path>/00 never hit its limit.
-> 
-> Why not? I am talking of a scenario where <some path>/00 is set to a
-> limit (similar to your example) and hits its limit, but the groups
-> under it have no limits, but tasks. Shouldn't we be scanning
-> <some path>/00/aa as well?
-> 
-No.  <some path>/00 == use_hierarchy=0 means _all_ children's accounting
-information is never added up to <some path>/00.
-
-If there is no task in <some path>/00, it means <some path>/00 contains only
-file cache and not-migrated rss. To hit limit, the admin has to make 
-memory.(memsw).limit_in_bytes smaller. But in this case, oom is not called.
--ENOMEM is returned to users. IIUC.
-
-
-
-
+> > > Because in QEMU it requires 10 bytes header in a separately, so one page
+> > > is used to share between virtio_net_hdr header which is 10 bytes head
+> > > and rest of data. So I put 6 bytes offset here between two buffers. I
+> > > didn't look at the reason why a seperate buf is used for virtio_net_hdr
+> > > in QEMU.
 > > 
-> > The bug that this patch fixes is:
-> > 
-> > - create a dir <some path>/00 and set some limits.
-> > - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
-> > - run some programs in both in 00 and 00/aa. programs in 00 should be
-> >   big enough to cause oom by its limit.
-> > - when oom happens by 00's limit, tasks in 00/aa can also be killed.
-> >
+> > It's a qemu bug.  It insists the header be an element in the scatterlist by
+> > itself.  Unfortunately we have to accommodate it.
 > 
-> To be honest, the last part is fair, specifically if 00/aa has a task
-> that is really the heaviest task as per the oom logic. no? Are you
-> suggesting that only tasks in <some path>/00 should be selected by the
-> oom logic? 
-> 
-<some path>/00 and <some path>/00/aa has completely different accounting set.
-There are no hierarchy relationship. The directory tree shows "virtual"
-hierarchy but in reality, their relationship is horizontal rather than hierarchycal.
+> We do?  Let's just fix this?
+> All we have to do is replace memcpy with proper iovec walk, correct?
+> Something like the followng (untested) patch?  It's probably not too
+> late to put this in the next qemu release...
 
-So, killing tasks only in <some path>/00 is better.
+You might want to implement a more generic helper which does:
 
-Thanks,
--Kame
+	/* Return pointer into iovec if we can, otherwise copy into buf */
+	void *pull_iovec(struct iovec *iov, int iovcnt, void *buf, size_t len)
+	{
+		unsigned int i;
+		void *p;
 
+		if (likely(iov_cnt && iov[0].iov_len >= len)) {
+			/* Nice contiguous chunk. */
+			void *p = iov[0].iov_base;
+			iov[i].iov_base += len;
+			iov[i].iov_len -= len;
+			return p;
+		}
 
+		p = buf;
+		for (i = 0; i < iov_cnt; i++) {
+			size_t this_len = min(len, iov[i].iov_len);
+			memcpy(p, iov[i].iov_base, this_len);
+			len -= this_len;
+			iov[i].iov_base += len;
+			iov[i].iov_len -= len;
+			if (len == 0)
+				return buf;
+		}
+		/* BTW, we screwed your iovec. */
+		return NULL;
+	}
 
+Then use it in all the virtio drivers...
+
+Thanks!
+Rusty.
