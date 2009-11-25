@@ -1,78 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbZKYSn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZKYS4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759285AbZKYSn1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758909AbZKYSn0
+	id S1759366AbZKYS4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbZKYS4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:43:26 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:39448
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758796AbZKYSnZ convert rfc822-to-8bit (ORCPT
+	Wed, 25 Nov 2009 13:56:13 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:35030 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758838AbZKYS4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:43:25 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ?
-Mime-Version: 1.0 (Apple Message framework v1077)
+	Wed, 25 Nov 2009 13:56:12 -0500
+Date: Wed, 25 Nov 2009 10:55:43 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, hpa@zytor.com,
+       Nathan Lynch <nathanl@austin.ibm.com>, haveblue@us.ibm.com,
+       Matt Helsley <matthltc@us.ibm.com>, arnd@arndb.de, roland@redhat.com,
+       mtk.manpages@googlemail.com, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       sukadev@linux.vnet.ibm.com
+Subject: [v13][PATCH 00/12] Implement eclone() system call
+Message-ID: <20091125185543.GA30858@us.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
-Date: Wed, 25 Nov 2009 13:43:24 -0500
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Content-Transfer-Encoding: 8BIT
-Message-Id: <E88E119C-BB86-4F01-8C2C-E514AC6BA5E2@wilsonet.com>
-References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain> <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com> <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
-To: Devin Heitmueller <dheitmueller@kernellabs.com>
-X-Mailer: Apple Mail (2.1077)
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 25, 2009, at 1:20 PM, Devin Heitmueller wrote:
-
-> On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
->> Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
->> 
->> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
-> 
-> This is one of the key use cases I would be very concerned with.  For
-> many users who have bought tuner products, the bundled remotes work
-> "out-of-the-box", regardless of whether lircd is installed.  I have no
-> objection so much as to saying "well, you have to install the lircd
-> service now", but there needs to be a way for the driver to
-> automatically tell lirc what the default remote control should be, to
-> avoid a regression in functionality.  We cannot go from a mode where
-> it worked automatically to a mode where now inexperienced users now
-> have to deal with the guts of getting lircd properly configured.
-
-Agreed. Auto-config of lircd for remotes bundled with receivers is definitely on the TODO list. It sorta kinda works using gnome-lirc-properties, but well, that's not an actual lirc project component, and from what I've seen, its fairly incomplete (and reproduces a device ID list within its own code, that has never been fully updated to match the list of stuff the lirc drivers actually support).
-
-> If such an interface were available, I would see to it that at least
-> all the devices I have added RC support for will continue to work
-> (converting the in-kernel RC profiles to lirc RC profiles as needed
-> and doing the associations with the driver).
-> 
-> The other key thing I don't think we have given much thought to is the
-> fact that in many tuners, the hardware does RC decoding and just
-> returns NEC/RC5/RC6 codes.  And in many of those cases, the hardware
-> has to be configured to know what format to receive.  We probably need
-> some kernel API such that the hardware can tell lirc what formats are
-> supported, and another API call to tell the hardware which mode to
-> operate in.
-
-Well, we've got a number of IOCTLs already, could extend those. (Although its been suggested elsewhere that we replace the IOCTLs with sysfs knobs). A simple sysfs attr that contains the name of the default config file for the bundled remote of a given receiver would seem simple enough to implement.
-
-> This is why I think we really should put together a list of use cases,
-> so that we can see how any given proposal addresses those use cases.
-> I offered to do such, but nobody seemed really interested in this.
-
-D'oh, sorry, I recall reading that email, but neglected to respond. Yes, I think that's useful, and would gladly contribute to the list.
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
 
 
+Andrew,
 
+(Sorry to spam, but I failed to cc LKML on my previous post and want to
+make sure I addressed all comments).
+
+We also ported the eclone() syscall to x86_64, powerpc and s390.
+Can you please merge or let me know if there are other comments ?
+
+---
+
+Subject: [v13][PATCH 00/12] Implement eclone() system call
+
+To support application checkpoint/restart, a task must have the same pid it
+had when it was checkpointed.  When containers are nested, the tasks within
+the containers exist in multiple pid namespaces and hence have multiple pids
+to specify during restart.
+
+This patchset implements a new system call, eclone() that lets a process
+specify the pids of the child process.
+
+Patches 1 through 7 are helper patches needed for choosing a pid for the
+child process.
+
+Patches 8 through 11 implement the eclone() system call on x86, x86_64, s390
+and powerpc.
+
+Patch 12 documents the new system call, some/all of which will eventually
+go into a man page.
+
+Changelog[v13]:
+	- Implement sys_eclone() on x86_64, s390 and powerpc architectures
+	- Reorg x86 implementation to enable sharing code with x86_64
+	- [Arnd Bergmann] Remove the ->reserved1 field we now have args_size
+	- [Nathan Lynch, Serge Hallyn]: Rename ->child_stack_base to
+	  ->child_stack and ensure ->child_stack_size is 0 on architectures
+	  that don't need the stack size.
+	- Modify exmaple in Documentation to avoid unnecessary register copy.
+
+Changelog[v12]:
+	- Ignore ->child_stack_size when ->child_stack_base is NULL (PATCH 8)
+	- Cleanup/simplify example in Documentation/eclone (PATCH 9).
+	- Rename sys call to a shorter name, eclone()
+
+Changelog[v11]:
+	- [Dave Hansen] Move clone_args validation checks to arch-indpeendent
+	  code.
+	- [Oren Laadan] Make args_size a parameter to system call and remove
+	  it from 'struct clone_args'
+
+Changelog[v10]:
+	- [Linus Torvalds] Use PTREGSCALL() implementation for clone rather
+	  than the generic system call
+	- Rename clone3() to clone_with_pids()
+	- Update Documentation/clone_with_pids() to show example usage with
+	  the PTREGSCALL implementation.
+
+Changelog[v9]:
+	- [Pavel Emelyanov] Drop the patch that made 'pid_max' a property
+	  of struct pid_namespace
+	- [Roland McGrath, H. Peter Anvin and earlier on, Serge Hallyn] To
+	  avoid inadvertent truncation clone_flags, preserve the first
+	  parameter of clone3() as 'u32 clone_flags' and specify newer
+	  flags in clone_args.flags_high (PATCH 8/9 and PATCH 9/9)
+	- [Eric Biederman] Generalize alloc_pidmap() code to simplify and
+	  remove duplication (see PATCH 3/9].
+	  
+Changelog[v8]:
+	- [Oren Laadan, Louis Rilling, KOSAKI Motohiro]
+	  The name 'clone2()' is in use - renamed new syscall to clone3().
+	- [Oren Laadan] ->parent_tidptr and ->child_tidptr need to be 64bit.
+	- [Oren Laadan] Ensure that unused fields/flags in clone_struct are 0.
+	  (Added [PATCH 7/10] to the patchset).
+
+Changelog[v7]:
+	- [Peter Zijlstra, Arnd Bergmann]
+	  Group the arguments to clone2() into a 'struct clone_arg' to
+	  workaround the issue of exceeding 6 arguments to the system call.
+	  Also define clone-flags as u64 to allow additional clone-flags.
+
+Changelog[v6]:
+	- [Nathan Lynch, Arnd Bergmann, H. Peter Anvin, Linus Torvalds]
+	  Change 'pid_set.pids' to 'pid_t pids[]' so sizeof(struct pid_set) is
+	  constant across architectures (Patches 7, 8).
+	- (Nathan Lynch) Change pid_set.num_pids to unsigned and remove
+	  'unum_pids < 0' check (Patches 7,8)
+	- (Pavel Machek) New patch (Patch 9) to add some documentation.
+
+Changelog[v5]:
+	- Make 'pid_max' a property of pid_ns (Integrated Serge Hallyn's patch
+	  into this set)
+	- (Eric Biederman): Avoid the new function, set_pidmap() - added
+	  couple of checks on 'target_pid' in alloc_pidmap() itself.
+
+=== IMPORTANT NOTE:
+
+clone() system call has another limitation - all but one bits in clone-flags
+are in use and if more new clone-flags are needed, we will need a variant of
+the clone() system call. 
+
+It appears to make sense to try and extend this new system call to address
+this limitation as well. The requirements of a new clone system call could
+then be summarized as:
+
+	- do everything clone() does today, and
+	- give application an ability to choose pids for the child process
+	  in all ancestor pid namespaces, and
+	- allow more clone_flags
+
+Contstraints:
+
+	- system-calls are restricted to 6 parameters and clone() already
+	  takes 5 parameters, any extension to clone() interface would require
+	  one or more copy_from_user().  (Not sure if copy_from_user() of ~40
+	  bytes would have a significant impact on performance of clone()).
+
+Based on these requirements and constraints, we explored a couple of system
+call interfaces (in earlier versions of this patchset). Based on input from
+Arnd Bergmann and others, the new interface of the system call is: 
+
+	struct clone_args {
+		u64 clone_flags_high;
+		u64 child_stack_base;
+		u64 child_stack_size;
+		u64 parent_tid_ptr;
+		u64 child_tid_ptr;
+		u32 nr_pids;
+		u32 reserved0;
+	};
+
+	sys_eclone(u32 flags_low, struct clone_args *cargs, int args_size,
+			pid_t *pids)
+
+Details of the struct clone_args and the usage are explained in the
+documentation (PATCH 12/12).
+
+NOTE:
+	While this patchset enables support for more clone-flags, actual
+	implementation for additional clone-flags is best implemented as
+	a separate patchset (PATCH 8/9 identifies some TODOs)
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
