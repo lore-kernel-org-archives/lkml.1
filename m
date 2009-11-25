@@ -1,98 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759853AbZKYVFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZKYUi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759853AbZKYVFL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:05:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759810AbZKYVFK
+	id S1759745AbZKYUi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759135AbZKYUi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:05:10 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:52764 "EHLO cmpxchg.org"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759806AbZKYVFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:05:09 -0500
-Date: Wed, 25 Nov 2009 21:35:09 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, lwoodman@redhat.com,
-       kosaki.motohiro@fujitsu.co.jp, Tomasz Chmielewski <mangoo@wpkg.org>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] vmscan: do not evict inactive pages when skipping an active list scan
-Message-ID: <20091125203509.GA18018@cmpxchg.org>
-References: <20091125133752.2683c3e4@bree.surriel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125133752.2683c3e4@bree.surriel.com>
+	Wed, 25 Nov 2009 15:38:26 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51033 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758813AbZKYUiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:38:25 -0500
+Message-ID: <4B0D95C3.4020706@garzik.org>
+Date: Wed, 25 Nov 2009 15:38:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 62/86] pata_pdc202xx_old: document known issues
+References: <20091125170218.5446.13513.sendpatchset@localhost> <200911251852.40281.bzolnier@gmail.com> <4B0D71A4.6090001@garzik.org> <200911251929.45897.bzolnier@gmail.com>
+In-Reply-To: <200911251929.45897.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On 11/25/2009 01:29 PM, Bartlomiej Zolnierkiewicz wrote:
+> I think it is the best to leave up to the driver maintainer
+> (once we find out who this person is, MAINTAINERS file still
+> lacks info about PATA drivers in -rc8).
 
-On Wed, Nov 25, 2009 at 01:37:52PM -0500, Rik van Riel wrote:
-> In AIM7 runs, recent kernels start swapping out anonymous pages
-> well before they should.  This is due to shrink_list falling
-> through to shrink_inactive_list if !inactive_anon_is_low(zone, sc),
-> when all we really wanted to do is pre-age some anonymous pages to
-> give them extra time to be referenced while on the inactive list.
 
-I do not quite understand what changed 'recently'.
+The important thing is taking two minutes to write a relevant comment, 
+not determining who is wearing a crown on his head.
 
-That fall-through logic to keep eating inactives when the ratio is off
-came in a year ago with the second-chance-for-anon-pages patch..?
+	Jeff
 
-> The obvious fix is to make sure that shrink_list does not fall
-> through to scanning/reclaiming inactive pages when we called it
-> to scan one of the active lists.
->
-> This change should be safe because the loop in shrink_zone ensures
-> that we will still shrink the anon and file inactive lists whenever
-> we should.
 
-It was not so obvious to me ;)
-
-At first, I thought it would make sense to actively rebalance between
-the lists if the inactive one grows too large (the fall-through case).
-
-But shrink_zone() does not know about this and although we scan
-inactive pages, we do not account for them and decrease the 'nr[lru]'
-for active pages instead, effectively shifting the 'active todo' over
-to the 'inactive todo'.  I can imagine this going wrong!
-
-So I agree, we should use the inactive_*_is_low() predicate only
-passively.
- 
-> Reported-by: Larry Woodman <lwoodman@redhat.com>
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-
-Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 777af57..ec4dfda 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1469,13 +1469,15 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
->  {
->  	int file = is_file_lru(lru);
->  
-> -	if (lru == LRU_ACTIVE_FILE && inactive_file_is_low(zone, sc)) {
-> -		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-> +	if (lru == LRU_ACTIVE_FILE) {
-> +		if (inactive_file_is_low(zone, sc))
-> +		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
->  		return 0;
->  	}
->  
-> -	if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
-> -		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-> +	if (lru == LRU_ACTIVE_ANON) {
-> +		if (inactive_file_is_low(zone, sc))
-> +		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
->  		return 0;
->  	}
->  	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
