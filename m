@@ -1,76 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934393AbZKYImq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934338AbZKYIrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934393AbZKYImq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934284AbZKYImp
+	id S934338AbZKYIrJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbZKYIrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:42:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:55891 "EHLO mx1.suse.de"
+	Wed, 25 Nov 2009 03:47:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30483 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934251AbZKYImm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:42:42 -0500
-Date: Wed, 25 Nov 2009 09:42:41 +0100
-From: Jan Kara <jack@suse.cz>
-To: tmhikaru@gmail.com
-Cc: Jan Kara <jack@suse.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-Message-ID: <20091125084240.GA549@quack.suse.cz>
-References: <20091124195607.GC16662@quack.suse.cz>
- <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org>
- <20091124203944.GD16662@quack.suse.cz>
- <20091124215044.GA20245@roll>
- <20091124222334.GB20245@roll>
+	id S933338AbZKYIrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:47:07 -0500
+Date: Wed, 25 Nov 2009 09:45:25 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing - fix function graph trace to properly display
+ failed entries
+Message-ID: <20091125084525.GA1940@jolsa.lab.eng.brq.redhat.com>
+References: <1259067458-27143-1-git-send-email-jolsa@redhat.com>
+ <1259082845.22249.1110.camel@gandalf.stny.rr.com>
+ <20091124211423.GE5071@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091124222334.GB20245@roll>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091124211423.GE5071@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-11-09 17:23:34, tmhikaru@gmail.com wrote:
-> On Tue, Nov 24, 2009 at 04:50:44PM -0500, tmhikaru@gmail.com wrote:
-> > On Tue, Nov 24, 2009 at 09:39:44PM +0100, Jan Kara wrote:
-> > > On Tue 24-11-09 15:13:01, Alan Stern wrote:
-> > > > On Tue, 24 Nov 2009, Jan Kara wrote:
-> > > > 
-> > > > >   After digging in block layer code, it's as we suspected:
-> > > > > In case of host error DID_ERROR (which is our case), scsi request is
-> > > > > retried iff it is not a FAILFAST request which is set if bio is doing
-> > > > > readahead... So this is explained and everything behaves as it should.
-> > > > > Thanks everybody involved :).
-> > > > 
-> > > > Okay, very good.  There remains the question of the disturbing error
-> > > > messages in the system log.  Should they be supressed for FAILFAST
-> > > > requests?
-> > >   I think it's useful they are there because ultimately, something really
-> > > went wrong and you should better investigate. BTW, "end_request: I/O error"
-> > > messages are in the log even for requests where we retried and succeeded...
+On Tue, Nov 24, 2009 at 10:14:36PM +0100, Frederic Weisbecker wrote:
+> On Tue, Nov 24, 2009 at 12:14:05PM -0500, Steven Rostedt wrote:
+> > On Tue, 2009-11-24 at 13:57 +0100, Jiri Olsa wrote:
+> > > Hi,
 > > > 
-> > > 								Honza
+> > > there's a case where the graph tracer might get confused and omits
+> > > display of a single record.  This applies for both destructive
+> > > (trace_pipe) and nondestructive (trace) cases.
+> > > 
+> > > 
+> > > <issue description>
+> > > 
+> > > The issue description for nondestructive case (trace) follows:
+> > > 
+> > > As the function_graph tracer goes through the trace entries (using "trace" file)
+> > > it keeps pointer to the current record and the next one:
+> > > 
+> > > current ->  func1 ENTRY
+> > >    next ->  func2 ENTRY
+> > >             func2 RETURN
+> > >             func1 RETURN
+> > > 
+> > > If it spots adjacent ENTRY and RETURN trace entries of the same function
+> > > and pid, it displays the "func2();" trace
+> > > 
+> > >             func1 ENTRY
+> > > current ->  func2 ENTRY 
+> > >    next ->  func2 RETURN
+> > >             func1 RETURN
+> > > 
+> > > and moves the next trace entry pointer behind the RETURN entry
+> > > 
+> > >             func1 ENTRY
+> > > current ->  func2 ENTRY 
+> > >             func2 RETURN
+> > >    next ->  func1 RETURN
+> > > 
+> > > so the next record peek will skip the RETURN entry and continue with
+> > > whatever is next.
+> > > 
+> > > It works ok but for one case. 
+> > > 
+> > > If the "func2()" trace does not make it to the seq_file read buffer, it needs
 > > 
-> > While I agree it is useful information, I think that if the error messages
-> > are going to be printed, you should *also* print that this is a NON FATAL
-> > error and that it's going to be retried. It'd help diagnosing the path it's
-> > following through the failure code IMHO as well as not making users
-> > completely freak out like I did in my case. It is *not* particularly obvious
-> > given the message printed to syslog what is going wrong or why.
-  Yeah, we might make it more obvious that read failed and whether or not
-we are going to retry. Just technically it's not so simple because a
-different layer prints messages about errors (generic block layer) and
-different (scsi disk driver) decides what to do (retry, don't retry, ...).
+> > In the trace_pipe it may be possible to fill the trace_seq buffer if the
+> > buffer passed into userspace is larger than the trace_seq buffer. But
+> > the trace_seq buffer should never overflow on the "trace" case. If it
+> > is, then there's probably another bug.
+> 
+> 
+> 
+> Hmm, yeah in trace_pipe case we repeat until we have no space
+> left in trace_seq (TRACE_TYPE_PARTIAL_LINE), or until we
+> the user buffer is filled.
+> 
+> But indeed in case of trace file, we are using a seq file
+> so the buffer gets flushed after each entries.
+> 
+> Assuming the trace_seq is 4096 bytes long this is probably
+> enough for every function graph entries (even with headers and
+> interrupts), this is not something we are supposed to see in trace_seq.
+> 
+> I did not realized that when Jiri sent the first version of this patch.
 
-> 	I should have asked since I'm here at the moment - do you need any
-> more information out of the buggy USB enclosure at the moment, or can I work
-> on trying to fix/replace it now?
-  No, feel free to do anything with it :). Thanks for your help with
-debugging this.
+sure, but it is not the trace_seq structure that overflows, it is the bare 
+seq_file underneath. The s_show calls "trace_print_seq":
 
-									Honza
+void trace_print_seq(struct seq_file *m, struct trace_seq *s)
+{               
+        int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
+        
+        seq_write(m, s->buffer, len);
+
+        trace_seq_init(s);
+}               
+
+it flushes the trace_seq to the seq_file and reinits the trace_seq.
+But the seq_file will get filled in the end, ending up with
+not displayed output in that case I described in the first email.
+
+> 
+>  
+> > 
+> > > to be processed again in the next read.  And here comes the issue: 
+> > > the next read will see following pointers setup for func2 processing:
+> > > 
+> > >             func1 ENTRY
+> > > current ->  func2 ENTRY 
+> > >             func2 RETURN
+> > >    next ->  func1 RETURN
+> > > 
+> > > which will turn to displaying the func2 entry like: "func2() {", since the
+> > > next entry is not RETURN of the same type.  Generaly it is whatever entry 
+> > > that follows, but definitelly not the RETURN entry of the same function.
+> > > 
+> > > The destructive case (trace_pipe) suffers from the similar issue,
+> > > although it keeps only the current pointer.
+> > > 
+> > > </issue description>
+> > > 
+> > > 
+> > > The following patch propose generic solution for both cases.
+> > > It keeps the last read entry/return in the tracer private
+> > > iterator storage and keeps track of the failed output.
+> > > Whenever the output fails, next read will output previous
+> > > 'not displayed' entry before processing next entry.
+> > 
+> > Have you added tests to make sure that the trace_seq buffer is indeed
+> > filling up?  In the trace_pipe, this could happen when the user buffer
+> > gets full.
+
+that should be in the trace_output.c part of the patch,
+each display function set the 'failed' flag appropriatelly
+
+> > 
+> > What I think you are seeing, is a buffer overflow during a run. If the
+> > trace buffer overflows, it will leave gaps in the trace. Those abandoned
+> > leaf functions are probably a result of a trace buffer wrap.
+> > 
+> > I don't thing this is the proper solution to the problem.
+
+I can see other solution, which would need to move the look ahead
+skip of the record in the 'get_return_for_leaf' function.
+
+jirka
+> 
+> 
+> But I guess it doesn't happen because the function graph tracer
+> has too large entries, or it would do an endless loop while
+> reading the trace file.
+> 
+> It's more likely a bug somewhere in the trace_seq_* functions.
+> 
+> I'm going to have a look.
+> 
+> Thanks.
+> 
