@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbZKYS1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbZKYS1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759176AbZKYS1N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbZKYS1M
+	id S932612AbZKYS1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759080AbZKYS1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:27:12 -0500
-Received: from mail.perches.com ([173.55.12.10]:1172 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759016AbZKYS1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:27:11 -0500
-Subject: Re: [PATCH] SLUB: Fix __GFP_ZERO unlikely() annotation
-From: Joe Perches <joe@perches.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <1259173279-21220-1-git-send-email-penberg@cs.helsinki.fi>
-References: <1259173279-21220-1-git-send-email-penberg@cs.helsinki.fi>
+	Wed, 25 Nov 2009 13:27:50 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56738 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759039AbZKYS1u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 13:27:50 -0500
+Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
+ runqueue variant
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1258891781.14325.34.camel@marge.simson.net>
+References: <1258891781.14325.34.camel@marge.simson.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 10:27:16 -0800
-Message-ID: <1259173636.29779.41.camel@Joe-Laptop.home>
+Date: Wed, 25 Nov 2009 19:27:52 +0100
+Message-ID: <1259173672.4027.732.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -25,19 +27,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 20:21 +0200, Pekka Enberg wrote:
-> The unlikely() annotation in slab_alloc() covers too much of the expression.
-> It's actually very likely that the object is not NULL so use unlikely() only
-> for the __GFP_ZERO expression like SLAB does.
-[]
-> +++ b/mm/slub.c
-> @@ -1735,7 +1735,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
-> -	if (unlikely((gfpflags & __GFP_ZERO) && object))
-> +	if (unlikely(gfpflags & __GFP_ZERO) && object)
->  		memset(object, 0, objsize);
+On Sun, 2009-11-22 at 13:09 +0100, Mike Galbraith wrote:
+> sched: fix set_task_cpu() and provide an unlocked runqueue variant.
+> 
+> set_task_cpu() falsifies migration stats by unconditionally generating migration
+> stats whether a task's cpu actually changed or not.  As used in copy_process(),
+> the runqueue is unlocked, so we need to provide an unlocked variant which does
+> the locking to provide a write barrier.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <new-submission>
+> 
+> ---
 
-so why not use
+> +void set_task_cpu_unlocked(struct task_struct *p, unsigned int new_cpu)
+> +{
+> +	unsigned long flags;
+> +	struct rq *rq, *new_rq = cpu_rq(new_cpu);
+> +
+> +	smp_wmb();
+> +	rq = task_rq_lock(p, &flags);
+> +	update_rq_clock(rq);
+> +	if (rq != new_rq)
+> +		update_rq_clock(new_rq);
+> +	set_task_cpu(p, new_cpu);
+> +	task_rq_unlock(rq, &flags);
+> +}
 
-	if (unlikely(gfpflags & __GFP_ZERO) && likely(object))
+I've got to ask, what's that barrier for?
+
 
 
