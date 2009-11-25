@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZKYNbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbZKYNb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbZKYNbO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbZKYNbK
+	id S964840AbZKYNb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758326AbZKYNbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:31:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49044 "EHLO hera.kernel.org"
+	Wed, 25 Nov 2009 08:31:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49055 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758368AbZKYNbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:31:06 -0500
-Date: Wed, 25 Nov 2009 13:30:36 GMT
-From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	id S934722AbZKYNbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:31:20 -0500
+Date: Wed, 25 Nov 2009 13:30:49 GMT
+From: tip-bot for Shmulik Ladkani <shmulik.ladkani@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
+       tglx@linutronix.de, mingo@elte.hu, shmulik.ladkani@gmail.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
-References: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
+       tglx@linutronix.de, shmulik.ladkani@gmail.com, mingo@elte.hu
+In-Reply-To: <4b0d2fe4.0ab6660a.6437.3cfc@mx.google.com>
+References: <4b0d2fe4.0ab6660a.6437.3cfc@mx.google.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/iommu] x86: Fix iommu=soft boot option
-Message-ID: <tip-273bee27fa9f79d94b78c83506016f2e41e78983@git.kernel.org>
-Git-Commit-ID: 273bee27fa9f79d94b78c83506016f2e41e78983
+Subject: [tip:sched/core] sched.c: Call debug_show_all_locks() when dumping all tasks
+Message-ID: <tip-93335a21557e80f6a99bc2812c634e488139043c@git.kernel.org>
+Git-Commit-ID: 93335a21557e80f6a99bc2812c634e488139043c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,47 +29,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  273bee27fa9f79d94b78c83506016f2e41e78983
-Gitweb:     http://git.kernel.org/tip/273bee27fa9f79d94b78c83506016f2e41e78983
-Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-AuthorDate: Wed, 25 Nov 2009 08:46:28 +0900
+Commit-ID:  93335a21557e80f6a99bc2812c634e488139043c
+Gitweb:     http://git.kernel.org/tip/93335a21557e80f6a99bc2812c634e488139043c
+Author:     Shmulik Ladkani <shmulik.ladkani@gmail.com>
+AuthorDate: Wed, 25 Nov 2009 15:23:41 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Nov 2009 10:12:51 +0100
+CommitDate: Wed, 25 Nov 2009 14:26:52 +0100
 
-x86: Fix iommu=soft boot option
+sched.c: Call debug_show_all_locks() when dumping all tasks
 
-iommu=soft boot option forces the kernel to use swiotlb.
+In commit v2.6.21-691-g39bc89f ("make SysRq-T show all tasks
+again") the interface of show_state_filter() was changed: zero
+valued 'state_filter' specifies "dump all tasks" (instead of -1).
 
-( This has the side-effect of enabling the swiotlb over the
-  GART if this boot option is provided. This is the desired
-  behavior of the swiotlb boot option and works like that
-  for all other hw-IOMMU drivers. )
+However, the condition for calling debug_show_all_locks() ("show
+locks if all tasks are dumped") was not updated accordingly.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: yinghai@kernel.org
-LKML-Reference: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Shmulik Ladkani <shmulik.ladkani@gmail.com>
+Cc: peterz@infradead.org
+LKML-Reference: <4b0d2fe4.0ab6660a.6437.3cfc@mx.google.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/pci-swiotlb.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index e36e71d..e3c0a66 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -50,6 +50,8 @@ static struct dma_map_ops swiotlb_dma_ops = {
-  */
- int __init pci_swiotlb_init(void)
- {
-+	int use_swiotlb = swiotlb | swiotlb_force;
-+
- 	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
- #ifdef CONFIG_X86_64
- 	if (!no_iommu && max_pfn > MAX_DMA32_PFN)
-@@ -63,5 +65,5 @@ int __init pci_swiotlb_init(void)
- 		dma_ops = &swiotlb_dma_ops;
- 	}
- 
--	return swiotlb_force;
-+	return use_swiotlb;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 010d5e1..a57c6ae 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6915,7 +6915,7 @@ void show_state_filter(unsigned long state_filter)
+ 	/*
+ 	 * Only show locks if all tasks are dumped:
+ 	 */
+-	if (state_filter == -1)
++	if (!state_filter)
+ 		debug_show_all_locks();
  }
+ 
