@@ -1,126 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbZKYS4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbZKYS53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759397AbZKYS4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758838AbZKYS4u
+	id S1759415AbZKYS53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZKYS52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:56:50 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:52609 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758782AbZKYS4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:56:49 -0500
-Date: Wed, 25 Nov 2009 10:56:46 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, hpa@zytor.com,
-       Nathan Lynch <nathanl@austin.ibm.com>, haveblue@us.ibm.com,
-       Matt Helsley <matthltc@us.ibm.com>, arnd@arndb.de, roland@redhat.com,
-       mtk.manpages@googlemail.com, linux-api@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>
-Subject: [v13][PATCH 01/12] Factor out code to allocate pidmap page
-Message-ID: <20091125185646.GB30858@us.ibm.com>
-References: <20091125185543.GA30858@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125185543.GA30858@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Nov 2009 13:57:28 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:54684 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753868AbZKYS51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 13:57:27 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=v4X0nIsU9jQA:10 a=dnsDqYgvY1eI8xxSV9Tekg==:17
+ a=pGb0pc2owl8CynuoNskA:9 a=EZeF9Z3pA5YMV570NtO7Q7X-B08A:4
+From: graeme.smecher@mail.mcgill.ca
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+       Graeme Smecher <graeme.smecher@mail.mcgill.ca>
+Subject: [PATCH] microblaze: Add dev_archdata node accessors
+Date: Wed, 25 Nov 2009 10:57:02 -0800
+Message-Id: <1259175422-4628-1-git-send-email-graeme.smecher@mail.mcgill.ca>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [v13][PATCH 01/12] Factor out code to allocate pidmap page
+This syncs microblaze with powerpc and sparc architectures, which gained the
+same accessors in Commit 3f3b1632022fcc8317fa3b3c1236471415b3a6b8.
 
-To simplify alloc_pidmap(), move code to allocate a pid map page to a
-separate function.
-
-Changelog[v3]:
-	- Earlier version of patchset called alloc_pidmap_page() from two
-	  places. But now its called from only one place. Even so, moving
-	  this code out into a separate function simplifies alloc_pidmap().
-Changelog[v2]:
-	- (Matt Helsley, Dave Hansen) Have alloc_pidmap_page() return
-	  -ENOMEM on error instead of -1.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
+Signed-off-by: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
 ---
- kernel/pid.c |   45 ++++++++++++++++++++++++++++++---------------
- 1 files changed, 30 insertions(+), 15 deletions(-)
+ arch/microblaze/include/asm/device.h |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/pid.c b/kernel/pid.c
-index d3f722d..7d4bb6e 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -122,9 +122,35 @@ static void free_pidmap(struct upid *upid)
- 	atomic_inc(&map->nr_free);
- }
+diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
+index 30286db..b8f654d 100644
+--- a/arch/microblaze/include/asm/device.h
++++ b/arch/microblaze/include/asm/device.h
+@@ -16,6 +16,18 @@ struct dev_archdata {
+ 	struct device_node	*of_node;
+ };
  
-+static int alloc_pidmap_page(struct pidmap *map)
++static inline void dev_archdata_set_node(struct dev_archdata *ad,
++					 struct device_node *np)
 +{
-+	void *page;
-+
-+	if (likely(map->page))
-+		return 0;
-+
-+	page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+
-+	/*
-+	 * Free the page if someone raced with us installing it:
-+	 */
-+	spin_lock_irq(&pidmap_lock);
-+	if (map->page)
-+		kfree(page);
-+	else
-+		map->page = page;
-+	spin_unlock_irq(&pidmap_lock);
-+
-+	if (unlikely(!map->page))
-+		return -ENOMEM;
-+
-+	return 0;
++	ad->of_node = np;
 +}
 +
- static int alloc_pidmap(struct pid_namespace *pid_ns)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
-+	int rc;
- 	struct pidmap *map;
- 
- 	pid = last + 1;
-@@ -134,21 +160,10 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
- 	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
- 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
- 	for (i = 0; i <= max_scan; ++i) {
--		if (unlikely(!map->page)) {
--			void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
--			/*
--			 * Free the page if someone raced with us
--			 * installing it:
--			 */
--			spin_lock_irq(&pidmap_lock);
--			if (map->page)
--				kfree(page);
--			else
--				map->page = page;
--			spin_unlock_irq(&pidmap_lock);
--			if (unlikely(!map->page))
--				break;
--		}
-+		rc = alloc_pidmap_page(map);
-+		if (rc)
-+			break;
++static inline struct device_node *
++dev_archdata_get_node(const struct dev_archdata *ad)
++{
++	return ad->of_node;
++}
 +
- 		if (likely(atomic_read(&map->nr_free))) {
- 			do {
- 				if (!test_and_set_bit(offset, map->page)) {
+ struct pdev_archdata {
+ };
+ 
 -- 
-1.6.0.4
+1.6.5
 
