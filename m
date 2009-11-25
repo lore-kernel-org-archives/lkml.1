@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZKYLfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbZKYLhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZKYLfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZKYLfl
+	id S1758730AbZKYLhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758701AbZKYLhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:35:41 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33113 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758700AbZKYLfZ (ORCPT
+	Wed, 25 Nov 2009 06:37:51 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:24778 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758691AbZKYLhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:35:25 -0500
-Date: Wed, 25 Nov 2009 11:36:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: x86@kernel.org, Komuro <komurojun-mbn@nifty.com>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: ioports 0x100-0x3af and iomem 0xd000-0xdffff,
- 0xa0000000-0xa0ffffff -- safe to use on x86 for pcmcia?
-Message-ID: <20091125113622.5b1218b0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091124213723.GA22689@comet.dominikbrodowski.net>
-References: <20091124213723.GA22689@comet.dominikbrodowski.net>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 25 Nov 2009 06:37:50 -0500
+Subject: Re: [PATCHv2 3/3] Define critical regulators as always_on
+From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>
+In-Reply-To: <20091125111336.GF17420@opensource.wolfsonmicro.com>
+References: <1259143495-9480-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
+	 <1259143495-9480-4-git-send-email-ext-juha.1.keski-saari@nokia.com>
+	 <20091125101407.GA17420@opensource.wolfsonmicro.com>
+	 <1259144999.10122.3.camel@keskisaa-workstation>
+	 <20091125111336.GF17420@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 13:36:39 +0200
+Message-ID: <1259148999.10122.25.camel@keskisaa-workstation>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Nov 2009 11:36:41.0632 (UTC) FILETIME=[8EDC1A00:01CA6DC3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   This latter configuration file most often contains 
-> 	include port 0x100-0x3af
-> 	include memory 0xc0000-0xfffff
-> 	include memory 0xa0000000-0xa0ffffff
-
-Which crashes older thinkpads, some ATI chipset systems and
-usually anything containing an NE2000 clone in ISA space.
-
-> And so Komuro (CCed) suggested to add these default resource entries to the
-> kernel, so that it can later use parts of these resource areas to enable
-> PCMCIA devices without userspace interaction.
+On Wed, 2009-11-25 at 12:13 +0100, ext Mark Brown wrote:
+> On Wed, Nov 25, 2009 at 12:29:59PM +0200, Juha Keski-Saari wrote:
 > 
-> Do you think it would be safe to enable these areas by (kernel) default on
-> x86? Of course, other entries in /proc/io{mem,ports} would be honoured, there
-> would be a boot option to disable this feature, and some tests are run on the
-> iomem and ioport resource areas.
+> > +		case TWL4030_REG_VINTDIG:
+> > +			c->always_on = true;
+> > +			break;
+> 
+> One other thing I noticed having seen the MFD series - is this going to
+> build without the separate MFD patch you've posted?
 
-The problem you have is that you change the ordering.
+Yes, the changes to twl4030-regulator.c compile without the changes the
+MFD patch set makes to twl4030-core.c and twl4030.h
 
-If you load the ne2k ISA driver before pcmcia (as occurs now because of
-it being done from user space) the resources get claimed first. If you do
-it the other way around and test then merely reading an I/O register
-mapped to an NE2K or most NE2K clones crashes the machine.
-
-Are there any modern systems where the PCI based autoconfig is
-insufficient, or is this just ancient stuff  ?
-
-Alan
