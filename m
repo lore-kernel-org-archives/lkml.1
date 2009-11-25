@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZKYLp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934431AbZKYLtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbZKYLp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbZKYLp1
+	id S934431AbZKYLtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934212AbZKYLtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:45:27 -0500
-Received: from thunk.org ([69.25.196.29]:43786 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758641AbZKYLp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:45:26 -0500
-Date: Wed, 25 Nov 2009 06:45:22 -0500
-From: tytso@mit.edu
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the ext4 tree
-Message-ID: <20091125114522.GD14289@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Jiri Kosina <jkosina@suse.cz>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-References: <20091125183414.eb45acca.sfr@canb.auug.org.au>
- <alpine.LSU.2.00.0911251216270.6953@wotan.suse.de>
+	Wed, 25 Nov 2009 06:49:24 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:56710 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934143AbZKYLtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:49:23 -0500
+Date: Wed, 25 Nov 2009 11:49:08 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Jie Zhang <jie.zhang@analog.com>
+Cc: uClinux development list <uclinux-dev@uclinux.org>,
+       David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Subject: Re: [uClinux-dev] [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+Message-ID: <20091125114908.GA21778@shareable.org>
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <20091125061640.GB17203@shareable.org> <4B0CCE4A.5000602@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0911251216270.6953@wotan.suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <4B0CCE4A.5000602@analog.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 12:16:43PM +0100, Jiri Kosina wrote:
-> On Wed, 25 Nov 2009, Stephen Rothwell wrote:
-> 
-> > Today's linux-next merge of the trivial tree got a conflict in
-> > fs/ext4/balloc.c between commit 4433871130f36585fde38e7dd817433296648945
-> > ("ext4: fold ext4_free_blocks() and ext4_mb_free_blocks()") from the ext4
-> > tree and commit 15dcf8433b514d1dc1b80d87a0798c2db2c37e95 ("tree-wide: fix
-> > some typos and punctuation in comments") from the trivial tree.
-> > 
-> > The former moved the comment fixed by the latter and fixed the typo along
-> > the way.
-> 
-> Dropped the mballoc hunk from my queue, thanks.
+Jie Zhang wrote:
+> On 11/25/2009 02:16 PM, Jamie Lokier wrote:
+> >Mike Frysinger wrote:
+> >>From: Jie Zhang<jie.zhang@analog.com>
+> >>
+> >>The mmu code uses the copy_*_user_page() variants in access_process_vm()
+> >>rather than copy_*_user() as the former includes an icache flush.  This is
+> >>important when doing things like setting software breakpoints with gdb.
+> >>So switch the nommu code over to do the same.
+> >
+> >Reasonable, but it's a bit subtle don't you think?
+> >How about a one-line comment saying why it's using copy_*_user_page()?
+> >
+> >(If it was called copy_*_user_flush_icache() I wouldn't say anything,
+> >but it isn't).
+> >
+> But I think it's well known in Linux kernel developers that 
+> copy_to_user_page and copy_from_user_page should do cache flushing. It's 
+> documented in Documentation/cachetlb.txt. I don't think it's necessary 
+> to replicate it here.
 
-You mean balloc hunk, I hope.  (In the commit in question, I moved the
-comment from fs/ext4/balloc.c to fs/ext4/mballoc.c.)
+You're right, however I now think the commit message is misleading.
 
-						- Ted
+Since this is the *only place in the entire kernel* where these
+functions are used (plus the mmu equivalent), I'm not sure I'd agree
+about well known, and the name could be better (copy_*_user_ptrace()),
+but I agree now, it doesn't need a comment.
+
+It was the talk of icache flush which bothered me, as I (wrongly)
+assumed copy_*_user_page() was used elsewhere, without knowledge of
+icache vs non-icache differences - which are often the responsibility
+of userspace to get right, so often the kernel does not care.
+
+In fact, it's not just icache.  copy_*_user_page() has to do some
+*data* cache flushing too, on some architecures.  For example, see
+arch/sparc/include/asm/cacheflush_64.h:
+
+    #define copy_to_user_page(vma, page, vaddr, dst, src, len)              \
+            do {                                                            \
+                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
+                    memcpy(dst, src, len);                                  \
+                    flush_ptrace_access(vma, page, vaddr, src, len, 0);     \
+            } while (0)
+
+    #define copy_from_user_page(vma, page, vaddr, dst, src, len)            \
+            do {                                                            \
+                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
+                    memcpy(dst, src, len);                                  \
+                    flush_ptrace_access(vma, page, vaddr, dst, len, 1);     \
+            } while (0)
+
+I'm not sure why I don't see the same dcache flushing on ARM, so I
+wonder if the ARM implementation of these buggy.
+
+Anyway, that means the commit message is a little misleading, saying
+it's for the icache flush.  It is for whatever icache and dcache
+flushes are needed for a ptrace access.
+
+Which is why, given they are only used for ptrace (have just grepped),
+I'm inclined to think it'd be clearer to rename the functions to
+copy_*_user_ptrace().  And make your no-mmu change of course :-)
+Any thoughts on the rename?
+
+-- Jamie
