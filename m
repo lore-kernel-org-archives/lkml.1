@@ -1,28 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbZKYTfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932791AbZKYTrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759599AbZKYTfr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 14:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbZKYTfr
+	id S932791AbZKYTrk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 14:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZKYTrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 14:35:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57409 "EHLO
+	Wed, 25 Nov 2009 14:47:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56673 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759588AbZKYTfq (ORCPT
+	by vger.kernel.org with ESMTP id S1759367AbZKYTri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 14:35:46 -0500
-Date: Wed, 25 Nov 2009 11:35:01 -0800
+	Wed, 25 Nov 2009 14:47:38 -0500
+Date: Wed, 25 Nov 2009 11:45:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Philip Langdale <philipl@overt.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Port ricoh_mmc from driver to pci quirk.
-Message-Id: <20091125113501.1f4d42b9.akpm@linux-foundation.org>
-In-Reply-To: <20091125085324.1ef9ae1f@fido2.homeip.net>
-References: <1259021583.16650.9.camel@maxim-laptop>
-	<20091123162119.3777e14d@fido2.homeip.net>
-	<1259160947.10147.1.camel@maxim-laptop>
-	<1259161121.10147.4.camel@maxim-laptop>
-	<20091125085324.1ef9ae1f@fido2.homeip.net>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, x86@kernel.org
+Subject: Re: [PATCH v4] k10temp: temperature sensor for AMD Family 10h/11h
+ CPUs
+Message-Id: <20091125114544.df69cc98.akpm@linux-foundation.org>
+In-Reply-To: <4B0B9CBB.2050107@ladisch.de>
+References: <4AF91F70.10106@ladisch.de>
+	<4B06501B.8080509@ladisch.de>
+	<87ws1l5wcl.fsf@depni.sinp.msu.ru>
+	<4B0673D7.5010006@ladisch.de>
+	<20091120123016.19d98ab4@hyperion.delvare>
+	<4B068402.7020606@ladisch.de>
+	<20091120131855.7f8f8722@hyperion.delvare>
+	<4B0A3DB6.9090703@ladisch.de>
+	<20091123145154.5b2b5735@hyperion.delvare>
+	<4B0AAA55.3040702@ladisch.de>
+	<20091123200527.1114cbc2@hyperion.delvare>
+	<4B0B9CBB.2050107@ladisch.de>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,33 +40,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009 08:53:24 -0800
-Philip Langdale <philipl@overt.org> wrote:
+On Tue, 24 Nov 2009 09:43:39 +0100
+Clemens Ladisch <clemens@ladisch.de> wrote:
 
-> On Wed, 25 Nov 2009 16:58:41 +0200
-> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> This adds a driver for the internal temperature sensor of AMD Family 10h
+> and 11h CPUs.
 > 
-> > >From 5c5e6f5ab1a5a09a430f410cab4b160a5e65501c Mon Sep 17 00:00:00
-> > >2001
-> > From: Maxim Levitsky <maximlevitsky@gmail.com>
-> > Date: Wed, 25 Nov 2009 16:37:46 +0200
-> > Subject: [PATCH] Port ricoh_mmc from driver to pci quirk.
-> >  This is much cleaner and correct solution
+> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> ---
+> v3: added 'force' parameter for CPUs with buggy sensor; more documentation
+> v4: added max/crit values, other changes suggested by Jean Delvare
 
-This patch actually fixes a bug but the changelog forgot to tell us
-this important fact.
+Pierre's happy now?
 
-> I'm fine with the concept, but when I originally started work on
-> Ricoh support, Pierre specifically didn't want a pci quirk.
-> 
-> Pierre wrote:
-> > I'd rather we didn't. The current style of quirks are bad enough,
-> > making them even more vendor or device specific is a bit more than I'm
-> > willing to accept right now (seriously, how hard can it be to follow
-> > the damn spec?).
+>
+> ...
+>
+> +#define REG_HARDWARE_THERMAL_CONTROL	0x64
+> +#define  HTC_ENABLE			0x00000001
+> +
+> +#define REG_REPORTED_TEMPERATURE	0xa4
+> +
+> +#define REG_NORTHBRIDGE_CAPABILITIES	0xe8
+> +#define  NB_CAP_HTC			0x00000400
 
-Can the bug be fixed by other means, within ricoh_mmc.c?
-
-It's a bit sad to add a lump of code to everyone's kernel like this -
-what percentage of those machines actually have a ricoh mmc controller?
+These definitions relate to register addresses within the AMD CPUs,
+yes?  I wonder if these should be placed in some header file in
+arch/x86/include/asm/ where other such things are described.
 
