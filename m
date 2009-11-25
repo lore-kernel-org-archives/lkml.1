@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbZKYKAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbZKYKFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758559AbZKYKAx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758509AbZKYKAw
+	id S1758586AbZKYKFq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbZKYKFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:00:52 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45743 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758400AbZKYKAw (ORCPT
+	Wed, 25 Nov 2009 05:05:45 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:17426 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758567AbZKYKFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:00:52 -0500
-Subject: Re: [RFC][PATCH 0/7] perf trace: general-purpose scripting
- support, v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, anton@samba.org,
-       hch@infradead.org, Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1259143109.4027.241.camel@laptop>
-References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
-	 <1259137695.4027.45.camel@laptop> <1259141891.4027.199.camel@laptop>
-	 <20091125094338.GA21220@elte.hu>  <1259143109.4027.241.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 11:00:43 +0100
-Message-ID: <1259143243.4027.245.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 05:05:44 -0500
+From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+To: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: peter.de-schrijver@nokia.com, eduardo.valentin@nokia.com,
+       ext-juha.1.keski-saari@nokia.com
+Subject: [PATCHv2 0/3] for-next: Add all twl4030 regulators to RegFW
+Date: Wed, 25 Nov 2009 12:04:52 +0200
+Message-Id: <1259143495-9480-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 25 Nov 2009 10:05:01.0309 (UTC) FILETIME=[C0696AD0:01CA6DB6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 10:58 +0100, Peter Zijlstra wrote:
-> On Wed, 2009-11-25 at 10:43 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Wed, 2009-11-25 at 09:28 +0100, Peter Zijlstra wrote:
-> > > > On Wed, 2009-11-25 at 01:15 -0600, Tom Zanussi wrote:
-> > > > > sched::sched_wakeup      0 01238.657997033     6183 firefox              comm=firefox, pid=6199, prio=120, success=1, target_cpu=1
-> > > > > sched::sched_switch      1 01238.657991740     7140 firefox              prev_comm=firefox, prev_pid=7140, prev_prio=120, prev_state=S, next_comm=firefox, next_pid=6199, next_prio=120
-> > > > > 
-> > > > > min_wakeup_latency: -5293 
-> > > > 
-> > > > Looks like we missed a clock update on the cross cpu wakeup, Mike was
-> > > > busy plugging those holes -- I've been starting at a patch that might
-> > > > cure this (amongst other things).
-> > > 
-> > > Hmm, current -tip should have that cured as per:
-> > 
-> > well, but timestamp inconsistencies are still possible fundamentally, as 
-> > cpu_clock() is not globally serialized.
-> 
-> No, but the cross-cpu update should have pulled 1 to the same time as 0.
-> 
-> So what we see here is that at wakeup time, cpu0 has 01238.657997033, if
-> it at that time does a cross-cpu clock update, sched_clock_remote()
-> should pull cpu1's time to that same time (unless cpu1 is ahead, but
-> given the situation that's clearly not the case).
-> 
-> The clock update on cpu1's schedule() would then either find a negative
-> increment, not further updating the time, but refreshing the raw tsc
-> stamp so that future updates appear monotonic, or find a positive stamp,
-> resulting in fwd time movement.
-> 
-> In any case, the wakeup latency should appear >= 0.
+Hello Liam,
 
-To clarify, left to their own devices, cpu_clock() times are monotonic
-per cpu, but can drift up to ~1 jiffy between cpus, but explicit
-cross-cpu updates should pull them straight.
+This series is a revision of an earlier patch which was sent before.
+The previous patch was split and now these changes are against voltage-2.6
+tree, branch for-next.
+
+There are two new modification. So now this series contains:
+- Add all twl4030 regulators to the RegFW and 
+- make sure the REMAP configuration of each regulator is as after reset. 
+- Also defines critical regulators as always-on since it is not feasible
+to allow them to be disabled in a case where the RegFW is used
+
+These are only modifications on the twl4030 regulator driver. Changes to
+the mfd driver will be sent separately
+
+BR,
+
+Juha Keski-Saari (3):
+  twl4030-regulator: Add all TWL regulators to twreg_info
+  Reset REMAP configuration in regulator probe
+  Define critical regulators as always_on
+
+ drivers/regulator/twl4030-regulator.c |   48 +++++++++++++++++++++++---------
+ 1 files changed, 34 insertions(+), 14 deletions(-)
 
