@@ -1,99 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbZKYKaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbZKYKal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbZKYKaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbZKYKa3
+	id S1758687AbZKYKal (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758625AbZKYKak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:30:29 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:21390 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbZKYKa2 (ORCPT
+	Wed, 25 Nov 2009 05:30:40 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:44028 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758656AbZKYKai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:30:28 -0500
-Subject: Re: [PATCHv2 3/3] Define critical regulators as always_on
-From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "De-Schrijver Peter (Nokia-D/Helsinki)" 
-	<Peter.De-Schrijver@nokia.com>,
-       "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>
-In-Reply-To: <20091125101407.GA17420@opensource.wolfsonmicro.com>
-References: <1259143495-9480-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
-	 <1259143495-9480-4-git-send-email-ext-juha.1.keski-saari@nokia.com>
-	 <20091125101407.GA17420@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 12:29:59 +0200
-Message-ID: <1259144999.10122.3.camel@keskisaa-workstation>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Nov 2009 10:30:03.0933 (UTC) FILETIME=[400BA4D0:01CA6DBA]
-X-Nokia-AV: Clean
+	Wed, 25 Nov 2009 05:30:38 -0500
+Message-ID: <4B0D0742.2050301@gmail.com>
+Date: Wed, 25 Nov 2009 11:30:26 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: David Miller <davem@davemloft.net>, peter.p.waskiewicz.jr@intel.com,
+       peterz@infradead.org, arjan@linux.intel.com, yong.zhang0@gmail.com,
+       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
+ hints
+References: <20091124.093956.247147202.davem@davemloft.net>	<1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com>	<20091124.105442.06273019.davem@davemloft.net>	<4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org> <4B0C4624.9080607@gmail.com>
+In-Reply-To: <4B0C4624.9080607@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 25 Nov 2009 11:30:28 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 11:14 +0100, ext Mark Brown wrote:
-> On Wed, Nov 25, 2009 at 12:04:55PM +0200, Juha Keski-Saari wrote:
+Eric Dumazet a écrit :
+> Andi Kleen a écrit :
+>> They are typically allocated with dma_alloc_coherent(), which does
+>> allocate a continuous area.  In theory you could do interleaving
+>> with IOMMus, but just putting it on the same node as the device
+>> is probably better.
 > 
-> > +	if (pdev->id == TWL4030_REG_VIO ||
-> > +		pdev->id == TWL4030_REG_VDD1 ||
-> > +		pdev->id == TWL4030_REG_VDD2 ||
-> > +		pdev->id == TWL4030_REG_VPLL1 ||
-> > +		pdev->id == TWL4030_REG_VINTANA1 ||
-> > +		pdev->id == TWL4030_REG_VINTANA2 ||
-> > +		pdev->id == TWL4030_REG_VINTDIG)
-> > +		c->always_on = true;
+> There are two parts, biggest one allocated with vmalloc()
+> (to hold struct ixgbe_rx_buffer array, 32 bytes or more per entry),
+> only used by driver (not adapter)
 > 
-> This would be a bit clearer and much more idiomatic as a switch
-> statement.
+> and one allocated with pci_alloc_consistent() 
+> (to hold ixgbe_adv_tx_desc array, 16 bytes per entry)
+> 
+> vmalloc() one could be spreaded on many nodes.
+> I am not speaking about the pci_alloc_consistent() one :)
+> 
 
-A switch statement sounds like a better idea, yes. Below is a version
-that implements that change.
+BTW, I found my Nehalem dev machine behaves strangly, defeating all
+my NUMA tweaks. (This is an HP DL380 G6)
 
->From 469f1f3fac05a740484cb32469b64aae424ba4de Mon Sep 17 00:00:00 2001
-From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
-Date: Wed, 25 Nov 2009 11:10:35 +0200
-Subject: [PATCHv3 3/3] Define critical regulators as always_on
+It has two sockets, populated with two E5530 @2.4GH.
 
-Defines VIO, VDD1, VDD2, VPLL1 and VINT* regulators as always_on by
-default
-since they are critical to TWL and its master's functionality and should
-be on in all cases where RegFW is used
+Each cpu has 2x4GB RAM modules.
 
-Signed-off-by: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
----
- drivers/regulator/twl4030-regulator.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+It claims having two memory nodes, but all cpus are on Node 0
 
-diff --git a/drivers/regulator/twl4030-regulator.c
-b/drivers/regulator/twl4030-regulator.c
-index 7029fb9..02100bc 100644
---- a/drivers/regulator/twl4030-regulator.c
-+++ b/drivers/regulator/twl4030-regulator.c
-@@ -456,6 +456,19 @@ static int twl4030reg_probe(struct platform_device
-*pdev)
- 	c->valid_ops_mask &= REGULATOR_CHANGE_VOLTAGE
- 				| REGULATOR_CHANGE_MODE
- 				| REGULATOR_CHANGE_STATUS;
-+	switch(pdev->id) {
-+		case TWL4030_REG_VIO:
-+		case TWL4030_REG_VDD1:
-+		case TWL4030_REG_VDD2:
-+		case TWL4030_REG_VPLL1:
-+		case TWL4030_REG_VINTANA1:
-+		case TWL4030_REG_VINTANA2:
-+		case TWL4030_REG_VINTDIG:
-+			c->always_on = true;
-+			break;
-+		default:
-+			break;
-+	}
- 
- 	rdev = regulator_register(&info->desc, &pdev->dev, initdata, info);
- 	if (IS_ERR(rdev)) {
--- 
-1.6.3.3
+dmesg | grep -i node
+[    0.000000] SRAT: PXM 0 -> APIC 0 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 1 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 2 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 3 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 4 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 5 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 6 -> Node 0
+[    0.000000] SRAT: PXM 0 -> APIC 7 -> Node 0
+[    0.000000] SRAT: Node 0 PXM 0 0-e0000000
+[    0.000000] SRAT: Node 0 PXM 0 100000000-220000000
+[    0.000000] SRAT: Node 1 PXM 1 220000000-420000000
+[    0.000000] Bootmem setup node 0 0000000000000000-0000000220000000
+[    0.000000]   NODE_DATA [0000000000001000 - 0000000000004fff]
+[    0.000000] Bootmem setup node 1 0000000220000000-000000041ffff000
+[    0.000000]   NODE_DATA [0000000220000000 - 0000000220003fff]
+[    0.000000]  [ffffea0000000000-ffffea00087fffff] PMD -> [ffff880028600000-ffff8800305fffff] on node 0
+[    0.000000]  [ffffea0008800000-ffffea00107fffff] PMD -> [ffff880220200000-ffff8802281fffff] on node 1
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[5] active PFN ranges
+[    0.000000] On node 0 totalpages: 2094543
+[    0.000000] On node 1 totalpages: 2097151
+[    0.000000] NR_CPUS:16 nr_cpumask_bits:16 nr_cpu_ids:16 nr_node_ids:2
+[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=16, Nodes=2
+[    0.004756] Inode-cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+[    0.007213] CPU 0/0x0 -> Node 0
+[    0.398104] CPU 1/0x10 -> Node 0
+[    0.557854] CPU 2/0x4 -> Node 0
+[    0.717606] CPU 3/0x14 -> Node 0
+[    0.877357] CPU 4/0x2 -> Node 0
+[    1.037109] CPU 5/0x12 -> Node 0
+[    1.196860] CPU 6/0x6 -> Node 0
+[    1.356611] CPU 7/0x16 -> Node 0
+[    1.516365] CPU 8/0x1 -> Node 0
+[    1.676114] CPU 9/0x11 -> Node 0
+[    1.835865] CPU 10/0x5 -> Node 0
+[    1.995616] CPU 11/0x15 -> Node 0
+[    2.155367] CPU 12/0x3 -> Node 0
+[    2.315119] CPU 13/0x13 -> Node 0
+[    2.474870] CPU 14/0x7 -> Node 0
+[    2.634621] CPU 15/0x17 -> Node 0
 
+# cat /proc/buddyinfo 
+Node 0, zone      DMA      2      2      2      1      1      1      1      0      1      1      3 
+Node 0, zone    DMA32      5     11      4      5      4     12      1      4      4      5    834 
+Node 0, zone   Normal   4109    120     98    153     67     35     21     15     11     10    109 
+Node 1, zone   Normal      7     17     10     12      7     14      5      7      6      5   2004 
+
+
+This is with net-next-2.6, I'll try linux-2.6
