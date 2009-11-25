@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbZKYVfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbZKYVjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbZKYVfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbZKYVfm
+	id S1759490AbZKYVjI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759380AbZKYVjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:35:42 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58139 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759017AbZKYVfl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:35:41 -0500
-Date: Wed, 25 Nov 2009 22:35:46 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: davem@davemloft.net
-Cc: zambrano@broadcom.com, dave@thedillows.org, mb@bu3sch.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] b44.c box lockup fix (netconsole): ratelimit NAPI poll
-	error message
-Message-ID: <20091125213546.GA6168@rhlx01.hs-esslingen.de>
+	Wed, 25 Nov 2009 16:39:07 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:58036 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759147AbZKYVjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:39:05 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dist-devel@blackfin.uclinux.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] Blackfin fixes for 2.6.32
+Date: Wed, 25 Nov 2009 16:38:59 -0500
+Message-Id: <1259185147-31999-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+Ignoring the updated anomaly lists, we've got a whole bunch of tiny
+fixes either for regressions and hardware anomalies.
 
-my OpenWrt MIPSEL ASUS WL-500gP v2 kept locking up during driver
-debugging with kobject debugging turned on (when debugging non-working
-drivers such as USB, ftdi_sio and usb_audio).
-Turns out that it's not very helpful to have a netconsole-deployed
-network driver's interrupt handler message spew noise permanently
-(see comment in patch).
+André Goddard Rosa (1):
+  Blackfin: fix cache Kconfig typo
 
-See
-http://bugzilla.kernel.org/show_bug.cgi?id=14691
-for background information.
+Graf Yang (1):
+  Blackfin: fix SMP build error in start_thread()
 
-Tested on 2.6.30.9 and working (now normal debug messages manage
-to come through, too, yet box still locked up, simply due to excessive
-_normal_ log messages such as kobject logging, but that's _expected_
-and user-correctable).
+Jie Zhang (1):
+  Blackfin: fix typo in ptrace poking
 
-checkpatch.pl'd, applies cleanly to -rc8.
-Likely -stable candidate material.
+Michael Hennerich (1):
+  Blackfin: fix suspend/resume failure with some on-chip ROMs
 
-r8169 (and perhaps other netconsole-capable drivers?)
-might need such a correction, too, if the
-                        if (likely(napi_schedule_prep(&tp->napi)))
-                                __napi_schedule(&tp->napi);
-                        else if (netif_msg_intr(tp)) {
-                                printk(KERN_INFO "%s: interrupt %04x in poll\n",
-                                dev->name, status);
-                        }
-is similarly problematic.
-BTW: this patch here is to be seen separate from the r8169 interrupt handler
-rework as discussed at "r8169: avoid losing MSI interrupts", since even with a
-"working" interrupt handler (i.e. one that closes the "new interrupt" race window,
-which the one in b44 currently probably doesn't) such error messages
-have a fatal feedback loop in the case of netconsole deployment.
+Mike Frysinger (3):
+  Blackfin: update anomaly lists
+  Blackfin: work around testset anomaly 05000477
+  Blackfin: check for anomaly 05000475
 
-Thanks,
+Roel Kluin (1):
+  Blackfin: fix memset in smp_send_reschedule() and -stop()
 
-Signed-off-by: Andreas Mohr <andi@lisas.de>
+ arch/blackfin/kernel/bfin_dma_5xx.c             |    9 ++++++-
+ arch/blackfin/kernel/cplb-mpu/cplbinit.c        |    2 +-
+ arch/blackfin/kernel/process.c                  |    2 +-
+ arch/blackfin/kernel/ptrace.c                   |    2 +-
+ arch/blackfin/mach-bf518/include/mach/anomaly.h |   18 ++++++++++++---
+ arch/blackfin/mach-bf527/include/mach/anomaly.h |   20 +++++++++++++----
+ arch/blackfin/mach-bf533/include/mach/anomaly.h |   18 ++++++++++++---
+ arch/blackfin/mach-bf537/include/mach/anomaly.h |   18 ++++++++++++---
+ arch/blackfin/mach-bf538/include/mach/anomaly.h |   18 ++++++++++++---
+ arch/blackfin/mach-bf548/include/mach/anomaly.h |   23 ++++++++++++++++----
+ arch/blackfin/mach-bf561/atomic.S               |   14 +++++++++++-
+ arch/blackfin/mach-bf561/include/mach/anomaly.h |   25 ++++++++++++++++++----
+ arch/blackfin/mach-common/arch_checks.c         |    5 ++++
+ arch/blackfin/mach-common/smp.c                 |    6 +---
+ 14 files changed, 138 insertions(+), 42 deletions(-)
 
---- linux-2.6.30.9/drivers/net/b44.c.orig	2009-11-25 20:49:48.000000000 +0100
-+++ linux-2.6.30.9/drivers/net/b44.c	2009-11-25 21:26:34.000000000 +0100
-@@ -913,8 +913,18 @@
- 			__b44_disable_ints(bp);
- 			__napi_schedule(&bp->napi);
- 		} else {
--			printk(KERN_ERR PFX "%s: Error, poll already scheduled\n",
--			       dev->name);
-+			/* netconsole fix!!:
-+			 * without ratelimiting, this message would:
-+			 * immediately find its way out to b44 netconsole ->
-+			 * new IRQ -> re-encounter failed napi_schedule_prep()
-+			 * -> error message -> ad nauseam -> box LOCKUP.
-+			 * See thread "r8169: avoid losing MSI interrupts"
-+			 * for further inspiration. */
-+			if (printk_ratelimit())
-+				printk(KERN_ERR PFX
-+					"%s: Error, poll already scheduled; "
-+					"istat 0x%x, imask 0x%x\n",
-+						dev->name, istat, imask);
- 		}
- 
- irq_ack:
