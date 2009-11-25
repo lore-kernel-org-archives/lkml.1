@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751170AbZKYFzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751318AbZKYGHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751170AbZKYFzE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 00:55:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZKYFzD
+	id S1751318AbZKYGHF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 01:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZKYGHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 00:55:03 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:58580 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbZKYFzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 00:55:02 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Jie Zhang <jie.zhang@analog.com>
-Subject: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
-Date: Wed, 25 Nov 2009 00:55:03 -0500
-Message-Id: <1259128503-28276-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.3
+	Wed, 25 Nov 2009 01:07:05 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:48577 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZKYGHD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 01:07:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=P8qVdXRLtitek5xJQO8DAuYfFo/kAxuUTcJoyb6KZJmfFdqfwjoMFef3V6+OYSJaZp
+         yU4XGtUe5uqH54Oy6rwtLM/QalldDW9ZXZfTye8flNURcN5m8saai4aLS/WzQR1vm05A
+         KE/AsmWTh40fIEkjHf1IWoJBRLPcQMmnIqidE=
+MIME-Version: 1.0
+In-Reply-To: <da1989290911241958o88d49a8i14a2c9b39f1f101b@mail.gmail.com>
+References: <1259148311-31724-1-git-send-email-cliffcai.sh@gmail.com> 
+	<8bd0f97a0911241951o5394972dl65c48371f4149b7d@mail.gmail.com> 
+	<da1989290911241958o88d49a8i14a2c9b39f1f101b@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 25 Nov 2009 01:06:49 -0500
+Message-ID: <8bd0f97a0911242206u535b829u1c9fbc8a2c0f12a0@mail.gmail.com>
+Subject: Re: [PATCH v2] [mmc/host]:Blackfin SD Host Controller Driver
+To: Cliff Cai <cliffcai.sh@gmail.com>
+Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       cliff.cai@analog.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jie Zhang <jie.zhang@analog.com>
+On Tue, Nov 24, 2009 at 22:58, Cliff Cai wrote:
+> On Wed, Nov 25, 2009 at 11:51 AM, Mike Frysinger wrote:
+>> On Wed, Nov 25, 2009 at 06:25,  <cliffcai.sh@gmail.com> wrote:
+>>> From: Cliff Cai <cliffcai.sh@gmail.com>
+>>>
+>>> v2-v1 change:remove mmc host before releasing it in sdh_probe().
+>>>
+>>> Signed-off-by: Cliff Cai <cliffcai.sh@gmail.com>
+>>> ---
+>>
+>> changelog info should be below the ---, not above.
+>
+> is this true?
 
-The mmu code uses the copy_*_user_page() variants in access_process_vm()
-rather than copy_*_user() as the former includes an icache flush.  This is
-important when doing things like setting software breakpoints with gdb.
-So switch the nommu code over to do the same.
-
-Signed-off-by: Jie Zhang <jie.zhang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- mm/nommu.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 9876fa0..51ae9be 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1889,9 +1889,11 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
- 
- 		/* only read or write mappings where it is permitted */
- 		if (write && vma->vm_flags & VM_MAYWRITE)
--			len -= copy_to_user((void *) addr, buf, len);
-+			copy_to_user_page(vma, NULL, NULL,
-+					  (void *) addr, buf, len);
- 		else if (!write && vma->vm_flags & VM_MAYREAD)
--			len -= copy_from_user(buf, (void *) addr, len);
-+			copy_from_user_page(vma, NULL, NULL,
-+					    buf, (void *) addr, len);
- 		else
- 			len = 0;
- 	} else {
--- 
-1.6.5.3
-
+things above the --- are the changelog and go into the git commit.
+things below are transient notes for people looking at the patches.
+-mike
