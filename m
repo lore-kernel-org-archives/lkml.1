@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZKYRoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbZKYRpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZKYRoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbZKYRoh
+	id S932317AbZKYRpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759476AbZKYRpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:44:37 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:33012
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759453AbZKYRod convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:44:33 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <m3fx827dgi.fsf@intrepid.localdomain>
-Date: Wed, 25 Nov 2009 12:44:26 -0500
-Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Content-Transfer-Encoding: 8BIT
-Message-Id: <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <m3fx827dgi.fsf@intrepid.localdomain>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-X-Mailer: Apple Mail (2.1077)
+	Wed, 25 Nov 2009 12:45:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44528 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759468AbZKYRpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 12:45:32 -0500
+Message-ID: <4B0D6CFE.4070804@kernel.org>
+Date: Wed, 25 Nov 2009 09:44:30 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
+ big -v11
+References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com>
+In-Reply-To: <4B0D13EB.9010403@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 25, 2009, at 11:53 AM, Krzysztof Halasa wrote:
-
-> Jarod Wilson <jarod@wilsonet.com> writes:
-...
->> Now, I'm all for "improving" things and integrating better with the
->> input subsystem, but what I don't really want to do is break
->> compatibility with the existing setups on thousands (and thousands?)
->> of MythTV boxes around the globe. The lirc userspace can be pretty
->> nimble. If we can come up with a shiny new way that raw IR can be
->> passed out through an input device, I'm pretty sure lirc userspace can
->> be adapted to handle that.
+Kenji Kaneshige wrote:
+> Hi Yinghai,
 > 
-> Lirc can already handle input layer. Since both ways require userspace
-> changes, why not do it the right way the first time? Most of the code
-> is already written.
+> I would like to reconfirm what is the problem you're trying to solve
+> before reviewing and testing the additional patch. To be honest, your
+> patch looks more and more complicated and it is becoming difficult
+> for me to review and test it.
 
-There's obviously still some debate as to what "the right way" is. :)
+the real problem:
+1. boot time:
 
-And the matter of someone having the time to write the rest of the code that would be needed.
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to the bridge, but stop
+assigning resource to the device under that bridge, because the device need big resource.
 
->> If a new input-layer-based transmit interface is developed, we can
->> take advantage of that too. But there's already a very mature lirc
->> interface for doing all of this. So why not start with adding things
->> more or less as they exist right now and evolve the drivers into an
->> idealized form? Getting *something* into the kernel in the first place
->> is a huge step in that direction.
+so patch1 is trying to 
+a. pci assign unassign and record the failed device resource.
+b. clear the BIOS assigned resource of the parent bridge of fail device
+c. go back and call pci assign unsigned
+d. if it still fail, will go up more bridges. and clear and try again.
+
+2. hotplug:
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to every bridge. (8M)
+but when insert one card that big resource, the card can not get resource. because kernel will not touch the 
+bridge resource.
+
+so patch2 is trying to
+a. assign resource to devices with that slot. and record fail devices
+b. if there is some failed, will clear sepcifically io port of bridge, or mmio of bridge, or mmio pref of bridge.
+c. try to assign the parent bridge of the slot.
+
+so it will keep original assigned resource by BIOS if possible.
+
+and you have tested patch1 and patch2 in V11, but said patch1 may have shrinking resource problem.
+the patch3 is addressing the patch1 that could shrinking resource for non-pcie hotplug bridge...
+
+
 > 
-> What I see as potentially problematic is breaking compatibility multiple
-> times.
+> By the way, if your problem is that BIOS doesn't assign the resource
+> to the parent bridge (root port or switch downstream port) of PCIe
+> hotplug slots, I guess we can improve it with simpler way. I made a
+> sample patches (no enough testing). Please take a look. Patches are
+> 
+> - [PATCH 1/2] pciehp: remove redundancy in bridge resource allocation
+> - [PATCH 2/2] pciehp: add support for bridge resource reallocation
 
-Ah, but the approach I'd take to converting to in-kernel decoding[*] would be this:
+like some earlier version of patch2 (release it them all at first) but have pciehp_realloc parameter.
+could be useful in some case when current patch2 (try and increase) could use up all space.
+i like to have that after patch2.
 
-1) bring drivers in in their current state
-   - users keep using lirc as they always have
-
-2) add in-kernel decoding infra that feeds input layer
-
-3) add option to use in-kernel decoding to existing lirc drivers
-   - users can keep using lirc as they always have
-   - users can optionally try out in-kernel decoding via a modparam
-
-4) switch the default mode from lirc decode to kernel decode for each lirc driver
-   - modparam can be used to continue using lirc interface instead
-
-5) assuming users aren't coming at us with pitchforks, because things don't actually work reliably with in-kernel decoding, deprecate the lirc interface in driver
-
-6) remove lirc interface from driver, its now a pure input device
-
-This would all be on a per-lirc-driver basis, and if/when all decoding could be reliably done in-kernel, and/or there was a way other than the lirc interface to pass raw IR signals out to userspace, the lirc interface could be removed entirely.
-
-And we still need to consider IR transmitters as well. Those are handled quite well through the lirc interface, and I've not seen any concrete code (or even fully fleshed out ideas) on how IR transmit could be handled in this in-kernel decoding world.
-
-
-[*] assuming, of course, that it was actually agreed upon that in-kernel decoding was the right way, the only way, all others will be shot on sight. ;)
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
-
-
-
+YH
