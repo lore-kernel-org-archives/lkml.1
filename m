@@ -1,317 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbZKYN2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964876AbZKYNcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964810AbZKYN2N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZKYN2M
+	id S964876AbZKYNcB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934692AbZKYNb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62740 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:31:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31329 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752711AbZKYN2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:07 -0500
+	id S964822AbZKYN2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:16 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>, Alexander Viro <aviro@redhat.com>
-Subject: [PATCH 02/30] GFS2: Fix -o meta mounts for subsequent mounts (i.e. all but the first one)
-Date: Wed, 25 Nov 2009 14:22:27 +0000
-Message-Id: <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH 03/30] GFS2: Fix up system xattrs
+Date: Wed, 25 Nov 2009 14:22:28 +0000
+Message-Id: <1259158975-28499-4-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have a long term plan to use the "-o meta" flag to GFS2 mounts to
-access the alternate root which is used to store metadata for a GFS2
-filesystem. This will allow us to eventually remove support for the
-gfs2meta filesystem type (which is in any case just a "front end" to
-the gfs2 filesystem type with the meta/master root).
-
-Currently the "-o meta" option is only taken into account on the
-initial mount of the filesystem. Subsequent mounts of the same
-filesystem (i.e. on the same device) result in basically the same
-as bind mounting the root of the original mount.
-
-This patch changes that by using what is more or less a copy
-of get_sb_bdev() and extending it so that it will take into
-account the alternate root in all cases. The main difference
-is that we have to parse the mount options a bit earlier. We can
-then use them to select the appropriate root towards the end of
-the function.
-
-In addition this also fixes a bug where it was possible (but certainly
-not desirable) to set different ro/rw options for the meta root
-when mounted via the gfs2meta fs compared with the original mount.
+This code has been shamelessly stolen from XFS at the suggestion
+of Christoph Hellwig. I've not added support for cached ACLs so
+far... watch for that in a later patch, although this is designed
+in such a way that they should be easy to add.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Alexander Viro <aviro@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>
 ---
- fs/gfs2/ops_fstype.c |  135 +++++++++++++++++++++++++++++++++++++++++++------
- fs/gfs2/super.c      |   16 +++---
- fs/gfs2/super.h      |    2 +-
- 3 files changed, 127 insertions(+), 26 deletions(-)
+ fs/gfs2/acl.c   |  170 +++++++++++++++++++++++++++++++++++++------------------
+ fs/gfs2/acl.h   |   24 ++------
+ fs/gfs2/xattr.c |   18 ------
+ 3 files changed, 120 insertions(+), 92 deletions(-)
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 52fb6c0..e5ee062 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -1114,7 +1114,7 @@ void gfs2_online_uevent(struct gfs2_sbd *sdp)
-  * Returns: errno
-  */
+diff --git a/fs/gfs2/acl.c b/fs/gfs2/acl.c
+index 3fc4e3a..2168da1 100644
+--- a/fs/gfs2/acl.c
++++ b/fs/gfs2/acl.c
+@@ -12,6 +12,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/completion.h>
+ #include <linux/buffer_head.h>
++#include <linux/xattr.h>
+ #include <linux/posix_acl.h>
+ #include <linux/posix_acl_xattr.h>
+ #include <linux/gfs2_ondisk.h>
+@@ -26,61 +27,6 @@
+ #include "trans.h"
+ #include "util.h"
  
--static int fill_super(struct super_block *sb, void *data, int silent)
-+static int fill_super(struct super_block *sb, struct gfs2_args *args, int silent)
- {
- 	struct gfs2_sbd *sdp;
- 	struct gfs2_holder mount_gh;
-@@ -1125,17 +1125,7 @@ static int fill_super(struct super_block *sb, void *data, int silent)
- 		printk(KERN_WARNING "GFS2: can't alloc struct gfs2_sbd\n");
- 		return -ENOMEM;
- 	}
+-#define ACL_ACCESS 1
+-#define ACL_DEFAULT 0
 -
--	sdp->sd_args.ar_quota = GFS2_QUOTA_DEFAULT;
--	sdp->sd_args.ar_data = GFS2_DATA_DEFAULT;
--	sdp->sd_args.ar_commit = 60;
--	sdp->sd_args.ar_errors = GFS2_ERRORS_DEFAULT;
+-int gfs2_acl_validate_set(struct gfs2_inode *ip, int access,
+-			  struct gfs2_ea_request *er, int *remove, mode_t *mode)
+-{
+-	struct posix_acl *acl;
+-	int error;
 -
--	error = gfs2_mount_args(sdp, &sdp->sd_args, data);
--	if (error) {
--		printk(KERN_WARNING "GFS2: can't parse mount arguments\n");
--		goto fail;
+-	error = gfs2_acl_validate_remove(ip, access);
+-	if (error)
+-		return error;
+-
+-	if (!er->er_data)
+-		return -EINVAL;
+-
+-	acl = posix_acl_from_xattr(er->er_data, er->er_data_len);
+-	if (IS_ERR(acl))
+-		return PTR_ERR(acl);
+-	if (!acl) {
+-		*remove = 1;
+-		return 0;
 -	}
-+	sdp->sd_args = *args;
- 
- 	if (sdp->sd_args.ar_spectator) {
-                 sb->s_flags |= MS_RDONLY;
-@@ -1243,18 +1233,125 @@ fail:
+-
+-	error = posix_acl_valid(acl);
+-	if (error)
+-		goto out;
+-
+-	if (access) {
+-		error = posix_acl_equiv_mode(acl, mode);
+-		if (!error)
+-			*remove = 1;
+-		else if (error > 0)
+-			error = 0;
+-	}
+-
+-out:
+-	posix_acl_release(acl);
+-	return error;
+-}
+-
+-int gfs2_acl_validate_remove(struct gfs2_inode *ip, int access)
+-{
+-	if (!GFS2_SB(&ip->i_inode)->sd_args.ar_posix_acl)
+-		return -EOPNOTSUPP;
+-	if (!is_owner_or_cap(&ip->i_inode))
+-		return -EPERM;
+-	if (S_ISLNK(ip->i_inode.i_mode))
+-		return -EOPNOTSUPP;
+-	if (!access && !S_ISDIR(ip->i_inode.i_mode))
+-		return -EACCES;
+-
+-	return 0;
+-}
+-
+ static int acl_get(struct gfs2_inode *ip, const char *name,
+ 		   struct posix_acl **acl, struct gfs2_ea_location *el,
+ 		   char **datap, unsigned int *lenp)
+@@ -277,3 +223,117 @@ out_brelse:
  	return error;
  }
  
--static int gfs2_get_sb(struct file_system_type *fs_type, int flags,
--		       const char *dev_name, void *data, struct vfsmount *mnt)
-+static int set_gfs2_super(struct super_block *s, void *data)
- {
--	return get_sb_bdev(fs_type, flags, dev_name, data, fill_super, mnt);
-+	s->s_bdev = data;
-+	s->s_dev = s->s_bdev->bd_dev;
-+
-+	/*
-+	 * We set the bdi here to the queue backing, file systems can
-+	 * overwrite this in ->fill_super()
-+	 */
-+	s->s_bdi = &bdev_get_queue(s->s_bdev)->backing_dev_info;
-+	return 0;
- }
- 
--static int test_meta_super(struct super_block *s, void *ptr)
-+static int test_gfs2_super(struct super_block *s, void *ptr)
- {
- 	struct block_device *bdev = ptr;
- 	return (bdev == s->s_bdev);
- }
- 
-+/**
-+ * gfs2_get_sb - Get the GFS2 superblock
-+ * @fs_type: The GFS2 filesystem type
-+ * @flags: Mount flags
-+ * @dev_name: The name of the device
-+ * @data: The mount arguments
-+ * @mnt: The vfsmnt for this mount
-+ *
-+ * Q. Why not use get_sb_bdev() ?
-+ * A. We need to select one of two root directories to mount, independent
-+ *    of whether this is the initial, or subsequent, mount of this sb
-+ *
-+ * Returns: 0 or -ve on error
-+ */
-+
-+static int gfs2_get_sb(struct file_system_type *fs_type, int flags,
-+		       const char *dev_name, void *data, struct vfsmount *mnt)
++static int gfs2_acl_type(const char *name)
 +{
-+	struct block_device *bdev;
-+	struct super_block *s;
-+	fmode_t mode = FMODE_READ;
-+	int error;
-+	struct gfs2_args args;
-+	struct gfs2_sbd *sdp;
++	if (strcmp(name, GFS2_POSIX_ACL_ACCESS) == 0)
++		return ACL_TYPE_ACCESS;
++	if (strcmp(name, GFS2_POSIX_ACL_DEFAULT) == 0)
++		return ACL_TYPE_DEFAULT;
++	return -EINVAL;
++}
 +
-+	if (!(flags & MS_RDONLY))
-+		mode |= FMODE_WRITE;
++static int gfs2_xattr_system_get(struct inode *inode, const char *name,
++				 void *buffer, size_t size)
++{
++	int type;
 +
-+	bdev = open_bdev_exclusive(dev_name, mode, fs_type);
-+	if (IS_ERR(bdev))
-+		return PTR_ERR(bdev);
++	type = gfs2_acl_type(name);
++	if (type < 0)
++		return type;
 +
-+	/*
-+	 * once the super is inserted into the list by sget, s_umount
-+	 * will protect the lockfs code from trying to start a snapshot
-+	 * while we are mounting
-+	 */
-+	mutex_lock(&bdev->bd_fsfreeze_mutex);
-+	if (bdev->bd_fsfreeze_count > 0) {
-+		mutex_unlock(&bdev->bd_fsfreeze_mutex);
-+		error = -EBUSY;
-+		goto error_bdev;
-+	}
-+	s = sget(fs_type, test_gfs2_super, set_gfs2_super, bdev);
-+	mutex_unlock(&bdev->bd_fsfreeze_mutex);
-+	error = PTR_ERR(s);
-+	if (IS_ERR(s))
-+		goto error_bdev;
++	return gfs2_xattr_get(inode, GFS2_EATYPE_SYS, name, buffer, size);
++}
 +
-+	memset(&args, 0, sizeof(args));
-+	args.ar_quota = GFS2_QUOTA_DEFAULT;
-+	args.ar_data = GFS2_DATA_DEFAULT;
-+	args.ar_commit = 60;
-+	args.ar_errors = GFS2_ERRORS_DEFAULT;
++static int gfs2_set_mode(struct inode *inode, mode_t mode)
++{
++	int error = 0;
 +
-+	error = gfs2_mount_args(&args, data);
-+	if (error) {
-+		printk(KERN_WARNING "GFS2: can't parse mount arguments\n");
-+		if (s->s_root)
-+			goto error_super;
-+		deactivate_locked_super(s);
-+		return error;
++	if (mode != inode->i_mode) {
++		struct iattr iattr;
++
++		iattr.ia_valid = ATTR_MODE;
++		iattr.ia_mode = mode;
++
++		error = gfs2_setattr_simple(GFS2_I(inode), &iattr);
 +	}
 +
-+	if (s->s_root) {
-+		error = -EBUSY;
-+		if ((flags ^ s->s_flags) & MS_RDONLY)
-+			goto error_super;
-+		close_bdev_exclusive(bdev, mode);
-+	} else {
-+		char b[BDEVNAME_SIZE];
-+
-+		s->s_flags = flags;
-+		s->s_mode = mode;
-+		strlcpy(s->s_id, bdevname(bdev, b), sizeof(s->s_id));
-+		sb_set_blocksize(s, block_size(bdev));
-+		error = fill_super(s, &args, flags & MS_SILENT ? 1 : 0);
-+		if (error) {
-+			deactivate_locked_super(s);
-+			return error;
-+		}
-+		s->s_flags |= MS_ACTIVE;
-+		bdev->bd_super = s;
-+	}
-+
-+	sdp = s->s_fs_info;
-+	mnt->mnt_sb = s;
-+	if (args.ar_meta)
-+		mnt->mnt_root = dget(sdp->sd_master_dir);
-+	else
-+		mnt->mnt_root = dget(sdp->sd_root_dir);
-+	return 0;
-+
-+error_super:
-+	deactivate_locked_super(s);
-+error_bdev:
-+	close_bdev_exclusive(bdev, mode);
 +	return error;
 +}
 +
- static int set_meta_super(struct super_block *s, void *ptr)
- {
- 	return -EINVAL;
-@@ -1274,13 +1371,17 @@ static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
- 		       dev_name, error);
- 		return error;
- 	}
--	s = sget(&gfs2_fs_type, test_meta_super, set_meta_super,
-+	s = sget(&gfs2_fs_type, test_gfs2_super, set_meta_super,
- 		 path.dentry->d_inode->i_sb->s_bdev);
- 	path_put(&path);
- 	if (IS_ERR(s)) {
- 		printk(KERN_WARNING "GFS2: gfs2 mount does not exist\n");
- 		return PTR_ERR(s);
- 	}
-+	if ((flags ^ s->s_flags) & MS_RDONLY) {
-+		deactivate_locked_super(s);
-+		return -EBUSY;
++static int gfs2_xattr_system_set(struct inode *inode, const char *name,
++				 const void *value, size_t size, int flags)
++{
++	struct gfs2_sbd *sdp = GFS2_SB(inode);
++	struct posix_acl *acl = NULL;
++	int error = 0, type;
++
++	if (!sdp->sd_args.ar_posix_acl)
++		return -EOPNOTSUPP;
++
++	type = gfs2_acl_type(name);
++	if (type < 0)
++		return type;
++	if (flags & XATTR_CREATE)
++		return -EINVAL;
++	if (type == ACL_TYPE_DEFAULT && !S_ISDIR(inode->i_mode))
++		return value ? -EACCES : 0;
++	if ((current_fsuid() != inode->i_uid) && !capable(CAP_FOWNER))
++		return -EPERM;
++	if (S_ISLNK(inode->i_mode))
++		return -EOPNOTSUPP;
++
++	if (!value)
++		goto set_acl;
++
++	acl = posix_acl_from_xattr(value, size);
++	if (!acl) {
++		/*
++		 * acl_set_file(3) may request that we set default ACLs with
++		 * zero length -- defend (gracefully) against that here.
++		 */
++		goto out;
 +	}
- 	sdp = s->s_fs_info;
- 	mnt->mnt_sb = s;
- 	mnt->mnt_root = dget(sdp->sd_master_dir);
-diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-index 0ec3ec6..42e5458 100644
---- a/fs/gfs2/super.c
-+++ b/fs/gfs2/super.c
-@@ -106,13 +106,13 @@ static const match_table_t tokens = {
++	if (IS_ERR(acl)) {
++		error = PTR_ERR(acl);
++		goto out;
++	}
++
++	error = posix_acl_valid(acl);
++	if (error)
++		goto out_release;
++
++	error = -EINVAL;
++	if (acl->a_count > GFS2_ACL_MAX_ENTRIES)
++		goto out_release;
++
++	if (type == ACL_TYPE_ACCESS) {
++		mode_t mode = inode->i_mode;
++		error = posix_acl_equiv_mode(acl, &mode);
++
++		if (error <= 0) {
++			posix_acl_release(acl);
++			acl = NULL;
++
++			if (error < 0)
++				return error;
++		}
++
++		error = gfs2_set_mode(inode, mode);
++		if (error)
++			goto out_release;
++	}
++
++set_acl:
++	error = gfs2_xattr_set(inode, GFS2_EATYPE_SYS, name, value, size, 0);
++out_release:
++	posix_acl_release(acl);
++out:
++	return error;
++}
++
++struct xattr_handler gfs2_xattr_system_handler = {
++	.prefix = XATTR_SYSTEM_PREFIX,
++	.get    = gfs2_xattr_system_get,
++	.set    = gfs2_xattr_system_set,
++};
++
+diff --git a/fs/gfs2/acl.h b/fs/gfs2/acl.h
+index 6751930..cc95439 100644
+--- a/fs/gfs2/acl.h
++++ b/fs/gfs2/acl.h
+@@ -13,26 +13,12 @@
+ #include "incore.h"
  
- /**
-  * gfs2_mount_args - Parse mount options
-- * @sdp:
-- * @data:
-+ * @args: The structure into which the parsed options will be written
-+ * @options: The options to parse
-  *
-  * Return: errno
-  */
+ #define GFS2_POSIX_ACL_ACCESS		"posix_acl_access"
+-#define GFS2_POSIX_ACL_ACCESS_LEN	16
+ #define GFS2_POSIX_ACL_DEFAULT		"posix_acl_default"
+-#define GFS2_POSIX_ACL_DEFAULT_LEN	17
++#define GFS2_ACL_MAX_ENTRIES		25
  
--int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *options)
-+int gfs2_mount_args(struct gfs2_args *args, char *options)
+-#define GFS2_ACL_IS_ACCESS(name, len) \
+-         ((len) == GFS2_POSIX_ACL_ACCESS_LEN && \
+-         !memcmp(GFS2_POSIX_ACL_ACCESS, (name), (len)))
+-
+-#define GFS2_ACL_IS_DEFAULT(name, len) \
+-         ((len) == GFS2_POSIX_ACL_DEFAULT_LEN && \
+-         !memcmp(GFS2_POSIX_ACL_DEFAULT, (name), (len)))
+-
+-struct gfs2_ea_request;
+-
+-int gfs2_acl_validate_set(struct gfs2_inode *ip, int access,
+-			  struct gfs2_ea_request *er,
+-			  int *remove, mode_t *mode);
+-int gfs2_acl_validate_remove(struct gfs2_inode *ip, int access);
+-int gfs2_check_acl(struct inode *inode, int mask);
+-int gfs2_acl_create(struct gfs2_inode *dip, struct gfs2_inode *ip);
+-int gfs2_acl_chmod(struct gfs2_inode *ip, struct iattr *attr);
++extern int gfs2_check_acl(struct inode *inode, int mask);
++extern int gfs2_acl_create(struct gfs2_inode *dip, struct gfs2_inode *ip);
++extern int gfs2_acl_chmod(struct gfs2_inode *ip, struct iattr *attr);
++extern struct xattr_handler gfs2_xattr_system_handler;
+ 
+ #endif /* __ACL_DOT_H__ */
+diff --git a/fs/gfs2/xattr.c b/fs/gfs2/xattr.c
+index 8a0f8ef..6b80354 100644
+--- a/fs/gfs2/xattr.c
++++ b/fs/gfs2/xattr.c
+@@ -1507,18 +1507,6 @@ static int gfs2_xattr_user_set(struct inode *inode, const char *name,
+ 	return gfs2_xattr_set(inode, GFS2_EATYPE_USR, name, value, size, flags);
+ }
+ 
+-static int gfs2_xattr_system_get(struct inode *inode, const char *name,
+-				 void *buffer, size_t size)
+-{
+-	return gfs2_xattr_get(inode, GFS2_EATYPE_SYS, name, buffer, size);
+-}
+-
+-static int gfs2_xattr_system_set(struct inode *inode, const char *name,
+-				 const void *value, size_t size, int flags)
+-{
+-	return gfs2_xattr_set(inode, GFS2_EATYPE_SYS, name, value, size, flags);
+-}
+-
+ static int gfs2_xattr_security_get(struct inode *inode, const char *name,
+ 				   void *buffer, size_t size)
  {
- 	char *o;
- 	int token;
-@@ -157,7 +157,7 @@ int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *options)
- 			break;
- 		case Opt_debug:
- 			if (args->ar_errors == GFS2_ERRORS_PANIC) {
--				fs_info(sdp, "-o debug and -o errors=panic "
-+				printk(KERN_WARNING "GFS2: -o debug and -o errors=panic "
- 				       "are mutually exclusive.\n");
- 				return -EINVAL;
- 			}
-@@ -210,7 +210,7 @@ int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *options)
- 		case Opt_commit:
- 			rv = match_int(&tmp[0], &args->ar_commit);
- 			if (rv || args->ar_commit <= 0) {
--				fs_info(sdp, "commit mount option requires a positive numeric argument\n");
-+				printk(KERN_WARNING "GFS2: commit mount option requires a positive numeric argument\n");
- 				return rv ? rv : -EINVAL;
- 			}
- 			break;
-@@ -219,7 +219,7 @@ int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *options)
- 			break;
- 		case Opt_err_panic:
- 			if (args->ar_debug) {
--				fs_info(sdp, "-o debug and -o errors=panic "
-+				printk(KERN_WARNING "GFS2: -o debug and -o errors=panic "
- 					"are mutually exclusive.\n");
- 				return -EINVAL;
- 			}
-@@ -227,7 +227,7 @@ int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *options)
- 			break;
- 		case Opt_error:
- 		default:
--			fs_info(sdp, "invalid mount option: %s\n", o);
-+			printk(KERN_WARNING "GFS2: invalid mount option: %s\n", o);
- 			return -EINVAL;
- 		}
- 	}
-@@ -1062,7 +1062,7 @@ static int gfs2_remount_fs(struct super_block *sb, int *flags, char *data)
- 	spin_lock(&gt->gt_spin);
- 	args.ar_commit = gt->gt_log_flush_secs;
- 	spin_unlock(&gt->gt_spin);
--	error = gfs2_mount_args(sdp, &args, data);
-+	error = gfs2_mount_args(&args, data);
- 	if (error)
- 		return error;
+@@ -1543,12 +1531,6 @@ static struct xattr_handler gfs2_xattr_security_handler = {
+ 	.set    = gfs2_xattr_security_set,
+ };
  
-diff --git a/fs/gfs2/super.h b/fs/gfs2/super.h
-index 235db36..ed962ea 100644
---- a/fs/gfs2/super.h
-+++ b/fs/gfs2/super.h
-@@ -27,7 +27,7 @@ static inline unsigned int gfs2_jindex_size(struct gfs2_sbd *sdp)
- 
- extern void gfs2_jindex_free(struct gfs2_sbd *sdp);
- 
--extern int gfs2_mount_args(struct gfs2_sbd *sdp, struct gfs2_args *args, char *data);
-+extern int gfs2_mount_args(struct gfs2_args *args, char *data);
- 
- extern struct gfs2_jdesc *gfs2_jdesc_find(struct gfs2_sbd *sdp, unsigned int jid);
- extern int gfs2_jdesc_check(struct gfs2_jdesc *jd);
+-static struct xattr_handler gfs2_xattr_system_handler = {
+-	.prefix = XATTR_SYSTEM_PREFIX,
+-	.get    = gfs2_xattr_system_get,
+-	.set    = gfs2_xattr_system_set,
+-};
+-
+ struct xattr_handler *gfs2_xattr_handlers[] = {
+ 	&gfs2_xattr_user_handler,
+ 	&gfs2_xattr_security_handler,
 -- 
 1.6.2.5
 
