@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZKYBxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933767AbZKYBx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbZKYBxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 20:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758175AbZKYBxf
+	id S933767AbZKYBx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 20:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbZKYBx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 20:53:35 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:41539 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758155AbZKYBxe convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 20:53:56 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:47100 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758175AbZKYBxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 20:53:34 -0500
+	Tue, 24 Nov 2009 20:53:55 -0500
+Message-ID: <4B0C8E31.9040608@austin.ibm.com>
+Date: Tue, 24 Nov 2009 19:53:53 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091124170419.92cb63f6.akpm@linux-foundation.org>
-References: <fa686aa40911241654w6ceb2c96nb3a6a57ac1b471f5@mail.gmail.com> 
-	<20091124170419.92cb63f6.akpm@linux-foundation.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Nov 2009 18:53:21 -0700
-X-Google-Sender-Auth: 080d21e227c7aa5d
-Message-ID: <fa686aa40911241753lca699c9sa9ca0a0585a9d39d@mail.gmail.com>
-Subject: Re: [RFC] two new linux-next trees (SPI and devicetree)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Michal Simek <michal.simek@petalogix.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+CC: Ben Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 3/3] CPU DLPAR  handling
+References: <4B0C8B45.6080804@austin.ibm.com>
+In-Reply-To: <4B0C8B45.6080804@austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 6:04 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 24 Nov 2009 17:54:27 -0700
-> Grant Likely <grant.likely@secretlab.ca> wrote:
->
->> I've made the offer to be SPI
->> co-maintainer,
->
-> OK by me.  Don't break anything.
+Register the pseries specific handlers for the powerpc architecture handlers
+for the cpu probe and release files.  This also implements the cpu DLPAR
+addition and removal of CPUS from the system.
 
-I'll do my best.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
-> My current stash:
->
->
-> atmel_spi-fix-dma-addr-calculation-for-len-buffer_size.patch
-> spi-controller-driver-for-designware-spi-core.patch
-> spi-add-pci-interface-driver-for-designware-spi-core.patch
-> spi-add-pci-interface-driver-for-designware-spi-core-fix.patch
-> spi-controller-driver-for-designware-spi-core-fix.patch
-> spidev-add-proper-section-markers.patch
-> spidev-use-declare_bitmap-instead-of-declaring-the-array.patch
-> spidev-use-declare_bitmap-instead-of-declaring-the-array-checkpatch-fixes.patch
-> spi-drain-mxc-spi-transfer-buffer-when-probing-device.patch
-> spi_s3c24xx-add-fiq-pseudo-dma-support.patch
+arch/powerpc/platforms/pseries/dlpar.c |   88 +++++++++++++++++++++++++++++++++
+ 1 file changed, 88 insertions(+)
 
-Since they're already in your tree, do you mind continuing to shepherd
-these (either merge or drop)?  I've gotten a patchwork project set up
-on kernel.org for the spi mailing list, so I can easily track things
-from this point on.  My gameplan at this point is to try and stay on
-top of the things that I'm familiar with (mostly powerpc) and depend
-on other people to ack the rest.  I'll pick up anything that a)
-doesn't look ugly, b) isn't contested, and c) applies.  :-)
-
->> but I haven't received any feedback yet from either
->> akpm or dbrownell.
->
-> I haven't heard anything from David in over a month.
-
-Okay, shall I go ahead and merge my change to MAINTAINERS through my
-tree too then?
-
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-11-24 23:29:12.000000000 -0600
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-11-24 23:29:24.000000000 -0600
+@@ -321,4 +321,92 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+ 
++static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
++{
++	struct device_node *dn;
++	unsigned long drc_index;
++	char *cpu_name;
++	int rc;
++
++	rc = strict_strtoul(buf, 0, &drc_index);
++	if (rc)
++		return -EINVAL;
++
++	dn = dlpar_configure_connector(drc_index);
++	if (!dn)
++		return -EINVAL;
++
++	/* configure-connector reports cpus as living in the base
++	 * directory of the device tree.  CPUs actually live in the
++	 * cpus directory so we need to fixup the full_name.
++	 */
++	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
++			   GFP_KERNEL);
++	if (!cpu_name) {
++		dlpar_free_cc_nodes(dn);
++		return -ENOMEM;
++	}
++
++	sprintf(cpu_name, "/cpus/%s", dn->full_name);
++	kfree(dn->full_name);
++	dn->full_name = cpu_name;
++
++	rc = dlpar_acquire_drc(drc_index);
++	if (rc) {
++		dlpar_free_cc_nodes(dn);
++		return -EINVAL;
++	}
++
++	rc = dlpar_attach_node(dn);
++	if (rc) {
++		dlpar_release_drc(drc_index);
++		dlpar_free_cc_nodes(dn);
++	}
++
++	return rc ? rc : count;
++}
++
++static ssize_t dlpar_cpu_release(const char *buf, size_t count)
++{
++	struct device_node *dn;
++	const u32 *drc_index;
++	int rc;
++
++	dn = of_find_node_by_path(buf);
++	if (!dn)
++		return -EINVAL;
++
++	drc_index = of_get_property(dn, "ibm,my-drc-index", NULL);
++	if (!drc_index) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	rc = dlpar_release_drc(*drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	rc = dlpar_detach_node(dn);
++	if (rc) {
++		dlpar_acquire_drc(*drc_index);
++		return rc;
++	}
++
++	of_node_put(dn);
++	return count;
++}
++
++static int __init pseries_dlpar_init(void)
++{
++	ppc_md.cpu_probe = dlpar_cpu_probe;
++	ppc_md.cpu_release = dlpar_cpu_release;
++
++	return 0;
++}
++machine_device_initcall(pseries, pseries_dlpar_init);
++
++#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
