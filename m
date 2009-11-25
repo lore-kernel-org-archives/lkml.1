@@ -1,246 +1,328 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbZKYMvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934641AbZKYMxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934634AbZKYMvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934559AbZKYMvT
+	id S934641AbZKYMxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934580AbZKYMxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:51:19 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:33895 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934553AbZKYMvS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:51:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aY21vB1NSH4XnmYcztltMrCyr0bmBgajsQAJJ/1vGU2L70dhtqfxUj8AL2n7PryBkn
-         HTQLbchSc/iOCmqDgjE7TXDpaWqnyr3+9VAcmo4kAxtmKUzrpFeAGB8U7ocyAx5eXaPn
-         fHbppqEWdH34Af4+4SUTHluoYuWDIyvZhOMas=
-MIME-Version: 1.0
-In-Reply-To: <4B0D1FFB.5060403@gmail.com>
-References: <4B0D1FFB.5060403@gmail.com>
-Date: Wed, 25 Nov 2009 20:51:24 +0800
-Message-ID: <713d0d430911250451x51e0196bwdcbe5e8f087c3f8c@mail.gmail.com>
-Subject: Re: [PATCH V3] ARM: NUC900: add RTC driver support for nuc910 and 
-	nuc920
-From: Hu Ruihuan <specter118@gmail.com>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>,
-       linux-rtc <rtc-linux@googlegroups.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Nov 2009 07:53:34 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37896 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934559AbZKYMxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:53:33 -0500
+Date: Wed, 25 Nov 2009 23:53:33 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 25
+Message-Id: <20091125235333.37c425ec.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__25_Nov_2009_23_53_33_+1100_eGEpcYwKZJs_qmZF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Dear Alessandro,
->
-> This is a fixed patch which was tested via rtc test program located in Documentation/rtc.txt.
->
-> Thanks for your help.
->
-> Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
-> ---
->  drivers/rtc/Kconfig      |    6 +
->  drivers/rtc/Makefile     |    1 +
->  drivers/rtc/rtc-nuc900.c |  334 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 341 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/rtc/rtc-nuc900.c
->
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index 3c20dae..266ce62 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -573,6 +573,12 @@ config RTC_DRV_AB3100
->          Select this to enable the ST-Ericsson AB3100 Mixed Signal IC RTC
->          support. This chip contains a battery- and capacitor-backed RTC.
->
-> +config RTC_DRV_NUC900
-> +       tristate "NUC910/NUC920 RTC driver"
-> +       depends on RTC_CLASS && ARCH_W90X900
-> +       help
-> +         If you say yes here you get support for the RTC subsystem of the
-> +         NUC910/NUC920 used in embedded systems.
->
->  comment "on-CPU RTC drivers"
->
-> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> index aa3fbd5..d511774 100644
-> --- a/drivers/rtc/Makefile
-> +++ b/drivers/rtc/Makefile
-> @@ -53,6 +53,7 @@ obj-$(CONFIG_RTC_MXC)         += rtc-mxc.o
->  obj-$(CONFIG_RTC_DRV_MAX6900)  += rtc-max6900.o
->  obj-$(CONFIG_RTC_DRV_MAX6902)  += rtc-max6902.o
->  obj-$(CONFIG_RTC_DRV_MV)       += rtc-mv.o
-> +obj-$(CONFIG_RTC_DRV_NUC900)   += rtc-nuc900.o
->  obj-$(CONFIG_RTC_DRV_OMAP)     += rtc-omap.o
->  obj-$(CONFIG_RTC_DRV_PCAP)     += rtc-pcap.o
->  obj-$(CONFIG_RTC_DRV_PCF8563)  += rtc-pcf8563.o
-> diff --git a/drivers/rtc/rtc-nuc900.c b/drivers/rtc/rtc-nuc900.c
-> new file mode 100644
-> index 0000000..09383e2
-> --- /dev/null
-> +++ b/drivers/rtc/rtc-nuc900.c
-> @@ -0,0 +1,334 @@
-> +/*
-> + * Copyright (c) 2008-2009 Nuvoton technology corporation.
-> + *
-> + * Wan ZongShun <mcuos.com@gmail.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation;version 2 of the License.
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/rtc.h>
-> +#include <linux/delay.h>
-> +#include <linux/io.h>
-> +#include <linux/bcd.h>
-> +
-> +/* RTC Control Registers */
-> +#define REG_RTC_INIR           0x00
-> +#define REG_RTC_AER            0x04
-> +#define REG_RTC_FCR            0x08
-> +#define REG_RTC_TLR            0x0C
-> +#define REG_RTC_CLR            0x10
-> +#define REG_RTC_TSSR           0x14
-> +#define REG_RTC_DWR            0x18
-> +#define REG_RTC_TAR            0x1C
-> +#define REG_RTC_CAR            0x20
-> +#define REG_RTC_LIR            0x24
-> +#define REG_RTC_RIER           0x28
-> +#define REG_RTC_RIIR           0x2C
-> +#define REG_RTC_TTR            0x30
-> +
-> +#define RTCSET                 0x01
-> +#define AERRWENB               0x10000
-> +#define INIRRESET              0xa5eb1357
-> +#define AERPOWERON             0xA965
-> +#define AERPOWEROFF            0x0000
-> +#define LEAPYEAR               0x0001
-> +#define TICKENB                        0x80
-> +#define TICKINTENB             0x0002
-> +#define ALARMINTENB            0x0001
-> +#define MODE24                 0x0001
-> +
-> +struct nuc900_rtc {
-> +       int                     irq_num;
-> +       void __iomem            *rtc_reg;
-> +       struct rtc_device       *rtcdev;
-> +       spinlock_t              lock;
-> +};
-> +
-> +struct nuc900_bcd_time {
-> +       int bcd_sec;
-> +       int bcd_min;
-> +       int bcd_hour;
-> +       int bcd_mday;
-> +       int bcd_mon;
-> +       int bcd_year;
-> +};
-> +
-> +static irqreturn_t nuc900_rtc_interrupt(int irq, void *_rtc)
-> +{
-> +       struct nuc900_rtc *rtc = _rtc;
-> +       unsigned long events = 0, rtc_irq;
-> +
-> +       rtc_irq = __raw_readl(rtc->rtc_reg + REG_RTC_RIIR);
-> +
-> +       if (rtc_irq & ALARMINTENB) {
-> +               rtc_irq &= ~ALARMINTENB;
-> +               __raw_writel(rtc_irq, rtc->rtc_reg + REG_RTC_RIIR);
-> +               events |= RTC_AF | RTC_IRQF;
-> +       }
-> +
-> +       if (rtc_irq & TICKINTENB) {
-> +               rtc_irq &= ~TICKINTENB;
-> +               __raw_writel(rtc_irq, rtc->rtc_reg + REG_RTC_RIIR);
-> +               events |= RTC_UF | RTC_IRQF;
-> +       }
-> +
-> +       rtc_update_irq(rtc->rtcdev, 1, events);
-> +
-> +       return IRQ_HANDLED;
-> +}
-> +
-> +static void check_rtc_power(struct nuc900_rtc *nuc900_rtc)
-> +{
-> +       unsigned int i;
-> +       __raw_writel(INIRRESET, nuc900_rtc->rtc_reg + REG_RTC_INIR);
-> +
-> +       mdelay(10);
-> +
-> +       __raw_writel(AERPOWERON, nuc900_rtc->rtc_reg + REG_RTC_AER);
-> +
-> +       for (i = 0; i < 1000000; i++) {
-> +               if (__raw_readl(nuc900_rtc->rtc_reg + REG_RTC_AER) & AERRWENB)
-> +                       break;
-> +       }
-> +}
-> +
-> +static void nuc900_rtc_bcd2bin(unsigned int timereg,
-> +                               unsigned int calreg, struct rtc_time *tm)
-> +{
-> +       tm->tm_mday     = bcd2bin(calreg >> 0);
-> +       tm->tm_mon      = bcd2bin(calreg >> 8);
-> +       tm->tm_year     = bcd2bin(calreg >> 16) + 100;
-> +
-> +       tm->tm_sec      = bcd2bin(timereg >> 0);
-> +       tm->tm_min      = bcd2bin(timereg >> 8);
-> +       tm->tm_hour     = bcd2bin(timereg >> 16);
-> +
-> +       rtc_valid_tm(tm);
-> +}
-> +
-> +static void nuc900_rtc_bin2bcd(struct rtc_time *settm,
-> +                                               struct nuc900_bcd_time *gettm)
-> +{
-> +       gettm->bcd_mday = bin2bcd(settm->tm_mday) << 0;
-> +       gettm->bcd_mon  = bin2bcd(settm->tm_mon) << 8;
-> +       gettm->bcd_year = bin2bcd(settm->tm_year - 100) << 16;
-> +
-> +       gettm->bcd_sec  = bin2bcd(settm->tm_sec) << 0;
-> +       gettm->bcd_min  = bin2bcd(settm->tm_min) << 8;
-> +       gettm->bcd_hour = bin2bcd(settm->tm_hour) << 16;
-> +}
-> +
-> +static int nuc900_update_irq_enable(struct device *dev, unsigned int enabled)
-> +{
-> +       struct nuc900_rtc *rtc = dev_get_drvdata(dev);
-> +
-> +       if (enabled)
-> +               __raw_writel(__raw_readl(rtc->rtc_reg + REG_RTC_RIER)|
-> +                               (TICKINTENB), rtc->rtc_reg + REG_RTC_RIER);
-> +       else
-> +               __raw_writel(__raw_readl(rtc->rtc_reg + REG_RTC_RIER)&
-> +                               (~TICKINTENB), rtc->rtc_reg + REG_RTC_RIER);
-> +
-> +       return 0;
-> +}
-I think you should lock irq before the serial read and write to the
-REG_RTC_RIER register.
+--Signature=_Wed__25_Nov_2009_23_53_33_+1100_eGEpcYwKZJs_qmZF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-> +
-> +static int nuc900_alarm_irq_enable(struct device *dev, unsigned int enabled)
-> +{
-> +       struct nuc900_rtc *rtc = dev_get_drvdata(dev);
-> +
-> +       if (enabled)
-> +               __raw_writel(__raw_readl(rtc->rtc_reg + REG_RTC_RIER)|
-> +                               (ALARMINTENB), rtc->rtc_reg + REG_RTC_RIER);
-> +       else
-> +               __raw_writel(__raw_readl(rtc->rtc_reg + REG_RTC_RIER)&
-> +                               (~ALARMINTENB), rtc->rtc_reg + REG_RTC_RIER);
-> +
-> +       return 0;
-> +}
-> +
-ditto
+Changes since 20091124:
+
+New trees:
+	spi
+
+The microblaze tree lost its build failure.
+
+The ext3 tree gained a conflict against the cifs tree.
+
+The ubifs tree lost its build failure.
+
+The rr tree gained a conflict against the arm tree.
+
+The mfd tree lost its build failure.
+
+The voltage tree gained a conflict against the mfd tree.
+
+The trivial tree gained conflicts against the arm and ext4 trees.
+
+The alacrity tree lost its build failure.
+
+The percpu tree gained a build failure for which I reverted a commit.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 154 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (content): Merge conflict in arch/mips/Makefile
+CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
+CONFLICT (content): Merge conflict in drivers/net/au1000_eth.c
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/common/tuners/tda18271-=
+fe.c
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/ieee802154/fakehard.c
+CONFLICT (content): Merge conflict in drivers/net/e1000e/ich8lan.c
+CONFLICT (content): Merge conflict in drivers/net/e1000e/phy.c
+CONFLICT (content): Merge conflict in drivers/net/netxen/netxen_nic_init.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ath/ath9k/main.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/arm/kernel/vmlinux.lds.S
+Applying: modpost: autoconf.h has moved to include/generated
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/ray_cs.c
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+CONFLICT (content): Merge conflict in Documentation/dontdiff
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in arch/arm/plat-mxc/include/mach/mx2x.h
+CONFLICT (content): Merge conflict in drivers/net/e1000e/lib.c
+CONFLICT (content): Merge conflict in fs/ext4/balloc.c
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/afs/write.c
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+CONFLICT (content): Merge conflict in fs/ubifs/file.c
+CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
+CONFLICT (content): Merge conflict in net/socket.c
+Merging irda/for-next
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Applying: i7core_edac: do not export static functions
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
+CONFLICT (content): Merge conflict in kernel/irq/chip.c
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
+.S
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in kernel/softlockup.c
+Applying: percpu: merge fixup for variable renaming
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+CONFLICT (content): Merge conflict in net/ipv6/addrconf.c
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+CONFLICT (content): Merge conflict in arch/arm/plat-mxc/Makefile
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
+pc_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
+_cs.c
+Merging scsi-post-merge/master
+[master cc187de] Revert "Merge branch 'for-linus' into for-next to receive =
+per_cpu_ptr_to_phys()."
+
+--Signature=_Wed__25_Nov_2009_23_53_33_+1100_eGEpcYwKZJs_qmZF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksNKM0ACgkQjjKRsyhoI8ysQACgjKet3sr7xjHW3pWwZL8crKow
+YYMAnjg0IC+khsj2CxToomMfb1qL4jaJ
+=YAWc
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__25_Nov_2009_23_53_33_+1100_eGEpcYwKZJs_qmZF--
