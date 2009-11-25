@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933567AbZKYRrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZKYRoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933567AbZKYRrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbZKYRrj
+	id S1759500AbZKYRoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbZKYRoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:47:39 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:34390 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932922AbZKYRq7 (ORCPT
+	Wed, 25 Nov 2009 12:44:37 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:33012
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759453AbZKYRod convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:46:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=RW3sY7dnimY2tzDFkBIZp8JiFA05+bAWszI64+EOZBAJsmFfvOel2DHh4eZiELS5hH
-         rjLtTMJxxGoXuRbZwhYkQtytNlTtOTNKq67lqZ5fF8xpG2FlYl/zD2XZoCELmQ7jZLd6
-         40zLqI6/wrxQAyaoBV081t2XSdTtVtH9vmP5U=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 19/86] pata_cmd640: document known issues
-Date: Wed, 25 Nov 2009 18:44:01 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125172633.7a15711b@lxorguk.ukuu.org.uk> <4B0D6B4F.9030605@garzik.org>
-In-Reply-To: <4B0D6B4F.9030605@garzik.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911251844.01227.bzolnier@gmail.com>
+	Wed, 25 Nov 2009 12:44:33 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <m3fx827dgi.fsf@intrepid.localdomain>
+Date: Wed, 25 Nov 2009 12:44:26 -0500
+Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Content-Transfer-Encoding: 8BIT
+Message-Id: <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com>
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <m3fx827dgi.fsf@intrepid.localdomain>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 November 2009 06:37:19 pm Jeff Garzik wrote:
-> On 11/25/2009 12:26 PM, Alan Cox wrote:
-> > On Wed, 25 Nov 2009 18:04:36 +0100
-> > Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>  wrote:
-> >
-> >> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
-> >> Subject: [PATCH] pata_cmd640: document known issues
-> >>
-> >> Document known issues with the driver to aid distribution makers,
-> >> users and developers in making informed decisions instead of wasting
-> >> their time needlessly.
-> >
-> > Umm. its a) under CONFIG_PCI, and b) says CMD640 PCI IDE...
-> 
-> Agreed, that's a bit redundant.
-> 
-> Also, as I noted in another email, known issues should be listed in the 
-> driver source code at the top of the file, not in Kconfig.
+On Nov 25, 2009, at 11:53 AM, Krzysztof Halasa wrote:
 
-Agreed, since virtually everybody should be looking into source
-code of each single driver before compiling kernel and/or deciding
-to include it into distribution kernel.
+> Jarod Wilson <jarod@wilsonet.com> writes:
+...
+>> Now, I'm all for "improving" things and integrating better with the
+>> input subsystem, but what I don't really want to do is break
+>> compatibility with the existing setups on thousands (and thousands?)
+>> of MythTV boxes around the globe. The lirc userspace can be pretty
+>> nimble. If we can come up with a shiny new way that raw IR can be
+>> passed out through an input device, I'm pretty sure lirc userspace can
+>> be adapted to handle that.
+> 
+> Lirc can already handle input layer. Since both ways require userspace
+> changes, why not do it the right way the first time? Most of the code
+> is already written.
 
---
-Bartlomiej Zolnierkiewicz
+There's obviously still some debate as to what "the right way" is. :)
+
+And the matter of someone having the time to write the rest of the code that would be needed.
+
+>> If a new input-layer-based transmit interface is developed, we can
+>> take advantage of that too. But there's already a very mature lirc
+>> interface for doing all of this. So why not start with adding things
+>> more or less as they exist right now and evolve the drivers into an
+>> idealized form? Getting *something* into the kernel in the first place
+>> is a huge step in that direction.
+> 
+> What I see as potentially problematic is breaking compatibility multiple
+> times.
+
+Ah, but the approach I'd take to converting to in-kernel decoding[*] would be this:
+
+1) bring drivers in in their current state
+   - users keep using lirc as they always have
+
+2) add in-kernel decoding infra that feeds input layer
+
+3) add option to use in-kernel decoding to existing lirc drivers
+   - users can keep using lirc as they always have
+   - users can optionally try out in-kernel decoding via a modparam
+
+4) switch the default mode from lirc decode to kernel decode for each lirc driver
+   - modparam can be used to continue using lirc interface instead
+
+5) assuming users aren't coming at us with pitchforks, because things don't actually work reliably with in-kernel decoding, deprecate the lirc interface in driver
+
+6) remove lirc interface from driver, its now a pure input device
+
+This would all be on a per-lirc-driver basis, and if/when all decoding could be reliably done in-kernel, and/or there was a way other than the lirc interface to pass raw IR signals out to userspace, the lirc interface could be removed entirely.
+
+And we still need to consider IR transmitters as well. Those are handled quite well through the lirc interface, and I've not seen any concrete code (or even fully fleshed out ideas) on how IR transmit could be handled in this in-kernel decoding world.
+
+
+[*] assuming, of course, that it was actually agreed upon that in-kernel decoding was the right way, the only way, all others will be shot on sight. ;)
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
