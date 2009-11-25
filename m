@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933880AbZKYBGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbZKYBFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933880AbZKYBGi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 20:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbZKYBGi
+	id S933831AbZKYBFM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 20:05:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933710AbZKYBFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 20:06:38 -0500
-Received: from mga09.intel.com ([134.134.136.24]:20101 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933753AbZKYBGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 20:06:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,282,1257148800"; 
-   d="scan'208";a="470333168"
-Date: Wed, 25 Nov 2009 09:02:05 +0800
-From: Alek Du <alek.du@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] gpio: Langwell GPIO driver miscellaneous clean-ups
-Message-ID: <20091125090205.122e59a3@dxy.sh.intel.com>
-In-Reply-To: <20091124122937.ac9371d0.akpm@linux-foundation.org>
-References: <20091122111901.5e99a391@dxy.sh.intel.com>
-	<20091124122937.ac9371d0.akpm@linux-foundation.org>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 24 Nov 2009 20:05:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59054 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933698AbZKYBFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 20:05:11 -0500
+Date: Tue, 24 Nov 2009 17:04:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Michal Simek <michal.simek@petalogix.com>
+Subject: Re: [RFC] two new linux-next trees (SPI and devicetree)
+Message-Id: <20091124170419.92cb63f6.akpm@linux-foundation.org>
+In-Reply-To: <fa686aa40911241654w6ceb2c96nb3a6a57ac1b471f5@mail.gmail.com>
+References: <fa686aa40911241654w6ceb2c96nb3a6a57ac1b471f5@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009 04:29:37 +0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, 24 Nov 2009 17:54:27 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-> On Sun, 22 Nov 2009 11:19:01 +0800
-> Alek Du <alek.du@intel.com> wrote:
-> 
-> > >From 9ba8224f5246ef7fdf1c0a15bb5535e442731435 Mon Sep 17 00:00:00 2001
-> > From: Alek Du <alek.du@intel.com>
-> > Date: Sun, 22 Nov 2009 10:58:21 +0800
-> > Subject: [PATCH] gpio: Langwell GPIO driver miscellaneous clean-ups
-> > 
-> > 1. Use >= N to check invalid gpio number (unsigned type)
-> 
-> I already had this in gpio-fix-test-on-unsigned-in-lnw_irq_type.patch
-> 
-> > 2. Remove wrong and unnecessary unmask operation
-> > 3. Remove extra GEDR reading
-> > 
-> > The 2) and 3) will fix interrupts losing when two or more pins are triggered at close time.
-> > 
-> 
-> Those aren't cleanups - they're bug fixes!
-I agree, thx.
+> I've made the offer to be SPI
+> co-maintainer,
 
-> 
-> How important are they?
+OK by me.  Don't break anything.
 
-It is not show stopper one, but would be great if could commit to 2.6.32 rcx.
+My current stash:
 
-Thanks,
-Alek
+
+atmel_spi-fix-dma-addr-calculation-for-len-buffer_size.patch
+spi-controller-driver-for-designware-spi-core.patch
+spi-add-pci-interface-driver-for-designware-spi-core.patch
+spi-add-pci-interface-driver-for-designware-spi-core-fix.patch
+spi-controller-driver-for-designware-spi-core-fix.patch
+spidev-add-proper-section-markers.patch
+spidev-use-declare_bitmap-instead-of-declaring-the-array.patch
+spidev-use-declare_bitmap-instead-of-declaring-the-array-checkpatch-fixes.patch
+spi-drain-mxc-spi-transfer-buffer-when-probing-device.patch
+spi_s3c24xx-add-fiq-pseudo-dma-support.patch
+
+
+> but I haven't received any feedback yet from either
+> akpm or dbrownell.
+
+I haven't heard anything from David in over a month.
+
