@@ -1,92 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZKYXWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935096AbZKYXWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbZKYXWf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 18:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933745AbZKYXWe
+	id S935096AbZKYXWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 18:22:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934896AbZKYXWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 18:22:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5521 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758914AbZKYXWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 18:22:33 -0500
-Message-ID: <4B0DBC2D.1010603@redhat.com>
-Date: Thu, 26 Nov 2009 00:22:21 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Christoph Bartelmus <lirc@bartelmus.de>
-CC: awalls@radix.net, dheitmueller@kernellabs.com, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDZbPXRZjFB@christoph>
-In-Reply-To: <BDZbPXRZjFB@christoph>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 18:22:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:24898 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934859AbZKYXWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 18:22:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=m3u5tPD9RRty31nMgjU0Xv+BAxELG4p7GXk3PZ8JvVEJVLGXIf7gLjfZKZQqzfeed3
+         8w0PP3oMr19fq3wy4BQbzmRLSZIkv5K4nIGq9UFAsd6fqj2CPLVwoo+5Kkn0X0H7ROfx
+         SZdeCK8x6yfZst97W9sW2tTizPq3ryX8VtTBM=
+Subject: Re: Plan for adding XD support in mtd layer
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alex Dubov <oakad@yahoo.com>,
+       arnd@arndb.de, tglx@linutronix.de
+In-Reply-To: <20091125205942.GF10944@logfs.org>
+References: <1258763144.4997.12.camel@maxim-laptop>
+	 <20091121102542.GA21136@logfs.org> <1258894713.4127.4.camel@maxim-laptop>
+	 <1259106610.28219.34.camel@maxim-laptop> <20091125104027.GB10944@logfs.org>
+	 <1259155258.4875.17.camel@maxim-laptop> <20091125153458.GC10944@logfs.org>
+	 <1259165866.10147.35.camel@maxim-laptop> <20091125205942.GF10944@logfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 01:22:45 +0200
+Message-ID: <1259191365.15916.31.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> (1) ir code (say rc5) ->  keycode conversion looses information.
->>
->> I think this can easily be addressed by adding a IR event type to the
->> input layer, which could look like this:
->>
->>     input_event->type  = EV_IR
->>     input_event->code  = IR_RC5
->>     input_event->value =<rc5 value>
->>
->> In case the 32bit value is too small we might want send two events
->> instead, with ->code being set to IR_<code>_1 and IR_<code>_2
->>
->> Advantages:
->>     * Applications (including lircd) can get access to the unmodified
->>       rc5/rc6/... codes.
->
-> Unfortunately with most hardware decoders the code that you get is only
-> remotely related to the actual code sent. Most RC-5 decoders strip off
-> start bits.
+On Wed, 2009-11-25 at 21:59 +0100, Jörn Engel wrote: 
+> On Wed, 25 November 2009 18:17:46 +0200, Maxim Levitsky wrote:
+> > On Wed, 2009-11-25 at 16:34 +0100, Jörn Engel wrote: 
+> > > 
+> > > Those are card readers built into notebooks, right?  How are they
+> > > attached?  Via PCI or USB?
+> > Mostly in notebooks.
+> > External readers usually implement standard mass-storage protocol.
+> 
+> Ok.  I guess I won't buy a new notebook just to test a driver then.
+> 
+> > They are usually PCI , however some USB devices work the same, for
+> > example
+> > alluda device that currently has two drivers in the kernel, one mtd for
+> > raw access, and another self-contained USB driver that does FTL and
+> > exposes device as an SCSI device.
+> 
+> Yes.  I've written the mtd driver for that one.
+> 
+> > > It has been a while since I looked at the spec, but I believe there are
+> > > two parts to it.  The flash hardware allows block erases, sector reads
+> > > and sector writes.  On top of that you have the FTL that adds further
+> > > restrictions.
+> > if this is the case, then no problems.
+> > Alex said something about firmware bugs though, that I belive is
+> > connected to raw block writes.
+> > 
+> > I also know that driver for my ricoh based controller does always block
+> > based cow writes.
+> 
+> If you only ever want to use the device with the FTL on top, that is
+> perfectly acceptable.  But it is an FTL restriction, not part of the
+> hardware.  Apart from firmware bugs, of course.
+Exactly.
 
-I would include only the actual data bits in the payload anyway.
+> 
+> > when I say block I mean area that can be erased independently, and it
+> > consists of several 512 byte sectors.
+> > (Very old incarnation of smartmedia format had 256 byte sectors that
+> > were tied together in pairs)
+> 
+> Some also had 256 or 512 blocks per zone.  These days everything seems
+> to have 512+16 Byte sectors, 16 sectors per block, 1024 physical (1000
+> logical) blocks per zone and as many zones as the device can fit.  Or at
+> least that was the case two years ago.
+Yes that the same I see.
 
-> Toggle-bits are thrown away. NEC decoders usually don't pass
-> through the address part.
+> 
+> > > Format and rescue certainly make sense.  I'm not sure how a debug
+> > > application would measure the health, but maybe that's possible as well.
+> > I can count bad sectors, ecc corrected sectors, see how many spares
+> > remain in each block, etc...
+> 
+> Iirc the number of bad blocks never changes.  Either a block is
+> factory-marked or it will stay in use forever.  A smart FTL could try to
+> store the erase count or the number of correctable/uncorrectable errors
+> for each block somewhere, but I don't believe it is done - or could be
+> done while staying compatible with the xD spec.
 
-Too bad.  But information which isn't provided by the hardware can't be 
-passed up anyway, no matter what kernel/userspace interface is used. 
-Gone is gone.
+> 
+> So that pretty much leaves the number of correctable/uncorrectable
+> errors currently on the device.
+Exactly.
 
-> There is no common standard which bit is sent first, LSB or MSB.
+> 
+> > > That would be available when using mtdchar or mtdblock to read the
+> > > device.  Which ought to be enough for format, rescue and debug, I
+> > > believe.
+> > 
+> > Yes this is enough, but how I expose media type in the mtd driver, there
+> > is a field for that I missed?
+> > 
+> > And same question for the ID.
+> > 
+> > Note that media type /ID is _not_ stored on the media (well it is but is
+> > not accessible that way)
+> > There is need for special command to read it from the device.
+> 
+> Right.  I forgot about that one.  In fact, I tried fairly hard to
+> forget. ;)
+> 
+> According to FMTP140E.PDF, CIS and IDI are stored in sector 0 or the
+> first non-defective block.  In other words, it can be read and written
+> normally, without any magic.  Certainly not the atrocities I tried not
+> to remember.
+I wish I had the spec.
+I don't know the format of the CIS, and I know that special command is
+used to query the ID.
+CIS these days isn't used for anything and I hoped not to touch that
+thing.
 
-Input layer would have to define a bit order.  And drivers which get it 
-the other way from the hardware have to convert.  Or maybe signal the 
-order and the input core then will convert if needed.
+I wont argue on that one with you, but why not to add the new field.
+It is quite generic, it could be card vendor information or so?
+Few bits of custom information to assign for each card no?
 
-> Checksums are thrown away.
 
-Don't include them.
+I am taking about these:
 
-> To sum it up: I don't think this information will be useful at all for
-> lircd or anyone else.
+struct xd_card_id1 {
+unsigned char maker_code;
+unsigned char device_code;
+unsigned char option_code1;
+unsigned char option_code2;
+} __attribute__((packed));
 
-Why not?  With RC5 remotes applications can get the device address bits 
-for example, which right now are simply get lost in the ir code -> 
-keycode conversion step.
+struct xd_card_id2 {
+unsigned char characteristics_code;
+#define XD_CARD_CELL_TYPE_MASK   0xc0
+#define XD_CARD_MULTI_BLOCK_MASK 0x30
 
-> Actually lircd does not even know anything about
-> actual protocols. We only distinguish between certain protocol types, like
-> Manchester encoded, space encoded, pulse encoded etc. Everything else like
-> the actual timing is fully configurable.
+unsigned char vendor_code1;
+unsigned char size_code;
+unsigned char vendor_code2;
+unsigned char vendor_code3;
+} __attribute__((packed));
 
-I know that lircd does matching instead of decoding, which allows to 
-handle unknown encodings.  Thats why I think there will always be cases 
-which only lircd will be able to handle (using raw samples).
+struct xd_card_id3 {
+unsigned char vendor_code1;
+unsigned char vendor_code2;
+unsigned char id_code;
+unsigned char vendor_code3;
+} __attribute__((packed));
 
-That doesn't make attempts to actually decode the IR samples a useless 
-exercise though ;)
 
-cheers,
-   Gerd
+Are these 32 bit values copied from CIF?
+
+These values are read using commands:
+
+XD_CARD_CMD_ID1         = 0x90,
+XD_CARD_CMD_ID2         = 0x91,
+XD_CARD_CMD_ID3         = 0x9a
+
+
+I need especially the xd_card_id1.device_code because this specifies the
+media type, but xd_card_id3.id_code is used to detemine if media is
+smartmedia or XD.
+
+Best regards,
+Maxim Levitsky
 
