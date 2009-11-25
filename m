@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759875AbZKYXEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbZKYXKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759875AbZKYXEz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 18:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbZKYXEy
+	id S1759921AbZKYXKz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 18:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759905AbZKYXKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 18:04:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49574
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758902AbZKYXEy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 18:04:54 -0500
-Date: Wed, 25 Nov 2009 15:05:12 -0800 (PST)
-Message-Id: <20091125.150512.103371946.davem@davemloft.net>
-To: hemantp@ti.com
-Cc: linux-ide@vger.kernel.org, bzolnier@gmail.com, sshtylyov@ru.mvista.com,
-       petkovbb@gmail.com, christian.engelmayer@frequentis.com,
-       linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com
-Subject: Re: [PATCH] ide: fix ioctl to pass requested transfer mode to
- ide_find_dma_mode instead of UDMA6
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1259063450-21049-1-git-send-email-hemantp@ti.com>
-References: <1259063450-21049-1-git-send-email-hemantp@ti.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 25 Nov 2009 18:10:54 -0500
+Received: from waste.org ([173.11.57.241]:58880 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759505AbZKYXKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 18:10:53 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
+	 <1259090615.17871.696.camel@calx>
+	 <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com>
+	 <1259103315.17871.895.camel@calx>
+	 <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 17:06:47 -0600
+Message-ID: <1259190407.2858.61.camel@calx>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hemant Pedanekar <hemantp@ti.com>
-Date: Tue, 24 Nov 2009 17:20:50 +0530
+On Wed, 2009-11-25 at 13:59 -0800, David Rientjes wrote:
+> On Tue, 24 Nov 2009, Matt Mackall wrote:
+> 
+> > I'm afraid I have only anecdotal reports from SLOB users, and embedded
+> > folks are notorious for lack of feedback, but I only need a few people
+> > to tell me they're shipping 100k units/mo to be confident that SLOB is
+> > in use in millions of devices.
+> > 
+> 
+> It's much more popular than I had expected; do you think it would be 
+> possible to merge slob's core into another allocator or will it require 
+> seperation forever?
 
-> Currently, ide_cmd_ioctl when invoked for setting DMA transfer mode calls
-> ide_find_dma_mode with requested mode as XFER_UDMA_6. This prevents setting DMA
-> mode to any other value than the default (maximum) supported by the device (or
-> UDMA6, if supported) irrespective of the actual requested transfer mode and
-> returns error.
-> 
-> For example, setting mode to UDMA2 using hdparm, where UDMA4 is the default
-> transfer mode gives following error:
-> 	# ./hdparm -d1 -Xudma2  /dev/hda
-> 	 /dev/hda:hda: UDMA/66 mode selected
-> 	 setting using_dma to 1 (on)
-> 	 hda: UDMA/66 mode selected
-> 	 setting xfermode to 66 (UltraDMA mode2)
-> 	 HDIO_DRIVE_CMD(setxfermode) failed: Invalid argument
-> 	 using_dma     =  1 (on)
-> 
-> This patch fixes the issue.
-> 
-> Signed-off-by: Hemant Pedanekar <hemantp@ti.com>
-> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Probably not. It's actually a completely different kind of allocator
+than the rest as it doesn't actually use "slabs" at all. It's instead a
+slab-like interface on a traditional heap allocator. SLAB/SLUB/SLQB have
+much more in common - their biggest differences are about their approach
+to scalability/locking issues.
 
-Applied and queued up for -stable, thanks!
+On the upside, SLOB is easily the simplest of the bunch.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
