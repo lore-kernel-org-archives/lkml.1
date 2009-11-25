@@ -1,28 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbZKYWpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZKYVTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759863AbZKYWpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 17:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZKYWpp
+	id S1758879AbZKYVTD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:19:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZKYVTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 17:45:45 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33221 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759861AbZKYWpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 17:45:44 -0500
-Date: Thu, 26 Nov 2009 08:13:59 +1100
-From: Neil Brown <neilb@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>
-Subject: Re: BUG at scsi_lib.c:1108 [Was: mmotm 2009-11-24-16-47 uploaded]
-Message-ID: <20091126081359.414c8216@notabene.brown>
-In-Reply-To: <4B0D9221.2050103@gmail.com>
-References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>
-	<4B0D4949.4090109@gmail.com>
-	<1259162399.2535.8.camel@mulgrave.site>
-	<4B0D9221.2050103@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.1; x86_64-pc-linux-gnu)
+	Wed, 25 Nov 2009 16:19:02 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34902 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753465AbZKYVTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:19:01 -0500
+Date: Wed, 25 Nov 2009 13:18:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Luming Yu <luming.yu@gmail.com>
+Subject: Re: [PATCH 1/2] hrtimer: correct a few numbers in comments and
+ printk outputs
+Message-Id: <20091125131802.e8044b9a.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0911252116240.24119@localhost.localdomain>
+References: <1258745020-28060-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	<20091123152516.729e1407.akpm@linux-foundation.org>
+	<20091124101403.GA25364@pengutronix.de>
+	<20091125115601.3741fcc7.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0911252116240.24119@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,24 +35,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009 21:22:57 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+On Wed, 25 Nov 2009 21:18:39 +0100 (CET)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> It doesn't make sense at all. How can empty merge cause a regression?
-> And md/for-next doesn't produce the BUG.
+> On Wed, 25 Nov 2009, Andrew Morton wrote:
+> 
+> > On Tue, 24 Nov 2009 11:14:03 +0100
+> > Uwe Kleine-K__nig  <u.kleine-koenig@pengutronix.de> wrote:
+> > 
+> > > Hello Andrew,
+> > > 
+> > > On Mon, Nov 23, 2009 at 03:25:16PM -0800, Andrew Morton wrote:
+> > > > On Fri, 20 Nov 2009 20:23:39 +0100
+> > > > Uwe Kleine-K__nig  <u.kleine-koenig@pengutronix.de> wrote:
+> > > > 
+> > > > > @@ -52,7 +52,7 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
+> > > > >  			printk(KERN_WARNING
+> > > > >  			       "CE: %s increasing min_delta_ns to %lu nsec\n",
+> > > > >  			       dev->name ? dev->name : "?",
+> > > > > -			       dev->min_delta_ns << 1);
+> > > > > +			       dev->min_delta_ns);
+> > > > >  
+> > > > >  			i = 0;
+> > > > >  		}
+> > > > 
+> > > > This one's already in linux-next:
+> > > > 
+> > > > @@ -50,9 +50,9 @@ int tick_dev_program_event(struct clock_
+> > > >  				dev->min_delta_ns += dev->min_delta_ns >> 1;
+> > > >  
+> > > >  			printk(KERN_WARNING
+> > > > -			       "CE: %s increasing min_delta_ns to %lu nsec\n",
+> > > > +			       "CE: %s increasing min_delta_ns to %llu nsec\n",
+> > > >  			       dev->name ? dev->name : "?",
+> > > > -			       dev->min_delta_ns << 1);
+> > > > +			       (unsigned long long) dev->min_delta_ns << 1);
+> > > '<< 1' is wrong here, too.
+> > > 
+> > 
+> > What's wrong with it?  That leftshift appears to be to compensate for
+> > the rightshift a few lines above.
+> > 
+> > That change was unobvious and unchangelogged, so here we are again.
+> 
+> That's actually my fault. In commit 61c22c34 I removed the WARN_ON
+> which we put there to gather data on kerneloops.org for a while and
+> did not fix the printk format string.
+> 
 
-I've hit that situation before.  Two separate changes in separate
-branches conspire to cause a problem.
+The issue is not the format string.  I'm wondering why Uwe removed that
+left-shift of dev->min_delta_ns.
 
-md/for-next contains code to handle barriers properly for all levels,
-not just RAID1.
-It is possible I got this wrong in some way, and some new sanity check
-in a separate branch is firing, or it is possible some other bug in
-barrier handling has been added and now that MD sends barriers, it is
-being triggered.
-
-What I did to find the actual offending patches is to got to one of the
-heads just before the merge, and cherry-pick all the patches from the
-other branch, and then bisect that.
-
-NeilBrown
