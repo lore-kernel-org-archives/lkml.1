@@ -1,142 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbZKYQVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbZKYQ0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbZKYQVR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZKYQVQ
+	id S1758832AbZKYQ0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbZKYQ0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:21:16 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58233 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005AbZKYQVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:21:15 -0500
-Subject: Re: [PATCH] tracing - fix function graph trace to properly display
- failed entries
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091125084525.GA1940@jolsa.lab.eng.brq.redhat.com>
-References: <1259067458-27143-1-git-send-email-jolsa@redhat.com>
-	 <1259082845.22249.1110.camel@gandalf.stny.rr.com>
-	 <20091124211423.GE5071@nowhere>
-	 <20091125084525.GA1940@jolsa.lab.eng.brq.redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 25 Nov 2009 11:21:20 -0500
-Message-Id: <1259166080.21397.28.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 11:26:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52382 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758190AbZKYQ0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:26:19 -0500
+Date: Wed, 25 Nov 2009 17:25:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jakub Jelinek <jakub@redhat.com>, Andrew Haley <aph@redhat.com>,
+       "H.J. Lu" <hjl.tools@gmail.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
+ messing with mcount prologue
+Message-ID: <20091125162556.GA14233@elte.hu>
+References: <4B06EF6F.2050507@redhat.com>
+ <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+ <4B0972C9.302@redhat.com>
+ <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
+ <4B0BF119.4070704@redhat.com>
+ <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain>
+ <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com>
+ <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain>
+ <20091125154452.GA9456@elte.hu>
+ <alpine.LFD.2.00.0911251650570.24119@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911251650570.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 09:45 +0100, Jiri Olsa wrote:
-> On Tue, Nov 24, 2009 at 10:14:36PM +0100, Frederic Weisbecker wrote:
 
+* Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Wed, 25 Nov 2009, Ingo Molnar wrote:
+> > * Thomas Gleixner <tglx@linutronix.de> wrote:
 > > 
-> > Hmm, yeah in trace_pipe case we repeat until we have no space
-> > left in trace_seq (TRACE_TYPE_PARTIAL_LINE), or until we
-> > the user buffer is filled.
+> > > On Tue, 24 Nov 2009, Jakub Jelinek wrote:
+> > > 
+> > > > On Tue, Nov 24, 2009 at 03:55:49PM +0100, Thomas Gleixner wrote:
+> > > > > > you should compile your code with -maccumulate-outgoing-args, and there's
+> > > > > > no need to use -mtune=generic.  Is that right?
+> > > > > 
+> > > > > Seems to work. What other side effects has that ?
+> > > > 
+> > > > Faster code, significant increase in code size though.  Note that on many
+> > > > architectures it is the only supported model.
+> > > 
+> > > Just checked on the affected -marchs. The increase in code size is 
+> > > about 3% which is not that bad and definitely acceptable for the 
+> > > tracing case. Will zap the -mtune=generic patch and use 
+> > > -maccumulate-outgoing-args instead.
 > > 
-> > But indeed in case of trace file, we are using a seq file
-> > so the buffer gets flushed after each entries.
-> > 
-> > Assuming the trace_seq is 4096 bytes long this is probably
-> > enough for every function graph entries (even with headers and
-> > interrupts), this is not something we are supposed to see in trace_seq.
-> > 
-> > I did not realized that when Jiri sent the first version of this patch.
+> > hm, 3% sounds quite large :( dyn-ftrace is enabled in distro configs, so 
+> > 3% is a big deal IMO.
 > 
-> sure, but it is not the trace_seq structure that overflows, it is the bare 
-> seq_file underneath. The s_show calls "trace_print_seq":
+> Distro-configs have -mtune=generic anyway. So it's not changing
+> anything for them.
 > 
-> void trace_print_seq(struct seq_file *m, struct trace_seq *s)
-> {               
->         int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
->         
->         seq_write(m, s->buffer, len);
-> 
->         trace_seq_init(s);
-> }               
-> 
-> it flushes the trace_seq to the seq_file and reinits the trace_seq.
-> But the seq_file will get filled in the end, ending up with
-> not displayed output in that case I described in the first email.
-> 
+> I'm talking about the -march flags which result in that weird code
+> (pentium-mmx ....).
 
-First note, the filling of the trace_seq is only an issue with
-trace_pipe. The trace file never has this issue because it uses the
-trace_seq once per event, and there exists no event that is bigger than
-a page.
+ok!
 
-
-The trace_pipe fills as much as it can because it is doing it live and
-wants to be as fast as possible, and it is passing information between
-user and kernel. Thus it will try to pass as much to userspace as
-possible.
-
-
-Now any issue with the trace file is not caused by trace_seq. But lets
-look at what is happening with trace_pipe.
-
-In tracing_read_pipe, we do the following:
-
-	len = iter->seq.len;
-
-	ret = print_trace_line(iter);
-	if (ret == TRACE_TYPE_PARTIAL_LINE) {
-		iter->seq.len = len;  /* this removes any partial write */
-		break;
-	}
-
-	if (ret != TRACE_TYPE_NO_CONSUME)
-		trace_consume(iter);
-
-	if (iter->seq.len >= cnt)
-		break;
-
-
-The above is contained in a loop. It stops when either there are no more
-events, the trace_seq buffer is full or we fill the users buffer.
-
-The print_trace_line is what eventually goes into the function graph
-tracer calling print_graph_function.
-
-The call get_return_for_leaf figures out if this is a leaf function or
-not.
-
-	ring_iter = iter->buffer_iter[iter->cpu];
-
-	if (ring_iter)
-		event = ring_buffer_iter_peak(ring_iter, NULL);
-	else {
-		ring_buffer_consume(iter->tr->buffer, iter->cpu, NULL);
-		event = ring_buffer_peak(iter->tr->buffer, iter->cpu,
-					NULL);
-	}
-
-ring_iter is NULL on trace_pipe, so we consume the event. If the next
-item is not a graph item, it will be consumed in the loop described
-above and lost.
-
-In the case of print_graph_entry_nested, where we don't want to discard
-the consumed event, on success it returns: TRACE_TYPE_NO_CONSUME, so
-that the event does not get consumed.
-
-But if the buffer fills up, and we exit with TRACE_TYPE_PARTIAL_LINE, we
-lost the current event :-(  That is, it was consumed and not read. The
-next read by userspace that calls the find_next_entry_inc() will not
-have the correct entry.
-
-Looking at this deeper, I'm not sure the find_next_entry_inc is correct
-here. If we break out of the loop by filling up the seq buffer, we lose
-that event all together. I'll look deeper into this.
-
-Thanks,
-
--- Steve
-
-
+	Ingo
