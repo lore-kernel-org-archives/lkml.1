@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935011AbZKYVj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbZKYVfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935011AbZKYVj7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932983AbZKYVj5
+	id S1759271AbZKYVfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbZKYVfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:39:57 -0500
-Received: from atlantis.8hz.com ([212.129.237.78]:61428 "EHLO atlantis.8hz.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932705AbZKYVjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:39:55 -0500
-X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 16:39:55 EST
-Date: Wed, 25 Nov 2009 21:32:46 +0000
-From: Sean Young <sean@mess.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Jarod Wilson <jarod@wilsonet.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: IR raw input is not sutable for input system
-Message-ID: <20091125213246.GA44831@atlantis.8hz.com>
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop> <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net> <1259155734.4875.23.camel@maxim-laptop>
-Mime-Version: 1.0
+	Wed, 25 Nov 2009 16:35:42 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58139 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759017AbZKYVfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:35:41 -0500
+Date: Wed, 25 Nov 2009 22:35:46 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: davem@davemloft.net
+Cc: zambrano@broadcom.com, dave@thedillows.org, mb@bu3sch.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] b44.c box lockup fix (netconsole): ratelimit NAPI poll
+	error message
+Message-ID: <20091125213546.GA6168@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259155734.4875.23.camel@maxim-laptop>
-User-Agent: Mutt/1.4.2.3i
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 03:28:54PM +0200, Maxim Levitsky wrote:
-> On Tue, 2009-11-24 at 19:32 -0800, Trent Piepho wrote: 
-> > On Wed, 25 Nov 2009, Maxim Levitsky wrote:
-> > > Its not the case.
-> > > There are many protocols, I know that by experimenting with my universal
-> > > remote. There are many receivers, and all have different accuracy.
-> > > Most remotes aren't designed to be used with PC, thus user has to invent
-> > > mapping between buttons and actions.
-> > > Its is not possible to identify remotes accurately, many remotes send
-> > > just a 8 bit integer that specifies the 'model' thus many remotes can
-> > > share it.
-> > 
-> > The signal recevied by the ir receiver contains glitches.  Depending on the
-> > receiver there can be quite a few.  It is also not trivial to turn the raw
-> > signal sent by the remote into a digital value, even if you know what to
-> > expect.  It takes digital signal processing techniques to turn the messy
-> > sequence of inaccurate mark and space lengths into a best guess at what
-> > digital code the remote sent.
-> Exactly
-> 
-> > 
-> > It's like turning raw VBI data into decoded ASCII teletext from a simulated
-> > keyboard device, all in the kernel.
-> You hit a nail on the head with this one.
+Hello all,
 
-Absolutely. There are a number of use cases when you want access to the 
-space-pulse (i.e. IR) information. For debugging purposes; support for 
-non-standard remotes. Being able to do a precise recording of IR activity
-so you can replay without parsing. One could even imagine IR being used 
-for completely different purposes than "key strokes", so the kernel
-should not enforce this "policy".
+my OpenWrt MIPSEL ASUS WL-500gP v2 kept locking up during driver
+debugging with kobject debugging turned on (when debugging non-working
+drivers such as USB, ftdi_sio and usb_audio).
+Turns out that it's not very helpful to have a netconsole-deployed
+network driver's interrupt handler message spew noise permanently
+(see comment in patch).
 
-In the past I've spent time dissecting the IR output of a strange remote, 
-I would hate to think this would not be possible due to mad kernel 
-interfaces which cater just for drooling in front of the telly with
-your *new* remote.
+See
+http://bugzilla.kernel.org/show_bug.cgi?id=14691
+for background information.
 
+Tested on 2.6.30.9 and working (now normal debug messages manage
+to come through, too, yet box still locked up, simply due to excessive
+_normal_ log messages such as kobject logging, but that's _expected_
+and user-correctable).
 
-Sean
+checkpatch.pl'd, applies cleanly to -rc8.
+Likely -stable candidate material.
+
+r8169 (and perhaps other netconsole-capable drivers?)
+might need such a correction, too, if the
+                        if (likely(napi_schedule_prep(&tp->napi)))
+                                __napi_schedule(&tp->napi);
+                        else if (netif_msg_intr(tp)) {
+                                printk(KERN_INFO "%s: interrupt %04x in poll\n",
+                                dev->name, status);
+                        }
+is similarly problematic.
+BTW: this patch here is to be seen separate from the r8169 interrupt handler
+rework as discussed at "r8169: avoid losing MSI interrupts", since even with a
+"working" interrupt handler (i.e. one that closes the "new interrupt" race window,
+which the one in b44 currently probably doesn't) such error messages
+have a fatal feedback loop in the case of netconsole deployment.
+
+Thanks,
+
+Signed-off-by: Andreas Mohr <andi@lisas.de>
+
+--- linux-2.6.30.9/drivers/net/b44.c.orig	2009-11-25 20:49:48.000000000 +0100
++++ linux-2.6.30.9/drivers/net/b44.c	2009-11-25 21:26:34.000000000 +0100
+@@ -913,8 +913,18 @@
+ 			__b44_disable_ints(bp);
+ 			__napi_schedule(&bp->napi);
+ 		} else {
+-			printk(KERN_ERR PFX "%s: Error, poll already scheduled\n",
+-			       dev->name);
++			/* netconsole fix!!:
++			 * without ratelimiting, this message would:
++			 * immediately find its way out to b44 netconsole ->
++			 * new IRQ -> re-encounter failed napi_schedule_prep()
++			 * -> error message -> ad nauseam -> box LOCKUP.
++			 * See thread "r8169: avoid losing MSI interrupts"
++			 * for further inspiration. */
++			if (printk_ratelimit())
++				printk(KERN_ERR PFX
++					"%s: Error, poll already scheduled; "
++					"istat 0x%x, imask 0x%x\n",
++						dev->name, istat, imask);
+ 		}
+ 
+ irq_ack:
