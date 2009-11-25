@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbZKYUAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbZKYUAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759666AbZKYUAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbZKYUAA
+	id S1759690AbZKYUAL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbZKYUAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:00:00 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56853 "EHLO hera.kernel.org"
+	Wed, 25 Nov 2009 15:00:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56869 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759626AbZKYT77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 14:59:59 -0500
-Message-ID: <4B0D8C83.3000005@kernel.org>
-Date: Wed, 25 Nov 2009 11:58:59 -0800
+	id S1759673AbZKYUAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:00:06 -0500
+Message-ID: <4B0D8C90.9020605@kernel.org>
+Date: Wed, 25 Nov 2009 11:59:12 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -22,76 +22,116 @@ CC: Ingo Molnar <mingo@elte.hu>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
        Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 0/9] pci: update pci bridge resource to get more big range
- for devices under it - v12
-References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com>
-In-Reply-To: <4B0D13EB.9010403@jp.fujitsu.com>
+Subject: [PATCH 1/9] pci: separate pci_setup_bridge to small functions
+References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D88A4.5050904@kerne!
+ l.org>
+In-Reply-To: <4B0D88A4.5050904@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-split the two patches in to 9 for easy review...
+prepare to use those small functions according to resource type later
 
-please check
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-1. boot time:
+---
+ drivers/pci/setup-bus.c |   54 +++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 44 insertions(+), 10 deletions(-)
 
-BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to the bridge, but stop
-assigning resource to the device under that bridge, because the device need big resource.
-
-so patches (first 6) are trying to 
-a. pci assign unassign and record the failed device resource.
-b. clear the BIOS assigned resource of the parent bridge of fail device
-c. go back and call pci assign unsigned
-d. if it still fail, will go up more bridges. and clear and try again.
-
-v2: Jesse doesn't like it is in find_free_bus_resource...
-    try to move out of pci_bus_size_bridges loop.
-v3: add pci_setup_bridge calling after pci_bridge_release_not_used_res.
-    only clear release those res for x86.
-v4: Bjorn want to release use dev instead of bus.
-v5: Kenji pointed out it will have problem with several level bridge.
-    so let only handle leaf bridge.
-v6: address Kenji's request (new pci_bus_release...). and change applying order
-    move back release to pci_assign_unassigned_resource
-v7: change functions name pci_bus_release_unused_bridge_res according to Jesse
-v8: address Eric's concern, only overwrite leaf bridge resource that is not big
-    enough need to do it in two steps, and first step recore the failed res,
-    and don't touch bridge res that programmed by firmware. second step will
-    try to release bridge resource that is too small at first.
-v9: refresh to be applied after bjorn's patch, and remove trick about save
-    size and restore resource second try.
-v11:add pci=try=5, about more try to change more bridge
-v12:not shrink pci bridge resource
-
-2. hotplug:
-BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to every bridge. (8M)
-but when insert one card that big resource, the card can not get resource. because kernel will not touch the 
-bridge resource.
-
-so patches (last 3) are trying to
-a. assign resource to devices with that slot. and record fail devices
-b. if there is some failed, will clear sepcifically io port of bridge, or mmio of bridge, or mmio pref of bridge.
-c. try to assign the parent bridge of the slot.
-
-v2: address Alex's concern about pci remove/rescan feature about
-    pci_setup_bridge changes.
-v3: Kenji pointed out that pci_config_slot need to be called before
-    pci_bus_add_devices()
-v4: move out pci_is_enabled checkout of pci_setup_bridge()
-v5: change the applying sequence.
-v6: change the functions name according to Jesse
-v8: address Eric's concern, only overwrite leaf bridge resource that is not
-     big enough
-v9: refresh to be applied after bjorn's patch, and remove trick about save
-    size and restore resource second try.
-v10:alex found need to have export for pci_assign_unassigned_bridge_resources
-v11: pass check_leaf with pci_bus_release_unused_bridge_res
-
-
-Thanks
-
-Yinghai
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -134,19 +134,12 @@ EXPORT_SYMBOL(pci_setup_cardbus);
+    config space writes, so it's quite possible that an I/O window of
+    the bridge will have some undesirable address (e.g. 0) after the
+    first write. Ditto 64-bit prefetchable MMIO.  */
+-static void pci_setup_bridge(struct pci_bus *bus)
++static void pci_setup_bridge_io(struct pci_bus *bus)
+ {
+ 	struct pci_dev *bridge = bus->self;
+ 	struct resource *res;
+ 	struct pci_bus_region region;
+-	u32 l, bu, lu, io_upper16;
+-	int pref_mem64;
+-
+-	if (pci_is_enabled(bridge))
+-		return;
+-
+-	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
+-		 bus->secondary, bus->subordinate);
++	u32 l, io_upper16;
+ 
+ 	/* Set up the top and bottom of the PCI I/O segment for this bus. */
+ 	res = bus->resource[0];
+@@ -172,7 +165,13 @@ static void pci_setup_bridge(struct pci_
+ 	pci_write_config_dword(bridge, PCI_IO_BASE, l);
+ 	/* Update upper 16 bits of I/O base/limit. */
+ 	pci_write_config_dword(bridge, PCI_IO_BASE_UPPER16, io_upper16);
+-
++}
++static void pci_setup_bridge_mmio(struct pci_bus *bus)
++{
++	struct pci_dev *bridge = bus->self;
++	struct resource *res;
++	struct pci_bus_region region;
++	u32 l;
+ 	/* Set up the top and bottom of the PCI Memory segment
+ 	   for this bus. */
+ 	res = bus->resource[1];
+@@ -187,6 +186,14 @@ static void pci_setup_bridge(struct pci_
+ 		dev_info(&bridge->dev, "  bridge window [mem disabled]\n");
+ 	}
+ 	pci_write_config_dword(bridge, PCI_MEMORY_BASE, l);
++}
++static void pci_setup_bridge_mmio_pref(struct pci_bus *bus)
++{
++	struct pci_dev *bridge = bus->self;
++	struct resource *res;
++	struct pci_bus_region region;
++	u32 l, bu, lu;
++	int pref_mem64;
+ 
+ 	/* Clear out the upper 32 bits of PREF limit.
+ 	   If PCI_PREF_BASE_UPPER32 was non-zero, this temporarily
+@@ -219,10 +226,37 @@ static void pci_setup_bridge(struct pci_
+ 		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+ 		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ 	}
++}
++static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
++{
++	struct pci_dev *bridge = bus->self;
++
++	if (pci_is_enabled(bridge))
++		return;
++
++	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
++		 bus->secondary, bus->subordinate);
++
++	if (type & IORESOURCE_IO)
++		pci_setup_bridge_io(bus);
++
++	if (type & IORESOURCE_MEM)
++		pci_setup_bridge_mmio(bus);
++
++	if (type & IORESOURCE_PREFETCH)
++		pci_setup_bridge_mmio_pref(bus);
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+ 
++static void pci_setup_bridge(struct pci_bus *bus)
++{
++	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++
++	__pci_setup_bridge(bus, type);
++}
++
+ /* Check whether the bridge supports optional I/O and
+    prefetchable memory ranges. If not, the respective
+    base/limit registers must be read-only and read as 0. */
 
