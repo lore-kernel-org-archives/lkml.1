@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934262AbZKYBVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934167AbZKYBUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934262AbZKYBVB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 20:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934156AbZKYBU6
+	id S934167AbZKYBUc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 20:20:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZKYBUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 20:20:58 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:50179 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934071AbZKYBU5 (ORCPT
+	Tue, 24 Nov 2009 20:20:31 -0500
+Received: from mga05.intel.com ([192.55.52.89]:19371 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933966AbZKYBUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 20:20:57 -0500
-Message-ID: <4B0C86BF.10003@snapgear.com>
-Date: Wed, 25 Nov 2009 11:22:07 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
-	<u.kleine-koenig@pengutronix.de>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Greg Ungerer <gerg@uclinux.org>,
-       Len Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH 08/38] move mcf_remove to .devexit.text
-References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-4-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-5-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-7-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-8-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1259096853-18909-8-git-send-email-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 24 Nov 2009 20:20:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,282,1257148800"; 
+   d="scan'208";a="750138047"
+Subject: Re: [MM] Make mm counters per cpu instead of atomic
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Tejun Heo <tj@kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <alpine.DEB.2.00.0911240914190.14045@router.home>
+References: <alpine.DEB.1.10.0911041409020.7409@V090114053VZO-1>
+	 <1258440521.11321.32.camel@localhost> <1258443101.11321.33.camel@localhost>
+	 <1258450465.11321.36.camel@localhost>
+	 <alpine.DEB.1.10.0911171223460.20360@V090114053VZO-1>
+	 <1258966270.29789.45.camel@localhost>
+	 <alpine.DEB.2.00.0911230830300.26432@router.home>
+	 <1259049753.29789.49.camel@localhost>
+	 <alpine.DEB.2.00.0911240914190.14045@router.home>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Wed, 25 Nov 2009 09:23:01 +0800
+Message-Id: <1259112181.29789.53.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe,
-
-Uwe Kleine-König wrote:
-> The function mcf_remove is used only wrapped by __devexit_p so define it
-> using __devexit.
+On Tue, 2009-11-24 at 09:17 -0600, Christoph Lameter wrote:
+> On Tue, 24 Nov 2009, Zhang, Yanmin wrote:
 > 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Greg Ungerer <gerg@uclinux.org>
-> Cc: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Alan Cox <alan@linux.intel.com>
-> Cc: linux-kernel@vger.kernel.org
-
-I have this queued in the for-linus (and for-next) branches for
-inclusion in 2.6.33 at:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
-
-Regards
-Greg
-
-
-
-> ---
->  drivers/serial/mcf.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > True.... We need to find some alternative to per cpu data to scale mmap
+> > > sem then.
+> > I ran lots of benchmarks such like specjbb2005/hackbench/tbench/dbench/iozone
+> > /sysbench_oltp(mysql)/aim7 against percpu tree(based on 2.6.32-rc7) on a 4*8*2 logical
+> > cpu machine, and didn't find big result difference between with your patch and without
+> > your patch.
 > 
-> diff --git a/drivers/serial/mcf.c b/drivers/serial/mcf.c
-> index b443824..7bb5fee 100644
-> --- a/drivers/serial/mcf.c
-> +++ b/drivers/serial/mcf.c
-> @@ -602,7 +602,7 @@ static int __devinit mcf_probe(struct platform_device *pdev)
->  
->  /****************************************************************************/
->  
-> -static int mcf_remove(struct platform_device *pdev)
-> +static int __devexit mcf_remove(struct platform_device *pdev)
->  {
->  	struct uart_port *port;
->  	int i;
+> This affects loads that heavily use mmap_sem. You wont find too many
+> issues in tests that do not run processes with a large thread count and
+> cause lots of faults or uses of get_user_pages(). The tests you list are
+> not of that nature.
+sysbench_oltp(mysql) is kind of such workload. Both sysbench and mysql are
+multi-threaded. 2 years ago, I investigated a scalability issue of such
+ workload and found mysql causes frequent down_read(mm->mmap_sem). Nick changes
+it to down_read to fix it.
+
+But this workload doesn't work well with more than 64 threads because mysql has some
+unreasonable big locks in userspace (implemented as a conditional spinlock in
+userspace).
+
+Yanmin
 
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-8 Gardner Close                             FAX:         +61 7 3217 5323
-Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
