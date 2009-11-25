@@ -1,65 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbZKYV4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935144AbZKYV6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935129AbZKYV4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935118AbZKYV4U
+	id S935144AbZKYV6t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935122AbZKYV6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:56:20 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:36391 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935119AbZKYV4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:56:16 -0500
-Date: Wed, 25 Nov 2009 16:56:19 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Christoph Hellwig <hch@lst.de>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: regression: 2.6.32-rc8 shuts down after reaching critical
- temperature
-In-reply-to: <20091125102857.GA28310@lst.de>
-Message-id: <alpine.LFD.2.00.0911251647000.3950@localhost.localdomain>
-References: <20091125102857.GA28310@lst.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Nov 2009 16:58:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44534 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935121AbZKYV6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:58:47 -0500
+Message-ID: <4B0DA885.7010601@redhat.com>
+Date: Wed, 25 Nov 2009 22:58:29 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+CC: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com> <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+In-Reply-To: <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Christoph Hellwig wrote:
+On 11/25/09 19:20, Devin Heitmueller wrote:
+> On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson<jarod@wilsonet.com>
+> wrote:
+>> Took me a minute to figure out exactly what you were talking
+>> about. You're referring to the current in-kernel decoding done on
+>> an ad-hoc basis for assorted remotes bundled with capture devices,
+>> correct?
+>>
+>> Admittedly, unifying those and the lirc driven devices hasn't
+>> really been on my radar.
 
-> I recently upgraded my Thinkpad T500 from Linux 2.6.31 to Linux
-> 2.6.32-rc (first -rc7 but I've also tried with -rc6 and -rc8) and when
-> putting load on it, e.g. by building a kernel tree.  It shuts down soon
-> with the
-> 
-> 	Critical temperature reached (%ld C), shutting down.\n"
-> 
-> printk from drivers/thermal/thermal_sys.c, where the temperature is
-> usually 100C or slightly above.  The system is a Lenovo Thinkpad T500
-> with a Intel Core 2 Dueo T9600 running a 32 bit kernel.
+I think at the end of the day we'll want to have all IR drivers use the
+same interface.  The way the current in-kernel input layer drivers work
+obviously isn't perfect too, so we *must* consider both worlds to get a
+good solution for long-term ...
 
-"thermal.nocrt=1" will disable the actual shutdown -- but you'll
-still get the warning -- which might be helpful.  "thermal.crt=105"
-would override all critical trip points to be 105, for example,
-but otherwise not change any behaviour.
+> This is one of the key use cases I would be very concerned with. For
+> many users who have bought tuner products, the bundled remotes work
+> "out-of-the-box", regardless of whether lircd is installed.
 
-> I've done some attempts at bisecting it, but for most of the 2.6.32-rc
-> series the system crashes during boot in ACPI code with a backtrace
-> longer than the screen can display.
+I bet this simply isn't going to change.
 
-Hmm, I don't have a T500, but I've not seen such crashes during -rc.
-Please send along your .config
-Do you still get them when disabling the thinkpad-acpi driver?
+> I have no objection so much as to saying "well, you have to install
+> the lircd service now", but there needs to be a way for the driver to
+>  automatically tell lirc what the default remote control should be,
+> to avoid a regression in functionality.
 
-Probably the most interesting place to bisect is drivers/acpi/ec.c
+*Requiring* lircd for the current in-kernel drivers doesn't make sense
+at all.  Allowing lircd being used so it can do some more advanced stuff 
+makes sense though.
 
-If you can send along the dmesg from the recent failing kernel,
-plus the output from "grep . /proc/acpi/thermal_zone/*/*"
-that may be helpful.
+> This is why I think we really should put together a list of use
+> cases, so that we can see how any given proposal addresses those use
+> cases. I offered to do such, but nobody seemed really interested in
+> this.
 
-thanks,
--Len
+Lets have a look at the problems the current input layer bits have 
+compared to lirc:
 
+
+(1) ir code (say rc5) -> keycode conversion looses information.
+
+I think this can easily be addressed by adding a IR event type to the 
+input layer, which could look like this:
+
+   input_event->type  = EV_IR
+   input_event->code  = IR_RC5
+   input_event->value = <rc5 value>
+
+In case the 32bit value is too small we might want send two events 
+instead, with ->code being set to IR_<code>_1 and IR_<code>_2
+
+Advantages:
+   * Applications (including lircd) can get access to the unmodified
+     rc5/rc6/... codes.
+   * All the ir-code -> keycode mapping magic can be handled by the
+     core input layer then.  All the driver needs to do is to pass on
+     the information which keymap should be loaded by default (for the
+     bundled remote if any).  The configuration can happen in userspace
+     (sysfs attribute + udev + small utility in tools/ir/).
+   * lirc drivers which get ir codes from the hardware can be converted
+     to pure input layer drivers without regressions.  lircd is not
+     required any more.
+
+
+(2) input layer doesn't give access to the raw samples.
+
+Not sure how to deal with that best.  Passing them through the input 
+layer would certainly be possible to hack up.  But what would be the 
+point?  The input layer wouldn't do any processing on them.  It wouldn't 
+buy us much.  So we might want to simply stick with todays lirc 
+interface for the raw samples.
+
+Drivers which support both ir codes (be it by hardware or by in-kernel 
+decoding) and raw samples would register two devices then, one input 
+device and one lirc device.  It would probably a good idea to stop 
+sending events to the input layer as soon as someone (most likely lircd) 
+opens the lirc device to avoid keystrokes showing up twice.
+
+By default the in-kernel bits will be at work, but optionally you can 
+have lircd grab the raw samples and do fancy advanced decoding.
+
+
+(3) input layer doesn't allow transmitting IR codes.
+
+If we keep the lirc interface for raw samples anyway, then we can keep 
+it for sending too, problem solved ;)  How does sending hardware work 
+btw?  Do they all accept just raw samples?  Or does some hardware also 
+accept ir-codes?
+
+cheers,
+   Gerd
