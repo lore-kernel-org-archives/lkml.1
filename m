@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964860AbZKYN21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbZKYNaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964860AbZKYN21 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbZKYN2Y
+	id S964896AbZKYNaF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:30:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbZKYN20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61138 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:28:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48211 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934542AbZKYN2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:23 -0500
+	id S934542AbZKYN2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:24 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 12/30] GFS2: Remove obsolete code in quota.c
-Date: Wed, 25 Nov 2009 14:22:37 +0000
-Message-Id: <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-12-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 13/30] GFS2: Add get_xstate quota function
+Date: Wed, 25 Nov 2009 14:22:38 +0000
+Message-Id: <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
@@ -28,70 +28,61 @@ References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-10-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-11-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-12-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no point in testing for GLF_DEMOTE here, we might as
-well always release the glock at that point.
+This allows querying of the quota state via the XFS quota
+API.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/glock.h |    9 ---------
- fs/gfs2/quota.c |   13 +++++--------
- 2 files changed, 5 insertions(+), 17 deletions(-)
+ fs/gfs2/quota.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/fs/gfs2/glock.h b/fs/gfs2/glock.h
-index c609894..13f0bd2 100644
---- a/fs/gfs2/glock.h
-+++ b/fs/gfs2/glock.h
-@@ -180,15 +180,6 @@ static inline int gfs2_glock_is_held_shrd(struct gfs2_glock *gl)
- 	return gl->gl_state == LM_ST_SHARED;
- }
- 
--static inline int gfs2_glock_is_blocking(struct gfs2_glock *gl)
--{
--	int ret;
--	spin_lock(&gl->gl_spin);
--	ret = test_bit(GLF_DEMOTE, &gl->gl_flags);
--	spin_unlock(&gl->gl_spin);
--	return ret;
--}
--
- int gfs2_glock_get(struct gfs2_sbd *sdp,
- 		   u64 number, const struct gfs2_glock_operations *glops,
- 		   int create, struct gfs2_glock **glp);
 diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index 73a43ce..6aaa6c5 100644
+index 6aaa6c5..e7114be 100644
 --- a/fs/gfs2/quota.c
 +++ b/fs/gfs2/quota.c
-@@ -843,9 +843,8 @@ restart:
- 	if (force_refresh || qd->qd_qb.qb_magic != cpu_to_be32(GFS2_MAGIC)) {
- 		loff_t pos;
- 		gfs2_glock_dq_uninit(q_gh);
--		error = gfs2_glock_nq_init(qd->qd_gl,
--					   LM_ST_EXCLUSIVE, GL_NOCACHE,
--					   q_gh);
-+		error = gfs2_glock_nq_init(qd->qd_gl, LM_ST_EXCLUSIVE,
-+					   GL_NOCACHE, q_gh);
- 		if (error)
- 			return error;
+@@ -47,6 +47,7 @@
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
++#include <linux/dqblk_xfs.h>
  
-@@ -871,11 +870,9 @@ restart:
- 		qlvb->qb_value = cpu_to_be64(q.qu_value);
- 		qd->qd_qb = *qlvb;
- 
--		if (gfs2_glock_is_blocking(qd->qd_gl)) {
--			gfs2_glock_dq_uninit(q_gh);
--			force_refresh = 0;
--			goto restart;
--		}
-+		gfs2_glock_dq_uninit(q_gh);
-+		force_refresh = 0;
-+		goto restart;
- 	}
- 
+ #include "gfs2.h"
+ #include "incore.h"
+@@ -1375,7 +1376,29 @@ int gfs2_quotad(void *data)
  	return 0;
+ }
+ 
++static int gfs2_quota_get_xstate(struct super_block *sb,
++				 struct fs_quota_stat *fqs)
++{
++	struct gfs2_sbd *sdp = sb->s_fs_info;
++
++	memset(fqs, 0, sizeof(struct fs_quota_stat));
++	fqs->qs_version = FS_QSTAT_VERSION;
++	if (sdp->sd_args.ar_quota == GFS2_QUOTA_ON)
++		fqs->qs_flags = (XFS_QUOTA_UDQ_ENFD | XFS_QUOTA_GDQ_ENFD);
++	else if (sdp->sd_args.ar_quota == GFS2_QUOTA_ACCOUNT)
++		fqs->qs_flags = (XFS_QUOTA_UDQ_ACCT | XFS_QUOTA_GDQ_ACCT);
++	if (sdp->sd_quota_inode) {
++		fqs->qs_uquota.qfs_ino = GFS2_I(sdp->sd_quota_inode)->i_no_addr;
++		fqs->qs_uquota.qfs_nblks = sdp->sd_quota_inode->i_blocks;
++	}
++	fqs->qs_uquota.qfs_nextents = 1; /* unsupported */
++	fqs->qs_gquota = fqs->qs_uquota; /* its the same inode in both cases */
++	fqs->qs_incoredqs = atomic_read(&qd_lru_count);
++	return 0;
++}
++
+ const struct quotactl_ops gfs2_quotactl_ops = {
+ 	.quota_sync     = gfs2_quota_sync,
++	.get_xstate     = gfs2_quota_get_xstate,
+ };
+ 
 -- 
 1.6.2.5
 
