@@ -1,48 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934664AbZKYM6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934652AbZKYM6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934664AbZKYM6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758763AbZKYM6c
+	id S934652AbZKYM6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZKYM6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:58:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47811 "EHLO hera.kernel.org"
+	Wed, 25 Nov 2009 07:58:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:65191 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758746AbZKYM6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:58:31 -0500
-Message-ID: <4B0D29D9.1090809@kernel.org>
-Date: Wed, 25 Nov 2009 21:58:01 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1758723AbZKYM6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:58:19 -0500
+Message-ID: <4B0D2A75.9000009@redhat.com>
+Date: Wed, 25 Nov 2009 08:00:37 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: linux-next: percpu tree build failure
-References: <20091125234133.4d603f48.sfr@canb.auug.org.au>
-In-Reply-To: <20091125234133.4d603f48.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] trace_kprobes: don't output zero offset
+References: <4B0CEBCB.7080309@cn.fujitsu.com>
+In-Reply-To: <4B0CEBCB.7080309@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Lai,
 
-11/25/2009 09:41 PM, Stephen Rothwell wrote:
-> Caused by commit 9a453506c3503929654112851e27b8c64c693912 ("percpu: Fix
-> kdump failure if booted with percpu_alloc=page").  I reverted the merge
-> commit (due to dependencies) that merged the above
-> (25b1a9ccfdd0e3dc306a1e3a354ba5480c4b0dd9 "Merge branch 'for-linus' into
-> for-next to receive per_cpu_ptr_to_phys ().") for today.  The branch
-> being merged had only that one commit in it.
+Lai Jiangshan wrote:
+> 
+> "symbol_name+0" is not so friendly.
+> It makes the output longer.
 
-The change was missing asm/io.h include and the fix commit was
-incorrectly attributed to me.  Fixed both problems.
+Hmm, I've added +0 just for convenience of parser programs.
+But anyway, skipping it is not so costly option for them :-)
 
-Thanks.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+> index 9e42f2a..e82bea3 100644
+> --- a/kernel/trace/trace_kprobe.c
+> +++ b/kernel/trace/trace_kprobe.c
+> @@ -243,7 +243,11 @@ static int probe_arg_string(char *buf, size_t n, struct fetch_func *ff)
+>  		ret = snprintf(buf, n, "@0x%p", ff->data);
+>  	else if (ff->func == fetch_symbol) {
+>  		struct symbol_cache *sc = ff->data;
+> -		ret = snprintf(buf, n, "@%s%+ld", sc->symbol, sc->offset);
+> +		if (sc->offset)
+> +			ret = snprintf(buf, n, "@%s%+ld", sc->symbol,
+> +					sc->offset);
+> +		else
+> +			ret = snprintf(buf, n, "@%s", sc->symbol);
+>  	} else if (ff->func == fetch_retvalue)
+>  		ret = snprintf(buf, n, "$retval");
+>  	else if (ff->func == fetch_stack_address)
+> @@ -760,10 +764,12 @@ static int probes_seq_show(struct seq_file *m, void *v)
+>  	seq_printf(m, "%c", probe_is_return(tp) ? 'r' : 'p');
+>  	seq_printf(m, ":%s/%s", tp->call.system, tp->call.name);
+>  
+> -	if (tp->symbol)
+> +	if (!tp->symbol)
+> +		seq_printf(m, " 0x%p", tp->rp.kp.addr);
+> +	else if (tp->rp.kp.offset)
+>  		seq_printf(m, " %s+%u", probe_symbol(tp), tp->rp.kp.offset);
+>  	else
+> -		seq_printf(m, " 0x%p", tp->rp.kp.addr);
+> +		seq_printf(m, " %s", probe_symbol(tp));
+>  
+>  	for (i = 0; i < tp->nr_args; i++) {
+>  		ret = probe_arg_string(buf, MAX_ARGSTR_LEN, &tp->args[i].fetch);
+> 
+> 
 
 -- 
-tejun
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
