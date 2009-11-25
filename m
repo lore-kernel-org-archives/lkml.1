@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbZKYLQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZKYLSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbZKYLQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZKYLQn
+	id S1758669AbZKYLSy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758353AbZKYLSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:16:43 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35228 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148AbZKYLQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:16:42 -0500
-Date: Wed, 25 Nov 2009 12:16:43 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: linux-next: manual merge of the trivial tree with the ext4
- tree
-In-Reply-To: <20091125183414.eb45acca.sfr@canb.auug.org.au>
-Message-ID: <alpine.LSU.2.00.0911251216270.6953@wotan.suse.de>
-References: <20091125183414.eb45acca.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Nov 2009 06:18:53 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45927 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbZKYLSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:18:52 -0500
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter
+ irqbalance hints
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       Yong Zhang <yong.zhang0@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.jf.intel.com" <arjan@linux.jf.intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <alpine.LFD.2.00.0911241027140.24119@localhost.localdomain>
+References: <20091123064630.7385.30498.stgit@ppwaskie-hc2.jf.intel.com>
+	 <2674af740911222332i65c0d066h79bf2c1ca1d5e4f0@mail.gmail.com>
+	 <1258968980.2697.9.camel@ppwaskie-mobl2> <1258995923.4531.715.camel@laptop>
+	 <Pine.WNT.4.64.0911231529240.10056@ppwaskie-MOBL2.amr.corp.intel.com>
+	 <1259051902.4531.1053.camel@laptop>
+	 <1259053156.2631.21.camel@ppwaskie-mobl2>
+	 <alpine.LFD.2.00.0911241027140.24119@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 12:18:52 +0100
+Message-ID: <1259147932.4027.327.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Stephen Rothwell wrote:
 
-> Today's linux-next merge of the trivial tree got a conflict in
-> fs/ext4/balloc.c between commit 4433871130f36585fde38e7dd817433296648945
-> ("ext4: fold ext4_free_blocks() and ext4_mb_free_blocks()") from the ext4
-> tree and commit 15dcf8433b514d1dc1b80d87a0798c2db2c37e95 ("tree-wide: fix
-> some typos and punctuation in comments") from the trivial tree.
-> 
-> The former moved the comment fixed by the latter and fixed the typo along
-> the way.
+While we're dicking about with irq affinities, maybe we ought to
+consider cpuset integration as well. There's various folks who want to
+use exclusive cpusets to isolate workloads.
 
-Dropped the mballoc hunk from my queue, thanks.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
