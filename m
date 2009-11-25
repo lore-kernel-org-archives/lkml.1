@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934615AbZKYJE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934619AbZKYJGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934615AbZKYJE4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 04:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934551AbZKYJEy
+	id S934619AbZKYJGc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 04:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934496AbZKYJGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 04:04:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58747 "EHLO smtps.tip.net.au"
+	Wed, 25 Nov 2009 04:06:32 -0500
+Received: from sh.osrg.net ([192.16.179.4]:48823 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934493AbZKYJEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 04:04:50 -0500
-Date: Wed, 25 Nov 2009 20:04:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve French <sfrench@us.ibm.com>, Jeff Layton <jlayton@redhat.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: linux-next: manual merge of the ext3 tree with the cifs tree
-Message-Id: <20091125200444.cab8f918.sfr@canb.auug.org.au>
-In-Reply-To: <20091125085006.GB549@quack.suse.cz>
-References: <20091125140626.2b71fb0a.sfr@canb.auug.org.au>
-	<20091125085006.GB549@quack.suse.cz>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	id S934548AbZKYJGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 04:06:31 -0500
+Date: Wed, 25 Nov 2009 18:05:47 +0900
+To: yinghai@kernel.org
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B0CF0CA.30807@kernel.org>
+References: <4B0C7257.3070609@kernel.org>
+	<20091125081832.GA1822@elte.hu>
+	<4B0CF0CA.30807@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Nov_2009_20_04_44_+1100_XBPeMR4555t/tbnD"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091125180517P.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 18:05:47 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Nov_2009_20_04_44_+1100_XBPeMR4555t/tbnD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 25 Nov 2009 00:54:34 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Hi Jan,
+> only remember that SLES 9 SP3 (?) at some point has problem with AMD 10h ( quad core version)
+> when memory > 4 g (with USB controller ?)
+> because the gart code only check K8 device id, and didn't check 10h device id. so gart iommu is not used.
+> and happenly swiotlb code has problem with that kernel version.
+> 
+> thinking we should keep old behavior, until some day we can remove them all.
 
-On Wed, 25 Nov 2009 09:50:06 +0100 Jan Kara <jack@suse.cz> wrote:
->
-> On Wed 25-11-09 14:06:26, Stephen Rothwell wrote:
-> > Today's linux-next merge of the ext3 tree got a conflict in fs/cifs/dir=
-.c
-> > between commit cea62343956c24452700c06cf028b72414c58a74 ("[CIFS]
-> > Duplicate data on appending to some Samba servers") from the cifs tree
-> > and commit 618903228b94b67a1d04634a83ea9cdb99c09e37 ("vfs: Implement
-> > proper O_SYNC semantics") from the ext3 tree.
->   Thanks for notification and fixup.
->=20
-> > Just context changes.  I fixed it up (see below) and can carry the fix =
-as
-> > necessary.
->   Looking at the code, I don't see an easy way of resolving this by chang=
-ing
-> either mine or CIFS tree - I have other patches depending on this and this
-> patch depending on others and I assume it's similar with CIFS... So I gue=
-ss
-> we'll have to live with this conflict.
-
-Its not a big issue and even if it hits Linus' tree that way, I think he
-would not mind.
-
-I have just noticed that I get the same conflict between the cifs tree
-and the fsnotify tree (hi Eric!) which has also included that patch from
-Christoph.  Again, not a big problem.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__25_Nov_2009_20_04_44_+1100_XBPeMR4555t/tbnD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksM8ywACgkQjjKRsyhoI8yntgCfdnY7/Rgu1wRRj0w2HY6Hm8Ht
-jC4AnRYymCzhEs3oFL1TJhXdtUZz6vOs
-=N30n
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Nov_2009_20_04_44_+1100_XBPeMR4555t/tbnD--
+Why? We are talking about changing 2.6.33 behavior. swiotlb in 2.6.33
+should be the safe option.
