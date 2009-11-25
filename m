@@ -1,105 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964891AbZKYO2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964872AbZKYOaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964891AbZKYO2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:28:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934706AbZKYO2Q
+	id S964872AbZKYOaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 09:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934728AbZKYOae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 09:28:16 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:38645 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbZKYO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 09:28:15 -0500
-Date: Wed, 25 Nov 2009 15:28:20 +0100
-From: Michal Marek <mmarek@suse.cz>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 13/14] kbuild: move autoconf.h to include/generated
-Message-ID: <20091125142820.GA10565@sepie.suse.cz>
-References: <20091018080635.GA13767@merkur.ravnborg.org>
- <1255853723-477-13-git-send-email-sam@ravnborg.org>
+	Wed, 25 Nov 2009 09:30:34 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:59960 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934708AbZKYOad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 09:30:33 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255853723-477-13-git-send-email-sam@ravnborg.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091125212959.601673f5.sfr@canb.auug.org.au>
+References: <20091125212959.601673f5.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 25 Nov 2009 07:30:19 -0700
+X-Google-Sender-Auth: 264bee4f2a39d307
+Message-ID: <fa686aa40911250630h764c4f26xb2e7cc735261e987@mail.gmail.com>
+Subject: Re: linux-next: spi tree build warning
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?=22Richard_R=F6jfors=22?= 
+	<richard.rojfors@mocean-labs.com>,
+       spi-devel-general@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 18, 2009 at 10:15:22AM +0200, Sam Ravnborg wrote:
-> diff --git a/Makefile b/Makefile
-> index 6570cf1..b125cd9 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -336,7 +336,7 @@ CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
->  # Needed to be compatible with the O= option
->  LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include -Iinclude \
->                     $(if $(KBUILD_SRC), -I$(srctree)/include) \
-> -                   -include include/linux/autoconf.h
-> +                   -include include/generated/autoconf.h
->  
->  KBUILD_CPPFLAGS := -D__KERNEL__
->  
-> @@ -491,17 +491,18 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
->  # if auto.conf.cmd is missing then we are probably in a cleaned tree so
->  # we execute the config step to be sure to catch updated Kconfig files
->  include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
-> +	$(Q)mkdir -p include/generated
->  	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
+On Wed, Nov 25, 2009 at 3:29 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Grant,
+>
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+>
+> drivers/spi/xilinx_spi.c: In function 'xilinx_spi_init':
+> drivers/spi/xilinx_spi.c:411: warning: cast from pointer to integer of different size
+>
+> Maybe introduced by commit 8387f616c653f878b33d859310a8ed5c568505ee
+> ("xilinx_spi: Split into of driver and generic part").
 
-This doesn't work if one runs make silentoldconfig directly. I fixed
-this with the following patch in my tree (will be pushed out soon).
+Trivial fix committed to next-spi branch:
 
-Michal
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+index b927812..9f38637 100644
+--- a/drivers/spi/xilinx_spi.c
++++ b/drivers/spi/xilinx_spi.c
+@@ -408,8 +408,8 @@ struct spi_master *xilinx_spi_init(struct device *dev, struc
+                goto free_irq;
+        }
 
-Subject: [PATCH] kbuild: create include/generated in silentoldconfig
+-       dev_info(dev, "at 0x%08X mapped to 0x%08X, irq=%d\n",
+-               (u32)mem->start, (u32)xspi->regs, xspi->irq);
++       dev_info(dev, "at 0x%08llX mapped to 0x%p, irq=%d\n",
++               (unsigned long long)mem->start, xspi->regs, xspi->irq);
+        return master;
 
-The toplevel Makefile creates the directory if it runs silentoldconfig
-automatically, but if run manually, it fails:
-
-  $ make mrproper
-  $ make defconfig && make silentoldconfig
-  *** Default configuration is based on 'x86_64_defconfig'
-  #
-  # configuration written to .config
-  #
-  scripts/kconfig/conf -s arch/x86/Kconfig
-
-  *** Error during update of the kernel configuration.
-  ...
-
-Move the mkdir command to the silentoldconfig target to make it work.
-
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- Makefile                 |    1 -
- scripts/kconfig/Makefile |    1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index 7bd2531..74ad9a9 100644
---- a/Makefile
-+++ b/Makefile
-@@ -491,7 +491,6 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
- # if auto.conf.cmd is missing then we are probably in a cleaned tree so
- # we execute the config step to be sure to catch updated Kconfig files
- include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
--	$(Q)mkdir -p include/generated
- 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
- else
- # external modules needs include/generated/autoconf.h and include/config/auto.conf
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 6d69c7c..ca5ce8e 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -27,6 +27,7 @@ oldconfig: $(obj)/conf
- 	$< -o $(Kconfig)
- 
- silentoldconfig: $(obj)/conf
-+	$(Q)mkdir -p include/generated
- 	$< -s $(Kconfig)
- 
- localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
--- 
-1.6.4.2
-
+ free_irq:
