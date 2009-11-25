@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964874AbZKYN2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964884AbZKYN3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964874AbZKYN2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbZKYN22
+	id S964884AbZKYN3s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:29:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964867AbZKYN23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10001 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:28:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37196 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934670AbZKYN20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:26 -0500
+	id S964864AbZKYN22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:28 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 14/30] GFS2: Add proper error reporting to quota sync via sysfs
-Date: Wed, 25 Nov 2009 14:22:39 +0000
-Message-Id: <1259158975-28499-15-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 15/30] GFS2: Remove constant argument from qdsb_get()
+Date: Wed, 25 Nov 2009 14:22:40 +0000
+Message-Id: <1259158975-28499-16-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-15-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
@@ -30,57 +30,71 @@ References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-12-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-15-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For some reason, the errors were not making it to userspace.
+The "create" argument to qdsb_get() was only ever set to true,
+so this patch removes that argument.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/sys.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ fs/gfs2/quota.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index be1b8ac..c5dad1e 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -178,6 +178,7 @@ static ssize_t quota_sync_store(struct gfs2_sbd *sdp, const char *buf,
- static ssize_t quota_refresh_user_store(struct gfs2_sbd *sdp, const char *buf,
- 					size_t len)
- {
-+	int error;
- 	u32 id;
- 
- 	if (!capable(CAP_SYS_ADMIN))
-@@ -185,13 +186,14 @@ static ssize_t quota_refresh_user_store(struct gfs2_sbd *sdp, const char *buf,
- 
- 	id = simple_strtoul(buf, NULL, 0);
- 
--	gfs2_quota_refresh(sdp, 1, id);
--	return len;
-+	error = gfs2_quota_refresh(sdp, 1, id);
-+	return error ? error : len;
+diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
+index e7114be..f790f5a 100644
+--- a/fs/gfs2/quota.c
++++ b/fs/gfs2/quota.c
+@@ -462,12 +462,12 @@ static void qd_unlock(struct gfs2_quota_data *qd)
+ 	qd_put(qd);
  }
  
- static ssize_t quota_refresh_group_store(struct gfs2_sbd *sdp, const char *buf,
- 					 size_t len)
+-static int qdsb_get(struct gfs2_sbd *sdp, int user, u32 id, int create,
++static int qdsb_get(struct gfs2_sbd *sdp, int user, u32 id,
+ 		    struct gfs2_quota_data **qdp)
  {
-+	int error;
- 	u32 id;
+ 	int error;
  
- 	if (!capable(CAP_SYS_ADMIN))
-@@ -199,8 +201,8 @@ static ssize_t quota_refresh_group_store(struct gfs2_sbd *sdp, const char *buf,
+-	error = qd_get(sdp, user, id, create, qdp);
++	error = qd_get(sdp, user, id, CREATE, qdp);
+ 	if (error)
+ 		return error;
  
- 	id = simple_strtoul(buf, NULL, 0);
+@@ -509,20 +509,20 @@ int gfs2_quota_hold(struct gfs2_inode *ip, u32 uid, u32 gid)
+ 	if (sdp->sd_args.ar_quota == GFS2_QUOTA_OFF)
+ 		return 0;
  
--	gfs2_quota_refresh(sdp, 0, id);
--	return len;
-+	error = gfs2_quota_refresh(sdp, 0, id);
-+	return error ? error : len;
- }
+-	error = qdsb_get(sdp, QUOTA_USER, ip->i_inode.i_uid, CREATE, qd);
++	error = qdsb_get(sdp, QUOTA_USER, ip->i_inode.i_uid, qd);
+ 	if (error)
+ 		goto out;
+ 	al->al_qd_num++;
+ 	qd++;
  
- static ssize_t demote_rq_store(struct gfs2_sbd *sdp, const char *buf, size_t len)
+-	error = qdsb_get(sdp, QUOTA_GROUP, ip->i_inode.i_gid, CREATE, qd);
++	error = qdsb_get(sdp, QUOTA_GROUP, ip->i_inode.i_gid, qd);
+ 	if (error)
+ 		goto out;
+ 	al->al_qd_num++;
+ 	qd++;
+ 
+ 	if (uid != NO_QUOTA_CHANGE && uid != ip->i_inode.i_uid) {
+-		error = qdsb_get(sdp, QUOTA_USER, uid, CREATE, qd);
++		error = qdsb_get(sdp, QUOTA_USER, uid, qd);
+ 		if (error)
+ 			goto out;
+ 		al->al_qd_num++;
+@@ -530,7 +530,7 @@ int gfs2_quota_hold(struct gfs2_inode *ip, u32 uid, u32 gid)
+ 	}
+ 
+ 	if (gid != NO_QUOTA_CHANGE && gid != ip->i_inode.i_gid) {
+-		error = qdsb_get(sdp, QUOTA_GROUP, gid, CREATE, qd);
++		error = qdsb_get(sdp, QUOTA_GROUP, gid, qd);
+ 		if (error)
+ 			goto out;
+ 		al->al_qd_num++;
 -- 
 1.6.2.5
 
