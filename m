@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964942AbZKYWUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZKYWZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964942AbZKYWUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 17:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964928AbZKYWUh
+	id S1759434AbZKYWZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 17:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759228AbZKYWZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 17:20:37 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:44931 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964924AbZKYWUg (ORCPT
+	Wed, 25 Nov 2009 17:25:34 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:55380 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759124AbZKYWZd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 17:20:36 -0500
-Subject: Re: -rt dbench scalabiltiy issue
-From: john stultz <johnstul@us.ibm.com>
-To: Nick Piggin <npiggin@suse.de>, "Theodore Ts'o" <tytso@mit.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Darren Hart <dvhltc@us.ibm.com>, Clark Williams <williams@redhat.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, cmm@us.ibm.com
-In-Reply-To: <20091125071804.GE17484@wotan.suse.de>
-References: <1255723519.5135.121.camel@localhost.localdomain>
-	 <20091017223902.GA29439@wotan.suse.de> <1258507696.2077.61.camel@localhost>
-	 <20091118042516.GC21813@wotan.suse.de>
-	 <1258683764.3840.28.camel@localhost.localdomain>
-	 <20091123090630.GF5602@wotan.suse.de> <1259115377.2115.25.camel@localhost>
-	 <20091125071804.GE17484@wotan.suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 14:20:33 -0800
-Message-ID: <1259187633.3585.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 17:25:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=A3K6EhDU7hFTDtkgyzHJTpmGpAjjWAnCQfivsMnSWMLln0XS/JY5y8bj9IRamB9pWG
+         lXnsSmGs7yaxolZ43LRsaH1q7gS5KEA4+A0afZTEAP/O8G101xuKyN32GF2XPRmzWVpA
+         fCafySQmExK03B2h+3UYglTT4RlR5r+vpK+W0=
+MIME-Version: 1.0
+In-Reply-To: <20091125140422.cdee4a0d.akpm@linux-foundation.org>
+References: <1259162390-378-1-git-send-email-cliffcai.sh@gmail.com> 
+	<20091125140422.cdee4a0d.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 25 Nov 2009 17:25:20 -0500
+Message-ID: <8bd0f97a0911251425q178993fete79b675e2730bdec@mail.gmail.com>
+Subject: Re: [PATCH v4][mmc/host]:Blackfin SD Host Controller Driver
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cliffcai.sh@gmail.com, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, cliff.cai@analog.com,
+       Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 08:18 +0100, Nick Piggin wrote:
-> On Tue, Nov 24, 2009 at 06:16:17PM -0800, john stultz wrote:
-> > On Mon, 2009-11-23 at 10:06 +0100, Nick Piggin wrote:
-> > > BTW. Have you tested like ext4, xfs and btrfs cases?  I don't think ext3
-> > > is likely to see a huge amount of scalability work, and so it will be
-> > > good to give an early heads up to the more active projects...
-> > 
-> > Yea, I need to give those a shot. I also generated the same numbers as
-> > before with ext2 (all the raw numbers are in dbench-scalability dir):
-> > 
-> > http://sr71.net/~jstultz/dbench-scalability/graphs/ext2-scalability.png
-> > 
-> > Again, its similar to ext3, in that all the -rt variants are hitting
-> > some contention issues. But I was a little surprised to see
-> > 2.6.32-rc7-nick below 2.6.32-rc7 there, so generated perf data there as
-> > well:
-> > 
-> > http://sr71.net/~jstultz/dbench-scalability/perflogs/2.6.32-rc7-nick.ext2.perflog
-> 
-> Ext2 doesn't look too bad in the -rt profiles. The block allocator is
-> only taking up a couple of % of the spinlocks. Most of the contention
-> is in path lookup, probably cwd dentry contention.
-> 
-> The -nick case probably also is hitting d_lock contention more. Don't
-> know why it shows up more on ext2. The stat path should be nothing
-> filesystem specific outside the regular path lookup, until path lookup
-> is done and we found the inode.
-> 
-> If you're using acls or something on ext2 then lock free path walk
-> might fail more often.
+On Wed, Nov 25, 2009 at 17:04, Andrew Morton wrote:
+> On Wed, 25 Nov 2009 23:19:50 +0800 cliffcai.sh wrote:
+>> +struct dma_desc_array {
+>> +     unsigned long   start_addr;
+>> +     unsigned short  cfg;
+>> +     unsigned short  x_count;
+>> +     short           x_modify;
+>> +} __attribute__((packed));
+>
+> __packed is preferred.
 
-CC'ed Ted and Mingming as they might be interested:
+we should move this into the Blackfin dma.h at any rate
 
-Got ext4 data up:
-http://sr71.net/~jstultz/dbench-scalability/graphs/ext4-scalability.png
+>> +static void sdh_start_cmd(struct sdh_host *host, struct mmc_command *cmd)
+>> +{
+>> +     unsigned int sdh_cmd;
+>> +     unsigned int stat_mask;
+>> +
+>> +     dev_dbg(mmc_dev(host->mmc), "%s enter cmd: 0x%p\n", __func__, cmd);
+>> +     WARN_ON(host->cmd != NULL);
+>> +     host->cmd = cmd;
+>> +
+>> +     sdh_cmd = 0;
+>> +     stat_mask = 0;
+>> +
+>> +     sdh_cmd |= cmd->opcode;
+>> +
+>> +     if (cmd->flags & MMC_RSP_PRESENT) {
+>> +             sdh_cmd |= CMD_RSP;
+>> +             stat_mask |= CMD_RESP_END;
+>> +     } else
+>> +             stat_mask |= CMD_SENT;
+>
+> Arguably wrong from a coding-style POV and looks weird IMO.  Adds a bit
+> of risk that subsequent coders will think they're writing in python adn
+> will add bugs.
 
-Looks pretty similar to ext2. I'm also seeing path_get contention as
-well with your patch on ext4 in the perflogs:
-http://sr71.net/~jstultz/dbench-scalability/perflogs/2.6.32-rc7-nick.ext4.perflog
+i dont really get what you're referring to here.  the code in question
+looks ifne to me, and i dont see anything "python-esque" about it
 
+> Fixes:
+>
+> -       } else
+> +       } else }
 
-> Anyway, I think all these problems should largely go away when path
-> walk fall back is improved.
-
-Great, let me know when you have a rough shot at it ready for testing.
-
-thanks
--john
-
-
+guessing you actually meant '{' there
+-mike
