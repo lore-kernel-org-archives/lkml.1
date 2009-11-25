@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbZKYRHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbZKYRHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932460AbZKYRHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932400AbZKYRHK
+	id S932503AbZKYRHV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbZKYRHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:07:10 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:57397 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932219AbZKYRHH (ORCPT
+	Wed, 25 Nov 2009 12:07:18 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:42882 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932422AbZKYRHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:07:07 -0500
+	Wed, 25 Nov 2009 12:07:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=ih4RWUZTpi7p0PUxl6BM8kBzIhv7UAWJ+xTaGTDAWvsYhob9LKIQLPjjDip2d8jma7
-         iQdKUFL+DTLprXN44oNwL+80/kHNo9GbZtL7rTnqRbtfJ23Pp2tVv6QRVa0WOISIvEb5
-         DZjfRUztc7NUXXU7qxHzSuAIzzJilKYhTijQo=
+        b=gg7SJ8T/ieHDUll3LrWu2UfCFP4/wP3hSLG5n8pWrQflPS1tk0Podqwh2KqjoRhl2r
+         AsrQFf5eHW9x+tlprxUebI5bqPmwhRIaoM8GKMixSG+Qw1YzaIvkK9wxOTGRpJjB8UnZ
+         G+VAzA0+yEBwLGahd4yAz4RdwQ7EHpLNTKEzs=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:06:30 +0100
-Message-Id: <20091125170630.5446.62655.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:06:37 +0100
+Message-Id: <20091125170637.5446.77089.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 35/86] pata_it8213: fix UDMA handling
+Subject: [PATCH 36/86] pata_it8213: add UDMA100 and UDMA133 support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_it8213: fix UDMA handling
-
-Driver should program the cycle timing not the mode number
-(doing the latter results in wrong timings being used).
+Subject: [PATCH] pata_it8213: add UDMA100 and UDMA133 support
 
 There shouldn't be any problems with it as IDE it8213 host driver
-has been doing it this way for years.
+has been supporting UDMA100 and UDMA133 for years.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
@@ -47,16 +44,21 @@ Index: b/drivers/ata/pata_it8213.c
 ===================================================================
 --- a/drivers/ata/pata_it8213.c
 +++ b/drivers/ata/pata_it8213.c
-@@ -173,10 +173,10 @@ static void it8213_set_dmamode (struct a
+@@ -164,7 +164,7 @@ static void it8213_set_dmamode (struct a
  
- 		udma_enable |= (1 << devid);
- 
--		/* Load the UDMA mode number */
-+		/* Load the UDMA cycle time */
- 		pci_read_config_word(dev, 0x4A, &udma_timing);
- 		udma_timing &= ~(3 << (4 * devid));
--		udma_timing |= (udma & 3) << (4 * devid);
-+		udma_timing |= u_speed << (4 * devid);
- 		pci_write_config_word(dev, 0x4A, udma_timing);
- 
- 		/* Load the clock selection */
+ 		/* Clocks follow the PIIX style */
+ 		u_speed = min(2 - (udma & 1), udma);
+-		if (udma == 5)
++		if (udma > 4)
+ 			u_clock = 0x1000;	/* 100Mhz */
+ 		else if (udma > 2)
+ 			u_clock = 1;		/* 66Mhz */
+@@ -264,7 +264,7 @@ static int it8213_init_one (struct pci_d
+ 		.flags		= ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask	= ATA_PIO4,
+ 		.mwdma_mask	= ATA_MWDMA2,
+-		.udma_mask 	= ATA_UDMA4, /* FIXME: want UDMA 100? */
++		.udma_mask 	= ATA_UDMA6,
+ 		.port_ops	= &it8213_ops,
+ 	};
+ 	/* Current IT8213 stuff is single port */
