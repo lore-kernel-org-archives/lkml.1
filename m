@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934709AbZKYRMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934772AbZKYRMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934709AbZKYRMZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbZKYRMU
+	id S934772AbZKYRMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934745AbZKYRM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:12:20 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:52976 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759409AbZKYRMS (ORCPT
+	Wed, 25 Nov 2009 12:12:29 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:30269 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933637AbZKYRMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:12:18 -0500
+	Wed, 25 Nov 2009 12:12:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=li4QRigXX5CnAfa9yV1VNqOc6DeG4I6Zci+VzRyAo9XA4O1yd8RuGKEV0xSxh6hZ6/
-         ThUPIy44IVZG9sbY0u3B/aGTr/yGIlloCX45i1g6Mu5H0qiRHO3tzwodArXrB7EuoKUj
-         h4M60zhzxxXLx4CJog87yPPvVaGoynH/9Fkdw=
+        b=kfK14i8jWvFjLp3OxiQVeghzaFY6R9G8u0EEh9GsAawijfx8mnjLXZYDNgBOGjZDID
+         yp24tQ4me0KxyRR+hgATOyA2B1/B7dA59jxM9KLW78Xu9IPT6gJgXQlMYw02TJRqyi40
+         CgcOwjkaNOVOv2I50sjJuDJ/1BnHo7eSs8uu0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:11:39 +0100
-Message-Id: <20091125171139.5446.21161.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:11:47 +0100
+Message-Id: <20091125171147.5446.15532.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 77/86] pata_sis: add 32-bit PIO support
+Subject: [PATCH 78/86] pata_sis: Power Management fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_sis: add 32-bit PIO support
+Subject: [PATCH] pata_sis: Power Management fix
 
-There shouldn't be any problems with it as IDE sis5513 host driver
-has been allowing 32-bit PIO operations for years.
+Call sis_fixup() on resume.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_sis.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/ata/pata_sis.c |   21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
 Index: b/drivers/ata/pata_sis.c
 ===================================================================
 --- a/drivers/ata/pata_sis.c
 +++ b/drivers/ata/pata_sis.c
-@@ -504,14 +504,14 @@ static struct scsi_host_template sis_sht
- };
+@@ -2,7 +2,7 @@
+  *    pata_sis.c - SiS ATA driver
+  *
+  *	(C) 2005 Red Hat
+- *	(C) 2007 Bartlomiej Zolnierkiewicz
++ *	(C) 2007,2009 Bartlomiej Zolnierkiewicz
+  *
+  *    Based upon linux/drivers/ide/pci/sis5513.c
+  * Copyright (C) 1999-2000	Andre Hedrick <andre@linux-ide.org>
+@@ -829,6 +829,23 @@ static int sis_init_one (struct pci_dev 
+ 	return ata_pci_sff_init_one(pdev, ppi, &sis_sht, chipset);
+ }
  
- static struct ata_port_operations sis_133_for_sata_ops = {
--	.inherits		= &ata_bmdma_port_ops,
-+	.inherits		= &ata_bmdma32_port_ops,
- 	.set_piomode		= sis_133_set_piomode,
- 	.set_dmamode		= sis_133_set_dmamode,
- 	.cable_detect		= sis_133_cable_detect,
- };
- 
- static struct ata_port_operations sis_base_ops = {
--	.inherits		= &ata_bmdma_port_ops,
-+	.inherits		= &ata_bmdma32_port_ops,
- 	.prereset		= sis_pre_reset,
++#ifdef CONFIG_PM
++static int sis_reinit_one(struct pci_dev *pdev)
++{
++	struct ata_host *host = dev_get_drvdata(&pdev->dev);
++	int rc;
++
++	rc = ata_pci_device_do_resume(pdev);
++	if (rc)
++		return rc;
++
++	sis_fixup(pdev, host->private_data);
++
++	ata_host_resume(host);
++	return 0;
++}
++#endif
++
+ static const struct pci_device_id sis_pci_tbl[] = {
+ 	{ PCI_VDEVICE(SI, 0x5513), },	/* SiS 5513 */
+ 	{ PCI_VDEVICE(SI, 0x5518), },	/* SiS 5518 */
+@@ -844,7 +861,7 @@ static struct pci_driver sis_pci_driver 
+ 	.remove			= ata_pci_remove_one,
+ #ifdef CONFIG_PM
+ 	.suspend		= ata_pci_device_suspend,
+-	.resume			= ata_pci_device_resume,
++	.resume			= sis_reinit_one,
+ #endif
  };
  
