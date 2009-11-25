@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbZKYQ0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbZKYREM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbZKYQ0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbZKYQ0T
+	id S1759055AbZKYREM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbZKYREJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:26:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52382 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Nov 2009 12:04:09 -0500
+Received: from mx1.emlix.com ([193.175.82.87]:41763 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758190AbZKYQ0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:26:19 -0500
-Date: Wed, 25 Nov 2009 17:25:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jakub Jelinek <jakub@redhat.com>, Andrew Haley <aph@redhat.com>,
-       "H.J. Lu" <hjl.tools@gmail.com>, rostedt@goodmis.org,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
- messing with mcount prologue
-Message-ID: <20091125162556.GA14233@elte.hu>
-References: <4B06EF6F.2050507@redhat.com>
- <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
- <4B0972C9.302@redhat.com>
- <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
- <4B0BF119.4070704@redhat.com>
- <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain>
- <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com>
- <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain>
- <20091125154452.GA9456@elte.hu>
- <alpine.LFD.2.00.0911251650570.24119@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911251650570.24119@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1758969AbZKYREG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 12:04:06 -0500
+X-Greylist: delayed 1973 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 12:04:06 EST
+From: Johannes Weiner <jw@emlix.com>
+To: Alessandro Zummo <a.zummo@towertech.it>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org
+Subject: [patch 1/3] rtc-x1205: fix rtc_time to y2k register value conversion
+Date: Wed, 25 Nov 2009 17:32:14 +0100
+Message-Id: <1259166736-31006-1-git-send-email-jw@emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The possible CCR_Y2K register values are 19 or 20 and struct
+rtc_time's tm_year is in years since 1900.
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+The function translating rtc_time to register values assumes tm_year
+to be years since first christmas, though, and we end up storing 0 or
+1 in the CCR_Y2K register, which the hardware does not refuse to do.
 
-> On Wed, 25 Nov 2009, Ingo Molnar wrote:
-> > * Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > On Tue, 24 Nov 2009, Jakub Jelinek wrote:
-> > > 
-> > > > On Tue, Nov 24, 2009 at 03:55:49PM +0100, Thomas Gleixner wrote:
-> > > > > > you should compile your code with -maccumulate-outgoing-args, and there's
-> > > > > > no need to use -mtune=generic.  Is that right?
-> > > > > 
-> > > > > Seems to work. What other side effects has that ?
-> > > > 
-> > > > Faster code, significant increase in code size though.  Note that on many
-> > > > architectures it is the only supported model.
-> > > 
-> > > Just checked on the affected -marchs. The increase in code size is 
-> > > about 3% which is not that bad and definitely acceptable for the 
-> > > tracing case. Will zap the -mtune=generic patch and use 
-> > > -maccumulate-outgoing-args instead.
-> > 
-> > hm, 3% sounds quite large :( dyn-ftrace is enabled in distro configs, so 
-> > 3% is a big deal IMO.
-> 
-> Distro-configs have -mtune=generic anyway. So it's not changing
-> anything for them.
-> 
-> I'm talking about the -march flags which result in that weird code
-> (pentium-mmx ....).
+A subsequent probing of the clock fails due to the invalid value range
+in the register, though.
 
-ok!
+[ And if it didn't, reading the clock would yield a bogus year because
+  the function translating registers to tm_year is assuming a register
+  value of 19 or 20. ]
 
-	Ingo
+This fixes the conversion from years since 1900 in tm_year to the
+corresponding CCR_Y2K value of 19 or 20.
+
+Signed-off-by: Johannes Weiner <jw@emlix.com>
+---
+ drivers/rtc/rtc-x1205.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/rtc/rtc-x1205.c b/drivers/rtc/rtc-x1205.c
+index 310c107..cc9ba47 100644
+--- a/drivers/rtc/rtc-x1205.c
++++ b/drivers/rtc/rtc-x1205.c
+@@ -195,7 +195,7 @@ static int x1205_set_datetime(struct i2c_client *client, struct rtc_time *tm,
+ 		/* year, since the rtc epoch*/
+ 		buf[CCR_YEAR] = bin2bcd(tm->tm_year % 100);
+ 		buf[CCR_WDAY] = tm->tm_wday & 0x07;
+-		buf[CCR_Y2K] = bin2bcd(tm->tm_year / 100);
++		buf[CCR_Y2K] = bin2bcd((tm->tm_year + 1900) / 100);
+ 	}
+ 
+ 	/* If writing alarm registers, set compare bits on registers 0-4 */
+-- 
+1.6.5
+
