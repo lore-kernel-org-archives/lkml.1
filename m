@@ -1,24 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750860AbZKYFVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751076AbZKYFmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750860AbZKYFVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 00:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZKYFVl
+	id S1751076AbZKYFmg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 00:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZKYFmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 00:21:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50948 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbZKYFVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 00:21:40 -0500
-Date: Wed, 25 Nov 2009 16:21:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: linux-next: manual merge of the rr tree with the arm tree
-Message-Id: <20091125162143.f3ecd684.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Wed, 25 Nov 2009 00:42:35 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43449 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZKYFme (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 00:42:34 -0500
+Date: Wed, 25 Nov 2009 14:32:18 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [BUGFIX][PATCH v2 -stable] memcg: avoid oom-killing innocent task
+ in case of use_hierarchy
+Message-Id: <20091125143218.96156a5f.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+	<20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+	<20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,75 +36,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+> Hmm. Maybe not-expected behavior...could you add comment ?
+> 
+How about this ?
 
-Today's linux-next merge of the rr tree got a conflict in
-arch/arm/kernel/vmlinux.lds.S between commit
-78d7530ac338e458fa513527ee7bb4278d0d8017 ("ARM: Clean up linker script
-using new linker script macros") from the arm tree and commit
-0a5e2c8918d0945f6384e104050c5234057455df ("ARM: use unified discard
-definition in linker script") from the rr tree.
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> (*) I'm sorry I can't work enough in these days.
+> 
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
+BTW, this patch conflict with oom-dump-stack-and-vm-state-when-oom-killer-panics.patch
+in current mmotm(that's why I post mmotm version separately), so this bug will not be fixed
+till 2.6.33 in linus-tree.
+So I think this patch should go in 2.6.32.y too.
+
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+a task can be a candidate for being oom-killed from memcg's limit, checks
+"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+
+But this check return true(it's false positive) when:
+
+	<some path>/00		use_hierarchy == 0	<- hitting limit
+	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
+
+This leads to killing an innocent task in 00/aa. This patch is a fix for this
+bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+should print information of mem_cgroup which the task being killed, not current,
+belongs to.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+ mm/memcontrol.c |    8 +++++++-
+ mm/oom_kill.c   |    2 +-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fd4529d..566925e 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -496,7 +496,13 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
+ 	task_unlock(task);
+ 	if (!curr)
+ 		return 0;
+-	if (curr->use_hierarchy)
++	/*
++	 * We should check use_hierarchy of "mem" not "curr". Because checking
++	 * use_hierarchy of "curr" here make this function true if hierarchy is
++	 * enabled in "curr" and "curr" is a child of "mem" in *cgroup*
++	 * hierarchy(even if use_hierarchy is disabled in "mem").
++	 */
++	if (mem->use_hierarchy)
+ 		ret = css_is_ancestor(&curr->css, &mem->css);
+ 	else
+ 		ret = (curr == mem);
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index a7b2460..ed452e9 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -400,7 +400,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		cpuset_print_task_mems_allowed(current);
+ 		task_unlock(current);
+ 		dump_stack();
+-		mem_cgroup_print_oom_info(mem, current);
++		mem_cgroup_print_oom_info(mem, p);
+ 		show_mem();
+ 		if (sysctl_oom_dump_tasks)
+ 			dump_tasks(mem);
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+1.5.6.1
 
-diff --cc arch/arm/kernel/vmlinux.lds.S
-index 71151bd,ec511d4..0000000
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@@ -58,18 -77,13 +58,18 @@@ SECTION
-  #endif
-  	}
-  
- +	PERCPU(PAGE_SIZE)
- +
- +#ifndef CONFIG_XIP_KERNEL
- +	. = ALIGN(PAGE_SIZE);
- +	__init_end = .;
- +#endif
- +
-- 	/DISCARD/ : {			/* Exit code and data		*/
-- 		EXIT_TEXT
-- 		EXIT_DATA
-- 		*(.exitcall.exit)
-- 		*(.discard)
-+ 	/*
-+ 	 * unwind exit sections must be discarded before the rest of the
-+ 	 * unwind sections get included.
-+ 	 */
-+ 	/DISCARD/ : {
-  		*(.ARM.exidx.exit.text)
-  		*(.ARM.extab.exit.text)
-  #ifndef CONFIG_HOTPLUG_CPU
-@@@ -233,11 -256,24 +233,14 @@@
-  	}
-  #endif
-  
- -	.bss : {
- -		__bss_start = .;	/* BSS				*/
- -		*(.bss)
- -		*(COMMON)
- -		__bss_stop = .;
- -		_end = .;
- -	}
- -					/* Stabs debugging sections.	*/
- -	.stab 0 : { *(.stab) }
- -	.stabstr 0 : { *(.stabstr) }
- -	.stab.excl 0 : { *(.stab.excl) }
- -	.stab.exclstr 0 : { *(.stab.exclstr) }
- -	.stab.index 0 : { *(.stab.index) }
- -	.stab.indexstr 0 : { *(.stab.indexstr) }
- +	BSS_SECTION(0, 0, 0)
- +	_end = .;
- +
- +	STABS_DEBUG
-  	.comment 0 : { *(.comment) }
-+ 
-+ 	/* Default discards */
-+ 	DISCARDS
-  }
-  
-  /*
