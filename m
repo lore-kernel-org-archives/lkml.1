@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbZKYLf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbZKYLfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbZKYLf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbZKYLfX
+	id S1758720AbZKYLfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbZKYLfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:35:23 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:54050 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758725AbZKYLfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:35:19 -0500
-Message-ID: <4B0D1667.8050506@gmail.com>
-Date: Wed, 25 Nov 2009 12:35:03 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: David Miller <davem@davemloft.net>, peter.p.waskiewicz.jr@intel.com,
-       peterz@infradead.org, arjan@linux.intel.com, yong.zhang0@gmail.com,
-       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-References: <20091124.093956.247147202.davem@davemloft.net> <1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com> <20091124.105442.06273019.davem@davemloft.net> <4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org> <4B0C4624.9080607@gmail.com> <4B0D0742.2050301@gmail.com> <20091125103713.GF29096@one.firstfloor.org>
-In-Reply-To: <20091125103713.GF29096@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 25 Nov 2009 12:35:05 +0100 (CET)
+	Wed, 25 Nov 2009 06:35:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51106 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758681AbZKYLfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:35:08 -0500
+Date: Wed, 25 Nov 2009 22:35:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michal Nazarewicz <m.nazarewicz@samsung.com>
+Subject: linux-next: usb tree build warning
+Message-Id: <20091125223508.c0924e2d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> Works here
->> dmesg | grep -i node
->> [    0.000000] SRAT: PXM 0 -> APIC 0 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 1 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 2 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 3 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 4 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 5 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 6 -> Node 0
->> [    0.000000] SRAT: PXM 0 -> APIC 7 -> Node 0
-> 
-> You seem to only have 8 CPUs (one socket) Normally a dual socket nehalem
-> should have 16 with HyperThreading enabled.
-> 
-> For some reason the BIOS is not reporting the other CPU.
-> 
-> You could double check with acpidmp / iasl -d if that's
-> what the BIOS really reports, but normally it should work.
-> 
+--Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Good Lord, I had a CONFIG_NR_CPUS=16 in my .config.
+Hi Greg,
 
-Changing to to 32 or 64 seems better :)
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-# dmesg | grep -i node
-[    0.000000] SRAT: PXM 0 -> APIC 0 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 1 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 2 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 3 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 4 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 5 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 6 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 7 -> Node 0
-[    0.000000] SRAT: PXM 1 -> APIC 16 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 17 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 18 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 19 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 20 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 21 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 22 -> Node 1
-[    0.000000] SRAT: PXM 1 -> APIC 23 -> Node 1
-[    0.000000] SRAT: Node 0 PXM 0 0-e0000000
-[    0.000000] SRAT: Node 0 PXM 0 100000000-220000000
-[    0.000000] SRAT: Node 1 PXM 1 220000000-420000000
-[    0.000000] Bootmem setup node 0 0000000000000000-0000000220000000
-[    0.000000]   NODE_DATA [0000000000001000 - 0000000000005fff]
-[    0.000000] Bootmem setup node 1 0000000220000000-000000041ffff000
-[    0.000000]   NODE_DATA [0000000220000000 - 0000000220004fff]
-[    0.000000]  [ffffea0000000000-ffffea00087fffff] PMD -> [ffff880028600000-ffff8800305fffff] on node 0
-[    0.000000]  [ffffea0008800000-ffffea00107fffff] PMD -> [ffff880220200000-ffff8802281fffff] on node 1
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[5] active PFN ranges
-[    0.000000] On node 0 totalpages: 2094543
-[    0.000000] On node 1 totalpages: 2097151
-[    0.000000] NR_CPUS:32 nr_cpumask_bits:32 nr_cpu_ids:32 nr_node_ids:2
-[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=32, Nodes=2
-[    0.004830] Inode-cache hash table entries: 1048576 (order: 11, 8388608 bytes)
-[    0.007291] CPU 0/0x0 -> Node 0
-[    0.398106] CPU 1/0x10 -> Node 1
-[    0.557857] CPU 2/0x4 -> Node 0
-[    0.717609] CPU 3/0x14 -> Node 1
-[    0.877359] CPU 4/0x2 -> Node 0
-[    1.037112] CPU 5/0x12 -> Node 1
-[    1.196862] CPU 6/0x6 -> Node 0
-[    1.356614] CPU 7/0x16 -> Node 1
-[    1.516368] CPU 8/0x1 -> Node 0
-[    1.676117] CPU 9/0x11 -> Node 1
-[    1.835867] CPU 10/0x5 -> Node 0
-[    1.995619] CPU 11/0x15 -> Node 1
-[    2.155370] CPU 12/0x3 -> Node 0
-[    2.315122] CPU 13/0x13 -> Node 1
-[    2.474873] CPU 14/0x7 -> Node 0
-[    2.634624] CPU 15/0x17 -> Node 1
+drivers/usb/gadget/multi.c:30:1: warning: "CONFIG_USB_ETH_RNDIS" redefined
+In file included from <command-line>:0:
+./include/generated/autoconf.h:185:1: warning: this is the location of the =
+previous definition
 
+Introduced by commit a8e2db2fc35a9c4599181730ef5772376232e881 ("USB: g_mult=
+i: Multifunction Composite Gadget added").
 
-Thanks Andi
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksNFmwACgkQjjKRsyhoI8wQjgCbBFVD+MynrRghLqCfMK1TFq38
+HzsAn0A+tKe1AaCzCNehK0xmam1PY7hS
+=Np71
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn--
