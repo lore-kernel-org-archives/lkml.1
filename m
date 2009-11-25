@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZKYQK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbZKYQN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbZKYQK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZKYQK5
+	id S1758091AbZKYQN5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZKYQN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:10:57 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44794 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753389AbZKYQKt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:10:49 -0500
-Date: Wed, 25 Nov 2009 11:10:48 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jan Kara <jack@suse.cz>
-cc: tmhikaru@gmail.com, Boaz Harrosh <bharrosh@panasas.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       <linux-ext4@vger.kernel.org>
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
- readonly
-In-Reply-To: <20091125084240.GA549@quack.suse.cz>
-Message-ID: <Pine.LNX.4.44L0.0911251052020.2879-100000@iolanthe.rowland.org>
+	Wed, 25 Nov 2009 11:13:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22497 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753172AbZKYQNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:13:55 -0500
+Message-ID: <4B0D5789.3000303@redhat.com>
+Date: Wed, 25 Nov 2009 11:12:57 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jason Baron <jbaron@redhat.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH -tip v5 07/10] kprobes/x86: Support kprobes jump	optimization
+ on x86
+References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com> <20091123232211.22071.58974.stgit@dhcp-100-2-132.bos.redhat.com> <20091124162708.GA29995@redhat.com> <4B0C1BF8.9060408@redhat.com>
+In-Reply-To: <4B0C1BF8.9060408@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Jan Kara wrote:
+Masami Hiramatsu wrote:
+> Jason Baron wrote:
+>> Also, with multiple users we don't want to trample over each others code
+>> patching. Thus, if each sub-system could register some type of
+>> 'is_reserved()' callback, and then we can call all these call backs from
+>> the '__multibyte_poke()' routine before we do any patching to make sure
+>> that we aren't trampling on each others code. After a successful
+>> patching, each sub-system can update its reserved set of code as
+>> appropriate. I can code a prototype here, if this makes sense.
+>
+> Hmm, we have to implement it carefully, because here kprobes already
+> inserted int3 and optprobe rewrites the int3 again. If is_reserved()
+> returns 1 and multibyte_poke returns error, we can't optimize it anymore.
 
-> > > > > Okay, very good.  There remains the question of the disturbing error
-> > > > > messages in the system log.  Should they be supressed for FAILFAST
-> > > > > requests?
-> > > >   I think it's useful they are there because ultimately, something really
-> > > > went wrong and you should better investigate. BTW, "end_request: I/O error"
-> > > > messages are in the log even for requests where we retried and succeeded...
+IMHO, all text-modifiers except kprobes provide is_reserved() callback
+and kprobes cancels probing if its target address is reserved, since
+only kprobes changes texts anywhere while others changes texts at
+fixed addresses.
 
-That isn't true.  Take a look at the dmesg log accompanying Tim's 
-usbmon log.  Although there were 5 read errors in the usbmon log, there 
-were only 2 I/O error messages in dmesg, corresponding to the 2 reads 
-that weren't retried successfully.
+Anyway, I think this will be another bugfix for current kprobes/alternative.
 
-Personally, I think it makes little sense to print error messages in 
-the system log for commands where retries are disallowed.  Unless we go 
-ahead and print error messages for _all_ failures, including those 
-which are retried successfully.
+Thank you,
+-- 
+Masami Hiramatsu
 
-Perhaps a good compromise would be to set the REQ_QUIET flag in 
-req->cmd_flags for readaheads.  That would suppress the error messages 
-coming from the SCSI core.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
->   Yeah, we might make it more obvious that read failed and whether or not
-> we are going to retry. Just technically it's not so simple because a
-> different layer prints messages about errors (generic block layer) and
-> different (scsi disk driver) decides what to do (retry, don't retry, ...).
-
-Actually the retry decisions (or many of them) are made by the SCSI 
-core, and that's also where some of those error messages come from.
-
-> > 	I should have asked since I'm here at the moment - do you need any
-> > more information out of the buggy USB enclosure at the moment, or can I work
-> > on trying to fix/replace it now?
->   No, feel free to do anything with it :). Thanks for your help with
-> debugging this.
-
-To clarify, the enclosure isn't really very buggy.  It _should_ have
-carried out the failed commands, or if it had a valid reason for not
-doing so then it _should_ have reported the reason.  Regardless, the
-errors that occurred were harmless because they went away when the
-commands were retried.  (Although if they weren't harmless, you
-wouldn't be able to tell just from reading the system log...)
-
-Alan Stern
+e-mail: mhiramat@redhat.com
 
