@@ -1,104 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934943AbZKYUBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934951AbZKYULE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934943AbZKYUBf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759748AbZKYUBD
+	id S934951AbZKYULE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:11:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934910AbZKYULD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:01:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56944 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759735AbZKYUBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:01:00 -0500
-Message-ID: <4B0D8CB8.1070404@kernel.org>
-Date: Wed, 25 Nov 2009 11:59:52 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 25 Nov 2009 15:11:03 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51287 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934838AbZKYULC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:11:02 -0500
+Message-ID: <4B0D8E0D.9070501@zytor.com>
+Date: Wed, 25 Nov 2009 12:05:33 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 9/9] pci: pciehp second try to get big range for pcie devices
-References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D88A4.5050904@kerne!
- l.org>
-In-Reply-To: <4B0D88A4.5050904@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: rostedt@goodmis.org
+CC: Andrew Haley <aph@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H.J. Lu" <hjl.tools@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
+ messing with mcount prologue
+References: <1258694593.22249.1012.camel@gandalf.stny.rr.com>	 <1258736456.22249.1032.camel@gandalf.stny.rr.com>	 <4B06EF6F.2050507@redhat.com>	 <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>	 <4B0972C9.302@redhat.com>	 <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>	 <4B0BF119.4070704@redhat.com>	 <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain>	 <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com>	 <4B0BFC84.7070806@redhat.com>	 <20091124153634.GK22813@hs20-bc2-1.build.redhat.com>	 <4B0BFFD0.2080203@redhat.com> <4B0C0C12.7040907@zytor.com>	 <4B0C13F4.5090106@redhat.com> <1259083839.22249.1117.camel@gandalf.stny.rr.com>
+In-Reply-To: <1259083839.22249.1117.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/24/2009 09:30 AM, Steven Rostedt wrote:
+> 
+> For other archs, Linus showed some examples:
+> 
+> http://lkml.org/lkml/2009/11/19/349
+> 
 
-handle the case the slot bridge that doesn't get pre-allocated big enough res
-from FW.
-for example pcie devices need 256M, but the bridge only get preallocated 2M...
+Yes; the key here is that the ABI-defined entry state is readily
+mappable onto the state on entry to the __fentry__ function.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+	-hpa
 
----
- drivers/pci/setup-bus.c |   41 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -970,13 +970,52 @@ void pci_assign_unassigned_bridge_resour
- {
- 	struct pci_bus *bus;
- 	struct pci_bus *parent = bridge->subordinate;
-+	bool second_tried = false;
-+	struct resource_list head, *list, *tmp;
- 	int retval;
-+	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-+				  IORESOURCE_PREFETCH;
-+
-+again:
-+	head.next = NULL;
- 
- 	pci_bus_size_bridges(parent);
- 	pci_clear_master(bridge);
--	__pci_bridge_assign_resources(bridge, NULL);
-+	__pci_bridge_assign_resources(bridge, &head);
- 	retval = pci_reenable_device(bridge);
- 	pci_set_master(bridge);
- 	pci_enable_bridges(parent);
-+
-+	/* any device complain? */
-+	if (!head.next)
-+		return;
-+
-+	if (second_tried) {
-+		/* still fail, don't want to try more */
-+		free_failed_list(&head);
-+		return;
-+	}
-+
-+	second_tried = true;
-+	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
-+
-+	/*
-+	 * Try to release leaf bridge's resources that doesn't fit resource of
-+	 * child device under that bridge
-+	 */
-+	for (list = head.next; list;) {
-+		unsigned long flags = list->res->flags;
-+
-+		bus = list->dev->bus;
-+		if (list->dev->subordinate)
-+			list->res->flags = 0;
-+		pci_bus_release_unused_bridge_res(bus, flags & type_mask, 0);
-+
-+		tmp = list;
-+		list = list->next;
-+		kfree(tmp);
-+	}
-+
-+	goto again;
- }
- EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
