@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbZKYNaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964874AbZKYN2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbZKYNaF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:30:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbZKYN20
+	id S964874AbZKYN2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964863AbZKYN22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48211 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:28:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10001 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934542AbZKYN2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:24 -0500
+	id S934670AbZKYN20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:26 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 13/30] GFS2: Add get_xstate quota function
-Date: Wed, 25 Nov 2009 14:22:38 +0000
-Message-Id: <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 14/30] GFS2: Add proper error reporting to quota sync via sysfs
+Date: Wed, 25 Nov 2009 14:22:39 +0000
+Message-Id: <1259158975-28499-15-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
@@ -29,60 +29,58 @@ References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-11-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-12-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-13-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-14-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows querying of the quota state via the XFS quota
-API.
+For some reason, the errors were not making it to userspace.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/quota.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+ fs/gfs2/sys.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index 6aaa6c5..e7114be 100644
---- a/fs/gfs2/quota.c
-+++ b/fs/gfs2/quota.c
-@@ -47,6 +47,7 @@
- #include <linux/gfs2_ondisk.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
-+#include <linux/dqblk_xfs.h>
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index be1b8ac..c5dad1e 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -178,6 +178,7 @@ static ssize_t quota_sync_store(struct gfs2_sbd *sdp, const char *buf,
+ static ssize_t quota_refresh_user_store(struct gfs2_sbd *sdp, const char *buf,
+ 					size_t len)
+ {
++	int error;
+ 	u32 id;
  
- #include "gfs2.h"
- #include "incore.h"
-@@ -1375,7 +1376,29 @@ int gfs2_quotad(void *data)
- 	return 0;
+ 	if (!capable(CAP_SYS_ADMIN))
+@@ -185,13 +186,14 @@ static ssize_t quota_refresh_user_store(struct gfs2_sbd *sdp, const char *buf,
+ 
+ 	id = simple_strtoul(buf, NULL, 0);
+ 
+-	gfs2_quota_refresh(sdp, 1, id);
+-	return len;
++	error = gfs2_quota_refresh(sdp, 1, id);
++	return error ? error : len;
  }
  
-+static int gfs2_quota_get_xstate(struct super_block *sb,
-+				 struct fs_quota_stat *fqs)
-+{
-+	struct gfs2_sbd *sdp = sb->s_fs_info;
-+
-+	memset(fqs, 0, sizeof(struct fs_quota_stat));
-+	fqs->qs_version = FS_QSTAT_VERSION;
-+	if (sdp->sd_args.ar_quota == GFS2_QUOTA_ON)
-+		fqs->qs_flags = (XFS_QUOTA_UDQ_ENFD | XFS_QUOTA_GDQ_ENFD);
-+	else if (sdp->sd_args.ar_quota == GFS2_QUOTA_ACCOUNT)
-+		fqs->qs_flags = (XFS_QUOTA_UDQ_ACCT | XFS_QUOTA_GDQ_ACCT);
-+	if (sdp->sd_quota_inode) {
-+		fqs->qs_uquota.qfs_ino = GFS2_I(sdp->sd_quota_inode)->i_no_addr;
-+		fqs->qs_uquota.qfs_nblks = sdp->sd_quota_inode->i_blocks;
-+	}
-+	fqs->qs_uquota.qfs_nextents = 1; /* unsupported */
-+	fqs->qs_gquota = fqs->qs_uquota; /* its the same inode in both cases */
-+	fqs->qs_incoredqs = atomic_read(&qd_lru_count);
-+	return 0;
-+}
-+
- const struct quotactl_ops gfs2_quotactl_ops = {
- 	.quota_sync     = gfs2_quota_sync,
-+	.get_xstate     = gfs2_quota_get_xstate,
- };
+ static ssize_t quota_refresh_group_store(struct gfs2_sbd *sdp, const char *buf,
+ 					 size_t len)
+ {
++	int error;
+ 	u32 id;
  
+ 	if (!capable(CAP_SYS_ADMIN))
+@@ -199,8 +201,8 @@ static ssize_t quota_refresh_group_store(struct gfs2_sbd *sdp, const char *buf,
+ 
+ 	id = simple_strtoul(buf, NULL, 0);
+ 
+-	gfs2_quota_refresh(sdp, 0, id);
+-	return len;
++	error = gfs2_quota_refresh(sdp, 0, id);
++	return error ? error : len;
+ }
+ 
+ static ssize_t demote_rq_store(struct gfs2_sbd *sdp, const char *buf, size_t len)
 -- 
 1.6.2.5
 
