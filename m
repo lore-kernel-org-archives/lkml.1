@@ -1,102 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbZKYAJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933147AbZKYAKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933034AbZKYAJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 19:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932779AbZKYAJ5
+	id S933147AbZKYAKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 19:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932848AbZKYAKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 19:09:57 -0500
-Received: from sh.osrg.net ([192.16.179.4]:36518 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932769AbZKYAJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 19:09:57 -0500
-Date: Wed, 25 Nov 2009 09:05:00 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0C7257.3070609@kernel.org>
-References: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
-	<4B0C7257.3070609@kernel.org>
+	Tue, 24 Nov 2009 19:10:49 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53610 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932779AbZKYAKt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 19:10:49 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 25 Nov 2009 09:07:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
+ in case of use_hierarchy
+Message-Id: <20091125090756.690d7a68.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091124170402.GB3365@balbir.in.ibm.com>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+	<661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com>
+	<20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp>
+	<20091124170402.GB3365@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091125090441G.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 09:05:00 +0900 (JST)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 15:55:03 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+On Tue, 24 Nov 2009 22:34:02 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> FUJITA Tomonori wrote:
-> > "x86: Handle HW IOMMU initialization failure gracefully" patchset
-> > handled this option properly however somehow I broke it during cleanup
-> > after that. Sorry.
-> > 
-> > =
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH -tip] x86: fix iommu=soft boot option
-> > 
-> > iommu=soft boot option forces the kernel to use swiotlb.
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  arch/x86/kernel/pci-swiotlb.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-> > index e36e71d..e3c0a66 100644
-> > --- a/arch/x86/kernel/pci-swiotlb.c
-> > +++ b/arch/x86/kernel/pci-swiotlb.c
-> > @@ -50,6 +50,8 @@ static struct dma_map_ops swiotlb_dma_ops = {
-> >   */
-> >  int __init pci_swiotlb_init(void)
-> >  {
-> > +	int use_swiotlb = swiotlb | swiotlb_force;
-> > +
-> >  	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
-> >  #ifdef CONFIG_X86_64
-> >  	if (!no_iommu && max_pfn > MAX_DMA32_PFN)
-> > @@ -63,5 +65,5 @@ int __init pci_swiotlb_init(void)
-> >  		dma_ops = &swiotlb_dma_ops;
-> >  	}
-> >  
-> > -	return swiotlb_force;
-> > +	return use_swiotlb;
-> >  }
+> * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
 > 
-> before your cleanup patchset:
-> for AMD 64bit, MEM > 4g, no AGP, iommu=soft
-> 1. if BIOS have correct gart setting, Kernel will use gart
-
-I know but it's GART problem.
-
-'iommu=soft' means that the kernel must use swiotlb. All the IOMMU
-drivers except for GART works properly.
-
-Documentation/x86/x86_64/boot-options.txt says:
-
-  General iommu options:
-    off                Don't initialize and use any kind of IOMMU.
-    noforce            Don't force hardware IOMMU usage when it is not needed.
-                       (default).
-    force              Force the use of the hardware IOMMU even when it is
-                       not actually needed (e.g. because < 3 GB memory).
-    soft               Use software bounce buffering (SWIOTLB) (default for
-                       Intel machines). This can be used to prevent the usage
-                       of an available hardware IOMMU.
-
-
-> 2. if BIOS does not have correct gart setting, Kernel will use swiotlb
+> > On Tue, 24 Nov 2009 19:01:54 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
+> > > <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> > > > a task can be a candidate for being oom-killed from memcg's limit, checks
+> > > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+> > > >
+> > > > But this check return true(it's false positive) when:
+> > > >
+> > > >        <some path>/00          use_hierarchy == 0      <- hitting limit
+> > > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
+> > > >
+> > > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> > > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> > > > should print information of mem_cgroup which the task being killed, not current,
+> > > > belongs to.
+> > > >
+> > > 
+> > > Quick Question: What happens if <some path>/00 has no tasks in it
+> > > after your patches?
+> > > 
+> > Nothing would happen because <some path>/00 never hit its limit.
 > 
-> for AMD 64bit, MEM > 4g, no AGP, no "iommu=soft"
-> 1. if BIOS have correct gart setting, Kernel will use gart
-> 2. if BIOS does not have correct gart setting, Kernel will allocate some RAM, and set range in AMD NB, and use gart iommu
+> Why not? I am talking of a scenario where <some path>/00 is set to a
+> limit (similar to your example) and hits its limit, but the groups
+> under it have no limits, but tasks. Shouldn't we be scanning
+> <some path>/00/aa as well?
 > 
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+No.  <some path>/00 == use_hierarchy=0 means _all_ children's accounting
+information is never added up to <some path>/00.
+
+If there is no task in <some path>/00, it means <some path>/00 contains only
+file cache and not-migrated rss. To hit limit, the admin has to make 
+memory.(memsw).limit_in_bytes smaller. But in this case, oom is not called.
+-ENOMEM is returned to users. IIUC.
+
+
+
+
+> > 
+> > The bug that this patch fixes is:
+> > 
+> > - create a dir <some path>/00 and set some limits.
+> > - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
+> > - run some programs in both in 00 and 00/aa. programs in 00 should be
+> >   big enough to cause oom by its limit.
+> > - when oom happens by 00's limit, tasks in 00/aa can also be killed.
+> >
+> 
+> To be honest, the last part is fair, specifically if 00/aa has a task
+> that is really the heaviest task as per the oom logic. no? Are you
+> suggesting that only tasks in <some path>/00 should be selected by the
+> oom logic? 
+> 
+<some path>/00 and <some path>/00/aa has completely different accounting set.
+There are no hierarchy relationship. The directory tree shows "virtual"
+hierarchy but in reality, their relationship is horizontal rather than hierarchycal.
+
+So, killing tasks only in <some path>/00 is better.
+
+Thanks,
+-Kame
+
+
+
