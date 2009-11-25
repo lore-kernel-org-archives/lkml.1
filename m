@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZKYO7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZKYPGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZKYO7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZKYO7T
+	id S1757267AbZKYPGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 10:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZKYPGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 09:59:19 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63326 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753590AbZKYO7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 09:59:19 -0500
-To: serue@us.ibm.com
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TOMOYO: Add recursive directory matching operatorsupport.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200911242200.AFC90128.FFJtHLOFVMQSOO@I-love.SAKURA.ne.jp>
-	<20091125140009.GA602@us.ibm.com>
-In-Reply-To: <20091125140009.GA602@us.ibm.com>
-Message-Id: <200911252359.DFI56759.FMOSVOFQFJLHOt@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Wed, 25 Nov 2009 23:59:21 +0900
-Mime-Version: 1.0
+	Wed, 25 Nov 2009 10:06:18 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52750 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbZKYPGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 10:06:17 -0500
+To: "Liuweni" <qingshenlwy@gmail.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "strongzgy" <strongzgy@gmail.com>, "xgr178" <xgr178@163.com>,
+       "Liu Hui" <onlyflyer@gmail.com>, "viro" <viro@zeniv.linux.org.uk>,
+       "akpm" <akpm@linux-foundation.org>, "jack" <jack@suse.cz>,
+       "npiggin" <npiggin@suse.de>,
+       "linux-fsdevel" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1/3]fs/inode: iunique() Optimize Performance
+From: Andi Kleen <andi@firstfloor.org>
+References: <200911252209432039291@gmail.com>
+Date: Wed, 25 Nov 2009 16:06:22 +0100
+In-Reply-To: <200911252209432039291@gmail.com> (Liuweni's message of "Wed, 25 Nov 2009 22:09:45 +0800")
+Message-ID: <87pr76ve35.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+"Liuweni" <qingshenlwy@gmail.com> writes:
 
-Serge E. Hallyn wrote:
-> Are you sure you want to use this syntax for 'in_repeating'?
+> ---
+> move the if condition out the while{}.
+> While the function executing, the if 
+> condition won't check again and again.
+> And this code won't change the function
+> of iunique().
 
-Yes.
+Normally compiler automatically move loop invariant code out of loop
+bodies. Have you verified that's not the case here?
 
-I don't have a plan to implement conventional regular expressions.
-There are many variants for regular expressions (e.g. shell, perl, sed) and
-users likely use characters with special meaning without knowing.
-TOMOYO treats a character as literal unless prefixed by '\' character so that
-users who didn't know the meaning of a character don't get unwanted results.
+-Andi
 
-> As a unix admin, I expect something like
-> 
-> 	/{bin,sbin}/init
-> (or more likely /{s,}bin/init )
-> 
-> to mean match both /bin/init and /sbin/init.
-
-You will be able to use
-
-  path_group ALL_INIT /bin/init
-  path_group ALL_INIT /sbin/init
-
-    +
-
-  allow_execute @ALL_INIT
-
-in the future (hopefully in Linux 2.6.34).
+-- 
+ak@linux.intel.com -- Speaking for myself only.
