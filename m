@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZKYN1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758578AbZKYN27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758373AbZKYN1f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZKYN1e
+	id S1758578AbZKYN27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758363AbZKYN25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:27:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48894 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbZKYN1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:27:33 -0500
-Message-ID: <4B0D301C.30709@kernel.org>
-Date: Wed, 25 Nov 2009 22:24:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: rename global percpu symbol dr7 to cpu_dr7
-References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <20091125105004.GA18163@elte.hu>
-In-Reply-To: <20091125105004.GA18163@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Nov 2009 08:28:57 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:34830 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964930AbZKYN2y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lglge8EmdIzYGfuzgn7Nb0XtA7NidAdsXEr55axN/DKWSzYGsQGqabtML+bS9URFkB
+         IM89V30g7zp0PCVosL6s4kQWdeDE6ytJZa69UUH4ZywwEbdywm6ASzzhH53SBvqK1V/b
+         kvLDOt3ZBfYh1v5okVqx9OAz5iKCzoXorq4dc=
+Subject: Re: IR raw input is not sutable for input system
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
+References: <200910200956.33391.jarod@redhat.com>
+	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	 <20091123173726.GE17813@core.coreip.homeip.net>
+	 <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop>
+	 <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 15:28:54 +0200
+Message-ID: <1259155734.4875.23.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Percpu symbols now occupy the same namespace as other global symbols
-and as such short global symbols without subsystem prefix tend to
-collide with local variables.  dr7 percpu variable used by x86 was hit
-by this.  Rename it to cpu_dr7.  The rename also makes it more
-consistent with its fellow cpu_debugreg percpu variable.
+On Tue, 2009-11-24 at 19:32 -0800, Trent Piepho wrote: 
+> On Wed, 25 Nov 2009, Maxim Levitsky wrote:
+> >
+> > Its not the case.
+> > There are many protocols, I know that by experimenting with my universal
+> > remote. There are many receivers, and all have different accuracy.
+> > Most remotes aren't designed to be used with PC, thus user has to invent
+> > mapping between buttons and actions.
+> > Its is not possible to identify remotes accurately, many remotes send
+> > just a 8 bit integer that specifies the 'model' thus many remotes can
+> > share it.
+> 
+> The signal recevied by the ir receiver contains glitches.  Depending on the
+> receiver there can be quite a few.  It is also not trivial to turn the raw
+> signal sent by the remote into a digital value, even if you know what to
+> expect.  It takes digital signal processing techniques to turn the messy
+> sequence of inaccurate mark and space lengths into a best guess at what
+> digital code the remote sent.
+Exactly
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/x86/include/asm/debugreg.h |    4 ++--
- arch/x86/kernel/hw_breakpoint.c |   10 +++++-----
- 2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> It's like turning raw VBI data into decoded ASCII teletext from a simulated
+> keyboard device, all in the kernel.
+You hit a nail on the head with this one.
 
-diff --git a/arch/x86/include/asm/debugreg.h b/arch/x86/include/asm/debugreg.h
-index fdabd84..8240f76 100644
---- a/arch/x86/include/asm/debugreg.h
-+++ b/arch/x86/include/asm/debugreg.h
-@@ -75,7 +75,7 @@
-  */
- #ifdef __KERNEL__
- 
--DECLARE_PER_CPU(unsigned long, dr7);
-+DECLARE_PER_CPU(unsigned long, cpu_dr7);
- 
- static inline void hw_breakpoint_disable(void)
- {
-@@ -91,7 +91,7 @@ static inline void hw_breakpoint_disable(void)
- 
- static inline int hw_breakpoint_active(void)
- {
--	return __get_cpu_var(dr7) & DR_GLOBAL_ENABLE_MASK;
-+	return __get_cpu_var(cpu_dr7) & DR_GLOBAL_ENABLE_MASK;
- }
- 
- extern void aout_dump_debugregs(struct user *dump);
-diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
-index 4d267fb..92ea5aa 100644
---- a/arch/x86/kernel/hw_breakpoint.c
-+++ b/arch/x86/kernel/hw_breakpoint.c
-@@ -46,8 +46,8 @@
- #include <asm/debugreg.h>
- 
- /* Per cpu debug control register value */
--DEFINE_PER_CPU(unsigned long, dr7);
--EXPORT_PER_CPU_SYMBOL(dr7);
-+DEFINE_PER_CPU(unsigned long, cpu_dr7);
-+EXPORT_PER_CPU_SYMBOL(cpu_dr7);
- 
- /* Per cpu debug address registers values */
- static DEFINE_PER_CPU(unsigned long, cpu_debugreg[HBP_NUM]);
-@@ -118,7 +118,7 @@ int arch_install_hw_breakpoint(struct perf_event *bp)
- 	set_debugreg(info->address, i);
- 	__get_cpu_var(cpu_debugreg[i]) = info->address;
- 
--	dr7 = &__get_cpu_var(dr7);
-+	dr7 = &__get_cpu_var(cpu_dr7);
- 	*dr7 |= encode_dr7(i, info->len, info->type);
- 
- 	set_debugreg(*dr7, 7);
-@@ -153,7 +153,7 @@ void arch_uninstall_hw_breakpoint(struct perf_event *bp)
- 	if (WARN_ONCE(i == HBP_NUM, "Can't find any breakpoint slot"))
- 		return;
- 
--	dr7 = &__get_cpu_var(dr7);
-+	dr7 = &__get_cpu_var(cpu_dr7);
- 	*dr7 &= ~encode_dr7(i, info->len, info->type);
- 
- 	set_debugreg(*dr7, 7);
-@@ -437,7 +437,7 @@ void hw_breakpoint_restore(void)
- 	set_debugreg(__get_cpu_var(cpu_debugreg[2]), 2);
- 	set_debugreg(__get_cpu_var(cpu_debugreg[3]), 3);
- 	set_debugreg(current->thread.debugreg6, 6);
--	set_debugreg(__get_cpu_var(dr7), 7);
-+	set_debugreg(__get_cpu_var(cpu_dr7), 7);
- }
- EXPORT_SYMBOL_GPL(hw_breakpoint_restore);
- 
+
+> 
+> > Kernel job is to take the information from device and present it to
+> > userspace using uniform format, that is kernel does 1:1 translating, but
+> > doesn't parse the data.
+
+> 
+> One thing that could be done, unless it has changed much since I wrote it
+> 10+ years ago, is to take the mark/space protocol the ir device uses and sent
+> that data to lircd via the input layer.  It would be less efficient, but
+> would avoid another kernel interface.  Of course the input layer to lircd
+> interface would be somewhat different than other input devices, so
+> it's not entirely correct to say another interface is avoided.
+I agree with this one, but it is very optional.
+
+I also want to add that lirc can and does behave just like an input
+device. 
+It sends the parsed events using uinput, so your remote appears just
+like a keyboard.
+It can even act like a mouse, and btw I use that feature, and it works
+just fine.
+
+
+So lets put lirc into the kernel finally?
+
+Best regards,
+Maxim Levitsky
+
+
