@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934480AbZKYN2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934730AbZKYNcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934480AbZKYN2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZKYN2E
+	id S934730AbZKYNcu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934706AbZKYNcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58213 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:32:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13719 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbZKYN2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:04 -0500
+	id S933704AbZKYN2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:05 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Subject: GFS2: Extra early pre-pull patch posting
-Date: Wed, 25 Nov 2009 14:22:25 +0000
-Message-Id: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 01/30] GFS2: Fix potential race in glock code
+Date: Wed, 25 Nov 2009 14:22:26 +0000
+Message-Id: <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
+References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Due to the larger than usual content of new items in this patch set
-I'm posting it a bit earlier than normal so that there is more time
-for review.
+We need to be careful of the ordering between clearing the
+GLF_LOCK bit and scheduling the workqueue.
 
-There are a few bug fixes in this set, but most of the content is
-new code relating to xattrs and quotas. The ACL support is cleaned
-up and support for caching of ACLs has been added. At the same time
-the xattr support has been fixed and clean up too.
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+---
+ fs/gfs2/glock.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-There are a series of patches which add support for the XFS-style
-quota interface to GFS2. There has always been support for quotas
-in GFS2, but the interface was via a userland tool which manipulated
-the quota file directly. Due to the way in which the GFS2 quotas
-were implemented, they were a better fit for the XFS-style interface
-than the dquot interface, so that was the one which we chose to
-use. We do not support all features of the XFS quotas though (we
-don't have project quotas) and quotas are also turned on and off
-only via mount options as we still do not support the set_xstate
-function (but we do allow querying of the current quota state via
-get_xstate). Aside from that, it does cover most of the XFS feature
-set, and everything that is needed to manipulate all supported GFS2
-quota types.
-
-The userland tools for generic quota manipulation do not yet
-understand how to talk to GFS2's quota interface as they
-assume that only XFS uses the XFS-style quota interface. That
-is a future project.
-
-In addition to that, the quota netlink notification interface is
-made into a generic feature so that GFS2 can use it as well as
-dquot based systems.
-
-Other features:
- o Added a barrier/nobarrier option in common with other filesystems
-   (N.B. this defaults to on if it isn't specified)
- o A spare field in our common-to-many-objects metadata header is now
-   used to write the journal id of the last node to modify that bit
-   of metadata. This is ignored by the filesystem, but useful for
-   debugging purposes.
-
-I have spotted that one of the patches starts FS2: instead of GFS2:
-and I'll try and fix that before the merge. Its a pain as it is part
-way down the patch series and I don't think I can fix it without
-rebasing the tree.
-
-Let me know if you spot anything else thats wrong,
-
-Steve.
-
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 8b674b1..a3f90ad 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -672,12 +672,17 @@ out:
+ 	return;
+ 
+ out_sched:
++	clear_bit(GLF_LOCK, &gl->gl_flags);
++	smp_mb__after_clear_bit();
+ 	gfs2_glock_hold(gl);
+ 	if (queue_delayed_work(glock_workqueue, &gl->gl_work, 0) == 0)
+ 		gfs2_glock_put_nolock(gl);
++	return;
++
+ out_unlock:
+ 	clear_bit(GLF_LOCK, &gl->gl_flags);
+-	goto out;
++	smp_mb__after_clear_bit();
++	return;
+ }
+ 
+ static void delete_work_func(struct work_struct *work)
+@@ -1375,10 +1380,11 @@ static int gfs2_shrink_glock_memory(int nr, gfp_t gfp_mask)
+ 				handle_callback(gl, LM_ST_UNLOCKED, 0);
+ 				nr--;
+ 			}
++			clear_bit(GLF_LOCK, &gl->gl_flags);
++			smp_mb__after_clear_bit();
+ 			if (queue_delayed_work(glock_workqueue, &gl->gl_work, 0) == 0)
+ 				gfs2_glock_put_nolock(gl);
+ 			spin_unlock(&gl->gl_spin);
+-			clear_bit(GLF_LOCK, &gl->gl_flags);
+ 			spin_lock(&lru_lock);
+ 			continue;
+ 		}
+-- 
+1.6.2.5
 
