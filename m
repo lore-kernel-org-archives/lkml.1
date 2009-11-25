@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbZKYK24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbZKYKaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbZKYK24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZKYK2z
+	id S1758666AbZKYKaK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758453AbZKYKaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:28:55 -0500
-Received: from verein.lst.de ([213.95.11.210]:49351 "EHLO verein.lst.de"
+	Wed, 25 Nov 2009 05:30:09 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38513 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbZKYK2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:28:55 -0500
-Date: Wed, 25 Nov 2009 11:28:57 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: regression: 2.6.32-rc8 shuts down after reaching critical temperature
-Message-ID: <20091125102857.GA28310@lst.de>
+	id S1751665AbZKYKaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 05:30:08 -0500
+Date: Wed, 25 Nov 2009 21:29:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?UTF-8?B?IlJpY2hhcmQgUsO2amZvcnMi?= 
+	<richard.rojfors@mocean-labs.com>
+Subject: linux-next: spi tree build warning
+Message-Id: <20091125212959.601673f5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__25_Nov_2009_21_29_59_+1100_8+LZ2_c6ySI_Gl26"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently upgraded my Thinkpad T500 from Linux 2.6.31 to Linux
-2.6.32-rc (first -rc7 but I've also tried with -rc6 and -rc8) and when
-putting load on it, e.g. by building a kernel tree.  It shuts down soon
-with the
+--Signature=_Wed__25_Nov_2009_21_29_59_+1100_8+LZ2_c6ySI_Gl26
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	Critical temperature reached (%ld C), shutting down.\n"
+Hi Grant,
 
-printk from drivers/thermal/thermal_sys.c, where the temperature is
-usually 100C or slightly above.  The system is a Lenovo Thinkpad T500
-with a Intel Core 2 Dueo T9600 running a 32 bit kernel.
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-I've done some attempts at bisecting it, but for most of the 2.6.32-rc
-series the system crashes during boot in ACPI code with a backtrace
-longer than the screen can display.
+drivers/spi/xilinx_spi.c: In function 'xilinx_spi_init':
+drivers/spi/xilinx_spi.c:411: warning: cast from pointer to integer of diff=
+erent size
+
+Maybe introduced by commit 8387f616c653f878b33d859310a8ed5c568505ee
+("xilinx_spi: Split into of driver and generic part").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__25_Nov_2009_21_29_59_+1100_8+LZ2_c6ySI_Gl26
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksNBycACgkQjjKRsyhoI8xsUwCgg93a7uPbwoBM0GqIuGnDlT/z
+2bcAoJqxEIE9pORO6viZ/BUKHDUH4rr+
+=UV+0
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__25_Nov_2009_21_29_59_+1100_8+LZ2_c6ySI_Gl26--
