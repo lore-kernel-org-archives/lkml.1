@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934797AbZKYUAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934850AbZKYUAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934797AbZKYUAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932899AbZKYUAp
+	id S934850AbZKYUAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759735AbZKYUAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:00:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56906 "EHLO hera.kernel.org"
+	Wed, 25 Nov 2009 15:00:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56907 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759732AbZKYUAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759733AbZKYUAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Nov 2009 15:00:40 -0500
-Message-ID: <4B0D8CA2.1040306@kernel.org>
-Date: Wed, 25 Nov 2009 11:59:30 -0800
+Message-ID: <4B0D8CA6.8000209@kernel.org>
+Date: Wed, 25 Nov 2009 11:59:34 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -22,7 +22,8 @@ CC: Ingo Molnar <mingo@elte.hu>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
        Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 4/9] pci: add failed_list to record failed one for pci_bus_assign_resources
+Subject: [PATCH 5/9] pci: update leaf bridge res to get more big range in
+ pci assign unssign
 References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D88A4.5050904@kerne!
  l.org>
 In-Reply-To: <4B0D88A4.5050904@kernel.org>
@@ -33,124 +34,143 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-so later we can do sth with those failed one
+
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to the bridge, but stop
+assigning resource to the device under that bridge, because the device need big resource.
+
+1. pci assign unassign and record the failed device resource.
+2. clear the BIOS assigned resource of the parent bridge of fail device
+3. go back and call pci assign unsigned
+4. if it still fail, will go up more bridges. and clear and try again.
+
+use pci_try_num to control back track bridge levels.
+
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- drivers/pci/setup-bus.c |   70 +++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 63 insertions(+), 7 deletions(-)
+ drivers/pci/pci.c       |    5 +++
+ drivers/pci/pci.h       |    2 +
+ drivers/pci/setup-bus.c |   68 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 74 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/drivers/pci/setup-bus.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/setup-bus.c
 +++ linux-2.6/drivers/pci/setup-bus.c
-@@ -27,7 +27,49 @@
- #include <linux/slab.h>
- #include "pci.h"
+@@ -805,10 +805,25 @@ static void pci_bus_dump_resources(struc
+ 	}
+ }
  
--static void pbus_assign_resources_sorted(const struct pci_bus *bus)
++/*
++ * first try will not touch pci bridge res
++ * second try will clear small leaf bridge res
++ * third try will clear related bridge: some aggressive
++ */
++/* assume we only have 4 level bridges, so only try 5 times */
++int pci_try_num = 5;
+ void __init
+ pci_assign_unassigned_resources(void)
+ {
+ 	struct pci_bus *bus;
++	int tried_times = 0;
++	int check_leaf = 1;
++	struct resource_list head, *list, *tmp;
++	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
++				  IORESOURCE_PREFETCH;
++	unsigned long failed_type;
++again:
++	head.next = NULL;
+ 
+ 	/* Depth first, calculate sizes and alignments of all
+ 	   subordinate buses. */
+@@ -817,7 +832,58 @@ pci_assign_unassigned_resources(void)
+ 	}
+ 	/* Depth last, allocate resources and update the hardware. */
+ 	list_for_each_entry(bus, &pci_root_buses, node) {
+-		pci_bus_assign_resources(bus);
++		__pci_bus_assign_resources(bus, &head);
++	}
++	tried_times++;
 +
-+static void add_to_failed_list(struct resource_list *head, struct pci_dev *dev,
-+				 struct resource *res)
-+{
-+	struct resource_list *list = head;
-+	struct resource_list *ln = list->next;
-+	struct resource_list *tmp;
++	/* any device complain? */
++	if (!head.next)
++		goto enable_and_dump;
++	failed_type = 0;
++	for (list = head.next; list;) {
++		unsigned long flags = list->res->flags;
 +
-+	tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
-+	if (!tmp) {
-+		pr_warning("add_to_failed_list: kmalloc() failed!\n");
-+		return;
++		failed_type |= flags;
++		list = list->next;
++	}
++	/*
++	 * io port are tight, don't try extra
++	 * or if reach the limit, don't want to try more
++	 */
++	failed_type &= type_mask;
++	if ((failed_type == IORESOURCE_IO) || (tried_times >= pci_try_num)) {
++		free_failed_list(&head);
++		goto enable_and_dump;
 +	}
 +
-+	tmp->next = ln;
-+	tmp->res = res;
-+	tmp->dev = dev;
-+	list->next = tmp;
-+}
++	printk(KERN_DEBUG "PCI: No. %d try to assign unassigned res\n",
++			 tried_times + 1);
 +
-+static void free_failed_list(struct resource_list *head)
-+{
-+	struct resource_list *list, *tmp;
-+	struct resource *res;
 +	/*
-+	 * Try to release leaf bridge's resources that there is no child
-+	 * under it
++	 * Try to release leaf bridge's resources that doesn't fit resource of
++	 * child device under that bridge
 +	 */
-+	for (list = head->next; list;) {
-+		res = list->res;
-+		res->start = 0;
-+		res->end = 0;
-+		res->flags = 0;
++	/* third times and later will not check if it is leaf */
++	if ((tried_times + 1) > 2)
++		check_leaf = 0;
++	for (list = head.next; list;) {
++		unsigned long flags = list->res->flags;
++
++		bus = list->dev->bus;
++		if (list->dev->subordinate)
++			list->res->flags = 0;
++		pci_bus_release_unused_bridge_res(bus, flags & type_mask,
++						  check_leaf);
 +		tmp = list;
 +		list = list->next;
 +		kfree(tmp);
 +	}
 +
-+	head->next = NULL;
-+}
++	goto again;
 +
-+static void pbus_assign_resources_sorted(const struct pci_bus *bus,
-+					 struct resource_list *fail_head)
- {
- 	struct pci_dev *dev;
- 	struct resource *res;
-@@ -58,9 +100,17 @@ static void pbus_assign_resources_sorted
- 		res = list->res;
- 		idx = res - &list->dev->resource[0];
- 		if (pci_assign_resource(list->dev, idx)) {
--			res->start = 0;
--			res->end = 0;
--			res->flags = 0;
-+			if (fail_head && !pci_is_root_bus(list->dev->bus)) {
-+				/*
-+				 * device need to keep flags and size
-+				 * for next try
-+				 */
-+				add_to_failed_list(fail_head, list->dev, res);
-+			} else {
-+				res->start = 0;
-+				res->end = 0;
-+				res->flags = 0;
-+			}
- 		}
- 		tmp = list;
- 		list = list->next;
-@@ -577,19 +627,20 @@ void __ref pci_bus_size_bridges(struct p
- }
- EXPORT_SYMBOL(pci_bus_size_bridges);
- 
--void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
-+					 struct resource_list *fail_head)
- {
- 	struct pci_bus *b;
- 	struct pci_dev *dev;
- 
--	pbus_assign_resources_sorted(bus);
-+	pbus_assign_resources_sorted(bus, fail_head);
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		b = dev->subordinate;
- 		if (!b)
- 			continue;
- 
--		pci_bus_assign_resources(b);
-+		__pci_bus_assign_resources(b, fail_head);
- 
- 		switch (dev->class >> 8) {
- 		case PCI_CLASS_BRIDGE_PCI:
-@@ -607,6 +658,11 @@ void __ref pci_bus_assign_resources(cons
- 		}
++enable_and_dump:
++	/* Depth last, update the hardware. */
++	list_for_each_entry(bus, &pci_root_buses, node) {
+ 		pci_enable_bridges(bus);
  	}
- }
-+
-+void __ref pci_bus_assign_resources(const struct pci_bus *bus)
-+{
-+	__pci_bus_assign_resources(bus, NULL);
-+}
- EXPORT_SYMBOL(pci_bus_assign_resources);
  
- static void release_children_resource(struct resource *r)
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -2779,6 +2779,11 @@ static int __init pci_setup(char *str)
+ 				pci_no_aer();
+ 			} else if (!strcmp(str, "nodomains")) {
+ 				pci_no_domains();
++			} else if (!strncmp(str, "try=", 4)) {
++				int try_num = memparse(str + 4, &str);
++
++				if (try_num > 0 && try_num < 10)
++					pci_try_num = try_num;
+ 			} else if (!strncmp(str, "cbiosize=", 9)) {
+ 				pci_cardbus_io_size = memparse(str + 9, &str);
+ 			} else if (!strncmp(str, "cbmemsize=", 10)) {
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -203,6 +203,8 @@ static inline int pci_ari_enabled(struct
+ 	return bus->self && bus->self->ari_enabled;
+ }
+ 
++extern int pci_try_num;
++
+ #ifdef CONFIG_PCI_QUIRKS
+ extern int pci_is_reassigndev(struct pci_dev *dev);
+ resource_size_t pci_specified_resource_alignment(struct pci_dev *dev);
 
