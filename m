@@ -1,170 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbZKYHM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZKYHNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977AbZKYHM0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 02:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZKYHMZ
+	id S1753489AbZKYHNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 02:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbZKYHNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 02:12:25 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41549 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZKYHMZ (ORCPT
+	Wed, 25 Nov 2009 02:13:53 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:54052 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbZKYHNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 02:12:25 -0500
-Message-ID: <4B0CD8D5.8050803@austin.ibm.com>
-Date: Wed, 25 Nov 2009 01:12:21 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	Wed, 25 Nov 2009 02:13:52 -0500
+Message-ID: <4B0CD912.7090002@nokia.com>
+Date: Wed, 25 Nov 2009 09:13:22 +0200
+From: Adrian Hunter <adrian.hunter@nokia.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-CC: gregkh@suse.de, paul Mackerras <paulus@samba.org>,
-       Ben Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 2/3] sysfs cpu probe/release files
-References: <4B0CD70F.6090600@austin.ibm.com>
-In-Reply-To: <4B0CD70F.6090600@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Subject: Re: [PATCH 4/7] nandsim: Don't use PF_MEMALLOC
+References: <20091124194532.AFC2.A69D9226@jp.fujitsu.com> <4B0BC9E3.6070504@nokia.com> <20091125084630.AFC5.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091125084630.AFC5.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Nov 2009 07:13:22.0700 (UTC) FILETIME=[C5F664C0:01CA6D9E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to support kernel DLPAR of CPU resources we need to provide an
-interface to add (probe) and remove (release) the resource from the system.
-This patch Creates new generic probe and release sysfs files to facilitate
-cpu probe/release.  The probe/release interface provides for allowing each
-arch to supply their own routines for implementing the backend of adding
-and removing cpus to/from the system.
+KOSAKI Motohiro wrote:
+>> KOSAKI Motohiro wrote:
+>>> Hi
+>>>
+>>> Thank you for this useful comments.
+>>>
+>>>>> I vaguely remember Adrian (CCed) did this on purpose. This is for the
+>>>>> case when nandsim emulates NAND flash on top of a file. So there are 2
+>>>>> file-systems involved: one sits on top of nandsim (e.g. UBIFS) and the
+>>>>> other owns the file which nandsim uses (e.g., ext3).
+>>>>>
+>>>>> And I really cannot remember off the top of my head why he needed
+>>>>> PF_MEMALLOC, but I think Adrian wanted to prevent the direct reclaim
+>>>>> path to re-enter, say UBIFS, and cause deadlock. But I'd thing that all
+>>>>> the allocations in vfs_read()/vfs_write() should be GFP_NOFS, so that
+>>>>> should not be a probelm?
+>>>>>
+>>>> Yes it needs PF_MEMALLOC to prevent deadlock because there can be a
+>>>> file system on top of nandsim which, in this case, is on top of another
+>>>> file system.
+>>>>
+>>>> I do not see how mempools will help here.
+>>>>
+>>>> Please offer an alternative solution.
+>>> I have few questions.
+>>>
+>>> Can you please explain more detail? Another stackable filesystam
+>>> (e.g. ecryptfs) don't have such problem. Why nandsim have its issue?
+>>> What lock cause deadlock?
+>> The file systems are not stacked.  One is over nandsim, which nandsim
+>> does not know about because it is just a lowly NAND device, and, with
+>> the file cache option, one file system below to provide the file cache.
+>>
+>> The deadlock is the kernel writing out dirty pages to the top file system
+>> which writes to nandsim which writes to the bottom file system which
+>> allocates memory which causes dirty pages to be written out to the top
+>> file system, which tries to write to nandsim => deadlock.
+> 
+> You mean you want to prevent pageout() instead reclaim itself?
 
-This also creates the powerpc specific stubs to handle the arch callouts 
-from writes to the sysfs files.
+Yes
 
-The creation and use of these files is regulated by the 
-CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
-capability will have the files created.
+> Dropping filecache seems don't make recursive call, right?
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
+Yes
 
- arch/powerpc/Kconfig               |    4 ++++
- arch/powerpc/include/asm/machdep.h |    5 +++++
- arch/powerpc/kernel/sysfs.c        |   19 +++++++++++++++++++
- drivers/base/cpu.c                 |   32 ++++++++++++++++++++++++++++++++
- include/linux/cpu.h                |    2 ++
- 5 files changed, 62 insertions(+)
-
-Index: powerpc/drivers/base/cpu.c
-===================================================================
---- powerpc.orig/drivers/base/cpu.c	2009-11-25 04:06:10.000000000 -0600
-+++ powerpc/drivers/base/cpu.c	2009-11-25 04:11:01.000000000 -0600
-@@ -72,6 +72,38 @@
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+static ssize_t cpu_probe_store(struct class *class, const char *buf,
-+			       size_t count)
-+{
-+	return arch_cpu_probe(buf, count);
-+}
-+
-+static ssize_t cpu_release_store(struct class *class, const char *buf,
-+				 size_t count)
-+{
-+	return arch_cpu_release(buf, count);
-+}
-+
-+static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
-+static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
-+
-+int __init cpu_probe_release_init(void)
-+{
-+	int rc;
-+
-+	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+			       &class_attr_probe.attr);
-+	if (!rc)
-+		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				       &class_attr_release.attr);
-+
-+	return rc;
-+}
-+device_initcall(cpu_probe_release_init);
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #else /* ... !CONFIG_HOTPLUG_CPU */
- static inline void register_cpu_control(struct cpu *cpu)
- {
-Index: powerpc/arch/powerpc/include/asm/machdep.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-11-25 04:06:10.000000000 -0600
-+++ powerpc/arch/powerpc/include/asm/machdep.h	2009-11-25 04:11:01.000000000 -0600
-@@ -266,6 +266,11 @@
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	ssize_t (*cpu_probe)(const char *, size_t);
-+	ssize_t (*cpu_release)(const char *, size_t);
-+#endif
- };
- 
- extern void e500_idle(void);
-Index: powerpc/arch/powerpc/kernel/sysfs.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-11-25 04:06:10.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/sysfs.c	2009-11-25 04:11:01.000000000 -0600
-@@ -461,6 +461,25 @@
- 
- 	cacheinfo_cpu_offline(cpu);
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+ssize_t arch_cpu_probe(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_probe)
-+		return ppc_md.cpu_probe(buf, count);
-+
-+	return -EINVAL;
-+}
-+
-+ssize_t arch_cpu_release(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_release)
-+		return ppc_md.cpu_release(buf, count);
-+
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig	2009-11-25 04:06:10.000000000 -0600
-+++ powerpc/arch/powerpc/Kconfig	2009-11-25 04:11:01.000000000 -0600
-@@ -320,6 +320,10 @@
- 
- 	  Say N if you are unsure.
- 
-+config ARCH_CPU_PROBE_RELEASE
-+	def_bool y
-+	depends on HOTPLUG_CPU
-+
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 
-Index: powerpc/include/linux/cpu.h
-===================================================================
---- powerpc.orig/include/linux/cpu.h	2009-11-25 04:06:10.000000000 -0600
-+++ powerpc/include/linux/cpu.h	2009-11-25 04:11:56.000000000 -0600
-@@ -43,6 +43,8 @@
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
-+extern ssize_t arch_cpu_probe(const char *, size_t);
-+extern ssize_t arch_cpu_release(const char *, size_t);
- #endif
- struct notifier_block;
- 
