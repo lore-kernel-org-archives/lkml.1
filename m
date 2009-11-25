@@ -1,415 +1,611 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbZKYXMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964973AbZKYXN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759928AbZKYXMM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 18:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759908AbZKYXML
+	id S964973AbZKYXN2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 18:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759924AbZKYXN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 18:12:11 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:56074 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759906AbZKYXMH (ORCPT
+	Wed, 25 Nov 2009 18:13:28 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:49052 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759917AbZKYXN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 18:12:07 -0500
-Date: Thu, 26 Nov 2009 00:12:11 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: wuzhangjin@gmail.com, ralf@linux-mips.org
-Cc: tiwai@suse.de, linux-kernel@vger.kernel.org
-Subject: snd_usb_audio OOPS on MIPSEL - is that the mmap issue?
-Message-ID: <20091125231211.GA19559@rhlx01.hs-esslingen.de>
+	Wed, 25 Nov 2009 18:13:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=Vr+XpaQYXNy/9WPGhAMIZUeXqrDnQPazHQE8ZTR3jY2ZUoCUxwFBGlOZ8aOCqrG75w
+         Z10zTFdtuj+B5e3K03WqNLqTFqG5f1sxP+4J9lxeMta3CEBcaOGL4vY6x+6LiYY/LEne
+         8M3FulnPzcKh9IyjmEaXqQG44RJWJ33P5PKnE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <2f11576a0911190636vd21069bv2fe4f22a57b3d333@mail.gmail.com>
+References: <c0c067900911172356n2717ce9dn8a4231345903fde6@mail.gmail.com>
+	 <2f11576a0911190636vd21069bv2fe4f22a57b3d333@mail.gmail.com>
+Date: Wed, 25 Nov 2009 18:13:32 -0500
+X-Google-Sender-Auth: 6e1485e7c340445c
+Message-ID: <c0c067900911251513v48a34b18k73fb48f0e8d43c30@mail.gmail.com>
+Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
+From: Dan Merillat <dan.merillat@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Norbert Preining <preining@logic.at>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Dave Chinner <david@fromorbit.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Nov 19, 2009 at 9:36 AM, KOSAKI Motohiro
+<kosaki.motohiro@gmail.com> wrote:
+> Hi Dan,
+>
+> Umm, very strange.
+> I made two debug patch. can you please apply it and post following
+> command output?
+>
+> % cat /proc/meminfo
+> % cat /proc/vmstat
+> % cat /proc/zoneinfo
+> # cat /proc/filecache | sort -nr -k3 |head -30
 
-when running
-cat X.mp3|madplay -
+As I said I can't give you the filecache info, but here's two  datasets
 
-on my ASUS WL-500gP v2 Debian 2.6.30.9, I get lots of "Problems" (tm),
-with a backtrace that looks related:
+The  amount of cache is due to 1.5gb of mmaped vmware guest backing files.
 
-[<80090c10>] swap_info_get+0x74/0xfc
-[<80093090>] free_swap_and_cache+0x20/0x220
-[<80083480>] unmap_vmas+0x418/0x63c
-[<80087c3c>] exit_mmap+0xb8/0x148
-[<8002d5c0>] mmput+0xbc/0x1d4
-[<800325fc>] exit_mm+0x260/0x298
-[<8003491c>] do_exit+0x1cc/0x6a0
-[<80014034>] nmi_exception_handler+0x0/0x34
+First, 400mb ram "free" but still swapping out - usable with a few
+pauses as apps swap back in.
+meminfo
+MemTotal:        3929040 kB
+MemFree:          417748 kB
+Buffers:           98348 kB
+Cached:          2243696 kB
+SwapCached:       149480 kB
+Active:          1687316 kB
+Inactive:        1527104 kB
+Active(anon):    1042292 kB
+Inactive(anon):   477736 kB
+Active(file):     645024 kB
+Inactive(file):  1049368 kB
+Unevictable:          20 kB
+Mlocked:              20 kB
+SwapTotal:       3903480 kB
+SwapFree:        3249496 kB
+Dirty:               224 kB
+Writeback:             0 kB
+AnonPages:        759152 kB
+Mapped:           398180 kB
+Slab:             101844 kB
+SReclaimable:      60864 kB
+SUnreclaim:        40980 kB
+PageTables:        38656 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     5868000 kB
+Committed_AS:    3989292 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      302588 kB
+VmallocChunk:   34359432695 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       40832 kB
+DirectMap2M:     4020224 kB
 
-This would perhaps be the MIPS mmap issue
-(see e.g. http://patchwork.kernel.org/patch/60430/ ), right?
+vmstat
+nr_free_pages 104437
+nr_inactive_anon 119434
+nr_active_anon 260573
+nr_inactive_file 262342
+nr_active_file 161256
+nr_unevictable 5
+nr_mlock 5
+nr_anon_pages 189788
+nr_mapped 99545
+nr_file_pages 622881
+nr_dirty 56
+nr_writeback 0
+nr_slab_reclaimable 15216
+nr_slab_unreclaimable 10245
+nr_page_table_pages 9664
+nr_unstable 0
+nr_bounce 0
+nr_vmscan_write 13542637
+nr_writeback_temp 0
+numa_hit 378246197
+numa_miss 0
+numa_foreign 0
+numa_interleave 8130
+numa_local 378246197
+numa_other 0
+pgpgin 134039596
+pgpgout 83142977
+pswpin 168794
+pswpout 282875
+pgalloc_dma 28902
+pgalloc_dma32 244979577
+pgalloc_normal 135020061
+pgalloc_movable 0
+pgfree 380133342
+pgactivate 2301807
+pgdeactivate 1966072
+pgfault 123713739
+pgmajfault 168717
+pgrefill_dma 447
+pgrefill_dma32 818890
+pgrefill_normal 263325
+pgrefill_movable 0
+pgsteal_dma 62
+pgsteal_dma32 41972665
+pgsteal_normal 8076187
+pgsteal_movable 0
+pgscan_kswapd_dma 192
+pgscan_kswapd_dma32 100342332
+pgscan_kswapd_normal 19655823
+pgscan_kswapd_movable 0
+pgscan_direct_dma 0
+pgscan_direct_dma32 9364278
+pgscan_direct_normal 2242788
+pgscan_direct_movable 0
+zone_reclaim_failed 0
+pginodesteal 6375
+slabs_scanned 1234816
+kswapd_steal 47729503
+kswapd_inodesteal 242151
+pageoutrun 409691
+allocstall 26919
+pgrotated 283193
+htlb_buddy_alloc_success 0
+htlb_buddy_alloc_fail 0
+unevictable_pgs_culled 9875
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 40104
+unevictable_pgs_mlocked 42144
+unevictable_pgs_munlocked 41486
+unevictable_pgs_cleared 0
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
 
-
-Oh well, b44 netconsole lockup (just fixed it),
-non-working WLAN (seems most close to fully working after all,
-incredible as that may be given my initial thoughts),
-crashing usb-audio, non-transferring ftdi_sio.
-Does anything actually WORK on this box at all???
-That's almost a worse status than my Aspire One A110L once had...
-(and that's saying a LOT given that that one had more than 10 issues).
-It will get better eventually, I'm sure...
-
-Thanks,
-
-Andreas Mohr
-
-
-$ ./netconsole.sh 
-
-
-
-kobject: 'usb_endpoint' (81ecaa80): kobject_add_internal: parent: '2-1.1.4:1.1', set: '<NULL>'
-kobject: 'usbdev2.5_ep01' (81f0c890): kobject_add_internal: parent: 'usb_endpoint', set: 'devices'
-kobject: 'usbdev2.5_ep01' (81f0c890): kobject_uevent_env                                          
-kobject: 'usbdev2.5_ep01' (81f0c890): fill_kobj_path: path = '/devices/ssb0:1/usb2/2-1/2-1.1/2-1.1.4/2-1.1.4:1.1/usb_endpoint/usbdev2.5_ep01'
-setting usb interface 1:1                                                                                                                    
-Instruction bus error, epc == 80005074, ra == 80000018                                                                                       
-Oops[#1]:                                                                                                                                    
-Cpu 0                                                                                                                                        
-$ 0   : 00000000 1000d000 c047f000 00000001                                                                                                  
-$ 4   : c047f040 00000000 000c0300 c047f000                                                                                                  
-$ 8   : 00000000 c053f300 80357dbc 00080000                                                                                                  
-$12   : 81016c40 00000000 40000000 00000000                                                                                                  
-$16   : 00060180 00001000 00000002 00010000                                                                                                  
-$20   : 81474380 81e87c00 81e87c00 81ed5e00                                                                                                  
-$24   : 00000000 80018994                                                                                                                    
-$28   : 81f6a000 81f6bd40 81474080 80000018                                                                                                  
-Hi    : 00000000                                                                                                                             
-Lo    : 00601800                                                                                                                             
-epc   : 80005074 __bzero+0x38/0x164                                                                                                          
-    Not tainted                                                                                                                              
-ra    : 80000018 0x80000018                                                                                                                  
-Status: 1000d003    KERNEL EXL IE                                                                                                            
-Cause : 00800018                                                                                                                             
-PrId  : 00029029 (Broadcom BCM3302)                                                                                                          
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process madplay (pid: 1362, threadinfo=81f6a000, task=81d46838, tls=00000000)                                                                  
-Stack : 00010000 80787218 81474380 00002000 00002000 00001000 00000002 80772a60                                                                
-        81ed5e00 10010850 8125ca00 1000c210 00000000 80787124 80dc4a00 00000004                                                                
-        00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000018                                                                
-        00000000 00000000 00000000 00000000 00000000 00000000 00000000 ffffffff                                                                
-        ffffffff 00000000 00000000 00000000 00000000 00000000 00000000 80000000                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80005074>] __bzero+0x38/0x164                                                                                                                
-
-
-Code: 30c8003c  01244821  24840040 <ac85ffc0> ac85ffc4  ac85ffc8  ac85ffcc  ac85ffd0  ac85ffd4 
-Disabling lock debugging due to kernel taint                                                   
-Instruction bus error, epc == 80033968, ra == 80000018                                         
-Oops[#2]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d001 00000000 80000000                                                    
-$ 4   : 00000000 0000000d 7fc3b0e8 00000000                                                    
-$ 8   : 00000000 00000000 00000000 81d48838                                                    
-$12   : 81ecf9e0 feced300 81d36868 0000000d                                                    
-$16   : 00000551 81d48838 00000000 00000000                                                    
-$20   : 00000003 00000000 813d1ea8 00000000                                                    
-$24   : 00000000 00000000                                                                      
-$28   : 813d0000 813d1e20 ffffffff 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 80033968 wait_consider_task+0x484/0xd24                                                
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process bash (pid: 1191, threadinfo=813d0000, task=81d98838, tls=00000000)                                                                     
-Stack : 00000040 800950b4 81d98960 8000a3a0 808d1004 808b1700 81ee3480 8002c5bc                                                                
-        00000001 00000003 02625a00 00000000 00000003 00000000 81d48838 81d98838                                                                
-        81d9894c 00000000 00000003 00000000 813d1ea8 0000000e ffffffff 80034324                                                                
-        81ddeb9c 00000006 00000001 81dc5870 00000003 00000000 0000000e 00000000                                                                
-        7fc3b0e8 00000000 fffffff6 00000000 81d98838 80029018 81e871a8 81e871a8                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80033968>] wait_consider_task+0x484/0xd24                                                                                                    
-[<80034324>] do_wait+0x11c/0x378                                                                                                               
-[<80034634>] sys_wait4+0xb4/0xe0                                                                                                               
-[<800031f0>] stack_done+0x20/0x3c                                                                                                              
-
-
-Code: 00431024  14400218  00000000 <acc50000> 1480003f  00000000  12e0003e  26e80004  8f870018 
-Instruction bus error, epc == 80004db8, ra == 80000018                                         
-Oops[#3]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 81c08480 00000000                                                    
-$ 4   : 7fdabd10 81c0ddd0 00000000 1000d001                                                    
-$ 8   : 00000000 00000000 00000000 813d0000                                                    
-$12   : 81c084b0 69800e80 81d36868 00000000                                                    
-$16   : 00000004 00000000 81c0ddc0 81c0ddc0                                                    
-$20   : 7fdabd10 00000000 0000000b 00000000                                                    
-$24   : 00000000 80018994                                                                      
-$28   : 81c0c000 81c0dd98 00000001 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 80004db8 __copy_user+0xd4/0x2bc                                                        
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process init (pid: 1, threadinfo=81c0c000, task=81c08480, tls=00000000)                                                                        
-Stack : 81f11000 81c0dda8 81c0df00 800a1b7c 81c0ddc0 81c0ddc4 81c0ddc8 81c0ddcc                                                                
-        81c0ddd0 81c0ddd4 00000400 00000000 00000000 00000000 00000000 00000000                                                                
-        00000001 8006fd58 81c0de30 81f11000 80357de0 00000000 00000000 00000000                                                                
-        81f11000 ffffff9c 81c0dea8 800950b4 00000003 00000001 81f11000 ffffff9c                                                                
-        81c0dea8 800a5914 0000000d 00000000 00000000 00000000 000000cb 00001180                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80004db8>] __copy_user+0xd4/0x2bc                                                                                                            
-
-
-Code: 8ca80000  24a50004  24c6fffc <ac880000> 1706fffb  24840004  10c00040  00864821  240a0020 
-Instruction bus error, epc == 800a8db0, ra == 80000018                                         
-Oops[#4]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 00000000 00000000                                                    
-$ 4   : 00000000 8053db80 00000002 8053db80                                                    
-$ 8   : 00000000 80357e10 00080000 81c0c000                                                    
-$12   : 81d21868 61c06a00 81d36868 00000000                                                    
-$16   : 8053db98 fffffffc 80a02c00 fffffffc                                                    
-$20   : 8053db98 00000000 00000000 8053db70                                                    
-$24   : 00000000 802577b0                                                                      
-$28   : 8053c000 8053db60 00462070 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 800a8db0 do_sys_poll+0x2d0/0x388                                                       
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process rpc.nfsd (pid: 1146, threadinfo=8053c000, task=81d21838, tls=00000000)                                                                 
-Stack : 00000000 00000001 001200d2 00000000 00000000 00000000 00000001 00000000                                                                
-        00000000 00000002 00000004 000000c3 00000005 000000c3 8053f2a8 00000001                                                                
-        80a59614 2aac5000 00562717 80084ba4 81e22354 800272ac 00000001 80340000                                                                
-        8053dd78 8033ff68 ffffffff 803b0000 803b0000 803b0000 8033d9d0 000098dc                                                                
-        803b0000 8053dc30 803af690 803b0000 8033d9d0 8004e5bc ffffffff 80026764                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<800a8db0>] do_sys_poll+0x2d0/0x388                                                                                                           
-[<800a9198>] sys_poll+0x8c/0xfc                                                                                                                
-[<800031f0>] stack_done+0x20/0x3c                                                                                                              
-
-
-Code: 0802a375  00004021  94a2000e <a7c20006> 1460000d  24a50008  24840001  27de0008  0086102a 
-Instruction bus error, epc == 800051e8, ra == 80000018                                         
-Oops[#5]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 00000000 7fbed27c                                                    
-$ 4   : 80aaf000 7fbed27c 00001000 00001000                                                    
-$ 8   : 00000000 00001000 80aaf000 00080000                                                    
-$12   : 810155e0 00000000 81d36868 00000000                                                    
-$16   : 7fbed27c 803c0000 000001a4 00000097                                                    
-$20   : 00000097 00000006 0000000e 000000fe                                                    
-$24   : 00000001 80197e90                                                                      
-$28   : 81e9e000 81e9fee0 00000000 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 800051e8 __strncpy_from_user_nocheck_asm+0x8/0x50                                      
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process udevd (pid: 274, threadinfo=81e9e000, task=81d36838, tls=00000000)                                                                     
-Stack : 00000008 800a9e44 00000000 00000004 00000000 ffffff9c 00002301 80095968                                                                
-        00000001 00450000 00000000 801fc8a8 0000015f 00000053 00000301 000001a4                                                                
-        7fbed27c 00000097 00000097 800031f0 00000006 00411e7c 00000001 00000000                                                                
-        00000000 00000000 00000000 1000d000 00000fa5 00000000 7fbed27c 00002301                                                                
-        000001a4 00000004 00000004 00000000 004548f0 4f4a414d 35323d52 00000000                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<800051e8>] __strncpy_from_user_nocheck_asm+0x8/0x50                                                                                          
-
-
-Code: 00000000  00001021  00a01821 <90680000> 24630001  11000005  a0880000  24420001  24840001 
-Instruction bus error, epc == 80031608, ra == 80000018                                         
-Oops[#6]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d001 004469f0 803a91ae                                                    
-$ 4   : 0001b543 0000003c 81e65e7c 1000d001                                                    
-$ 8   : 000000b6 80357e3c 00080000 81c90000                                                    
-$12   : 81dc5868 288a0cf1 81c27930 00000000                                                    
-$16   : 00000000 00000000 00000fff 00000000                                                    
-$20   : 80390000 80340000 004469f0 80390000                                                    
-$24   : 00000000 80018994                                                                      
-$28   : 81e64000 81e65e60 80340000 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 80031608 do_syslog+0x1ac/0x4b0                                                         
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process klogd (pid: 1033, threadinfo=81e64000, task=81dbe838, tls=00000000)                                                                    
-Stack : 000134b3 81dbe838 80049eb4 81e65e6c 00000000 81dbe838 80049eb4 81e65e7c                                                                
-        81e65e7c 00000006 81c95a80 fffffffb 004469f0 81e65f18 00440000 00400000                                                                
-        00440000 00400000 00400000 800dd900 80a03308 81e65f18 00000025 7fc376b4                                                                
-        00000000 00000fff 81e54640 80098e00 00000000 00440000 00440000 8000a3a0                                                                
-        00000000 00440000 00440000 81e54640 00000fff 004469f0 00440000 80098f98                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80031608>] do_syslog+0x1ac/0x4b0                                                                                                             
-[<800dd900>] proc_reg_read+0x48/0x6c                                                                                                           
-[<80098e00>] vfs_read+0xb4/0x14c                                                                                                               
-[<80098f98>] sys_read+0x58/0x9c                                                                                                                
-[<800031f0>] stack_done+0x20/0x3c                                                                                                              
-
-
-Code: 000000c0  00008021  02d31021 <a0450000> 0c002a59  26730001  40016000  3421001f  3821001f 
-Instruction bus error, epc == 80004db8, ra == 80000018                                         
-Oops[#7]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 81d74838 00000000                                                    
-$ 4   : 7f9cc240 80b47dd0 00000000 1000d001                                                    
-$ 8   : 00000000 00000000 00000000 81e28000                                                    
-$12   : 81dc5868 6ab13b80 81d74868 00000000                                                    
-$16   : 00000004 00000000 80b47dc0 80b47dc0                                                    
-$20   : 7f9cc240 00000000 0000000d 00000000                                                    
-$24   : 00000000 80271d18                                                                      
-$28   : 80b46000 80b47d98 7f9cc8b4 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 80004db8 __copy_user+0xd4/0x2bc                                                        
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process nmbd (pid: 1073, threadinfo=80b46000, task=81d74838, tls=00000000)                                                                     
-Stack : 00000000 80b47da8 80b47f00 803b0000 80b47dc0 80b47dc4 80b47dc8 80b47dcc                                                                
-        80b47dd0 80b47dd4 00001fc0 00000000 00000000 00000000 00000000 00000000                                                                
-        00000000 80b47e20 803c0000 81c29900 81f04228 00000000 81eab398 81f5ca20                                                                
-        81f04390 00000000 8125c2ac 81f04228 00000001 800950b4 00006f6c ffffffff                                                                
-        00000000 803c0000 00000000 800d8e44 00000000 00000000 81f1eba0 800950a0                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80004db8>] __copy_user+0xd4/0x2bc                                                                                                            
-
-
-Code: 8ca80000  24a50004  24c6fffc <ac880000> 1706fffb  24840004  10c00040  00864821  240a0020 
-Instruction bus error, epc == 80090c10, ra == 80000018                                         
-Oops[#8]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 c019e002 00000002                                                    
-$ 4   : 00000001 803bd4e4 00000001 80b8c000                                                    
-$ 8   : 80387840 80357e3c 00080000 00000003                                                    
-$12   : 00000010 80387840 00000004 00000000                                                    
-$16   : 00000001 80b8cafc 2aebf000 0030cb2e                                                    
-$20   : 2aec0000 0090168b 00000000 00000000                                                    
-$24   : 00000000 80018994                                                                      
-$28   : 80b46000 80b47b40 00000000 80000018                                                    
-Hi    : 00000000                                                                               
-Lo    : 00000000                                                                               
-epc   : 80090c10 swap_info_get+0x74/0xfc                                                       
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process nmbd (pid: 1073, threadinfo=80b46000, task=81d74838, tls=00000000)                                                                     
-Stack : 2ae7c000 017ff613 00000000 00000000 ffffffff 80093090 00000009 80036d3c                                                                
-        80357de0 00000000 00000000 00002000 80b8cafc 2aebf000 0030cb2e 80083480                                                                
-        80b47dc0 00000000 7f9cc240 00000000 2aebffff 8033db30 80b881e0 80b892ac                                                                
-        80b892ac 2aec0000 00000000 00000001 80b4443c 80b881e0 80387840 80b88214                                                                
-        81d74838 00000000 00000001 00000000 7f9cc8b4 80087c3c 80b47bf0 814c26e0                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<80090c10>] swap_info_get+0x74/0xfc                                                                                                           
-[<80093090>] free_swap_and_cache+0x20/0x220                                                                                                    
-[<80083480>] unmap_vmas+0x418/0x63c                                                                                                            
-[<80087c3c>] exit_mmap+0xb8/0x148                                                                                                              
-[<8002d5c0>] mmput+0xbc/0x1d4                                                                                                                  
-[<800325fc>] exit_mm+0x260/0x298                                                                                                               
-[<8003491c>] do_exit+0x1cc/0x6a0                                                                                                               
-[<80014034>] nmi_exception_handler+0x0/0x34                                                                                                    
+zoneinfo
+Node 0, zone      DMA
+  pages free     3887
+        min      7
+        low      8
+        high     10
+        scanned  0
+        spanned  4096
+        present  3839
+    nr_free_pages 3887
+    nr_inactive_anon 15
+    nr_active_anon 0
+    nr_inactive_file 18
+    nr_active_file 56
+    nr_unevictable 0
+    nr_mlock     0
+    nr_anon_pages 7
+    nr_mapped    2
+    nr_file_pages 82
+    nr_dirty     0
+    nr_writeback 0
+    nr_slab_reclaimable 5
+    nr_slab_unreclaimable 2
+    nr_page_table_pages 0
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 0
+    nr_writeback_temp 0
+    numa_hit     21161
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 0
+    numa_local   21161
+    numa_other   0
+        protection: (0, 3126, 3883, 3883)
+  pagesets
+    cpu: 0
+              count: 0
+              high:  0
+              batch: 1
+  vm stats threshold: 4
+    cpu: 1
+              count: 0
+              high:  0
+              batch: 1
+  vm stats threshold: 4
+  all_unreclaimable: 0
+  prev_priority:     12
+  start_pfn:         0
+  inactive_ratio:    1
+  recent_rotated_anon: 0
+  recent_scanned_anon: 2
+  recent_rotated_file: 3
+  recent_scanned_file: 12
+Node 0, zone    DMA32
+  pages free     100087
+        min      1602
+        low      2002
+        high     2403
+        scanned  0
+        spanned  1044480
+        present  800280
+    nr_free_pages 100087
+    nr_inactive_anon 62741
+    nr_active_anon 217794
+    nr_inactive_file 226981
+    nr_active_file 136874
+    nr_unevictable 5
+    nr_mlock     5
+    nr_anon_pages 130228
+    nr_mapped    83692
+    nr_file_pages 519311
+    nr_dirty     39
+    nr_writeback 0
+    nr_slab_reclaimable 10649
+    nr_slab_unreclaimable 5709
+    nr_page_table_pages 4812
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 10954292
+    nr_writeback_temp 0
+    numa_hit     243347959
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 0
+    numa_local   243347959
+    numa_other   0
+        protection: (0, 0, 757, 757)
+  pagesets
+    cpu: 0
+              count: 134
+              high:  186
+              batch: 31
+  vm stats threshold: 24
+    cpu: 1
+              count: 11
+              high:  186
+              batch: 31
+  vm stats threshold: 24
+  all_unreclaimable: 0
+  prev_priority:     12
+  start_pfn:         4096
+  inactive_ratio:    5
+  recent_rotated_anon: 33921
+  recent_scanned_anon: 77920
+  recent_rotated_file: 459
+  recent_scanned_file: 80092
+Node 0, zone   Normal
+  pages free     463
+        min      388
+        low      485
+        high     582
+        scanned  0
+        spanned  196608
+        present  193920
+    nr_free_pages 463
+    nr_inactive_anon 56678
+    nr_active_anon 42779
+    nr_inactive_file 35343
+    nr_active_file 24326
+    nr_unevictable 0
+    nr_mlock     0
+    nr_anon_pages 59553
+    nr_mapped    15851
+    nr_file_pages 103488
+    nr_dirty     17
+    nr_writeback 0
+    nr_slab_reclaimable 4562
+    nr_slab_unreclaimable 4534
+    nr_page_table_pages 4852
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 2588345
+    nr_writeback_temp 0
+    numa_hit     134877151
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 8130
+    numa_local   134877151
+    numa_other   0
+        protection: (0, 0, 0, 0)
+  pagesets
+    cpu: 0
+              count: 149
+              high:  186
+              batch: 31
+  vm stats threshold: 16
+    cpu: 1
+              count: 77
+              high:  186
+              batch: 31
+  vm stats threshold: 16
+  all_unreclaimable: 0
+  prev_priority:     12
+  start_pfn:         1048576
+  inactive_ratio:    1
+  recent_rotated_anon: 6122
+  recent_scanned_anon: 14889
+  recent_rotated_file: 491
+  recent_scanned_file: 9600
 
 
-Code: 00041840  8ca20020  00431021 <94440000> 1480001d  8fbf0014  3c048030  3c05802b  24a57210 
-Fixing recursive fault but reboot is needed!                                                   
-Instruction bus error, epc == 800a8db0, ra == 80000018                                         
-Oops[#9]:                                                                                      
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d000 00000000 00000000                                                    
-$ 4   : 00000000 8056fb80 00000002 8056fb80                                                    
-$ 8   : 00000000 0000d000 00000000 81c8e000                                                    
-$12   : 81c39830 802c1000 81d1a868 00000000                                                    
-$16   : 8056fb98 fffffffc 8056c0e0 fffffffc                                                    
-$20   : 8056fb98 00000000 00000000 8056fb70                                                    
-$24   : 00000000 802577b0                                                                      
-$28   : 8056e000 8056fb60 00458090 80000018                                                    
-Hi    : 00000121                                                                               
-Lo    : c4f5ed80                                                                               
-epc   : 800a8db0 do_sys_poll+0x2d0/0x388                                                       
-    Tainted: G      D                                                                          
-ra    : 80000018 0x80000018                                                                    
-Status: 1000d003    KERNEL EXL IE                                                              
-Cause : 00800018                                                                               
-PrId  : 00029029 (Broadcom BCM3302)                                                            
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211                                       
-Process rpc.mountd (pid: 1148, threadinfo=8056e000, task=81d1a838, tls=00000000)                                                               
-Stack : 8033d9d0 8009540c 00000001 00000001 00000000 8033dc28 81d21838 80028fc4                                                                
-        00000000 00000002 00000004 000000c3 00000005 000000c3 00000001 81d21838                                                                
-        8053b214 8003f5bc 81d21838 0000b5e8 803b0000 8056fc00 803af690 10005000                                                                
-        81d21838 0000b65c 803b0000 8056fc18 803af690 803b0000 8033d9d0 8004e5bc                                                                
-        05f5e100 000004c8 05f5e100 8004e61c 8056fc40 8033fa50 05f5e100 000004cd                                                                
-        ...                                                                                                                                    
-Call Trace:                                                                                                                                    
-[<800a8db0>] do_sys_poll+0x2d0/0x388                                                                                                           
-[<800a9198>] sys_poll+0x8c/0xfc                                                                                                                
-[<800031f0>] stack_done+0x20/0x3c                                                                                                              
+Second one was during a thrash storm (I think, it may not have dumped
+until the end of it)
+Note the kernel claims it has over 500mb free RAM that's not being
+used while we swap
+meminfo
+MemTotal:        3929040 kB
+MemFree:          544676 kB
+Buffers:          123256 kB
+Cached:          2097536 kB
+SwapCached:       184016 kB
+Active:          1703160 kB
+Inactive:        1376904 kB
+Active(anon):     990688 kB
+Inactive(anon):   400420 kB
+Active(file):     712472 kB
+Inactive(file):   976484 kB
+Unevictable:          20 kB
+Mlocked:              20 kB
+SwapTotal:       3903480 kB
+SwapFree:        3023160 kB
+Dirty:              6844 kB
+Writeback:           112 kB
+AnonPages:        740368 kB
+Mapped:           455792 kB
+Slab:             109176 kB
+SReclaimable:      63088 kB
+SUnreclaim:        46088 kB
+PageTables:        39540 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     5868000 kB
+Committed_AS:    4134332 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      302588 kB
+VmallocChunk:   34359432695 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       40832 kB
+DirectMap2M:     4020224 kB
 
+vmstat
+nr_free_pages 136138
+nr_inactive_anon 100105
+nr_active_anon 247672
+nr_inactive_file 244146
+nr_active_file 178118
+nr_unevictable 5
+nr_mlock 5
+nr_anon_pages 185092
+nr_mapped 113948
+nr_file_pages 601227
+nr_dirty 1711
+nr_writeback 28
+nr_slab_reclaimable 15772
+nr_slab_unreclaimable 11522
+nr_page_table_pages 9885
+nr_unstable 0
+nr_bounce 0
+nr_vmscan_write 14020410
+nr_writeback_temp 0
+numa_hit 438013705
+numa_miss 0
+numa_foreign 0
+numa_interleave 8130
+numa_local 438013705
+numa_other 0
+pgpgin 137757163
+pgpgout 89200634
+pswpin 410261
+pswpout 464160
+pgalloc_dma 28902
+pgalloc_dma32 291710526
+pgalloc_normal 149182097
+pgalloc_movable 0
+pgfree 441058114
+pgactivate 3112124
+pgdeactivate 2717995
+pgfault 185871068
+pgmajfault 254976
+pgrefill_dma 447
+pgrefill_dma32 839061
+pgrefill_normal 263472
+pgrefill_movable 0
+pgsteal_dma 62
+pgsteal_dma32 42581791
+pgsteal_normal 8623195
+pgsteal_movable 0
+pgscan_kswapd_dma 192
+pgscan_kswapd_dma32 115131371
+pgscan_kswapd_normal 24244847
+pgscan_kswapd_movable 0
+pgscan_direct_dma 0
+pgscan_direct_dma32 9390346
+pgscan_direct_normal 2249551
+pgscan_direct_movable 0
+zone_reclaim_failed 0
+pginodesteal 6375
+slabs_scanned 2123520
+kswapd_steal 48883166
+kswapd_inodesteal 310652
+pageoutrun 426393
+allocstall 26962
+pgrotated 464504
+htlb_buddy_alloc_success 0
+htlb_buddy_alloc_fail 0
+unevictable_pgs_culled 9875
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 40104
+unevictable_pgs_mlocked 42211
+unevictable_pgs_munlocked 41486
+unevictable_pgs_cleared 0
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
 
-Code: 0802a375  00004021  94a2000e <a7c20006> 1460000d  24a50008  24840001  27de0008  0086102a 
-Instruction bus error, epc == 80011004, ra == 80000018                                         
-Oops[#10]:                                                                                     
-Cpu 0                                                                                          
-$ 0   : 00000000 1000d001 24020000 80000000                                                    
-$ 4   : 7fd8cd68 24021017 0000000e 81d0ebe4                                                    
-$ 8   : 80012074 81ecde80 ffffffff ffffffff                                                    
-$12   : 00000000 671db480 81dc5868 00000000
-$16   : 00000000 00000000 81ecdf30 7fd8cd70
-$20   : 7fd8cd68 81d0ebe4 81ecde80 0000000e
-$24   : 00000000 80296e00
-$28   : 81ecc000 81ecde10 7fd8d024 80000018
-Hi    : 00000000
-Lo    : 00000000
-epc   : 80011004 install_sigtramp+0x20/0x54
-    Tainted: G      D
-ra    : 80000018 0x80000018
-Status: 1000d003    KERNEL EXL IE
-Cause : 00800018
-PrId  : 00029029 (Broadcom BCM3302)
-Modules linked in: snd_usb_audio snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd_page_alloc snd_usb_lib snd_rawmidi snd_seq_device snd_hwdep usbhid hid snd input_core soundcore nfs lockd auth_rpcgss sunrpc ipv6 arc4 ecb b43 mac80211 cfg80211
-Process syslogd (pid: 1027, threadinfo=81ecc000, task=81d0e838, tls=00000000)
-Stack : 81ecdf30 81ecde98 81e88bc0 81d14004 00000009 81ecdf30 7fd8cd58 8001211c
-        81fb7820 00000000 00000038 00000002 81ecdf30 81ecdf30 0000000e 81ecde80
-        81d0ebe4 81ecde98 2ac8f490 00448414 00402130 80011190 00000000 81ecde80
-        81ecdf30 800f07d0 81ecde7c 0044f090 10000000 00403fd0 00002000 00000000
-        00000000 00000000 0000000e 00000080 00000000 00000000 00000000 00000000
-        ...
-Call Trace:
-[<80011004>] install_sigtramp+0x20/0x54
-[<8001211c>] setup_frame+0xa8/0x13c
-[<80011190>] do_notify_resume+0x158/0x428
-[<800015f0>] work_notifysig+0xc/0x14
-
-
-Code: afbf001c  00a22821  02008821 <ac850000> 2402000c  ac820004  3c038039  8c628038  0040f809
-Kernel panic - not syncing: Attempted to kill init!
+zoneinfo
+Node 0, zone      DMA
+  pages free     3888
+        min      7
+        low      8
+        high     10
+        scanned  0
+        spanned  4096
+        present  3839
+    nr_free_pages 3888
+    nr_inactive_anon 14
+    nr_active_anon 0
+    nr_inactive_file 18
+    nr_active_file 56
+    nr_unevictable 0
+    nr_mlock     0
+    nr_anon_pages 6
+    nr_mapped    3
+    nr_file_pages 82
+    nr_dirty     0
+    nr_writeback 0
+    nr_slab_reclaimable 5
+    nr_slab_unreclaimable 2
+    nr_page_table_pages 0
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 0
+    nr_writeback_temp 0
+    numa_hit     21161
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 0
+    numa_local   21161
+    numa_other   0
+        protection: (0, 3126, 3883, 3883)
+  pagesets
+    cpu: 0
+              count: 0
+              high:  0
+              batch: 1
+  vm stats threshold: 4
+    cpu: 1
+              count: 0
+              high:  0
+              batch: 1
+  vm stats threshold: 4
+  all_unreclaimable: 0
+  prev_priority:     7
+  start_pfn:         0
+  inactive_ratio:    1
+  recent_rotated_anon: 0
+  recent_scanned_anon: 2
+  recent_rotated_file: 3
+  recent_scanned_file: 12
+Node 0, zone    DMA32
+  pages free     117449
+        min      1602
+        low      2002
+        high     2403
+        scanned  0
+        spanned  1044480
+        present  800280
+    nr_free_pages 117449
+    nr_inactive_anon 51601
+    nr_active_anon 208680
+    nr_inactive_file 210820
+    nr_active_file 154607
+    nr_unevictable 5
+    nr_mlock     5
+    nr_anon_pages 128789
+    nr_mapped    98197
+    nr_file_pages 508828
+    nr_dirty     1501
+    nr_writeback 0
+    nr_slab_reclaimable 11187
+    nr_slab_unreclaimable 6932
+    nr_page_table_pages 4798
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 11175938
+    nr_writeback_temp 0
+    numa_hit     288976607
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 0
+    numa_local   288976607
+    numa_other   0
+        protection: (0, 0, 757, 757)
+  pagesets
+    cpu: 0
+              count: 182
+              high:  186
+              batch: 31
+  vm stats threshold: 24
+    cpu: 1
+              count: 166
+              high:  186
+              batch: 31
+  vm stats threshold: 24
+  all_unreclaimable: 0
+  prev_priority:     7
+  start_pfn:         4096
+  inactive_ratio:    5
+  recent_rotated_anon: 34440
+  recent_scanned_anon: 39630
+  recent_rotated_file: 416
+  recent_scanned_file: 59261
+Node 0, zone   Normal
+  pages free     14801
+        min      388
+        low      485
+        high     582
+        scanned  0
+        spanned  196608
+        present  193920
+    nr_free_pages 14801
+    nr_inactive_anon 48490
+    nr_active_anon 38992
+    nr_inactive_file 33308
+    nr_active_file 23455
+    nr_unevictable 0
+    nr_mlock     0
+    nr_anon_pages 56297
+    nr_mapped    15748
+    nr_file_pages 92317
+    nr_dirty     210
+    nr_writeback 28
+    nr_slab_reclaimable 4580
+    nr_slab_unreclaimable 4588
+    nr_page_table_pages 5087
+    nr_unstable  0
+    nr_bounce    0
+    nr_vmscan_write 2844472
+    nr_writeback_temp 0
+    numa_hit     149016012
+    numa_miss    0
+    numa_foreign 0
+    numa_interleave 8130
+    numa_local   149016012
+    numa_other   0
+        protection: (0, 0, 0, 0)
+  pagesets
+    cpu: 0
+              count: 28
+              high:  186
+              batch: 31
+  vm stats threshold: 16
+    cpu: 1
+              count: 61
+              high:  186
+              batch: 31
+  vm stats threshold: 16
+  all_unreclaimable: 0
+  prev_priority:     7
+  start_pfn:         1048576
+  inactive_ratio:    1
+  recent_rotated_anon: 8094
+  recent_scanned_anon: 17955
+  recent_rotated_file: 229
+  recent_scanned_file: 14296
