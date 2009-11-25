@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934224AbZKYImi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934393AbZKYImq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934224AbZKYImi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:42:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZKYImg
+	id S934393AbZKYImq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934284AbZKYImp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:42:36 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:1372 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752435AbZKYImf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:42:35 -0500
-Message-ID: <4B0CEDFD.2050107@panasas.com>
-Date: Wed, 25 Nov 2009 10:42:37 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+	Wed, 25 Nov 2009 03:42:45 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55891 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934251AbZKYImm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:42:42 -0500
+Date: Wed, 25 Nov 2009 09:42:41 +0100
+From: Jan Kara <jack@suse.cz>
+To: tmhikaru@gmail.com
+Cc: Jan Kara <jack@suse.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+Message-ID: <20091125084240.GA549@quack.suse.cz>
+References: <20091124195607.GC16662@quack.suse.cz>
+ <Pine.LNX.4.44L0.0911241510590.2881-100000@iolanthe.rowland.org>
+ <20091124203944.GD16662@quack.suse.cz>
+ <20091124215044.GA20245@roll>
+ <20091124222334.GB20245@roll>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@citi.umich.edu>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCHSET 0-5] remove unneeded nfsd #includes
-References: <4B0C1EB7.50508@panasas.com> <20091124230852.GA468@fieldses.org>
-In-Reply-To: <20091124230852.GA468@fieldses.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Nov 2009 08:42:41.0106 (UTC) FILETIME=[3FD24320:01CA6DAB]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124222334.GB20245@roll>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/25/2009 01:08 AM, J. Bruce Fields wrote:
-> On Tue, Nov 24, 2009 at 07:58:15PM +0200, Boaz Harrosh wrote:
->> Why is debug.h exported from Kernel? (include/linux/nfsd/Kbuild)
-> 
-> I suppose it's so rpcdebug can get the rpc debug flags; see e.g.
-> nfs-utils/tools/rpcdebug/rpcdebug.c.
-> 
+On Tue 24-11-09 17:23:34, tmhikaru@gmail.com wrote:
+> On Tue, Nov 24, 2009 at 04:50:44PM -0500, tmhikaru@gmail.com wrote:
+> > On Tue, Nov 24, 2009 at 09:39:44PM +0100, Jan Kara wrote:
+> > > On Tue 24-11-09 15:13:01, Alan Stern wrote:
+> > > > On Tue, 24 Nov 2009, Jan Kara wrote:
+> > > > 
+> > > > >   After digging in block layer code, it's as we suspected:
+> > > > > In case of host error DID_ERROR (which is our case), scsi request is
+> > > > > retried iff it is not a FAILFAST request which is set if bio is doing
+> > > > > readahead... So this is explained and everything behaves as it should.
+> > > > > Thanks everybody involved :).
+> > > > 
+> > > > Okay, very good.  There remains the question of the disturbing error
+> > > > messages in the system log.  Should they be supressed for FAILFAST
+> > > > requests?
+> > >   I think it's useful they are there because ultimately, something really
+> > > went wrong and you should better investigate. BTW, "end_request: I/O error"
+> > > messages are in the log even for requests where we retried and succeeded...
+> > > 
+> > > 								Honza
+> > 
+> > While I agree it is useful information, I think that if the error messages
+> > are going to be printed, you should *also* print that this is a NON FATAL
+> > error and that it's going to be retried. It'd help diagnosing the path it's
+> > following through the failure code IMHO as well as not making users
+> > completely freak out like I did in my case. It is *not* particularly obvious
+> > given the message printed to syslog what is going wrong or why.
+  Yeah, we might make it more obvious that read failed and whether or not
+we are going to retry. Just technically it's not so simple because a
+different layer prints messages about errors (generic block layer) and
+different (scsi disk driver) decides what to do (retry, don't retry, ...).
 
-OK, thanks, so I didn't touch it
+> 	I should have asked since I'm here at the moment - do you need any
+> more information out of the buggy USB enclosure at the moment, or can I work
+> on trying to fix/replace it now?
+  No, feel free to do anything with it :). Thanks for your help with
+debugging this.
 
-> --b.
+									Honza
