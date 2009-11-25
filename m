@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbZKYPlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZKYPpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758123AbZKYPlO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 10:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbZKYPlO
+	id S1757584AbZKYPpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 10:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZKYPpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 10:41:14 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42261 "EHLO mx2.suse.de"
+	Wed, 25 Nov 2009 10:45:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39144 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759AbZKYPlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 10:41:13 -0500
-Date: Wed, 25 Nov 2009 07:41:06 -0800
-From: Greg KH <gregkh@suse.de>
-To: eran liberty <eran.liberty@gmail.com>
-Cc: balajirrao@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: kobjects: mark cleaned up kobjects as unitialized
-Message-ID: <20091125154106.GA24842@suse.de>
-References: <ffc2b1d40911250127x7b3c3609qb99820d212a7a0ad@mail.gmail.com>
- <20091125123534.GA17486@suse.de>
- <ffc2b1d40911250627q6c7e459v89a580d793b24fcf@mail.gmail.com>
- <20091125152747.GB24498@suse.de>
+	id S1753347AbZKYPpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 10:45:17 -0500
+Date: Wed, 25 Nov 2009 16:44:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jakub Jelinek <jakub@redhat.com>, Andrew Haley <aph@redhat.com>,
+       "H.J. Lu" <hjl.tools@gmail.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
+ messing with mcount prologue
+Message-ID: <20091125154452.GA9456@elte.hu>
+References: <1258694593.22249.1012.camel@gandalf.stny.rr.com>
+ <1258736456.22249.1032.camel@gandalf.stny.rr.com>
+ <4B06EF6F.2050507@redhat.com>
+ <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com>
+ <4B0972C9.302@redhat.com>
+ <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com>
+ <4B0BF119.4070704@redhat.com>
+ <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain>
+ <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com>
+ <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091125152747.GB24498@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 07:27:47AM -0800, Greg KH wrote:
-> > but basically you can demonstrate the problem with this simple code:
+
+* Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Tue, 24 Nov 2009, Jakub Jelinek wrote:
+> 
+> > On Tue, Nov 24, 2009 at 03:55:49PM +0100, Thomas Gleixner wrote:
+> > > > you should compile your code with -maccumulate-outgoing-args, and there's
+> > > > no need to use -mtune=generic.  Is that right?
+> > > 
+> > > Seems to work. What other side effects has that ?
 > > 
-> > struct device dev;
-> > while(1) {
-> >   dev->release = dummy_release_function_that_does_nothing;
+> > Faster code, significant increase in code size though.  Note that on many
+> > architectures it is the only supported model.
 > 
-> WTF!!!
-> 
-> Ugh, if I see one more person try to "trick" the kernel from reporting
-> this error by providing a "dummy" release function, I'm going to go find
-> a kitten to kick.
-> 
-> Seriously, why are you blatently ignoring the warning that the kernel is
-> trying to be nice and give to you?  Do we just invent messages that need
-> to be worked around?
+> Just checked on the affected -marchs. The increase in code size is 
+> about 3% which is not that bad and definitely acceptable for the 
+> tracing case. Will zap the -mtune=generic patch and use 
+> -maccumulate-outgoing-args instead.
 
-Oh, and before anyone thinks that I'm being too harsh here, again, refer
-to Documentation/kobject.txt:
-	Note that the kernel will warn you if you forget to provide a
-	release() method.  Do not try to get rid of this warning by
-	providing an "empty" release function; you will be mocked
-	mercilessly by the kobject maintainer if you attempt this.
+hm, 3% sounds quite large :( dyn-ftrace is enabled in distro configs, so 
+3% is a big deal IMO.
 
-Hence my mocking.
-
-thanks,
-
-greg k-h
+	Ingo
