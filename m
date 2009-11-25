@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934139AbZKYD36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbZKYDjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934139AbZKYD36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 22:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbZKYD35
+	id S934270AbZKYDjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 22:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933768AbZKYDjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 22:29:57 -0500
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:43737 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932570AbZKYD35 (ORCPT
+	Tue, 24 Nov 2009 22:39:17 -0500
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:38823 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933372AbZKYDjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 22:29:57 -0500
-Date: Wed, 25 Nov 2009 08:59:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
-	in case of use_hierarchy
-Message-ID: <20091125032954.GC3365@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp> <661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com> <20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp> <20091124170402.GB3365@balbir.in.ibm.com> <20091125084910.16d9095d.nishimura@mxp.nes.nec.co.jp>
+	Tue, 24 Nov 2009 22:39:17 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 22:39:17 EST
+Date: Tue, 24 Nov 2009 19:32:42 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: IR raw input is not sutable for input system
+In-Reply-To: <1259105571.28219.20.camel@maxim-laptop>
+Message-ID: <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
+References: <200910200956.33391.jarod@redhat.com>  <200910200958.50574.jarod@redhat.com>
+ <4B0A765F.7010204@redhat.com>  <4B0A81BF.4090203@redhat.com>
+ <m36391tjj3.fsf@intrepid.localdomain>  <20091123173726.GE17813@core.coreip.homeip.net>
+  <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091125084910.16d9095d.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-11-25 08:49:10]:
+On Wed, 25 Nov 2009, Maxim Levitsky wrote:
+>
+> Its not the case.
+> There are many protocols, I know that by experimenting with my universal
+> remote. There are many receivers, and all have different accuracy.
+> Most remotes aren't designed to be used with PC, thus user has to invent
+> mapping between buttons and actions.
+> Its is not possible to identify remotes accurately, many remotes send
+> just a 8 bit integer that specifies the 'model' thus many remotes can
+> share it.
 
-> On Tue, 24 Nov 2009 22:34:02 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
-> > 
-> > > On Tue, 24 Nov 2009 19:01:54 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
-> > > > <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-> > > > > a task can be a candidate for being oom-killed from memcg's limit, checks
-> > > > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
-> > > > >
-> > > > > But this check return true(it's false positive) when:
-> > > > >
-> > > > >        <some path>/00          use_hierarchy == 0      <- hitting limit
-> > > > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
-> > > > >
-> > > > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
-> > > > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-> > > > > should print information of mem_cgroup which the task being killed, not current,
-> > > > > belongs to.
-> > > > >
-> > > > 
-> > > > Quick Question: What happens if <some path>/00 has no tasks in it
-> > > > after your patches?
-> > > > 
-> > > Nothing would happen because <some path>/00 never hit its limit.
-> > 
-> > Why not? I am talking of a scenario where <some path>/00 is set to a
-> > limit (similar to your example) and hits its limit, but the groups
-> > under it have no limits, but tasks. Shouldn't we be scanning
-> > <some path>/00/aa as well?
-> > 
-> > > 
-> > > The bug that this patch fixes is:
-> > > 
-> > > - create a dir <some path>/00 and set some limits.
-> > > - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
-> > > - run some programs in both in 00 and 00/aa. programs in 00 should be
-> > >   big enough to cause oom by its limit.
-> > > - when oom happens by 00's limit, tasks in 00/aa can also be killed.
-> > >
-> > 
-> > To be honest, the last part is fair, specifically if 00/aa has a task
-> > that is really the heaviest task as per the oom logic. no? Are you
-> > suggesting that only tasks in <some path>/00 should be selected by the
-> > oom logic? 
-> > 
-> All of your comments would be rational if hierarchy is enabled in 00(it's
-> also enabled in 00/aa automatically in this case).
-> I'm saying about the case where it's disabled in 00 but enabled in 00/aa.
-> 
+The signal recevied by the ir receiver contains glitches.  Depending on the
+receiver there can be quite a few.  It is also not trivial to turn the raw
+signal sent by the remote into a digital value, even if you know what to
+expect.  It takes digital signal processing techniques to turn the messy
+sequence of inaccurate mark and space lengths into a best guess at what
+digital code the remote sent.
 
-OK, I misunderstood the example then, so even though hierarchy is
-disabled, we kill a task in 00/aa when 00 hits the limit. Thanks for
-clarifying.
+It's like turning raw VBI data into decoded ASCII teletext from a simulated
+keyboard device, all in the kernel.
 
-> In this scenario, charges by tasks in 00/aa is(and should not be) charged to 00.
-> And oom caused by 00's limit should not affect the task in 00/aa.
-> 
-> 
-> Regards,
-> Daisuke Nishimura.
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+> Kernel job is to take the information from device and present it to
+> userspace using uniform format, that is kernel does 1:1 translating, but
+> doesn't parse the data.
 
--- 
-	Balbir
+One thing that could be done, unless it has changed much since I wrote it
+10+ years ago, is to take the mark/space protocol the ir device uses and sent
+that data to lircd via the input layer.  It would be less efficient, but
+would avoid another kernel interface.  Of course the input layer to lircd
+interface would be somewhat different than other input devices, so
+it's not entirely correct to say another interface is avoided.
