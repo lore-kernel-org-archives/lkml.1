@@ -1,103 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZKYHWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbZKYHXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbZKYHWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 02:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZKYHWW
+	id S1758367AbZKYHXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 02:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZKYHXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 02:22:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50546 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753371AbZKYHWV (ORCPT
+	Wed, 25 Nov 2009 02:23:23 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43634 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbZKYHXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 02:22:21 -0500
-Date: Tue, 24 Nov 2009 23:21:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>, dri-devel@lists.sourceforge.net,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
-Subject: Re: 2.6.32-rc8 opps leaving X
-Message-Id: <20091124232135.2a2d5fe4.akpm@linux-foundation.org>
-In-Reply-To: <200911230704.51953.edt@aei.ca>
-References: <200911230704.51953.edt@aei.ca>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 02:23:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Fg3sYWDK2brcpRSCaD12NFWYeaA2SmICZ7unKgvVmAYb9kFoTrD7BgrT1bibOkh9Ex
+         +WK+THEnQVg4EXye3VSVVAt4MiIwKEeyA0SIupxKNqFXX62aoaDyUWsH8eVqpBC6AlL0
+         wG1Z+aHvpdpW/4Qy4bGbIHeE5f6biZw/ebQX0=
+Date: Wed, 25 Nov 2009 10:23:24 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] pnpbios: convert to seq_file
+Message-ID: <20091125072324.GG3459@x200.malnet.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Nov 2009 07:04:51 -0500 Ed Tomlinson <edt@aei.ca> wrote:
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-> Hi,
-> 
-> I got the following opps when leaving X with rc8:
->
-> [  183.846716] Unpin not necessary for ffff88016bba2200 !
+ drivers/pnp/pnpbios/proc.c |  204 ++++++++++++++++++++++++++++-----------------
+ 1 file changed, 129 insertions(+), 75 deletions(-)
 
-Jerome, Ed's kernel is talking to you!
-
-> [  183.860064] BUG: unable to handle kernel NULL pointer dereference at (null)
-> [  183.860069] IP: [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
-> [  183.860078] PGD 155125067 PUD 155126067 PMD 0
-> [  183.860082] Oops: 0002 [#1] PREEMPT SMP
-> [  183.860085] last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/temp1_input
-> [  183.860089] CPU 0
-> [  183.860091] Modules linked in: kvm_amd kvm tun sit tunnel4 ipv6 bridge stp llc bnep sco rfcomm l2cap snd_seq_dummy snd_seq_oss snx
-> [  183.860140] Pid: 2720, comm: console-kit-dae Not tainted 2.6.32-rc8-crc #42 System Product Name
-> [  183.860142] RIP: 0010:[<ffffffff8107bd39>]  [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
-> [  183.860147] RSP: 0018:ffff88015586dc58  EFLAGS: 00010282
-> [  183.860149] RAX: ffff88015586dfd8 RBX: 000000005586dce8 RCX: 0000000000000000
-> [  183.860151] RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffffffff8175ee40
-> [  183.860154] RBP: ffff88015586dc78 R08: 0000000000000000 R09: 0000000000000001
-> [  183.860156] R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000000
-> [  183.860157] R13: 0000000000000000 R14: ffff880100000000 R15: 0000000000000001
-> [  183.860160] FS:  00007f6270fd1710(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
-> [  183.860161] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [  183.860163] CR2: 0000000000000000 CR3: 0000000155a62000 CR4: 00000000000006f0
-> [  183.860165] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  183.860166] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  183.860168] Process console-kit-dae (pid: 2720, threadinfo ffff88015586c000, task ffff880155158000)
-> [  183.860169] Stack:
-> [  183.860170]  0000000000000000 000000005586dce8 0000000000000000 0000000000000000
-> [  183.860173] <0> ffff88015586dcd8 ffffffff812dc45f 0000000000000000 ffff880155158000
-> [  183.860175] <0> ffffffff8107bae0 ffff88015586dca0 ffff88015586dca0 0000000000000046
-> [  183.860178] Call Trace:
-> [  183.860183]  [<ffffffff812dc45f>] vt_event_wait+0xaf/0x140
-> [  183.860186]  [<ffffffff8107bae0>] ? autoremove_wake_function+0x0/0x40
-> [  183.860188]  [<ffffffff812dc523>] vt_waitactive+0x33/0x60
-> [  183.860191]  [<ffffffff812dda35>] vt_ioctl+0x1115/0x1cb0
-> [  183.860194]  [<ffffffff814a6f22>] ? _spin_unlock_irq+0x62/0x80
-> [  183.860198]  [<ffffffff81090cca>] ? __lock_acquire+0x38a/0x1550
-> [  183.860202]  [<ffffffff81142b02>] ? vfs_ioctl+0x22/0xa0
-> [  183.860204]  [<ffffffff81131025>] ? fget_light+0x95/0x170
-> [  183.860207]  [<ffffffff810b4179>] ? __rcu_read_unlock+0x79/0x2b0
-> [  183.860210]  [<ffffffff81130c66>] ? rcu_read_unlock+0x26/0x30
-> [  183.860212]  [<ffffffff811310e7>] ? fget_light+0x157/0x170
-> [  183.860214]  [<ffffffff81131025>] ? fget_light+0x95/0x170
-> [  183.860216]  [<ffffffff811432c9>] ? sys_ioctl+0xb9/0xc0
-> [  183.860220]  [<ffffffff8100b99b>] ? system_call_fastpath+0x16/0x1b
-> [  183.860221] Code: 74 24 18 49 89 4c 24 20 48 89 11 eb bb 0f 1f 44 00 00 55 48 89 e5 48 83 ec 20 48 89 5d e8 4c 89 65 f0 4c 89 6d
-> [  183.860241] RIP  [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
-> [  183.860243]  RSP <ffff88015586dc58>
-> [  183.860244] CR2: 0000000000000000
-> [  183.860247] ---[ end trace 3acb9156b0436989 ]---
-> 
-
-However the remainder points at
-
-: commit 8b92e87d39bfd046e7581e1fe0f40eac40f88608
-: Author:     Alan Cox <alan@linux.intel.com>
-: AuthorDate: Sat Sep 19 13:13:24 2009 -0700
-: Commit:     Live-CD User <linux@linux.site>
-: CommitDate: Sat Sep 19 13:13:24 2009 -0700
-: 
-:     vt: add an event interface
-
-(who is "Live-CD User"?)
-
-I'm a bit surprised that the X server is already using VT_WAITEVENT?
-
-It looks like vt_event_waitqueue got scribbled on.  I can't see how.
-
+--- a/drivers/pnp/pnpbios/proc.c
++++ b/drivers/pnp/pnpbios/proc.c
+@@ -24,6 +24,7 @@
+ #include <linux/types.h>
+ #include <linux/proc_fs.h>
+ #include <linux/pnp.h>
++#include <linux/seq_file.h>
+ #include <linux/init.h>
+ 
+ #include <asm/uaccess.h>
+@@ -33,42 +34,65 @@
+ static struct proc_dir_entry *proc_pnp = NULL;
+ static struct proc_dir_entry *proc_pnp_boot = NULL;
+ 
+-static int proc_read_pnpconfig(char *buf, char **start, off_t pos,
+-			       int count, int *eof, void *data)
++static int pnpconfig_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct pnp_isa_config_struc pnps;
+ 
+ 	if (pnp_bios_isapnp_config(&pnps))
+ 		return -EIO;
+-	return snprintf(buf, count,
+-			"structure_revision %d\n"
+-			"number_of_CSNs %d\n"
+-			"ISA_read_data_port 0x%x\n",
+-			pnps.revision, pnps.no_csns, pnps.isa_rd_data_port);
++	seq_printf(m, "structure_revision %d\n"
++		      "number_of_CSNs %d\n"
++		      "ISA_read_data_port 0x%x\n",
++		   pnps.revision, pnps.no_csns, pnps.isa_rd_data_port);
++	return 0;
+ }
+ 
+-static int proc_read_escdinfo(char *buf, char **start, off_t pos,
+-			      int count, int *eof, void *data)
++static int pnpconfig_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pnpconfig_proc_show, NULL);
++}
++
++static const struct file_operations pnpconfig_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= pnpconfig_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int escd_info_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct escd_info_struc escd;
+ 
+ 	if (pnp_bios_escd_info(&escd))
+ 		return -EIO;
+-	return snprintf(buf, count,
+-			"min_ESCD_write_size %d\n"
++	seq_printf(m, "min_ESCD_write_size %d\n"
+ 			"ESCD_size %d\n"
+ 			"NVRAM_base 0x%x\n",
+ 			escd.min_escd_write_size,
+ 			escd.escd_size, escd.nv_storage_base);
++	return 0;
+ }
+ 
++static int escd_info_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, escd_info_proc_show, NULL);
++}
++
++static const struct file_operations escd_info_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= escd_info_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ #define MAX_SANE_ESCD_SIZE (32*1024)
+-static int proc_read_escd(char *buf, char **start, off_t pos,
+-			  int count, int *eof, void *data)
++static int escd_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct escd_info_struc escd;
+ 	char *tmpbuf;
+-	int escd_size, escd_left_to_read, n;
++	int escd_size;
+ 
+ 	if (pnp_bios_escd_info(&escd))
+ 		return -EIO;
+@@ -76,7 +100,7 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
+ 	/* sanity check */
+ 	if (escd.escd_size > MAX_SANE_ESCD_SIZE) {
+ 		printk(KERN_ERR
+-		       "PnPBIOS: proc_read_escd: ESCD size reported by BIOS escd_info call is too great\n");
++		       "PnPBIOS: %s: ESCD size reported by BIOS escd_info call is too great\n", __func__);
+ 		return -EFBIG;
+ 	}
+ 
+@@ -94,56 +118,75 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
+ 
+ 	/* sanity check */
+ 	if (escd_size > MAX_SANE_ESCD_SIZE) {
+-		printk(KERN_ERR "PnPBIOS: proc_read_escd: ESCD size reported by"
+-				" BIOS read_escd call is too great\n");
++		printk(KERN_ERR "PnPBIOS: %s: ESCD size reported by"
++				" BIOS read_escd call is too great\n", __func__);
+ 		kfree(tmpbuf);
+ 		return -EFBIG;
+ 	}
+ 
+-	escd_left_to_read = escd_size - pos;
+-	if (escd_left_to_read < 0)
+-		escd_left_to_read = 0;
+-	if (escd_left_to_read == 0)
+-		*eof = 1;
+-	n = min(count, escd_left_to_read);
+-	memcpy(buf, tmpbuf + pos, n);
++	seq_write(m, tmpbuf, escd_size);
+ 	kfree(tmpbuf);
+-	*start = buf;
+-	return n;
++	return 0;
+ }
+ 
+-static int proc_read_legacyres(char *buf, char **start, off_t pos,
+-			       int count, int *eof, void *data)
++static int escd_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, escd_proc_show, NULL);
++}
++
++static const struct file_operations escd_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= escd_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int pnp_legacyres_proc_show(struct seq_file *m, void *v)
+ {
+-	/* Assume that the following won't overflow the buffer */
+-	if (pnp_bios_get_stat_res(buf))
++	void *buf;
++
++	buf = kmalloc(65536, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	if (pnp_bios_get_stat_res(buf)) {
++		kfree(buf);
+ 		return -EIO;
++	}
++
++	seq_write(m, buf, 65536);
++	kfree(buf);
++	return 0;
++}
+ 
+-	return count;		// FIXME: Return actual length
++static int pnp_legacyres_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pnp_legacyres_proc_show, NULL);
+ }
+ 
+-static int proc_read_devices(char *buf, char **start, off_t pos,
+-			     int count, int *eof, void *data)
++static const struct file_operations pnp_legacyres_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= pnp_legacyres_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int pnp_devices_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct pnp_bios_node *node;
+ 	u8 nodenum;
+-	char *p = buf;
+-
+-	if (pos >= 0xff)
+-		return 0;
+ 
+ 	node = kzalloc(node_info.max_node_size, GFP_KERNEL);
+ 	if (!node)
+ 		return -ENOMEM;
+ 
+-	for (nodenum = pos; nodenum < 0xff;) {
++	for (nodenum = 0; nodenum < 0xff;) {
+ 		u8 thisnodenum = nodenum;
+-		/* 26 = the number of characters per line sprintf'ed */
+-		if ((p - buf + 26) > count)
+-			break;
++
+ 		if (pnp_bios_get_dev_node(&nodenum, PNPMODE_DYNAMIC, node))
+ 			break;
+-		p += sprintf(p, "%02x\t%08x\t%02x:%02x:%02x\t%04x\n",
++		seq_printf(m, "%02x\t%08x\t%02x:%02x:%02x\t%04x\n",
+ 			     node->handle, node->eisa_id,
+ 			     node->type_code[0], node->type_code[1],
+ 			     node->type_code[2], node->flags);
+@@ -153,20 +196,29 @@ static int proc_read_devices(char *buf, char **start, off_t pos,
+ 			       "PnPBIOS: proc_read_devices:",
+ 			       (unsigned int)nodenum,
+ 			       (unsigned int)thisnodenum);
+-			*eof = 1;
+ 			break;
+ 		}
+ 	}
+ 	kfree(node);
+-	if (nodenum == 0xff)
+-		*eof = 1;
+-	*start = (char *)((off_t) nodenum - pos);
+-	return p - buf;
++	return 0;
++}
++
++static int pnp_devices_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pnp_devices_proc_show, NULL);
+ }
+ 
+-static int proc_read_node(char *buf, char **start, off_t pos,
+-			  int count, int *eof, void *data)
++static const struct file_operations pnp_devices_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= pnp_devices_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int pnpbios_proc_show(struct seq_file *m, void *v)
+ {
++	void *data = m->private;
+ 	struct pnp_bios_node *node;
+ 	int boot = (long)data >> 8;
+ 	u8 nodenum = (long)data;
+@@ -180,14 +232,20 @@ static int proc_read_node(char *buf, char **start, off_t pos,
+ 		return -EIO;
+ 	}
+ 	len = node->size - sizeof(struct pnp_bios_node);
+-	memcpy(buf, node->data, len);
++	seq_write(m, node->data, len);
+ 	kfree(node);
+-	return len;
++	return 0;
++}
++
++static int pnpbios_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pnpbios_proc_show, PDE(inode)->data);
+ }
+ 
+-static int proc_write_node(struct file *file, const char __user * buf,
+-			   unsigned long count, void *data)
++static ssize_t pnpbios_proc_write(struct file *file, const char __user *buf,
++				  size_t count, loff_t *pos)
+ {
++	void *data = PDE(file->f_path.dentry->d_inode)->data;
+ 	struct pnp_bios_node *node;
+ 	int boot = (long)data >> 8;
+ 	u8 nodenum = (long)data;
+@@ -218,34 +276,33 @@ out:
+ 	return ret;
+ }
+ 
++static const struct file_operations pnpbios_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= pnpbios_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++	.write		= pnpbios_proc_write,
++};
++
+ int pnpbios_interface_attach_device(struct pnp_bios_node *node)
+ {
+ 	char name[3];
+-	struct proc_dir_entry *ent;
+ 
+ 	sprintf(name, "%02x", node->handle);
+ 
+ 	if (!proc_pnp)
+ 		return -EIO;
+ 	if (!pnpbios_dont_use_current_config) {
+-		ent = create_proc_entry(name, 0, proc_pnp);
+-		if (ent) {
+-			ent->read_proc = proc_read_node;
+-			ent->write_proc = proc_write_node;
+-			ent->data = (void *)(long)(node->handle);
+-		}
++		proc_create_data(name, 0644, proc_pnp, &pnpbios_proc_fops,
++				 (void *)(long)(node->handle));
+ 	}
+ 
+ 	if (!proc_pnp_boot)
+ 		return -EIO;
+-	ent = create_proc_entry(name, 0, proc_pnp_boot);
+-	if (ent) {
+-		ent->read_proc = proc_read_node;
+-		ent->write_proc = proc_write_node;
+-		ent->data = (void *)(long)(node->handle + 0x100);
++	if (proc_create_data(name, 0644, proc_pnp_boot, &pnpbios_proc_fops,
++			     (void *)(long)(node->handle + 0x100)))
+ 		return 0;
+-	}
+-
+ 	return -EIO;
+ }
+ 
+@@ -262,14 +319,11 @@ int __init pnpbios_proc_init(void)
+ 	proc_pnp_boot = proc_mkdir("boot", proc_pnp);
+ 	if (!proc_pnp_boot)
+ 		return -EIO;
+-	create_proc_read_entry("devices", 0, proc_pnp, proc_read_devices, NULL);
+-	create_proc_read_entry("configuration_info", 0, proc_pnp,
+-			       proc_read_pnpconfig, NULL);
+-	create_proc_read_entry("escd_info", 0, proc_pnp, proc_read_escdinfo,
+-			       NULL);
+-	create_proc_read_entry("escd", S_IRUSR, proc_pnp, proc_read_escd, NULL);
+-	create_proc_read_entry("legacy_device_resources", 0, proc_pnp,
+-			       proc_read_legacyres, NULL);
++	proc_create("devices", 0, proc_pnp, &pnp_devices_proc_fops);
++	proc_create("configuration_info", 0, proc_pnp, &pnpconfig_proc_fops);
++	proc_create("escd_info", 0, proc_pnp, &escd_info_proc_fops);
++	proc_create("escd", S_IRUSR, proc_pnp, &escd_proc_fops);
++	proc_create("legacy_device_resources", 0, proc_pnp, &pnp_legacyres_proc_fops);
+ 
+ 	return 0;
+ }
