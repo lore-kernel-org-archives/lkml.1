@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbZKYRJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933245AbZKYRJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbZKYRJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932935AbZKYRJa
+	id S933245AbZKYRJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbZKYRJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:09:30 -0500
+	Wed, 25 Nov 2009 12:09:37 -0500
 Received: from mail-ew0-f219.google.com ([209.85.219.219]:57397 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754298AbZKYRJ0 (ORCPT
+	with ESMTP id S933117AbZKYRJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:09:26 -0500
+	Wed, 25 Nov 2009 12:09:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=rmCQiUkpVX5iobCxDk4+gYGFWH1zNj8WG14otrGyQgOwMT+5Cdo8HAw7U0CgGb+m95
-         nrk96hKX6lhd17wPGLFQFofYxWKmdKzV0hAumcliGa4ab7A2wkAo8R0E3uL5arS1KDPP
-         tr8nuGZWJ7Y4a3vGKh4ZHmLtmoI+W5Lz0jil8=
+        b=i3YWbdeHWbV2+K+FX/ShEf/uSpNqTCV3QGjNJLmOm1Ot3indGsq6Ct9a/9AdtApQe6
+         L9GwbngVgXl8n9TviKeBYcWLFhhL91QLjOYhgkTTyhdCzLQn/lSohCYVL5CmAUGwfALd
+         D7T+LoA4yNh9sVWgtX+b/aN+T0mDvjJydfljU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:08:48 +0100
-Message-Id: <20091125170848.5446.51732.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:08:55 +0100
+Message-Id: <20091125170855.5446.87352.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 54/86] pata_ns87415: add 32-bit PIO support
+Subject: [PATCH 55/86] pata_ns87415: Power Management fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_ns87415: add 32-bit PIO support
+Subject: [PATCH] pata_ns87415: Power Management fix
 
-There shouldn't be any problems with it as IDE ns87415 host driver
-has been allowing 32-bit PIO operations for years.
+Fix ->resume method to do chipset specific setup.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_ns87415.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ata/pata_ns87415.c |   32 +++++++++++++++++++++++++++-----
+ 1 file changed, 27 insertions(+), 5 deletions(-)
 
 Index: b/drivers/ata/pata_ns87415.c
 ===================================================================
 --- a/drivers/ata/pata_ns87415.c
 +++ b/drivers/ata/pata_ns87415.c
-@@ -300,7 +300,7 @@ static u8 ns87560_bmdma_status(struct at
- #endif		/* 87560 SuperIO Support */
+@@ -325,6 +325,13 @@ static struct scsi_host_template ns87415
+ 	ATA_BMDMA_SHT(DRV_NAME),
+ };
  
- static struct ata_port_operations ns87415_pata_ops = {
--	.inherits		= &ata_bmdma_port_ops,
-+	.inherits		= &ata_bmdma32_port_ops,
++static void ns87415_fixup(struct pci_dev *pdev)
++{
++	/* Select 512 byte sectors */
++	pci_write_config_byte(pdev, 0x55, 0xEE);
++	/* Select PIO0 8bit clocking */
++	pci_write_config_byte(pdev, 0x54, 0xB7);
++}
  
- 	.check_atapi_dma	= ns87415_check_atapi_dma,
- 	.bmdma_setup		= ns87415_bmdma_setup,
+ /**
+  *	ns87415_init_one - Register 87415 ATA PCI device with kernel services
+@@ -371,10 +378,8 @@ static int ns87415_init_one (struct pci_
+ 	if (rc)
+ 		return rc;
+ 
+-	/* Select 512 byte sectors */
+-	pci_write_config_byte(pdev, 0x55, 0xEE);
+-	/* Select PIO0 8bit clocking */
+-	pci_write_config_byte(pdev, 0x54, 0xB7);
++	ns87415_fixup(pdev);
++
+ 	return ata_pci_sff_init_one(pdev, ppi, &ns87415_sht, NULL);
+ }
+ 
+@@ -384,6 +389,23 @@ static const struct pci_device_id ns8741
+ 	{ }	/* terminate list */
+ };
+ 
++#ifdef CONFIG_PM
++static int ns87415_reinit_one(struct pci_dev *pdev)
++{
++	struct ata_host *host = dev_get_drvdata(&pdev->dev);
++	int rc;
++
++	rc = ata_pci_device_do_resume(pdev);
++	if (rc)
++		return rc;
++
++	ns87415_fixup(pdev);
++
++	ata_host_resume(host);
++	return 0;
++}
++#endif
++
+ static struct pci_driver ns87415_pci_driver = {
+ 	.name			= DRV_NAME,
+ 	.id_table		= ns87415_pci_tbl,
+@@ -391,7 +413,7 @@ static struct pci_driver ns87415_pci_dri
+ 	.remove			= ata_pci_remove_one,
+ #ifdef CONFIG_PM
+ 	.suspend		= ata_pci_device_suspend,
+-	.resume			= ata_pci_device_resume,
++	.resume			= ns87415_reinit_one,
+ #endif
+ };
+ 
