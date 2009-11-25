@@ -1,306 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964876AbZKYNcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964867AbZKYNbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964876AbZKYNcB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:32:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934692AbZKYNb6
+	id S964867AbZKYNbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934692AbZKYNa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:31:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31329 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:30:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38891 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964822AbZKYN2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:16 -0500
+	id S964836AbZKYN2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:20 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>,
+Cc: Steven Whitehouse <swhiteho@redhat.com>, Alexander Viro <aviro@redhat.com>,
        Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH 03/30] GFS2: Fix up system xattrs
-Date: Wed, 25 Nov 2009 14:22:28 +0000
-Message-Id: <1259158975-28499-4-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 04/30] VFS: Add forget_all_cached_acls()
+Date: Wed, 25 Nov 2009 14:22:29 +0000
+Message-Id: <1259158975-28499-5-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-4-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-4-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code has been shamelessly stolen from XFS at the suggestion
-of Christoph Hellwig. I've not added support for cached ACLs so
-far... watch for that in a later patch, although this is designed
-in such a way that they should be easy to add.
+This is required for cluster filesystems which want to use
+cached ACLs so that they can invalidate the cache when
+required.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Alexander Viro <aviro@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>
 ---
- fs/gfs2/acl.c   |  170 +++++++++++++++++++++++++++++++++++++------------------
- fs/gfs2/acl.h   |   24 ++------
- fs/gfs2/xattr.c |   18 ------
- 3 files changed, 120 insertions(+), 92 deletions(-)
+ include/linux/posix_acl.h |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/fs/gfs2/acl.c b/fs/gfs2/acl.c
-index 3fc4e3a..2168da1 100644
---- a/fs/gfs2/acl.c
-+++ b/fs/gfs2/acl.c
-@@ -12,6 +12,7 @@
- #include <linux/spinlock.h>
- #include <linux/completion.h>
- #include <linux/buffer_head.h>
-+#include <linux/xattr.h>
- #include <linux/posix_acl.h>
- #include <linux/posix_acl_xattr.h>
- #include <linux/gfs2_ondisk.h>
-@@ -26,61 +27,6 @@
- #include "trans.h"
- #include "util.h"
- 
--#define ACL_ACCESS 1
--#define ACL_DEFAULT 0
--
--int gfs2_acl_validate_set(struct gfs2_inode *ip, int access,
--			  struct gfs2_ea_request *er, int *remove, mode_t *mode)
--{
--	struct posix_acl *acl;
--	int error;
--
--	error = gfs2_acl_validate_remove(ip, access);
--	if (error)
--		return error;
--
--	if (!er->er_data)
--		return -EINVAL;
--
--	acl = posix_acl_from_xattr(er->er_data, er->er_data_len);
--	if (IS_ERR(acl))
--		return PTR_ERR(acl);
--	if (!acl) {
--		*remove = 1;
--		return 0;
--	}
--
--	error = posix_acl_valid(acl);
--	if (error)
--		goto out;
--
--	if (access) {
--		error = posix_acl_equiv_mode(acl, mode);
--		if (!error)
--			*remove = 1;
--		else if (error > 0)
--			error = 0;
--	}
--
--out:
--	posix_acl_release(acl);
--	return error;
--}
--
--int gfs2_acl_validate_remove(struct gfs2_inode *ip, int access)
--{
--	if (!GFS2_SB(&ip->i_inode)->sd_args.ar_posix_acl)
--		return -EOPNOTSUPP;
--	if (!is_owner_or_cap(&ip->i_inode))
--		return -EPERM;
--	if (S_ISLNK(ip->i_inode.i_mode))
--		return -EOPNOTSUPP;
--	if (!access && !S_ISDIR(ip->i_inode.i_mode))
--		return -EACCES;
--
--	return 0;
--}
--
- static int acl_get(struct gfs2_inode *ip, const char *name,
- 		   struct posix_acl **acl, struct gfs2_ea_location *el,
- 		   char **datap, unsigned int *lenp)
-@@ -277,3 +223,117 @@ out_brelse:
- 	return error;
+diff --git a/include/linux/posix_acl.h b/include/linux/posix_acl.h
+index 065a365..6760816 100644
+--- a/include/linux/posix_acl.h
++++ b/include/linux/posix_acl.h
+@@ -147,6 +147,20 @@ static inline void forget_cached_acl(struct inode *inode, int type)
+ 	if (old != ACL_NOT_CACHED)
+ 		posix_acl_release(old);
  }
- 
-+static int gfs2_acl_type(const char *name)
++
++static inline void forget_all_cached_acls(struct inode *inode)
 +{
-+	if (strcmp(name, GFS2_POSIX_ACL_ACCESS) == 0)
-+		return ACL_TYPE_ACCESS;
-+	if (strcmp(name, GFS2_POSIX_ACL_DEFAULT) == 0)
-+		return ACL_TYPE_DEFAULT;
-+	return -EINVAL;
++	struct posix_acl *old_access, *old_default;
++	spin_lock(&inode->i_lock);
++	old_access = inode->i_acl;
++	old_default = inode->i_default_acl;
++	inode->i_acl = inode->i_default_acl = ACL_NOT_CACHED;
++	spin_unlock(&inode->i_lock);
++	if (old_access != ACL_NOT_CACHED)
++		posix_acl_release(old_access);
++	if (old_default != ACL_NOT_CACHED)
++		posix_acl_release(old_default);
 +}
-+
-+static int gfs2_xattr_system_get(struct inode *inode, const char *name,
-+				 void *buffer, size_t size)
-+{
-+	int type;
-+
-+	type = gfs2_acl_type(name);
-+	if (type < 0)
-+		return type;
-+
-+	return gfs2_xattr_get(inode, GFS2_EATYPE_SYS, name, buffer, size);
-+}
-+
-+static int gfs2_set_mode(struct inode *inode, mode_t mode)
-+{
-+	int error = 0;
-+
-+	if (mode != inode->i_mode) {
-+		struct iattr iattr;
-+
-+		iattr.ia_valid = ATTR_MODE;
-+		iattr.ia_mode = mode;
-+
-+		error = gfs2_setattr_simple(GFS2_I(inode), &iattr);
-+	}
-+
-+	return error;
-+}
-+
-+static int gfs2_xattr_system_set(struct inode *inode, const char *name,
-+				 const void *value, size_t size, int flags)
-+{
-+	struct gfs2_sbd *sdp = GFS2_SB(inode);
-+	struct posix_acl *acl = NULL;
-+	int error = 0, type;
-+
-+	if (!sdp->sd_args.ar_posix_acl)
-+		return -EOPNOTSUPP;
-+
-+	type = gfs2_acl_type(name);
-+	if (type < 0)
-+		return type;
-+	if (flags & XATTR_CREATE)
-+		return -EINVAL;
-+	if (type == ACL_TYPE_DEFAULT && !S_ISDIR(inode->i_mode))
-+		return value ? -EACCES : 0;
-+	if ((current_fsuid() != inode->i_uid) && !capable(CAP_FOWNER))
-+		return -EPERM;
-+	if (S_ISLNK(inode->i_mode))
-+		return -EOPNOTSUPP;
-+
-+	if (!value)
-+		goto set_acl;
-+
-+	acl = posix_acl_from_xattr(value, size);
-+	if (!acl) {
-+		/*
-+		 * acl_set_file(3) may request that we set default ACLs with
-+		 * zero length -- defend (gracefully) against that here.
-+		 */
-+		goto out;
-+	}
-+	if (IS_ERR(acl)) {
-+		error = PTR_ERR(acl);
-+		goto out;
-+	}
-+
-+	error = posix_acl_valid(acl);
-+	if (error)
-+		goto out_release;
-+
-+	error = -EINVAL;
-+	if (acl->a_count > GFS2_ACL_MAX_ENTRIES)
-+		goto out_release;
-+
-+	if (type == ACL_TYPE_ACCESS) {
-+		mode_t mode = inode->i_mode;
-+		error = posix_acl_equiv_mode(acl, &mode);
-+
-+		if (error <= 0) {
-+			posix_acl_release(acl);
-+			acl = NULL;
-+
-+			if (error < 0)
-+				return error;
-+		}
-+
-+		error = gfs2_set_mode(inode, mode);
-+		if (error)
-+			goto out_release;
-+	}
-+
-+set_acl:
-+	error = gfs2_xattr_set(inode, GFS2_EATYPE_SYS, name, value, size, 0);
-+out_release:
-+	posix_acl_release(acl);
-+out:
-+	return error;
-+}
-+
-+struct xattr_handler gfs2_xattr_system_handler = {
-+	.prefix = XATTR_SYSTEM_PREFIX,
-+	.get    = gfs2_xattr_system_get,
-+	.set    = gfs2_xattr_system_set,
-+};
-+
-diff --git a/fs/gfs2/acl.h b/fs/gfs2/acl.h
-index 6751930..cc95439 100644
---- a/fs/gfs2/acl.h
-+++ b/fs/gfs2/acl.h
-@@ -13,26 +13,12 @@
- #include "incore.h"
+ #endif
  
- #define GFS2_POSIX_ACL_ACCESS		"posix_acl_access"
--#define GFS2_POSIX_ACL_ACCESS_LEN	16
- #define GFS2_POSIX_ACL_DEFAULT		"posix_acl_default"
--#define GFS2_POSIX_ACL_DEFAULT_LEN	17
-+#define GFS2_ACL_MAX_ENTRIES		25
- 
--#define GFS2_ACL_IS_ACCESS(name, len) \
--         ((len) == GFS2_POSIX_ACL_ACCESS_LEN && \
--         !memcmp(GFS2_POSIX_ACL_ACCESS, (name), (len)))
--
--#define GFS2_ACL_IS_DEFAULT(name, len) \
--         ((len) == GFS2_POSIX_ACL_DEFAULT_LEN && \
--         !memcmp(GFS2_POSIX_ACL_DEFAULT, (name), (len)))
--
--struct gfs2_ea_request;
--
--int gfs2_acl_validate_set(struct gfs2_inode *ip, int access,
--			  struct gfs2_ea_request *er,
--			  int *remove, mode_t *mode);
--int gfs2_acl_validate_remove(struct gfs2_inode *ip, int access);
--int gfs2_check_acl(struct inode *inode, int mask);
--int gfs2_acl_create(struct gfs2_inode *dip, struct gfs2_inode *ip);
--int gfs2_acl_chmod(struct gfs2_inode *ip, struct iattr *attr);
-+extern int gfs2_check_acl(struct inode *inode, int mask);
-+extern int gfs2_acl_create(struct gfs2_inode *dip, struct gfs2_inode *ip);
-+extern int gfs2_acl_chmod(struct gfs2_inode *ip, struct iattr *attr);
-+extern struct xattr_handler gfs2_xattr_system_handler;
- 
- #endif /* __ACL_DOT_H__ */
-diff --git a/fs/gfs2/xattr.c b/fs/gfs2/xattr.c
-index 8a0f8ef..6b80354 100644
---- a/fs/gfs2/xattr.c
-+++ b/fs/gfs2/xattr.c
-@@ -1507,18 +1507,6 @@ static int gfs2_xattr_user_set(struct inode *inode, const char *name,
- 	return gfs2_xattr_set(inode, GFS2_EATYPE_USR, name, value, size, flags);
- }
- 
--static int gfs2_xattr_system_get(struct inode *inode, const char *name,
--				 void *buffer, size_t size)
--{
--	return gfs2_xattr_get(inode, GFS2_EATYPE_SYS, name, buffer, size);
--}
--
--static int gfs2_xattr_system_set(struct inode *inode, const char *name,
--				 const void *value, size_t size, int flags)
--{
--	return gfs2_xattr_set(inode, GFS2_EATYPE_SYS, name, value, size, flags);
--}
--
- static int gfs2_xattr_security_get(struct inode *inode, const char *name,
- 				   void *buffer, size_t size)
- {
-@@ -1543,12 +1531,6 @@ static struct xattr_handler gfs2_xattr_security_handler = {
- 	.set    = gfs2_xattr_security_set,
- };
- 
--static struct xattr_handler gfs2_xattr_system_handler = {
--	.prefix = XATTR_SYSTEM_PREFIX,
--	.get    = gfs2_xattr_system_get,
--	.set    = gfs2_xattr_system_set,
--};
--
- struct xattr_handler *gfs2_xattr_handlers[] = {
- 	&gfs2_xattr_user_handler,
- 	&gfs2_xattr_security_handler,
+ static inline void cache_no_acl(struct inode *inode)
 -- 
 1.6.2.5
 
