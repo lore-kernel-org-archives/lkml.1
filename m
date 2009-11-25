@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934493AbZKYMlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934616AbZKYMpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934493AbZKYMlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZKYMlU
+	id S934616AbZKYMpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934435AbZKYMpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:41:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16980 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 07:45:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29046 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758735AbZKYMlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:41:20 -0500
-Message-ID: <4B0D267B.9060107@redhat.com>
-Date: Wed, 25 Nov 2009 07:43:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	id S934241AbZKYMpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:45:16 -0500
+Date: Wed, 25 Nov 2009 13:44:33 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Message-ID: <20091125124433.GB27615@random.random>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+ <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+ <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] trace_kprobes: always show group name
-References: <4B0CEBAF.6000104@cn.fujitsu.com>
-In-Reply-To: <4B0CEBAF.6000104@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
+Hello,
+
+lengthy discussion on something I think is quite obviously better and
+I tried to change a couple of years back already (rss instead of
+total_vm).
+
+On Thu, Oct 29, 2009 at 01:31:59AM -0700, David Rientjes wrote:
+> total_vm
+> 708945 test
+> 195695 krunner
+> 168881 plasma-desktop
+> 130567 ktorrent
+> 127081 knotify4
+> 125881 icedove-bin
+> 123036 akregator
+> 118641 kded4
 > 
-> Sometimes the group name is not "kprobes",
-> It'll be better if we can read it from tracing/kprobe_events.
+> rss
+> 707878 test
+> 42201 Xorg
+> 13300 icedove-bin
+> 10209 ktorrent
+> 9277 akregator
+> 8878 plasma-desktop
+> 7546 krunner
+> 4532 mysqld
 > 
-> # echo 'r:laijs/vfs_read vfs_read %ax' > kprobe_events
-> # cat kprobe_events
-> r:laijs/vfs_read vfs_read %ax=%ax
+> This patch would pick the memory hogging task, "test", first everytime 
 
+That is by far the only thing that matters. There's plenty of logic in
+the oom killer to remove races with tasks with TIF_MEMDIE set, to
+ensure not to fall into the second task until the first task had the
+time to release all its memory back to the system.
 
-Yep, that looks very nice :-)
+> just like the current implementation does.  It would then prefer Xorg, 
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+You're focusing on the noise and not looking at the only thing that
+matters.
 
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-> index 79ce6a2..9e42f2a 100644
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -758,7 +758,7 @@ static int probes_seq_show(struct seq_file *m, void *v)
->  	char buf[MAX_ARGSTR_LEN + 1];
->  
->  	seq_printf(m, "%c", probe_is_return(tp) ? 'r' : 'p');
-> -	seq_printf(m, ":%s", tp->call.name);
-> +	seq_printf(m, ":%s/%s", tp->call.system, tp->call.name);
->  
->  	if (tp->symbol)
->  		seq_printf(m, " %s+%u", probe_symbol(tp), tp->rp.kp.offset);
-> 
-> 
+The noise level with rss went down to 50000, it doesn't matter the
+order of what's below 50000. Only thing it matters is the _delta_
+between "noise-level innocent apps" and "exploit".
 
--- 
-Masami Hiramatsu
+The delta is clearly increase from 708945-max(noise) to
+707878-max(noise) which translates to a increase of precision from
+513250 to 665677, which shows how much more rss is making the
+detection more accurate (i.e. the distance between exploit and first
+innocent app). The lower level the noise level starts, the less likely
+the innocent apps are killed.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+There's simply no way to get to perfection, some innocent apps will
+always have high total_vm or rss levels, but this at least removes
+lots of innocent apps from the equation. The fact X isn't less
+innocent than before is because its rss is quite big, and this is not
+an error, luckily much smaller than the hog itself. Surely there are
+ways to force X to load huge bitmaps into its address space too
+(regardless of total_vm or rss) but again no perfection, just better
+with rss even in this testcase.
