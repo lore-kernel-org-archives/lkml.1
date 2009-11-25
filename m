@@ -1,134 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbZKYRJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZKYRJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759321AbZKYRJM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbZKYRJJ
+	id S1759343AbZKYRJY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932935AbZKYRJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:09:09 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60004 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759312AbZKYRJF (ORCPT
+	Wed, 25 Nov 2009 12:09:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:57397 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758868AbZKYRJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:09:05 -0500
+	Wed, 25 Nov 2009 12:09:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=mhRtSU1tyNXUxmevD5bRyXPxL0EeIcVZjXonX62PoeQMys8EWpRnkOaKrhGa3LismG
-         4e5txE7j4YXd0c4ndgInwDNaZOjRIux6/IJnayvoYCjZdFaIlyl0U5sBkfJyfBrcNfTl
-         wpU9URYOw2kLwl3U8f1mRBmYNont4cWj/UnYg=
+        b=IdF/743H2nhtKSc4T0OkdIeBR4wUI7O/bTKGxnHFvqsQG1ESDznUuIVSyIo2C8+64w
+         WY3PgNyB4ImT628nXo+aSGb5C6U/FjgPsyjEq3lVrqgxQ1CM42iDECkODKXtORMenKeN
+         s1uEyC/mXJgufgfW2qk3R6/7n9ef2BAU8PR0M=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:08:23 +0100
-Message-Id: <20091125170823.5446.16710.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:08:33 +0100
+Message-Id: <20091125170833.5446.48138.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 51/86] libata: remove no longer needed pata_qdi driver
+Subject: [PATCH 52/86] libata: remove no longer needed pata_winbond driver
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] libata: remove no longer needed pata_qdi driver
+Subject: [PATCH] libata: remove no longer needed pata_winbond driver
 
-QDI65x0 controllers are fully supported by pata_legacy driver
-so remove no longer needed pata_qdi driver.
+Winbond W83759A controller is fully supported by pata_legacy driver
+so remove no longer needed pata_winbond driver.
 
-Leave PATA_QDI config option for compatibility reasons and teach
-pata_legacy to preserve the old behavior of pata_qdi driver.
+Leave PATA_WINBOND_VLB config option for compatibility reasons
+and teach pata_legacy to preserve the old behavior of pata_winbond
+driver.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/Kconfig       |    1 
- drivers/ata/Makefile      |    1 
- drivers/ata/pata_legacy.c |    9 +
- drivers/ata/pata_qdi.c    |  366 ----------------------------------------------
- 4 files changed, 9 insertions(+), 368 deletions(-)
+ drivers/ata/Kconfig        |    1 
+ drivers/ata/Makefile       |    1 
+ drivers/ata/pata_legacy.c  |   13 +-
+ drivers/ata/pata_winbond.c |  282 ---------------------------------------------
+ 4 files changed, 12 insertions(+), 285 deletions(-)
 
 Index: b/drivers/ata/Kconfig
 ===================================================================
 --- a/drivers/ata/Kconfig
 +++ b/drivers/ata/Kconfig
-@@ -591,6 +591,7 @@ config PATA_PDC_OLD
- config PATA_QDI
- 	tristate "QDI VLB PATA support"
- 	depends on ISA
+@@ -695,6 +695,7 @@ config PATA_WINBOND
+ config PATA_WINBOND_VLB
+ 	tristate "Winbond W83759A VLB PATA support (Experimental)"
+ 	depends on ISA && EXPERIMENTAL
 +	select PATA_LEGACY
  	help
- 	  Support for QDI 6500 and 6580 PATA controllers on VESA local bus.
- 
+ 	  Support for the Winbond W83759A controller on Vesa Local Bus
+ 	  systems.
 Index: b/drivers/ata/Makefile
 ===================================================================
 --- a/drivers/ata/Makefile
 +++ b/drivers/ata/Makefile
-@@ -55,7 +55,6 @@ obj-$(CONFIG_PATA_PALMLD)	+= pata_palmld
- obj-$(CONFIG_PATA_PCMCIA)	+= pata_pcmcia.o
- obj-$(CONFIG_PATA_PDC2027X)	+= pata_pdc2027x.o
- obj-$(CONFIG_PATA_PDC_OLD)	+= pata_pdc202xx_old.o
--obj-$(CONFIG_PATA_QDI)		+= pata_qdi.o
- obj-$(CONFIG_PATA_RADISYS)	+= pata_radisys.o
- obj-$(CONFIG_PATA_RB532)	+= pata_rb532_cf.o
- obj-$(CONFIG_PATA_RDC)		+= pata_rdc.o
+@@ -64,7 +64,6 @@ obj-$(CONFIG_PATA_SERVERWORKS)	+= pata_s
+ obj-$(CONFIG_PATA_SIL680)	+= pata_sil680.o
+ obj-$(CONFIG_PATA_VIA)		+= pata_via.o
+ obj-$(CONFIG_PATA_WINBOND)	+= pata_sl82c105.o
+-obj-$(CONFIG_PATA_WINBOND_VLB)	+= pata_winbond.o
+ obj-$(CONFIG_PATA_SIS)		+= pata_sis.o
+ obj-$(CONFIG_PATA_TRIFLEX)	+= pata_triflex.o
+ obj-$(CONFIG_PATA_IXP4XX_CF)	+= pata_ixp4xx_cf.o
 Index: b/drivers/ata/pata_legacy.c
 ===================================================================
 --- a/drivers/ata/pata_legacy.c
 +++ b/drivers/ata/pata_legacy.c
-@@ -133,7 +133,12 @@ static int ht6560a;		/* HT 6560A on prim
- static int ht6560b;		/* HT 6560A on primary 1, second 2, both 3 */
- static int opti82c611a;		/* Opti82c611A on primary 1, sec 2, both 3 */
- static int opti82c46x;		/* Opti 82c465MV present(pri/sec autodetect) */
--static int qdi;			/* Set to probe QDI controllers */
-+/* Set to probe QDI controllers */
-+#ifdef PATA_QDI_MODULE
-+static int qdi = 1;
+@@ -44,6 +44,9 @@
+  *  Specific support is included for the ht6560a/ht6560b/opti82c611a/
+  *  opti82c465mv/promise 20230c/20630/qdi65x0/winbond83759A
+  *
++ *  Support for the Winbond 83759A when operating in advanced mode.
++ *  Multichip mode is not currently supported.
++ *
+  *  Use the autospeed and pio_mask options with:
+  *	Appian ADI/2 aka CLPD7220 or AIC25VL01.
+  *  Use the jumpers, autospeed and set pio_mask to the mode on the jumpers with
+@@ -139,8 +142,12 @@ static int qdi = 1;
+ #else
+ static int qdi;
+ #endif
+-static int winbond;		/* Set to probe Winbond controllers,
+-					give I/O port if non standard */
++/* Set to probe Winbond controllers, give I/O port if non standard */
++#ifdef PATA_WINBOND_VLB_MODULE
++static int winbond = 1;
 +#else
-+static int qdi;
++static int winbond;
 +#endif
- static int winbond;		/* Set to probe Winbond controllers,
- 					give I/O port if non standard */
  static int autospeed;		/* Chip present which snoops speed changes */
-@@ -1245,6 +1250,7 @@ MODULE_AUTHOR("Alan Cox");
- MODULE_DESCRIPTION("low-level driver for legacy ATA");
+ static int pio_mask = ATA_PIO4;	/* PIO range for autospeed devices */
+ static int iordy_mask = 0xFFFFFFFF;	/* Use iordy if available */
+@@ -1251,6 +1258,7 @@ MODULE_DESCRIPTION("low-level driver for
  MODULE_LICENSE("GPL");
  MODULE_VERSION(DRV_VERSION);
-+MODULE_ALIAS("pata_qdi");
+ MODULE_ALIAS("pata_qdi");
++MODULE_ALIAS("pata_winbond");
  
  module_param(probe_all, int, 0);
  module_param(autospeed, int, 0);
-@@ -1253,6 +1259,7 @@ module_param(ht6560b, int, 0);
- module_param(opti82c611a, int, 0);
+@@ -1260,6 +1268,7 @@ module_param(opti82c611a, int, 0);
  module_param(opti82c46x, int, 0);
  module_param(qdi, int, 0);
-+module_param_named(probe_qdi, qdi, int, 0);
+ module_param_named(probe_qdi, qdi, int, 0);
++module_param_named(probe_winbond, winbond, int, 0);
  module_param(pio_mask, int, 0);
  module_param(iordy_mask, int, 0);
  
-Index: b/drivers/ata/pata_qdi.c
+Index: b/drivers/ata/pata_winbond.c
 ===================================================================
---- a/drivers/ata/pata_qdi.c
+--- a/drivers/ata/pata_winbond.c
 +++ /dev/null
-@@ -1,366 +0,0 @@
+@@ -1,282 +0,0 @@
 -/*
-- *    pata_qdi.c - QDI VLB ATA controllers
+- *    pata_winbond.c - Winbond VLB ATA controllers
 - *	(C) 2006 Red Hat
 - *
-- * This driver mostly exists as a proof of concept for non PCI devices under
-- * libata. While the QDI6580 was 'neat' in 1993 it is no longer terribly
-- * useful.
-- *
-- * Tuning code written from the documentation at
-- * http://www.ryston.cz/petr/vlb/qd6500.html
-- * http://www.ryston.cz/petr/vlb/qd6580.html
-- *
-- * Probe code based on drivers/ide/legacy/qd65xx.c
-- * Rewritten from the work of Colten Edwards <pje120@cs.usask.ca> by
-- * Samuel Thibault <samuel.thibault@ens-lyon.org>
+- *    Support for the Winbond 83759A when operating in advanced mode.
+- *    Multichip mode is not currently supported.
 - */
 -
 -#include <linux/kernel.h>
 -#include <linux/module.h>
--#include <linux/pci.h>
 -#include <linux/init.h>
 -#include <linux/blkdev.h>
 -#include <linux/delay.h>
@@ -136,112 +138,90 @@ Index: b/drivers/ata/pata_qdi.c
 -#include <linux/libata.h>
 -#include <linux/platform_device.h>
 -
--#define DRV_NAME "pata_qdi"
--#define DRV_VERSION "0.3.1"
+-#define DRV_NAME "pata_winbond"
+-#define DRV_VERSION "0.0.3"
 -
--#define NR_HOST 4	/* Two 6580s */
+-#define NR_HOST 4	/* Two winbond controllers, two channels each */
 -
--struct qdi_data {
--	unsigned long timing;
--	u8 clock[2];
--	u8 last;
--	int fast;
+-struct winbond_data {
+-	unsigned long config;
 -	struct platform_device *platform_dev;
--
 -};
 -
--static struct ata_host *qdi_host[NR_HOST];
--static struct qdi_data qdi_data[NR_HOST];
--static int nr_qdi_host;
+-static struct ata_host *winbond_host[NR_HOST];
+-static struct winbond_data winbond_data[NR_HOST];
+-static int nr_winbond_host;
 -
 -#ifdef MODULE
--static int probe_qdi = 1;
+-static int probe_winbond = 1;
 -#else
--static int probe_qdi;
+-static int probe_winbond;
 -#endif
 -
--static void qdi6500_set_piomode(struct ata_port *ap, struct ata_device *adev)
+-static DEFINE_SPINLOCK(winbond_lock);
+-
+-static void winbond_writecfg(unsigned long port, u8 reg, u8 val)
 -{
--	struct ata_timing t;
--	struct qdi_data *qdi = ap->host->private_data;
--	int active, recovery;
--	u8 timing;
--
--	/* Get the timing data in cycles */
--	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
--
--	if (qdi->fast) {
--		active = 8 - clamp_val(t.active, 1, 8);
--		recovery = 18 - clamp_val(t.recover, 3, 18);
--	} else {
--		active = 9 - clamp_val(t.active, 2, 9);
--		recovery = 15 - clamp_val(t.recover, 0, 15);
--	}
--	timing = (recovery << 4) | active | 0x08;
--
--	qdi->clock[adev->devno] = timing;
--
--	outb(timing, qdi->timing);
+-	unsigned long flags;
+-	spin_lock_irqsave(&winbond_lock, flags);
+-	outb(reg, port + 0x01);
+-	outb(val, port + 0x02);
+-	spin_unlock_irqrestore(&winbond_lock, flags);
 -}
 -
--static void qdi6580_set_piomode(struct ata_port *ap, struct ata_device *adev)
+-static u8 winbond_readcfg(unsigned long port, u8 reg)
+-{
+-	u8 val;
+-
+-	unsigned long flags;
+-	spin_lock_irqsave(&winbond_lock, flags);
+-	outb(reg, port + 0x01);
+-	val = inb(port + 0x02);
+-	spin_unlock_irqrestore(&winbond_lock, flags);
+-
+-	return val;
+-}
+-
+-static void winbond_set_piomode(struct ata_port *ap, struct ata_device *adev)
 -{
 -	struct ata_timing t;
--	struct qdi_data *qdi = ap->host->private_data;
+-	struct winbond_data *winbond = ap->host->private_data;
 -	int active, recovery;
--	u8 timing;
+-	u8 reg;
+-	int timing = 0x88 + (ap->port_no * 4) + (adev->devno * 2);
+-
+-	reg = winbond_readcfg(winbond->config, 0x81);
 -
 -	/* Get the timing data in cycles */
--	ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
+-	if (reg & 0x40)		/* Fast VLB bus, assume 50MHz */
+-		ata_timing_compute(adev, adev->pio_mode, &t, 20000, 1000);
+-	else
+-		ata_timing_compute(adev, adev->pio_mode, &t, 30303, 1000);
 -
--	if (qdi->fast) {
--		active = 8 - clamp_val(t.active, 1, 8);
--		recovery = 18 - clamp_val(t.recover, 3, 18);
--	} else {
--		active = 9 - clamp_val(t.active, 2, 9);
--		recovery = 15 - clamp_val(t.recover, 0, 15);
--	}
--	timing = (recovery << 4) | active | 0x08;
+-	active = (clamp_val(t.active, 3, 17) - 1) & 0x0F;
+-	recovery = (clamp_val(t.recover, 1, 15) + 1) & 0x0F;
+-	timing = (active << 4) | recovery;
+-	winbond_writecfg(winbond->config, timing, reg);
 -
--	qdi->clock[adev->devno] = timing;
+-	/* Load the setup timing */
 -
--	outb(timing, qdi->timing);
--
--	/* Clear the FIFO */
+-	reg = 0x35;
 -	if (adev->class != ATA_DEV_ATA)
--		outb(0x5F, (qdi->timing & 0xFFF0) + 3);
+-		reg |= 0x08;	/* FIFO off */
+-	if (!ata_pio_need_iordy(adev))
+-		reg |= 0x02;	/* IORDY off */
+-	reg |= (clamp_val(t.setup, 0, 3) << 6);
+-	winbond_writecfg(winbond->config, timing + 1, reg);
 -}
 -
--/**
-- *	qdi_qc_issue		-	command issue
-- *	@qc: command pending
-- *
-- *	Called when the libata layer is about to issue a command. We wrap
-- *	this interface so that we can load the correct ATA timings.
-- */
 -
--static unsigned int qdi_qc_issue(struct ata_queued_cmd *qc)
+-static unsigned int winbond_data_xfer(struct ata_device *dev,
+-			unsigned char *buf, unsigned int buflen, int rw)
 -{
--	struct ata_port *ap = qc->ap;
--	struct ata_device *adev = qc->dev;
--	struct qdi_data *qdi = ap->host->private_data;
+-	struct ata_port *ap = dev->link->ap;
+-	int slop = buflen & 3;
 -
--	if (qdi->clock[adev->devno] != qdi->last) {
--		if (adev->pio_mode) {
--			qdi->last = qdi->clock[adev->devno];
--			outb(qdi->clock[adev->devno], qdi->timing);
--		}
--	}
--	return ata_sff_qc_issue(qc);
--}
--
--static unsigned int qdi_data_xfer(struct ata_device *dev, unsigned char *buf,
--				  unsigned int buflen, int rw)
--{
 -	if (ata_id_has_dword_io(dev->id)) {
--		struct ata_port *ap = dev->link->ap;
--		int slop = buflen & 3;
--
 -		if (rw == READ)
 -			ioread32_rep(ap->ioaddr.data_addr, buf, buflen >> 2);
 -		else
@@ -264,185 +244,136 @@ Index: b/drivers/ata/pata_qdi.c
 -	return buflen;
 -}
 -
--static struct scsi_host_template qdi_sht = {
+-static struct scsi_host_template winbond_sht = {
 -	ATA_PIO_SHT(DRV_NAME),
 -};
 -
--static struct ata_port_operations qdi6500_port_ops = {
+-static struct ata_port_operations winbond_port_ops = {
 -	.inherits	= &ata_sff_port_ops,
--	.qc_issue	= qdi_qc_issue,
--	.sff_data_xfer	= qdi_data_xfer,
+-	.sff_data_xfer	= winbond_data_xfer,
 -	.cable_detect	= ata_cable_40wire,
--	.set_piomode	= qdi6500_set_piomode,
--};
--
--static struct ata_port_operations qdi6580_port_ops = {
--	.inherits	= &qdi6500_port_ops,
--	.set_piomode	= qdi6580_set_piomode,
+-	.set_piomode	= winbond_set_piomode,
 -};
 -
 -/**
-- *	qdi_init_one		-	attach a qdi interface
+- *	winbond_init_one		-	attach a winbond interface
 - *	@type: Type to display
 - *	@io: I/O port start
 - *	@irq: interrupt line
 - *	@fast: True if on a > 33Mhz VLB
 - *
-- *	Register an ISA bus IDE interface. Such interfaces are PIO and we
+- *	Register a VLB bus IDE interface. Such interfaces are PIO and we
 - *	assume do not support IRQ sharing.
 - */
 -
--static __init int qdi_init_one(unsigned long port, int type, unsigned long io, int irq, int fast)
+-static __init int winbond_init_one(unsigned long port)
 -{
--	unsigned long ctl = io + 0x206;
 -	struct platform_device *pdev;
--	struct ata_host *host;
--	struct ata_port *ap;
--	void __iomem *io_addr, *ctl_addr;
--	int ret;
+-	u8 reg;
+-	int i, rc;
 -
--	/*
--	 *	Fill in a probe structure first of all
--	 */
+-	reg = winbond_readcfg(port, 0x81);
+-	reg |= 0x80;	/* jumpered mode off */
+-	winbond_writecfg(port, 0x81, reg);
+-	reg = winbond_readcfg(port, 0x83);
+-	reg |= 0xF0;	/* local control */
+-	winbond_writecfg(port, 0x83, reg);
+-	reg = winbond_readcfg(port, 0x85);
+-	reg |= 0xF0;	/* programmable timing */
+-	winbond_writecfg(port, 0x85, reg);
 -
--	pdev = platform_device_register_simple(DRV_NAME, nr_qdi_host, NULL, 0);
--	if (IS_ERR(pdev))
--		return PTR_ERR(pdev);
+-	reg = winbond_readcfg(port, 0x81);
 -
--	ret = -ENOMEM;
--	io_addr = devm_ioport_map(&pdev->dev, io, 8);
--	ctl_addr = devm_ioport_map(&pdev->dev, ctl, 1);
--	if (!io_addr || !ctl_addr)
--		goto fail;
+-	if (!(reg & 0x03))		/* Disabled */
+-		return -ENODEV;
 -
--	ret = -ENOMEM;
--	host = ata_host_alloc(&pdev->dev, 1);
--	if (!host)
--		goto fail;
--	ap = host->ports[0];
+-	for (i = 0; i < 2 ; i ++) {
+-		unsigned long cmd_port = 0x1F0 - (0x80 * i);
+-		unsigned long ctl_port = cmd_port + 0x206;
+-		struct ata_host *host;
+-		struct ata_port *ap;
+-		void __iomem *cmd_addr, *ctl_addr;
 -
--	if (type == 6580) {
--		ap->ops = &qdi6580_port_ops;
+-		if (!(reg & (1 << i)))
+-			continue;
+-
+-		pdev = platform_device_register_simple(DRV_NAME, nr_winbond_host, NULL, 0);
+-		if (IS_ERR(pdev))
+-			return PTR_ERR(pdev);
+-
+-		rc = -ENOMEM;
+-		host = ata_host_alloc(&pdev->dev, 1);
+-		if (!host)
+-			goto err_unregister;
+-		ap = host->ports[0];
+-
+-		rc = -ENOMEM;
+-		cmd_addr = devm_ioport_map(&pdev->dev, cmd_port, 8);
+-		ctl_addr = devm_ioport_map(&pdev->dev, ctl_port, 1);
+-		if (!cmd_addr || !ctl_addr)
+-			goto err_unregister;
+-
+-		ata_port_desc(ap, "cmd 0x%lx ctl 0x%lx", cmd_port, ctl_port);
+-
+-		ap->ops = &winbond_port_ops;
 -		ap->pio_mask = ATA_PIO4;
 -		ap->flags |= ATA_FLAG_SLAVE_POSS;
--	} else {
--		ap->ops = &qdi6500_port_ops;
--		ap->pio_mask = ATA_PIO2; /* Actually PIO3 !IORDY is possible */
--		ap->flags = ATA_FLAG_SLAVE_POSS | ATA_FLAG_NO_IORDY;
+-		ap->ioaddr.cmd_addr = cmd_addr;
+-		ap->ioaddr.altstatus_addr = ctl_addr;
+-		ap->ioaddr.ctl_addr = ctl_addr;
+-		ata_sff_std_ports(&ap->ioaddr);
+-
+-		/* hook in a private data structure per channel */
+-		host->private_data = &winbond_data[nr_winbond_host];
+-		winbond_data[nr_winbond_host].config = port;
+-		winbond_data[nr_winbond_host].platform_dev = pdev;
+-
+-		/* activate */
+-		rc = ata_host_activate(host, 14 + i, ata_sff_interrupt, 0,
+-				       &winbond_sht);
+-		if (rc)
+-			goto err_unregister;
+-
+-		winbond_host[nr_winbond_host++] = dev_get_drvdata(&pdev->dev);
 -	}
 -
--	ap->ioaddr.cmd_addr = io_addr;
--	ap->ioaddr.altstatus_addr = ctl_addr;
--	ap->ioaddr.ctl_addr = ctl_addr;
--	ata_sff_std_ports(&ap->ioaddr);
--
--	ata_port_desc(ap, "cmd %lx ctl %lx", io, ctl);
--
--	/*
--	 *	Hook in a private data structure per channel
--	 */
--	ap->private_data = &qdi_data[nr_qdi_host];
--
--	qdi_data[nr_qdi_host].timing = port;
--	qdi_data[nr_qdi_host].fast = fast;
--	qdi_data[nr_qdi_host].platform_dev = pdev;
--
--	printk(KERN_INFO DRV_NAME": qd%d at 0x%lx.\n", type, io);
--
--	/* activate */
--	ret = ata_host_activate(host, irq, ata_sff_interrupt, 0, &qdi_sht);
--	if (ret)
--		goto fail;
--
--	qdi_host[nr_qdi_host++] = dev_get_drvdata(&pdev->dev);
 -	return 0;
 -
-- fail:
+- err_unregister:
 -	platform_device_unregister(pdev);
--	return ret;
+-	return rc;
 -}
 -
 -/**
-- *	qdi_init		-	attach qdi interfaces
+- *	winbond_init		-	attach winbond interfaces
 - *
-- *	Attach qdi IDE interfaces by scanning the ports it may occupy.
+- *	Attach winbond IDE interfaces by scanning the ports it may occupy.
 - */
 -
--static __init int qdi_init(void)
+-static __init int winbond_init(void)
 -{
--	unsigned long flags;
--	static const unsigned long qd_port[2] = { 0x30, 0xB0 };
--	static const unsigned long ide_port[2] = { 0x170, 0x1F0 };
--	static const int ide_irq[2] = { 14, 15 };
+-	static const unsigned long config[2] = { 0x130, 0x1B0 };
 -
 -	int ct = 0;
 -	int i;
 -
--	if (probe_qdi == 0)
+-	if (probe_winbond == 0)
 -		return -ENODEV;
 -
 -	/*
-- 	 *	Check each possible QD65xx base address
+- 	 *	Check both base addresses
 -	 */
 -
 -	for (i = 0; i < 2; i++) {
--		unsigned long port = qd_port[i];
--		u8 r, res;
+-		if (probe_winbond & (1<<i)) {
+-			int ret = 0;
+-			unsigned long port = config[i];
 -
--
--		if (request_region(port, 2, "pata_qdi")) {
--			/* Check for a card */
--			local_irq_save(flags);
--			r = inb_p(port);
--			outb_p(0x19, port);
--			res = inb_p(port);
--			outb_p(r, port);
--			local_irq_restore(flags);
--
--			/* Fail */
--			if (res == 0x19)
--			{
--				release_region(port, 2);
--				continue;
--			}
--
--			/* Passes the presence test */
--			r = inb_p(port + 1);	/* Check port agrees with port set */
--			if ((r & 2) >> 1 != i) {
--				release_region(port, 2);
--				continue;
--			}
--
--			/* Check card type */
--			if ((r & 0xF0) == 0xC0) {
--				/* QD6500: single channel */
--				if (r & 8) {
--					/* Disabled ? */
+-			if (request_region(port, 2, "pata_winbond")) {
+-				ret = winbond_init_one(port);
+-				if (ret <= 0)
 -					release_region(port, 2);
--					continue;
--				}
--				if (qdi_init_one(port, 6500, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04) == 0)
--					ct++;
--			}
--			if (((r & 0xF0) == 0xA0) || (r & 0xF0) == 0x50) {
--				/* QD6580: dual channel */
--				if (!request_region(port + 2 , 2, "pata_qdi"))
--				{
--					release_region(port, 2);
--					continue;
--				}
--				res = inb(port + 3);
--				if (res & 1) {
--					/* Single channel mode */
--					if (qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04) == 0)
--						ct++;
--				} else {
--					/* Dual channel mode */
--					if (qdi_init_one(port, 6580, 0x1F0, 14, r & 0x04) == 0)
--						ct++;
--					if (qdi_init_one(port + 2, 6580, 0x170, 15, r & 0x04) == 0)
--						ct++;
--				}
+-				else ct+= ret;
 -			}
 -		}
 -	}
@@ -451,27 +382,24 @@ Index: b/drivers/ata/pata_qdi.c
 -	return -ENODEV;
 -}
 -
--static __exit void qdi_exit(void)
+-static __exit void winbond_exit(void)
 -{
 -	int i;
 -
--	for (i = 0; i < nr_qdi_host; i++) {
--		ata_host_detach(qdi_host[i]);
--		/* Free the control resource. The 6580 dual channel has the resources
--		 * claimed as a pair of 2 byte resources so we need no special cases...
--		 */
--		release_region(qdi_data[i].timing, 2);
--		platform_device_unregister(qdi_data[i].platform_dev);
+-	for (i = 0; i < nr_winbond_host; i++) {
+-		ata_host_detach(winbond_host[i]);
+-		release_region(winbond_data[i].config, 2);
+-		platform_device_unregister(winbond_data[i].platform_dev);
 -	}
 -}
 -
 -MODULE_AUTHOR("Alan Cox");
--MODULE_DESCRIPTION("low-level driver for qdi ATA");
+-MODULE_DESCRIPTION("low-level driver for Winbond VL ATA");
 -MODULE_LICENSE("GPL");
 -MODULE_VERSION(DRV_VERSION);
 -
--module_init(qdi_init);
--module_exit(qdi_exit);
+-module_init(winbond_init);
+-module_exit(winbond_exit);
 -
--module_param(probe_qdi, int, 0);
+-module_param(probe_winbond, int, 0);
 -
