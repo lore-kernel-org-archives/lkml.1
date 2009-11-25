@@ -1,93 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZKYISq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933642AbZKYIbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZKYISq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbZKYISp
+	id S933642AbZKYIbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZKYIbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:18:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58596 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758410AbZKYISp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:18:45 -0500
-Date: Wed, 25 Nov 2009 09:18:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-Message-ID: <20091125081832.GA1822@elte.hu>
-References: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
- <4B0C7257.3070609@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0C7257.3070609@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Wed, 25 Nov 2009 03:31:23 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:45256 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbZKYIbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:31:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=usCwvhtm4UY7OvmJnLntjEjhKjt0ieXKJElFYeqP0ug1fYiO15WsPAxvLywJAe+EXZ
+         8jncwWDjkN8ZZ0cAkKIgOJPiobmVE9XsvIFuOK//Z208ugFaT/7HnJZiEtsYwLVBgpZH
+         EvMLvbC64pSUY/zuhNbjgYxpDDD2Dng8fv6sU=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: spi-devel-general@lists.sourceforge.net
+Cc: grant.likely@secretlab.ca, Magnus Damm <magnus.damm@gmail.com>,
+       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Date: Wed, 25 Nov 2009 17:26:03 +0900
+Message-Id: <20091125082603.25618.57438.sendpatchset@rxone.opensource.se>
+Subject: [PATCH] spi: Allow using spi_bitbang_setup() with custom txrx_bufs()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Magnus Damm <damm@opensource.se>
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+This patch modifies the shared spi bitbanging code
+to allow using spi_bitbang_setup() even though the
+txrx_word[] callbacks are unset. Useful for drivers
+that want to make use of spi_bitbang_setup() but
+have their own txrx_bufs() callback.
 
-> FUJITA Tomonori wrote:
-> > "x86: Handle HW IOMMU initialization failure gracefully" patchset
-> > handled this option properly however somehow I broke it during cleanup
-> > after that. Sorry.
-> > 
-> > =
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH -tip] x86: fix iommu=soft boot option
-> > 
-> > iommu=soft boot option forces the kernel to use swiotlb.
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  arch/x86/kernel/pci-swiotlb.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-> > index e36e71d..e3c0a66 100644
-> > --- a/arch/x86/kernel/pci-swiotlb.c
-> > +++ b/arch/x86/kernel/pci-swiotlb.c
-> > @@ -50,6 +50,8 @@ static struct dma_map_ops swiotlb_dma_ops = {
-> >   */
-> >  int __init pci_swiotlb_init(void)
-> >  {
-> > +	int use_swiotlb = swiotlb | swiotlb_force;
-> > +
-> >  	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
-> >  #ifdef CONFIG_X86_64
-> >  	if (!no_iommu && max_pfn > MAX_DMA32_PFN)
-> > @@ -63,5 +65,5 @@ int __init pci_swiotlb_init(void)
-> >  		dma_ops = &swiotlb_dma_ops;
-> >  	}
-> >  
-> > -	return swiotlb_force;
-> > +	return use_swiotlb;
-> >  }
-> 
-> before your cleanup patchset:
-> for AMD 64bit, MEM > 4g, no AGP, iommu=soft
-> 1. if BIOS have correct gart setting, Kernel will use gart
-> 2. if BIOS does not have correct gart setting, Kernel will use swiotlb
-> 
-> for AMD 64bit, MEM > 4g, no AGP, no "iommu=soft"
-> 1. if BIOS have correct gart setting, Kernel will use gart
-> 2. if BIOS does not have correct gart setting, Kernel will allocate some RAM, and set range in AMD NB, and use gart iommu
+While at it, drop the MSIOF driver workaround.
 
-So the question is, how many people relied on the previous behavior of 
-'iommu=soft' not really falling back to the swiotlb code but preventing 
-the quirk from running.
+Signed-off-by: Magnus Damm <damm@opensource.se>
+---
 
-Are you aware of specific versions of distributions adding iommu=soft 
-and relying on that? Should we be careful about changing the previous 
-behavior?
+ Depends on the MSIOF driver.
 
-	Ingo
+ drivers/spi/spi_bitbang.c  |   25 ++++++++++++++-----------
+ drivers/spi/spi_sh_msiof.c |   11 -----------
+ 2 files changed, 14 insertions(+), 22 deletions(-)
+
+--- 0001/drivers/spi/spi_bitbang.c
++++ work/drivers/spi/spi_bitbang.c	2009-11-25 15:30:45.000000000 +0900
+@@ -176,6 +176,14 @@ int spi_bitbang_setup_transfer(struct sp
+ }
+ EXPORT_SYMBOL_GPL(spi_bitbang_setup_transfer);
+ 
++static int spi_bitbang_bufs(struct spi_device *spi, struct spi_transfer *t)
++{
++	struct spi_bitbang_cs	*cs = spi->controller_state;
++	unsigned		nsecs = cs->nsecs;
++
++	return cs->txrx_bufs(spi, cs->txrx_word, nsecs, t);
++}
++
+ /**
+  * spi_bitbang_setup - default setup for per-word I/O loops
+  */
+@@ -183,6 +191,7 @@ int spi_bitbang_setup(struct spi_device 
+ {
+ 	struct spi_bitbang_cs	*cs = spi->controller_state;
+ 	struct spi_bitbang	*bitbang;
++	int			mode_mask = SPI_CPOL | SPI_CPHA;
+ 	int			retval;
+ 	unsigned long		flags;
+ 
+@@ -196,9 +205,11 @@ int spi_bitbang_setup(struct spi_device 
+ 	}
+ 
+ 	/* per-word shift register access, in hardware or bitbanging */
+-	cs->txrx_word = bitbang->txrx_word[spi->mode & (SPI_CPOL|SPI_CPHA)];
+-	if (!cs->txrx_word)
+-		return -EINVAL;
++	if (bitbang->txrx_bufs == spi_bitbang_bufs) {
++		cs->txrx_word = bitbang->txrx_word[spi->mode & mode_mask];
++		if (!cs->txrx_word)
++			return -EINVAL;
++	}
+ 
+ 	retval = bitbang->setup_transfer(spi, NULL);
+ 	if (retval < 0)
+@@ -232,14 +243,6 @@ void spi_bitbang_cleanup(struct spi_devi
+ }
+ EXPORT_SYMBOL_GPL(spi_bitbang_cleanup);
+ 
+-static int spi_bitbang_bufs(struct spi_device *spi, struct spi_transfer *t)
+-{
+-	struct spi_bitbang_cs	*cs = spi->controller_state;
+-	unsigned		nsecs = cs->nsecs;
+-
+-	return cs->txrx_bufs(spi, cs->txrx_word, nsecs, t);
+-}
+-
+ /*----------------------------------------------------------------------*/
+ 
+ /*
+--- 0002/drivers/spi/spi_sh_msiof.c
++++ work/drivers/spi/spi_sh_msiof.c	2009-11-25 15:25:32.000000000 +0900
+@@ -510,13 +510,6 @@ static int sh_msiof_spi_txrx(struct spi_
+ 	return bytes_done;
+ }
+ 
+-static u32 sh_msiof_spi_txrx_word(struct spi_device *spi, unsigned nsecs,
+-				  u32 word, u8 bits)
+-{
+-	BUG_ON(1); /* unused but needed by bitbang code */
+-	return 0;
+-}
+-
+ static int sh_msiof_spi_probe(struct platform_device *pdev)
+ {
+ 	struct resource	*r;
+@@ -594,10 +587,6 @@ static int sh_msiof_spi_probe(struct pla
+ 	p->bitbang.chipselect = sh_msiof_spi_chipselect;
+ 	p->bitbang.setup_transfer = sh_msiof_spi_setup_transfer;
+ 	p->bitbang.txrx_bufs = sh_msiof_spi_txrx;
+-	p->bitbang.txrx_word[SPI_MODE_0] = sh_msiof_spi_txrx_word;
+-	p->bitbang.txrx_word[SPI_MODE_1] = sh_msiof_spi_txrx_word;
+-	p->bitbang.txrx_word[SPI_MODE_2] = sh_msiof_spi_txrx_word;
+-	p->bitbang.txrx_word[SPI_MODE_3] = sh_msiof_spi_txrx_word;
+ 
+ 	ret = spi_bitbang_start(&p->bitbang);
+ 	if (ret == 0)
