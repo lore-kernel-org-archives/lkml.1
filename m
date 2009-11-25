@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbZKYRK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934824AbZKYRR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbZKYRK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbZKYRKX
+	id S934824AbZKYRR7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934781AbZKYRR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:10:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39574 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758890AbZKYRKU (ORCPT
+	Wed, 25 Nov 2009 12:17:56 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:28343 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759361AbZKYRK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:10:20 -0500
+	Wed, 25 Nov 2009 12:10:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=NcK+c6j1mi5pjKJht5N3yvjthUPOtsaBPfNG/glrc31SeSdpF807V23xy/ck1tP0zz
-         np7MPf5q+jThHNVUVsLD3Fj7L25lIZyijyXTdiP7iEY9+B6AACGopzinRSD/gyrjxZyR
-         8EzFzbXsUB3xY5mVy8eUGCfikC8GRDiGvm88o=
+        b=s8HMOxEen586RwzGCHIECxqR3k4OOQyGgRiGeSXn4ZdWinf/NOhj6x0NluQcatIhDe
+         1Wy9dAs+Tah5CrmI2QpG0a1FHLz64q5k3r76z1hv3MOPzJqW8KOW1htxwmJyaFBbsmRu
+         RonqR4tAJkR7Ex4KWmIQPTLhqLKxKJvGy2u3w=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:09:40 +0100
-Message-Id: <20091125170940.5446.67928.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:09:48 +0100
+Message-Id: <20091125170948.5446.32754.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 61/86] pata_sis: Power Management fix
+Subject: [PATCH 62/86] pata_pdc202xx_old: document known issues
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_pdc202xx_old: Power Management fix
+Subject: [PATCH] pata_pdc202xx_old: document known issues
 
-Enable burst mode on resume for PDC2026x controllers.
+Document known issues with the driver to aid distribution makers,
+users and developers in making informed decisions instead of wasting
+their time needlessly.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_pdc202xx_old.c |   33 +++++++++++++++++++++++++++++++--
- 1 file changed, 31 insertions(+), 2 deletions(-)
+ drivers/ata/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: b/drivers/ata/pata_pdc202xx_old.c
+Index: b/drivers/ata/Kconfig
 ===================================================================
---- a/drivers/ata/pata_pdc202xx_old.c
-+++ b/drivers/ata/pata_pdc202xx_old.c
-@@ -232,14 +232,21 @@ static void pdc2026x_dev_config(struct a
- 	adev->max_sectors = 256;
- }
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -583,6 +583,10 @@ config PATA_PDC_OLD
+ 	  This option enables support for the Promise 20246, 20262, 20263,
+ 	  20265 and 20267 adapters.
  
--static int pdc2026x_port_start(struct ata_port *ap)
-+static void pdc2026x_bmdma_enable_burst(struct ata_port *ap)
- {
- 	void __iomem *bmdma = ap->ioaddr.bmdma_addr;
++	  Known issues:
++	  - UDMA transfers fail mysteriously on some chipsets
++	  - ATAPI DMA is unsupported currently
 +
- 	if (bmdma) {
- 		/* Enable burst mode */
- 		u8 burst = ioread8(bmdma + 0x1f);
- 		iowrite8(burst | 0x01, bmdma + 0x1f);
- 	}
-+}
-+
-+static int pdc2026x_port_start(struct ata_port *ap)
-+{
-+	pdc2026x_bmdma_enable_burst(ap);
-+
- 	return ata_sff_port_start32(ap);
- }
+ 	  If unsure, say N.
  
-@@ -327,6 +334,28 @@ static int pdc202xx_init_one(struct pci_
- 	return ata_pci_sff_init_one(dev, ppi, &pdc202xx_sht, NULL);
- }
- 
-+#ifdef CONFIG_PM
-+static int pdc202xx_reinit_one(struct pci_dev *pdev)
-+{
-+	struct ata_host *host = dev_get_drvdata(&pdev->dev);
-+	int rc, i;
-+
-+	rc = ata_pci_device_do_resume(pdev);
-+	if (rc)
-+		return rc;
-+
-+	for (i = 0; i < host->n_ports; i++) {
-+		struct ata_port *ap = host->ports[i];
-+
-+		if (ap->udma_mask > ATA_UDMA2)
-+			pdc2026x_bmdma_enable_burst(ap);
-+	}
-+
-+	ata_host_resume(host);
-+	return 0;
-+}
-+#endif
-+
- static const struct pci_device_id pdc202xx[] = {
- 	{ PCI_VDEVICE(PROMISE, PCI_DEVICE_ID_PROMISE_20246), 0 },
- 	{ PCI_VDEVICE(PROMISE, PCI_DEVICE_ID_PROMISE_20262), 1 },
-@@ -344,7 +373,7 @@ static struct pci_driver pdc202xx_pci_dr
- 	.remove		= ata_pci_remove_one,
- #ifdef CONFIG_PM
- 	.suspend	= ata_pci_device_suspend,
--	.resume		= ata_pci_device_resume,
-+	.resume		= pdc202xx_reinit_one,
- #endif
- };
- 
+ config PATA_QDI
