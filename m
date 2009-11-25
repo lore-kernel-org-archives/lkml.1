@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZKYSUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbZKYSUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbZKYSUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:20:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbZKYSUM
+	id S932440AbZKYSUY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759042AbZKYSUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:20:12 -0500
-Received: from www.tglx.de ([62.245.132.106]:50020 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568AbZKYSUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:20:11 -0500
-To: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] MXC: set GPIO IRQ handler
-From: John Ogness <john.ogness@linutronix.de>
-Date: Wed, 25 Nov 2009 19:19:58 +0100
-Message-ID: <807htelb5d.fsf@merkur.tec.linutronix.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Wed, 25 Nov 2009 13:20:20 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:44757 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759013AbZKYSUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 13:20:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
+	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+Date: Wed, 25 Nov 2009 13:20:21 -0500
+Message-ID: <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The irq chip function gpio_set_irq_type() correctly sets the i.MX
-registers but does not set the irq handler. This means that all
-gpio-based irq's are handled with handle_edge_irq().
+On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
+> Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
+>
+> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
 
-This patch corrects this by also setting the appropriate handler.
+This is one of the key use cases I would be very concerned with.  For
+many users who have bought tuner products, the bundled remotes work
+"out-of-the-box", regardless of whether lircd is installed.  I have no
+objection so much as to saying "well, you have to install the lircd
+service now", but there needs to be a way for the driver to
+automatically tell lirc what the default remote control should be, to
+avoid a regression in functionality.  We cannot go from a mode where
+it worked automatically to a mode where now inexperienced users now
+have to deal with the guts of getting lircd properly configured.
 
-This patch is against 2.6.32-rc8.
+If such an interface were available, I would see to it that at least
+all the devices I have added RC support for will continue to work
+(converting the in-kernel RC profiles to lirc RC profiles as needed
+and doing the associations with the driver).
 
-Signed-off-by: John Ogness <john.ogness@linutronix.de>
----
- arch/arm/plat-mxc/gpio.c |    5 +++++
- 1 file changed, 5 insertions(+)
---- a/arch/arm/plat-mxc/gpio.c
-+++ b/arch/arm/plat-mxc/gpio.c
-@@ -126,6 +126,11 @@ static int gpio_set_irq_type(u32 irq, u3
- 	__raw_writel(val | (edge << (bit << 1)), reg);
- 	_clear_gpio_irqstatus(port, gpio & 0x1f);
- 
-+	if (type & (IRQ_TYPE_LEVEL_LOW | IRQ_TYPE_LEVEL_HIGH))
-+		__set_irq_handler_unlocked(irq, handle_level_irq);
-+	else if (type & (IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_EDGE_RISING))
-+		__set_irq_handler_unlocked(irq, handle_edge_irq);
-+
- 	return 0;
- }
- 
+The other key thing I don't think we have given much thought to is the
+fact that in many tuners, the hardware does RC decoding and just
+returns NEC/RC5/RC6 codes.  And in many of those cases, the hardware
+has to be configured to know what format to receive.  We probably need
+some kernel API such that the hardware can tell lirc what formats are
+supported, and another API call to tell the hardware which mode to
+operate in.
+
+This is why I think we really should put together a list of use cases,
+so that we can see how any given proposal addresses those use cases.
+I offered to do such, but nobody seemed really interested in this.
+
+Devin
+
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
