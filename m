@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbZKYRX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbZKYRYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932353AbZKYRX3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbZKYRX2
+	id S1759431AbZKYRYL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbZKYRYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:23:28 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:55436 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932340AbZKYRXN (ORCPT
+	Wed, 25 Nov 2009 12:24:07 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47204 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759130AbZKYRYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:23:13 -0500
-Date: 25 Nov 2009 18:20:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: khc@pm.waw.pl
-Cc: awalls@radix.net
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BDZb9P9ZjFB@christoph>
-In-Reply-To: <m3fx827dgi.fsf@intrepid.localdomain>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Wed, 25 Nov 2009 12:24:04 -0500
+Date: Wed, 25 Nov 2009 18:24:06 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: Steppeing down as Maintainer
+Message-ID: <20091125172406.GA14085@merkur.ravnborg.org>
+References: <20091120182249.GA28251@merkur.ravnborg.org> <20091120182613.GA28307@merkur.ravnborg.org> <20091125172122.46beaf17.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+nKdFVEa+JUCYwIWqS6mFuSiuQRlBisqz9RYK
- WVyMyIneBnDpbQq6TC4frPkDgToK+EhIP5MiKOlx0FxV16e9VN
- EYHNo28HTH93w5YqplMV2czI0jdNiY/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125172122.46beaf17.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Nov 25, 2009 at 05:21:22PM +1100, Stephen Rothwell wrote:
+> Hi Sam,
+> 
+> On Fri, 20 Nov 2009 19:26:13 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > It has been fun but the last year or more it has
+> > been a duty and a burden. So I leave it open for
+> > other to take over.
+> 
+> I, also, want to thank you very much for all your work.
+> 
+> I am, however, wondering what will happen to the changes you have that are
+> currently in linux-next:
+> 
+> Apparently for v2.6.32 (in kbuild-current):
+> 
+> Michael Tokarev (1):
+>       kbuild: fix bzImage build for x86
+> 
+> And queued for v2.6.33:
+> 
+> Sam Ravnborg (14):
+>       kbuild: search arch/$ARCH/include before include/
+>       dontdiff: add generated
+>       kbuild: move bounds.h to include/generated
+>       kbuild: move asm-offsets.h to include/generated
+>       ia64: move nr-irqs.h to include/generated
+>       arm: move mach-types to include/generated
+>       sh: move machtypes.h to include/generated
+>       kbuild: drop include2/ used for O=... builds
+>       kbuild: do not check for include/asm-$ARCH
+>       kbuild: drop include/asm
+>       kbuild: move compile.h to include/generated
+>       drop explicit include of autoconf.h
+>       kbuild: move autoconf.h to include/generated
+>       kbuild: move utsrelease.h to include/generated
+> 
+> I am (for the moment) still merging these from the copy I have of your
+> trees, but what to do in the longer term?
 
-on 25 Nov 09 at 17:53, Krzysztof Halasa wrote:
-> Jarod Wilson <jarod@wilsonet.com> writes:
-[...]
->> nimble. If we can come up with a shiny new way that raw IR can be
->> passed out through an input device, I'm pretty sure lirc userspace can
->> be adapted to handle that.
+I will submit the patches like any other regular submitter to linux-kbuild
+if the upcoming Maintainers does not pick them up from the git trees.
 
-As Trent already pointed out, adding support for raw IR through an input  
-device would require a new interface too. You just put the label "input  
-device" on it. This does not make much sense for me.
+So for now keeping the pull would be nice but as soon as you have
+a ew set of kbuild tress then drop these.
 
-> Lirc can already handle input layer. Since both ways require userspace
-> changes,
+Frankly I had forgot that I had a patch in -fixes...
 
-I'm not sure what two ways you are talking about. With the patches posted  
-by Jarod, nothing has to be changed in userspace.
-Everything works, no code needs to be written and tested, everybody is  
-happy.
-
-We had exactly the same discussion around one year ago. I've seen no new  
-arguements in the current discussion and nobody came up with this shiny  
-new way of integrating LIRC into the input layer since last year. Maybe  
-it's about time to just accept that the LIRC interface is the way to go.
-
-Can we finally get the patch integrated, please?
-
-Christoph
+	Sam
