@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZKYUfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759853AbZKYVFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbZKYUfq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:35:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbZKYUfp
+	id S1759853AbZKYVFL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:05:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759810AbZKYVFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:35:45 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:42979 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758806AbZKYUfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:35:44 -0500
-X-Greylist: delayed 309 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 15:35:44 EST
-Date: Wed, 25 Nov 2009 21:30:36 +0100
-From: Pierre Ossman <pierre@ossman.eu>
-To: Philip Langdale <philipl@overt.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Port ricoh_mmc from driver to pci quirk.
-Message-ID: <20091125213036.7afa636b@mjolnir.ossman.eu>
-In-Reply-To: <20091125085324.1ef9ae1f@fido2.homeip.net>
-References: <1259021583.16650.9.camel@maxim-laptop>
-	<20091123162119.3777e14d@fido2.homeip.net>
-	<1259160947.10147.1.camel@maxim-laptop>
-	<1259161121.10147.4.camel@maxim-laptop>
-	<20091125085324.1ef9ae1f@fido2.homeip.net>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
+	Wed, 25 Nov 2009 16:05:10 -0500
+Received: from f0.cmpxchg.org ([85.214.51.133]:52764 "EHLO cmpxchg.org"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759806AbZKYVFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:05:09 -0500
+Date: Wed, 25 Nov 2009 21:35:09 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, lwoodman@redhat.com,
+       kosaki.motohiro@fujitsu.co.jp, Tomasz Chmielewski <mangoo@wpkg.org>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] vmscan: do not evict inactive pages when skipping an active list scan
+Message-ID: <20091125203509.GA18018@cmpxchg.org>
+References: <20091125133752.2683c3e4@bree.surriel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-1973-1259181042-0001-2"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125133752.2683c3e4@bree.surriel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hello all,
 
---=_freyr.ossman.eu-1973-1259181042-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Nov 25, 2009 at 01:37:52PM -0500, Rik van Riel wrote:
+> In AIM7 runs, recent kernels start swapping out anonymous pages
+> well before they should.  This is due to shrink_list falling
+> through to shrink_inactive_list if !inactive_anon_is_low(zone, sc),
+> when all we really wanted to do is pre-age some anonymous pages to
+> give them extra time to be referenced while on the inactive list.
 
-On Wed, 25 Nov 2009 08:53:24 -0800
-Philip Langdale <philipl@overt.org> wrote:
+I do not quite understand what changed 'recently'.
 
-> On Wed, 25 Nov 2009 16:58:41 +0200
-> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
->=20
-> > >From 5c5e6f5ab1a5a09a430f410cab4b160a5e65501c Mon Sep 17 00:00:00
-> > >2001
-> > From: Maxim Levitsky <maximlevitsky@gmail.com>
-> > Date: Wed, 25 Nov 2009 16:37:46 +0200
-> > Subject: [PATCH] Port ricoh_mmc from driver to pci quirk.
-> >  This is much cleaner and correct solution
->=20
-> I'm fine with the concept, but when I originally started work on
-> Ricoh support, Pierre specifically didn't want a pci quirk.
->=20
-> Pierre wrote:
-> > I'd rather we didn't. The current style of quirks are bad enough,
-> > making them even more vendor or device specific is a bit more than I'm
-> > willing to accept right now (seriously, how hard can it be to follow
-> > the damn spec?).
->=20
-> Pierre's not officially the maintainer anymore but I still respect his
-> opinions here. Given that a pci quirk solves this problem so simply,
-> I think it's justified at this point.
->=20
-> Pierre, do you want to comment?
->=20
+That fall-through logic to keep eating inactives when the ratio is off
+came in a year ago with the second-chance-for-anon-pages patch..?
 
-I was talking about the quirks mechanism in sdhci, not pci quirks. :)
+> The obvious fix is to make sure that shrink_list does not fall
+> through to scanning/reclaiming inactive pages when we called it
+> to scan one of the active lists.
+>
+> This change should be safe because the loop in shrink_zone ensures
+> that we will still shrink the anon and file inactive lists whenever
+> we should.
 
-I have no objections to this patch.
+It was not so obvious to me ;)
 
->=20
-> I would at least suggest a printk so ensure people know this is
-> happening - otherwise there's no visible evidence that the system
-> even has an MMC controller that's been disabled.
->=20
+At first, I thought it would make sense to actively rebalance between
+the lists if the inactive one grows too large (the fall-through case).
 
-Agreed. There might be cases where we cause problems since we don't
-fully understand this hardware.
+But shrink_zone() does not know about this and although we scan
+inactive pages, we do not account for them and decrease the 'nr[lru]'
+for active pages instead, effectively shifting the 'active todo' over
+to the 'inactive todo'.  I can imagine this going wrong!
 
-Rgds
---=20
-     -- Pierre Ossman
+So I agree, we should use the inactive_*_is_low() predicate only
+passively.
+ 
+> Reported-by: Larry Woodman <lwoodman@redhat.com>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 
-  WARNING: This correspondence is being monitored by FRA, a
-  Swedish intelligence agency. Make sure your server uses
-  encryption for SMTP traffic and consider using PGP for
-  end-to-end encryption.
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 
---=_freyr.ossman.eu-1973-1259181042-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEARECAAYFAksNk+8ACgkQ7b8eESbyJLhMKACdF9GK8CgjFJiVGVZ79+JkW1C0
-F+4An2wT0jvfPx6C+0ldW3NUAjfb8j9w
-=JJN/
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-1973-1259181042-0001-2--
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 777af57..ec4dfda 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1469,13 +1469,15 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+>  {
+>  	int file = is_file_lru(lru);
+>  
+> -	if (lru == LRU_ACTIVE_FILE && inactive_file_is_low(zone, sc)) {
+> -		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+> +	if (lru == LRU_ACTIVE_FILE) {
+> +		if (inactive_file_is_low(zone, sc))
+> +		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
+>  		return 0;
+>  	}
+>  
+> -	if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
+> -		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+> +	if (lru == LRU_ACTIVE_ANON) {
+> +		if (inactive_file_is_low(zone, sc))
+> +		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
+>  		return 0;
+>  	}
+>  	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
