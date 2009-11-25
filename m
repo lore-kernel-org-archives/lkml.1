@@ -1,109 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbZKYO2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964891AbZKYO2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964844AbZKYO2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbZKYO2Q
+	id S964891AbZKYO2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 09:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934706AbZKYO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 25 Nov 2009 09:28:16 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:44701 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758456AbZKYO2P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: from cantor2.suse.de ([195.135.220.15]:38645 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753208AbZKYO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Nov 2009 09:28:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=XcSXOIhrrk1/wBEkkdGdMeRQDeTr22O+JOP5ouLI15tRMOCZmuunsBEaWpsJnbBuFm
-         pNyvPvqYc5QZX/4Zmbtt9Xp4vizfR1aDiccF3Yd0X8X53/4eZLbTT2eTeaMUgqH2Z2ui
-         1DddgJUKDn+StOLIPAESWC4yU5fpjyePgctHs=
+Date: Wed, 25 Nov 2009 15:28:20 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/14] kbuild: move autoconf.h to include/generated
+Message-ID: <20091125142820.GA10565@sepie.suse.cz>
+References: <20091018080635.GA13767@merkur.ravnborg.org>
+ <1255853723-477-13-git-send-email-sam@ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <20091125123534.GA17486@suse.de>
-References: <ffc2b1d40911250127x7b3c3609qb99820d212a7a0ad@mail.gmail.com> 
-	<20091125123534.GA17486@suse.de>
-From: eran liberty <eran.liberty@gmail.com>
-Date: Wed, 25 Nov 2009 16:27:59 +0200
-Message-ID: <ffc2b1d40911250627q6c7e459v89a580d793b24fcf@mail.gmail.com>
-Subject: Re: kobjects: mark cleaned up kobjects as unitialized
-To: Greg KH <gregkh@suse.de>
-Cc: balajirrao@gmail.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255853723-477-13-git-send-email-sam@ravnborg.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Sun, Oct 18, 2009 at 10:15:22AM +0200, Sam Ravnborg wrote:
+> diff --git a/Makefile b/Makefile
+> index 6570cf1..b125cd9 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -336,7 +336,7 @@ CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
+>  # Needed to be compatible with the O= option
+>  LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include -Iinclude \
+>                     $(if $(KBUILD_SRC), -I$(srctree)/include) \
+> -                   -include include/linux/autoconf.h
+> +                   -include include/generated/autoconf.h
+>  
+>  KBUILD_CPPFLAGS := -D__KERNEL__
+>  
+> @@ -491,17 +491,18 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
+>  # if auto.conf.cmd is missing then we are probably in a cleaned tree so
+>  # we execute the config step to be sure to catch updated Kconfig files
+>  include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
+> +	$(Q)mkdir -p include/generated
+>  	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
 
-On Wed, Nov 25, 2009 at 2:35 PM, Greg KH <gregkh@suse.de> wrote:
-> On Wed, Nov 25, 2009 at 11:27:58AM +0200, eran liberty wrote:
->> Hi Greg & Balaji,
->>
->> After diving into the LDKM and failed to spot the point where you
->> actually un-initialize the 'state_initialized' of a kobject... and
->> since I have statically allocated object which trip over this very
->> same trap...
->
-> Ah, there's your problem, don't statically allocate a kobject.  Fix that
-> and your issue goes away, right?
+This doesn't work if one runs make silentoldconfig directly. I fixed
+this with the following patch in my tree (will be pushed out soon).
 
-right... but... I want to :).
+Michal
 
-Is there a Linux directive saying 'thus shall not statically allocate
-(or reuse in any other way) kobjects"?
+Subject: [PATCH] kbuild: create include/generated in silentoldconfig
 
->
->> Google-ing for others who fell into this trap, I found your thread/patch at:
->> http://lkml.org/lkml/2008/3/8/155
->> and
->> http://lkml.indiana.edu/hypermail/linux/kernel/0902.0/01969.html
->>
->> I noticed this patch did not make it into the mainline.
->>
->> Is this patch still valid?
+The toplevel Makefile creates the directory if it runs silentoldconfig
+automatically, but if run manually, it fails:
 
-Why was your proposed patch not merged?
-Is there some logic behind not having it?
+  $ make mrproper
+  $ make defconfig && make silentoldconfig
+  *** Default configuration is based on 'x86_64_defconfig'
+  #
+  # configuration written to .config
+  #
+  scripts/kconfig/conf -s arch/x86/Kconfig
 
->> Is there some other, better way to do it by the book?
->
-> Do not statically allocate a kobject.
->
->> Right now I by-pass the problem by memset-ing the whole object after I
->> release it... but I feel this is a bit brutal.
+  *** Error during update of the kernel configuration.
+  ...
 
-Assuming I will keep it static and clear the status_initialize bit (by
-memset-ing the whole object) after the kobject was released... am I
-doing something wrong? should i expect other bad phenomena?
+Move the mkdir command to the silentoldconfig target to make it work.
 
->
-> You should be freeing your memory in your release function.
->
-Should I free the object itself in release() function?
-In OO-like thinking I would expect release() to be a cleanup function
-for the device to be used, while the kfree() be done by the same
-object which did the kmalloc()
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ Makefile                 |    1 -
+ scripts/kconfig/Makefile |    1 +
+ 2 files changed, 1 insertions(+), 1 deletions(-)
 
-> Do you have a pointer to your code somewhere?
->
+diff --git a/Makefile b/Makefile
+index 7bd2531..74ad9a9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -491,7 +491,6 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
+ # if auto.conf.cmd is missing then we are probably in a cleaned tree so
+ # we execute the config step to be sure to catch updated Kconfig files
+ include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
+-	$(Q)mkdir -p include/generated
+ 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
+ else
+ # external modules needs include/generated/autoconf.h and include/config/auto.conf
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 6d69c7c..ca5ce8e 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -27,6 +27,7 @@ oldconfig: $(obj)/conf
+ 	$< -o $(Kconfig)
+ 
+ silentoldconfig: $(obj)/conf
++	$(Q)mkdir -p include/generated
+ 	$< -s $(Kconfig)
+ 
+ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
+-- 
+1.6.4.2
 
-I will pack something and send you (i dont think Mr. vger will
-tolerate attachments :) )
-but basically you can demonstrate the problem with this simple code:
-
-struct device dev;
-while(1) {
-  dev->release = dummy_release_function_that_does_nothing;
-  device_register(&dev); /* will fail on second iteration without the
-memset!! ?? */
-  device_unregister(&dev);
-  memset(&dev,0,sizeof(struct device)); /* should be unnecessary  */
-}
-
-> thanks,
->
-> greg k-h
->
-
-thanks,
--- Liberty
