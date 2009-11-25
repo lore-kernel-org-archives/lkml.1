@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbZKYRrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbZKYRpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933124AbZKYRrL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbZKYRrH
+	id S1759503AbZKYRpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759479AbZKYRo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:47:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:20577 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933017AbZKYRrE (ORCPT
+	Wed, 25 Nov 2009 12:44:59 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:37168 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759478AbZKYRo6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:47:04 -0500
+	Wed, 25 Nov 2009 12:44:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=poM06IMPsd2q75PCRAQ6ails/38FbnNxKUGHIQUdiSAamMVFkbZRZuyikiak5x2fQz
-         9t7uy7ilc+pHMrPi6IFVShjjK8VAovpJssikKMmAJEFf0S+4fNHsr8wNTpRCn2lGkYZf
-         CXGt8bLmXzMlyaax6VUa6utgJnwAcgxMerRFw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 48/86] pata_legacy: add pointers to QDI65x0 documentation
-Date: Wed, 25 Nov 2009 18:44:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170802.5446.46013.sendpatchset@localhost> <20091125173852.71fcdf9d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091125173852.71fcdf9d@lxorguk.ukuu.org.uk>
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=q8tnMUJ/5Ut6tAgm3yw50aYUSng6xurvZgJLZYVMDk1n6UM41TJoTprbZbXS0BFPBf
+         Btu8uTWrh6qeZY00SKtU9o5L9gOgbYgJUE7exFcAs2u/fy1juLG2YI+XmV6pbnWtEAnz
+         qouCRbWPtgv61RXiWUv6W3wAxmi6t/tg4NEBw=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911251844.59772.bzolnier@gmail.com>
+In-Reply-To: <5dcc4c8a0911250427g73f7a3a0y26eff2379fb86edf@mail.gmail.com>
+References: <5dcc4c8a0911241202s1d56354el9628763b05451fb9@mail.gmail.com>
+	 <5dcc4c8a0911250427g73f7a3a0y26eff2379fb86edf@mail.gmail.com>
+Date: Wed, 25 Nov 2009 18:45:02 +0100
+Message-ID: <9ea470500911250945x72052c22hb0ccebf2fe96798a@mail.gmail.com>
+Subject: Re: Kernel module, undefined symbol show_regs
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tanya Gornak <errizo@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 November 2009 06:38:52 pm Alan Cox wrote:
-> > + *	QDI65x0 probe code based on drivers/ide/legacy/qd65xx.c
-> > + *	Rewritten from the work of Colten Edwards <pje120@cs.usask.ca> by
-> > + *	Samuel Thibault <samuel.thibault@ens-lyon.org>
-> 
-> It's not drivers/ide/legacy/qd65xx.c - because you moved it back in the
-> old IDE code.
+On Wed, Nov 25, 2009 at 1:27 PM, Tanya Gornak <errizo@gmail.com> wrote:
+> Hello. I can't solve problem that happens while I'm making my kernel module.
+>
+> part of my module:
+> // ...
+> #include <linux/sched.h>
+> //....
+> static u32 task_syscall_entry(enum utrace_resume_action action,
+>                                 struct utrace_engine *engine,
+>                                 struct task_struct *task,
+>                                 struct pt_regs *regs){
+>     // ...
+>         show_regs(regs);
+>
+> }
+> But, while making I get:
+>
+> WARNING: "show_regs" [/home/tehhi/module/trace.ko] undefined!
+>
+> extern void show_regs(struct pt_regs *);  define in header
+> linux/sched.h, place of source code is
+> linux/arch/x86/kernel/process_32.c
+> It use extern void __show_regs(struct pt_regs *); and extern
+> asmlinkage void __backtrace(void);
+> I think that extern means that I can use it (and there are no static
+> symbols in this function).
+>
+> When trying to insert module, it predictably complains of an unknown
+> symbol show_regs.
+>
+> What am I missing here?
 
-It was the correct path/driver when the aforementioned code was added.
+You're using a function in a module which is not exported to modules.
+See http://lwn.net/images/pdf/LDD3/ch02.pdf for more details.
 
---
-Bartlomiej Zolnierkiewicz
+-- 
+Regards/Gruss,
+Boris
