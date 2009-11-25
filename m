@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934975AbZKYUQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964809AbZKYUM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934975AbZKYUQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932338AbZKYUQw
+	id S964809AbZKYUM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759636AbZKYUM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:16:52 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51046 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932331AbZKYUQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:16:52 -0500
-Message-ID: <4B0D8FC1.1010608@zytor.com>
-Date: Wed, 25 Nov 2009 12:12:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 25 Nov 2009 15:12:27 -0500
+Received: from fieldses.org ([174.143.236.118]:39060 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753423AbZKYUMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:12:25 -0500
+Date: Wed, 25 Nov 2009 15:13:15 -0500
+From: "J. Bruce Fields" <bfields@citi.umich.edu>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       pNFS Mailing List <pnfs@linux-nfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/5] vfs: nfsctl.c unused nfsd #includes
+Message-ID: <20091125201315.GH32502@fieldses.org>
+References: <4B0C1EB7.50508@panasas.com> <4B0C201C.4040400@panasas.com>
 MIME-Version: 1.0
-To: Jakub Jelinek <jakub@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Haley <aph@redhat.com>, "H.J. Lu" <hjl.tools@gmail.com>,
-       rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
- messing with mcount prologue
-References: <1258736456.22249.1032.camel@gandalf.stny.rr.com> <4B06EF6F.2050507@redhat.com> <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com> <4B0972C9.302@redhat.com> <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com> <4B0BF119.4070704@redhat.com> <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain> <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain> <20091125154452.GA9456@elte.hu> <20091125164434.GS22813@hs20-bc2-1.build.redhat.com>
-In-Reply-To: <20091125164434.GS22813@hs20-bc2-1.build.redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0C201C.4040400@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/25/2009 08:44 AM, Jakub Jelinek wrote:
+On Tue, Nov 24, 2009 at 08:04:12PM +0200, Boaz Harrosh wrote:
 > 
-> If you compile kernels 90%+ people out there run with -p on i?86/x86_64,
-> then certainly coming up with a new gcc switch and new profiling ABI is
-> desirable.  -p on i?86/x86_64 e.g. forces -fno-omit-frame-pointer, which
-> makes code on these register starved arches significantly worse.
-> Making GCC output profiling call before prologue instead of after prologue
-> is a 4 liner in generic code and a few lines in target specific code.
-> The important thing is that we shouldn't have 100 different profiling ABIs,
-> so it is desirable to agree on something that will be generally useful not
-> just for the kernel, but perhaps for other purposes.
+> Only linux/nfsd/syscall.h is actually used. Remove the
+> other nfsd #includes, so they can be moved to source
+> directory.
+
+I guess I'll take this one too.
+
+The arch-specific ones I'm assuming are someone else's problem unless I
+hear otherwise.
+
+--b.
+
 > 
-
-There is really just one that makes sense, which is providing the
-ABI-defined entry state, which means intercepting at the point of entry.
-
-Anything else is/was a mistake.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  fs/nfsctl.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/nfsctl.c b/fs/nfsctl.c
+> index 8f9a205..d3854d9 100644
+> --- a/fs/nfsctl.c
+> +++ b/fs/nfsctl.c
+> @@ -7,8 +7,6 @@
+>  #include <linux/types.h>
+>  #include <linux/file.h>
+>  #include <linux/fs.h>
+> -#include <linux/sunrpc/svc.h>
+> -#include <linux/nfsd/nfsd.h>
+>  #include <linux/nfsd/syscall.h>
+>  #include <linux/cred.h>
+>  #include <linux/sched.h>
+> -- 
+> 1.6.5.2
+> 
+> 
