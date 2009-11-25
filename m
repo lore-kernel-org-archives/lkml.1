@@ -1,110 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbZKYKal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbZKYC7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758687AbZKYKal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758625AbZKYKak
+	id S1758270AbZKYC7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 21:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbZKYC7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:30:40 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:44028 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758656AbZKYKai (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:30:38 -0500
-Message-ID: <4B0D0742.2050301@gmail.com>
-Date: Wed, 25 Nov 2009 11:30:26 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: David Miller <davem@davemloft.net>, peter.p.waskiewicz.jr@intel.com,
-       peterz@infradead.org, arjan@linux.intel.com, yong.zhang0@gmail.com,
-       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance
- hints
-References: <20091124.093956.247147202.davem@davemloft.net>	<1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com>	<20091124.105442.06273019.davem@davemloft.net>	<4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org> <4B0C4624.9080607@gmail.com>
-In-Reply-To: <4B0C4624.9080607@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 25 Nov 2009 11:30:28 +0100 (CET)
+	Tue, 24 Nov 2009 21:59:21 -0500
+Received: from mga09.intel.com ([134.134.136.24]:37351 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758225AbZKYC7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 21:59:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,283,1257148800"; 
+   d="scan'208";a="470355880"
+Date: Wed, 25 Nov 2009 05:35:16 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Youquan,Song" <youquan.song@linux.intel.com>,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
+       youquan.song@intel.com
+Subject: Re: [PATCH]crypto: Fix algorithm and driver duplicate registered
+Message-ID: <20091125103516.GA25093@youquan-linux.bj.intel.com>
+References: <20091119003202.GA28448@youquan-linux.bj.intel.com> <20091119001827.GC2315@gondor.apana.org.au> <20091119110222.GA19379@youquan-linux.bj.intel.com> <20091119114730.GC6392@gondor.apana.org.au> <20091123174724.GB14372@youquan-linux.bj.intel.com> <20091123113126.GA6297@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091123113126.GA6297@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Andi Kleen a écrit :
->> They are typically allocated with dma_alloc_coherent(), which does
->> allocate a continuous area.  In theory you could do interleaving
->> with IOMMus, but just putting it on the same node as the device
->> is probably better.
+> On Mon, Nov 23, 2009 at 12:47:24PM -0500, Youquan,Song wrote:
+> >
+> > The alg->cra_name and alg->cra_driver_name, from the description,
+> > cra_name is the algorithm name and cra_driver_name is the driver name.
 > 
-> There are two parts, biggest one allocated with vmalloc()
-> (to hold struct ixgbe_rx_buffer array, 32 bytes or more per entry),
-> only used by driver (not adapter)
+> For each algorithm you may have an arbitrary number of drivers
+> implementing it.  The driver name must be unique.  However,
+> duplicates are allowed so that a new version of a driver may
+> be loaded while the older instances of it are still in use.
 > 
-> and one allocated with pci_alloc_consistent() 
-> (to hold ixgbe_adv_tx_desc array, 16 bytes per entry)
+> > But when I read the code, I often get confuse about these two names.
+> > They often mix each other.  
+> > 
+> > Can you give me some instruction about them? or Can we make them more clear? Thanks. 
 > 
-> vmalloc() one could be spreaded on many nodes.
-> I am not speaking about the pci_alloc_consistent() one :)
-> 
+> Well can you tell me what exactly confuses you?
 
-BTW, I found my Nehalem dev machine behaves strangly, defeating all
-my NUMA tweaks. (This is an HP DL380 G6)
+Thanks. 
+For example:
 
-It has two sockets, populated with two E5530 @2.4GH.
+struct crypto_alg *crypto_larval_lookup(const char *name, u32 type, u32
+mask)
 
-Each cpu has 2x4GB RAM modules.
+The parameter "name",  sometime it is "alg->cra_name" while sometime it
+become "alg->cra_driver_name". What's to lookup, algorithm or driver, depends on
+the context of parameter, So it need confirm no duplicate name exists between 
+cra_driver_name and cra_name. Therefore, there are some werid checking needed, 
+such as following:
 
-It claims having two memory nodes, but all cpus are on Node 0
-
-dmesg | grep -i node
-[    0.000000] SRAT: PXM 0 -> APIC 0 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 1 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 2 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 3 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 4 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 5 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 6 -> Node 0
-[    0.000000] SRAT: PXM 0 -> APIC 7 -> Node 0
-[    0.000000] SRAT: Node 0 PXM 0 0-e0000000
-[    0.000000] SRAT: Node 0 PXM 0 100000000-220000000
-[    0.000000] SRAT: Node 1 PXM 1 220000000-420000000
-[    0.000000] Bootmem setup node 0 0000000000000000-0000000220000000
-[    0.000000]   NODE_DATA [0000000000001000 - 0000000000004fff]
-[    0.000000] Bootmem setup node 1 0000000220000000-000000041ffff000
-[    0.000000]   NODE_DATA [0000000220000000 - 0000000220003fff]
-[    0.000000]  [ffffea0000000000-ffffea00087fffff] PMD -> [ffff880028600000-ffff8800305fffff] on node 0
-[    0.000000]  [ffffea0008800000-ffffea00107fffff] PMD -> [ffff880220200000-ffff8802281fffff] on node 1
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[5] active PFN ranges
-[    0.000000] On node 0 totalpages: 2094543
-[    0.000000] On node 1 totalpages: 2097151
-[    0.000000] NR_CPUS:16 nr_cpumask_bits:16 nr_cpu_ids:16 nr_node_ids:2
-[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=16, Nodes=2
-[    0.004756] Inode-cache hash table entries: 1048576 (order: 11, 8388608 bytes)
-[    0.007213] CPU 0/0x0 -> Node 0
-[    0.398104] CPU 1/0x10 -> Node 0
-[    0.557854] CPU 2/0x4 -> Node 0
-[    0.717606] CPU 3/0x14 -> Node 0
-[    0.877357] CPU 4/0x2 -> Node 0
-[    1.037109] CPU 5/0x12 -> Node 0
-[    1.196860] CPU 6/0x6 -> Node 0
-[    1.356611] CPU 7/0x16 -> Node 0
-[    1.516365] CPU 8/0x1 -> Node 0
-[    1.676114] CPU 9/0x11 -> Node 0
-[    1.835865] CPU 10/0x5 -> Node 0
-[    1.995616] CPU 11/0x15 -> Node 0
-[    2.155367] CPU 12/0x3 -> Node 0
-[    2.315119] CPU 13/0x13 -> Node 0
-[    2.474870] CPU 14/0x7 -> Node 0
-[    2.634621] CPU 15/0x17 -> Node 0
-
-# cat /proc/buddyinfo 
-Node 0, zone      DMA      2      2      2      1      1      1      1      0      1      1      3 
-Node 0, zone    DMA32      5     11      4      5      4     12      1      4      4      5    834 
-Node 0, zone   Normal   4109    120     98    153     67     35     21     15     11     10    109 
-Node 1, zone   Normal      7     17     10     12      7     14      5      7      6      5   2004 
+                if (!strcmp(q->cra_driver_name, alg->cra_name) ||
+                    !strcmp(q->cra_name, alg->cra_driver_name))
 
 
-This is with net-next-2.6, I'll try linux-2.6
+I wonder, Can we define two functions: one lookup algorithm other lookup
+driver? It will be more clear. 
+ 
+
+Thanks.
