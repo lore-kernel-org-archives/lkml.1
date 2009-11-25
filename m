@@ -1,127 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZKYJiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbZKYJit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbZKYJiU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 04:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758510AbZKYJiP
+	id S1758543AbZKYJit (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 04:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758521AbZKYJis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 04:38:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36517 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758503AbZKYJiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 04:38:10 -0500
-Subject: Re: [RFC][PATCH 0/7] perf trace: general-purpose scripting
- support, v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, anton@samba.org, hch@infradead.org,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1259137695.4027.45.camel@laptop>
-References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
-	 <1259137695.4027.45.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 10:38:11 +0100
-Message-ID: <1259141891.4027.199.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 04:38:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57781 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758487AbZKYJir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 04:38:47 -0500
+Date: Wed, 25 Nov 2009 10:38:51 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Bernhard Kaindl <bernhard.kaindl@gmx.net>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] Support loading and saving custom remarks in .config
+Message-ID: <20091125093851.GA14314@sepie.suse.cz>
+References: <cover.1256767265.git.aragorn@Anduril.ringwar.org>
+ <b106dec1237ab723ae6a2404d42601bf20704bf3.1256767265.git.aragorn@Anduril.ringwar.org>
+ <4B0C57EA.1030400@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0C57EA.1030400@suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-25 at 09:28 +0100, Peter Zijlstra wrote:
-> On Wed, 2009-11-25 at 01:15 -0600, Tom Zanussi wrote:
-> > sched::sched_wakeup      0 01238.657997033     6183 firefox              comm=firefox, pid=6199, prio=120, success=1, target_cpu=1
-> > sched::sched_switch      1 01238.657991740     7140 firefox              prev_comm=firefox, prev_pid=7140, prev_prio=120, prev_state=S, next_comm=firefox, next_pid=6199, next_prio=120
-> > 
-> > min_wakeup_latency: -5293 
-> 
-> Looks like we missed a clock update on the cross cpu wakeup, Mike was
-> busy plugging those holes -- I've been starting at a patch that might
-> cure this (amongst other things).
+To make it easier for users to maintain their .config over time, add
+support for one-line comments (remarks) attached to config option
+assignments. The format is
 
-Hmm, current -tip should have that cured as per:
+  # some remark
+  CONFIG_FOO=y
+  # another remark
+  # CONFIG_BAR is not set
 
+If a config option is removed, the respective remark is removed as well.
+This patch is based on a previous patch by Bernhard Kaindl.
+
+Signed-off-by: Michal Marek <mmarek@suse.cz>
 ---
-commit 055a00865dcfc8e61f3cbefbb879c9577bd36ae5
-Author: Mike Galbraith <efault@gmx.de>
-Date:   Thu Nov 12 11:07:44 2009 +0100
+ scripts/kconfig/confdata.c |   52 +++++++++++++++++++++++++++++++++++++++++++-
+ scripts/kconfig/expr.h     |    1 +
+ 2 files changed, 52 insertions(+), 1 deletions(-)
 
-    sched: Fix/add missing update_rq_clock() calls
-    
-    kthread_bind(), migrate_task() and sched_fork were missing
-    updates, and try_to_wake_up() was updating after having already
-    used the stale clock.
-    
-    Aside from preventing potential latency hits, there' a side
-    benefit in that early boot printk time stamps become monotonic.
-    
-    Signed-off-by: Mike Galbraith <efault@gmx.de>
-    Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    LKML-Reference: <1258020464.6491.2.camel@marge.simson.net>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    LKML-Reference: <new-submission>
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3c11ae0..701eca4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2017,6 +2017,7 @@ void kthread_bind(struct task_struct *p, unsigned int cpu)
- 	}
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index b55e72f..daa7d78 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -152,13 +152,46 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
+ 	return 0;
+ }
  
- 	spin_lock_irqsave(&rq->lock, flags);
-+	update_rq_clock(rq);
- 	set_task_cpu(p, cpu);
- 	p->cpus_allowed = cpumask_of_cpu(cpu);
- 	p->rt.nr_cpus_allowed = 1;
-@@ -2115,6 +2116,7 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
- 	 * it is sufficient to simply update the task's cpu field.
- 	 */
- 	if (!p->se.on_rq && !task_running(rq, p)) {
-+		update_rq_clock(rq);
- 		set_task_cpu(p, dest_cpu);
- 		return 0;
- 	}
-@@ -2376,14 +2378,15 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	task_rq_unlock(rq, &flags);
- 
- 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
--	if (cpu != orig_cpu)
-+	if (cpu != orig_cpu) {
-+		local_irq_save(flags);
-+		rq = cpu_rq(cpu);
-+		update_rq_clock(rq);
- 		set_task_cpu(p, cpu);
--
-+		local_irq_restore(flags);
-+	}
- 	rq = task_rq_lock(p, &flags);
- 
--	if (rq != orig_rq)
--		update_rq_clock(rq);
--
- 	WARN_ON(p->state != TASK_WAKING);
- 	cpu = task_cpu(p);
- 
-@@ -2545,6 +2548,7 @@ static void __sched_fork(struct task_struct *p)
- void sched_fork(struct task_struct *p, int clone_flags)
++static char *extract_remark(const char *line)
++{
++	const char *p;
++	char *res, *p2;
++	static const char *alnum =
++		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
++		"abcdefghijklmnopqrstuvwxyz"
++		"0123456789_";
++
++
++	if (!line || *line != '#')
++		return NULL;
++	line++;
++	line += strspn(line, " \t");
++	if (!*line || *line == '\n')
++		return NULL;
++	if (strncmp(line, "CONFIG_", sizeof("CONFIG_") - 1) != 0)
++		goto found;
++	p = line + strspn(line, alnum);
++	if (strcmp(p, " is not set\n") == 0)
++		return NULL;
++	/* skip commented out assignments */
++	if (p[1] == '=' && !strchr(p, ' ') && !strchr(p, '\t'))
++		return NULL;
++found:
++	res = strdup(line);
++	p2 = strchr(res, '\n');
++	if (p2)
++		*p2 = '\0';
++	return res;
++}
++
+ int conf_read_simple(const char *name, int def)
  {
- 	int cpu = get_cpu();
-+	unsigned long flags;
+ 	FILE *in = NULL;
+ 	char line[1024];
+ 	char *p, *p2;
+ 	struct symbol *sym;
+-	int i, def_flags;
++	char *last_remark;
++	int i, def_flags, last_remark_lineno;
  
- 	__sched_fork(p);
+ 	if (name) {
+ 		in = zconf_fopen(name);
+@@ -195,6 +228,8 @@ load:
+ 	conf_lineno = 0;
+ 	conf_warnings = 0;
+ 	conf_unsaved = 0;
++	last_remark = NULL;
++	last_remark_lineno = 0;
  
-@@ -2581,7 +2585,10 @@ void sched_fork(struct task_struct *p, int clone_flags)
- #ifdef CONFIG_SMP
- 	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
- #endif
-+	local_irq_save(flags);
-+	update_rq_clock(cpu_rq(cpu));
- 	set_task_cpu(p, cpu);
-+	local_irq_restore(flags);
+ 	def_flags = SYMBOL_DEF << def;
+ 	for_all_symbols(i, sym) {
+@@ -215,8 +250,15 @@ load:
+ 	}
  
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	if (likely(sched_info_on()))
-
+ 	while (fgets(line, sizeof(line), in)) {
++		char *remark;
+ 		conf_lineno++;
+ 		sym = NULL;
++		remark = extract_remark(line);
++		if (remark) {
++			free(last_remark);
++			last_remark = remark;
++			last_remark_lineno = conf_lineno;
++		}
+ 		switch (line[0]) {
+ 		case '#':
+ 			if (memcmp(line + 2, "CONFIG_", 7))
+@@ -309,6 +351,12 @@ load:
+ 			}
+ 			cs->def[def].tri = EXPR_OR(cs->def[def].tri, sym->def[def].tri);
+ 		}
++		if (sym && last_remark &&
++				last_remark_lineno == conf_lineno - 1) {
++			sym->remark = last_remark;
++			/* don't free() the string in the next iteration */
++			last_remark = NULL;
++		}
+ 	}
+ 	fclose(in);
+ 
+@@ -484,6 +532,8 @@ int conf_write(const char *name)
+ 				if (modules_sym->curr.tri == no)
+ 					type = S_BOOLEAN;
+ 			}
++			if (sym->remark)
++				fprintf(out, "# %s\n", sym->remark);
+ 			switch (type) {
+ 			case S_BOOLEAN:
+ 			case S_TRISTATE:
+diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
+index 6408fef..217e8cb 100644
+--- a/scripts/kconfig/expr.h
++++ b/scripts/kconfig/expr.h
+@@ -77,6 +77,7 @@ enum {
+ struct symbol {
+ 	struct symbol *next;
+ 	char *name;
++	char *remark;
+ 	enum symbol_type type;
+ 	struct symbol_value curr;
+ 	struct symbol_value def[S_DEF_COUNT];
+-- 
+1.6.4.2
 
