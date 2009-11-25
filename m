@@ -1,63 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZKYQxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZKYQ6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZKYQxv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:53:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbZKYQxs
+	id S1758904AbZKYQ6A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758899AbZKYQ57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:53:48 -0500
-Received: from khc.piap.pl ([195.187.100.11]:54141 "EHLO khc.piap.pl"
+	Wed, 25 Nov 2009 11:57:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21698 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758813AbZKYQxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:53:46 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>
-	<1259024037.3871.36.camel@palomino.walls.org>
-	<6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com>
-Date: Wed, 25 Nov 2009 17:53:49 +0100
-In-Reply-To: <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> (Jarod
-	Wilson's message of "Tue, 24 Nov 2009 08:32:40 -0500")
-Message-ID: <m3fx827dgi.fsf@intrepid.localdomain>
+	id S1758876AbZKYQ5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:57:53 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v6 00/11] kprobes: Kprobes jump optimization support
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Wed, 25 Nov 2009 11:55:10 -0500
+Message-ID: <20091125165510.6073.48721.stgit@harusame>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson <jarod@wilsonet.com> writes:
+Hi,
 
-> The bulk of breakage in lirc I've personally had to deal with has
-> mostly come in the form of kernel interface changes, which would
-> definitely be mitigated by not having to maintain the drivers
-> out-of-tree any longer.
+Here are the patchset of the kprobes jump optimization v6
+(a.k.a. Djprobe). I've cleaned up codes and added comments.
+Also, I made a separated patch of generic text_poke_smp()
+for cross modifying code(XMC) by using stop_machine().
 
-Certainly.
+These patches can be applied on the latest -tip.
 
-> Now, I'm all for "improving" things and integrating better with the
-> input subsystem, but what I don't really want to do is break
-> compatibility with the existing setups on thousands (and thousands?)
-> of MythTV boxes around the globe. The lirc userspace can be pretty
-> nimble. If we can come up with a shiny new way that raw IR can be
-> passed out through an input device, I'm pretty sure lirc userspace can
-> be adapted to handle that.
+Changes in v6:
+ - Clean up codes and add comment.
+ - Split stop_machine-based text_poke code.
+ - Use int3 even if len == 1. (on int3-based text_poke_fixup code)
 
-Lirc can already handle input layer. Since both ways require userspace
-changes, why not do it the right way the first time? Most of the code
-is already written.
+And kprobe stress test didn't found any regressions - from kprobes,
+under kvm/x86.
 
-> If a new input-layer-based transmit interface is developed, we can
-> take advantage of that too. But there's already a very mature lirc
-> interface for doing all of this. So why not start with adding things
-> more or less as they exist right now and evolve the drivers into an
-> idealized form? Getting *something* into the kernel in the first place
-> is a huge step in that direction.
+Jump Optimized Kprobes
+======================
+o Concept
+ Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
+probes into running kernel. Jump optimization allows kprobes to replace
+breakpoint with a jump instruction for reducing probing overhead drastically.
 
-What I see as potentially problematic is breaking compatibility multiple
-times.
+o Performance
+ An optimized kprobe 5 times faster than a kprobe.
+
+ Optimizing probes gains its performance. Usually, a kprobe hit takes
+0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
+probe hit takes less than 0.1 microseconds (actual number depends on the
+processor). Here is a sample overheads.
+
+Intel(R) Xeon(R) CPU E5410  @ 2.33GHz (without debugging options)
+
+                     x86-32  x86-64
+kprobe:              0.68us  0.91us
+kprobe+booster:	     0.27us  0.40us
+kprobe+optimized:    0.06us  0.06us
+
+kretprobe :          0.95us  1.21us
+kretprobe+booster:   0.53us  0.71us
+kretprobe+optimized: 0.30us  0.35us
+
+(booster skips single-stepping)
+
+ Note that jump optimization also consumes more memory, but not so much.
+It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
+consumes a few MB.
+
+
+o Usage
+ Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
+optimized if possible.
+
+ Kprobes decodes probed function and checks whether the target instructions
+can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
+doesn't optimize it.
+
+
+o Optimization
+  Before preparing optimization, Kprobes inserts original(user-defined)
+ kprobe on the specified address. So, even if the kprobe is not
+ possible to be optimized, it just uses a normal kprobe.
+
+ - Safety check
+  First, Kprobes gets the address of probed function and checks whether the
+ optimized region, which will be replaced by a jump instruction, does NOT
+ straddle the function boundary, because if the optimized region reaches the
+ next function, its caller causes unexpected results.
+  Next, Kprobes decodes whole body of probed function and checks there is
+ NO indirect jump, NO instruction which will cause exception by checking
+ exception_tables (this will jump to fixup code and fixup code jumps into
+ same function body) and NO near jump which jumps into the optimized region
+ (except the 1st byte of jump), because if some jump instruction jumps
+ into the middle of another instruction, it causes unexpected results too.
+  Kprobes also measures the length of instructions which will be replaced
+ by a jump instruction, because a jump instruction is longer than 1 byte,
+ it may replaces multiple instructions, and it checks whether those
+ instructions can be executed out-of-line.
+
+ - Preparing detour code
+  Then, Kprobes prepares "detour" buffer, which contains exception emulating
+ code (push/pop registers, call handler), copied instructions(Kprobes copies
+ instructions which will be replaced by a jump, to the detour buffer), and
+ a jump which jumps back to the original execution path.
+
+ - Pre-optimization
+  After preparing detour code, Kprobes enqueues the kprobe to optimizing list
+ and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
+ probes, kprobe-optimizer will delay to work.
+  When the optimized-kprobe is hit before optimization, its handler
+ changes IP(instruction pointer) to copied code and exits. So, the
+ instructions which were copied to detour buffer are executed on the detour
+ buffer.
+
+ - Optimization
+  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
+ synchronize_sched for safety, because some processors are possible to be
+ interrupted on the instructions which will be replaced by a jump instruction.
+ As you know, synchronize_sched() can ensure that all interruptions which were
+ executed when synchronize_sched() was called are done, only if
+ CONFIG_PREEMPT=n. So, this version supports only the kernel with
+ CONFIG_PREEMPT=n.(*)
+  After that, kprobe-optimizer replaces the 4 bytes right after int3 breakpoint
+ with relative-jump destination, and synchronize caches on all processors. Next,
+ it replaces int3 with relative-jump opcode, and synchronize caches again.
+
+ - Unoptimization
+  When unregistering, disabling kprobe or being blocked by other kprobe,
+ an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
+ the kprobe just be dequeued from the optimized list. When the optimization
+ has been done, it replaces a jump with int3 breakpoint and original code.
+  First it puts int3 at the first byte of the jump, synchronize caches
+ on all processors, and replaces the 4 bytes right after int3 with the
+ original code.
+
+(*)This optimization-safety checking may be replaced with stop-machine method
+ which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
+
+
+Thank you,
+
+---
+
+Masami Hiramatsu (11):
+      [RFC] kprobes/x86: Use text_poke_fixup() for jump optimization
+      [RFC] x86: Introduce generic jump patching without stop_machine
+      kprobes: Add documents of jump optimization
+      kprobes/x86: Support kprobes jump optimization on x86
+      x86: Add text_poke_smp for SMP cross modifying code
+      kprobes/x86: Cleanup save/restore registers
+      kprobes/x86: Boost probes when reentering
+      kprobes: Jump optimization sysctl interface
+      kprobes: Introduce kprobes jump optimization
+      kprobes: Introduce generic insn_slot framework
+      kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
+
+
+ Documentation/kprobes.txt          |  192 ++++++++++-
+ arch/Kconfig                       |   13 +
+ arch/x86/Kconfig                   |    1 
+ arch/x86/include/asm/alternative.h |   15 +
+ arch/x86/include/asm/kprobes.h     |   31 ++
+ arch/x86/kernel/alternative.c      |  162 +++++++++
+ arch/x86/kernel/kprobes.c          |  592 ++++++++++++++++++++++++++++------
+ include/linux/kprobes.h            |   44 +++
+ kernel/kprobes.c                   |  628 +++++++++++++++++++++++++++++++-----
+ kernel/sysctl.c                    |   13 +
+ 10 files changed, 1485 insertions(+), 206 deletions(-)
+
 -- 
-Krzysztof Halasa
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
