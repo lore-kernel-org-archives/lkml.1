@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbZKYUUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964841AbZKYUX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935026AbZKYUUx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935010AbZKYUUx
+	id S964841AbZKYUX3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935016AbZKYUX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:20:53 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:52133 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935004AbZKYUUw (ORCPT
+	Wed, 25 Nov 2009 15:23:28 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:55455 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbZKYUX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:20:52 -0500
+	Wed, 25 Nov 2009 15:23:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=hXwtfc0eDMeLnfVTduPe5OxupoZBhL1PA4lK+xQ4UqNrMg3djgE03vCrIaF3WfSMrx
-         E89vaMYHpe3mVoFRGah9kyPRL1AQttaeXWKH/LwAFCU0gxCWRe0ZS0FkOXj413qoXz/C
-         qU7pw6jOqSMt75RfgcNsXDrJBxDxuIwNEpQeM=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] hw-breakpoints: Fix unused function in off-case
-Date: Wed, 25 Nov 2009 21:20:53 +0100
-Message-Id: <1259180453-5813-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
-References: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VGwaWjiAw0NnhCEij35Ar6skszwixu2H1RisDIDFUdR0lU/WHy7APY7TqWbtLkYheo
+         9IgemaRZw4HGtepRlhg33RoFFcYAtE3zXWtl64rukmeA0QQwEqd2RFfJuW2gtFf/RSTF
+         W4Bw20bcC/JTvviENXR8kojKFbXmOx5FXMx/M=
+Message-ID: <4B0D9221.2050103@gmail.com>
+Date: Wed, 25 Nov 2009 21:22:57 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@suse.de>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Jens Axboe <Jens.Axboe@oracle.com>, neilb@suse.de
+Subject: Re: BUG at scsi_lib.c:1108 [Was: mmotm 2009-11-24-16-47 uploaded]
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>	 <4B0D4949.4090109@gmail.com> <1259162399.2535.8.camel@mulgrave.site>
+In-Reply-To: <1259162399.2535.8.camel@mulgrave.site>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bp_perf_event_destroy() is unused in its off-case version, let's remove
-it to fix the following warning:
+On 11/25/2009 04:19 PM, James Bottomley wrote:
+> On Wed, 2009-11-25 at 16:12 +0100, Jiri Slaby wrote:
+>> On 11/25/2009 01:47 AM, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2009-11-24-16-47 has been uploaded to
+>>
+>> Hi, I'm hitting the BUG below in the past two -mmotm's
+>> (2009-11-24-16-47, 2009-11-17-14-03):
+> 
+> So this looks like some type of bug in the barrier code. What the BUG_ON
+> is saying is that something sent us a REQ_TYPE_FS (which should be a
+> filesystem read or write) with no attached data, so we can't process it.
+> 
+> I've cc'd Jens to see what he thinks.
+> 
+> Could you bisect this to find the offending commit?
 
-kernel/perf_event.c:4306: warning: 'bp_perf_event_destroy' defined but not used
+Hmm. I bisected it twice to
+commit 1bebedd653e1bb0440ebf40724c55791c21ad7cc
+Merge: a8d5ddf 62fa36a
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Wed Nov 25 17:42:47 2009 +1100
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
----
- kernel/perf_event.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+    Merge remote branch 'md/for-next'
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 35df94e..b119e4e 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4303,10 +4303,6 @@ void perf_bp_event(struct perf_event *bp, void *data)
- 		perf_swevent_add(bp, 1, 1, &sample, regs);
- }
- #else
--static void bp_perf_event_destroy(struct perf_event *event)
--{
--}
--
- static const struct pmu *bp_perf_event_init(struct perf_event *bp)
- {
- 	return NULL;
+
+It doesn't make sense at all. How can empty merge cause a regression?
+And md/for-next doesn't produce the BUG.
+
+After the 1st bisection I did
+ git checkout 1bebedd653e1bb0440ebf40724c55791c21ad7cc
+and built it. It crashed. Then I did
+ git bisect start 1bebedd origin/stable
+where origin is next. And got back to the 1bebedd by bisection.
+
 -- 
-1.6.2.3
-
+js
+Faculty of Informatics, Masaryk University
+Suse Labs, Novell
