@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964890AbZKYN2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964927AbZKYN2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964890AbZKYN2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964880AbZKYN2c
+	id S964927AbZKYN2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbZKYN2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:28:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30974 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:28:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56327 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964863AbZKYN2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:30 -0500
+	id S964879AbZKYN2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:32 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 17/30] GFS2: Clean up gfs2_adjust_quota() and do_glock()
-Date: Wed, 25 Nov 2009 14:22:42 +0000
-Message-Id: <1259158975-28499-18-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-17-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 18/30] GFS2: Add get_xquota support
+Date: Wed, 25 Nov 2009 14:22:43 +0000
+Message-Id: <1259158975-28499-19-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-18-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
@@ -33,195 +33,77 @@ References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-15-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-16-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-17-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-18-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both of these functions contained confusing and in one case
-duplicate code. This patch adds a new check in do_glock()
-so that we report -ENOENT if we are asked to sync a quota
-entry which doesn't exist. Due to the previous patch this is
-now reported correctly to userspace.
-
-Also there are a few new comments, and I hope that the code
-is easier to understand now.
+This adds support for viewing the current GFS2 quota settings
+via the XFS quota API. The setting of quotas will be addressed
+in a later patch. Fields which are not supported here are left
+set to zero.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Reviewed-by: Bob Peterson <rpeterso@redhat.com>
 ---
- fs/gfs2/quota.c |   82 +++++++++++++++++-------------------------------------
- 1 files changed, 26 insertions(+), 56 deletions(-)
+ fs/gfs2/quota.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 43 insertions(+), 0 deletions(-)
 
 diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index db124af..33e369f 100644
+index 33e369f..6c5d6aa 100644
 --- a/fs/gfs2/quota.c
 +++ b/fs/gfs2/quota.c
-@@ -15,7 +15,7 @@
-  * fuzziness in the current usage value of IDs that are being used on different
-  * nodes in the cluster simultaneously.  So, it is possible for a user on
-  * multiple nodes to overrun their quota, but that overrun is controlable.
-- * Since quota tags are part of transactions, there is no need to a quota check
-+ * Since quota tags are part of transactions, there is no need for a quota check
-  * program to be run on node crashes or anything like that.
-  *
-  * There are couple of knobs that let the administrator manage the quota
-@@ -66,13 +66,6 @@
- #define QUOTA_USER 1
- #define QUOTA_GROUP 0
- 
--struct gfs2_quota_host {
--	u64 qu_limit;
--	u64 qu_warn;
--	s64 qu_value;
--	u32 qu_ll_next;
--};
--
- struct gfs2_quota_change_host {
- 	u64 qc_change;
- 	u32 qc_flags; /* GFS2_QCF_... */
-@@ -618,33 +611,19 @@ static void do_qc(struct gfs2_quota_data *qd, s64 change)
- 	mutex_unlock(&sdp->sd_quota_mutex);
+@@ -1367,8 +1367,51 @@ static int gfs2_quota_get_xstate(struct super_block *sb,
+ 	return 0;
  }
  
--static void gfs2_quota_in(struct gfs2_quota_host *qu, const void *buf)
--{
--	const struct gfs2_quota *str = buf;
--
--	qu->qu_limit = be64_to_cpu(str->qu_limit);
--	qu->qu_warn = be64_to_cpu(str->qu_warn);
--	qu->qu_value = be64_to_cpu(str->qu_value);
--	qu->qu_ll_next = be32_to_cpu(str->qu_ll_next);
--}
--
--static void gfs2_quota_out(const struct gfs2_quota_host *qu, void *buf)
--{
--	struct gfs2_quota *str = buf;
--
--	str->qu_limit = cpu_to_be64(qu->qu_limit);
--	str->qu_warn = cpu_to_be64(qu->qu_warn);
--	str->qu_value = cpu_to_be64(qu->qu_value);
--	str->qu_ll_next = cpu_to_be32(qu->qu_ll_next);
--	memset(&str->qu_reserved, 0, sizeof(str->qu_reserved));
--}
--
- /**
-- * gfs2_adjust_quota
-+ * gfs2_adjust_quota - adjust record of current block usage
-+ * @ip: The quota inode
-+ * @loc: Offset of the entry in the quota file
-+ * @change: The amount of change to record
-+ * @qd: The quota data
-  *
-  * This function was mostly borrowed from gfs2_block_truncate_page which was
-  * in turn mostly borrowed from ext3
-+ *
-+ * Returns: 0 or -ve on error
-  */
++static int gfs2_xquota_get(struct super_block *sb, int type, qid_t id,
++			   struct fs_disk_quota *fdq)
++{
++	struct gfs2_sbd *sdp = sb->s_fs_info;
++	struct gfs2_quota_lvb *qlvb;
++	struct gfs2_quota_data *qd;
++	struct gfs2_holder q_gh;
++	int error;
 +
- static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
- 			     s64 change, struct gfs2_quota_data *qd)
- {
-@@ -656,8 +635,7 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
- 	struct buffer_head *bh;
- 	struct page *page;
- 	void *kaddr;
--	char *ptr;
--	struct gfs2_quota_host qp;
-+	struct gfs2_quota *qp;
- 	s64 value;
- 	int err = -EIO;
- 
-@@ -701,18 +679,13 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
- 	gfs2_trans_add_bh(ip->i_gl, bh, 0);
- 
- 	kaddr = kmap_atomic(page, KM_USER0);
--	ptr = kaddr + offset;
--	gfs2_quota_in(&qp, ptr);
--	qp.qu_value += change;
--	value = qp.qu_value;
--	gfs2_quota_out(&qp, ptr);
-+	qp = kaddr + offset;
-+	value = (s64)be64_to_cpu(qp->qu_value) + change;
-+	qp->qu_value = cpu_to_be64(value);
-+	qd->qd_qb.qb_value = qp->qu_value;
- 	flush_dcache_page(page);
- 	kunmap_atomic(kaddr, KM_USER0);
- 	err = 0;
--	qd->qd_qb.qb_magic = cpu_to_be32(GFS2_MAGIC);
--	qd->qd_qb.qb_value = cpu_to_be64(value);
--	((struct gfs2_quota_lvb*)(qd->qd_gl->gl_lvb))->qb_magic = cpu_to_be32(GFS2_MAGIC);
--	((struct gfs2_quota_lvb*)(qd->qd_gl->gl_lvb))->qb_value = cpu_to_be64(value);
- unlock:
- 	unlock_page(page);
- 	page_cache_release(page);
-@@ -741,8 +714,7 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
- 
- 	sort(qda, num_qd, sizeof(struct gfs2_quota_data *), sort_qd, NULL);
- 	for (qx = 0; qx < num_qd; qx++) {
--		error = gfs2_glock_nq_init(qda[qx]->qd_gl,
--					   LM_ST_EXCLUSIVE,
-+		error = gfs2_glock_nq_init(qda[qx]->qd_gl, LM_ST_EXCLUSIVE,
- 					   GL_NOCACHE, &ghs[qx]);
- 		if (error)
- 			goto out;
-@@ -797,8 +769,7 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
- 		qd = qda[x];
- 		offset = qd2offset(qd);
- 		error = gfs2_adjust_quota(ip, offset, qd->qd_change_sync,
--					  (struct gfs2_quota_data *)
--					  qd);
-+					  (struct gfs2_quota_data *)qd);
- 		if (error)
- 			goto out_end_trans;
- 
-@@ -829,8 +800,7 @@ static int do_glock(struct gfs2_quota_data *qd, int force_refresh,
- 	struct gfs2_sbd *sdp = qd->qd_gl->gl_sbd;
- 	struct gfs2_inode *ip = GFS2_I(sdp->sd_quota_inode);
- 	struct gfs2_holder i_gh;
--	struct gfs2_quota_host q;
--	char buf[sizeof(struct gfs2_quota)];
-+	struct gfs2_quota q;
- 	int error;
- 	struct gfs2_quota_lvb *qlvb;
- 
-@@ -853,22 +823,23 @@ restart:
- 		if (error)
- 			goto fail;
- 
--		memset(buf, 0, sizeof(struct gfs2_quota));
-+		memset(&q, 0, sizeof(struct gfs2_quota));
- 		pos = qd2offset(qd);
--		error = gfs2_internal_read(ip, NULL, buf, &pos,
--					   sizeof(struct gfs2_quota));
-+		error = gfs2_internal_read(ip, NULL, (char *)&q, &pos, sizeof(q));
- 		if (error < 0)
- 			goto fail_gunlock;
--
-+		if ((error < sizeof(q)) && force_refresh) {
-+			error = -ENOENT;
-+			goto fail_gunlock;
-+		}
- 		gfs2_glock_dq_uninit(&i_gh);
- 
--		gfs2_quota_in(&q, buf);
- 		qlvb = (struct gfs2_quota_lvb *)qd->qd_gl->gl_lvb;
- 		qlvb->qb_magic = cpu_to_be32(GFS2_MAGIC);
- 		qlvb->__pad = 0;
--		qlvb->qb_limit = cpu_to_be64(q.qu_limit);
--		qlvb->qb_warn = cpu_to_be64(q.qu_warn);
--		qlvb->qb_value = cpu_to_be64(q.qu_value);
-+		qlvb->qb_limit = q.qu_limit;
-+		qlvb->qb_warn = q.qu_warn;
-+		qlvb->qb_value = q.qu_value;
- 		qd->qd_qb = *qlvb;
- 
- 		gfs2_glock_dq_uninit(q_gh);
-@@ -1126,7 +1097,6 @@ int gfs2_quota_refresh(struct gfs2_sbd *sdp, int user, u32 id)
- 		gfs2_glock_dq_uninit(&q_gh);
- 
- 	qd_put(qd);
--
- 	return error;
- }
++	memset(fdq, 0, sizeof(struct fs_disk_quota));
++
++	if (sdp->sd_args.ar_quota == GFS2_QUOTA_OFF)
++		return -ESRCH; /* Crazy XFS error code */
++
++	if (type == USRQUOTA)
++		type = QUOTA_USER;
++	else if (type == GRPQUOTA)
++		type = QUOTA_GROUP;
++	else
++		return -EINVAL;
++
++	error = qd_get(sdp, type, id, &qd);
++	if (error)
++		return error;
++	error = do_glock(qd, FORCE, &q_gh);
++	if (error)
++		goto out;
++
++	qlvb = (struct gfs2_quota_lvb *)qd->qd_gl->gl_lvb;
++	fdq->d_version = FS_DQUOT_VERSION;
++	fdq->d_flags = (type == QUOTA_USER) ? XFS_USER_QUOTA : XFS_GROUP_QUOTA;
++	fdq->d_id = id;
++	fdq->d_blk_hardlimit = be64_to_cpu(qlvb->qb_limit);
++	fdq->d_blk_softlimit = be64_to_cpu(qlvb->qb_warn);
++	fdq->d_bcount = be64_to_cpu(qlvb->qb_value);
++
++	gfs2_glock_dq_uninit(&q_gh);
++out:
++	qd_put(qd);
++	return error;
++}
++
+ const struct quotactl_ops gfs2_quotactl_ops = {
+ 	.quota_sync     = gfs2_quota_sync,
+ 	.get_xstate     = gfs2_quota_get_xstate,
++	.get_xquota	= gfs2_xquota_get,
+ };
  
 -- 
 1.6.2.5
