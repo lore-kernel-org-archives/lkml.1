@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZKYKxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbZKYK5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbZKYKxu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZKYKxu
+	id S1758654AbZKYK5C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:57:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbZKYK5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:53:50 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60225 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750703AbZKYKxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:53:49 -0500
-Date: Wed, 25 Nov 2009 21:53:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: linux-next: tip tree build warning
-Message-Id: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Nov_2009_21_53_38_+1100_YbXsy6+CWxd0pb1u"
+	Wed, 25 Nov 2009 05:57:00 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:46675 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758527AbZKYK45 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 05:56:57 -0500
+Date: Wed, 25 Nov 2009 12:56:49 +0200
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: ALS subsystem (was Re: [PATCH 1/2] staging: iio: tsl2563 ambient
+ light sensor driver)
+Message-ID: <20091125105649.GJ16444@smtp.gmail.com>
+Mail-Followup-To: Zhang Rui <rui.zhang@intel.com>,
+	Jonathan Cameron <jic23@cam.ac.uk>,
+	List Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1257772468-4004-1-git-send-email-amit.kucheria@verdurent.com>
+ <4AF81FE5.5080102@cam.ac.uk>
+ <20091109142430.GZ1773@smtp.gmail.com>
+ <4AF85ABB.7060406@cam.ac.uk>
+ <1257843493.4469.25.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1257843493.4469.25.camel@rzhang-dt>
+X-URL: http://www.verdurent.com/
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Nov_2009_21_53_38_+1100_YbXsy6+CWxd0pb1u
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 09 Nov 10, Zhang Rui wrote:
+> On Tue, 2009-11-10 at 02:08 +0800, Jonathan Cameron wrote:
+> > Amit Kucheria wrote:
+> > > On 09 Nov 09, Jonathan Cameron wrote:
+> > >> Hi Amit,
+> > >>
+> > >> Normally I'd welcome this in IIO, except that all ambient light sensors are in the
+> > >> process of moving to the new ALS subsystem.  There are still some issues to resolve
+> > >> in that subsystem (mainly to do with naming conventions) but hopefully we will
+> > >> get them sorted out shortly.
+> > > 
+> > > Groan! :)
+> > You have my sympathies on this! Typical that the first other developer to put
+> > forward a patch for IIO picks the one type of device we are moving out.
+> > If you do have any comments on IIO as a result of using it please send them
+> > on.
+> > > Who will be the subsystem maintainer and is there already a public git
+> > > tree?
+> > No git tree as far as I know.  Maintainer is Zhang Rui (Cc'd)
+> > Zhang, what are your plans wrt to that?  I guess I can put one up with the current
+> > patches if it is helpful?  We really need to sort out the naming issue as the one
+> > thing that people have come out against. 
+> > 
+> well. I'd prefer a generic name alsX with an extra "name"/"desc" file.
+> 
+> > After that I'm guessing ping Andrew Morton to see if he is willing to handle the push
+> > to Linus? Or does Zhang want to try doing one directly?
+> > 
+> I'll refresh the patch and send to Andrew.
+>
 
-Hi all,
+Rui,
 
-Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+Is there any progress on this? I haven't seen a patch refresh on LKML. 
 
-kernel/perf_event.c:4306: warning: 'bp_perf_event_destroy' defined but not =
-used
+I can help if you need any.
 
-Introduced by commit 24f1e32c60c45c89a997c73395b69c8af6f0a84e
-("hw-breakpoints: Rewrite the hw-breakpoints layer on top of perf
-events").
+Regards,
+Amit
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__25_Nov_2009_21_53_38_+1100_YbXsy6+CWxd0pb1u
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksNDLIACgkQjjKRsyhoI8xS1wCgtumM6LTUSfICs5BTNBCAHSlo
-hIMAn3/Uom3IRlyjjnx816M63bm3/XA6
-=+I5Y
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Nov_2009_21_53_38_+1100_YbXsy6+CWxd0pb1u--
+-- 
+-------------------------------------------------------------------------
+Amit Kucheria,				 Kernel Developer, Verdurent
+-------------------------------------------------------------------------
