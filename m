@@ -1,111 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751076AbZKYFmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751006AbZKYFiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751076AbZKYFmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 00:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZKYFmf
+	id S1751006AbZKYFiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 00:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZKYFiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 00:42:35 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43449 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZKYFme (ORCPT
+	Wed, 25 Nov 2009 00:38:23 -0500
+Received: from vms173019pub.verizon.net ([206.46.173.19]:64652 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbZKYFiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 00:42:34 -0500
-Date: Wed, 25 Nov 2009 14:32:18 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
+	Wed, 25 Nov 2009 00:38:23 -0500
+Date: Wed, 25 Nov 2009 00:38:12 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+       ibm-acpi-devel@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [BUGFIX][PATCH v2 -stable] memcg: avoid oom-killing innocent task
- in case of use_hierarchy
-Message-Id: <20091125143218.96156a5f.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-	<20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
-	<20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] thinkpad-acpi: should error return be nagative?
+In-reply-to: <4B06E477.3000503@gmail.com>
+Message-id: <alpine.LFD.2.00.0911250038060.4058@localhost.localdomain>
+References: <4B06E477.3000503@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm. Maybe not-expected behavior...could you add comment ?
-> 
-How about this ?
+applied
 
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> (*) I'm sorry I can't work enough in these days.
-> 
-
-BTW, this patch conflict with oom-dump-stack-and-vm-state-when-oom-killer-panics.patch
-in current mmotm(that's why I post mmotm version separately), so this bug will not be fixed
-till 2.6.33 in linus-tree.
-So I think this patch should go in 2.6.32.y too.
-
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-
-task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-a task can be a candidate for being oom-killed from memcg's limit, checks
-"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
-
-But this check return true(it's false positive) when:
-
-	<some path>/00		use_hierarchy == 0	<- hitting limit
-	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
-
-This leads to killing an innocent task in 00/aa. This patch is a fix for this
-bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-should print information of mem_cgroup which the task being killed, not current,
-belongs to.
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- mm/memcontrol.c |    8 +++++++-
- mm/oom_kill.c   |    2 +-
- 2 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index fd4529d..566925e 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -496,7 +496,13 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
- 	task_unlock(task);
- 	if (!curr)
- 		return 0;
--	if (curr->use_hierarchy)
-+	/*
-+	 * We should check use_hierarchy of "mem" not "curr". Because checking
-+	 * use_hierarchy of "curr" here make this function true if hierarchy is
-+	 * enabled in "curr" and "curr" is a child of "mem" in *cgroup*
-+	 * hierarchy(even if use_hierarchy is disabled in "mem").
-+	 */
-+	if (mem->use_hierarchy)
- 		ret = css_is_ancestor(&curr->css, &mem->css);
- 	else
- 		ret = (curr == mem);
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index a7b2460..ed452e9 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -400,7 +400,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 		cpuset_print_task_mems_allowed(current);
- 		task_unlock(current);
- 		dump_stack();
--		mem_cgroup_print_oom_info(mem, current);
-+		mem_cgroup_print_oom_info(mem, p);
- 		show_mem();
- 		if (sysctl_oom_dump_tasks)
- 			dump_tasks(mem);
--- 
-1.5.6.1
+thanks,
+Len Brown, Intel Open Source Technology Center
 
