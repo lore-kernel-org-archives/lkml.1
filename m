@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935058AbZKYVIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbZKYWpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935058AbZKYVIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbZKYVIs
+	id S1759863AbZKYWpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 17:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZKYWpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:08:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65392 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932562AbZKYVIr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:08:47 -0500
-Subject: Re: [PATCH -tip v5 03/10] kprobes: Introduce kprobes jump
- optimization
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <4B0C492D.1060602@redhat.com>
-References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20091123232141.22071.53317.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20091124024417.GA6752@nowhere> <20091124033135.GE6752@nowhere>
-	 <4B0BFCF8.4060905@redhat.com> <20091124201357.GB5071@nowhere>
-	 <4B0C492D.1060602@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 25 Nov 2009 16:08:51 -0500
-Message-Id: <1259183331.21397.71.camel@gandalf.stny.rr.com>
+	Wed, 25 Nov 2009 17:45:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:33221 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759861AbZKYWpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 17:45:44 -0500
+Date: Thu, 26 Nov 2009 08:13:59 +1100
+From: Neil Brown <neilb@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: BUG at scsi_lib.c:1108 [Was: mmotm 2009-11-24-16-47 uploaded]
+Message-ID: <20091126081359.414c8216@notabene.brown>
+In-Reply-To: <4B0D9221.2050103@gmail.com>
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>
+	<4B0D4949.4090109@gmail.com>
+	<1259162399.2535.8.camel@mulgrave.site>
+	<4B0D9221.2050103@gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-24 at 15:59 -0500, Masami Hiramatsu wrote:
+On Wed, 25 Nov 2009 21:22:57 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> > I see...so the non-preemptible kernel requirement looks
-> > hard to workaround :-s
-> 
-> It's the next challenge I think :-)
-> Even though, kprobes itself still work on preemptive kernel,
-> so we don't lose any functionality.
+> It doesn't make sense at all. How can empty merge cause a regression?
+> And md/for-next doesn't produce the BUG.
 
->From kstop_machine, we could search all tasks to see if any are about to
-resume in the modified location. If there is, we could either
+I've hit that situation before.  Two separate changes in separate
+branches conspire to cause a problem.
 
-1) insert a normal kprobe
-2) modify the return address of the task to jump to some trampoline to 
-   finish the work and return to the code spot with a direct jump.
+md/for-next contains code to handle barriers properly for all levels,
+not just RAID1.
+It is possible I got this wrong in some way, and some new sanity check
+in a separate branch is firing, or it is possible some other bug in
+barrier handling has been added and now that MD sends barriers, it is
+being triggered.
 
-#2 is kind of nasty but seems like a fun thing to implement ;-)
+What I did to find the actual offending patches is to got to one of the
+heads just before the merge, and cherry-pick all the patches from the
+other branch, and then bisect that.
 
--- Steve
-
-
+NeilBrown
