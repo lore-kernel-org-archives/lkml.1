@@ -1,120 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934608AbZKYJDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934514AbZKYI7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934608AbZKYJDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 04:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934597AbZKYJDt
+	id S934514AbZKYI7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZKYI7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 04:03:49 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:47930 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934598AbZKYJDj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 04:03:39 -0500
-X-Greylist: delayed 452 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 04:03:39 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UJgjOEDd/cnpLgar01+29Y9P2ST4WVfTzBZT3/lmZZLY1uWOAxZNqpSK9Sci0MmzgD
-         7UOjlgEgtGaTOBwS/yw57JWAXrWYcv/NfkWrW1Ip5FMp45HTJZq5i8INhr0IKHnK+lrd
-         yWo27S+KA9kX5G6VezV3+EoBBW0DSvZ/jnYuE=
+	Wed, 25 Nov 2009 03:59:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48744 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbZKYI7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:59:51 -0500
+Message-ID: <4B0CF1B3.1050200@kernel.org>
+Date: Wed, 25 Nov 2009 00:58:27 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20091124232135.2a2d5fe4.akpm@linux-foundation.org>
-References: <200911230704.51953.edt@aei.ca>
-	 <20091124232135.2a2d5fe4.akpm@linux-foundation.org>
-Date: Wed, 25 Nov 2009 18:56:13 +1000
-Message-ID: <21d7e9970911250056t9600c63y995e2df37745347c@mail.gmail.com>
-Subject: Re: 2.6.32-rc8 opps leaving X
-From: Dave Airlie <airlied@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ed Tomlinson <edt@aei.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>, dri-devel@lists.sourceforge.net,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: seperate reserve_early and reserve_early_overlap_check
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 5:21 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 23 Nov 2009 07:04:51 -0500 Ed Tomlinson <edt@aei.ca> wrote:
->
->> Hi,
->>
->> I got the following opps when leaving X with rc8:
->>
->> [  183.846716] Unpin not necessary for ffff88016bba2200 !
->
-> Jerome, Ed's kernel is talking to you!
 
-Harmless need to remove that warning.
+when the area is from find_e820_area(), it could be overlapped with others.
 
->
->> [  183.860064] BUG: unable to handle kernel NULL pointer dereference at (null)
->> [  183.860069] IP: [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
->> [  183.860078] PGD 155125067 PUD 155126067 PMD 0
->> [  183.860082] Oops: 0002 [#1] PREEMPT SMP
->> [  183.860085] last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/temp1_input
->> [  183.860089] CPU 0
->> [  183.860091] Modules linked in: kvm_amd kvm tun sit tunnel4 ipv6 bridge stp llc bnep sco rfcomm l2cap snd_seq_dummy snd_seq_oss snx
->> [  183.860140] Pid: 2720, comm: console-kit-dae Not tainted 2.6.32-rc8-crc #42 System Product Name
->> [  183.860142] RIP: 0010:[<ffffffff8107bd39>]  [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
->> [  183.860147] RSP: 0018:ffff88015586dc58  EFLAGS: 00010282
->> [  183.860149] RAX: ffff88015586dfd8 RBX: 000000005586dce8 RCX: 0000000000000000
->> [  183.860151] RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffffffff8175ee40
->> [  183.860154] RBP: ffff88015586dc78 R08: 0000000000000000 R09: 0000000000000001
->> [  183.860156] R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000000
->> [  183.860157] R13: 0000000000000000 R14: ffff880100000000 R15: 0000000000000001
->> [  183.860160] FS:  00007f6270fd1710(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
->> [  183.860161] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->> [  183.860163] CR2: 0000000000000000 CR3: 0000000155a62000 CR4: 00000000000006f0
->> [  183.860165] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> [  183.860166] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> [  183.860168] Process console-kit-dae (pid: 2720, threadinfo ffff88015586c000, task ffff880155158000)
->> [  183.860169] Stack:
->> [  183.860170]  0000000000000000 000000005586dce8 0000000000000000 0000000000000000
->> [  183.860173] <0> ffff88015586dcd8 ffffffff812dc45f 0000000000000000 ffff880155158000
->> [  183.860175] <0> ffffffff8107bae0 ffff88015586dca0 ffff88015586dca0 0000000000000046
->> [  183.860178] Call Trace:
->> [  183.860183]  [<ffffffff812dc45f>] vt_event_wait+0xaf/0x140
->> [  183.860186]  [<ffffffff8107bae0>] ? autoremove_wake_function+0x0/0x40
->> [  183.860188]  [<ffffffff812dc523>] vt_waitactive+0x33/0x60
->> [  183.860191]  [<ffffffff812dda35>] vt_ioctl+0x1115/0x1cb0
->> [  183.860194]  [<ffffffff814a6f22>] ? _spin_unlock_irq+0x62/0x80
->> [  183.860198]  [<ffffffff81090cca>] ? __lock_acquire+0x38a/0x1550
->> [  183.860202]  [<ffffffff81142b02>] ? vfs_ioctl+0x22/0xa0
->> [  183.860204]  [<ffffffff81131025>] ? fget_light+0x95/0x170
->> [  183.860207]  [<ffffffff810b4179>] ? __rcu_read_unlock+0x79/0x2b0
->> [  183.860210]  [<ffffffff81130c66>] ? rcu_read_unlock+0x26/0x30
->> [  183.860212]  [<ffffffff811310e7>] ? fget_light+0x157/0x170
->> [  183.860214]  [<ffffffff81131025>] ? fget_light+0x95/0x170
->> [  183.860216]  [<ffffffff811432c9>] ? sys_ioctl+0xb9/0xc0
->> [  183.860220]  [<ffffffff8100b99b>] ? system_call_fastpath+0x16/0x1b
->> [  183.860221] Code: 74 24 18 49 89 4c 24 20 48 89 11 eb bb 0f 1f 44 00 00 55 48 89 e5 48 83 ec 20 48 89 5d e8 4c 89 65 f0 4c 89 6d
->> [  183.860241] RIP  [<ffffffff8107bd39>] prepare_to_wait+0x19/0x80
->> [  183.860243]  RSP <ffff88015586dc58>
->> [  183.860244] CR2: 0000000000000000
->> [  183.860247] ---[ end trace 3acb9156b0436989 ]---
->>
->
-> However the remainder points at
->
-> : commit 8b92e87d39bfd046e7581e1fe0f40eac40f88608
-> : Author:     Alan Cox <alan@linux.intel.com>
-> : AuthorDate: Sat Sep 19 13:13:24 2009 -0700
-> : Commit:     Live-CD User <linux@linux.site>
-> : CommitDate: Sat Sep 19 13:13:24 2009 -0700
-> :
-> :     vt: add an event interface
->
-> (who is "Live-CD User"?)
->
-> I'm a bit surprised that the X server is already using VT_WAITEVENT?
->
-> It looks like vt_event_waitqueue got scribbled on.  I can't see how.
+so just add it directly. the new reserve_early()
 
-This isn't X its consolekit.
+and rename old reserve_early() to reserve_early_overlap_check()
 
-Dave.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/e820.h  |    3 ++-
+ arch/x86/kernel/e820.c       |   26 +++++++++++++++++++++++++-
+ arch/x86/kernel/efi.c        |    4 ++--
+ arch/x86/kernel/head32.c     |    6 ++++--
+ arch/x86/kernel/head64.c     |    6 ++++--
+ arch/x86/kernel/mpparse.c    |    6 ++++--
+ arch/x86/kernel/setup.c      |    6 ++++--
+ arch/x86/kernel/trampoline.c |    7 ++++---
+ arch/x86/xen/mmu.c           |    4 ++--
+ arch/x86/xen/setup.c         |    2 +-
+ 10 files changed, 52 insertions(+), 18 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/e820.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/e820.h
++++ linux-2.6/arch/x86/include/asm/e820.h
+@@ -111,7 +111,8 @@ extern unsigned long end_user_pfn;
+ 
+ extern u64 find_e820_area(u64 start, u64 end, u64 size, u64 align);
+ extern u64 find_e820_area_size(u64 start, u64 *sizep, u64 align);
+-extern void reserve_early(u64 start, u64 end, char *name);
++void reserve_early(u64 start, u64 end, char *name);
++void reserve_early_overlap_check(u64 start, u64 end, char *name);
+ extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
+ extern void free_early(u64 start, u64 end);
+ extern void early_res_to_bootmem(u64 start, u64 end);
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -835,6 +835,30 @@ static void __init drop_overlaps_that_ar
+ 	}
+ }
+ 
++void __init reserve_early(u64 start, u64 end, char *name)
++{
++	int i;
++	struct early_res *r;
++
++	if (start >= end)
++		return;
++
++	for (i = 0; i < MAX_EARLY_RES; i++) {
++		r = &early_res[i];
++		if (!r->end) {
++			r->start = start;
++			r->end = end;
++			if (name)
++				strncpy(r->name, name, sizeof(r->name) - 1);
++			r->overlap_ok = 0;
++
++			return;
++		}
++	}
++
++	panic("Too many early reservations");
++}
++
+ static void __init __reserve_early(u64 start, u64 end, char *name,
+ 						int overlap_ok)
+ {
+@@ -891,7 +915,7 @@ void __init reserve_early_overlap_ok(u64
+  * range without risk of panic'ing on an overlapping overlap_ok
+  * early reservation.
+  */
+-void __init reserve_early(u64 start, u64 end, char *name)
++void __init reserve_early_overlap_check(u64 start, u64 end, char *name)
+ {
+ 	if (start >= end)
+ 		return;
+Index: linux-2.6/arch/x86/kernel/efi.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/efi.c
++++ linux-2.6/arch/x86/kernel/efi.c
+@@ -290,8 +290,8 @@ void __init efi_reserve_early(void)
+ 		boot_params.efi_info.efi_memdesc_size;
+ 	memmap.desc_version = boot_params.efi_info.efi_memdesc_version;
+ 	memmap.desc_size = boot_params.efi_info.efi_memdesc_size;
+-	reserve_early(pmap, pmap + memmap.nr_map * memmap.desc_size,
+-		      "EFI memmap");
++	reserve_early_overlap_check(pmap,
++			 pmap + memmap.nr_map * memmap.desc_size, "EFI memmap");
+ }
+ 
+ #if EFI_DEBUG
+Index: linux-2.6/arch/x86/kernel/head32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head32.c
++++ linux-2.6/arch/x86/kernel/head32.c
+@@ -31,7 +31,8 @@ void __init i386_start_kernel(void)
+ {
+ 	reserve_trampoline_memory();
+ 
+-	reserve_early(__pa_symbol(&_text), __pa_symbol(&__bss_stop), "TEXT DATA BSS");
++	reserve_early_overlap_check(__pa_symbol(&_text),
++				 __pa_symbol(&__bss_stop), "TEXT DATA BSS");
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* Reserve INITRD */
+@@ -39,7 +40,8 @@ void __init i386_start_kernel(void)
+ 		u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+ 		u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+ 		u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+-		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
++		reserve_early_overlap_check(ramdisk_image, ramdisk_end,
++						 "RAMDISK");
+ 	}
+ #endif
+ 
+Index: linux-2.6/arch/x86/kernel/head64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head64.c
++++ linux-2.6/arch/x86/kernel/head64.c
+@@ -100,7 +100,8 @@ void __init x86_64_start_reservations(ch
+ 
+ 	reserve_trampoline_memory();
+ 
+-	reserve_early(__pa_symbol(&_text), __pa_symbol(&__bss_stop), "TEXT DATA BSS");
++	reserve_early_overlap_check(__pa_symbol(&_text),
++				 __pa_symbol(&__bss_stop), "TEXT DATA BSS");
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* Reserve INITRD */
+@@ -108,7 +109,8 @@ void __init x86_64_start_reservations(ch
+ 		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+ 		unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+ 		unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
+-		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
++		reserve_early_overlap_check(ramdisk_image, ramdisk_end,
++						 "RAMDISK");
+ 	}
+ #endif
+ 
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -671,7 +671,8 @@ static void __init smp_reserve_memory(st
+ {
+ 	unsigned long size = get_mpc_size(mpf->physptr);
+ 
+-	reserve_early(mpf->physptr, mpf->physptr+size, "MP-table mpc");
++	reserve_early_overlap_check(mpf->physptr, mpf->physptr+size,
++					 "MP-table mpc");
+ }
+ 
+ static int __init smp_scan_config(unsigned long base, unsigned long length)
+@@ -700,7 +701,8 @@ static int __init smp_scan_config(unsign
+ 			       mpf, (u64)virt_to_phys(mpf));
+ 
+ 			mem = virt_to_phys(mpf);
+-			reserve_early(mem, mem + sizeof(*mpf), "MP-table mpf");
++			reserve_early_overlap_check(mem, mem + sizeof(*mpf),
++							 "MP-table mpf");
+ 			if (mpf->physptr)
+ 				smp_reserve_memory(mpf);
+ 
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -299,7 +299,8 @@ static inline void init_gbpages(void)
+ static void __init reserve_brk(void)
+ {
+ 	if (_brk_end > _brk_start)
+-		reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
++		reserve_early_overlap_check(__pa(_brk_start), __pa(_brk_end),
++						 "BRK");
+ 
+ 	/* Mark brk area as locked down and no longer taking any
+ 	   new allocations */
+@@ -476,7 +477,8 @@ static void __init reserve_early_setup_d
+ 	while (pa_data) {
+ 		data = early_memremap(pa_data, sizeof(*data));
+ 		sprintf(buf, "setup data %x", data->type);
+-		reserve_early(pa_data, pa_data+sizeof(*data)+data->len, buf);
++		reserve_early_overlap_check(pa_data,
++					 pa_data+sizeof(*data)+data->len, buf);
+ 		pa_data = data->next;
+ 		early_iounmap(data, sizeof(*data));
+ 	}
+Index: linux-2.6/arch/x86/kernel/trampoline.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/trampoline.c
++++ linux-2.6/arch/x86/kernel/trampoline.c
+@@ -22,11 +22,12 @@ void __init reserve_trampoline_memory(vo
+ 	 * FIXME: Don't need the extra page at 4K, but need to fix
+ 	 * trampoline before removing it. (see the GDT stuff)
+ 	 */
+-	reserve_early(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE");
++	reserve_early_overlap_check(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE,
++					 "EX TRAMPOLINE");
+ #endif
+ 	/* Has to be in very low memory so we can execute real-mode AP code. */
+-	reserve_early(TRAMPOLINE_BASE, TRAMPOLINE_BASE + TRAMPOLINE_SIZE,
+-			"TRAMPOLINE");
++	reserve_early_overlap_check(TRAMPOLINE_BASE,
++			 TRAMPOLINE_BASE + TRAMPOLINE_SIZE, "TRAMPOLINE");
+ }
+ 
+ /*
+Index: linux-2.6/arch/x86/xen/mmu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/mmu.c
++++ linux-2.6/arch/x86/xen/mmu.c
+@@ -1751,7 +1751,7 @@ __init pgd_t *xen_setup_kernel_pagetable
+ 	__xen_write_cr3(true, __pa(pgd));
+ 	xen_mc_issue(PARAVIRT_LAZY_CPU);
+ 
+-	reserve_early(__pa(xen_start_info->pt_base),
++	reserve_early_overlap_check(__pa(xen_start_info->pt_base),
+ 		      __pa(xen_start_info->pt_base +
+ 			   xen_start_info->nr_pt_frames * PAGE_SIZE),
+ 		      "XEN PAGETABLES");
+@@ -1789,7 +1789,7 @@ __init pgd_t *xen_setup_kernel_pagetable
+ 
+ 	pin_pagetable_pfn(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(swapper_pg_dir)));
+ 
+-	reserve_early(__pa(xen_start_info->pt_base),
++	reserve_early_overlap_check(__pa(xen_start_info->pt_base),
+ 		      __pa(xen_start_info->pt_base +
+ 			   xen_start_info->nr_pt_frames * PAGE_SIZE),
+ 		      "XEN PAGETABLES");
+Index: linux-2.6/arch/x86/xen/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/setup.c
++++ linux-2.6/arch/x86/xen/setup.c
+@@ -61,7 +61,7 @@ char * __init xen_memory_setup(void)
+ 	 *  - xen_start_info
+ 	 * See comment above "struct start_info" in <xen/interface/xen.h>
+ 	 */
+-	reserve_early(__pa(xen_start_info->mfn_list),
++	reserve_early_overlap_check(__pa(xen_start_info->mfn_list),
+ 		      __pa(xen_start_info->pt_base),
+ 			"XEN START INFO");
+ 
