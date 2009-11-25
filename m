@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZKYVa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935011AbZKYVj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbZKYVa5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758981AbZKYVa5
+	id S935011AbZKYVj7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932983AbZKYVj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:30:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4094 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 16:39:57 -0500
+Received: from atlantis.8hz.com ([212.129.237.78]:61428 "EHLO atlantis.8hz.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754553AbZKYVa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:30:56 -0500
-Message-ID: <4B0DA1D9.2030609@redhat.com>
-Date: Wed, 25 Nov 2009 16:30:01 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH -tip v5 03/10] kprobes: Introduce kprobes jump optimization
-References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com>	 <20091123232141.22071.53317.stgit@dhcp-100-2-132.bos.redhat.com>	 <20091124024417.GA6752@nowhere> <20091124033135.GE6752@nowhere>	 <4B0BFCF8.4060905@redhat.com> <20091124201357.GB5071@nowhere>	 <4B0C492D.1060602@redhat.com> <1259183331.21397.71.camel@gandalf.stny.rr.com>
-In-Reply-To: <1259183331.21397.71.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	id S932705AbZKYVjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:39:55 -0500
+X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 16:39:55 EST
+Date: Wed, 25 Nov 2009 21:32:46 +0000
+From: Sean Young <sean@mess.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Trent Piepho <xyzzy@speakeasy.org>, Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: IR raw input is not sutable for input system
+Message-ID: <20091125213246.GA44831@atlantis.8hz.com>
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop> <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net> <1259155734.4875.23.camel@maxim-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259155734.4875.23.camel@maxim-laptop>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Tue, 2009-11-24 at 15:59 -0500, Masami Hiramatsu wrote:
+On Wed, Nov 25, 2009 at 03:28:54PM +0200, Maxim Levitsky wrote:
+> On Tue, 2009-11-24 at 19:32 -0800, Trent Piepho wrote: 
+> > On Wed, 25 Nov 2009, Maxim Levitsky wrote:
+> > > Its not the case.
+> > > There are many protocols, I know that by experimenting with my universal
+> > > remote. There are many receivers, and all have different accuracy.
+> > > Most remotes aren't designed to be used with PC, thus user has to invent
+> > > mapping between buttons and actions.
+> > > Its is not possible to identify remotes accurately, many remotes send
+> > > just a 8 bit integer that specifies the 'model' thus many remotes can
+> > > share it.
+> > 
+> > The signal recevied by the ir receiver contains glitches.  Depending on the
+> > receiver there can be quite a few.  It is also not trivial to turn the raw
+> > signal sent by the remote into a digital value, even if you know what to
+> > expect.  It takes digital signal processing techniques to turn the messy
+> > sequence of inaccurate mark and space lengths into a best guess at what
+> > digital code the remote sent.
+> Exactly
 > 
->>> I see...so the non-preemptible kernel requirement looks
->>> hard to workaround :-s
->>
->> It's the next challenge I think :-)
->> Even though, kprobes itself still work on preemptive kernel,
->> so we don't lose any functionality.
-> 
->> From kstop_machine, we could search all tasks to see if any are about to
-> resume in the modified location. If there is, we could either
-> 
-> 1) insert a normal kprobe
-> 2) modify the return address of the task to jump to some trampoline to
->     finish the work and return to the code spot with a direct jump.
-> 
-> #2 is kind of nasty but seems like a fun thing to implement ;-)
+> > 
+> > It's like turning raw VBI data into decoded ASCII teletext from a simulated
+> > keyboard device, all in the kernel.
+> You hit a nail on the head with this one.
 
-Sure, anyway, a normal kprobe is already inserted, so we also can
-just wait until all tasks don't resume to the spot :-)
-(that's another reason why it uses delayed work for optimization.
- we can try it again and again.)
-And I think, that code will be shared with ksplice too.
+Absolutely. There are a number of use cases when you want access to the 
+space-pulse (i.e. IR) information. For debugging purposes; support for 
+non-standard remotes. Being able to do a precise recording of IR activity
+so you can replay without parsing. One could even imagine IR being used 
+for completely different purposes than "key strokes", so the kernel
+should not enforce this "policy".
 
-Thank you,
+In the past I've spent time dissecting the IR output of a strange remote, 
+I would hate to think this would not be possible due to mad kernel 
+interfaces which cater just for drooling in front of the telly with
+your *new* remote.
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Sean
