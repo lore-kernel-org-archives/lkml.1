@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbZKYQ5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZKYQ5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbZKYQ5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZKYQ5m
+	id S1758855AbZKYQ5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:57:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758833AbZKYQ5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:57:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38420 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 11:57:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52124 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbZKYQ5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:57:41 -0500
+	id S1758827AbZKYQ5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:57:07 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v6 06/11] kprobes/x86: Cleanup save/restore registers
+Subject: [PATCH -tip v6 07/11] x86: Add text_poke_smp for SMP cross modifying
+	code
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -27,8 +28,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
        Jason Baron <jbaron@redhat.com>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Wed, 25 Nov 2009 11:55:56 -0500
-Message-ID: <20091125165556.6073.21919.stgit@harusame>
+Date: Wed, 25 Nov 2009 11:56:04 -0500
+Message-ID: <20091125165604.6073.33601.stgit@harusame>
 In-Reply-To: <20091125165510.6073.48721.stgit@harusame>
 References: <20091125165510.6073.48721.stgit@harusame>
 User-Agent: StGIT/0.14.3
@@ -39,8 +40,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce SAVE/RESOTRE_REGS_STRING for cleanup kretprobe-trampoline asm
-code. These macros will be used for emulating interruption.
+Add generic text_poke_smp for SMP which uses stop_machine()
+to synchronize modifying code.
+Since stop_machine() can't protect code against NMI/MCE, this
+function can not modify those handlers. And also, this function
+is basically for modifying multibyte-single-instruction. For
+modifying multibyte-multi-instructions, we need another special
+trap & detour code.
+
+This code originaly comes from immediate value.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -58,169 +66,103 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
 
- arch/x86/kernel/kprobes.c |  128 ++++++++++++++++++++++++---------------------
- 1 files changed, 67 insertions(+), 61 deletions(-)
+ arch/x86/include/asm/alternative.h |    4 ++
+ arch/x86/kernel/alternative.c      |   60 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 85d88f6..73ac21e 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -551,6 +551,69 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	return 0;
- }
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index c240efc..a0e21ad 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -154,10 +154,12 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+  * invalid instruction possible) or if the instructions are changed from a
+  * consistent state to another consistent state atomically.
+  * More care must be taken when modifying code in the SMP case because of
+- * Intel's errata.
++ * Intel's errata. text_poke_smp() takes care that errata, but still
++ * doesn't support NMI/MCE handler code modifying.
+  * On the local CPU you need to be protected again NMI or MCE handlers seeing an
+  * inconsistent instruction while you patch.
+  */
+ extern void *text_poke(void *addr, const void *opcode, size_t len);
++extern void *text_poke_smp(void *addr, const void *opcode, size_t len);
  
-+#ifdef CONFIG_X86_64
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax. */	\
-+	"	subq $24, %rsp\n"	\
-+	"	pushq %rdi\n"		\
-+	"	pushq %rsi\n"		\
-+	"	pushq %rdx\n"		\
-+	"	pushq %rcx\n"		\
-+	"	pushq %rax\n"		\
-+	"	pushq %r8\n"		\
-+	"	pushq %r9\n"		\
-+	"	pushq %r10\n"		\
-+	"	pushq %r11\n"		\
-+	"	pushq %rbx\n"		\
-+	"	pushq %rbp\n"		\
-+	"	pushq %r12\n"		\
-+	"	pushq %r13\n"		\
-+	"	pushq %r14\n"		\
-+	"	pushq %r15\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popq %r15\n"		\
-+	"	popq %r14\n"		\
-+	"	popq %r13\n"		\
-+	"	popq %r12\n"		\
-+	"	popq %rbp\n"		\
-+	"	popq %rbx\n"		\
-+	"	popq %r11\n"		\
-+	"	popq %r10\n"		\
-+	"	popq %r9\n"		\
-+	"	popq %r8\n"		\
-+	"	popq %rax\n"		\
-+	"	popq %rcx\n"		\
-+	"	popq %rdx\n"		\
-+	"	popq %rsi\n"		\
-+	"	popq %rdi\n"		\
-+	/* Skip orig_ax, ip, cs */	\
-+	"	addq $24, %rsp\n"
-+#else
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax and gs. */	\
-+	"	subl $16, %esp\n"	\
-+	"	pushl %fs\n"		\
-+	"	pushl %ds\n"		\
-+	"	pushl %es\n"		\
-+	"	pushl %eax\n"		\
-+	"	pushl %ebp\n"		\
-+	"	pushl %edi\n"		\
-+	"	pushl %esi\n"		\
-+	"	pushl %edx\n"		\
-+	"	pushl %ecx\n"		\
-+	"	pushl %ebx\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popl %ebx\n"		\
-+	"	popl %ecx\n"		\
-+	"	popl %edx\n"		\
-+	"	popl %esi\n"		\
-+	"	popl %edi\n"		\
-+	"	popl %ebp\n"		\
-+	"	popl %eax\n"		\
-+	/* Skip ds, es, fs, gs, orig_ax, and ip. Note: don't pop cs here*/\
-+	"	addl $24, %esp\n"
-+#endif
+ #endif /* _ASM_X86_ALTERNATIVE_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index de7353c..7ce45d7 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -7,6 +7,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmalloc.h>
+ #include <linux/memory.h>
++#include <linux/stop_machine.h>
+ #include <asm/alternative.h>
+ #include <asm/sections.h>
+ #include <asm/pgtable.h>
+@@ -552,3 +553,62 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ 	local_irq_restore(flags);
+ 	return addr;
+ }
 +
- /*
-  * When a retprobed function returns, this code saves registers and
-  * calls trampoline_handler() runs, which calls the kretprobe's handler.
-@@ -564,65 +627,16 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			/* We don't bother saving the ss register */
- 			"	pushq %rsp\n"
- 			"	pushfq\n"
--			/*
--			 * Skip cs, ip, orig_ax.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subq $24, %rsp\n"
--			"	pushq %rdi\n"
--			"	pushq %rsi\n"
--			"	pushq %rdx\n"
--			"	pushq %rcx\n"
--			"	pushq %rax\n"
--			"	pushq %r8\n"
--			"	pushq %r9\n"
--			"	pushq %r10\n"
--			"	pushq %r11\n"
--			"	pushq %rbx\n"
--			"	pushq %rbp\n"
--			"	pushq %r12\n"
--			"	pushq %r13\n"
--			"	pushq %r14\n"
--			"	pushq %r15\n"
-+			SAVE_REGS_STRING
- 			"	movq %rsp, %rdi\n"
- 			"	call trampoline_handler\n"
- 			/* Replace saved sp with true return address. */
- 			"	movq %rax, 152(%rsp)\n"
--			"	popq %r15\n"
--			"	popq %r14\n"
--			"	popq %r13\n"
--			"	popq %r12\n"
--			"	popq %rbp\n"
--			"	popq %rbx\n"
--			"	popq %r11\n"
--			"	popq %r10\n"
--			"	popq %r9\n"
--			"	popq %r8\n"
--			"	popq %rax\n"
--			"	popq %rcx\n"
--			"	popq %rdx\n"
--			"	popq %rsi\n"
--			"	popq %rdi\n"
--			/* Skip orig_ax, ip, cs */
--			"	addq $24, %rsp\n"
-+			RESTORE_REGS_STRING
- 			"	popfq\n"
- #else
- 			"	pushf\n"
--			/*
--			 * Skip cs, ip, orig_ax and gs.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subl $16, %esp\n"
--			"	pushl %fs\n"
--			"	pushl %es\n"
--			"	pushl %ds\n"
--			"	pushl %eax\n"
--			"	pushl %ebp\n"
--			"	pushl %edi\n"
--			"	pushl %esi\n"
--			"	pushl %edx\n"
--			"	pushl %ecx\n"
--			"	pushl %ebx\n"
-+			SAVE_REGS_STRING
- 			"	movl %esp, %eax\n"
- 			"	call trampoline_handler\n"
- 			/* Move flags to cs */
-@@ -630,15 +644,7 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			"	movl %edx, 52(%esp)\n"
- 			/* Replace saved flags with true return address. */
- 			"	movl %eax, 56(%esp)\n"
--			"	popl %ebx\n"
--			"	popl %ecx\n"
--			"	popl %edx\n"
--			"	popl %esi\n"
--			"	popl %edi\n"
--			"	popl %ebp\n"
--			"	popl %eax\n"
--			/* Skip ds, es, fs, gs, orig_ax and ip */
--			"	addl $24, %esp\n"
-+			RESTORE_REGS_STRING
- 			"	popf\n"
- #endif
- 			"	ret\n");
++/*
++ * Cross-modifying kernel text with stop_machine().
++ * This code originally comes from immediate value.
++ */
++static atomic_t stop_machine_first;
++static int wrote_text;
++
++struct text_poke_params {
++	void *addr;
++	const void *opcode;
++	size_t len;
++};
++
++static int __kprobes stop_machine_text_poke(void *data)
++{
++	struct text_poke_params *tpp = data;
++
++	if (atomic_dec_and_test(&stop_machine_first)) {
++		text_poke(tpp->addr, tpp->opcode, tpp->len);
++		smp_wmb();	/* Make sure other cpus see that this has run */
++		wrote_text = 1;
++	} else {
++		while (!wrote_text)
++			smp_rmb();
++		sync_core();
++	}
++
++	flush_icache_range((unsigned long)tpp->addr,
++			   (unsigned long)tpp->addr + tpp->len);
++	return 0;
++}
++
++/**
++ * text_poke_smp - Update instructions on a live kernel on SMP
++ * @addr: address to modify
++ * @opcode: source of the copy
++ * @len: length to copy
++ *
++ * Modify multi-byte instruction by using stop_machine() on SMP. This allows
++ * user to poke/set multi-byte text on SMP. Only non-NMI/MCE code modifying
++ * should be allowed, since stop_machine() does _not_ protect code against
++ * NMI and MCE.
++ *
++ * Note: Must be called under get_online_cpus() and text_mutex.
++ */
++void *__kprobes text_poke_smp(void *addr, const void *opcode, size_t len)
++{
++	struct text_poke_params tpp;
++
++	tpp.addr = addr;
++	tpp.opcode = opcode;
++	tpp.len = len;
++	atomic_set(&stop_machine_first, 1);
++	wrote_text = 0;
++	stop_machine(stop_machine_text_poke, (void *)&tpp, NULL);
++	return addr;
++}
++
 
 
 -- 
