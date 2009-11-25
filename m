@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759815AbZKYUrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbZKYUrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759815AbZKYUrd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:47:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbZKYUrc
+	id S1759836AbZKYUrr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759823AbZKYUrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:47:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57894 "EHLO mx2.suse.de"
+	Wed, 25 Nov 2009 15:47:46 -0500
+Received: from khc.piap.pl ([195.187.100.11]:37129 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759798AbZKYUrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:47:31 -0500
-Message-ID: <4B0D97EA.8040100@suse.cz>
-Date: Wed, 25 Nov 2009 21:47:38 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1759819AbZKYUrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:47:45 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>, Christoph Bartelmus <lirc@bartelmus.de>,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
+	<E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+	<829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+Date: Wed, 25 Nov 2009 21:47:48 +0100
+In-Reply-To: <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+	(Devin Heitmueller's message of "Wed, 25 Nov 2009 13:20:21 -0500")
+Message-ID: <m3ws1e49hn.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: Steppeing down as Maintainer
-References: <20091120182249.GA28251@merkur.ravnborg.org> <20091120182613.GA28307@merkur.ravnborg.org> <20091125172122.46beaf17.sfr@canb.auug.org.au> <20091125172406.GA14085@merkur.ravnborg.org>
-In-Reply-To: <20091125172406.GA14085@merkur.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg napsal(a):
-> On Wed, Nov 25, 2009 at 05:21:22PM +1100, Stephen Rothwell wrote:
->> Hi Sam,
->>
->> On Fri, 20 Nov 2009 19:26:13 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
->>> It has been fun but the last year or more it has
->>> been a duty and a burden. So I leave it open for
->>> other to take over.
->> I, also, want to thank you very much for all your work.
->>
->> I am, however, wondering what will happen to the changes you have that are
->> currently in linux-next:
->>
->> Apparently for v2.6.32 (in kbuild-current):
->>
->> Michael Tokarev (1):
->>       kbuild: fix bzImage build for x86
->>
->> And queued for v2.6.33:
->>
->> Sam Ravnborg (14):
->>       kbuild: search arch/$ARCH/include before include/
->>       dontdiff: add generated
->>       kbuild: move bounds.h to include/generated
->>       kbuild: move asm-offsets.h to include/generated
->>       ia64: move nr-irqs.h to include/generated
->>       arm: move mach-types to include/generated
->>       sh: move machtypes.h to include/generated
->>       kbuild: drop include2/ used for O=... builds
->>       kbuild: do not check for include/asm-$ARCH
->>       kbuild: drop include/asm
->>       kbuild: move compile.h to include/generated
->>       drop explicit include of autoconf.h
->>       kbuild: move autoconf.h to include/generated
->>       kbuild: move utsrelease.h to include/generated
->>
->> I am (for the moment) still merging these from the copy I have of your
->> trees, but what to do in the longer term?
-> 
-> I will submit the patches like any other regular submitter to linux-kbuild
-> if the upcoming Maintainers does not pick them up from the git trees.
+Devin Heitmueller <dheitmueller@kernellabs.com> writes:
 
-I took your kbuild-next.git and I'm going through the other patches
-posted to linux-kbuild recently. I'll push the repo once passes some
-testing.
+> The other key thing I don't think we have given much thought to is the
+> fact that in many tuners, the hardware does RC decoding and just
+> returns NEC/RC5/RC6 codes.  And in many of those cases, the hardware
+> has to be configured to know what format to receive.  We probably need
+> some kernel API such that the hardware can tell lirc what formats are
+> supported, and another API call to tell the hardware which mode to
+> operate in.
 
-Michal
+For such cases, I wouldn't bother with lirc mode. Input layer + key
+mapping with ioctl (probably improved), and lircd can grab events from
+input layer if needed.
+-- 
+Krzysztof Halasa
