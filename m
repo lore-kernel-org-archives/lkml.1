@@ -1,147 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbZKYR14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbZKYQqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759081AbZKYR14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759047AbZKYREL
+	id S1758836AbZKYQqB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758825AbZKYQqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:04:11 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:42743 "EHLO mx1.emlix.com"
+	Wed, 25 Nov 2009 11:46:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2458 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759040AbZKYREK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:04:10 -0500
-From: Johannes Weiner <jw@emlix.com>
-To: Alessandro Zummo <a.zummo@towertech.it>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: [patch 3/3] rtc-x1205: unconditionally set date when setting clock
-Date: Wed, 25 Nov 2009 17:32:16 +0100
-Message-Id: <1259166736-31006-3-git-send-email-jw@emlix.com>
-In-Reply-To: <1259166736-31006-1-git-send-email-jw@emlix.com>
-References: <1259166736-31006-1-git-send-email-jw@emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+	id S1758823AbZKYQqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:46:00 -0500
+Date: Wed, 25 Nov 2009 11:44:34 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Haley <aph@redhat.com>,
+       "H.J. Lu" <hjl.tools@gmail.com>, rostedt@goodmis.org,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC messing with mcount prologue
+Message-ID: <20091125164434.GS22813@hs20-bc2-1.build.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <1258736456.22249.1032.camel@gandalf.stny.rr.com> <4B06EF6F.2050507@redhat.com> <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com> <4B0972C9.302@redhat.com> <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com> <4B0BF119.4070704@redhat.com> <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain> <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain> <20091125154452.GA9456@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125154452.GA9456@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All callsites of x1205_set_datetime() want the date to be set as well,
-so remove the flag parameter and set it unconditionally.
+On Wed, Nov 25, 2009 at 04:44:52PM +0100, Ingo Molnar wrote:
+> 
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Tue, 24 Nov 2009, Jakub Jelinek wrote:
+> > 
+> > > On Tue, Nov 24, 2009 at 03:55:49PM +0100, Thomas Gleixner wrote:
+> > > > > you should compile your code with -maccumulate-outgoing-args, and there's
+> > > > > no need to use -mtune=generic.  Is that right?
+> > > > 
+> > > > Seems to work. What other side effects has that ?
+> > > 
+> > > Faster code, significant increase in code size though.  Note that on many
+> > > architectures it is the only supported model.
+> > 
+> > Just checked on the affected -marchs. The increase in code size is 
+> > about 3% which is not that bad and definitely acceptable for the 
+> > tracing case. Will zap the -mtune=generic patch and use 
+> > -maccumulate-outgoing-args instead.
+> 
+> hm, 3% sounds quite large :( dyn-ftrace is enabled in distro configs, so 
+> 3% is a big deal IMO.
 
-Signed-off-by: Johannes Weiner <jw@emlix.com>
----
- drivers/rtc/rtc-x1205.c |   53 ++++++++++++++++-------------------------------
- 1 files changed, 18 insertions(+), 35 deletions(-)
+If you compile kernels 90%+ people out there run with -p on i?86/x86_64,
+then certainly coming up with a new gcc switch and new profiling ABI is
+desirable.  -p on i?86/x86_64 e.g. forces -fno-omit-frame-pointer, which
+makes code on these register starved arches significantly worse.
+Making GCC output profiling call before prologue instead of after prologue
+is a 4 liner in generic code and a few lines in target specific code.
+The important thing is that we shouldn't have 100 different profiling ABIs,
+so it is desirable to agree on something that will be generally useful not
+just for the kernel, but perhaps for other purposes.
 
-diff --git a/drivers/rtc/rtc-x1205.c b/drivers/rtc/rtc-x1205.c
-index 6583c1a..9aae491 100644
---- a/drivers/rtc/rtc-x1205.c
-+++ b/drivers/rtc/rtc-x1205.c
-@@ -155,11 +155,11 @@ static int x1205_get_status(struct i2c_client *client, unsigned char *sr)
- }
- 
- static int x1205_set_datetime(struct i2c_client *client, struct rtc_time *tm,
--			int datetoo, u8 reg_base, unsigned char alm_enable)
-+			u8 reg_base, unsigned char alm_enable)
- {
--	int i, xfer, nbytes;
--	unsigned char buf[8];
-+	int i, xfer;
- 	unsigned char rdata[10] = { 0, reg_base };
-+	unsigned char *buf = rdata + 2;
- 
- 	static const unsigned char wel[3] = { 0, X1205_REG_SR,
- 						X1205_SR_WEL };
-@@ -170,9 +170,9 @@ static int x1205_set_datetime(struct i2c_client *client, struct rtc_time *tm,
- 	static const unsigned char diswe[3] = { 0, X1205_REG_SR, 0 };
- 
- 	dev_dbg(&client->dev,
--		"%s: secs=%d, mins=%d, hours=%d\n",
--		__func__,
--		tm->tm_sec, tm->tm_min, tm->tm_hour);
-+		"%s: sec=%d min=%d hour=%d mday=%d mon=%d year=%d wday=%d\n",
-+		__func__, tm->tm_sec, tm->tm_min, tm->tm_hour, tm->tm_mday,
-+		tm->tm_mon, tm->tm_year, tm->tm_wday);
- 
- 	buf[CCR_SEC] = bin2bcd(tm->tm_sec);
- 	buf[CCR_MIN] = bin2bcd(tm->tm_min);
-@@ -180,23 +180,15 @@ static int x1205_set_datetime(struct i2c_client *client, struct rtc_time *tm,
- 	/* set hour and 24hr bit */
- 	buf[CCR_HOUR] = bin2bcd(tm->tm_hour) | X1205_HR_MIL;
- 
--	/* should we also set the date? */
--	if (datetoo) {
--		dev_dbg(&client->dev,
--			"%s: mday=%d, mon=%d, year=%d, wday=%d\n",
--			__func__,
--			tm->tm_mday, tm->tm_mon, tm->tm_year, tm->tm_wday);
-+	buf[CCR_MDAY] = bin2bcd(tm->tm_mday);
- 
--		buf[CCR_MDAY] = bin2bcd(tm->tm_mday);
-+	/* month, 1 - 12 */
-+	buf[CCR_MONTH] = bin2bcd(tm->tm_mon + 1);
- 
--		/* month, 1 - 12 */
--		buf[CCR_MONTH] = bin2bcd(tm->tm_mon + 1);
--
--		/* year, since the rtc epoch*/
--		buf[CCR_YEAR] = bin2bcd(tm->tm_year % 100);
--		buf[CCR_WDAY] = tm->tm_wday & 0x07;
--		buf[CCR_Y2K] = bin2bcd((tm->tm_year + 1900) / 100);
--	}
-+	/* year, since the rtc epoch*/
-+	buf[CCR_YEAR] = bin2bcd(tm->tm_year % 100);
-+	buf[CCR_WDAY] = tm->tm_wday & 0x07;
-+	buf[CCR_Y2K] = bin2bcd((tm->tm_year + 1900) / 100);
- 
- 	/* If writing alarm registers, set compare bits on registers 0-4 */
- 	if (reg_base < X1205_CCR_BASE)
-@@ -214,17 +206,8 @@ static int x1205_set_datetime(struct i2c_client *client, struct rtc_time *tm,
- 		return -EIO;
- 	}
- 
--
--	/* write register's data */
--	if (datetoo)
--		nbytes = 8;
--	else
--		nbytes = 3;
--	for (i = 0; i < nbytes; i++)
--		rdata[2+i] = buf[i];
--
--	xfer = i2c_master_send(client, rdata, nbytes+2);
--	if (xfer != nbytes+2) {
-+	xfer = i2c_master_send(client, rdata, sizeof(rdata));
-+	if (xfer != sizeof(rdata)) {
- 		dev_err(&client->dev,
- 			"%s: result=%d addr=%02x, data=%02x\n",
- 			__func__,
-@@ -282,7 +265,7 @@ static int x1205_fix_osc(struct i2c_client *client)
- 
- 	memset(&tm, 0, sizeof(tm));
- 
--	err = x1205_set_datetime(client, &tm, 1, X1205_CCR_BASE, 0);
-+	err = x1205_set_datetime(client, &tm, X1205_CCR_BASE, 0);
- 	if (err < 0)
- 		dev_err(&client->dev, "unable to restart the oscillator\n");
- 
-@@ -481,7 +464,7 @@ static int x1205_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- static int x1205_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
- {
- 	return x1205_set_datetime(to_i2c_client(dev),
--		&alrm->time, 1, X1205_ALM0_BASE, alrm->enabled);
-+		&alrm->time, X1205_ALM0_BASE, alrm->enabled);
- }
- 
- static int x1205_rtc_read_time(struct device *dev, struct rtc_time *tm)
-@@ -493,7 +476,7 @@ static int x1205_rtc_read_time(struct device *dev, struct rtc_time *tm)
- static int x1205_rtc_set_time(struct device *dev, struct rtc_time *tm)
- {
- 	return x1205_set_datetime(to_i2c_client(dev),
--		tm, 1, X1205_CCR_BASE, 0);
-+		tm, X1205_CCR_BASE, 0);
- }
- 
- static int x1205_rtc_proc(struct device *dev, struct seq_file *seq)
--- 
-1.6.5
-
+	Jakub
