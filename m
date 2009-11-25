@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933291AbZKYRrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbZKYRoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933291AbZKYRrN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbZKYRrJ
+	id S1759483AbZKYRoa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759465AbZKYRo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:47:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:57215 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933090AbZKYRrD (ORCPT
+	Wed, 25 Nov 2009 12:44:29 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40287 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759456AbZKYRo2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:47:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=KTosZVxV5Di0WOEFudtyQA3ISp2DJSYJFcAPmg8CqSsNpmeoYvsqCaQax4uysvOSTP
-         tBUrjhL8HzK/efSs9b8GpiXS29TRNVT2ZH5JciIrAkoivss0ALUKvvondq1EBl/dpRP3
-         Qu0vL+wxVYuMIXy6nEK5zMJrVacm6B77Nf7ok=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 45/86] pata_legacy: do not probe extra ports automatically if PCI is not present
-Date: Wed, 25 Nov 2009 18:45:52 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170740.5446.67217.sendpatchset@localhost> <20091125173215.539b5630@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091125173215.539b5630@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Message-Id: <200911251845.52700.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 25 Nov 2009 12:44:28 -0500
+Date: Wed, 25 Nov 2009 17:46:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 62/86] pata_pdc202xx_old: document known issues
+Message-ID: <20091125174632.174666be@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091125170948.5446.32754.sendpatchset@localhost>
+References: <20091125170218.5446.13513.sendpatchset@localhost>
+	<20091125170948.5446.32754.sendpatchset@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 November 2009 06:32:15 pm Alan Cox wrote:
-> On Wed, 25 Nov 2009 18:07:40 +0100
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Wed, 25 Nov 2009 18:09:48 +0100
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] pata_pdc202xx_old: document known issues
 > 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] pata_legacy: do not probe extra ports automatically if PCI is not present
-> > 
-> > It can be problematic if there are other ISA/VLB devices using
-> > those ports.
+> Document known issues with the driver to aid distribution makers,
+> users and developers in making informed decisions instead of wasting
+> their time needlessly.
 > 
-> NAK. You made a rather peculiar set of changes in the IDE layer but the
-
-Please give commit numbers and describe such 'peculiar set of changes in
-the IDE layer' in more details or skip such baseless, unjust and pointless
-comments from your mails.
-
-> PCI handling in pata_legacy includes knowledge of the various half-pci
-> devices and on a non PCI system 0x1E8/0x168 are reserved for extra IDE.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ata/Kconfig |    4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> We've had no complaints at all, ever about this.
+> Index: b/drivers/ata/Kconfig
+> ===================================================================
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -583,6 +583,10 @@ config PATA_PDC_OLD
+>  	  This option enables support for the Promise 20246, 20262, 20263,
+>  	  20265 and 20267 adapters.
+>  
+> +	  Known issues:
+> +	  - UDMA transfers fail mysteriously on some chipsets
+> +	  - ATAPI DMA is unsupported currently
 
-OTOH We had. :)
+Not sure this is useful, because the reports of UDMA failures are lower
+than most other reports. Should IPV6 have "known issues, mysterious timer
+list corruption" for example which occurs far more. Not do we list 'no
+atapi dma' in the help for the IDE SII driver ?
 
---
-Bartlomiej Zolnierkiewicz
+Would be useful to fix (may actually just work now) but comments belong
+in the driver code.
