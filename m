@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964861AbZKYOX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964844AbZKYO2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964861AbZKYOX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934707AbZKYOX6
+	id S964844AbZKYO2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 09:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbZKYO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 09:23:58 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:44248 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934706AbZKYOX5 (ORCPT
+	Wed, 25 Nov 2009 09:28:16 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:44701 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758456AbZKYO2P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 09:23:57 -0500
-Date: Wed, 25 Nov 2009 19:53:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 6/9] ksm: mem cgroup charge swapin copy
-Message-ID: <20091125142355.GD2970@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241648520.25288@sister.anvils>
+	Wed, 25 Nov 2009 09:28:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=XcSXOIhrrk1/wBEkkdGdMeRQDeTr22O+JOP5ouLI15tRMOCZmuunsBEaWpsJnbBuFm
+         pNyvPvqYc5QZX/4Zmbtt9Xp4vizfR1aDiccF3Yd0X8X53/4eZLbTT2eTeaMUgqH2Z2ui
+         1DddgJUKDn+StOLIPAESWC4yU5fpjyePgctHs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0911241648520.25288@sister.anvils>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091125123534.GA17486@suse.de>
+References: <ffc2b1d40911250127x7b3c3609qb99820d212a7a0ad@mail.gmail.com> 
+	<20091125123534.GA17486@suse.de>
+From: eran liberty <eran.liberty@gmail.com>
+Date: Wed, 25 Nov 2009 16:27:59 +0200
+Message-ID: <ffc2b1d40911250627q6c7e459v89a580d793b24fcf@mail.gmail.com>
+Subject: Re: kobjects: mark cleaned up kobjects as unitialized
+To: Greg KH <gregkh@suse.de>
+Cc: balajirrao@gmail.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hugh Dickins <hugh.dickins@tiscali.co.uk> [2009-11-24 16:51:13]:
+Hi Greg,
 
-> But ksm swapping does require one small change in mem cgroup handling.
-> When do_swap_page()'s call to ksm_might_need_to_copy() does indeed
-> substitute a duplicate page to accommodate a different anon_vma (or a
-> different index), that page escaped mem cgroup accounting, because of
-> the !PageSwapCache check in mem_cgroup_try_charge_swapin().
-> 
+On Wed, Nov 25, 2009 at 2:35 PM, Greg KH <gregkh@suse.de> wrote:
+> On Wed, Nov 25, 2009 at 11:27:58AM +0200, eran liberty wrote:
+>> Hi Greg & Balaji,
+>>
+>> After diving into the LDKM and failed to spot the point where you
+>> actually un-initialize the 'state_initialized' of a kobject... and
+>> since I have statically allocated object which trip over this very
+>> same trap...
+>
+> Ah, there's your problem, don't statically allocate a kobject.  Fix that
+> and your issue goes away, right?
 
-The duplicate page doesn't show up as PageSwapCache or are we optimizing
-for the race condition where the page is not in SwapCache? I should
-probably look at the full series.
+right... but... I want to :).
 
-> That was returning success without charging, on the assumption that
-> pte_same() would fail after, which is not the case here.  Originally I
-> proposed that success, so that an unshrinkable mem cgroup at its limit
-> would not fail unnecessarily; but that's a minor point, and there are
-> plenty of other places where we may fail an overallocation which might
-> later prove unnecessary.  So just go ahead and do what all the other
-> exceptions do: proceed to charge current mm.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Is there a Linux directive saying 'thus shall not statically allocate
+(or reuse in any other way) kobjects"?
 
+>
+>> Google-ing for others who fell into this trap, I found your thread/patch at:
+>> http://lkml.org/lkml/2008/3/8/155
+>> and
+>> http://lkml.indiana.edu/hypermail/linux/kernel/0902.0/01969.html
+>>
+>> I noticed this patch did not make it into the mainline.
+>>
+>> Is this patch still valid?
 
-Thanks for the patch!
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
- 
--- 
-	Balbir
+Why was your proposed patch not merged?
+Is there some logic behind not having it?
+
+>> Is there some other, better way to do it by the book?
+>
+> Do not statically allocate a kobject.
+>
+>> Right now I by-pass the problem by memset-ing the whole object after I
+>> release it... but I feel this is a bit brutal.
+
+Assuming I will keep it static and clear the status_initialize bit (by
+memset-ing the whole object) after the kobject was released... am I
+doing something wrong? should i expect other bad phenomena?
+
+>
+> You should be freeing your memory in your release function.
+>
+Should I free the object itself in release() function?
+In OO-like thinking I would expect release() to be a cleanup function
+for the device to be used, while the kfree() be done by the same
+object which did the kmalloc()
+
+> Do you have a pointer to your code somewhere?
+>
+
+I will pack something and send you (i dont think Mr. vger will
+tolerate attachments :) )
+but basically you can demonstrate the problem with this simple code:
+
+struct device dev;
+while(1) {
+  dev->release = dummy_release_function_that_does_nothing;
+  device_register(&dev); /* will fail on second iteration without the
+memset!! ?? */
+  device_unregister(&dev);
+  memset(&dev,0,sizeof(struct device)); /* should be unnecessary  */
+}
+
+> thanks,
+>
+> greg k-h
+>
+
+thanks,
+-- Liberty
