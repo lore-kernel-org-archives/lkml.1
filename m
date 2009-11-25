@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbZKYMFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758778AbZKYMMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758772AbZKYMFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758753AbZKYMFv
+	id S1758778AbZKYMMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:12:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZKYMMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:05:51 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:52287 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758752AbZKYMFu convert rfc822-to-8bit (ORCPT
+	Wed, 25 Nov 2009 07:12:30 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:22919 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758195AbZKYMM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:05:50 -0500
+	Wed, 25 Nov 2009 07:12:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UuKO2e/Astx6hFMdsf5C7vrtVqMwtCXf19i1rENUF7ag8mkxkKFwUn22FwlvX08P8F
+         dNJ7zga4f4MaZ2LmXtlMt53fxp2rGRv+UfjFhJlmB87w0Twrgo9c4rk/eZeMvAyKEZu1
+         oxZQQ9am/ZD1vnaIidGfa+Hkkzw+HSmVsQWTY=
+Date: Wed, 25 Nov 2009 13:12:33 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 0/3] [GIT PULL] tracing: rebase of TRACE_EVENT_TEMPLATE
+Message-ID: <20091125121226.GA5010@nowhere>
+References: <20091125043811.603607335@goodmis.org>
 MIME-Version: 1.0
-In-Reply-To: <200911242223.33206.linux@rainbow-software.org>
-References: <200911222201.59471.linux@rainbow-software.org> 
-	<200911240829.23067.linux@rainbow-software.org> <ac3eb2510911240057h2d2ca308pfeb9c8a94920d543@mail.gmail.com> 
-	<200911242223.33206.linux@rainbow-software.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 25 Nov 2009 13:05:40 +0100
-Message-ID: <ac3eb2510911250405j6551150eu4b68261a2e03514f@mail.gmail.com>
-Subject: Re: MODULE_DEVICE_TABLE(isapnp, ...) does nothing
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Jaroslav Kysela <perex@perex.cz>, Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125043811.603607335@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 22:23, Ondrej Zary <linux@rainbow-software.org> wrote:
-> On Tuesday 24 November 2009 09:57:28 Kay Sievers wrote:
+On Tue, Nov 24, 2009 at 11:38:11PM -0500, Steven Rostedt wrote:
+> 
+> Ingo,
+> 
+> This is the rebase to resolve the conflicts with perf.
+> 
+> Please pull the latest tip/perf/core tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/perf/core
+> 
+> 
+> Steven Rostedt (3):
+>       tracing: Create new TRACE_EVENT_TEMPLATE
+>       tracing: Create new DEFINE_EVENT_PRINT
+>       tracing: Convert some sched trace events to DEFINE_EVENT and _PRINT
 
->> Oh, your box has acpi mapped pnp aliases for this device? You can see
->> your ID string somewhere in this list?
->>   grep . /sys/bus/acpi/devices/*/modalias
->>
->> If not, is it in the pnp bus list?
->>   grep . /sys/bus/pnp/devices/*/id
->
-> It's listen in the pnp bus only:
->
-> $ grep -i 80d6 /sys/bus/acpi/devices/*/modalias
-> $ grep -i 80d6 /sys/bus/pnp/devices/*/id
-> /sys/bus/pnp/devices/01:01.00/id:PNP80d6
-> $ cat /sys/bus/pnp/devices/01\:01.00/id
-> RTL8019
-> PNP80d6
->
-> So the acpi alias was useless (I just copied another entry). This alone works:
-> alias pnp:dPNP80d6* ne
 
-I see. Plain upstream udev would not load anything here, as the pnp
-bus has no modalias support because of the non-working aliases. We
-rely on acpi mapping all the pnp entries. Your system probably runs
-the shell script which iterates over the "id" file and calls modprobe
-for all it finds in there.
 
-Kay
+Nice :)
+
+
+ 
+> ----
+>  include/linux/tracepoint.h   |    6 +
+>  include/trace/define_trace.h |   11 ++
+>  include/trace/events/sched.h |  170 ++++++++-------------------
+>  include/trace/ftrace.h       |  266 +++++++++++++++++++++++++++++++++++-------
+>  4 files changed, 292 insertions(+), 161 deletions(-)
+> 
+
