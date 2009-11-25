@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbZKYRSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934834AbZKYRTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759121AbZKYRSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934820AbZKYRSi
+	id S934834AbZKYRTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbZKYRTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:18:38 -0500
-Received: from khc.piap.pl ([195.187.100.11]:34672 "EHLO khc.piap.pl"
+	Wed, 25 Nov 2009 12:19:53 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:38282 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933761AbZKYRSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:18:34 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: IR raw input is not sutable for input system
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<20091123173726.GE17813@core.coreip.homeip.net>
-	<4B0B6321.3050001@wilsonet.com>
-	<1259105571.28219.20.camel@maxim-laptop>
-	<Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
-Date: Wed, 25 Nov 2009 18:18:38 +0100
-In-Reply-To: <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net> (Trent
-	Piepho's message of "Tue, 24 Nov 2009 19:32:42 -0800 (PST)")
-Message-ID: <m34ooi7cb5.fsf@intrepid.localdomain>
+	id S933735AbZKYRTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 12:19:50 -0500
+Message-ID: <4B0D6735.8000604@garzik.org>
+Date: Wed, 25 Nov 2009 12:19:49 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/86] PATA fixes
+References: <20091125170218.5446.13513.sendpatchset@localhost>
+In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Piepho <xyzzy@speakeasy.org> writes:
+On 11/25/2009 12:02 PM, Bartlomiej Zolnierkiewicz wrote:
+> I've been going through PATA drivers for the last few days to make
+> sure that we offer similar level of hardware support in the new PATA
+> drivers as with the old IDE subsystem and the following patchset is
+> the end result of said audit.
 
-> The signal recevied by the ir receiver contains glitches.  Depending on the
-> receiver there can be quite a few.  It is also not trivial to turn the raw
-> signal sent by the remote into a digital value, even if you know what to
-> expect.  It takes digital signal processing techniques to turn the messy
-> sequence of inaccurate mark and space lengths into a best guess at what
-> digital code the remote sent.
+Thanks!
 
-This is of course true. Except that most receivers do that in hardware,
-the receiver/demodular chip such as TSOP1838 does it.
-If you receive with a phototransistor or a photodiode feeding some sort
-of ADC device (not a very smart design), sure - you have to do this
-yourself.
+> - add 32-bit PIO support for more controllers
+>
+>    ( pata_artop, pata_atiixp, pata_efar, pata_cmd64x, pata_cs5520,
+>      pata_cs5530, pata_cs5535, pata_cypress, pata_hpt366, pata_hpt37x,
+>      pata_hpt3x2n, pata_it8213, pata_it821x, pata_jmicron, pata_ns87415,
+>      pata_opti, pata_pdc2027x, pata_pdc202xx_old, pata_rz1000,
+>      pata_sc1200, pata_scc, pata_sch, pata_serverworks, pata_sl82c105,
+>      pata_sis, pata_triflex&  pata_via )
 
-I have never heard of such receiver, though.
+This should be all in one patch.
 
-> One thing that could be done, unless it has changed much since I wrote it
-> 10+ years ago, is to take the mark/space protocol the ir device uses and sent
-> that data to lircd via the input layer.  It would be less efficient, but
-> would avoid another kernel interface.  Of course the input layer to lircd
-> interface would be somewhat different than other input devices, so
-> it's not entirely correct to say another interface is avoided.
+I'll let the comments from Alan and others trickle in before applying...
 
-IOW, it would be worse, wouldn't it?
--- 
-Krzysztof Halasa
+> - add ->init_host method for abstracting host specific controller
+>   initialization and then use it to cleanup Power Managment code
+>   resulting in over 100 LOC gone
+>
+>   ( pata_ali, pata_amd, pata_artop, pata_cmd640, pata_cmd64x,
+>     pata_cs5530, pata_hpt366, pata_hpt3x3, pata_it821x, pata_ninja32,
+>     pata_ns87415, pata_pdc2027x & sata_sil )
+
+hmmmm....  will reserve comment until I review it thoroughly, but I am a 
+bit reluctant to move away from the current struct-driver style driver 
+init/setup model.
+
+	Jeff
+
+
+
