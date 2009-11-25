@@ -1,78 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934741AbZKYNgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbZKYNh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934741AbZKYNgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934714AbZKYNgS
+	id S964888AbZKYNh6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934630AbZKYNh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:36:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43448 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:37:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26072 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934716AbZKYNgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:36:17 -0500
+	id S964790AbZKYNgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:36:21 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Benjamin Marzinski <bmarzins@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 23/30] GFS2: remove division from new statfs code
-Date: Wed, 25 Nov 2009 14:30:55 +0000
-Message-Id: <1259159462-28622-3-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259159462-28622-2-git-send-email-swhiteho@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 24/30] GFS2: add barrier/nobarrier mount options
+Date: Wed, 25 Nov 2009 14:30:56 +0000
+Message-Id: <1259159462-28622-4-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259159462-28622-3-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-20-git-send-email-swhiteho@redhat.com>
  <1259159462-28622-1-git-send-email-swhiteho@redhat.com>
  <1259159462-28622-2-git-send-email-swhiteho@redhat.com>
+ <1259159462-28622-3-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Marzinski <bmarzins@redhat.com>
+From: Christoph Hellwig <hch@lst.de>
 
-It's not necessary to do any 64bit division for the statfs sync code, so
-remove it.
+Currently gfs2 issues barrier unconditionally.  There are various reasons
+to disable them, be that just for testing or for stupid devices flushing
+large battert backed caches.  Add a nobarrier option that matches xfs and
+btrfs for this.  Also add a symmetric barrier option to turn it back on
+at remount time.
 
-Signed-off-by: Benjamin Marzinski <bmarzins@redhat.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/super.c |   17 +++++++++--------
- 1 files changed, 9 insertions(+), 8 deletions(-)
+ fs/gfs2/incore.h     |    1 +
+ fs/gfs2/ops_fstype.c |    2 ++
+ fs/gfs2/super.c      |   14 ++++++++++++++
+ 3 files changed, 17 insertions(+), 0 deletions(-)
 
+diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+index c239b0f..4792200 100644
+--- a/fs/gfs2/incore.h
++++ b/fs/gfs2/incore.h
+@@ -429,6 +429,7 @@ struct gfs2_args {
+ 	unsigned int ar_meta:1;			/* mount metafs */
+ 	unsigned int ar_discard:1;		/* discard requests */
+ 	unsigned int ar_errors:2;               /* errors=withdraw | panic */
++	unsigned int ar_nobarrier:1;            /* do not send barriers */
+ 	int ar_commit;				/* Commit interval */
+ 	int ar_statfs_quantum;			/* The fast statfs interval */
+ 	int ar_quota_quantum;			/* The quota interval */
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index 9744ee9..edfee24 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -1131,6 +1131,8 @@ static int fill_super(struct super_block *sb, struct gfs2_args *args, int silent
+ 	}
+ 	if (sdp->sd_args.ar_posix_acl)
+ 		sb->s_flags |= MS_POSIXACL;
++	if (sdp->sd_args.ar_nobarrier)
++		set_bit(SDF_NOBARRIERS, &sdp->sd_flags);
+ 
+ 	sb->s_magic = GFS2_MAGIC;
+ 	sb->s_op = &gfs2_super_ops;
 diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-index 3fee2fd..b1dcfab 100644
+index b1dcfab..5e4b314 100644
 --- a/fs/gfs2/super.c
 +++ b/fs/gfs2/super.c
-@@ -472,7 +472,8 @@ void gfs2_statfs_change(struct gfs2_sbd *sdp, s64 total, s64 free,
- 	struct gfs2_statfs_change_host *l_sc = &sdp->sd_statfs_local;
- 	struct gfs2_statfs_change_host *m_sc = &sdp->sd_statfs_master;
- 	struct buffer_head *l_bh;
--	int percent, sync_percent;
-+	s64 x, y;
-+	int need_sync = 0;
- 	int error;
+@@ -73,6 +73,8 @@ enum {
+ 	Opt_statfs_quantum,
+ 	Opt_statfs_percent,
+ 	Opt_quota_quantum,
++	Opt_barrier,
++	Opt_nobarrier,
+ 	Opt_error,
+ };
  
- 	error = gfs2_meta_inode_buffer(l_ip, &l_bh);
-@@ -486,16 +487,16 @@ void gfs2_statfs_change(struct gfs2_sbd *sdp, s64 total, s64 free,
- 	l_sc->sc_free += free;
- 	l_sc->sc_dinodes += dinodes;
- 	gfs2_statfs_change_out(l_sc, l_bh->b_data + sizeof(struct gfs2_dinode));
--	if (m_sc->sc_free)
--		percent = (100 * l_sc->sc_free) / m_sc->sc_free;
--	else
--		percent = 100;
-+	if (sdp->sd_args.ar_statfs_percent) {
-+		x = 100 * l_sc->sc_free;
-+		y = m_sc->sc_free * sdp->sd_args.ar_statfs_percent;
-+		if (x >= y || x <= -y)
-+			need_sync = 1;
-+	}
- 	spin_unlock(&sdp->sd_statfs_spin);
+@@ -107,6 +109,8 @@ static const match_table_t tokens = {
+ 	{Opt_statfs_quantum, "statfs_quantum=%d"},
+ 	{Opt_statfs_percent, "statfs_percent=%d"},
+ 	{Opt_quota_quantum, "quota_quantum=%d"},
++	{Opt_barrier, "barrier"},
++	{Opt_nobarrier, "nobarrier"},
+ 	{Opt_error, NULL}
+ };
  
- 	brelse(l_bh);
--	sync_percent = sdp->sd_args.ar_statfs_percent;
--	if (sync_percent && (percent >= sync_percent ||
--			     percent <= -sync_percent))
-+	if (need_sync)
- 		gfs2_wake_up_statfs(sdp);
- }
- 
+@@ -253,6 +257,12 @@ int gfs2_mount_args(struct gfs2_args *args, char *options)
+ 			}
+ 			args->ar_errors = GFS2_ERRORS_PANIC;
+ 			break;
++		case Opt_barrier:
++			args->ar_nobarrier = 0;
++			break;
++		case Opt_nobarrier:
++			args->ar_nobarrier = 1;
++			break;
+ 		case Opt_error:
+ 		default:
+ 			printk(KERN_WARNING "GFS2: invalid mount option: %s\n", o);
+@@ -1143,6 +1153,10 @@ static int gfs2_remount_fs(struct super_block *sb, int *flags, char *data)
+ 		sb->s_flags |= MS_POSIXACL;
+ 	else
+ 		sb->s_flags &= ~MS_POSIXACL;
++	if (sdp->sd_args.ar_nobarrier)
++		set_bit(SDF_NOBARRIERS, &sdp->sd_flags);
++	else
++		clear_bit(SDF_NOBARRIERS, &sdp->sd_flags);
+ 	spin_lock(&gt->gt_spin);
+ 	gt->gt_log_flush_secs = args.ar_commit;
+ 	gt->gt_quota_quantum = args.ar_quota_quantum;
 -- 
 1.6.2.5
 
