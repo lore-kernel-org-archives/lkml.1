@@ -1,45 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbZKYKUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbZKYKWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbZKYKUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758524AbZKYKUT
+	id S1758619AbZKYKWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758533AbZKYKWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:20:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:45056 "EHLO ozlabs.org"
+	Wed, 25 Nov 2009 05:22:10 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55676 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758420AbZKYKUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:20:18 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 1/1] Defer skb allocation for both mergeable buffers and big packets in virtio_net
-Date: Wed, 25 Nov 2009 20:50:21 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; i686; ; )
-Cc: Shirley Ma <mashirle@us.ibm.com>, Eric Dumazet <eric.dumazet@gmail.com>,
-       Avi Kivity <avi@redhat.com>, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Hollis Blanchard <hollisb@us.ibm.com>
-References: <1258697745.7416.20.camel@localhost.localdomain> <200911251042.06368.rusty@rustcorp.com.au> <20091125091530.GA6357@redhat.com>
-In-Reply-To: <20091125091530.GA6357@redhat.com>
+	id S1758506AbZKYKWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 05:22:09 -0500
+Message-ID: <4B0D0556.3080907@suse.cz>
+Date: Wed, 25 Nov 2009 11:22:14 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Robin Holt <holt@sgi.com>
+Cc: linux-kbuild@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] menuconfig: Display current values with symbols.
+References: <20090909182518.GB9913@sgi.com>
+In-Reply-To: <20090909182518.GB9913@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911252050.21907.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009 07:45:30 pm Michael S. Tsirkin wrote:
-> Hmm, is it really worth it to save a header copy if it's linear?  We are
-> going to access it anyway, and it fits into one cacheline nicely.  On
-> the other hand we have more code making life harder for compiler and
-> processor.
+Added kconfig maintainer to CC.
 
-Not sure: I think there would be many places where it would be useful.
+On 9.9.2009 20:25, Robin Holt wrote:
+> 
+> While investigating why a CONFIG_ symbol was not displayed, I was
+> frustrated with finding each of the dependent symbol's values.  This patch
+> adds a display of the symbol's value along side the symbol's name.
+> 
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> 
+> ---
+> 
+> One additional suggestion would be an easy way to navigate from the
+> search screen to the spot in the menus where that CONFIG_ value is set.
+> I could not figure out a clear and convenient method for that.  Some of
+> the menus are fairly long and since they are not sorted, can result in
+> some frustration while searching for the individual setting.
+> 
+> 
+> Index: xpmem_numatools_kernel/scripts/kconfig/expr.c
+> ===================================================================
+> --- xpmem_numatools_kernel.orig/scripts/kconfig/expr.c	2009-09-08 13:30:57.000000000 -0500
+> +++ xpmem_numatools_kernel/scripts/kconfig/expr.c	2009-09-09 11:53:07.000000000 -0500
+> @@ -1013,6 +1013,19 @@ int expr_compare_type(enum expr_type t1,
+>  #endif
+>  }
+>  
+> +void expr_print_symbol(void (*fn)(void *, struct symbol *, const char *), void *data, struct symbol *sym)
+> +{
+> +	char sym_value_str[5];
+> +
+> +	if (sym->name) {
+> +		fn(data, sym, sym->name);
+> +		if (snprintf(sym_value_str, 5, "[=%s]", sym_get_string_value(sym)) < 5)
+> +			fn(data, sym, sym_value_str);
+> +	} else {
+> +		fn(data, NULL, "<choice>");
+> +	}
+> +}
+> +
 
-We do a similar thing in the kernel to inspect non-linear packets, and
-it's served us well.
+The subject says menuconfig, but expr_print() is also used by xconfig.
+Did you check that xconfig still works after this change?
 
-Cheers,
-Rusty.
+Thanks.
+Michal
+
+>  void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, int prevtoken)
+>  {
+>  	if (!e) {
+> @@ -1024,28 +1037,19 @@ void expr_print(struct expr *e, void (*f
+>  		fn(data, NULL, "(");
+>  	switch (e->type) {
+>  	case E_SYMBOL:
+> -		if (e->left.sym->name)
+> -			fn(data, e->left.sym, e->left.sym->name);
+> -		else
+> -			fn(data, NULL, "<choice>");
+> +		expr_print_symbol(fn, data, e->left.sym);
+>  		break;
+>  	case E_NOT:
+>  		fn(data, NULL, "!");
+>  		expr_print(e->left.expr, fn, data, E_NOT);
+>  		break;
+>  	case E_EQUAL:
+> -		if (e->left.sym->name)
+> -			fn(data, e->left.sym, e->left.sym->name);
+> -		else
+> -			fn(data, NULL, "<choice>");
+> +		expr_print_symbol(fn, data, e->left.sym);
+>  		fn(data, NULL, "=");
+>  		fn(data, e->right.sym, e->right.sym->name);
+>  		break;
+>  	case E_UNEQUAL:
+> -		if (e->left.sym->name)
+> -			fn(data, e->left.sym, e->left.sym->name);
+> -		else
+> -			fn(data, NULL, "<choice>");
+> +		expr_print_symbol(fn, data, e->left.sym);
+>  		fn(data, NULL, "!=");
+>  		fn(data, e->right.sym, e->right.sym->name);
+>  		break;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
