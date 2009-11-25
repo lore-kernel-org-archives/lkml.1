@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbZKYDjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934369AbZKYDl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934270AbZKYDjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 22:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933768AbZKYDjR
+	id S934369AbZKYDl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 22:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934316AbZKYDlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 22:39:17 -0500
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:38823 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933372AbZKYDjR (ORCPT
+	Tue, 24 Nov 2009 22:41:25 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61876 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933823AbZKYDlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 22:39:17 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Nov 2009 22:39:17 EST
-Date: Tue, 24 Nov 2009 19:32:42 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: Jarod Wilson <jarod@wilsonet.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: IR raw input is not sutable for input system
-In-Reply-To: <1259105571.28219.20.camel@maxim-laptop>
-Message-ID: <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
-References: <200910200956.33391.jarod@redhat.com>  <200910200958.50574.jarod@redhat.com>
- <4B0A765F.7010204@redhat.com>  <4B0A81BF.4090203@redhat.com>
- <m36391tjj3.fsf@intrepid.localdomain>  <20091123173726.GE17813@core.coreip.homeip.net>
-  <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Nov 2009 22:41:24 -0500
+Subject: Re: [PATCH] tracing: separate raw syscall from syscall tracer
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B0C918E.1070101@cn.fujitsu.com>
+References: <4AEFC37C.5080609@cn.fujitsu.com>
+	 <20091103082311.GA4815@nowhere>  <4B0C918E.1070101@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 24 Nov 2009 22:41:28 -0500
+Message-Id: <1259120488.22249.1130.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Maxim Levitsky wrote:
->
-> Its not the case.
-> There are many protocols, I know that by experimenting with my universal
-> remote. There are many receivers, and all have different accuracy.
-> Most remotes aren't designed to be used with PC, thus user has to invent
-> mapping between buttons and actions.
-> Its is not possible to identify remotes accurately, many remotes send
-> just a 8 bit integer that specifies the 'model' thus many remotes can
-> share it.
+On Wed, 2009-11-25 at 10:08 +0800, Lai Jiangshan wrote:
+> Frederic Weisbecker wrote:
+> > On Tue, Nov 03, 2009 at 01:45:32PM +0800, Lai Jiangshan wrote:
 
-The signal recevied by the ir receiver contains glitches.  Depending on the
-receiver there can be quite a few.  It is also not trivial to turn the raw
-signal sent by the remote into a digital value, even if you know what to
-expect.  It takes digital signal processing techniques to turn the messy
-sequence of inaccurate mark and space lengths into a best guess at what
-digital code the remote sent.
+> > 
+> > Agreed, that's indeed not convenient.
+> > 
+> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > 
+> > 
+> > 
+> 
+> Hi, Steven
+> 
+> Could you accept this patch?
+> 
 
-It's like turning raw VBI data into decoded ASCII teletext from a simulated
-keyboard device, all in the kernel.
+Will do,
 
-> Kernel job is to take the information from device and present it to
-> userspace using uniform format, that is kernel does 1:1 translating, but
-> doesn't parse the data.
+Thanks,
 
-One thing that could be done, unless it has changed much since I wrote it
-10+ years ago, is to take the mark/space protocol the ir device uses and sent
-that data to lircd via the input layer.  It would be less efficient, but
-would avoid another kernel interface.  Of course the input layer to lircd
-interface would be somewhat different than other input devices, so
-it's not entirely correct to say another interface is avoided.
+-- Steve
+
+
