@@ -1,108 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbZKYRDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbZKYRDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbZKYRDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbZKYRDl
+	id S1758993AbZKYRDu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758983AbZKYRDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:03:41 -0500
+	Wed, 25 Nov 2009 12:03:48 -0500
 Received: from mail-ew0-f219.google.com ([209.85.219.219]:52887 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758948AbZKYRDi (ORCPT
+	with ESMTP id S1758932AbZKYRDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:03:38 -0500
+	Wed, 25 Nov 2009 12:03:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=cwWq0C80FGhNQB4yI0nnB2zkgrtit5XWhIPqMr+nXvMVGT8AGFEfSQekh+e9B/XyJr
-         rmS21rN42KkOV3ZVa4m7nvwixhlT81wdKhFxTLGdK3KsBxNBnx+7q/Z2NOTyWjZT2CEK
-         yGb14edhNk7OSryTdXI2lHAV6F3ZDd1TYHFn4=
+        b=h5cCUlUxd2cSg4Qqfw5jOS3m0Dw6Ti1CYTzBL9zy2iVbkxV8kJq7PzP7Rnzbk00w/t
+         hOCz6tK4SUgX8ydQVS+i/0yB2MLK3tO6yQaVZdsr+w74+Qj6xYkUQZvObnu6MRgYG5qF
+         E4YlpbyqCZuyfOZ3DJo8u028N2trO3BsnmyHo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:03:00 +0100
-Message-Id: <20091125170300.5446.25122.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:03:07 +0100
+Message-Id: <20091125170307.5446.12439.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 06/86] pata_artop: unify ->prereset methods
+Subject: [PATCH 07/86] pata_artop: remove dead 34MHz PCI clock support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_artop: unify ->prereset methods
+Subject: [PATCH] pata_artop: remove dead 34MHz PCI clock support
 
-We can use the same ->prereset method for ATP850 and ATP86xR chipsets.
+It has been dead for the last three years (== since the initial driver
+merge) and probability that it will ever get fixed is quite low.
+
+Since there is no reason to keep this dead code around any longer just
+remove it (it can still be retrieved from the git history if necessary).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_artop.c |   28 +++++++---------------------
- 1 file changed, 7 insertions(+), 21 deletions(-)
+ drivers/ata/pata_artop.c |   29 ++++++++---------------------
+ 1 file changed, 8 insertions(+), 21 deletions(-)
 
 Index: b/drivers/ata/pata_artop.c
 ===================================================================
 --- a/drivers/ata/pata_artop.c
 +++ b/drivers/ata/pata_artop.c
-@@ -39,30 +39,15 @@
+@@ -30,15 +30,6 @@
+ #define DRV_NAME	"pata_artop"
+ #define DRV_VERSION	"0.4.5"
  
- static int clock = 0;
- 
--static int atp850_pre_reset(struct ata_link *link, unsigned long deadline)
--{
--	struct ata_port *ap = link->ap;
--	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
--	const struct pci_bits artop_enable_bits[] = {
--		{ 0x4AU, 1U, 0x02UL, 0x02UL },	/* port 0 */
--		{ 0x4AU, 1U, 0x04UL, 0x04UL },	/* port 1 */
--	};
+-/*
+- *	The ARTOP has 33 Mhz and "over clocked" timing tables. Until we
+- *	get PCI bus speed functionality we leave this as 0. Its a variable
+- *	for when we get the functionality and also for folks wanting to
+- *	test stuff.
+- */
 -
--	if (!pci_test_config_bits(pdev, &artop_enable_bits[ap->port_no]))
--		return -ENOENT;
--
--	return ata_sff_prereset(link, deadline);
--}
+-static int clock = 0;
 -
  /**
-- *	atp86x_pre_reset	-	probe begin
-+ *	atp8xx_prereset	-	probe begin
+  *	atp8xx_prereset	-	probe begin
   *	@link: link
-  *	@deadline: deadline jiffies for the operation
-  *
-  *	Nothing complicated needed here.
-  */
- 
--static int atp86x_pre_reset(struct ata_link *link, unsigned long deadline)
-+static int atp8xx_prereset(struct ata_link *link, unsigned long deadline)
+@@ -101,13 +92,11 @@ static void atp850_load_piomode(struct a
  {
- 	static const struct pci_bits artop_enable_bits[] = {
- 		{ 0x4AU, 1U, 0x02UL, 0x02UL },	/* port 0 */
-@@ -72,8 +57,9 @@ static int atp86x_pre_reset(struct ata_l
- 	struct ata_port *ap = link->ap;
- 	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	int dn = adev->devno + 2 * ap->port_no;
+-	const u16 timing[2][5] = {
+-		{ 0x0000, 0x000A, 0x0008, 0x0303, 0x0301 },
+-		{ 0x0700, 0x070A, 0x0708, 0x0403, 0x0401 }
++	const u16 timing[5] =
++		{ 0x0000, 0x000A, 0x0008, 0x0303, 0x0301 };
  
--	/* Odd numbered device ids are the units with enable bits (the -R cards) */
--	if (pdev->device % 1 && !pci_test_config_bits(pdev, &artop_enable_bits[ap->port_no]))
-+	/* Odd numbered device ids are the units with enable bits. */
-+	if (pdev->device % 1 &&
-+	    !pci_test_config_bits(pdev, &artop_enable_bits[ap->port_no]))
- 		return -ENOENT;
+-	};
+ 	/* Load the PIO timing active/recovery bits */
+-	pci_write_config_word(pdev, 0x40 + 2 * dn, timing[clock][pio]);
++	pci_write_config_word(pdev, 0x40 + 2 * dn, timing[pio]);
+ }
  
- 	return ata_sff_prereset(link, deadline);
-@@ -317,7 +303,7 @@ static struct ata_port_operations atp850
- 	.cable_detect		= ata_cable_40wire,
- 	.set_piomode		= atp850_set_piomode,
- 	.set_dmamode		= atp850_set_dmamode,
--	.prereset		= atp850_pre_reset,
-+	.prereset		= atp8xx_prereset,
- 	.qc_defer		= atp850_qc_defer,
- };
+ /**
+@@ -156,13 +145,11 @@ static void atp86x_load_piomode(struct a
+ {
+ 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
+ 	int dn = adev->devno + 2 * ap->port_no;
+-	const u8 timing[2][5] = {
+-		{ 0x00, 0x0A, 0x08, 0x33, 0x31 },
+-		{ 0x70, 0x7A, 0x78, 0x43, 0x41 }
++	const u8 timing[5] =
++		{ 0x00, 0x0A, 0x08, 0x33, 0x31 };
  
-@@ -326,7 +312,7 @@ static struct ata_port_operations atp86x
- 	.cable_detect		= atp86x_cable_detect,
- 	.set_piomode		= atp86x_set_piomode,
- 	.set_dmamode		= atp86x_set_dmamode,
--	.prereset		= atp86x_pre_reset,
-+	.prereset		= atp8xx_prereset,
- };
+-	};
+ 	/* Load the PIO timing active/recovery bits */
+-	pci_write_config_byte(pdev, 0x40 + dn, timing[clock][pio]);
++	pci_write_config_byte(pdev, 0x40 + dn, timing[pio]);
+ }
  
- static void atp8xx_fixup(struct pci_dev *pdev)
+ /**
+@@ -223,7 +210,7 @@ static void atp850_set_dmamode(struct at
+ 
+ 	/* Add ultra DMA bits if in UDMA mode */
+ 	if (adev->dma_mode >= XFER_UDMA_0) {
+-		u8 mode = (adev->dma_mode - XFER_UDMA_0) + 1 - clock;
++		u8 mode = (adev->dma_mode - XFER_UDMA_0) + 1;
+ 		if (mode == 0)
+ 			mode = 1;
+ 		ultra |= (mode << (2 * dn));
+@@ -261,7 +248,7 @@ static void atp86x_set_dmamode(struct at
+ 	pci_read_config_byte(pdev, 0x44 + ap->port_no, &ultra);
+ 	ultra &= ~(7 << (4  * adev->devno));	/* One nibble per drive */
+ 	if (adev->dma_mode >= XFER_UDMA_0) {
+-		u8 mode = adev->dma_mode - XFER_UDMA_0 + 1 - clock;
++		u8 mode = adev->dma_mode - XFER_UDMA_0 + 1;
+ 		if (mode == 0)
+ 			mode = 1;
+ 		ultra |= (mode << (4 * adev->devno));
