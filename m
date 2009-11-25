@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZKYM1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbZKYM2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbZKYM1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758698AbZKYM1X
+	id S1758801AbZKYM2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbZKYM2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:27:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:40854 "EHLO
+	Wed, 25 Nov 2009 07:28:41 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:65384 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbZKYM1X convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752534AbZKYM2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:27:23 -0500
+	Wed, 25 Nov 2009 07:28:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=RoeLgQ6giEOX/iNr9rHorHtCKN934aTfUF9IMAHKaI40Cu6bf5lkxwZH6xNINOGRGl
-         wWY+YzlTXpE0NmyhuULq9PlbHYazleM3xaTZ/v1SnYnZn3zIXIfsboRipp0jCHsg1HAC
-         RZV//6/tsl1c9OSIDRDo2Rwpbktv7ky3Ubmac=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VXT7ftGIu0CXDqRP6wXPf492B50RGrQOkgzLVKDD+godc6MiL8XxC0mhhr+yP9dRjv
+         z58VywJluAt6/+ym8FVxWAuIlvvDAYsrr+rdVsJUVpTNQ01MreVIVeaCIrW5CG0aI5wr
+         coLULnHlIzyhJ/QD6WUcmpXo5rovT0J28Rp/g=
+Date: Wed, 25 Nov 2009 13:28:44 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: tip tree build warning
+Message-ID: <20091125122842.GB5010@nowhere>
+References: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <5dcc4c8a0911241202s1d56354el9628763b05451fb9@mail.gmail.com>
-References: <5dcc4c8a0911241202s1d56354el9628763b05451fb9@mail.gmail.com>
-Date: Wed, 25 Nov 2009 15:27:28 +0300
-Message-ID: <5dcc4c8a0911250427g73f7a3a0y26eff2379fb86edf@mail.gmail.com>
-Subject: Kernel module, undefined symbol show_regs
-From: Tanya Gornak <errizo@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello. I can't solve problem that happens while I'm making my kernel module.
+On Wed, Nov 25, 2009 at 09:53:38PM +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> 
+> kernel/perf_event.c:4306: warning: 'bp_perf_event_destroy' defined but not used
+> 
+> Introduced by commit 24f1e32c60c45c89a997c73395b69c8af6f0a84e
+> ("hw-breakpoints: Rewrite the hw-breakpoints layer on top of perf
+> events").
 
-part of my module:
-// ...
-#include <linux/sched.h>
-//....
-static u32 task_syscall_entry(enum utrace_resume_action action,
-                                struct utrace_engine *engine,
-                                struct task_struct *task,
-                                struct pt_regs *regs){
-    // ...
-        show_regs(regs);
 
-}
-But, while making I get:
 
-WARNING: "show_regs" [/home/tehhi/module/trace.ko] undefined!
+Oh I see, it's not used in the off-case. I'll fix that soon.
+Thanks for the report!
 
-extern void show_regs(struct pt_regs *);  define in header
-linux/sched.h, place of source code is
-linux/arch/x86/kernel/process_32.c
-It use extern void __show_regs(struct pt_regs *); and extern
-asmlinkage void __backtrace(void);
-I think that extern means that I can use it (and there are no static
-symbols in this function).
-
-When trying to insert module, it predictably complains of an unknown
-symbol show_regs.
-
-What am I missing here?
-
-Thanks in advance.
