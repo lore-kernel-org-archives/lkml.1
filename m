@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934133AbZKYIiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbZKYImD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934133AbZKYIiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZKYIiV
+	id S1758168AbZKYImD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:42:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZKYImA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:38:21 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:38480 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbZKYIiT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:38:19 -0500
-Date: Wed, 25 Nov 2009 09:38:23 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/5] s390: remove unused nfsd #includes
-Message-ID: <20091125093823.7b079905@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <4B0C1F98.4000204@panasas.com>
-References: <4B0C1EB7.50508@panasas.com>
-	<4B0C1F98.4000204@panasas.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 03:42:00 -0500
+Received: from tundra.namei.org ([65.99.196.166]:51557 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbZKYImA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:42:00 -0500
+Date: Wed, 25 Nov 2009 19:41:48 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>
+Subject: Re: [RFC][PATCH] security/selinux: Simplify proc inode to security
+ label mapping.
+In-Reply-To: <m11vjtrpfk.fsf@fess.ebiederm.org>
+Message-ID: <alpine.LRH.2.00.0911251939450.9198@tundra.namei.org>
+References: <m11vjtrpfk.fsf@fess.ebiederm.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 20:02:00 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+On Fri, 20 Nov 2009, Eric W. Biederman wrote:
 
-> Some unused includes removed.
 > 
-> This patch is in an effort to cleanup nfsd headers and move
-> private definitions to source directory.
+> Currently selinux has incestuous knowledge of the implementation details
+> of procfs and sysctl that it uses to get a pathname from an inode. As it
+> happens the point we care is in the security_d_instantiate lsm hook so
+> we have a valid dentry that we can use to get the entire pathname on
+> the proc filesystem.  With the recent change to sys_sysctl to go through
+> proc/sys all proc and sysctl accesses go through the vfs, which
+> means we no longer need a sysctl special case.
 > 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  arch/s390/kernel/compat_linux.c |    6 ------
->  arch/s390/kernel/compat_linux.h |    4 ----
->  2 files changed, 0 insertions(+), 10 deletions(-)
- 
-The patch is fine. I'll add it to the feature branch of git390 for the
-next merge window. 
+> So get the path for the dentry, remove the incestuous knowledge
+> and simplify the code.
+> 
+> caveat: Because the dentry may not yet be hashed I think dentry_path will
+>         append (deleted) and thus is not the right function to call.
+
+This seems to break labeling.  Prior to this patch, I see:
+
+
+# ls -lZ /proc/1/net/rpc/nfsd.fh
+-rw-------. root root system_u:object_r:sysctl_rpc_t:s0 channel
+
+with the patch:
+
+# ls -lZ /proc/1/net/rpc/nfsd.fh
+-rw-------. root root system_u:object_r:proc_t:s0      channel
+
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+James Morris
+<jmorris@namei.org>
