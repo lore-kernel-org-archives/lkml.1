@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbZKYM2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZKYMc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758801AbZKYM2m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbZKYM2l
+	id S1758805AbZKYMc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbZKYMc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:28:41 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:65384 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbZKYM2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:28:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VXT7ftGIu0CXDqRP6wXPf492B50RGrQOkgzLVKDD+godc6MiL8XxC0mhhr+yP9dRjv
-         z58VywJluAt6/+ym8FVxWAuIlvvDAYsrr+rdVsJUVpTNQ01MreVIVeaCIrW5CG0aI5wr
-         coLULnHlIzyhJ/QD6WUcmpXo5rovT0J28Rp/g=
-Date: Wed, 25 Nov 2009 13:28:44 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: tip tree build warning
-Message-ID: <20091125122842.GB5010@nowhere>
-References: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
+	Wed, 25 Nov 2009 07:32:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59370 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758725AbZKYMcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:32:25 -0500
+Message-ID: <4B0D23A6.8040902@kernel.org>
+Date: Wed, 25 Nov 2009 21:31:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125215338.d07a95b9.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: percpu tree build warning
+References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <20091125105004.GA18163@elte.hu>
+In-Reply-To: <20091125105004.GA18163@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 09:53:38PM +1100, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
-> 
-> kernel/perf_event.c:4306: warning: 'bp_perf_event_destroy' defined but not used
-> 
-> Introduced by commit 24f1e32c60c45c89a997c73395b69c8af6f0a84e
-> ("hw-breakpoints: Rewrite the hw-breakpoints layer on top of perf
-> events").
+Hello,
 
+11/25/2009 07:50 PM, Ingo Molnar wrote:
+> Tejun, is it perhaps a problem of the percpu code getting confused 
+> between the local and file scope 'dr7' variable shadowing each other?
 
+Yes.
 
-Oh I see, it's not used in the off-case. I'll fix that soon.
-Thanks for the report!
+> If yes then that needs to be fixed in the percpu tree. per-cpu variables 
+> used to have a __per_cpu prefix and that should be maintained - the two 
+> namespaces are obviously separate on the logical space, so they should 
+> never overlap in the implementational space either.
 
+If all we ever have are static variables, the prefix may be fine but
+with dynamic percpu variables now basically being the same first class
+citizen but prefix just doesn't cut it.  It just ends up adding more
+confusion.  The transition will be a bit painful (but not too much,
+how many of these reports have we had?  Only several) but after that
+it's just plain local/global symbol collision the compiler would have
+no problem warning about.  It behaves exactly like other global
+symbols.
+
+Percpu symbols and variables belong to a different address space than
+normal symbols.  Unfortunately, C doesn't have support for such thing.
+Prefixing kind of works but simply breaks when the addresses are
+allowed to be handled as values.  We have had the exactly same problem
+and solution for years now - iomem.  Percpu memory isn't different
+from iomem at all.  Once the conversion is complete and annotations
+and code are upstream, it won't be painful at all.
+
+Thanks.
+
+-- 
+tejun
