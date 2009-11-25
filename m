@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934492AbZKYADM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934505AbZKYADo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934492AbZKYADM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 19:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934439AbZKYADL
+	id S934505AbZKYADo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 19:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934452AbZKYADn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 19:03:11 -0500
-Received: from sh.osrg.net ([192.16.179.4]:52735 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934417AbZKYADK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 19:03:10 -0500
-Date: Wed, 25 Nov 2009 08:57:43 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, yinghai@kernel.org, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091124152645.GD21821@elte.hu>
-References: <4B0BB892.9080401@kernel.org>
-	<20091124225000H.fujita.tomonori@lab.ntt.co.jp>
-	<20091124152645.GD21821@elte.hu>
+	Tue, 24 Nov 2009 19:03:43 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53283 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934439AbZKYADn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 19:03:43 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 25 Nov 2009 09:00:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH -stable] memcg: avoid oom-killing innocent task
+ in case of use_hierarchy
+Message-Id: <20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+	<20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20091125085730S.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 08:57:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 16:26:45 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Tue, 24 Nov 2009 16:28:54 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
+> task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> a task can be a candidate for being oom-killed from memcg's limit, checks
+> "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> But this check return true(it's false positive) when:
 > 
-> > > don't think user will like to use SWIOTLB instead of swiotlb.
-> > 
-> > I doubt that users care about a way to fix their problems.
+> 	<some path>/00		use_hierarchy == 0	<- hitting limit
+> 	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
 > 
-> As far as swiotlb vs. GART goes, arguably a non-bouncing hw based 
-> solution (GART) is superior to a bouncing one (swiotlb), right?
+> This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> should print information of mem_cgroup which the task being killed, not current,
+> belongs to.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |    2 +-
+>  mm/oom_kill.c   |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index fd4529d..3acc226 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -496,7 +496,7 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
+>  	task_unlock(task);
+>  	if (!curr)
+>  		return 0;
+> -	if (curr->use_hierarchy)
+> +	if (mem->use_hierarchy)
+>  		ret = css_is_ancestor(&curr->css, &mem->css);
+>  	else
+>  		ret = (curr == mem);
 
-Yeah, but GART is not a real IOMMU that always does address
-translation. If users want performance, they need 64bit DMA capable
-devices to skip GART. With such devices, GART and SWIOTLB are same.
+Hmm. Maybe not-expected behavior...could you add comment ?
 
-So this hacky GART workaround is useful for only people who use non
-64bit DMA devices and broken BIOS with GART. IMO, it's not worth
-having the workaround.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+(*) I'm sorry I can't work enough in these days.
+
+Thanks,
+-Kame
+
