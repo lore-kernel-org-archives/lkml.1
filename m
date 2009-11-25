@@ -1,122 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934792AbZKYRPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934709AbZKYRMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934792AbZKYRPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759410AbZKYRMQ
+	id S934709AbZKYRMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbZKYRMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:12:16 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:30269 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759402AbZKYRML (ORCPT
+	Wed, 25 Nov 2009 12:12:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:52976 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759409AbZKYRMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:12:11 -0500
+	Wed, 25 Nov 2009 12:12:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=OZxYURHwwoM8V0L1YrhSB5nvPV3J7bCbp3bDoOQKrhgWscBTs3ViiqzSgMI2UPmA6n
-         aHUlQvVIyXTqEs5kRDv0mfkHtMfmNBpn3autfIpcLYzwLPPVbVLoKnopxNHeW9Ys2Fcx
-         2ncym0/bsNN5Y4Pp4E2CxA0E9a+XWPo8DBWzU=
+        b=li4QRigXX5CnAfa9yV1VNqOc6DeG4I6Zci+VzRyAo9XA4O1yd8RuGKEV0xSxh6hZ6/
+         ThUPIy44IVZG9sbY0u3B/aGTr/yGIlloCX45i1g6Mu5H0qiRHO3tzwodArXrB7EuoKUj
+         h4M60zhzxxXLx4CJog87yPPvVaGoynH/9Fkdw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 25 Nov 2009 18:11:31 +0100
-Message-Id: <20091125171131.5446.99406.sendpatchset@localhost>
+Date: Wed, 25 Nov 2009 18:11:39 +0100
+Message-Id: <20091125171139.5446.21161.sendpatchset@localhost>
 In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
 References: <20091125170218.5446.13513.sendpatchset@localhost>
-Subject: [PATCH 76/86] pata_sl82c105: add Power Management support
+Subject: [PATCH 77/86] pata_sis: add 32-bit PIO support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pata_sl82c105: add Power Management support
+Subject: [PATCH] pata_sis: add 32-bit PIO support
 
-There shouldn't be any problems with it as IDE sl82c105 host driver
-has been supporting Power Management for over year now.
+There shouldn't be any problems with it as IDE sis5513 host driver
+has been allowing 32-bit PIO operations for years.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ata/pata_sl82c105.c |   37 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 32 insertions(+), 5 deletions(-)
+ drivers/ata/pata_sis.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ata/pata_sl82c105.c
+Index: b/drivers/ata/pata_sis.c
 ===================================================================
---- a/drivers/ata/pata_sl82c105.c
-+++ b/drivers/ata/pata_sl82c105.c
-@@ -1,6 +1,7 @@
- /*
-  * pata_sl82c105.c 	- SL82C105 PATA for new ATA layer
-  *			  (C) 2005 Red Hat Inc
-+ *			  (C) 2009 Bartlomiej Zolnierkiewicz
-  *
-  * Based in part on linux/drivers/ide/pci/sl82c105.c
-  * 		SL82C105/Winbond 553 IDE driver
-@@ -278,6 +279,14 @@ static int sl82c105_bridge_revision(stru
- 	return bridge->revision;
- }
- 
-+static void sl82c105_fixup(struct pci_dev *pdev)
-+{
-+	u32 val;
-+
-+	pci_read_config_dword(pdev, 0x40, &val);
-+	val |= CTRL_P0EN | CTRL_P0F16 | CTRL_P1F16;
-+	pci_write_config_dword(pdev, 0x40, val);
-+}
- 
- static int sl82c105_init_one(struct pci_dev *dev, const struct pci_device_id *id)
- {
-@@ -295,7 +304,6 @@ static int sl82c105_init_one(struct pci_
- 	/* for now use only the first port */
- 	const struct ata_port_info *ppi[] = { &info_early,
- 					       NULL };
--	u32 val;
- 	int rev;
- 	int rc;
- 
-@@ -312,13 +320,28 @@ static int sl82c105_init_one(struct pci_
- 	else
- 		ppi[0] = &info_dma;
- 
--	pci_read_config_dword(dev, 0x40, &val);
--	val |= CTRL_P0EN | CTRL_P0F16 | CTRL_P1F16;
--	pci_write_config_dword(dev, 0x40, val);
-+	sl82c105_fixup(dev);
- 
- 	return ata_pci_sff_init_one(dev, ppi, &sl82c105_sht, NULL);
- }
- 
-+#ifdef CONFIG_PM
-+static int sl82c105_reinit_one(struct pci_dev *pdev)
-+{
-+	struct ata_host *host = dev_get_drvdata(&pdev->dev);
-+	int rc;
-+
-+	rc = ata_pci_device_do_resume(pdev);
-+	if (rc)
-+		return rc;
-+
-+	sl82c105_fixup(pdev);
-+
-+	ata_host_resume(host);
-+	return 0;
-+}
-+#endif
-+
- static const struct pci_device_id sl82c105[] = {
- 	{ PCI_VDEVICE(WINBOND, PCI_DEVICE_ID_WINBOND_82C105), },
- 
-@@ -329,7 +352,11 @@ static struct pci_driver sl82c105_pci_dr
- 	.name 		= DRV_NAME,
- 	.id_table	= sl82c105,
- 	.probe 		= sl82c105_init_one,
--	.remove		= ata_pci_remove_one
-+	.remove		= ata_pci_remove_one,
-+#ifdef CONFIG_PM
-+	.suspend	= ata_pci_device_suspend,
-+	.resume		= sl82c105_reinit_one,
-+#endif
+--- a/drivers/ata/pata_sis.c
++++ b/drivers/ata/pata_sis.c
+@@ -504,14 +504,14 @@ static struct scsi_host_template sis_sht
  };
  
- static int __init sl82c105_init(void)
+ static struct ata_port_operations sis_133_for_sata_ops = {
+-	.inherits		= &ata_bmdma_port_ops,
++	.inherits		= &ata_bmdma32_port_ops,
+ 	.set_piomode		= sis_133_set_piomode,
+ 	.set_dmamode		= sis_133_set_dmamode,
+ 	.cable_detect		= sis_133_cable_detect,
+ };
+ 
+ static struct ata_port_operations sis_base_ops = {
+-	.inherits		= &ata_bmdma_port_ops,
++	.inherits		= &ata_bmdma32_port_ops,
+ 	.prereset		= sis_pre_reset,
+ };
+ 
