@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbZKYSaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759087AbZKYSie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759297AbZKYSaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759206AbZKYSai
+	id S1759087AbZKYSie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZKYSid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:30:38 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43459 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759164AbZKYSai (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:30:38 -0500
-Message-ID: <4B0D77CC.3020807@cs.helsinki.fi>
-Date: Wed, 25 Nov 2009 20:30:36 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] SLUB: Fix __GFP_ZERO unlikely() annotation
-References: <1259173279-21220-1-git-send-email-penberg@cs.helsinki.fi> <1259173636.29779.41.camel@Joe-Laptop.home>
-In-Reply-To: <1259173636.29779.41.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 25 Nov 2009 13:38:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55071 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbZKYSic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 13:38:32 -0500
+Date: Wed, 25 Nov 2009 13:37:52 -0500
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, lwoodman@redhat.com, kosaki.motohiro@fujitsu.co.jp,
+       Tomasz Chmielewski <mangoo@wpkg.org>, akpm@linux-foundation.org
+Subject: [PATCH] vmscan: do not evict inactive pages when skipping an active
+ list scan
+Message-ID: <20091125133752.2683c3e4@bree.surriel.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2009-11-25 at 20:21 +0200, Pekka Enberg wrote:
->> The unlikely() annotation in slab_alloc() covers too much of the expression.
->> It's actually very likely that the object is not NULL so use unlikely() only
->> for the __GFP_ZERO expression like SLAB does.
-> []
->> +++ b/mm/slub.c
->> @@ -1735,7 +1735,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
->> -	if (unlikely((gfpflags & __GFP_ZERO) && object))
->> +	if (unlikely(gfpflags & __GFP_ZERO) && object)
->>  		memset(object, 0, objsize);
-> 
-> so why not use
-> 
-> 	if (unlikely(gfpflags & __GFP_ZERO) && likely(object))
+In AIM7 runs, recent kernels start swapping out anonymous pages
+well before they should.  This is due to shrink_list falling
+through to shrink_inactive_list if !inactive_anon_is_low(zone, sc),
+when all we really wanted to do is pre-age some anonymous pages to
+give them extra time to be referenced while on the inactive list.
 
-Because that has no effect on the generated code.
+The obvious fix is to make sure that shrink_list does not fall
+through to scanning/reclaiming inactive pages when we called it
+to scan one of the active lists.
+
+This change should be safe because the loop in shrink_zone ensures
+that we will still shrink the anon and file inactive lists whenever
+we should.
+
+
+Reported-by: Larry Woodman <lwoodman@redhat.com>
+Signed-off-by: Rik van Riel <riel@redhat.com>
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 777af57..ec4dfda 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1469,13 +1469,15 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+ {
+ 	int file = is_file_lru(lru);
+ 
+-	if (lru == LRU_ACTIVE_FILE && inactive_file_is_low(zone, sc)) {
+-		shrink_active_list(nr_to_scan, zone, sc, priority, file);
++	if (lru == LRU_ACTIVE_FILE) {
++		if (inactive_file_is_low(zone, sc))
++		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
+ 	}
+ 
+-	if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
+-		shrink_active_list(nr_to_scan, zone, sc, priority, file);
++	if (lru == LRU_ACTIVE_ANON) {
++		if (inactive_file_is_low(zone, sc))
++		      shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
+ 	}
+ 	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
+
