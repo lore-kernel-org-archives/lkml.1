@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934468AbZKYKKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbZKYKOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934468AbZKYKKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZKYKKH
+	id S1758629AbZKYKOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 05:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbZKYKOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:10:07 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:58464 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758557AbZKYKKH (ORCPT
+	Wed, 25 Nov 2009 05:14:41 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:18215 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758620AbZKYKOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:10:07 -0500
-Date: Wed, 25 Nov 2009 10:10:12 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] twl4030: fix ELF section mismatch...
-Message-ID: <20091125101011.GA30207@sirena.org.uk>
-References: <6278d2220911231054r15891be8k8f8130fd47cddca2@mail.gmail.com> <20091124233754.GK8290@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124233754.GK8290@sortiz.org>
-X-Cookie: There is a 20% chance of tomorrow.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Wed, 25 Nov 2009 05:14:39 -0500
+From: Juha Keski-Saari <ext-juha.1.keski-saari@nokia.com>
+To: lrg@slimlogic.co.uk, broonie@opensource.wolfsonmicro.com,
+       dbrownell@users.sourceforge.net, sameo@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Cc: peter.de-schrijver@nokia.com, eduardo.valentin@nokia.com,
+       ext-juha.1.keski-saari@nokia.com
+Subject: [PATCHv2 0/1] twl4030-mfd: Add all twl4030 regulators to RegFW
+Date: Wed, 25 Nov 2009 12:14:01 +0200
+Message-Id: <1259144042-9662-1-git-send-email-ext-juha.1.keski-saari@nokia.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 25 Nov 2009 10:14:05.0063 (UTC) FILETIME=[0483B170:01CA6DB8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 12:37:55AM +0100, Samuel Ortiz wrote:
-> On Mon, Nov 23, 2009 at 06:54:06PM +0000, Daniel J Blueman wrote:
-> > Since twl4030_probe is only called from functions in the init ELF
-> > section, annotate it so.
-> > 
-> > Signed-off-by: Daniel J Blueman <daniel.blueman@gmail.com>
+This patch is a revision of an earlier patch. The previous content was split
+and now these changes are against sound-2.6/twl4030-mfd.
 
-> Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+These are only modifications on the twl4030 mfd driver, changes to the
+regulator driver were sent separately
 
-> Mark, thanks for carrying this one with your twl4030 branch.
+BR,
 
-Sure.  Daniel, could you please resend the patch to me - I've deleted
-the original.
+Juha Keski-Saari (1):
+  twl4030-mfd: Add all twl4030 regulators to the twl4030 mfd driver
+
+ drivers/mfd/twl4030-core.c  |   26 ++++++++++++++++++++++++--
+ include/linux/i2c/twl4030.h |    8 ++++++--
+ 2 files changed, 30 insertions(+), 4 deletions(-)
+
