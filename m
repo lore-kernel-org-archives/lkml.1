@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934431AbZKYLtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934518AbZKYLuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934431AbZKYLtY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934212AbZKYLtY
+	id S934518AbZKYLuS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934274AbZKYLuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:49:24 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:56710 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934143AbZKYLtX (ORCPT
+	Wed, 25 Nov 2009 06:50:17 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49893 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934212AbZKYLuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:49:23 -0500
-Date: Wed, 25 Nov 2009 11:49:08 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Jie Zhang <jie.zhang@analog.com>
-Cc: uClinux development list <uclinux-dev@uclinux.org>,
-       David Howells <dhowells@redhat.com>,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Subject: Re: [uClinux-dev] [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
-Message-ID: <20091125114908.GA21778@shareable.org>
-References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <20091125061640.GB17203@shareable.org> <4B0CCE4A.5000602@analog.com>
-MIME-Version: 1.0
+	Wed, 25 Nov 2009 06:50:17 -0500
+Date: Wed, 25 Nov 2009 12:50:19 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       peter.p.waskiewicz.jr@intel.com, peterz@infradead.org,
+       arjan@linux.intel.com, yong.zhang0@gmail.com,
+       linux-kernel@vger.kernel.org, arjan@linux.jf.intel.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] irq: Add node_affinity CPU masks for smarter irqbalance hints
+Message-ID: <20091125115019.GG29096@one.firstfloor.org>
+References: <20091124.093956.247147202.davem@davemloft.net> <1259085412.2631.48.camel@ppwaskie-mobl2> <4B0C2547.8030408@gmail.com> <20091124.105442.06273019.davem@davemloft.net> <4B0C2CCA.6030006@gmail.com> <87iqczwtia.fsf@basil.nowhere.org> <4B0C4624.9080607@gmail.com> <4B0D0742.2050301@gmail.com> <20091125103713.GF29096@one.firstfloor.org> <4B0D1667.8050506@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B0CCE4A.5000602@analog.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B0D1667.8050506@gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jie Zhang wrote:
-> On 11/25/2009 02:16 PM, Jamie Lokier wrote:
-> >Mike Frysinger wrote:
-> >>From: Jie Zhang<jie.zhang@analog.com>
-> >>
-> >>The mmu code uses the copy_*_user_page() variants in access_process_vm()
-> >>rather than copy_*_user() as the former includes an icache flush.  This is
-> >>important when doing things like setting software breakpoints with gdb.
-> >>So switch the nommu code over to do the same.
-> >
-> >Reasonable, but it's a bit subtle don't you think?
-> >How about a one-line comment saying why it's using copy_*_user_page()?
-> >
-> >(If it was called copy_*_user_flush_icache() I wouldn't say anything,
-> >but it isn't).
-> >
-> But I think it's well known in Linux kernel developers that 
-> copy_to_user_page and copy_from_user_page should do cache flushing. It's 
-> documented in Documentation/cachetlb.txt. I don't think it's necessary 
-> to replicate it here.
+On Wed, Nov 25, 2009 at 12:35:03PM +0100, Eric Dumazet wrote:
+> > You seem to only have 8 CPUs (one socket) Normally a dual socket nehalem
+> > should have 16 with HyperThreading enabled.
+> > 
+> > For some reason the BIOS is not reporting the other CPU.
+> > 
+> > You could double check with acpidmp / iasl -d if that's
+> > what the BIOS really reports, but normally it should work.
+> > 
+> 
+> Good Lord, I had a CONFIG_NR_CPUS=16 in my .config.
 
-You're right, however I now think the commit message is misleading.
+That should be enough for a two socket (2S x 4C x 2T) today,
+but of course that will eventually change too.
 
-Since this is the *only place in the entire kernel* where these
-functions are used (plus the mmu equivalent), I'm not sure I'd agree
-about well known, and the name could be better (copy_*_user_ptrace()),
-but I agree now, it doesn't need a comment.
+> Changing to to 32 or 64 seems better :)
 
-It was the talk of icache flush which bothered me, as I (wrongly)
-assumed copy_*_user_page() was used elsewhere, without knowledge of
-icache vs non-icache differences - which are often the responsibility
-of userspace to get right, so often the kernel does not care.
+That looks weird. It should have worked with CONFIG_NR_CPUS==16 too,
+because you only have 16 CPUs and the NR_CPUS should affect APIC
+ranges etc.
 
-In fact, it's not just icache.  copy_*_user_page() has to do some
-*data* cache flushing too, on some architecures.  For example, see
-arch/sparc/include/asm/cacheflush_64.h:
+Something still fishy. I would properly report it.
 
-    #define copy_to_user_page(vma, page, vaddr, dst, src, len)              \
-            do {                                                            \
-                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
-                    memcpy(dst, src, len);                                  \
-                    flush_ptrace_access(vma, page, vaddr, src, len, 0);     \
-            } while (0)
+BTW kernel should give some error message in any case when
+there are not enough CPUs I guess. 
 
-    #define copy_from_user_page(vma, page, vaddr, dst, src, len)            \
-            do {                                                            \
-                    flush_cache_page(vma, vaddr, page_to_pfn(page));        \
-                    memcpy(dst, src, len);                                  \
-                    flush_ptrace_access(vma, page, vaddr, dst, len, 1);     \
-            } while (0)
+-Andi
 
-I'm not sure why I don't see the same dcache flushing on ARM, so I
-wonder if the ARM implementation of these buggy.
-
-Anyway, that means the commit message is a little misleading, saying
-it's for the icache flush.  It is for whatever icache and dcache
-flushes are needed for a ptrace access.
-
-Which is why, given they are only used for ptrace (have just grepped),
-I'm inclined to think it'd be clearer to rename the functions to
-copy_*_user_ptrace().  And make your no-mmu change of course :-)
-Any thoughts on the rename?
-
--- Jamie
+-- 
+ak@linux.intel.com -- Speaking for myself only.
