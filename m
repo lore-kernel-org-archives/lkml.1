@@ -1,64 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934681AbZKYNET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934679AbZKYNI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934681AbZKYNET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934670AbZKYNER
+	id S934679AbZKYNI7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934598AbZKYNI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:04:17 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33447 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934639AbZKYNEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:04:11 -0500
-Date: Thu, 26 Nov 2009 00:04:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: linux-next: percpu tree build failure
-Message-Id: <20091126000411.8fa198fd.sfr@canb.auug.org.au>
-In-Reply-To: <4B0D29D9.1090809@kernel.org>
-References: <20091125234133.4d603f48.sfr@canb.auug.org.au>
-	<4B0D29D9.1090809@kernel.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Wed, 25 Nov 2009 08:08:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45124 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S934597AbZKYNI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:08:58 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18t2T8X8JwtlfrY/+LspEtyO1R+u9UMEDaWei66c8
+	pWIq+n1ypdJJLp
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259142719.4027.228.camel@laptop>
+References: <1258891664.14325.30.camel@marge.simson.net>
+	 <1259070683.4531.1476.camel@laptop>
+	 <1259082449.15249.90.camel@marge.simson.net>
+	 <1259084140.4531.1710.camel@laptop>  <1259085280.4531.1730.camel@laptop>
+	 <1259086901.15249.121.camel@marge.simson.net>
+	 <1259087245.4531.1767.camel@laptop>
+	 <1259132226.20897.22.camel@marge.simson.net>
+	 <1259142719.4027.228.camel@laptop>
+Content-Type: text/plain
+Date: Wed, 25 Nov 2009 14:09:00 +0100
+Message-Id: <1259154540.22627.42.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Nov_2009_00_04_11_+1100_/2=ix_arjpYTG_JN"
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Nov_2009_00_04_11_+1100_/2=ix_arjpYTG_JN
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-11-25 at 10:51 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-11-25 at 07:57 +0100, Mike Galbraith wrote:
+> 
+> >         update_curr(cfs_rq);
+> > +
+> > +       if (is_same_group(se, pse)) {
+> > +               se->vruntime = pse->vruntime;
+> > +
+> > +               /*
+> > +                * If we're not sharing a runqueue, redo the child's vruntime
+> > +                * offset after accounting for any yet to be booked vruntime.
+> > +                */
+> > +               if (this_cpu != task_cpu(p)) {
+> > +                       struct cfs_rq *old_cfs_rq = cfs_rq_of(pse);
+> > +                       u64 now = cpu_rq(this_cpu)->clock;
+> > +                       unsigned long delta_exec = now - pse->exec_start;
+> > +
+> > +                       delta_exec = calc_delta_fair(delta_exec, se);
+> > +                       se->vruntime += delta_exec;
+> > +                       se->vruntime -= old_cfs_rq->min_vruntime -
+> > +                                               cfs_rq->min_vruntime;
+> > +               }
+> > +       }
+> > +
+> >         place_entity(cfs_rq, se, 1); 
+> 
+> /me got his head in a twist..
 
-Hi Tejun,
+The group stuff does that to me every time.
 
-On Wed, 25 Nov 2009 21:58:01 +0900 Tejun Heo <tj@kernel.org> wrote:
->
-> The change was missing asm/io.h include and the fix commit was
-> incorrectly attributed to me.  Fixed both problems.
+>  - is_same_group() assumes both things are on the same cpu and will
+>    fail (for the group configs) when this is not so.
 
-OK, thanks.
+Gak.  (grr)  This is getting ridiculous :)  There is only one caller of
+wake_up_new_task(), and that is the all fired be damned parent waking
+it's child.  There is one caller of sched_class::task_new() as well, and
+that is wake_up_new_task().  If I can't just copy the silly thing and be
+done with it, there's something wrong.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+(and if parent turns into grim reaper, heartless /me doesn't care)
 
---Signature=_Thu__26_Nov_2009_00_04_11_+1100_/2=ix_arjpYTG_JN
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+sched: fix sched_fair.c::task_new_fair vruntime bug.
 
-iEYEARECAAYFAksNK0sACgkQjjKRsyhoI8x7BgCfdzmKflDncFS+eM3QOQiFaXFx
-1JkAn1hs5YjkN1EfL7cPgX/hwHD+ic/b
-=dNn8
------END PGP SIGNATURE-----
+b5d9d734 fixed the problem of a forking task's child gaining vruntime..
+IFF the child/parent shared a runqueue.  In the other case, it broke
+fairness all to pieces by setting the child's vruntime to whatever task
+happened to be current on the child's runqueue at wakeup time.  Fix this
+by selecting a runqueue for the child at wakeup time, copying the parent's
+vruntime, adding any unaccounted vruntime, and redoing cross cpu offset.
 
---Signature=_Thu__26_Nov_2009_00_04_11_+1100_/2=ix_arjpYTG_JN--
+Also, since setting scheduling policy requires the tasklist lock, move
+sched_fork() under the tasklist lock in copy_process();
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
+---
+ kernel/fork.c       |    9 ++++++---
+ kernel/sched.c      |   35 +++++++++++++++++++++++------------
+ kernel/sched_fair.c |   29 +++++++++++++++++++++++------
+ 3 files changed, 52 insertions(+), 21 deletions(-)
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -1925,20 +1925,35 @@ static void task_tick_fair(struct rq *rq
+  * Share the fairness runtime between parent and child, thus the
+  * total amount of pressure for CPU stays equal - new tasks
+  * get a chance to run but frequent forkers are not allowed to
+- * monopolize the CPU. Note: the parent runqueue is locked,
+- * the child is not running yet.
++ * monopolize the CPU. Note: the child's runqueue is locked, the
++ * child is not yet running, and the parent is not preemptible.
+  */
+ static void task_new_fair(struct rq *rq, struct task_struct *p)
+ {
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(p);
+ 	struct sched_entity *se = &p->se, *curr = cfs_rq->curr;
++	struct sched_entity *pse = &current->se;
+ 	int this_cpu = smp_processor_id();
+ 
+-	sched_info_queued(p);
+-
+ 	update_curr(cfs_rq);
+-	if (curr)
+-		se->vruntime = curr->vruntime;
++
++	se->vruntime = pse->vruntime;
++
++	/*
++	 * If we're not sharing a runqueue, redo the child's vruntime
++	 * offset after accounting for any yet to be booked vruntime.
++	 */
++	if (this_cpu != task_cpu(p)) {
++		struct cfs_rq *old_cfs_rq = cfs_rq_of(pse);
++		u64 now = cpu_rq(this_cpu)->clock;
++		unsigned long delta_exec = now - pse->exec_start;
++
++		delta_exec = calc_delta_fair(delta_exec, se);
++		se->vruntime += delta_exec;
++		se->vruntime -= old_cfs_rq->min_vruntime -
++					cfs_rq->min_vruntime;
++	}
++
+ 	place_entity(cfs_rq, se, 1);
+ 
+ 	/* 'curr' will be NULL if the child belongs to a different group */
+@@ -1953,6 +1968,8 @@ static void task_new_fair(struct rq *rq,
+ 	}
+ 
+ 	enqueue_task_fair(rq, p, 0);
++
++	sched_info_queued(p);
+ }
+ 
+ /*
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -2558,7 +2558,6 @@ static void __sched_fork(struct task_str
+ void sched_fork(struct task_struct *p, int clone_flags)
+ {
+ 	int cpu = get_cpu();
+-	unsigned long flags;
+ 
+ 	__sched_fork(p);
+ 
+@@ -2592,13 +2591,7 @@ void sched_fork(struct task_struct *p, i
+ 	if (!rt_prio(p->prio))
+ 		p->sched_class = &fair_sched_class;
+ 
+-#ifdef CONFIG_SMP
+-	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+-#endif
+-	local_irq_save(flags);
+-	update_rq_clock(cpu_rq(cpu));
+-	set_task_cpu(p, cpu);
+-	local_irq_restore(flags);
++	__set_task_cpu(p, cpu);
+ 
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
+ 	if (likely(sched_info_on()))
+@@ -2625,14 +2618,31 @@ void sched_fork(struct task_struct *p, i
+  */
+ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
+ {
++	int cpu = get_cpu();
+ 	unsigned long flags;
+-	struct rq *rq;
++	struct task_struct *parent = current;
++	struct rq *rq, *orig_rq;
+ 
+-	rq = task_rq_lock(p, &flags);
++	smp_wmb();
++	rq = orig_rq = task_rq_lock(parent, &flags);
+ 	BUG_ON(p->state != TASK_RUNNING);
+-	update_rq_clock(rq);
++	update_rq_clock(orig_rq);
+ 
+-	if (!p->sched_class->task_new || !current->se.on_rq) {
++#ifdef CONFIG_SMP
++	p->state = TASK_WAKING;
++	__task_rq_unlock(rq);
++	cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
++	rq = cpu_rq(cpu);
++	if (rq != orig_rq) {
++		update_rq_clock(rq);
++		set_task_cpu(p, cpu);
++	}
++	rq = __task_rq_lock(p);
++	WARN_ON(p->state != TASK_WAKING);
++	p->state = TASK_RUNNING;
++#endif
++
++	if (!p->sched_class->task_new || !parent->se.on_rq) {
+ 		activate_task(rq, p, 0);
+ 	} else {
+ 		/*
+@@ -2649,6 +2659,7 @@ void wake_up_new_task(struct task_struct
+ 		p->sched_class->task_wake_up(rq, p);
+ #endif
+ 	task_rq_unlock(rq, &flags);
++	put_cpu();
+ }
+ 
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c
++++ linux-2.6/kernel/fork.c
+@@ -1125,9 +1125,6 @@ static struct task_struct *copy_process(
+ 
+ 	p->stack_start = stack_start;
+ 
+-	/* Perform scheduler related setup. Assign this task to a CPU. */
+-	sched_fork(p, clone_flags);
+-
+ 	retval = perf_event_init_task(p);
+ 	if (retval)
+ 		goto bad_fork_cleanup_policy;
+@@ -1230,6 +1227,12 @@ static struct task_struct *copy_process(
+ 	write_lock_irq(&tasklist_lock);
+ 
+ 	/*
++	 * Perform scheduler related setup.  Final CPU assignment will
++	 * be performed at wakeup time.
++	 */
++	sched_fork(p, clone_flags);
++
++	/*
+ 	 * The task hasn't been attached yet, so its cpus_allowed mask will
+ 	 * not be changed, nor will its assigned CPU.
+ 	 *
+
+
