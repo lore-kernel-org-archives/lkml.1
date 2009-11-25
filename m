@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbZKYRYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbZKYRZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759431AbZKYRYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbZKYRYH
+	id S1759337AbZKYRZm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759292AbZKYRZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:24:07 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47204 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759130AbZKYRYE (ORCPT
+	Wed, 25 Nov 2009 12:25:40 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:63760 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759113AbZKYRZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:24:04 -0500
-Date: Wed, 25 Nov 2009 18:24:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: Steppeing down as Maintainer
-Message-ID: <20091125172406.GA14085@merkur.ravnborg.org>
-References: <20091120182249.GA28251@merkur.ravnborg.org> <20091120182613.GA28307@merkur.ravnborg.org> <20091125172122.46beaf17.sfr@canb.auug.org.au>
+	Wed, 25 Nov 2009 12:25:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=imCd5dnc136rTEtBhpkEeUfo+ZP0rbouZBex0Wcj/+1sCL1uOJhRkYX29LL2qmQtIa
+         j0ylFxhJWh5rWswMz7QQyl8CH3+8m2cxIWLaYL945iFGDvtpO+ldRtpv5S26Rh8O8wVe
+         PyVMVUS5ORhaiQ6Be5WV9J4w67Db+oOGk5w8w=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 00/86] PATA fixes
+Date: Wed, 25 Nov 2009 18:24:13 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091125170218.5446.13513.sendpatchset@localhost> <4B0D6735.8000604@garzik.org>
+In-Reply-To: <4B0D6735.8000604@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125172122.46beaf17.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911251824.13702.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 05:21:22PM +1100, Stephen Rothwell wrote:
-> Hi Sam,
+On Wednesday 25 November 2009 06:19:49 pm Jeff Garzik wrote:
+> On 11/25/2009 12:02 PM, Bartlomiej Zolnierkiewicz wrote:
+> > I've been going through PATA drivers for the last few days to make
+> > sure that we offer similar level of hardware support in the new PATA
+> > drivers as with the old IDE subsystem and the following patchset is
+> > the end result of said audit.
 > 
-> On Fri, 20 Nov 2009 19:26:13 +0100 Sam Ravnborg <sam@ravnborg.org> wrote:
+> Thanks!
+> 
+> > - add 32-bit PIO support for more controllers
 > >
-> > It has been fun but the last year or more it has
-> > been a duty and a burden. So I leave it open for
-> > other to take over.
+> >    ( pata_artop, pata_atiixp, pata_efar, pata_cmd64x, pata_cs5520,
+> >      pata_cs5530, pata_cs5535, pata_cypress, pata_hpt366, pata_hpt37x,
+> >      pata_hpt3x2n, pata_it8213, pata_it821x, pata_jmicron, pata_ns87415,
+> >      pata_opti, pata_pdc2027x, pata_pdc202xx_old, pata_rz1000,
+> >      pata_sc1200, pata_scc, pata_sch, pata_serverworks, pata_sl82c105,
+> >      pata_sis, pata_triflex&  pata_via )
 > 
-> I, also, want to thank you very much for all your work.
-> 
-> I am, however, wondering what will happen to the changes you have that are
-> currently in linux-next:
-> 
-> Apparently for v2.6.32 (in kbuild-current):
-> 
-> Michael Tokarev (1):
->       kbuild: fix bzImage build for x86
-> 
-> And queued for v2.6.33:
-> 
-> Sam Ravnborg (14):
->       kbuild: search arch/$ARCH/include before include/
->       dontdiff: add generated
->       kbuild: move bounds.h to include/generated
->       kbuild: move asm-offsets.h to include/generated
->       ia64: move nr-irqs.h to include/generated
->       arm: move mach-types to include/generated
->       sh: move machtypes.h to include/generated
->       kbuild: drop include2/ used for O=... builds
->       kbuild: do not check for include/asm-$ARCH
->       kbuild: drop include/asm
->       kbuild: move compile.h to include/generated
->       drop explicit include of autoconf.h
->       kbuild: move autoconf.h to include/generated
->       kbuild: move utsrelease.h to include/generated
-> 
-> I am (for the moment) still merging these from the copy I have of your
-> trees, but what to do in the longer term?
+> This should be all in one patch.
 
-I will submit the patches like any other regular submitter to linux-kbuild
-if the upcoming Maintainers does not pick them up from the git trees.
+For review & testing purposes it is better do it this way, I can merge
+individual patches easily later if desirable.
 
-So for now keeping the pull would be nice but as soon as you have
-a ew set of kbuild tress then drop these.
+> I'll let the comments from Alan and others trickle in before applying...
 
-Frankly I had forgot that I had a patch in -fixes...
+See comment above.
 
-	Sam
+> > - add ->init_host method for abstracting host specific controller
+> >   initialization and then use it to cleanup Power Managment code
+> >   resulting in over 100 LOC gone
+> >
+> >   ( pata_ali, pata_amd, pata_artop, pata_cmd640, pata_cmd64x,
+> >     pata_cs5530, pata_hpt366, pata_hpt3x3, pata_it821x, pata_ninja32,
+> >     pata_ns87415, pata_pdc2027x & sata_sil )
+> 
+> hmmmm....  will reserve comment until I review it thoroughly, but I am a 
+> bit reluctant to move away from the current struct-driver style driver 
+> init/setup model.
+
+This change is not moving away from it.  On the contrary -- it enhances
+the current model by adding another possibility of doing things as the new
+->init_host method is completely optional.
+
+--
+Bartlomiej Zolnierkiewicz
