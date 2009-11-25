@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbZKYSXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934921AbZKYSKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758983AbZKYSXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbZKYSXh
+	id S934921AbZKYSKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbZKYSKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:23:37 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:58833 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753321AbZKYSXg (ORCPT
+	Wed, 25 Nov 2009 13:10:03 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53041 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933073AbZKYSKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:23:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=mBfpEpEMehKbnDdUs7ACd9VZFrvMr7MuHr4TZ7ri7EdeIkXeGEx3WMkm1yxY+gU7AQ
-         Nq/uBE/Zch5Ypyn1whvWT5MH0gOARghl7LZmNWtNWCXskjZrxiv4n7d2AvZLKBdxXvSN
-         SzvnncLiCosf6RCyfxQwRiemltHYc3QPaaz/o=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 82/86] pata_via: clear UDMA transfer mode bit for PIO and MWDMA
-Date: Wed, 25 Nov 2009 19:10:06 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+	Wed, 25 Nov 2009 13:10:01 -0500
+Date: Wed, 25 Nov 2009 18:12:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200911251858.38491.bzolnier@gmail.com> <20091125180648.6ab19725@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091125180648.6ab19725@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Subject: Re: [PATCH 45/86] pata_legacy: do not probe extra ports
+ automatically if PCI is not present
+Message-ID: <20091125181205.24c2c97f@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911251845.52700.bzolnier@gmail.com>
+References: <20091125170218.5446.13513.sendpatchset@localhost>
+	<20091125170740.5446.67217.sendpatchset@localhost>
+	<20091125173215.539b5630@lxorguk.ukuu.org.uk>
+	<200911251845.52700.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911251910.06924.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 November 2009 07:06:48 pm Alan Cox wrote:
-> > Do you really find such tidy patch hard to review?
+> > NAK. You made a rather peculiar set of changes in the IDE layer but the
 > 
-> When doing it at speed - yes.
+> Please give commit numbers and describe such 'peculiar set of changes in
+> the IDE layer' in more details or skip such baseless, unjust and pointless
 
-Do you review everybody else patches 'at speed' or only mine?
+Disabling what can be a safe probe
 
---
-Bartlomiej Zolnierkiewicz
+> comments from your mails.
+
+The old IDE code didn't do the full PCI check that libata did at the time
+there were public complaints. Libata legacy also doesn't fall for the bug
+where legacy loads and blocks PCI adapters as it has a smart check in it,
+including for weirdness like the CS55x0 and the MPIIX.
+
+So I'm firmly of the opinion that
+- We should leave it as is
+- If it causes a problem we should look at the exact case involved.
+  Possibly it would need a CONFIG_X86 but thats sort of implied as
+  embedded use pata_platform in preference.
+
+The fact it just works by default is very very important.
