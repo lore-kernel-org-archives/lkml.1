@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934686AbZKYNG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934667AbZKYNEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934686AbZKYNG5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934662AbZKYNG4
+	id S934667AbZKYNEH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934639AbZKYNEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:06:56 -0500
-Received: from cantor.suse.de ([195.135.220.2]:39349 "EHLO mx1.suse.de"
+	Wed, 25 Nov 2009 08:04:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4838 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934661AbZKYNG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:06:56 -0500
-Date: Wed, 25 Nov 2009 05:01:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       paul Mackerras <paulus@samba.org>,
-       Ben Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/3] sysfs cpu probe/release files
-Message-ID: <20091125130131.GA18248@suse.de>
-References: <4B0CD70F.6090600@austin.ibm.com> <4B0CD8D5.8050803@austin.ibm.com>
+	id S934638AbZKYNEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:04:04 -0500
+Message-ID: <4B0D2B22.4030403@redhat.com>
+Date: Wed, 25 Nov 2009 15:03:30 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0CD8D5.8050803@austin.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Gleb Natapov <gleb@redhat.com>
+CC: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       hpa@zytor.com, riel@redhat.com
+Subject: Re: [PATCH v2 08/12] Inject asynchronous page fault into a guest
+ if page is swapped out.
+References: <1258985167-29178-1-git-send-email-gleb@redhat.com> <1258985167-29178-9-git-send-email-gleb@redhat.com>
+In-Reply-To: <1258985167-29178-9-git-send-email-gleb@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 01:12:21AM -0600, Nathan Fontenot wrote:
-> In order to support kernel DLPAR of CPU resources we need to provide an
-> interface to add (probe) and remove (release) the resource from the system.
-> This patch Creates new generic probe and release sysfs files to facilitate
-> cpu probe/release.  The probe/release interface provides for allowing each
-> arch to supply their own routines for implementing the backend of adding
-> and removing cpus to/from the system.
+On 11/23/2009 04:06 PM, Gleb Natapov wrote:
+> If guest access swapped out memory do not swap it in from vcpu thread
+> context. Setup slow work to do swapping and send async page fault to
+> a guest.
 >
-> This also creates the powerpc specific stubs to handle the arch callouts 
-> from writes to the sysfs files.
+> Allow async page fault injection only when guest is in user mode since
+> otherwise guest may be in non-sleepable context and will not be able to
+> reschedule.
+>
+> +
+> +void kvm_arch_inject_async_page_present(struct kvm_vcpu *vcpu,
+> +					struct kvm_async_pf *work)
+> +{
+> +	put_user(KVM_PV_REASON_PAGE_READY, vcpu->arch.apf_data);
+> +	kvm_inject_page_fault(vcpu, work->arch.token, 0);
+> +	trace_kvm_send_async_pf(work->arch.token, work->gva,
+> +				KVM_PV_REASON_PAGE_READY);
+> +}
+>    
 
-Can you document these new sysfs files with some information in the
-Documentation/ABI/ directory please?
+What if the guest is now handling a previous asynv pf or ready 
+notification?  We're clobbering the data structure.
 
-thanks,
+> +
+> +bool kvm_arch_can_inject_async_page_present(struct kvm_vcpu *vcpu)
+> +{
+> +	return !kvm_event_needs_reinjection(vcpu)&&
+> +		kvm_x86_ops->interrupt_allowed(vcpu);
+> +}
+>    
 
-greg k-h
+Okay, so this is only allowed with interrupts disabled.  Need to make 
+sure the entire pf path up to async pf executes with interrupts disabled.
+
+-- 
+error compiling committee.c: too many arguments to function
+
