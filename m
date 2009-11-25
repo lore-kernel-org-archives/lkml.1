@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934469AbZKYD6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934485AbZKYEIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934469AbZKYD6g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 22:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934279AbZKYD6f
+	id S934485AbZKYEIt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 23:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934343AbZKYEIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 22:58:35 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:35429 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934246AbZKYD6e convert rfc822-to-8bit (ORCPT
+	Tue, 24 Nov 2009 23:08:48 -0500
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:40930 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933840AbZKYEIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 22:58:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bZ7+ypbP1maZRqMi38vlXHY1NSlFVGLK42oepS4dgKj21ULELhlsXhVITLH7mEDdc+
-         9LQ1PWugFn4sAtGpDtPbakbEgTNoDJo9uenVfiM6Pkwfgaw47i2eiLazhcAslEHz1nb4
-         jzCIP+Cs2FIiDIfrZjMRtpb7zRcgGJSJDSWvo=
+	Tue, 24 Nov 2009 23:08:48 -0500
+Date: Wed, 25 Nov 2009 09:38:46 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH -stable] memcg: avoid oom-killing innocent task
+	in case of use_hierarchy
+Message-ID: <20091125040845.GD3365@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp> <20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0911241951o5394972dl65c48371f4149b7d@mail.gmail.com>
-References: <1259148311-31724-1-git-send-email-cliffcai.sh@gmail.com>
-	 <8bd0f97a0911241951o5394972dl65c48371f4149b7d@mail.gmail.com>
-Date: Wed, 25 Nov 2009 11:58:40 +0800
-Message-ID: <da1989290911241958o88d49a8i14a2c9b39f1f101b@mail.gmail.com>
-Subject: Re: [PATCH v2] [mmc/host]:Blackfin SD Host Controller Driver
-From: Cliff Cai <cliffcai.sh@gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       cliff.cai@analog.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 11:51 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Nov 25, 2009 at 06:25,  <cliffcai.sh@gmail.com> wrote:
->> From: Cliff Cai <cliffcai.sh@gmail.com>
->>
->> v2-v1 change:remove mmc host before releasing it in sdh_probe().
->>
->> Signed-off-by: Cliff Cai <cliffcai.sh@gmail.com>
->> ---
+* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-11-24 16:28:54]:
+
+> task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> a task can be a candidate for being oom-killed from memcg's limit, checks
+> "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+> 
+> But this check return true(it's false positive) when:
+> 
+> 	<some path>/00		use_hierarchy == 0	<- hitting limit
+> 	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
+> 
+> This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> should print information of mem_cgroup which the task being killed, not current,
+> belongs to.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |    2 +-
+>  mm/oom_kill.c   |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index fd4529d..3acc226 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -496,7 +496,7 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
+>  	task_unlock(task);
+>  	if (!curr)
+>  		return 0;
+> -	if (curr->use_hierarchy)
+> +	if (mem->use_hierarchy)
+>  		ret = css_is_ancestor(&curr->css, &mem->css);
+>  	else
+>  		ret = (curr == mem);
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index a7b2460..ed452e9 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -400,7 +400,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+>  		cpuset_print_task_mems_allowed(current);
+>  		task_unlock(current);
+>  		dump_stack();
+> -		mem_cgroup_print_oom_info(mem, current);
+> +		mem_cgroup_print_oom_info(mem, p);
+>  		show_mem();
+>  		if (sysctl_oom_dump_tasks)
+>  			dump_tasks(mem);
 >
-> changelog info should be below the ---, not above.
 
-is this true?
+ 
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
 
-> you're also missing the s-o-b's:
->    Signed-off-by: Bryan Wu <cooloney@kernel.org>
->    Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> -mike
->
-
-Ok,I will do it.
-
-Cliff
+-- 
+	Balbir
