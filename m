@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934592AbZKYMlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZKYMjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934592AbZKYMlh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934559AbZKYMlf
+	id S1758799AbZKYMjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 07:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758746AbZKYMjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:41:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50485 "EHLO smtps.tip.net.au"
+	Wed, 25 Nov 2009 07:39:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56510 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934553AbZKYMlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:41:35 -0500
-Date: Wed, 25 Nov 2009 23:41:33 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: linux-next: percpu tree build failure
-Message-Id: <20091125234133.4d603f48.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Nov_2009_23_41_33_+1100_Vc+EMHFwSLWu1hH+"
+	id S1758740AbZKYMju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 07:39:50 -0500
+Message-ID: <4B0D261F.7050300@redhat.com>
+Date: Wed, 25 Nov 2009 07:42:07 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] trace_kprobes: fix memory leak
+References: <4B0CEB95.2060107@cn.fujitsu.com>
+In-Reply-To: <4B0CEB95.2060107@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Nov_2009_23_41_33_+1100_Vc+EMHFwSLWu1hH+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Lai,
 
-Hi all,
+Thank you for fixing bugs!
 
-Today's linux-next build (sparc64 defconfig) failed like this:
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-mm/percpu.c: In function 'per_cpu_ptr_to_phys':
-mm/percpu.c:1321: error: implicit declaration of function 'page_to_phys'
+Lai Jiangshan wrote:
+> 
+> tp->nr_args is not set before we "goto error",
+> it causes memory leak for free_trace_probe() use tp->nr_args
+> to free memory of args.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+> index 79ce6a2..82e8583 100644
+> --- a/kernel/trace/trace_kprobe.c
+> +++ b/kernel/trace/trace_kprobe.c
+> @@ -704,10 +704,12 @@ static int create_trace_probe(int argc, char **argv)
+>  		ret = parse_probe_arg(arg, &tp->args[i].fetch, is_return);
+>  		if (ret) {
+>  			pr_info("Parse error at argument%d. (%d)\n", i, ret);
+> +			kfree(tp->args[i].name);
+>  			goto error;
+>  		}
+> +
+> +		tp->nr_args++;
+>  	}
+> -	tp->nr_args = i;
+>  
+>  	ret = register_trace_probe(tp);
+>  	if (ret)
+> 
+> 
 
-Caused by commit 9a453506c3503929654112851e27b8c64c693912 ("percpu: Fix
-kdump failure if booted with percpu_alloc=3Dpage").  I reverted the merge
-commit (due to dependencies) that merged the above
-(25b1a9ccfdd0e3dc306a1e3a354ba5480c4b0dd9 "Merge branch 'for-linus' into
-for-next to receive per_cpu_ptr_to_phys ().") for today.  The branch
-being merged had only that one commit in it.
+-- 
+Masami Hiramatsu
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
---Signature=_Wed__25_Nov_2009_23_41_33_+1100_Vc+EMHFwSLWu1hH+
-Content-Type: application/pgp-signature
+e-mail: mhiramat@redhat.com
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksNJf0ACgkQjjKRsyhoI8xa3gCgucV2PLYl2MLOdDfhdsin4VCA
-RjIAmgK7oE2yh2MSOorW1X+5pfs2E/bI
-=U8Ip
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Nov_2009_23_41_33_+1100_Vc+EMHFwSLWu1hH+--
