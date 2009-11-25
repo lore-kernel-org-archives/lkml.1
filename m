@@ -1,54 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbZKYDWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934139AbZKYD36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934297AbZKYDWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 22:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934246AbZKYDWx
+	id S934139AbZKYD36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 22:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbZKYD35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 22:22:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:32891 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933742AbZKYDWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 22:22:47 -0500
+	Tue, 24 Nov 2009 22:29:57 -0500
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:43737 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932570AbZKYD35 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 22:29:57 -0500
+Date: Wed, 25 Nov 2009 08:59:55 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       stable <stable@kernel.org>, David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH -mmotm] memcg: avoid oom-killing innocent task
+	in case of use_hierarchy
+Message-ID: <20091125032954.GC3365@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp> <661de9470911240531p5e587c42w96995fde37dbd401@mail.gmail.com> <20091124230029.7245e1b8.d-nishimura@mtf.biglobe.ne.jp> <20091124170402.GB3365@balbir.in.ibm.com> <20091125084910.16d9095d.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19212.41731.446119.833036@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Nov 2009 14:22:43 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] CPU DLPAR  handling
-In-Reply-To: <4B0C8E31.9040608@austin.ibm.com>
-References: <4B0C8B45.6080804@austin.ibm.com>
-	<4B0C8E31.9040608@austin.ibm.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091125084910.16d9095d.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Fontenot writes:
+* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-11-25 08:49:10]:
 
-> Register the pseries specific handlers for the powerpc architecture handlers
-> for the cpu probe and release files.  This also implements the cpu DLPAR
-> addition and removal of CPUS from the system.
+> On Tue, 24 Nov 2009 22:34:02 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2009-11-24 23:00:29]:
+> > 
+> > > On Tue, 24 Nov 2009 19:01:54 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > On Tue, Nov 24, 2009 at 11:27 AM, Daisuke Nishimura
+> > > > <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+> > > > > a task can be a candidate for being oom-killed from memcg's limit, checks
+> > > > > "curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+> > > > >
+> > > > > But this check return true(it's false positive) when:
+> > > > >
+> > > > >        <some path>/00          use_hierarchy == 0      <- hitting limit
+> > > > >          <some path>/00/aa     use_hierarchy == 1      <- "curr"
+> > > > >
+> > > > > This leads to killing an innocent task in 00/aa. This patch is a fix for this
+> > > > > bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+> > > > > should print information of mem_cgroup which the task being killed, not current,
+> > > > > belongs to.
+> > > > >
+> > > > 
+> > > > Quick Question: What happens if <some path>/00 has no tasks in it
+> > > > after your patches?
+> > > > 
+> > > Nothing would happen because <some path>/00 never hit its limit.
+> > 
+> > Why not? I am talking of a scenario where <some path>/00 is set to a
+> > limit (similar to your example) and hits its limit, but the groups
+> > under it have no limits, but tasks. Shouldn't we be scanning
+> > <some path>/00/aa as well?
+> > 
+> > > 
+> > > The bug that this patch fixes is:
+> > > 
+> > > - create a dir <some path>/00 and set some limits.
+> > > - create a sub dir <some path>/00/aa w/o any limits, and enable hierarchy.
+> > > - run some programs in both in 00 and 00/aa. programs in 00 should be
+> > >   big enough to cause oom by its limit.
+> > > - when oom happens by 00's limit, tasks in 00/aa can also be killed.
+> > >
+> > 
+> > To be honest, the last part is fair, specifically if 00/aa has a task
+> > that is really the heaviest task as per the oom logic. no? Are you
+> > suggesting that only tasks in <some path>/00 should be selected by the
+> > oom logic? 
+> > 
+> All of your comments would be rational if hierarchy is enabled in 00(it's
+> also enabled in 00/aa automatically in this case).
+> I'm saying about the case where it's disabled in 00 but enabled in 00/aa.
+> 
 
-...
+OK, I misunderstood the example then, so even though hierarchy is
+disabled, we kill a task in 00/aa when 00 hits the limit. Thanks for
+clarifying.
 
-> +	/* configure-connector reports cpus as living in the base
-> +	 * directory of the device tree.  CPUs actually live in the
-> +	 * cpus directory so we need to fixup the full_name.
-> +	 */
-> +	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
-> +			   GFP_KERNEL);
-> +	if (!cpu_name) {
-> +		dlpar_free_cc_nodes(dn);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	sprintf(cpu_name, "/cpus/%s", dn->full_name);
+> In this scenario, charges by tasks in 00/aa is(and should not be) charged to 00.
+> And oom caused by 00's limit should not affect the task in 00/aa.
+> 
+> 
+> Regards,
+> Daisuke Nishimura.
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
-I would have expected dn->full_name to start with a '/' already, in
-which case this will end up with two consecutive slashes after
-'cpus'.  I think that will probably cause problems.
-
-Paul.
+-- 
+	Balbir
