@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbZKYHQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbZKYHQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758347AbZKYHQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 02:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758328AbZKYHQS
+	id S1758325AbZKYHQQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 02:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbZKYHQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 02:16:18 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:35501 "EHLO
+	Wed, 25 Nov 2009 02:16:15 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:36208 "EHLO
 	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934581AbZKYHQC (ORCPT
+	with ESMTP id S1752469AbZKYHQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 02:16:02 -0500
+	Wed, 25 Nov 2009 02:16:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=pBw8hjcG1Z+NRgnkAN5+urwh+vF17XveC0baZU1WT9T6kfLoOymGrbhZwPIOcmSwF2
-         poa2z6TeJ6R/gQiVyfxac0VX3JncHtXighmAilAH0wM4Pa8ZtbZaFoshYNczGEsjFvYO
-         OoJOLh3Qyi0aVy7/CRQLGGYST5QRH6Rr69r2Y=
+        b=ZA20Iz5G31Y57o824HUTCjD5uuwQpu61VS1mR/BzyvuQifDrhDPBgurKzms8zA3uhF
+         /V/7EWMxM/8n3urnCZoJtXdxDTY7cBrfkqyHXEFWXg9tZGtd2veX/I9azwNwE71yHsaY
+         0AIhPsSnxZ2cO/LVtcsvx/hQX1ASmEbAzeb98=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org, anton@samba.org,
        hch@infradead.org
-Subject: [RFC][PATCH 4/7] perf trace: Add perf trace scripting support modules for Perl
-Date: Wed, 25 Nov 2009 01:15:49 -0600
-Message-Id: <1259133352-23685-5-git-send-email-tzanussi@gmail.com>
+Subject: [RFC][PATCH 5/7] perf trace: Add interface to access perf data from Perl handlers
+Date: Wed, 25 Nov 2009 01:15:50 -0600
+Message-Id: <1259133352-23685-6-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
 References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
@@ -30,118 +30,350 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Perf-Trace-Util Perl module and some scripts that use it.  Core.pm
-contains Perl code to define and access flag and symbolic fields.
-Util.pm contains general-purpose utility functions.
+The Perl scripting support for perf trace allows most of a trace
+event's data to be accessed directly as handler arguments, but not all
+of it e.g. the less common fields aren't passed in.  To give scripts
+access to the other fields and/or any other data or metadata in the
+main perf executable that might be useful, a way to access the C data
+in perf from Perl is needed; this patch uses the Perl XS facility to
+do it for the common_xxx event fields not passed to handler functions.
 
-Also adds some makefile bits to install them in
-libexec/perf-core/scripts/perl (or wherever perfexec_instdir points).
+Context.pm exports three functions to Perl scripts that access fields
+for the current event by calling back into perf: common_pc(),
+common_flags() and common_lock_depth().  Support for common_flags()
+field values was added to Core.pm and a script used to sanity check
+these and other basic scripting features, check-perf-trace.pl, was
+also added.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/Makefile                                |    7 +
- .../perf/scripts/perl/Perf-Trace-Util/Makefile.PL  |   12 ++
- tools/perf/scripts/perl/Perf-Trace-Util/README     |   35 ++++
- .../perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm    |  157 ++++++++++++++++++
- .../perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm    |   88 ++++++++++
- tools/perf/scripts/perl/rw-by-file.pl              |  105 ++++++++++++
- tools/perf/scripts/perl/rw-by-pid.pl               |  170 ++++++++++++++++++++
- tools/perf/scripts/perl/wakeup-latency.pl          |  103 ++++++++++++
- tools/perf/scripts/perl/workqueue-stats.pl         |  129 +++++++++++++++
- 9 files changed, 806 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/Makefile.PL
- create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/README
- create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
- create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
- create mode 100644 tools/perf/scripts/perl/rw-by-file.pl
- create mode 100644 tools/perf/scripts/perl/rw-by-pid.pl
- create mode 100644 tools/perf/scripts/perl/wakeup-latency.pl
- create mode 100644 tools/perf/scripts/perl/workqueue-stats.pl
+ tools/perf/Makefile                                |    6 +-
+ tools/perf/scripts/perl/Perf-Trace-Util/Context.c  |  134 ++++++++++++++++++++
+ tools/perf/scripts/perl/Perf-Trace-Util/Context.xs |   41 ++++++
+ .../perf/scripts/perl/Perf-Trace-Util/Makefile.PL  |   11 ++-
+ tools/perf/scripts/perl/Perf-Trace-Util/README     |   34 +++++-
+ .../perl/Perf-Trace-Util/lib/Perf/Trace/Context.pm |   55 ++++++++
+ .../perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm    |   35 +++++
+ tools/perf/scripts/perl/Perf-Trace-Util/typemap    |    1 +
+ tools/perf/scripts/perl/check-perf-trace.pl        |  106 ++++++++++++++++
+ tools/perf/util/trace-event-parse.c                |    6 +-
+ tools/perf/util/trace-event-perl.c                 |   46 +++++++-
+ tools/perf/util/trace-event-perl.h                 |    9 ++
+ tools/perf/util/trace-event.h                      |    3 +
+ 13 files changed, 474 insertions(+), 13 deletions(-)
+ create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/Context.c
+ create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/Context.xs
+ create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Context.pm
+ create mode 100644 tools/perf/scripts/perl/Perf-Trace-Util/typemap
+ create mode 100644 tools/perf/scripts/perl/check-perf-trace.pl
 
 diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index ceceafe..f536fff 100644
+index f536fff..0bce5d1 100644
 --- a/tools/perf/Makefile
 +++ b/tools/perf/Makefile
-@@ -994,6 +994,13 @@ export perfexec_instdir
- install: all
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(bindir_SQ)'
- 	$(INSTALL) perf$X '$(DESTDIR_SQ)$(bindir_SQ)'
-+	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/Perf-Trace-Util/lib/Perf/Trace'
-+	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/bin'
-+	$(INSTALL) scripts/perl/Perf-Trace-Util/lib/Perf/Trace/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/Perf-Trace-Util/lib/Perf/Trace'
-+	$(INSTALL) scripts/perl/*.pl -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl'
-+	$(INSTALL) scripts/perl/bin/* -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/bin'
-+	$(INSTALL) scripts/perl/Perf-Trace-Util/Makefile.PL -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/Perf-Trace-Util'
-+	$(INSTALL) scripts/perl/Perf-Trace-Util/README -t '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/scripts/perl/Perf-Trace-Util'
- ifdef BUILT_INS
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
- 	$(INSTALL) $(BUILT_INS) '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
+@@ -511,6 +511,7 @@ ifneq ($(shell sh -c "(echo '\#include <EXTERN.h>'; echo '\#include <perl.h>'; e
+ 	BASIC_CFLAGS += -DNO_LIBPERL
+ else
+ 	ALL_LDFLAGS += $(PERL_EMBED_LDOPTS)
++	LIB_OBJS += scripts/perl/Perf-Trace-Util/Context.o
+ endif
+ 
+ ifdef NO_DEMANGLE
+@@ -887,6 +888,9 @@ util/find_next_bit.o: ../../lib/find_next_bit.c PERF-CFLAGS
+ util/trace-event-perl.o: util/trace-event-perl.c PERF-CFLAGS
+ 	$(QUIET_CC)$(CC) -o util/trace-event-perl.o -c $(ALL_CFLAGS) $(PERL_EMBED_CCOPTS) -Wno-redundant-decls -Wno-strict-prototypes  -Wno-unused-parameter $<
+ 
++scripts/perl/Perf-Trace-Util/Context.o: scripts/perl/Perf-Trace-Util/Context.c PERF-CFLAGS
++	$(QUIET_CC)$(CC) -o scripts/perl/Perf-Trace-Util/Context.o -c $(ALL_CFLAGS) $(PERL_EMBED_CCOPTS) -Wno-redundant-decls -Wno-strict-prototypes -Wno-unused-parameter -Wno-nested-externs $<
++
+ perf-%$X: %.o $(PERFLIBS)
+ 	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) $(filter %.o,$^) $(LIBS)
+ 
+@@ -1086,7 +1090,7 @@ distclean: clean
+ #	$(RM) configure
+ 
+ clean:
+-	$(RM) *.o */*.o $(LIB_FILE)
++	$(RM) *.o */*.o */*/*.o */*/*/*.o $(LIB_FILE)
+ 	$(RM) $(ALL_PROGRAMS) $(BUILT_INS) perf$X
+ 	$(RM) $(TEST_PROGRAMS)
+ 	$(RM) *.spec *.pyc *.pyo */*.pyc */*.pyo common-cmds.h TAGS tags cscope*
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/Context.c b/tools/perf/scripts/perl/Perf-Trace-Util/Context.c
+new file mode 100644
+index 0000000..3ba3ffc
+--- /dev/null
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/Context.c
+@@ -0,0 +1,134 @@
++/*
++ * This file was generated automatically by ExtUtils::ParseXS version 2.18_02 from the
++ * contents of Context.xs. Do not edit this file, edit Context.xs instead.
++ *
++ *	ANY CHANGES MADE HERE WILL BE LOST! 
++ *
++ */
++
++#line 1 "Context.xs"
++/*
++ * Context.xs.  XS interfaces for perf trace.
++ *
++ * Copyright (C) 2009 Tom Zanussi <tzanussi@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
++#include "EXTERN.h"
++#include "perl.h"
++#include "XSUB.h"
++#include "../../../util/trace-event-perl.h"
++
++#ifndef PERL_UNUSED_VAR
++#  define PERL_UNUSED_VAR(var) if (0) var = var
++#endif
++
++#line 41 "Context.c"
++
++XS(XS_Perf__Trace__Context_get_common_pc); /* prototype to pass -Wmissing-prototypes */
++XS(XS_Perf__Trace__Context_get_common_pc)
++{
++#ifdef dVAR
++    dVAR; dXSARGS;
++#else
++    dXSARGS;
++#endif
++    if (items != 1)
++       Perl_croak(aTHX_ "Usage: %s(%s)", "Perf::Trace::Context::get_common_pc", "context");
++    PERL_UNUSED_VAR(cv); /* -W */
++    {
++	struct scripting_context *	context = INT2PTR(struct scripting_context *,SvIV(ST(0)));
++	int	RETVAL;
++	dXSTARG;
++
++	RETVAL = get_common_pc(context);
++	XSprePUSH; PUSHi((IV)RETVAL);
++    }
++    XSRETURN(1);
++}
++
++
++XS(XS_Perf__Trace__Context_get_common_flags); /* prototype to pass -Wmissing-prototypes */
++XS(XS_Perf__Trace__Context_get_common_flags)
++{
++#ifdef dVAR
++    dVAR; dXSARGS;
++#else
++    dXSARGS;
++#endif
++    if (items != 1)
++       Perl_croak(aTHX_ "Usage: %s(%s)", "Perf::Trace::Context::get_common_flags", "context");
++    PERL_UNUSED_VAR(cv); /* -W */
++    {
++	struct scripting_context *	context = INT2PTR(struct scripting_context *,SvIV(ST(0)));
++	int	RETVAL;
++	dXSTARG;
++
++	RETVAL = get_common_flags(context);
++	XSprePUSH; PUSHi((IV)RETVAL);
++    }
++    XSRETURN(1);
++}
++
++
++XS(XS_Perf__Trace__Context_get_common_lock_depth); /* prototype to pass -Wmissing-prototypes */
++XS(XS_Perf__Trace__Context_get_common_lock_depth)
++{
++#ifdef dVAR
++    dVAR; dXSARGS;
++#else
++    dXSARGS;
++#endif
++    if (items != 1)
++       Perl_croak(aTHX_ "Usage: %s(%s)", "Perf::Trace::Context::get_common_lock_depth", "context");
++    PERL_UNUSED_VAR(cv); /* -W */
++    {
++	struct scripting_context *	context = INT2PTR(struct scripting_context *,SvIV(ST(0)));
++	int	RETVAL;
++	dXSTARG;
++
++	RETVAL = get_common_lock_depth(context);
++	XSprePUSH; PUSHi((IV)RETVAL);
++    }
++    XSRETURN(1);
++}
++
++#ifdef __cplusplus
++extern "C"
++#endif
++XS(boot_Perf__Trace__Context); /* prototype to pass -Wmissing-prototypes */
++XS(boot_Perf__Trace__Context)
++{
++#ifdef dVAR
++    dVAR; dXSARGS;
++#else
++    dXSARGS;
++#endif
++    const char* file = __FILE__;
++
++    PERL_UNUSED_VAR(cv); /* -W */
++    PERL_UNUSED_VAR(items); /* -W */
++    XS_VERSION_BOOTCHECK ;
++
++        newXSproto("Perf::Trace::Context::get_common_pc", XS_Perf__Trace__Context_get_common_pc, file, "$");
++        newXSproto("Perf::Trace::Context::get_common_flags", XS_Perf__Trace__Context_get_common_flags, file, "$");
++        newXSproto("Perf::Trace::Context::get_common_lock_depth", XS_Perf__Trace__Context_get_common_lock_depth, file, "$");
++    if (PL_unitcheckav)
++         call_list(PL_scopestack_ix, PL_unitcheckav);
++    XSRETURN_YES;
++}
++
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/Context.xs b/tools/perf/scripts/perl/Perf-Trace-Util/Context.xs
+new file mode 100644
+index 0000000..24facb3
+--- /dev/null
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/Context.xs
+@@ -0,0 +1,41 @@
++/*
++ * Context.xs.  XS interfaces for perf trace.
++ *
++ * Copyright (C) 2009 Tom Zanussi <tzanussi@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
++#include "EXTERN.h"
++#include "perl.h"
++#include "XSUB.h"
++#include "../../../util/trace-event-perl.h"
++
++MODULE = Perf::Trace::Context		PACKAGE = Perf::Trace::Context
++PROTOTYPES: ENABLE
++
++int
++get_common_pc(context)
++	struct scripting_context * context
++
++int
++get_common_flags(context)
++	struct scripting_context * context
++
++int
++get_common_lock_depth(context)
++	struct scripting_context * context
++
 diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/Makefile.PL b/tools/perf/scripts/perl/Perf-Trace-Util/Makefile.PL
-new file mode 100644
-index 0000000..b0de02e
---- /dev/null
+index b0de02e..decdeb0 100644
+--- a/tools/perf/scripts/perl/Perf-Trace-Util/Makefile.PL
 +++ b/tools/perf/scripts/perl/Perf-Trace-Util/Makefile.PL
-@@ -0,0 +1,12 @@
-+use 5.010000;
-+use ExtUtils::MakeMaker;
-+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-+# the contents of the Makefile that is written.
-+WriteMakefile(
-+    NAME              => 'Perf::Trace::Util',
-+    VERSION_FROM      => 'lib/Perf/Trace/Util.pm', # finds $VERSION
-+    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-+    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-+      (ABSTRACT_FROM  => 'lib/Perf/Trace/Util.pm', # retrieve abstract from module
-+       AUTHOR         => 'Tom Zanussi <tzanussi@gmail.com>') : ()),
-+);
+@@ -3,10 +3,15 @@ use ExtUtils::MakeMaker;
+ # See lib/ExtUtils/MakeMaker.pm for details of how to influence
+ # the contents of the Makefile that is written.
+ WriteMakefile(
+-    NAME              => 'Perf::Trace::Util',
+-    VERSION_FROM      => 'lib/Perf/Trace/Util.pm', # finds $VERSION
++    NAME              => 'Perf::Trace::Context',
++    VERSION_FROM      => 'lib/Perf/Trace/Context.pm', # finds $VERSION
+     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
+-      (ABSTRACT_FROM  => 'lib/Perf/Trace/Util.pm', # retrieve abstract from module
++      (ABSTRACT_FROM  => 'lib/Perf/Trace/Context.pm', # retrieve abstract from module
+        AUTHOR         => 'Tom Zanussi <tzanussi@gmail.com>') : ()),
++    LIBS              => [''], # e.g., '-lm'
++    DEFINE            => '-I ../..', # e.g., '-DHAVE_SOMETHING'
++    INC               => '-I.', # e.g., '-I. -I/usr/include/other'
++	# Un-comment this if you add C files to link with later:
++    OBJECT            => 'Context.o', # link all the C files too
+ );
 diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/README b/tools/perf/scripts/perl/Perf-Trace-Util/README
-new file mode 100644
-index 0000000..0a58378
---- /dev/null
+index 0a58378..adb99aa 100644
+--- a/tools/perf/scripts/perl/Perf-Trace-Util/README
 +++ b/tools/perf/scripts/perl/Perf-Trace-Util/README
-@@ -0,0 +1,35 @@
-+Perf-Trace-Util version 0.01
-+============================
+@@ -3,6 +3,34 @@ Perf-Trace-Util version 0.01
+ 
+ This module contains utility functions for use with perf trace.
+ 
++Core.pm and Util.pm are pure Perl modules; Core.pm contains routines
++that the core perf support for Perl calls on and should always be
++'used', while Util.pm contains useful but optional utility functions
++that scripts may want to use.  Context.pm contains the Perl->C
++interface that allows scripts to access data in the embedding perf
++executable; scripts wishing to do that should 'use Context.pm'.
 +
-+This module contains utility functions for use with perf trace.
++The Perl->C perf interface is completely driven by Context.xs.  If you
++want to add new Perl functions that end up accessing C data in the
++perf executable, you add desciptions of the new functions here.
++scripting_context is a pointer to the perf data in the perf executable
++that you want to access - it's passed as the second parameter,
++$context, to all handler functions.
 +
-+INSTALLATION
++After you do that:
 +
-+Building perf with perf trace Perl scripting should install this
-+module in the right place.
++  perl Makefile.PL   # to create a Makefile for the next step
++  make               # to create Context.c
 +
-+You should make sure libperl is installed first e.g. apt-get install
-+libperl-dev.
++  edit Context.c to add const to the char* file = __FILE__ line in
++  XS(boot_Perf__Trace__Context) to silence a warning/error.
 +
-+DEPENDENCIES
++  You can delete the Makefile, object files and anything else that was
++  generated e.g. blib and shared library, etc, except for of course
++  Context.c
 +
-+This module requires these other modules and libraries:
++  You should then be able to run the normal perf make as usual.
 +
-+  blah blah blah
-+
-+COPYRIGHT AND LICENCE
-+
-+Put the correct copyright and licence information here.
-+
-+Copyright (C) 2009 by Tom Zanussi <tzanussi@gmail.com>
-+
-+This library is free software; you can redistribute it and/or modify
-+it under the same terms as Perl itself, either Perl version 5.10.0 or,
-+at your option, any later version of Perl 5 you may have available.
-+
-+Alternatively, this software may be distributed under the terms of the
-+GNU General Public License ("GPL") version 2 as published by the Free
-+Software Foundation.
-+
-+
-+
-diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
+ INSTALLATION
+ 
+ Building perf with perf trace Perl scripting should install this
+@@ -15,12 +43,10 @@ DEPENDENCIES
+ 
+ This module requires these other modules and libraries:
+ 
+-  blah blah blah
++  None
+ 
+ COPYRIGHT AND LICENCE
+ 
+-Put the correct copyright and licence information here.
+-
+ Copyright (C) 2009 by Tom Zanussi <tzanussi@gmail.com>
+ 
+ This library is free software; you can redistribute it and/or modify
+@@ -31,5 +57,3 @@ Alternatively, this software may be distributed under the terms of the
+ GNU General Public License ("GPL") version 2 as published by the Free
+ Software Foundation.
+ 
+-
+-
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Context.pm b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Context.pm
 new file mode 100644
-index 0000000..fd250fb
+index 0000000..6c7f365
 --- /dev/null
-+++ b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
-@@ -0,0 +1,157 @@
-+package Perf::Trace::Core;
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Context.pm
+@@ -0,0 +1,55 @@
++package Perf::Trace::Context;
 +
 +use 5.010000;
 +use strict;
@@ -157,609 +389,178 @@ index 0000000..fd250fb
 +our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 +
 +our @EXPORT = qw(
-+define_flag_field define_flag_value flag_str dump_flag_fields
-+define_symbolic_field define_symbolic_value symbol_str dump_symbolic_fields
++	common_pc common_flags common_lock_depth
 +);
 +
 +our $VERSION = '0.01';
 +
-+my %flag_fields;
-+my %symbolic_fields;
++require XSLoader;
++XSLoader::load('Perf::Trace::Context', $VERSION);
 +
-+sub flag_str
++1;
++__END__
++=head1 NAME
++
++Perf::Trace::Context - Perl extension for accessing functions in perf.
++
++=head1 SYNOPSIS
++
++  use Perf::Trace::Context;
++
++=head1 SEE ALSO
++
++Perf (trace) documentation
++
++=head1 AUTHOR
++
++Tom Zanussi, E<lt>tzanussi@gmail.com<gt>
++
++=head1 COPYRIGHT AND LICENSE
++
++Copyright (C) 2009 by Tom Zanussi
++
++This library is free software; you can redistribute it and/or modify
++it under the same terms as Perl itself, either Perl version 5.10.0 or,
++at your option, any later version of Perl 5 you may have available.
++
++Alternatively, this software may be distributed under the terms of the
++GNU General Public License ("GPL") version 2 as published by the Free
++Software Foundation.
++
++=cut
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
+index fd250fb..9df376a 100644
+--- a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Core.pm
+@@ -16,10 +16,45 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+ our @EXPORT = qw(
+ define_flag_field define_flag_value flag_str dump_flag_fields
+ define_symbolic_field define_symbolic_value symbol_str dump_symbolic_fields
++trace_flag_str
+ );
+ 
+ our $VERSION = '0.01';
+ 
++my %trace_flags = (0x00 => "NONE",
++		   0x01 => "IRQS_OFF",
++		   0x02 => "IRQS_NOSUPPORT",
++		   0x04 => "NEED_RESCHED",
++		   0x08 => "HARDIRQ",
++		   0x10 => "SOFTIRQ");
++
++sub trace_flag_str
 +{
-+    my ($event_name, $field_name, $value) = @_;
++    my ($value) = @_;
 +
 +    my $string;
 +
-+    if ($flag_fields{$event_name}{$field_name}) {
-+	my $print_delim = 0;
-+	foreach my $idx (sort {$a <=> $b} keys %{$flag_fields{$event_name}{$field_name}{"values"}}) {
-+	    if (!$value && !$idx) {
-+		$string .= "$flag_fields{$event_name}{$field_name}{'values'}{$idx}";
-+		last;
++    my $print_delim = 0;
++
++    foreach my $idx (sort {$a <=> $b} keys %trace_flags) {
++	if (!$value && !$idx) {
++	    $string .= "NONE";
++	    last;
++	}
++
++	if ($idx && ($value & $idx) == $idx) {
++	    if ($print_delim) {
++		$string .= " | ";
 +	    }
-+	    if ($idx && ($value & $idx) == $idx) {
-+		if ($print_delim && $flag_fields{$event_name}{$field_name}{'delim'}) {
-+		    $string .= " $flag_fields{$event_name}{$field_name}{'delim'} ";
-+		}
-+		$string .= "$flag_fields{$event_name}{$field_name}{'values'}{$idx}";
-+		$print_delim = 1;
-+		$value &= ~$idx;
-+	    }
++	    $string .= "$trace_flags{$idx}";
++	    $print_delim = 1;
++	    $value &= ~$idx;
 +	}
 +    }
 +
 +    return $string;
 +}
 +
-+sub define_flag_field
-+{
-+    my ($event_name, $field_name, $delim) = @_;
-+
-+    $flag_fields{$event_name}{$field_name}{"delim"} = $delim;
-+}
-+
-+sub define_flag_value
-+{
-+    my ($event_name, $field_name, $value, $field_str) = @_;
-+
-+    $flag_fields{$event_name}{$field_name}{"values"}{$value} = $field_str;
-+}
-+
-+sub dump_flag_fields
-+{
-+    for my $event (keys %flag_fields) {
-+	print "event $event:\n";
-+	for my $field (keys %{$flag_fields{$event}}) {
-+	    print "    field: $field:\n";
-+	    print "        delim: $flag_fields{$event}{$field}{'delim'}\n";
-+	    foreach my $idx (sort {$a <=> $b} keys %{$flag_fields{$event}{$field}{"values"}}) {
-+		print "        value $idx: $flag_fields{$event}{$field}{'values'}{$idx}\n";
-+	    }
-+	}
-+    }
-+}
-+
-+sub symbol_str
-+{
-+    my ($event_name, $field_name, $value) = @_;
-+
-+    if ($symbolic_fields{$event_name}{$field_name}) {
-+	foreach my $idx (sort {$a <=> $b} keys %{$symbolic_fields{$event_name}{$field_name}{"values"}}) {
-+	    if (!$value && !$idx) {
-+		return "$symbolic_fields{$event_name}{$field_name}{'values'}{$idx}";
-+		last;
-+	    }
-+	    if ($value == $idx) {
-+		return "$symbolic_fields{$event_name}{$field_name}{'values'}{$idx}";
-+	    }
-+	}
-+    }
-+
-+    return undef;
-+}
-+
-+sub define_symbolic_field
-+{
-+    my ($event_name, $field_name) = @_;
-+
-+    # nothing to do, really
-+}
-+
-+sub define_symbolic_value
-+{
-+    my ($event_name, $field_name, $value, $field_str) = @_;
-+
-+    $symbolic_fields{$event_name}{$field_name}{"values"}{$value} = $field_str;
-+}
-+
-+sub dump_symbolic_fields
-+{
-+    for my $event (keys %symbolic_fields) {
-+	print "event $event:\n";
-+	for my $field (keys %{$symbolic_fields{$event}}) {
-+	    print "    field: $field:\n";
-+	    foreach my $idx (sort {$a <=> $b} keys %{$symbolic_fields{$event}{$field}{"values"}}) {
-+		print "        value $idx: $symbolic_fields{$event}{$field}{'values'}{$idx}\n";
-+	    }
-+	}
-+    }
-+}
-+
-+1;
-+__END__
-+=head1 NAME
-+
-+Perf::Trace::Core - Perl extension for perf trace
-+
-+=head1 SYNOPSIS
-+
-+  use Perf::Trace::Core
-+
-+=head1 SEE ALSO
-+
-+Perf (trace) documentation
-+
-+=head1 AUTHOR
-+
-+Tom Zanussi, E<lt>tzanussi@gmail.com<gt>
-+
-+=head1 COPYRIGHT AND LICENSE
-+
-+Copyright (C) 2009 by Tom Zanussi
-+
-+This library is free software; you can redistribute it and/or modify
-+it under the same terms as Perl itself, either Perl version 5.10.0 or,
-+at your option, any later version of Perl 5 you may have available.
-+
-+Alternatively, this software may be distributed under the terms of the
-+GNU General Public License ("GPL") version 2 as published by the Free
-+Software Foundation.
-+
-+=cut
-diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
+ my %flag_fields;
+ my %symbolic_fields;
+ 
+diff --git a/tools/perf/scripts/perl/Perf-Trace-Util/typemap b/tools/perf/scripts/perl/Perf-Trace-Util/typemap
 new file mode 100644
-index 0000000..052f132
+index 0000000..8408368
 --- /dev/null
-+++ b/tools/perf/scripts/perl/Perf-Trace-Util/lib/Perf/Trace/Util.pm
-@@ -0,0 +1,88 @@
-+package Perf::Trace::Util;
-+
-+use 5.010000;
-+use strict;
-+use warnings;
-+
-+require Exporter;
-+
-+our @ISA = qw(Exporter);
-+
-+our %EXPORT_TAGS = ( 'all' => [ qw(
-+) ] );
-+
-+our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-+
-+our @EXPORT = qw(
-+avg nsecs nsecs_secs nsecs_nsecs nsecs_usecs print_nsecs
-+);
-+
-+our $VERSION = '0.01';
-+
-+sub avg
-+{
-+    my ($total, $n) = @_;
-+
-+    return $total / $n;
-+}
-+
-+my $NSECS_PER_SEC    = 1000000000;
-+
-+sub nsecs
-+{
-+    my ($secs, $nsecs) = @_;
-+
-+    return $secs * $NSECS_PER_SEC + $nsecs;
-+}
-+
-+sub nsecs_secs {
-+    my ($nsecs) = @_;
-+
-+    return $nsecs / $NSECS_PER_SEC;
-+}
-+
-+sub nsecs_nsecs {
-+    my ($nsecs) = @_;
-+
-+    return $nsecs - nsecs_secs($nsecs);
-+}
-+
-+sub nsecs_str {
-+    my ($nsecs) = @_;
-+
-+    my $str = sprintf("%5u.%09u", nsecs_secs($nsecs), nsecs_nsecs($nsecs));
-+
-+    return $str;
-+}
-+
-+1;
-+__END__
-+=head1 NAME
-+
-+Perf::Trace::Util - Perl extension for perf trace
-+
-+=head1 SYNOPSIS
-+
-+  use Perf::Trace::Util;
-+
-+=head1 SEE ALSO
-+
-+Perf (trace) documentation
-+
-+=head1 AUTHOR
-+
-+Tom Zanussi, E<lt>tzanussi@gmail.com<gt>
-+
-+=head1 COPYRIGHT AND LICENSE
-+
-+Copyright (C) 2009 by Tom Zanussi
-+
-+This library is free software; you can redistribute it and/or modify
-+it under the same terms as Perl itself, either Perl version 5.10.0 or,
-+at your option, any later version of Perl 5 you may have available.
-+
-+Alternatively, this software may be distributed under the terms of the
-+GNU General Public License ("GPL") version 2 as published by the Free
-+Software Foundation.
-+
-+=cut
-diff --git a/tools/perf/scripts/perl/rw-by-file.pl b/tools/perf/scripts/perl/rw-by-file.pl
++++ b/tools/perf/scripts/perl/Perf-Trace-Util/typemap
+@@ -0,0 +1 @@
++struct scripting_context * T_PTR
+diff --git a/tools/perf/scripts/perl/check-perf-trace.pl b/tools/perf/scripts/perl/check-perf-trace.pl
 new file mode 100644
-index 0000000..61f9156
+index 0000000..4e7dc0a
 --- /dev/null
-+++ b/tools/perf/scripts/perl/rw-by-file.pl
-@@ -0,0 +1,105 @@
-+#!/usr/bin/perl -w
++++ b/tools/perf/scripts/perl/check-perf-trace.pl
+@@ -0,0 +1,106 @@
++# perf trace event handlers, generated by perf trace -g perl
 +# (c) 2009, Tom Zanussi <tzanussi@gmail.com>
 +# Licensed under the terms of the GNU GPL License version 2
 +
-+# Display r/w activity for files read/written to for a given program
-+
-+# The common_* event handler fields are the most useful fields common to
-+# all events.  They don't necessarily correspond to the 'common_*' fields
-+# in the status files.  Those fields not available as handler params can
-+# be retrieved via script functions of the form get_common_*().
-+
-+use 5.010000;
-+use strict;
-+use warnings;
++# This script tests basic functionality such as flag and symbol
++# strings, common_xxx() calls back into perf, begin, end, unhandled
++# events, etc.  Basically, if this script runs successfully and
++# displays expected results, perl scripting support should be ok.
 +
 +use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
 +use lib "./Perf-Trace-Util/lib";
 +use Perf::Trace::Core;
++use Perf::Trace::Context;
 +use Perf::Trace::Util;
-+
-+# change this to the comm of the program you're interested in
-+my $for_comm = "perf";
-+
-+my %reads;
-+my %writes;
-+
-+sub syscalls::sys_enter_read
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm, $nr, $fd, $buf, $count) = @_;
-+
-+    if ($common_comm eq $for_comm) {
-+	$reads{$fd}{bytes_requested} += $count;
-+	$reads{$fd}{total_reads}++;
-+    }
-+}
-+
-+sub syscalls::sys_enter_write
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm, $nr, $fd, $buf, $count) = @_;
-+
-+    if ($common_comm eq $for_comm) {
-+	$writes{$fd}{bytes_written} += $count;
-+	$writes{$fd}{total_writes}++;
-+    }
-+}
-+
-+sub trace_end
-+{
-+    printf("file read counts for $for_comm:\n\n");
-+
-+    printf("%6s  %10s  %10s\n", "fd", "# reads", "bytes_requested");
-+    printf("%6s  %10s  %10s\n", "------", "----------", "-----------");
-+
-+    foreach my $fd (sort {$reads{$b}{bytes_requested} <=>
-+			      $reads{$a}{bytes_requested}} keys %reads) {
-+	my $total_reads = $reads{$fd}{total_reads};
-+	my $bytes_requested = $reads{$fd}{bytes_requested};
-+	printf("%6u  %10u  %10u\n", $fd, $total_reads, $bytes_requested);
-+    }
-+
-+    printf("\nfile write counts for $for_comm:\n\n");
-+
-+    printf("%6s  %10s  %10s\n", "fd", "# writes", "bytes_written");
-+    printf("%6s  %10s  %10s\n", "------", "----------", "-----------");
-+
-+    foreach my $fd (sort {$writes{$b}{bytes_written} <=>
-+			      $writes{$a}{bytes_written}} keys %writes) {
-+	my $total_writes = $writes{$fd}{total_writes};
-+	my $bytes_written = $writes{$fd}{bytes_written};
-+	printf("%6u  %10u  %10u\n", $fd, $total_writes, $bytes_written);
-+    }
-+
-+    print_unhandled();
-+}
-+
-+my %unhandled;
-+
-+sub print_unhandled
-+{
-+    if ((scalar keys %unhandled) == 0) {
-+	return;
-+    }
-+
-+    print "\nunhandled events:\n\n";
-+
-+    printf("%-40s  %10s\n", "event", "count");
-+    printf("%-40s  %10s\n", "----------------------------------------",
-+	   "-----------");
-+
-+    foreach my $event_name (keys %unhandled) {
-+	printf("%-40s  %10d\n", $event_name, $unhandled{$event_name});
-+    }
-+}
-+
-+sub trace_unhandled
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm) = @_;
-+
-+    $unhandled{$event_name}++;
-+}
-+
-+
-diff --git a/tools/perf/scripts/perl/rw-by-pid.pl b/tools/perf/scripts/perl/rw-by-pid.pl
-new file mode 100644
-index 0000000..da601fa
---- /dev/null
-+++ b/tools/perf/scripts/perl/rw-by-pid.pl
-@@ -0,0 +1,170 @@
-+#!/usr/bin/perl -w
-+# (c) 2009, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# Display r/w activity for all processes
-+
-+# The common_* event handler fields are the most useful fields common to
-+# all events.  They don't necessarily correspond to the 'common_*' fields
-+# in the status files.  Those fields not available as handler params can
-+# be retrieved via script functions of the form get_common_*().
-+
-+use 5.010000;
-+use strict;
-+use warnings;
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Util;
-+
-+my %reads;
-+my %writes;
-+
-+sub syscalls::sys_exit_read
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$nr, $ret) = @_;
-+
-+    if ($ret > 0) {
-+	$reads{$common_pid}{bytes_read} += $ret;
-+    } else {
-+	if (!defined ($reads{$common_pid}{bytes_read})) {
-+	    $reads{$common_pid}{bytes_read} = 0;
-+	}
-+	$reads{$common_pid}{errors}{$ret}++;
-+    }
-+}
-+
-+sub syscalls::sys_enter_read
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$nr, $fd, $buf, $count) = @_;
-+
-+    $reads{$common_pid}{bytes_requested} += $count;
-+    $reads{$common_pid}{total_reads}++;
-+    $reads{$common_pid}{comm} = $common_comm;
-+}
-+
-+sub syscalls::sys_exit_write
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$nr, $ret) = @_;
-+
-+    if ($ret <= 0) {
-+	$writes{$common_pid}{errors}{$ret}++;
-+    }
-+}
-+
-+sub syscalls::sys_enter_write
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$nr, $fd, $buf, $count) = @_;
-+
-+    $writes{$common_pid}{bytes_written} += $count;
-+    $writes{$common_pid}{total_writes}++;
-+    $writes{$common_pid}{comm} = $common_comm;
-+}
-+
-+sub trace_end
-+{
-+    printf("read counts by pid:\n\n");
-+
-+    printf("%6s  %20s  %10s  %10s  %10s\n", "pid", "comm",
-+	   "# reads", "bytes_requested", "bytes_read");
-+    printf("%6s  %-20s  %10s  %10s  %10s\n", "------", "--------------------",
-+	   "-----------", "----------", "----------");
-+
-+    foreach my $pid (sort {$reads{$b}{bytes_read} <=>
-+			       $reads{$a}{bytes_read}} keys %reads) {
-+	my $comm = $reads{$pid}{comm};
-+	my $total_reads = $reads{$pid}{total_reads};
-+	my $bytes_requested = $reads{$pid}{bytes_requested};
-+	my $bytes_read = $reads{$pid}{bytes_read};
-+
-+	printf("%6s  %-20s  %10s  %10s  %10s\n", $pid, $comm,
-+	       $total_reads, $bytes_requested, $bytes_read);
-+    }
-+
-+    printf("\nfailed reads by pid:\n\n");
-+
-+    printf("%6s  %20s  %6s  %10s\n", "pid", "comm", "error #", "# errors");
-+    printf("%6s  %20s  %6s  %10s\n", "------", "--------------------",
-+	   "------", "----------");
-+
-+    foreach my $pid (keys %reads) {
-+	my $comm = $reads{$pid}{comm};
-+	foreach my $err (sort {$reads{$b}{comm} cmp $reads{$a}{comm}}
-+			 keys %{$reads{$pid}{errors}}) {
-+	    my $errors = $reads{$pid}{errors}{$err};
-+
-+	    printf("%6d  %-20s  %6d  %10s\n", $pid, $comm, $err, $errors);
-+	}
-+    }
-+
-+    printf("\nwrite counts by pid:\n\n");
-+
-+    printf("%6s  %20s  %10s  %10s\n", "pid", "comm",
-+	   "# writes", "bytes_written");
-+    printf("%6s  %-20s  %10s  %10s\n", "------", "--------------------",
-+	   "-----------", "----------");
-+
-+    foreach my $pid (sort {$writes{$b}{bytes_written} <=>
-+			       $writes{$a}{bytes_written}} keys %writes) {
-+	my $comm = $writes{$pid}{comm};
-+	my $total_writes = $writes{$pid}{total_writes};
-+	my $bytes_written = $writes{$pid}{bytes_written};
-+
-+	printf("%6s  %-20s  %10s  %10s\n", $pid, $comm,
-+	       $total_writes, $bytes_written);
-+    }
-+
-+    printf("\nfailed writes by pid:\n\n");
-+
-+    printf("%6s  %20s  %6s  %10s\n", "pid", "comm", "error #", "# errors");
-+    printf("%6s  %20s  %6s  %10s\n", "------", "--------------------",
-+	   "------", "----------");
-+
-+    foreach my $pid (keys %writes) {
-+	my $comm = $writes{$pid}{comm};
-+	foreach my $err (sort {$writes{$b}{comm} cmp $writes{$a}{comm}}
-+			 keys %{$writes{$pid}{errors}}) {
-+	    my $errors = $writes{$pid}{errors}{$err};
-+
-+	    printf("%6d  %-20s  %6d  %10s\n", $pid, $comm, $err, $errors);
-+	}
-+    }
-+
-+    print_unhandled();
-+}
-+
-+my %unhandled;
-+
-+sub print_unhandled
-+{
-+    if ((scalar keys %unhandled) == 0) {
-+	return;
-+    }
-+
-+    print "\nunhandled events:\n\n";
-+
-+    printf("%-40s  %10s\n", "event", "count");
-+    printf("%-40s  %10s\n", "----------------------------------------",
-+	   "-----------");
-+
-+    foreach my $event_name (keys %unhandled) {
-+	printf("%-40s  %10d\n", $event_name, $unhandled{$event_name});
-+    }
-+}
-+
-+sub trace_unhandled
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm) = @_;
-+
-+    $unhandled{$event_name}++;
-+}
-diff --git a/tools/perf/scripts/perl/wakeup-latency.pl b/tools/perf/scripts/perl/wakeup-latency.pl
-new file mode 100644
-index 0000000..ed58ef2
---- /dev/null
-+++ b/tools/perf/scripts/perl/wakeup-latency.pl
-@@ -0,0 +1,103 @@
-+#!/usr/bin/perl -w
-+# (c) 2009, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# Display avg/min/max wakeup latency
-+
-+# The common_* event handler fields are the most useful fields common to
-+# all events.  They don't necessarily correspond to the 'common_*' fields
-+# in the status files.  Those fields not available as handler params can
-+# be retrieved via script functions of the form get_common_*().
-+
-+use 5.010000;
-+use strict;
-+use warnings;
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Util;
-+
-+my %last_wakeup;
-+
-+my $max_wakeup_latency;
-+my $min_wakeup_latency;
-+my $total_wakeup_latency;
-+my $total_wakeups;
-+
-+sub sched::sched_switch
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$prev_comm, $prev_pid, $prev_prio, $prev_state, $next_comm, $next_pid,
-+	$next_prio) = @_;
-+
-+    my $wakeup_ts = $last_wakeup{$common_cpu}{ts};
-+    if ($wakeup_ts) {
-+	my $switch_ts = nsecs($common_secs, $common_nsecs);
-+	my $wakeup_latency = $switch_ts - $wakeup_ts;
-+	if ($wakeup_latency > $max_wakeup_latency) {
-+	    $max_wakeup_latency = $wakeup_latency;
-+	}
-+	if ($wakeup_latency < $min_wakeup_latency) {
-+	    $min_wakeup_latency = $wakeup_latency;
-+	}
-+	$total_wakeup_latency += $wakeup_latency;
-+	$total_wakeups++;
-+    }
-+    $last_wakeup{$common_cpu}{ts} = 0;
-+}
-+
-+sub sched::sched_wakeup
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$comm, $pid, $prio, $success, $target_cpu) = @_;
-+
-+    $last_wakeup{$target_cpu}{ts} = nsecs($common_secs, $common_nsecs);
-+}
 +
 +sub trace_begin
 +{
-+    $min_wakeup_latency = 1000000000;
-+    $max_wakeup_latency = 0;
++    print "trace_begin\n";
 +}
 +
 +sub trace_end
 +{
-+    printf("wakeup_latency stats:\n\n");
-+    print "total_wakeups: $total_wakeups\n";
-+    printf("avg_wakeup_latency (ns): %u\n",
-+	   avg($total_wakeup_latency, $total_wakeups));
-+    printf("min_wakeup_latency (ns): %u\n", $min_wakeup_latency);
-+    printf("max_wakeup_latency (ns): %u\n", $max_wakeup_latency);
++    print "trace_end\n";
 +
 +    print_unhandled();
++}
++
++sub irq::softirq_entry
++{
++	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
++	    $common_pid, $common_comm,
++	    $vec) = @_;
++
++	print_header($event_name, $common_cpu, $common_secs, $common_nsecs,
++		     $common_pid, $common_comm);
++
++	print_uncommon($context);
++
++	printf("vec=%s\n",
++	       symbol_str("irq::softirq_entry", "vec", $vec));
++}
++
++sub kmem::kmalloc
++{
++	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
++	    $common_pid, $common_comm,
++	    $call_site, $ptr, $bytes_req, $bytes_alloc,
++	    $gfp_flags) = @_;
++
++	print_header($event_name, $common_cpu, $common_secs, $common_nsecs,
++		     $common_pid, $common_comm);
++
++	print_uncommon($context);
++
++	printf("call_site=%p, ptr=%p, bytes_req=%u, bytes_alloc=%u, ".
++	       "gfp_flags=%s\n",
++	       $call_site, $ptr, $bytes_req, $bytes_alloc,
++
++	       flag_str("kmem::kmalloc", "gfp_flags", $gfp_flags));
++}
++
++# print trace fields not included in handler args
++sub print_uncommon
++{
++    my ($context) = @_;
++
++    printf("common_preempt_count=%d, common_flags=%s, common_lock_depth=%d, ",
++	   common_pc($context), trace_flag_str(common_flags($context)),
++	   common_lock_depth($context));
++
 +}
 +
 +my %unhandled;
@@ -788,141 +589,162 @@ index 0000000..ed58ef2
 +
 +    $unhandled{$event_name}++;
 +}
-diff --git a/tools/perf/scripts/perl/workqueue-stats.pl b/tools/perf/scripts/perl/workqueue-stats.pl
-new file mode 100644
-index 0000000..511302c
---- /dev/null
-+++ b/tools/perf/scripts/perl/workqueue-stats.pl
-@@ -0,0 +1,129 @@
-+#!/usr/bin/perl -w
-+# (c) 2009, Tom Zanussi <tzanussi@gmail.com>
-+# Licensed under the terms of the GNU GPL License version 2
 +
-+# Displays workqueue stats
-+#
-+# Usage:
-+#
-+#   perf record -c 1 -f -a -R -e workqueue:workqueue_creation -e
-+#     workqueue:workqueue_destruction -e workqueue:workqueue_execution
-+#     -e workqueue:workqueue_insertion
-+#
-+#   perf trace -p -s tools/perf/scripts/perl/workqueue-stats.pl
-+
-+use 5.010000;
-+use strict;
-+use warnings;
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Util;
-+
-+my @cpus;
-+
-+sub workqueue::workqueue_destruction
++sub print_header
 +{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$thread_comm, $thread_pid) = @_;
++	my ($event_name, $cpu, $secs, $nsecs, $pid, $comm) = @_;
 +
-+    $cpus[$common_cpu]{$thread_pid}{destroyed}++;
-+    $cpus[$common_cpu]{$thread_pid}{comm} = $thread_comm;
++	printf("%-20s %5u %05u.%09u %8u %-20s ",
++	       $event_name, $cpu, $secs, $nsecs, $pid, $comm);
++}
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index 600d52e..180368b 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -1981,7 +1981,7 @@ int trace_parse_common_pid(void *data)
+ 			      "common_pid");
+ }
+ 
+-static int parse_common_pc(void *data)
++int parse_common_pc(void *data)
+ {
+ 	static int pc_offset;
+ 	static int pc_size;
+@@ -1990,7 +1990,7 @@ static int parse_common_pc(void *data)
+ 			      "common_preempt_count");
+ }
+ 
+-static int parse_common_flags(void *data)
++int parse_common_flags(void *data)
+ {
+ 	static int flags_offset;
+ 	static int flags_size;
+@@ -1999,7 +1999,7 @@ static int parse_common_flags(void *data)
+ 			      "common_flags");
+ }
+ 
+-static int parse_common_lock_depth(void *data)
++int parse_common_lock_depth(void *data)
+ {
+ 	static int ld_offset;
+ 	static int ld_size;
+diff --git a/tools/perf/util/trace-event-perl.c b/tools/perf/util/trace-event-perl.c
+index c56b08d..d179ade 100644
+--- a/tools/perf/util/trace-event-perl.c
++++ b/tools/perf/util/trace-event-perl.c
+@@ -30,6 +30,21 @@
+ #include "trace-event.h"
+ #include "trace-event-perl.h"
+ 
++void xs_init(pTHX);
++
++void boot_Perf__Trace__Context(pTHX_ CV *cv);
++void boot_DynaLoader(pTHX_ CV *cv);
++
++void xs_init(pTHX)
++{
++	const char *file = __FILE__;
++	dXSUB_SYS;
++
++	newXS("Perf::Trace::Context::bootstrap", boot_Perf__Trace__Context,
++	      file);
++	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
 +}
 +
-+sub workqueue::workqueue_creation
+ INTERP my_perl;
+ 
+ #define FTRACE_MAX_EVENT				\
+@@ -227,6 +242,33 @@ static inline struct event *find_cache_event(int type)
+ 	return event;
+ }
+ 
++int get_common_pc(struct scripting_context *context)
 +{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$thread_comm, $thread_pid, $cpu) = @_;
++	int pc;
 +
-+    $cpus[$common_cpu]{$thread_pid}{created}++;
-+    $cpus[$common_cpu]{$thread_pid}{comm} = $thread_comm;
++	pc = parse_common_pc(context->event_data);
++
++	return pc;
 +}
 +
-+sub workqueue::workqueue_execution
++int get_common_flags(struct scripting_context *context)
 +{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$thread_comm, $thread_pid, $func) = @_;
++	int flags;
 +
-+    $cpus[$common_cpu]{$thread_pid}{executed}++;
-+    $cpus[$common_cpu]{$thread_pid}{comm} = $thread_comm;
++	flags = parse_common_flags(context->event_data);
++
++	return flags;
 +}
 +
-+sub workqueue::workqueue_insertion
++int get_common_lock_depth(struct scripting_context *context)
 +{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm,
-+	$thread_comm, $thread_pid, $func) = @_;
++	int lock_depth;
 +
-+    $cpus[$common_cpu]{$thread_pid}{inserted}++;
-+    $cpus[$common_cpu]{$thread_pid}{comm} = $thread_comm;
++	lock_depth = parse_common_lock_depth(context->event_data);
++
++	return lock_depth;
 +}
 +
-+sub trace_end
-+{
-+    print "workqueue work stats:\n\n";
-+    my $cpu = 0;
-+    printf("%3s %6s %6s\t%-20s\n", "cpu", "ins", "exec", "name");
-+    printf("%3s %6s %6s\t%-20s\n", "---", "---", "----", "----");
-+    foreach my $pidhash (@cpus) {
-+	while ((my $pid, my $wqhash) = each %$pidhash) {
-+	    my $ins = $$wqhash{'inserted'};
-+	    my $exe = $$wqhash{'executed'};
-+	    my $comm = $$wqhash{'comm'};
-+	    if ($ins || $exe) {
-+		printf("%3u %6u %6u\t%-20s\n", $cpu, $ins, $exe, $comm);
-+	    }
-+	}
-+	$cpu++;
-+    }
+ static void perl_process_event(int cpu, void *data,
+ 			       int size __attribute((unused)),
+ 			       unsigned long long nsecs, char *comm)
+@@ -290,6 +332,7 @@ static void perl_process_event(int cpu, void *data,
+ 	}
+ 
+ 	PUTBACK;
 +
-+    $cpu = 0;
-+    print "\nworkqueue lifecycle stats:\n\n";
-+    printf("%3s %6s %6s\t%-20s\n", "cpu", "created", "destroyed", "name");
-+    printf("%3s %6s %6s\t%-20s\n", "---", "-------", "---------", "----");
-+    foreach my $pidhash (@cpus) {
-+	while ((my $pid, my $wqhash) = each %$pidhash) {
-+	    my $created = $$wqhash{'created'};
-+	    my $destroyed = $$wqhash{'destroyed'};
-+	    my $comm = $$wqhash{'comm'};
-+	    if ($created || $destroyed) {
-+		printf("%3u %6u %6u\t%-20s\n", $cpu, $created, $destroyed,
-+		       $comm);
-+	    }
-+	}
-+	$cpu++;
-+    }
+ 	if (get_cv(handler, 0))
+ 		call_pv(handler, G_SCALAR);
+ 	else if (get_cv("main::trace_unhandled", 0)) {
+@@ -328,7 +371,8 @@ static int perl_start_script(const char *script)
+ 	my_perl = perl_alloc();
+ 	perl_construct(my_perl);
+ 
+-	if (perl_parse(my_perl, NULL, 2, (char **)command_line, (char **)NULL))
++	if (perl_parse(my_perl, xs_init, 2, (char **)command_line,
++		       (char **)NULL))
+ 		return -1;
+ 
+ 	perl_run(my_perl);
+diff --git a/tools/perf/util/trace-event-perl.h b/tools/perf/util/trace-event-perl.h
+index 6c94fa9..666a864 100644
+--- a/tools/perf/util/trace-event-perl.h
++++ b/tools/perf/util/trace-event-perl.h
+@@ -29,6 +29,11 @@ typedef int INTERP;
+ #define perl_run(a)		(0)
+ #define perl_destruct(a)	(0)
+ #define perl_free(a)		(0)
++#define pTHX			void
++#define CV			void
++#define dXSUB_SYS
++#define pTHX_
++static inline void newXS(const char *a, void *b, const char *c) {}
+ #else
+ #include <EXTERN.h>
+ #include <perl.h>
+@@ -39,4 +44,8 @@ struct scripting_context {
+ 	void *event_data;
+ };
+ 
++int get_common_pc(struct scripting_context *context);
++int get_common_flags(struct scripting_context *context);
++int get_common_lock_depth(struct scripting_context *context);
 +
-+    print_unhandled();
-+}
-+
-+my %unhandled;
-+
-+sub print_unhandled
-+{
-+    if ((scalar keys %unhandled) == 0) {
-+	return;
-+    }
-+
-+    print "\nunhandled events:\n\n";
-+
-+    printf("%-40s  %10s\n", "event", "count");
-+    printf("%-40s  %10s\n", "----------------------------------------",
-+	   "-----------");
-+
-+    foreach my $event_name (keys %unhandled) {
-+	printf("%-40s  %10d\n", $event_name, $unhandled{$event_name});
-+    }
-+}
-+
-+sub trace_unhandled
-+{
-+    my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	$common_pid, $common_comm) = @_;
-+
-+    $unhandled{$event_name}++;
-+}
+ #endif /* __PERF_TRACE_EVENT_PERL_H */
+diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
+index b1e58d3..81698d5 100644
+--- a/tools/perf/util/trace-event.h
++++ b/tools/perf/util/trace-event.h
+@@ -246,6 +246,9 @@ extern int latency_format;
+ int parse_header_page(char *buf, unsigned long size);
+ int trace_parse_common_type(void *data);
+ int trace_parse_common_pid(void *data);
++int parse_common_pc(void *data);
++int parse_common_flags(void *data);
++int parse_common_lock_depth(void *data);
+ struct event *trace_find_event(int id);
+ struct event *trace_find_next_event(struct event *event);
+ unsigned long long read_size(void *ptr, int size);
 -- 
 1.6.4.GIT
 
