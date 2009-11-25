@@ -1,142 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935114AbZKYV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbZKYVz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935114AbZKYV4A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758842AbZKYVz7
+	id S1759452AbZKYVz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758842AbZKYVz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:55:59 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33322 "EHLO
+	Wed, 25 Nov 2009 16:55:57 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63240 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759008AbZKYVz5 (ORCPT
+	with ESMTP id S1756136AbZKYVz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Nov 2009 16:55:57 -0500
-Message-Id: <20091125215602.587628179@goodmis.org>
+Message-Id: <20091125215602.789741544@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 25 Nov 2009 16:55:30 -0500
+Date: Wed, 25 Nov 2009 16:55:31 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] [PATCH 1/2] ring-buffer-benchmark: Add parameters to set produce/consumer priorities
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: [PATCH 2/2] [PATCH 2/2] tracing: Separate raw syscall from syscall tracer
 References: <20091125215529.492517040@goodmis.org>
-Content-Disposition: inline; filename=0001-ring-buffer-benchmark-Add-parameters-to-set-produce-.patch
+Content-Disposition: inline; filename=0002-tracing-Separate-raw-syscall-from-syscall-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Running the ring-buffer-benchmark's threads at the lowest priority may
-work well for keeping it in the background, but it is not appropriate
-for the benchmarks.
+The current syscall tracer mixes raw syscalls and real syscalls.
 
-This patch adds 4 parameters to the module:
+echo 1 > events/syscalls/enable
+And we get these from the output:
 
-  consumer_fifo
-  consumer_nice
-  producer_fifo
-  producer_nice
+(XXXX insteads "            grep-20914 [001] 588211.446347" .. etc)
 
-By default the consumer and producer still run at nice +19.
+XXXX: sys_read(fd: 3, buf: 80609a8, count: 7000)
+XXXX: sys_enter: NR 3 (3, 80609a8, 7000, a, 1000, bfce8ef8)
+XXXX: sys_read -> 0x138
+XXXX: sys_exit: NR 3 = 312
+XXXX: sys_read(fd: 3, buf: 8060ae0, count: 7000)
+XXXX: sys_enter: NR 3 (3, 8060ae0, 7000, a, 1000, bfce8ef8)
+XXXX: sys_read -> 0x138
+XXXX: sys_exit: NR 3 = 312
 
-If the *_fifo options are set, they will override the *_nice values.
+There are 2 drawbacks here.
+A) two almost identical records are saved in ringbuffer
+   when a syscall enters or exits. (4 records for every syscall)
+   This wastes precious space in the ring buffer.
+B) the lines including "sys_enter/sys_exit" produces
+   hardly any useful information for the output (no labels).
 
- modprobe ring_buffer_benchmark consumer_nice=0 producer_fifo=10
+The user can use this method to prevent these drawbacks:
+echo 1 > events/syscalls/enable
+echo 0 > events/syscalls/sys_enter/enable
+echo 0 > events/syscalls/sys_exit/enable
 
-The above will set the consumer thread to a nice value of 0, and
-the producer thread to a RT SCHED_FIFO priority of 10.
+But this is not user friendly. So we separate raw syscall
+from syscall tracer.
 
-Note, this patch also fixes a bug where calling set_user_nice on the
-consumer thread would oops the kernel when the parameter "disable_reader"
-is set.
+After this fix applied:
+syscall tracer's output (echo 1 > events/syscalls/enable):
 
+XXXX: sys_read(fd: 3, buf: bfe87d88, count: 200)
+XXXX: sys_read -> 0x200
+XXXX: sys_fstat64(fd: 3, statbuf: bfe87c98)
+XXXX: sys_fstat64 -> 0x0
+XXXX: sys_close(fd: 3)
+
+raw syscall tracer's output (echo 1 > events/raw_syscalls/enable):
+
+XXXX: sys_enter: NR 175 (0, bf92bf18, bf92bf98, 8, b748cff4, bf92bef8)
+XXXX: sys_exit: NR 175 = 0
+XXXX: sys_enter: NR 175 (2, bf92bf98, 0, 8, b748cff4, bf92bef8)
+XXXX: sys_exit: NR 175 = 0
+XXXX: sys_enter: NR 3 (9, bf927f9c, 4000, b77e2518, b77dce60, bf92bff8)
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4AEFC37C.5080609@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer_benchmark.c |   58 ++++++++++++++++++++++++++++++++-
- 1 files changed, 56 insertions(+), 2 deletions(-)
+ include/trace/events/syscalls.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
-index 3875d49..b2477ca 100644
---- a/kernel/trace/ring_buffer_benchmark.c
-+++ b/kernel/trace/ring_buffer_benchmark.c
-@@ -39,6 +39,24 @@ static int write_iteration = 50;
- module_param(write_iteration, uint, 0644);
- MODULE_PARM_DESC(write_iteration, "# of writes between timestamp readings");
+diff --git a/include/trace/events/syscalls.h b/include/trace/events/syscalls.h
+index 397dff2..fb726ac 100644
+--- a/include/trace/events/syscalls.h
++++ b/include/trace/events/syscalls.h
+@@ -1,5 +1,6 @@
+ #undef TRACE_SYSTEM
+-#define TRACE_SYSTEM syscalls
++#define TRACE_SYSTEM raw_syscalls
++#define TRACE_INCLUDE_FILE syscalls
  
-+static int producer_nice = 19;
-+static int consumer_nice = 19;
-+
-+static int producer_fifo = -1;
-+static int consumer_fifo = -1;
-+
-+module_param(producer_nice, uint, 0644);
-+MODULE_PARM_DESC(producer_nice, "nice prio for producer");
-+
-+module_param(consumer_nice, uint, 0644);
-+MODULE_PARM_DESC(consumer_nice, "nice prio for consumer");
-+
-+module_param(producer_fifo, uint, 0644);
-+MODULE_PARM_DESC(producer_fifo, "fifo prio for producer");
-+
-+module_param(consumer_fifo, uint, 0644);
-+MODULE_PARM_DESC(consumer_fifo, "fifo prio for consumer");
-+
- static int read_events;
- 
- static int kill_test;
-@@ -270,6 +288,27 @@ static void ring_buffer_producer(void)
- 
- 	if (kill_test)
- 		trace_printk("ERROR!\n");
-+
-+	if (!disable_reader) {
-+		if (consumer_fifo < 0)
-+			trace_printk("Running Consumer at nice: %d\n",
-+				     consumer_nice);
-+		else
-+			trace_printk("Running Consumer at SCHED_FIFO %d\n",
-+				     consumer_fifo);
-+	}
-+	if (producer_fifo < 0)
-+		trace_printk("Running Producer at nice: %d\n",
-+			     producer_nice);
-+	else
-+		trace_printk("Running Producer at SCHED_FIFO %d\n",
-+			     producer_fifo);
-+
-+	/* Let the user know that the test is running at low priority */
-+	if (producer_fifo < 0 && consumer_fifo < 0 &&
-+	    producer_nice == 19 && consumer_nice == 19)
-+		trace_printk("WARNING!!! This test is running at lowest priority.\n");
-+
- 	trace_printk("Time:     %lld (usecs)\n", time);
- 	trace_printk("Overruns: %lld\n", overruns);
- 	if (disable_reader)
-@@ -402,8 +441,23 @@ static int __init ring_buffer_benchmark_init(void)
- 	/*
- 	 * Run them as low-prio background tasks by default:
- 	 */
--	set_user_nice(consumer, 19);
--	set_user_nice(producer, 19);
-+	if (!disable_reader) {
-+		if (consumer_fifo >= 0) {
-+			struct sched_param param = {
-+				.sched_priority = consumer_fifo
-+			};
-+			sched_setscheduler(consumer, SCHED_FIFO, &param);
-+		} else
-+			set_user_nice(consumer, consumer_nice);
-+	}
-+
-+	if (producer_fifo >= 0) {
-+		struct sched_param param = {
-+			.sched_priority = consumer_fifo
-+		};
-+		sched_setscheduler(producer, SCHED_FIFO, &param);
-+	} else
-+		set_user_nice(producer, producer_nice);
- 
- 	return 0;
- 
+ #if !defined(_TRACE_EVENTS_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
+ #define _TRACE_EVENTS_SYSCALLS_H
 -- 
 1.6.5
 
