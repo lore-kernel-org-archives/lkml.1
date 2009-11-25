@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbZKYISW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZKYISq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758429AbZKYISW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 03:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZKYIST
+	id S1758458AbZKYISq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 03:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbZKYISp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 03:18:19 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:56547 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934553AbZKYISP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 03:18:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=GDCzMJA0GEf9K+L8ITxzZkgo1Rflbwq2ILCVtl5NpN6WPm5HYYUDeR9WPXGd1/vYlo
-         3I4rn6gWiSvO9yWTbePj5StlnaJ93i/u+Wj2Yu5Pcw4zQzPQh8y0XEuWLshVUZJezcWs
-         q6wvs1IIju2+2xBFkFGVi74hT9DMhHpPJQEIQ=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, linux-sh@vger.kernel.org, johnstul@us.ibm.com,
-       lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>,
-       tglx@linutronix.de
-Date: Wed, 25 Nov 2009 17:12:55 +0900
-Message-Id: <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
-In-Reply-To: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se>
-References: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se>
-Subject: [PATCH 02/02] clocksource: Start CMT at clocksource resume
+	Wed, 25 Nov 2009 03:18:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58596 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758410AbZKYISp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 03:18:45 -0500
+Date: Wed, 25 Nov 2009 09:18:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
+Message-ID: <20091125081832.GA1822@elte.hu>
+References: <20091125084611O.fujita.tomonori@lab.ntt.co.jp>
+ <4B0C7257.3070609@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0C7257.3070609@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@opensource.se>
 
-Add code to start the CMT timer on clocksource resume.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-This makes sure the timer is started during sysdev_resume().
-Without this patch the clocksource may be read as suspended,
-this after sysdev resume but before platform device resume.
+> FUJITA Tomonori wrote:
+> > "x86: Handle HW IOMMU initialization failure gracefully" patchset
+> > handled this option properly however somehow I broke it during cleanup
+> > after that. Sorry.
+> > 
+> > =
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH -tip] x86: fix iommu=soft boot option
+> > 
+> > iommu=soft boot option forces the kernel to use swiotlb.
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  arch/x86/kernel/pci-swiotlb.c |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+> > index e36e71d..e3c0a66 100644
+> > --- a/arch/x86/kernel/pci-swiotlb.c
+> > +++ b/arch/x86/kernel/pci-swiotlb.c
+> > @@ -50,6 +50,8 @@ static struct dma_map_ops swiotlb_dma_ops = {
+> >   */
+> >  int __init pci_swiotlb_init(void)
+> >  {
+> > +	int use_swiotlb = swiotlb | swiotlb_force;
+> > +
+> >  	/* don't initialize swiotlb if iommu=off (no_iommu=1) */
+> >  #ifdef CONFIG_X86_64
+> >  	if (!no_iommu && max_pfn > MAX_DMA32_PFN)
+> > @@ -63,5 +65,5 @@ int __init pci_swiotlb_init(void)
+> >  		dma_ops = &swiotlb_dma_ops;
+> >  	}
+> >  
+> > -	return swiotlb_force;
+> > +	return use_swiotlb;
+> >  }
+> 
+> before your cleanup patchset:
+> for AMD 64bit, MEM > 4g, no AGP, iommu=soft
+> 1. if BIOS have correct gart setting, Kernel will use gart
+> 2. if BIOS does not have correct gart setting, Kernel will use swiotlb
+> 
+> for AMD 64bit, MEM > 4g, no AGP, no "iommu=soft"
+> 1. if BIOS have correct gart setting, Kernel will use gart
+> 2. if BIOS does not have correct gart setting, Kernel will allocate some RAM, and set range in AMD NB, and use gart iommu
 
-Signed-off-by: Magnus Damm <damm@opensource.se>
----
+So the question is, how many people relied on the previous behavior of 
+'iommu=soft' not really falling back to the swiotlb code but preventing 
+the quirk from running.
 
- drivers/clocksource/sh_cmt.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+Are you aware of specific versions of distributions adding iommu=soft 
+and relying on that? Should we be careful about changing the previous 
+behavior?
 
---- 0001/drivers/clocksource/sh_cmt.c
-+++ work/drivers/clocksource/sh_cmt.c	2009-11-25 16:02:52.000000000 +0900
-@@ -432,6 +432,13 @@ static void sh_cmt_clocksource_disable(s
- 	sh_cmt_stop(cs_to_sh_cmt(cs), FLAG_CLOCKSOURCE);
- }
- 
-+static void sh_cmt_clocksource_resume(struct clocksource *cs)
-+{
-+	struct sh_cmt_priv *p = cs_to_sh_cmt(cs);
-+
-+	sh_cmt_start(p, FLAG_CLOCKSOURCE);
-+}
-+
- static int sh_cmt_register_clocksource(struct sh_cmt_priv *p,
- 				       char *name, unsigned long rating)
- {
-@@ -442,6 +449,7 @@ static int sh_cmt_register_clocksource(s
- 	cs->read = sh_cmt_clocksource_read;
- 	cs->enable = sh_cmt_clocksource_enable;
- 	cs->disable = sh_cmt_clocksource_disable;
-+	cs->resume = sh_cmt_clocksource_resume;
- 	cs->mask = CLOCKSOURCE_MASK(sizeof(unsigned long) * 8);
- 	cs->flags = CLOCK_SOURCE_IS_CONTINUOUS;
- 	pr_info("sh_cmt: %s used as clock source\n", cs->name);
+	Ingo
