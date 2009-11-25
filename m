@@ -1,163 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZKYBt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZKYBxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZKYBt6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Nov 2009 20:49:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbZKYBt6
+	id S1758220AbZKYBxf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Nov 2009 20:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758175AbZKYBxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Nov 2009 20:49:58 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35442 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758150AbZKYBt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Nov 2009 20:49:57 -0500
-Message-ID: <4B0C8D46.1030206@austin.ibm.com>
-Date: Tue, 24 Nov 2009 19:49:58 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 24 Nov 2009 20:53:35 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:41539 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758155AbZKYBxe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Nov 2009 20:53:34 -0500
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-CC: Ben Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/3] sysfs cpu probe/release files
-References: <4B0C8B45.6080804@austin.ibm.com>
-In-Reply-To: <4B0C8B45.6080804@austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091124170419.92cb63f6.akpm@linux-foundation.org>
+References: <fa686aa40911241654w6ceb2c96nb3a6a57ac1b471f5@mail.gmail.com> 
+	<20091124170419.92cb63f6.akpm@linux-foundation.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Nov 2009 18:53:21 -0700
+X-Google-Sender-Auth: 080d21e227c7aa5d
+Message-ID: <fa686aa40911241753lca699c9sa9ca0a0585a9d39d@mail.gmail.com>
+Subject: Re: [RFC] two new linux-next trees (SPI and devicetree)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Michal Simek <michal.simek@petalogix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create new probe and release sysfs files to facilitate adding and removing
-cpus from the system.  This also creates the powerpc specific stubs to handle
-the arch callouts from writes to the sysfs files.
+On Tue, Nov 24, 2009 at 6:04 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 24 Nov 2009 17:54:27 -0700
+> Grant Likely <grant.likely@secretlab.ca> wrote:
+>
+>> I've made the offer to be SPI
+>> co-maintainer,
+>
+> OK by me.  Don't break anything.
 
-The creation and use of these files is regulated by the 
-CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
-capability will have the files created.
+I'll do my best.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/Kconfig               |    4 ++++
- arch/powerpc/include/asm/machdep.h |    5 +++++
- arch/powerpc/kernel/sysfs.c        |   19 +++++++++++++++++++
- drivers/base/cpu.c                 |   32 ++++++++++++++++++++++++++++++++
- include/linux/cpu.h                |    4 ++++
- 5 files changed, 64 insertions(+)
+> My current stash:
+>
+>
+> atmel_spi-fix-dma-addr-calculation-for-len-buffer_size.patch
+> spi-controller-driver-for-designware-spi-core.patch
+> spi-add-pci-interface-driver-for-designware-spi-core.patch
+> spi-add-pci-interface-driver-for-designware-spi-core-fix.patch
+> spi-controller-driver-for-designware-spi-core-fix.patch
+> spidev-add-proper-section-markers.patch
+> spidev-use-declare_bitmap-instead-of-declaring-the-array.patch
+> spidev-use-declare_bitmap-instead-of-declaring-the-array-checkpatch-fixes.patch
+> spi-drain-mxc-spi-transfer-buffer-when-probing-device.patch
+> spi_s3c24xx-add-fiq-pseudo-dma-support.patch
 
-Index: powerpc/drivers/base/cpu.c
-===================================================================
---- powerpc.orig/drivers/base/cpu.c	2009-11-23 18:19:23.000000000 -0600
-+++ powerpc/drivers/base/cpu.c	2009-11-24 14:30:07.000000000 -0600
-@@ -72,6 +72,38 @@
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+static ssize_t cpu_probe_store(struct class *class, const char *buf,
-+			       size_t count)
-+{
-+	return arch_cpu_probe(buf, count);
-+}
-+
-+static ssize_t cpu_release_store(struct class *class, const char *buf,
-+				 size_t count)
-+{
-+	return arch_cpu_release(buf, count);
-+}
-+
-+static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
-+static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
-+
-+int __init cpu_probe_release_init(void)
-+{
-+	int rc;
-+
-+	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+			       &class_attr_probe.attr);
-+	if (!rc)
-+		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				       &class_attr_release.attr);
-+
-+	return rc;
-+}
-+device_initcall(cpu_probe_release_init);
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #else /* ... !CONFIG_HOTPLUG_CPU */
- static inline void register_cpu_control(struct cpu *cpu)
- {
-Index: powerpc/arch/powerpc/include/asm/machdep.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-11-23 18:19:23.000000000 -0600
-+++ powerpc/arch/powerpc/include/asm/machdep.h	2009-11-24 14:30:07.000000000 -0600
-@@ -266,6 +266,11 @@
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	ssize_t (*cpu_probe)(const char *, size_t);
-+	ssize_t (*cpu_release)(const char *, size_t);
-+#endif
- };
- 
- extern void e500_idle(void);
-Index: powerpc/arch/powerpc/kernel/sysfs.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-11-23 18:19:23.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/sysfs.c	2009-11-24 14:43:40.000000000 -0600
-@@ -461,6 +461,25 @@
- 
- 	cacheinfo_cpu_offline(cpu);
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+ssize_t arch_cpu_probe(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_probe)
-+		return ppc_md.cpu_probe(buf, count);
-+
-+	return -EINVAL;
-+}
-+
-+ssize_t arch_cpu_release(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_release)
-+		return ppc_md.cpu_release(buf, count);
-+
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig	2009-11-23 18:19:23.000000000 -0600
-+++ powerpc/arch/powerpc/Kconfig	2009-11-24 14:30:07.000000000 -0600
-@@ -320,6 +320,10 @@
- 
- 	  Say N if you are unsure.
- 
-+config ARCH_CPU_PROBE_RELEASE
-+	def_bool y
-+	depends on HOTPLUG_CPU
-+
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 
-Index: powerpc/include/linux/cpu.h
-===================================================================
---- powerpc.orig/include/linux/cpu.h	2009-11-23 18:19:23.000000000 -0600
-+++ powerpc/include/linux/cpu.h	2009-11-24 14:30:07.000000000 -0600
-@@ -43,6 +43,10 @@
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+extern ssize_t arch_cpu_probe(const char *, size_t);
-+extern ssize_t arch_cpu_release(const char *, size_t);
-+#endif
- #endif
- struct notifier_block;
- 
+Since they're already in your tree, do you mind continuing to shepherd
+these (either merge or drop)?  I've gotten a patchwork project set up
+on kernel.org for the spi mailing list, so I can easily track things
+from this point on.  My gameplan at this point is to try and stay on
+top of the things that I'm familiar with (mostly powerpc) and depend
+on other people to ack the rest.  I'll pick up anything that a)
+doesn't look ugly, b) isn't contested, and c) applies.  :-)
+
+>> but I haven't received any feedback yet from either
+>> akpm or dbrownell.
+>
+> I haven't heard anything from David in over a month.
+
+Okay, shall I go ahead and merge my change to MAINTAINERS through my
+tree too then?
+
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
