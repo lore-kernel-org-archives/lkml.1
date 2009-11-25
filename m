@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbZKYLfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZKYLfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbZKYLfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 06:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758700AbZKYLfI
+	id S1758749AbZKYLfn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZKYLfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 06:35:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51106 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758681AbZKYLfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 06:35:08 -0500
-Date: Wed, 25 Nov 2009 22:35:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michal Nazarewicz <m.nazarewicz@samsung.com>
-Subject: linux-next: usb tree build warning
-Message-Id: <20091125223508.c0924e2d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Wed, 25 Nov 2009 06:35:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33113 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758700AbZKYLfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:35:25 -0500
+Date: Wed, 25 Nov 2009 11:36:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: x86@kernel.org, Komuro <komurojun-mbn@nifty.com>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: ioports 0x100-0x3af and iomem 0xd000-0xdffff,
+ 0xa0000000-0xa0ffffff -- safe to use on x86 for pcmcia?
+Message-ID: <20091125113622.5b1218b0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091124213723.GA22689@comet.dominikbrodowski.net>
+References: <20091124213723.GA22689@comet.dominikbrodowski.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>   This latter configuration file most often contains 
+> 	include port 0x100-0x3af
+> 	include memory 0xc0000-0xfffff
+> 	include memory 0xa0000000-0xa0ffffff
 
-Hi Greg,
+Which crashes older thinkpads, some ATI chipset systems and
+usually anything containing an NE2000 clone in ISA space.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+> And so Komuro (CCed) suggested to add these default resource entries to the
+> kernel, so that it can later use parts of these resource areas to enable
+> PCMCIA devices without userspace interaction.
+> 
+> Do you think it would be safe to enable these areas by (kernel) default on
+> x86? Of course, other entries in /proc/io{mem,ports} would be honoured, there
+> would be a boot option to disable this feature, and some tests are run on the
+> iomem and ioport resource areas.
 
-drivers/usb/gadget/multi.c:30:1: warning: "CONFIG_USB_ETH_RNDIS" redefined
-In file included from <command-line>:0:
-./include/generated/autoconf.h:185:1: warning: this is the location of the =
-previous definition
+The problem you have is that you change the ordering.
 
-Introduced by commit a8e2db2fc35a9c4599181730ef5772376232e881 ("USB: g_mult=
-i: Multifunction Composite Gadget added").
+If you load the ne2k ISA driver before pcmcia (as occurs now because of
+it being done from user space) the resources get claimed first. If you do
+it the other way around and test then merely reading an I/O register
+mapped to an NE2K or most NE2K clones crashes the machine.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Are there any modern systems where the PCI based autoconfig is
+insufficient, or is this just ancient stuff  ?
 
---Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksNFmwACgkQjjKRsyhoI8wQjgCbBFVD+MynrRghLqCfMK1TFq38
-HzsAn0A+tKe1AaCzCNehK0xmam1PY7hS
-=Np71
------END PGP SIGNATURE-----
-
---Signature=_Wed__25_Nov_2009_22_35_08_+1100_PQCrLoFNtk0SG.cn--
+Alan
