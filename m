@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZKYQ6C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZKYQ7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbZKYQ6C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:58:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbZKYQ6A
+	id S1758870AbZKYQ7M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:59:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbZKYQ7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:58:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61670 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 11:59:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29662 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758890AbZKYQ54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:57:56 -0500
+	id S1758850AbZKYQ5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:57:52 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v6 09/11] kprobes: Add documents of jump optimization
+Subject: [PATCH -tip v6 10/11] [RFC] x86: Introduce generic jump patching
+	without stop_machine
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -27,8 +28,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
        Jason Baron <jbaron@redhat.com>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Wed, 25 Nov 2009 11:56:19 -0500
-Message-ID: <20091125165619.6073.33253.stgit@harusame>
+Date: Wed, 25 Nov 2009 11:56:26 -0500
+Message-ID: <20091125165626.6073.78864.stgit@harusame>
 In-Reply-To: <20091125165510.6073.48721.stgit@harusame>
 References: <20091125165510.6073.48721.stgit@harusame>
 User-Agent: StGIT/0.14.3
@@ -39,7 +40,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add documentations about kprobe jump optimization to Documentation/kprobes.txt.
+Add text_poke_fixup() which takes a fixup address to where a processor
+jumps if it hits the modifying address while code modifying.
+text_poke_fixup() does following steps for this purpose.
+
+ 1. Setup int3 handler for fixup.
+ 2. Put a breakpoint (int3) on the first byte of modifying region,
+    and synchronize code on all CPUs.
+ 3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+ 4. Modify the first byte of modifying region, and synchronize code
+    on all CPUs.
+ 5. Clear int3 handler.
+
+Thus, if some other processor execute modifying address when step2 to step4,
+it will be jumped to fixup code.
+
+This still has many limitations for modifying multi-instructions at once.
+However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
+because;
+ - Replaced instruction is just one instruction, which is executed atomically.
+ - Replacing instruction is a jump, so we can set fixup address where the jump
+   goes to.
+
+Changes in v6:
+ - Use int3 even if len == 1 (int3 size).
+
+Changes in v5
+ - Add some comments.
+ - Use smp_wmb()/smp_rmb()
+ - Remove unneeded sync_core_all()
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -57,277 +86,161 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
 
- Documentation/kprobes.txt |  192 ++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 179 insertions(+), 13 deletions(-)
+ arch/x86/include/asm/alternative.h |   11 ++++
+ arch/x86/kernel/alternative.c      |  102 ++++++++++++++++++++++++++++++++++++
+ kernel/kprobes.c                   |    2 -
+ 3 files changed, 114 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
-index 053037a..e4b0504 100644
---- a/Documentation/kprobes.txt
-+++ b/Documentation/kprobes.txt
-@@ -1,6 +1,7 @@
- Title	: Kernel Probes (Kprobes)
- Authors	: Jim Keniston <jkenisto@us.ibm.com>
- 	: Prasanna S Panchamukhi <prasanna@in.ibm.com>
-+	: Masami Hiramatsu <mhiramat@redhat.com>
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index a0e21ad..ed87711 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -162,4 +162,15 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+ extern void *text_poke(void *addr, const void *opcode, size_t len);
+ extern void *text_poke_smp(void *addr, const void *opcode, size_t len);
  
- CONTENTS
++/*
++ * Setup int3 trap and fixup execution for cross-modifying on SMP case.
++ * If the other cpus execute modifying instruction, it will hit int3
++ * and go to fixup code. This just provides a minimal safety check.
++ * Additional checks/restrictions are required for completely safe
++ * cross-modifying.
++ */
++extern void *text_poke_fixup(void *addr, const void *opcode, size_t len,
++			     void *fixup);
++extern void sync_core_all(void);
++
+ #endif /* _ASM_X86_ALTERNATIVE_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index 7ce45d7..3117142 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -4,6 +4,7 @@
+ #include <linux/list.h>
+ #include <linux/stringify.h>
+ #include <linux/kprobes.h>
++#include <linux/kdebug.h>
+ #include <linux/mm.h>
+ #include <linux/vmalloc.h>
+ #include <linux/memory.h>
+@@ -612,3 +613,104 @@ void *__kprobes text_poke_smp(void *addr, const void *opcode, size_t len)
+ 	return addr;
+ }
  
-@@ -14,6 +15,7 @@ CONTENTS
- 8. Kprobes Example
- 9. Jprobes Example
- 10. Kretprobes Example
-+11. Optimization Example
- Appendix A: The kprobes debugfs interface
++/*
++ * On pentium series, Unsynchronized cross-modifying code
++ * operations can cause unexpected instruction execution results.
++ * So after code modified, we should synchronize it on each processor.
++ */
++static void __kprobes __local_sync_core(void *info)
++{
++	sync_core();
++}
++
++void __kprobes sync_core_all(void)
++{
++	on_each_cpu(__local_sync_core, NULL, 1);
++}
++
++/* Safely cross-code modifying with fixup address */
++static void *patch_fixup_from;
++static void *patch_fixup_addr;
++
++static int __kprobes patch_exceptions_notify(struct notifier_block *self,
++					     unsigned long val, void *data)
++{
++	struct die_args *args = data;
++	struct pt_regs *regs = args->regs;
++
++	smp_rmb();
++
++	if (likely(!patch_fixup_from))
++		return NOTIFY_DONE;
++
++	if (val != DIE_INT3 || !regs || user_mode_vm(regs) ||
++	    (unsigned long)patch_fixup_from != regs->ip)
++		return NOTIFY_DONE;
++
++	args->regs->ip = (unsigned long)patch_fixup_addr;
++
++	return NOTIFY_STOP;
++}
++
++/**
++ * text_poke_fixup() -- cross-modifying kernel text with fixup address.
++ * @addr:	Modifying address.
++ * @opcode:	New instruction.
++ * @len:	length of modifying bytes.
++ * @fixup:	Fixup address.
++ *
++ * Note: You must backup replaced instructions before calling this,
++ * if you need to recover it.
++ * Note: Must be called under text_mutex.
++ */
++void *__kprobes text_poke_fixup(void *addr, const void *opcode, size_t len,
++				void *fixup)
++{
++	static const unsigned char int3_insn = BREAKPOINT_INSTRUCTION;
++	static const int int3_size = sizeof(int3_insn);
++
++	/* Preparing fixup address */
++	patch_fixup_addr = fixup;
++	patch_fixup_from = (u8 *)addr + int3_size; /* IP address after int3 */
++	smp_wmb();
++
++	/* Cap by an int3 - expecting synchronously done */
++	text_poke(addr, &int3_insn, int3_size);
++
++	if (len - int3_size > 0) {
++		/* Replace tail bytes */
++		text_poke((char *)addr + int3_size,
++			  (const char *)opcode + int3_size,
++			  len - int3_size);
++		/* Synchronize code cache */
++		sync_core_all();
++	}
++
++	/* Replace int3 with head byte - expecting synchronously done */
++	text_poke(addr, opcode, int3_size);
++
++	/*
++	 * Sync core again - this is for waiting for disabled IRQ code
++	 * quiescent state, IOW, waiting for all running int3 fixup
++	 * handlers.
++	 */
++	sync_core_all();
++
++	/* Cleanup fixup address */
++	patch_fixup_from = NULL;
++	smp_wmb();
++
++	return addr;
++}
++
++static struct notifier_block patch_exceptions_nb = {
++	.notifier_call = patch_exceptions_notify,
++	.priority = 0x7fffffff /* we need to be notified first */
++};
++
++static int __init patch_init(void)
++{
++	return register_die_notifier(&patch_exceptions_nb);
++}
++
++arch_initcall(patch_init);
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index d88f4c1..a58c6fa 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1334,7 +1334,7 @@ EXPORT_SYMBOL_GPL(unregister_kprobes);
  
- 1. Concepts: Kprobes, Jprobes, Return Probes
-@@ -42,13 +44,13 @@ registration/unregistration of a group of *probes. These functions
- can speed up unregistration process when you have to unregister
- a lot of probes at once.
+ static struct notifier_block kprobe_exceptions_nb = {
+ 	.notifier_call = kprobe_exceptions_notify,
+-	.priority = 0x7fffffff /* we need to be notified first */
++	.priority = 0x7ffffff0 /* High priority, but not first.  */
+ };
  
--The next three subsections explain how the different types of
--probes work.  They explain certain things that you'll need to
--know in order to make the best use of Kprobes -- e.g., the
--difference between a pre_handler and a post_handler, and how
--to use the maxactive and nmissed fields of a kretprobe.  But
--if you're in a hurry to start using Kprobes, you can skip ahead
--to section 2.
-+The next four subsections explain how the different types of
-+probes work and how the optimization works.  They explain certain
-+things that you'll need to know in order to make the best use of
-+Kprobes -- e.g., the difference between a pre_handler and
-+a post_handler, and how to use the maxactive and nmissed fields of
-+a kretprobe.  But if you're in a hurry to start using Kprobes, you
-+can skip ahead to section 2.
- 
- 1.1 How Does a Kprobe Work?
- 
-@@ -161,13 +163,110 @@ In case probed function is entered but there is no kretprobe_instance
- object available, then in addition to incrementing the nmissed count,
- the user entry_handler invocation is also skipped.
- 
-+1.4 How Does the Optimization Work?
-+
-+ If you configured kernel with CONFIG_OPTPROBES=y (currently this option is
-+supported on x86/x86-64, non-preemptive kernel) and
-+"debug.kprobes_optimization" sysctl sets 1, kprobes tries to use a
-+jump instruction instead of breakpoint instruction automatically.
-+
-+1.4.1 Init a Kprobe
-+
-+ Before preparing optimization, Kprobes inserts original(user-defined)
-+kprobe on the specified address. So, even if the kprobe is not
-+possible to be optimized, it just uses a normal kprobe.
-+
-+1.4.2 Safety check
-+
-+ First, Kprobes gets the address of probed function and checks whether the
-+optimized region, which will be replaced by a jump instruction, does NOT
-+straddle the function boundary, because if the optimized region reaches the
-+next function, its caller causes unexpected results.
-+ Next, Kprobes decodes whole body of probed function and checks there is
-+NO indirect jump, NO instruction which will cause exception by checking
-+exception_tables (this will jump to fixup code and fixup code jumps into
-+same function body) and NO near jump which jumps into the optimized region
-+(except the 1st byte of jump), because if some jump instruction jumps
-+into the middle of another instruction, it causes unexpected results too.
-+ Kprobes also measures the length of instructions which will be replaced
-+by a jump instruction, because a jump instruction is longer than 1 byte,
-+it may replaces multiple instructions, and it checks whether those
-+instructions can be executed out-of-line.
-+
-+1.4.3 Preparing detour buffer
-+
-+ Then, Kprobes prepares "detour" buffer, which contains exception emulating
-+code (push/pop registers, call handler), copied instructions(Kprobes copies
-+instructions which will be replaced by a jump, to the detour buffer), and
-+a jump which jumps back to the original execution path.
-+
-+1.4.4 Pre-optimization
-+
-+ After preparing detour buffer, Kprobes checks that the probe is *NOT* in
-+the below cases;
-+ - The probe has either break_handler or post_handler.
-+ - Other probes are probing the instructions which will be replaced by
-+   a jump instruction.
-+ - The probe is disabled.
-+In above cases, Kprobes just doesn't start optimizating the probe.
-+
-+ If the kprobe can be optimized, Kprobes enqueues the kprobe to optimizing
-+list and kicks kprobe-optimizer workqueue to optimize it. To wait other
-+optimized probes, kprobe-optimizer will delay to work.
-+ When the optimized-kprobe is hit before optimization, its handler changes
-+IP(instruction pointer) to copied code and exits. So, the instructions which
-+were copied to detour buffer are executed on the detour buffer.
-+
-+1.4.5 Optimization
-+
-+ Kprobe-optimizer doesn't start instruction-replacing soon, it waits
-+synchronize_sched for safety, because some processors are possible to be
-+interrupted on the instructions which will be replaced by a jump instruction.
-+As you know, synchronize_sched() can ensure that all interruptions which were
-+executed when synchronize_sched() was called are done, only if
-+CONFIG_PREEMPT=n. So, this version supports only the kernel with
-+CONFIG_PREEMPT=n.(*)
-+ After that, kprobe-optimizer replaces the 4 bytes right after int3
-+breakpoint with relative-jump destination, and synchronize caches on all
-+processors. And then, it replaces int3 with relative-jump opcode, and
-+synchronize caches again.
-+
-+ After optimizing the probe, a CPU hits the jump instruction and jumps to
-+the out-of-line buffer directly. Thus the breakpoint exception is skipped.
-+
-+1.4.6 Unoptimization
-+
-+ When unregistering, disabling kprobe or being blocked by other kprobe,
-+an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
-+the kprobe just be dequeued from the optimized list. When the optimization
-+has been done, it replaces a jump with int3 breakpoint and original code.
-+ First it puts int3 at the first byte of the jump, synchronize caches
-+on all processors, replaces the 4 bytes right after int3 with the original
-+code and synchronize caches again.
-+
-+(*)This optimization-safety checking may be replaced with stop-machine method
-+ which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
-+
-+NOTE for geeks:
-+The jump optimization changes the kprobe's pre_handler behavior.
-+Without optimization, pre_handler can change kernel execution path by
-+changing regs->ip and return 1. However, after optimizing the probe,
-+that modification is ignored. Thus, if you'd like to tweak kernel
-+execution path, you need to avoid optimization. In that case, you can
-+choose either,
-+ - Set empty function to post_handler or break_handler.
-+ or
-+ - Config CONFIG_OPTPROBES=n.
-+ or
-+ - Execute 'sysctl -w debug.kprobes_optimization=n'
-+
- 2. Architectures Supported
- 
- Kprobes, jprobes, and return probes are implemented on the following
- architectures:
- 
--- i386
--- x86_64 (AMD-64, EM64T)
-+- i386 (Supports jump optimization)
-+- x86_64 (AMD-64, EM64T) (Supports jump optimization)
- - ppc64
- - ia64 (Does not support probes on instruction slot1.)
- - sparc64 (Return probes not yet implemented.)
-@@ -193,6 +292,10 @@ it useful to "Compile the kernel with debug info" (CONFIG_DEBUG_INFO),
- so you can use "objdump -d -l vmlinux" to see the source-to-object
- code mapping.
- 
-+If you want to reduce probing overhead, set "Kprobes jump optimization
-+support" (CONFIG_OPTPROBES) to "y". You can find this option under
-+"Kprobes" line.
-+
- 4. API Reference
- 
- The Kprobes API includes a "register" function and an "unregister"
-@@ -387,9 +490,12 @@ the probe which has been registered.
- 
- 5. Kprobes Features and Limitations
- 
--Kprobes allows multiple probes at the same address.  Currently,
--however, there cannot be multiple jprobes on the same function at
--the same time.
-+Kprobes allows multiple probes at the same address even if it is optimized.
-+Currently, however, there cannot be multiple jprobes on the same function
-+at the same time. And also, optimized kprobes can not invoke the
-+post_handler and the break_handler. So if you attempt to install the probe
-+which has the the post_handler or the break_handler at the same address of
-+an optimized kprobe, the probe will be unoptimized automatically.
- 
- In general, you can install a probe anywhere in the kernel.
- In particular, you can probe interrupt handlers.  Known exceptions
-@@ -453,6 +559,37 @@ reason, Kprobes doesn't support return probes (or kprobes or jprobes)
- on the x86_64 version of __switch_to(); the registration functions
- return -EINVAL.
- 
-+On x86/x86-64, since the Jump Optimization of Kprobes modifies instructions
-+widely, there are some limitations for optimization. To explain it,
-+we introduce some terminology. Image certain binary line which is
-+constructed by 2 byte instruction, 2byte instruction and 3byte instruction.
-+
-+        IA
-+         |
-+[-2][-1][0][1][2][3][4][5][6][7]
-+        [ins1][ins2][  ins3 ]
-+	[<-     DCR       ->]
-+	   [<- JTPR ->]
-+
-+ins1: 1st Instruction
-+ins2: 2nd Instruction
-+ins3: 3rd Instruction
-+IA:  Insertion Address
-+JTPR: Jump Target Prohibition Region
-+DCR: Detoured Code Region
-+
-+The instructions in DCR are copied to the out-of-line buffer
-+of the djprobe instance, because the bytes in JTPR are replaced by
-+a jump instruction. So, there are several limitations.
-+
-+a) The instructions in DCR must be relocatable.
-+b) The instructions in DCR must not include call instruction.
-+c) JTPR must not be targeted by any jump or call instruction.
-+d) DCR must not straddle the border betweeen functions.
-+
-+Anyway, these limitations are checked by in-kernel instruction decoder,
-+so you don't need to care about that.
-+
- 6. Probe Overhead
- 
- On a typical CPU in use in 2005, a kprobe hit takes 0.5 to 1.0
-@@ -476,6 +613,19 @@ k = 0.49 usec; j = 0.76; r = 0.80; kr = 0.82; jr = 1.07
- ppc64: POWER5 (gr), 1656 MHz (SMT disabled, 1 virtual CPU per physical CPU)
- k = 0.77 usec; j = 1.31; r = 1.26; kr = 1.45; jr = 1.99
- 
-+6.1 Optimized Probe Overhead
-+
-+Typically, an optimized kprobe hit takes 0.07 to 0.1 microseconds to
-+process. Here are sample overhead figures (in usec) for x86-64 architectures.
-+k = unoptimized kprobe, b = boosted(single-step skipped), o = optimized kprobe,
-+r = unoptimized kretprobe, rb = boosted kretprobe, ro = optimized kretprobe.
-+
-+i386: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.68 usec; b = 0.27; o = 0.06; r = 0.95; rb = 0.53; ro = 0.30
-+
-+x86-64: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.91 usec; b = 0.40; o = 0.06; r = 1.21; rb = 0.71; ro = 0.35
-+
- 7. TODO
- 
- a. SystemTap (http://sourceware.org/systemtap): Provides a simplified
-@@ -523,7 +673,8 @@ is also specified. Following columns show probe status. If the probe is on
- a virtual address that is no longer valid (module init sections, module
- virtual addresses that correspond to modules that've been unloaded),
- such probes are marked with [GONE]. If the probe is temporarily disabled,
--such probes are marked with [DISABLED].
-+such probes are marked with [DISABLED]. If the probe is optimized, it is
-+marked with [OPTIMIZED].
- 
- /sys/kernel/debug/kprobes/enabled: Turn kprobes ON/OFF forcibly.
- 
-@@ -533,3 +684,18 @@ registered probes will be disarmed, till such time a "1" is echoed to this
- file. Note that this knob just disarms and arms all kprobes and doesn't
- change each probe's disabling state. This means that disabled kprobes (marked
- [DISABLED]) will be not enabled if you turn ON all kprobes by this knob.
-+
-+
-+Appendix B: The kprobes sysctl interface
-+
-+/proc/sys/debug/kprobes-optimization: Turn kprobes optimization ON/OFF.
-+
-+When CONFIG_OPTPROBES=y, this sysctl interface appears and it provides a knob
-+to globally and forcibly turn the jump optimization ON or OFF. By default,
-+jump optimization is allowed(ON). By echoing "0" to this file or By setting
-+0 to "debug.kprobes_optimization" via sysctl, all optimized probes will be
-+unoptimized. And new probes registered after that will not be optimized.
-+Note that this knob *Changes* the optimized state. This means that optimized
-+probes (marked [OPTIMIZED]) will be unoptimized ([OPTIMIZED] tag will be
-+removed). And after the knob is turned on, it will be optimized again.
-+
+ unsigned long __weak arch_deref_entry_point(void *entry)
 
 
 -- 
