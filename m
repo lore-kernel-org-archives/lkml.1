@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbZKYOPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934713AbZKYOLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780AbZKYOPB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758385AbZKYOPB
+	id S934713AbZKYOLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 09:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZKYOLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 09:15:01 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48252 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbZKYOPA (ORCPT
+	Wed, 25 Nov 2009 09:11:21 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:46801 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbZKYOLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 09:15:00 -0500
-Date: Wed, 25 Nov 2009 07:15:05 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Liuweni <qingshenlwy@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       strongzgy <strongzgy@gmail.com>, xgr178 <xgr178@163.com>,
-       Liu Hui <onlyflyer@gmail.com>, viro <viro@zeniv.linux.org.uk>,
-       akpm <akpm@linux-foundation.org>, jack <jack@suse.cz>,
-       npiggin <npiggin@suse.de>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1/3]fs/inode: iunique() Optimize Performance
-Message-ID: <20091125141505.GH9482@parisc-linux.org>
-References: <200911252209432039291@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911252209432039291@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Nov 2009 09:11:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=VmKlurluYGSEqtLSi77nuAjjl4gmAx5/yHAc/Zxe47gVxvsHchl1E59AAuWfN3JYrZ
+         KxKdZqZC74IHdFulf1SHmGg1n7U8MIA1i+P/HX47BrKeot7+VLWvH0Lk5Zx79k1RPqn/
+         ogEXo1bufhduSldbLtRTmWoo+jcOWNyDsxB4U=
+Date: Wed, 25 Nov 2009 22:15:42 +0800
+From: "Liuweni" <qingshenlwy@gmail.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "strongzgy" <strongzgy@gmail.com>, "xgr178" <xgr178@163.com>,
+       "Liu Hui" <onlyflyer@gmail.com>
+Subject: [PATCH 3/3]fs/inode: iunique() Optimize Performance
+Message-ID: <200911252215376876159@gmail.com>
+X-mailer: Foxmail 6, 15, 201, 22 [cn]
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 10:09:45PM +0800, Liuweni wrote:
-> ---
-> move the if condition out the while{}.
-> While the function executing, the if 
-> condition won't check again and again.
-> And this code won't change the function
-> of iunique().
+---
+Add the macro L1_CACHE_SHIFT into the arch/h8300/include/asm/cache.h
+In this architecture, missing L1_CACHE_SHIFT, The iunique() optimize 
+performance will not work correctly .
+---
+Signed-off-by: Liuwenyi<qingshenlwy@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+---
+diff --git a/arch/h8300/include/asm/cache.h b/arch/h8300/include/asm/cache.h
+index c635028..0a73cd5 100644
+--- a/arch/h8300/include/asm/cache.h
++++ b/arch/h8300/include/asm/cache.h
+@@ -3,6 +3,7 @@
+ 
+ /* bytes per L1 cache line */
+ #define        L1_CACHE_BYTES  4
++#define        L1_CACHE_SHIFT  2
+ 
+ /* m68k-elf-gcc  2.95.2 doesn't like these */
+ 
 
-That's not true.
+ 				
+--------------
 
-> @@ -838,9 +838,10 @@ ino_t iunique(struct super_block *sb, ino_t max_reserved)
->  	ino_t res;
->  
->  	spin_lock(&inode_lock);
-> +
-> +	if (counter <= max_reserved)
-> +		counter = max_reserved + 1;
->  	do {
-> -		if (counter <= max_reserved)
-> -			counter = max_reserved + 1;
->  		res = counter++;
+Best Regards,
+Liuweni
+2009-11-25
 
-'counter' is incremented here, so if it wraps around, we'll blunder into 
-the reserved space again.
-
->  		head = inode_hashtable + hash(sb, res);
->  		inode = find_inode_fast(sb, head, res);
-> 
->  				
-> --------------
-> Best Regards,
-> Liuweni
-> 2009-11-25
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
