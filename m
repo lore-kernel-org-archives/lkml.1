@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934375AbZKYJvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbZKYJv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934375AbZKYJvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 04:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758346AbZKYJvh
+	id S1758569AbZKYJv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 04:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758557AbZKYJv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 04:51:37 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34068 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758276AbZKYJvg (ORCPT
+	Wed, 25 Nov 2009 04:51:57 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49377 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758514AbZKYJvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 04:51:36 -0500
-X-Sasl-enc: MH5NFQzeb6naE8BO2gEHzrbwgXc8b8ACeOM/5i8MPmxt 1259142701
-Message-ID: <4B0CFE2A.6010008@ladisch.de>
-Date: Wed, 25 Nov 2009 10:51:38 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Serge Belyshev <belyshev@depni.sinp.msu.ru>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v3] k10temp: temperature sensor for AMD Family 10h/11h
- CPUs
-References: <4AF91F70.10106@ladisch.de>	<4B06501B.8080509@ladisch.de>	<87ws1l5wcl.fsf@depni.sinp.msu.ru>	<4B0673D7.5010006@ladisch.de>	<20091120123016.19d98ab4@hyperion.delvare>	<4B068402.7020606@ladisch.de>	<20091120131855.7f8f8722@hyperion.delvare>	<4B0A3DB6.9090703@ladisch.de>	<20091123145154.5b2b5735@hyperion.delvare>	<4B0AAA55.3040702@ladisch.de>	<20091123200527.1114cbc2@hyperion.delvare>	<4B0B9CB1.3090808@ladisch.de>	<20091124142654.76f4d166@hyperion.delvare>	<4B0BE935.1050708@ladisch.de> <20091124211134.12971937@hyperion.delvare>
-In-Reply-To: <20091124211134.12971937@hyperion.delvare>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 25 Nov 2009 04:51:55 -0500
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259132226.20897.22.camel@marge.simson.net>
+References: <1258891664.14325.30.camel@marge.simson.net>
+	 <1259070683.4531.1476.camel@laptop>
+	 <1259082449.15249.90.camel@marge.simson.net>
+	 <1259084140.4531.1710.camel@laptop>  <1259085280.4531.1730.camel@laptop>
+	 <1259086901.15249.121.camel@marge.simson.net>
+	 <1259087245.4531.1767.camel@laptop>
+	 <1259132226.20897.22.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Nov 2009 10:51:59 +0100
+Message-ID: <1259142719.4027.228.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Tue, 24 Nov 2009 15:09:57 +0100, Clemens Ladisch wrote:
-> > This means that one of the already existing limit values must be the
-> > reference base, so we'd need just a mechanism to specify which of them
-> > is it, i.e., "temp1_relative_base: max".  If we'd have
-> > "temp1_relative: 70000", the application would have to search among the
-> > limit values for one with the same value.
-> 
-> I fail to see why the application would care about this at all. When in
-> relative mode, all other values would be offset by the temp#_relative
-> value. But that value itself would not be displayed (it has no physical
-> value, otherwise we wouldn't be in absolute mode, would we?)
-> ...
-> 
-> > temp1_relative: true
-> 
-> This is taking flexibility away from us, for no benefit that I can see.
-> Am I missing something?
+On Wed, 2009-11-25 at 07:57 +0100, Mike Galbraith wrote:
 
-The application has to display something like "24 °C below the limit",
-so how should it know that the 70°C should be named "the limit"?
+>         update_curr(cfs_rq);
+> +
+> +       if (is_same_group(se, pse)) {
+> +               se->vruntime = pse->vruntime;
+> +
+> +               /*
+> +                * If we're not sharing a runqueue, redo the child's vruntime
+> +                * offset after accounting for any yet to be booked vruntime.
+> +                */
+> +               if (this_cpu != task_cpu(p)) {
+> +                       struct cfs_rq *old_cfs_rq = cfs_rq_of(pse);
+> +                       u64 now = cpu_rq(this_cpu)->clock;
+> +                       unsigned long delta_exec = now - pse->exec_start;
+> +
+> +                       delta_exec = calc_delta_fair(delta_exec, se);
+> +                       se->vruntime += delta_exec;
+> +                       se->vruntime -= old_cfs_rq->min_vruntime -
+> +                                               cfs_rq->min_vruntime;
+> +               }
+> +       }
+> +
+>         place_entity(cfs_rq, se, 1); 
 
-To use an example, my CPU has these entries like these:
-temp1_input: 29875
-temp1_max: 70000
-temp1_crit: 95000
-temp1_crit_hyst: 92500
+/me got his head in a twist..
 
-How should these entries be displayed?
-(we know that: "40.1 °C below limit", "limit", "25 °C above limit" etc.)
+ - is_same_group() assumes both things are on the same cpu and will
+   fail (for the group configs) when this is not so.
 
-But what algorithm should the application (or libsensors) use to create
-those labels?  If we have "temp1_relative: 70000", then this happens to
-be the "max" limit; but what if some CPU vendor decides to define, e.g.,
-the value 0 as the "normal" operating temperatire, so that the entries
-would look like this:
-temp1_input: -1000
-temp1_max: 40000
-temp1_relative: 0
-Should the values be labeled as "1 °C below normal" and "40 °C above
-normal", and how should the application know that 0 is to be labeled
-"normal"?  It might make more sense to display the temperature just as
-"41 °C below max", in which case the actual value of temp1_relative is
-not used at all.
+ - if we're not on the same cpu, update_curr() will have updated current
+   on the target cpu, but the parent vruntime will still be stale.
 
-"Relative" means that any value is meaningful only in comparison with
-other values/limits, so it does not make sense to declare one point on
-the scale as base.
-
-> Additionally it wouldn't fit in libsensors as it exists today.
-
-Then the best bet would probably be an entry like temp#_unit, with
-0 = absolute °C (default); 1 = relative °C or °K; other values
-"unknown".  Even if some silly scale is introduced later, applications
-that read this entry then know that they must not display a unit like °C
-for unknown unit specifications.
+ - when all is said and done, place_entity(.initial=1) will do:
+    ->vruntime = max(min_vruntime + debit, ->vruntime)
+   which ought to place a new task far enough ahead in any case...
 
 
-Best regards,
-Clemens
+
