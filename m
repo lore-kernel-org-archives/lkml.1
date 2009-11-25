@@ -1,32 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZKYQ6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbZKYQ5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbZKYQ6A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 11:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758899AbZKYQ57
+	id S1758858AbZKYQ5p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 11:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758808AbZKYQ5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 11:57:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21698 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 11:57:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40759 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758876AbZKYQ5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 11:57:53 -0500
+	id S1754021AbZKYQ5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 11:57:41 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v6 00/11] kprobes: Kprobes jump optimization support
+Subject: [PATCH -tip v6 01/11] kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION
+	to RELATIVEJUMP_OPCODE
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Christoph Hellwig <hch@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Wed, 25 Nov 2009 11:55:10 -0500
-Message-ID: <20091125165510.6073.48721.stgit@harusame>
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
+       Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Wed, 25 Nov 2009 11:55:18 -0500
+Message-ID: <20091125165518.6073.2174.stgit@harusame>
+In-Reply-To: <20091125165510.6073.48721.stgit@harusame>
+References: <20091125165510.6073.48721.stgit@harusame>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -35,155 +40,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Change RELATIVEJUMP_INSTRUCTION macro to RELATIVEJUMP_OPCODE since it
+represents just the opcode byte.
 
-Here are the patchset of the kprobes jump optimization v6
-(a.k.a. Djprobe). I've cleaned up codes and added comments.
-Also, I made a separated patch of generic text_poke_smp()
-for cross modifying code(XMC) by using stop_machine().
-
-These patches can be applied on the latest -tip.
-
-Changes in v6:
- - Clean up codes and add comment.
- - Split stop_machine-based text_poke code.
- - Use int3 even if len == 1. (on int3-based text_poke_fixup code)
-
-And kprobe stress test didn't found any regressions - from kprobes,
-under kvm/x86.
-
-Jump Optimized Kprobes
-======================
-o Concept
- Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
-probes into running kernel. Jump optimization allows kprobes to replace
-breakpoint with a jump instruction for reducing probing overhead drastically.
-
-o Performance
- An optimized kprobe 5 times faster than a kprobe.
-
- Optimizing probes gains its performance. Usually, a kprobe hit takes
-0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
-probe hit takes less than 0.1 microseconds (actual number depends on the
-processor). Here is a sample overheads.
-
-Intel(R) Xeon(R) CPU E5410  @ 2.33GHz (without debugging options)
-
-                     x86-32  x86-64
-kprobe:              0.68us  0.91us
-kprobe+booster:	     0.27us  0.40us
-kprobe+optimized:    0.06us  0.06us
-
-kretprobe :          0.95us  1.21us
-kretprobe+booster:   0.53us  0.71us
-kretprobe+optimized: 0.30us  0.35us
-
-(booster skips single-stepping)
-
- Note that jump optimization also consumes more memory, but not so much.
-It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
-consumes a few MB.
-
-
-o Usage
- Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
-optimized if possible.
-
- Kprobes decodes probed function and checks whether the target instructions
-can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
-doesn't optimize it.
-
-
-o Optimization
-  Before preparing optimization, Kprobes inserts original(user-defined)
- kprobe on the specified address. So, even if the kprobe is not
- possible to be optimized, it just uses a normal kprobe.
-
- - Safety check
-  First, Kprobes gets the address of probed function and checks whether the
- optimized region, which will be replaced by a jump instruction, does NOT
- straddle the function boundary, because if the optimized region reaches the
- next function, its caller causes unexpected results.
-  Next, Kprobes decodes whole body of probed function and checks there is
- NO indirect jump, NO instruction which will cause exception by checking
- exception_tables (this will jump to fixup code and fixup code jumps into
- same function body) and NO near jump which jumps into the optimized region
- (except the 1st byte of jump), because if some jump instruction jumps
- into the middle of another instruction, it causes unexpected results too.
-  Kprobes also measures the length of instructions which will be replaced
- by a jump instruction, because a jump instruction is longer than 1 byte,
- it may replaces multiple instructions, and it checks whether those
- instructions can be executed out-of-line.
-
- - Preparing detour code
-  Then, Kprobes prepares "detour" buffer, which contains exception emulating
- code (push/pop registers, call handler), copied instructions(Kprobes copies
- instructions which will be replaced by a jump, to the detour buffer), and
- a jump which jumps back to the original execution path.
-
- - Pre-optimization
-  After preparing detour code, Kprobes enqueues the kprobe to optimizing list
- and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
- probes, kprobe-optimizer will delay to work.
-  When the optimized-kprobe is hit before optimization, its handler
- changes IP(instruction pointer) to copied code and exits. So, the
- instructions which were copied to detour buffer are executed on the detour
- buffer.
-
- - Optimization
-  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
- synchronize_sched for safety, because some processors are possible to be
- interrupted on the instructions which will be replaced by a jump instruction.
- As you know, synchronize_sched() can ensure that all interruptions which were
- executed when synchronize_sched() was called are done, only if
- CONFIG_PREEMPT=n. So, this version supports only the kernel with
- CONFIG_PREEMPT=n.(*)
-  After that, kprobe-optimizer replaces the 4 bytes right after int3 breakpoint
- with relative-jump destination, and synchronize caches on all processors. Next,
- it replaces int3 with relative-jump opcode, and synchronize caches again.
-
- - Unoptimization
-  When unregistering, disabling kprobe or being blocked by other kprobe,
- an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
- the kprobe just be dequeued from the optimized list. When the optimization
- has been done, it replaces a jump with int3 breakpoint and original code.
-  First it puts int3 at the first byte of the jump, synchronize caches
- on all processors, and replaces the 4 bytes right after int3 with the
- original code.
-
-(*)This optimization-safety checking may be replaced with stop-machine method
- which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
-
-
-Thank you,
-
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Anders Kaseorg <andersk@ksplice.com>
+Cc: Tim Abbott <tabbott@ksplice.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
 
-Masami Hiramatsu (11):
-      [RFC] kprobes/x86: Use text_poke_fixup() for jump optimization
-      [RFC] x86: Introduce generic jump patching without stop_machine
-      kprobes: Add documents of jump optimization
-      kprobes/x86: Support kprobes jump optimization on x86
-      x86: Add text_poke_smp for SMP cross modifying code
-      kprobes/x86: Cleanup save/restore registers
-      kprobes/x86: Boost probes when reentering
-      kprobes: Jump optimization sysctl interface
-      kprobes: Introduce kprobes jump optimization
-      kprobes: Introduce generic insn_slot framework
-      kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
+ arch/x86/include/asm/kprobes.h |    2 +-
+ arch/x86/kernel/kprobes.c      |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/include/asm/kprobes.h b/arch/x86/include/asm/kprobes.h
+index 4fe681d..eaec8ea 100644
+--- a/arch/x86/include/asm/kprobes.h
++++ b/arch/x86/include/asm/kprobes.h
+@@ -32,7 +32,7 @@ struct kprobe;
+ 
+ typedef u8 kprobe_opcode_t;
+ #define BREAKPOINT_INSTRUCTION	0xcc
+-#define RELATIVEJUMP_INSTRUCTION 0xe9
++#define RELATIVEJUMP_OPCODE 0xe9
+ #define MAX_INSN_SIZE 16
+ #define MAX_STACK_SIZE 64
+ #define MIN_STACK_SIZE(ADDR)					       \
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 1f3186c..b6b75f1 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -115,7 +115,7 @@ static void __kprobes set_jmp_op(void *from, void *to)
+ 	} __attribute__((packed)) * jop;
+ 	jop = (struct __arch_jmp_op *)from;
+ 	jop->raddr = (s32)((long)(to) - ((long)(from) + 5));
+-	jop->op = RELATIVEJUMP_INSTRUCTION;
++	jop->op = RELATIVEJUMP_OPCODE;
+ }
+ 
+ /*
 
- Documentation/kprobes.txt          |  192 ++++++++++-
- arch/Kconfig                       |   13 +
- arch/x86/Kconfig                   |    1 
- arch/x86/include/asm/alternative.h |   15 +
- arch/x86/include/asm/kprobes.h     |   31 ++
- arch/x86/kernel/alternative.c      |  162 +++++++++
- arch/x86/kernel/kprobes.c          |  592 ++++++++++++++++++++++++++++------
- include/linux/kprobes.h            |   44 +++
- kernel/kprobes.c                   |  628 +++++++++++++++++++++++++++++++-----
- kernel/sysctl.c                    |   13 +
- 10 files changed, 1485 insertions(+), 206 deletions(-)
 
 -- 
 Masami Hiramatsu
