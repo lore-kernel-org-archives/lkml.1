@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935001AbZKYUSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935013AbZKYUTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935001AbZKYUSw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 15:18:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934971AbZKYUSv
+	id S935013AbZKYUTl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 15:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934984AbZKYUTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 15:18:51 -0500
-Received: from www.tglx.de ([62.245.132.106]:45988 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934946AbZKYUSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 15:18:51 -0500
-Date: Wed, 25 Nov 2009 21:18:39 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Luming Yu <luming.yu@gmail.com>
-Subject: Re: [PATCH 1/2] hrtimer: correct a few numbers in comments and printk
- outputs
-In-Reply-To: <20091125115601.3741fcc7.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0911252116240.24119@localhost.localdomain>
-References: <1258745020-28060-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091123152516.729e1407.akpm@linux-foundation.org> <20091124101403.GA25364@pengutronix.de> <20091125115601.3741fcc7.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 25 Nov 2009 15:19:40 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:44171 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934983AbZKYUTj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 15:19:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=a/xnKwuD0Iw/V+jDod5ofSizFzjkmmx4ZyOAujY0YGm1sLnBdnDGRZg1hALdfN4eg1
+         AkqrXivN6ctIQMygttzU+EH0Gq+QQ38av537zOuSLCavobxWYU5++N9uFiZuvXyRQEJQ
+         QiLxsmUEIDawURvz8tXvkJyPWTaJ8KO1cxwz0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.DEB.2.00.0911251414480.4779@router.home>
+References: <1259173279-21220-1-git-send-email-penberg@cs.helsinki.fi>
+	 <1259173636.29779.41.camel@Joe-Laptop.home>
+	 <4B0D77CC.3020807@cs.helsinki.fi>
+	 <alpine.DEB.2.00.0911251414480.4779@router.home>
+Date: Wed, 25 Nov 2009 22:19:44 +0200
+X-Google-Sender-Auth: c5f16941d93b547b
+Message-ID: <84144f020911251219lb60a4c5s618b791a50824958@mail.gmail.com>
+Subject: Re: [PATCH] SLUB: Fix __GFP_ZERO unlikely() annotation
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009, Andrew Morton wrote:
+On Wed, Nov 25, 2009 at 10:15 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> On Wed, 25 Nov 2009, Pekka Enberg wrote:
+>
+>> Because that has no effect on the generated code.
+>
+> Does this affect the cycle count in slab_alloc?
 
-> On Tue, 24 Nov 2009 11:14:03 +0100
-> Uwe Kleine-K__nig  <u.kleine-koenig@pengutronix.de> wrote:
-> 
-> > Hello Andrew,
-> > 
-> > On Mon, Nov 23, 2009 at 03:25:16PM -0800, Andrew Morton wrote:
-> > > On Fri, 20 Nov 2009 20:23:39 +0100
-> > > Uwe Kleine-K__nig  <u.kleine-koenig@pengutronix.de> wrote:
-> > > 
-> > > > @@ -52,7 +52,7 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
-> > > >  			printk(KERN_WARNING
-> > > >  			       "CE: %s increasing min_delta_ns to %lu nsec\n",
-> > > >  			       dev->name ? dev->name : "?",
-> > > > -			       dev->min_delta_ns << 1);
-> > > > +			       dev->min_delta_ns);
-> > > >  
-> > > >  			i = 0;
-> > > >  		}
-> > > 
-> > > This one's already in linux-next:
-> > > 
-> > > @@ -50,9 +50,9 @@ int tick_dev_program_event(struct clock_
-> > >  				dev->min_delta_ns += dev->min_delta_ns >> 1;
-> > >  
-> > >  			printk(KERN_WARNING
-> > > -			       "CE: %s increasing min_delta_ns to %lu nsec\n",
-> > > +			       "CE: %s increasing min_delta_ns to %llu nsec\n",
-> > >  			       dev->name ? dev->name : "?",
-> > > -			       dev->min_delta_ns << 1);
-> > > +			       (unsigned long long) dev->min_delta_ns << 1);
-> > '<< 1' is wrong here, too.
-> > 
-> 
-> What's wrong with it?  That leftshift appears to be to compensate for
-> the rightshift a few lines above.
-> 
-> That change was unobvious and unchangelogged, so here we are again.
-
-That's actually my fault. In commit 61c22c34 I removed the WARN_ON
-which we put there to gather data on kerneloops.org for a while and
-did not fix the printk format string.
-
-Will take care of it. Thanks,
-
-     tglx
+Joe's suggestion doesn't change the generated code, my patch does and
+probably changes cycle count. Let me see if I can run the in-kernel
+slab tests.
