@@ -1,49 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZKYOzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZKYPBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbZKYOzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 09:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZKYOzr
+	id S1756463AbZKYPBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 10:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZKYPBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 09:55:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:44884 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbZKYOzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 09:55:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=PFYGCIekfL4iBGa8FAe6MtkiTqbf/6jxU+QXvgcpUoeIXBBMUrSF4EBj1pLcme/zfS
-         Ofjnw4yfp+Fz3LX4R/+zD/nhHkx2ut3nHoZyy+FrGDl9KjN70HYk6vVM8QtFL9F2GJRQ
-         eh6atzgoMcfcZzeUfJAz0PgZWyAzGi8FVSf5Q=
-Subject: Re: The work of ricoh_mmc isn't detected by pci core
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Philip Langdale <philipl@overt.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, philipl@alumni.utexas.net
-In-Reply-To: <20091123162119.3777e14d@fido2.homeip.net>
-References: <1259021583.16650.9.camel@maxim-laptop>
-	 <20091123162119.3777e14d@fido2.homeip.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 25 Nov 2009 16:55:47 +0200
-Message-ID: <1259160947.10147.1.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 10:01:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14446 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754114AbZKYPBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 10:01:32 -0500
+Date: Wed, 25 Nov 2009 15:55:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: [RFC,PATCH 14/14] utrace core
+Message-ID: <20091125145556.GA5394@redhat.com>
+References: <20091124200220.GA5828@redhat.com> <87my2bwtno.fsf@basil.nowhere.org> <20091124204152.GA9131@redhat.com> <20091124212619.GB29096@one.firstfloor.org> <20091124214450.GA12828@redhat.com> <20091125084617.GD29096@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125084617.GD29096@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I converted your driver input pci quirk, and this works very well.
-MMC device disappears without any trace.
-Suspend/resume works fine.
+On 11/25, Andi Kleen wrote:
+>
+> > This is subjective, but personally I disagree. Contrary, imho it
+> > is good that tracehook hides the (simple) details. I do not understand
+> > why the reader of, say, do_fork() should see the contents of
+> > tracehook_report_clone_complete(). This will complicate the understanding.
+>
+> Someone who has to debug or review fork needs to know what's going on.
+>
+> Yes they can find out by going through inlines, but that
+> just costs more time and distracts from the actual problem.
+>
+> > Those people who want to understand/change fork() do not care about
+> > utrace/ptrace usually.
+> >
+> > And please note that it is much, much easier to change this code
+> > when it lives in tracehooks.h instead of sched.c/signal.c/etc.
+>
+> The problem is that when you have to trace this code when something
+> goes wrong the extra layer just holds you up. For debugging usually
+> abstraction is a bad idea.
+>
+> My experience is also that in general such extra "abstraction layers"
+> are frowned upon in Linux kernel code style. For example when new
+> vendor drivers are submitted for hardware like NICs etc,
+> they frequently tend to have all kinds of "abstraction layers".
+> Typically the first step to linuxify them is to get rid of those.
+>
+> This makes the code more readable, shorter, better to debug and read.
 
-07:00.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 05)
-07:00.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
-07:00.2 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
-07:00.3 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 12)
+OK, let's try to remove these helpers. Let's take a random one,
+tracehook_report_exec().
 
+The current code in search_binary_handler:
 
-Best regards,
-	Maxim Levitsky
+		if (retval >= 0) {
+			if (depth == 0)
+				tracehook_report_exec(fmt, bprm, regs);
+			put_binfmt(fmt);
+			allow_write_access(bprm->file);
+			if (bprm->file)
+				fput(bprm->file);
+			bprm->file = NULL;
+			current->did_exec = 1;
+			proc_exec_connector(current);
+			return retval;
+		}
+
+becomes:	
+
+		if (retval >= 0) {
+			if (depth == 0) {
+				if (unlikely(task_utrace_flags(current) & UTRACE_EVENT(EXEC)))
+					utrace_report_exec(fmt, bprm, regs);
+				if (!ptrace_event(PT_TRACE_EXEC, PTRACE_EVENT_EXEC, 0) &&
+				    unlikely(task_ptrace(current) & PT_PTRACED))
+					send_sig(SIGTRAP, current, 0);
+			}
+			put_binfmt(fmt);
+			allow_write_access(bprm->file);
+			if (bprm->file)
+				fput(bprm->file);
+			bprm->file = NULL;
+			current->did_exec = 1;
+			proc_exec_connector(current);
+			return retval;
+		}
+
+Cleanup? I don't think so.
+
+OK, when CONFIG_UTRACE goes away, we can kill a lot of old code, and
+in tracehooks too. So the code above becomes
+
+		if (retval >= 0) {
+			if (depth == 0) {
+				if (unlikely(task_utrace_flags(current) & UTRACE_EVENT(EXEC)))
+					utrace_report_exec(fmt, bprm, regs);
+			}
+			put_binfmt(fmt);
+			allow_write_access(bprm->file);
+			if (bprm->file)
+				fput(bprm->file);
+			bprm->file = NULL;
+			current->did_exec = 1;
+			proc_exec_connector(current);
+			return retval;
+		}
+
+Much better. But in this case please note that most of tracehooks
+just do:
+
+		if (unlikely(task_utrace_flags(current) & SOME_EVENT))
+			utrace_report_some_event();
+
+I really don't understand why we shouldn't have (trivial!) helpers
+for this. (As for naming - personally I do not care at all ;)
+
+You can argue that some tracehooks (say, exit_notify() path) can be
+simplified. Yes, we are going to do this. And again, when CONFIG_UTRACE
+goes away, we can just kill some tracehooks. Say, most of them in
+do_fork() path.
+
+> Because the inlines do not add anything to functionality and actually
+> hide what the code does, that is obfuscation.
+
+This applies to any function. As for tracehooks, they mostly hide
+"if (task_utrace_flags(current))" check and nothing more.
+
+> For you it might be obvious
+> because you've been hacking that code for quite some time, but for
+> someone who is not in your position that's different.
+
+Yes, this is true. Let me repeat, I know that this is subjective and
+I am biased.
+
+Oleg.
 
