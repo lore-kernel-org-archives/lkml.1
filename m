@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZKYTLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbZKYTSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbZKYTLe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 14:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbZKYTLd
+	id S1759557AbZKYTSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 14:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759080AbZKYTSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 14:11:33 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:64544 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758960AbZKYTLc (ORCPT
+	Wed, 25 Nov 2009 14:18:17 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:58246 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbZKYTSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 14:11:32 -0500
+	Wed, 25 Nov 2009 14:18:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZzffWrvLjSV2pWvvqWiIlzfGgnHVmBclnOXlMtBMjLEOhq+hAu7zHWxy1N2qa55dpf
-         PxCGlXVAyO9TSPVcC3tdLruH66soAUDiKPUYL1S69NrB9M87UhjFD74QtclLs/UobIMU
-         9LBpwtwVQhrZOKfO4+Lf4qPH7izpr26kjhhWg=
-Date: Wed, 25 Nov 2009 20:11:05 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091125191105.GA3167@ami.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
- <20091124111946.GA7883@ff.dom.local>
- <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=W69DNdmT9kP/HlW7DNJ8b/BcQIEJWdz4LZclvfdLHNSCrr2K5Ys5Cc1Y2/M5HCVFh2
+         JPLKpip6wRSRzQcJTB8pwXQOEIplrzvQT+Gzc753FxBLMWK54cRacHWcJ2GotObfhBeF
+         IIW7/IUzTwR4PPQsHiCgW1gmAMtIV8EGztsqE=
+From: Brian Gerst <brgerst@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: loadsegment() optimization
+Date: Wed, 25 Nov 2009 14:18:26 -0500
+Message-Id: <1259176706-5908-1-git-send-email-brgerst@gmail.com>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 09:06:30AM -0500, Caleb Cushing wrote:
-> > Anyway, since there are problems with
-> > getting stats from the router we still can't compare them, or check
-> > for the dropped stats. (Btw, could you check for /proc/net/softnet_stat
-> > yet?)
-> 
-> router? good kernel? bad kernel?
+Zero the input register in the exception handler instead of using
+an extra register to pass in a zero value.
 
-router.
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
+---
+ arch/x86/include/asm/system.h |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-> 
-> > So, it might be the kernel problem you reported, but there is not
-> > enough data to prove it. Then my proposal is to try to repeat this
-> > problem in more "testing friendly" conditions - preferably against
-> > some other, more up-to-date linux box, if possible?
-> 
-> yeah 2.6.31.6 works on my laptop fine I'll just have to see about
-> getting a direct connection to it. probably do that after I bring the
-> other NIC back from home, on thanksgiving.
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index f08f973..18ac1ec 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -158,18 +158,19 @@ extern void native_load_gs_index(unsigned);
+  * segment if something goes wrong..
+  */
+ #define loadsegment(seg, value)			\
++do {						\
++	unsigned short __val = value;		\
+ 	asm volatile("\n"			\
+ 		     "1:\t"			\
+ 		     "movl %k0,%%" #seg "\n"	\
+-		     "2:\n"			\
+ 		     ".section .fixup,\"ax\"\n"	\
+-		     "3:\t"			\
+-		     "movl %k1, %%" #seg "\n\t"	\
+-		     "jmp 2b\n"			\
++		     "2:\t"			\
++		     "xorl %k0,%k0\n\t"		\
++		     "jmp 1b\n"			\
+ 		     ".previous\n"		\
+-		     _ASM_EXTABLE(1b,3b)	\
+-		     : :"r" (value), "r" (0) : "memory")
+-
++		     _ASM_EXTABLE(1b,2b)	\
++		     : "+r" (__val) : : "memory"); \
++} while (0)
+ 
+ /*
+  * Save a segment register away
+-- 
+1.6.5.2
 
-This other NIC is a really good idea, so let's wait and see.
-
-Happy Thanksgiving!
-Jarek P.
