@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935173AbZKYWPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935191AbZKYWQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935173AbZKYWPd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 17:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935158AbZKYWPa
+	id S935191AbZKYWQO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 17:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbZKYWQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 17:15:30 -0500
-Received: from mail1-out1.atlantis.sk ([80.94.52.55]:37424 "EHLO
-	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759563AbZKYWP3 (ORCPT
+	Wed, 25 Nov 2009 17:16:13 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:41653 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935123AbZKYWQK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 17:15:29 -0500
-To: Oliver Neukum <oliver@neukum.org>
-Subject: [PATCH 2/3] [resend] usbtouchscreen: find input endpoint automatically
-Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Wed, 25 Nov 2009 23:15:27 +0100
+	Wed, 25 Nov 2009 17:16:10 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911252315.29395.linux@rainbow-software.org>
+In-Reply-To: <20091125082603.25618.57438.sendpatchset@rxone.opensource.se>
+References: <20091125082603.25618.57438.sendpatchset@rxone.opensource.se>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 25 Nov 2009 15:15:54 -0700
+X-Google-Sender-Auth: aae9a16b31d9a286
+Message-ID: <fa686aa40911251415q624f3610n92cbc20437b12bf6@mail.gmail.com>
+Subject: Re: [PATCH] spi: Allow using spi_bitbang_setup() with custom 
+	txrx_bufs()
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, dbrownell@users.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Find input enpoint automatically instead of assuming that the first one is OK.
-This is needed for devices with multiple endpoints such as iNexio where the
-first endpoint might be output.
+On Wed, Nov 25, 2009 at 1:26 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
+> From: Magnus Damm <damm@opensource.se>
+>
+> This patch modifies the shared spi bitbanging code
+> to allow using spi_bitbang_setup() even though the
+> txrx_word[] callbacks are unset. Useful for drivers
+> that want to make use of spi_bitbang_setup() but
+> have their own txrx_bufs() callback.
+>
+> While at it, drop the MSIOF driver workaround.
+>
+> Signed-off-by: Magnus Damm <damm@opensource.se>
+> ---
+>
+>  Depends on the MSIOF driver.
+>
+>  drivers/spi/spi_bitbang.c  |   25 ++++++++++++++-----------
+>  drivers/spi/spi_sh_msiof.c |   11 -----------
+>  2 files changed, 14 insertions(+), 22 deletions(-)
+>
+> --- 0001/drivers/spi/spi_bitbang.c
+> +++ work/drivers/spi/spi_bitbang.c      2009-11-25 15:30:45.000000000 +0900
+> @@ -176,6 +176,14 @@ int spi_bitbang_setup_transfer(struct sp
+>  }
+>  EXPORT_SYMBOL_GPL(spi_bitbang_setup_transfer);
+>
+> +static int spi_bitbang_bufs(struct spi_device *spi, struct spi_transfer *t)
+> +{
+> +       struct spi_bitbang_cs   *cs = spi->controller_state;
+> +       unsigned                nsecs = cs->nsecs;
+> +
+> +       return cs->txrx_bufs(spi, cs->txrx_word, nsecs, t);
+> +}
+> +
+>  /**
+>  * spi_bitbang_setup - default setup for per-word I/O loops
+>  */
+> @@ -183,6 +191,7 @@ int spi_bitbang_setup(struct spi_device
+>  {
+>        struct spi_bitbang_cs   *cs = spi->controller_state;
+>        struct spi_bitbang      *bitbang;
+> +       int                     mode_mask = SPI_CPOL | SPI_CPHA;
+>        int                     retval;
+>        unsigned long           flags;
+>
+> @@ -196,9 +205,11 @@ int spi_bitbang_setup(struct spi_device
+>        }
+>
+>        /* per-word shift register access, in hardware or bitbanging */
+> -       cs->txrx_word = bitbang->txrx_word[spi->mode & (SPI_CPOL|SPI_CPHA)];
+> -       if (!cs->txrx_word)
+> -               return -EINVAL;
+> +       if (bitbang->txrx_bufs == spi_bitbang_bufs) {
+> +               cs->txrx_word = bitbang->txrx_word[spi->mode & mode_mask];
+> +               if (!cs->txrx_word)
+> +                       return -EINVAL;
+> +       }
 
+Hmmm... this smells like an ugly hack to me.  It seems to me that if
+some bitbang backend drivers don't want this code, then it should be
+encoded into a callback so it can be overridden.  Thoughts.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-source-2.6.31/drivers/input/touchscreen/usbtouchscreen.c.1	2009-11-23 10:30:14.000000000 +0100
-+++ linux-source-2.6.31/drivers/input/touchscreen/usbtouchscreen.c	2009-11-23 10:57:14.000000000 +0100
-@@ -882,17 +882,25 @@ static int usbtouch_probe(struct usb_int
- 	struct usbtouch_usb *usbtouch;
- 	struct input_dev *input_dev;
- 	struct usb_host_interface *interface;
--	struct usb_endpoint_descriptor *endpoint;
-+	struct usb_endpoint_descriptor *endpoint = NULL;
- 	struct usb_device *udev = interface_to_usbdev(intf);
- 	struct usbtouch_device_info *type;
- 	int err = -ENOMEM;
-+	int i;
- 
- 	/* some devices are ignored */
- 	if (id->driver_info == DEVTYPE_IGNORE)
- 		return -ENODEV;
- 
- 	interface = intf->cur_altsetting;
--	endpoint = &interface->endpoint[0].desc;
-+	/* find first input endpoint */
-+	for (i = 0; i < interface->desc.bNumEndpoints; i++)
-+		if (usb_endpoint_dir_in(&interface->endpoint[i].desc)) {
-+			endpoint = &interface->endpoint[i].desc;
-+			break;
-+		}
-+	if (!endpoint)
-+		return -ENXIO;
- 
- 	usbtouch = kzalloc(sizeof(struct usbtouch_usb), GFP_KERNEL);
- 	input_dev = input_allocate_device();
-
+g.
 
 -- 
-Ondrej Zary
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
