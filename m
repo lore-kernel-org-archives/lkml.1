@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZKYTwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbZKYTy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbZKYTwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 14:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbZKYTww
+	id S1759642AbZKYTy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 14:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbZKYTy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 14:52:52 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:39956 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759608AbZKYTwv (ORCPT
+	Wed, 25 Nov 2009 14:54:27 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:40183 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759610AbZKYTy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 14:52:51 -0500
-Date: Wed, 25 Nov 2009 12:52:57 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: J?r?my Cochoy <jeremy.cochoy@gmail.com>
-Cc: Liuweni <qingshenlwy@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       strongzgy <strongzgy@gmail.com>, xgr178 <xgr178@163.com>,
-       Liu Hui <onlyflyer@gmail.com>, viro <viro@zeniv.linux.org.uk>,
-       akpm <akpm@linux-foundation.org>, jack <jack@suse.cz>,
-       npiggin <npiggin@suse.de>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1/3]fs/inode: iunique() Optimize Performance
-Message-ID: <20091125195256.GL9482@parisc-linux.org>
-References: <200911252209432039291@gmail.com> <20091125141505.GH9482@parisc-linux.org> <a229bc400911251120y220066afjb10d391198c5807c@mail.gmail.com>
+	Wed, 25 Nov 2009 14:54:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=CEenpVv/L7hlDxX9ZAGp0JHNeAwAUgo5ohMA3N9/4/UwngbyCxB6IRvuMvWkP85daA
+         v11jjUY7ipYC8zgATIJbRmhzsb82kgqiSruIiB3208ugSN+66r8d93HKnjqDhgJ32BRT
+         g7gWpDIjnPr3zhLISI0F3k6LUop0oLh0eH4AM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 82/86] pata_via: clear UDMA transfer mode bit for PIO and MWDMA
+Date: Wed, 25 Nov 2009 20:53:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091125170218.5446.13513.sendpatchset@localhost> <200911251910.06924.bzolnier@gmail.com> <20091125193419.2457c0ae@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091125193419.2457c0ae@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a229bc400911251120y220066afjb10d391198c5807c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200911252053.09387.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 08:20:02PM +0100, J?r?my Cochoy wrote:
-> Hello,
+On Wednesday 25 November 2009 08:34:19 pm Alan Cox wrote:
+> On Wed, 25 Nov 2009 19:10:06 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 > 
-> There is something strange in iunique : what will happend if all inode
-> between max_reserved+1 and (unsinged in)(0-1) ? Will it make an
-> infinite loop or an interruption can happen and make an inode become
-> free?
-
-Another process can free an inode while this loop is executing.
-
-> In that case, it will be better to stop search when counter overflow, no?
-
-If you have all four billion inodes allocated, you have significantly
-bigger problems than this loop.  For a start, at 600 bytes per inode,
-I'd like to see your machine with 2.4TB of memory.  Then there's the
-size of your inode hash, and the depth of the chains within it.
-
-> Will it not be better to use a field max_ino_used (in superblock, for
-> exemple) where we store the last inode allocated with iunique and make
-> a search only if max_ino_used become to (unsigned)(-1) ?
+> > On Wednesday 25 November 2009 07:06:48 pm Alan Cox wrote:
+> > > > Do you really find such tidy patch hard to review?
+> > > 
+> > > When doing it at speed - yes.
+> > 
+> > Do you review everybody else patches 'at speed' or only mine?
 > 
-> But, if iunique is here to provide a solution in order to generate
-> unused inode in filesystem which have various inode number, it's
-> better to use a list of used ino, in a short hash table which use the
-> first 8 bits of the inode, always use the same function to create a
-> new inode and look at the head if we can add a new inode with bigger
-> ino and still in the range. (But i think filesystems developper prefer
-> to write ther own functions in order to do that, no?)
+> All of them when I've got a lot of stuff to do. Owing to a lack of time
+> machine and 500 hour days it's neccessary.
 > 
-> Well, if we want to stop in case of full inode filesystem, we can put
-> the first condition in the head and add change return as :
-> return inode->i_ino > max_reserved ? res : 0; // 0 might "i can't find
-> an inode after max_reserved"
+> Also btw take it is a compliment - there are some people's patches I
+> always review in detail and it isn't the patches you expect to be *right*
+> that you spend the time on...
 
-Gloves.
+Well, you don't really have to review every single patch touching areas
+that  you're just interested in (and if you're maintaining those drivers
+please document it in MAINTAINERS file, thanks).
 
-http://thedailywtf.com/Articles/The_Complicator_0x27_s_Gloves.aspx
+The problem is that in case you're not entirely correct, which is much
+more likely when doing things 'at speed', you're will be wasting time
+for everybody (not that I really care that much about  others' time but
+I do care about mine).
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--
+Bartlomiej Zolnierkiewicz
