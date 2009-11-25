@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbZKYMJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZKYL4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758769AbZKYMJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 07:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbZKYMJS
+	id S1758716AbZKYL4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZKYL4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 07:09:18 -0500
-Received: from mail.sv1.nifty.com ([220.209.183.60]:30409 "EHLO
-	defg301p.nifty.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758674AbZKYMJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 07:09:17 -0500
-X-Greylist: delayed 450 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Nov 2009 07:09:17 EST
-DomainKey-Signature: a=rsa-sha1; s=2007jul; d=nifty.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:x-priority:
-	x-msmail-priority:priority:x-mailer:references;
-	b=A2YplVgqH89bE7mi5xs/a1pulERrHPAAzO5EbEgNnkXA0leLm1dG30DRuAGxSwJSY
-	jIjmwX6/w3OWPTAwkKY1g==
-X-Nifty-SrcIP: [172.22.128.192]
-Message-ID: <10200001.47511259150210534.komurojun-mbn@nifty.com>
-Date: Wed, 25 Nov 2009 20:56:50 +0900 (JST)
-From: Komuro <komurojun-mbn@nifty.com>
-To: Peter Stuge <peter@stuge.se>
-Subject: Re: Re: ioports 0x100-0x3af and iomem 0xd000-0xdffff, 0xa0000000-0xa0ffffff -- safe to use on x86 for pcmcia?
-Cc: x86@kernel.org, Komuro <komurojun-mbn@nifty.com>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091124231653.30084.qmail@stuge.se>
+	Wed, 25 Nov 2009 06:56:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36720 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934121AbZKYL4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:56:47 -0500
+Date: Wed, 25 Nov 2009 12:56:51 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: tytso@mit.edu
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: linux-next: manual merge of the trivial tree with the ext4
+ tree
+In-Reply-To: <20091125114522.GD14289@thunk.org>
+Message-ID: <alpine.LSU.2.00.0911251256190.6953@wotan.suse.de>
+References: <20091125183414.eb45acca.sfr@canb.auug.org.au> <alpine.LSU.2.00.0911251216270.6953@wotan.suse.de> <20091125114522.GD14289@thunk.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <20091124231653.30084.qmail@stuge.se>
- <20091124213723.GA22689@comet.dominikbrodowski.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Nov 2009, tytso@mit.edu wrote:
 
-Hi,
+> > > Today's linux-next merge of the trivial tree got a conflict in
+> > > fs/ext4/balloc.c between commit 4433871130f36585fde38e7dd817433296648945
+> > > ("ext4: fold ext4_free_blocks() and ext4_mb_free_blocks()") from the ext4
+> > > tree and commit 15dcf8433b514d1dc1b80d87a0798c2db2c37e95 ("tree-wide: fix
+> > > some typos and punctuation in comments") from the trivial tree.
+> > > 
+> > > The former moved the comment fixed by the latter and fixed the typo along
+> > > the way.
+> > 
+> > Dropped the mballoc hunk from my queue, thanks.
+> 
+> You mean balloc hunk, I hope.  (In the commit in question, I moved the
+> comment from fs/ext4/balloc.c to fs/ext4/mballoc.c.)
 
->c0000-fffff is option ROM and BIOS land. Maybe every BIOS out there
->is being a good boy/girl and actually adds entries to e820 or similar
->but I would kindof like to stay away from the region anyway.
->
->0xa0000000 is 2.5GB, so it's doomed on systems with >=2.5GB RAM. :(
->
->
->//Peter
+Yup, sorry, I have been looking at completely different patch while 
+writing the mail and got side-tracked.
 
-(1)
-The i82365(ISA-pcmcia controller) and some older card-bus controller
-need the c000-fffff area to access the CIS instead of high memory area
-(1MB above).
+Anyway, the conflict between ext4 and trivial trees should be gone now.
 
-(2) 
-Most of the PC that need the PCMCIA card is not so new.
-and have less than 2.5GB.
+Thanks,
 
-Best Regards
-Komuro
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
