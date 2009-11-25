@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZKYN3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964914AbZKYN2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbZKYN3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 08:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758779AbZKYN3c
+	id S964914AbZKYN2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 08:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964876AbZKYN2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 08:29:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41503 "EHLO mx1.redhat.com"
+	Wed, 25 Nov 2009 08:28:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964881AbZKYN2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 08:28:33 -0500
+	id S964897AbZKYN2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 08:28:35 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 19/30] GFS2: Add set_xquota support
-Date: Wed, 25 Nov 2009 14:22:44 +0000
-Message-Id: <1259158975-28499-20-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1259158975-28499-19-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 20/30] VFS: Export dquot_send_warning
+Date: Wed, 25 Nov 2009 14:22:45 +0000
+Message-Id: <1259158975-28499-21-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1259158975-28499-20-git-send-email-swhiteho@redhat.com>
 References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-2-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-3-git-send-email-swhiteho@redhat.com>
@@ -35,314 +35,299 @@ References: <1259158975-28499-1-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-17-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-18-git-send-email-swhiteho@redhat.com>
  <1259158975-28499-19-git-send-email-swhiteho@redhat.com>
+ <1259158975-28499-20-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the ability to set GFS2 quota limit and
-warning levels via the XFS quota API.
+Sending a message to userspace in a generic format to warn
+of events (e.g. quota exceeded) in the quota subsystem is
+a generically useful feature. This patch makes some minor
+changes to the send_message function from dquot.c renaming
+it quota_send_message, moving it to quota.c and exporting it
+for use by filesystems which do not use the dquot code.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/quota.c |  198 +++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 172 insertions(+), 26 deletions(-)
+ fs/quota/Kconfig      |    2 +-
+ fs/quota/dquot.c      |   93 +++++--------------------------------------------
+ fs/quota/quota.c      |   93 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/quota.h |   11 ++++++
+ 4 files changed, 114 insertions(+), 85 deletions(-)
 
-diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index 6c5d6aa..e8db534 100644
---- a/fs/gfs2/quota.c
-+++ b/fs/gfs2/quota.c
-@@ -615,8 +615,9 @@ static void do_qc(struct gfs2_quota_data *qd, s64 change)
-  * gfs2_adjust_quota - adjust record of current block usage
-  * @ip: The quota inode
-  * @loc: Offset of the entry in the quota file
-- * @change: The amount of change to record
-+ * @change: The amount of usage change to record
-  * @qd: The quota data
-+ * @fdq: The updated limits to record
-  *
-  * This function was mostly borrowed from gfs2_block_truncate_page which was
-  * in turn mostly borrowed from ext3
-@@ -625,19 +626,21 @@ static void do_qc(struct gfs2_quota_data *qd, s64 change)
-  */
+diff --git a/fs/quota/Kconfig b/fs/quota/Kconfig
+index 8047e01..353e78a 100644
+--- a/fs/quota/Kconfig
++++ b/fs/quota/Kconfig
+@@ -17,7 +17,7 @@ config QUOTA
  
- static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
--			     s64 change, struct gfs2_quota_data *qd)
-+			     s64 change, struct gfs2_quota_data *qd,
-+			     struct fs_disk_quota *fdq)
- {
- 	struct inode *inode = &ip->i_inode;
- 	struct address_space *mapping = inode->i_mapping;
- 	unsigned long index = loc >> PAGE_CACHE_SHIFT;
- 	unsigned offset = loc & (PAGE_CACHE_SIZE - 1);
- 	unsigned blocksize, iblock, pos;
--	struct buffer_head *bh;
-+	struct buffer_head *bh, *dibh;
- 	struct page *page;
- 	void *kaddr;
- 	struct gfs2_quota *qp;
- 	s64 value;
- 	int err = -EIO;
-+	u64 size;
+ config QUOTA_NETLINK_INTERFACE
+ 	bool "Report quota messages through netlink interface"
+-	depends on QUOTA && NET
++	depends on QUOTACTL && NET
+ 	help
+ 	  If you say Y here, quota warnings (about exceeding softlimit, reaching
+ 	  hardlimit, etc.) will be reported through netlink interface. If unsure,
+diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+index 39b49c4..9b6ad90 100644
+--- a/fs/quota/dquot.c
++++ b/fs/quota/dquot.c
+@@ -77,10 +77,6 @@
+ #include <linux/capability.h>
+ #include <linux/quotaops.h>
+ #include <linux/writeback.h> /* for inode_lock, oddly enough.. */
+-#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
+-#include <net/netlink.h>
+-#include <net/genetlink.h>
+-#endif
  
- 	if (gfs2_is_stuffed(ip))
- 		gfs2_unstuff_dinode(ip, NULL);
-@@ -683,9 +686,34 @@ static int gfs2_adjust_quota(struct gfs2_inode *ip, loff_t loc,
- 	value = (s64)be64_to_cpu(qp->qu_value) + change;
- 	qp->qu_value = cpu_to_be64(value);
- 	qd->qd_qb.qb_value = qp->qu_value;
-+	if (fdq) {
-+		if (fdq->d_fieldmask & FS_DQ_BSOFT) {
-+			qp->qu_warn = cpu_to_be64(fdq->d_blk_softlimit);
-+			qd->qd_qb.qb_warn = qp->qu_warn;
-+		}
-+		if (fdq->d_fieldmask & FS_DQ_BHARD) {
-+			qp->qu_limit = cpu_to_be64(fdq->d_blk_hardlimit);
-+			qd->qd_qb.qb_limit = qp->qu_limit;
-+		}
-+	}
- 	flush_dcache_page(page);
- 	kunmap_atomic(kaddr, KM_USER0);
--	err = 0;
-+
-+	err = gfs2_meta_inode_buffer(ip, &dibh);
-+	if (err)
-+		goto unlock;
-+
-+	size = loc + sizeof(struct gfs2_quota);
-+	if (size > inode->i_size) {
-+		ip->i_disksize = size;
-+		i_size_write(inode, size);
-+	}
-+	inode->i_mtime = inode->i_atime = CURRENT_TIME;
-+	gfs2_trans_add_bh(ip->i_gl, dibh, 1);
-+	gfs2_dinode_out(ip, dibh->b_data);
-+	brelse(dibh);
-+	mark_inode_dirty(inode);
-+
- unlock:
- 	unlock_page(page);
- 	page_cache_release(page);
-@@ -713,6 +741,7 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
- 		return -ENOMEM;
+ #include <asm/uaccess.h>
  
- 	sort(qda, num_qd, sizeof(struct gfs2_quota_data *), sort_qd, NULL);
-+	mutex_lock_nested(&ip->i_inode.i_mutex, I_MUTEX_QUOTA);
- 	for (qx = 0; qx < num_qd; qx++) {
- 		error = gfs2_glock_nq_init(qda[qx]->qd_gl, LM_ST_EXCLUSIVE,
- 					   GL_NOCACHE, &ghs[qx]);
-@@ -768,8 +797,7 @@ static int do_sync(unsigned int num_qd, struct gfs2_quota_data **qda)
- 	for (x = 0; x < num_qd; x++) {
- 		qd = qda[x];
- 		offset = qd2offset(qd);
--		error = gfs2_adjust_quota(ip, offset, qd->qd_change_sync,
--					  (struct gfs2_quota_data *)qd);
-+		error = gfs2_adjust_quota(ip, offset, qd->qd_change_sync, qd, NULL);
- 		if (error)
- 			goto out_end_trans;
- 
-@@ -789,20 +817,44 @@ out_gunlock:
- out:
- 	while (qx--)
- 		gfs2_glock_dq_uninit(&ghs[qx]);
-+	mutex_unlock(&ip->i_inode.i_mutex);
- 	kfree(ghs);
- 	gfs2_log_flush(ip->i_gl->gl_sbd, ip->i_gl);
- 	return error;
+@@ -1071,73 +1067,6 @@ static void print_warning(struct dquot *dquot, const int warntype)
  }
+ #endif
  
-+static int update_qd(struct gfs2_sbd *sdp, struct gfs2_quota_data *qd)
-+{
-+	struct gfs2_inode *ip = GFS2_I(sdp->sd_quota_inode);
-+	struct gfs2_quota q;
-+	struct gfs2_quota_lvb *qlvb;
-+	loff_t pos;
-+	int error;
-+
-+	memset(&q, 0, sizeof(struct gfs2_quota));
-+	pos = qd2offset(qd);
-+	error = gfs2_internal_read(ip, NULL, (char *)&q, &pos, sizeof(q));
-+	if (error < 0)
-+		return error;
-+
-+	qlvb = (struct gfs2_quota_lvb *)qd->qd_gl->gl_lvb;
-+	qlvb->qb_magic = cpu_to_be32(GFS2_MAGIC);
-+	qlvb->__pad = 0;
-+	qlvb->qb_limit = q.qu_limit;
-+	qlvb->qb_warn = q.qu_warn;
-+	qlvb->qb_value = q.qu_value;
-+	qd->qd_qb = *qlvb;
-+
-+	return 0;
-+}
-+
- static int do_glock(struct gfs2_quota_data *qd, int force_refresh,
- 		    struct gfs2_holder *q_gh)
- {
- 	struct gfs2_sbd *sdp = qd->qd_gl->gl_sbd;
- 	struct gfs2_inode *ip = GFS2_I(sdp->sd_quota_inode);
- 	struct gfs2_holder i_gh;
--	struct gfs2_quota q;
- 	int error;
--	struct gfs2_quota_lvb *qlvb;
- 
- restart:
- 	error = gfs2_glock_nq_init(qd->qd_gl, LM_ST_SHARED, 0, q_gh);
-@@ -812,7 +864,6 @@ restart:
- 	qd->qd_qb = *(struct gfs2_quota_lvb *)qd->qd_gl->gl_lvb;
- 
- 	if (force_refresh || qd->qd_qb.qb_magic != cpu_to_be32(GFS2_MAGIC)) {
--		loff_t pos;
- 		gfs2_glock_dq_uninit(q_gh);
- 		error = gfs2_glock_nq_init(qd->qd_gl, LM_ST_EXCLUSIVE,
- 					   GL_NOCACHE, q_gh);
-@@ -823,25 +874,11 @@ restart:
- 		if (error)
- 			goto fail;
- 
--		memset(&q, 0, sizeof(struct gfs2_quota));
--		pos = qd2offset(qd);
--		error = gfs2_internal_read(ip, NULL, (char *)&q, &pos, sizeof(q));
--		if (error < 0)
--			goto fail_gunlock;
--		if ((error < sizeof(q)) && force_refresh) {
--			error = -ENOENT;
-+		error = update_qd(sdp, qd);
-+		if (error)
- 			goto fail_gunlock;
--		}
--		gfs2_glock_dq_uninit(&i_gh);
+-#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
 -
--		qlvb = (struct gfs2_quota_lvb *)qd->qd_gl->gl_lvb;
--		qlvb->qb_magic = cpu_to_be32(GFS2_MAGIC);
--		qlvb->__pad = 0;
--		qlvb->qb_limit = q.qu_limit;
--		qlvb->qb_warn = q.qu_warn;
--		qlvb->qb_value = q.qu_value;
--		qd->qd_qb = *qlvb;
+-/* Netlink family structure for quota */
+-static struct genl_family quota_genl_family = {
+-	.id = GENL_ID_GENERATE,
+-	.hdrsize = 0,
+-	.name = "VFS_DQUOT",
+-	.version = 1,
+-	.maxattr = QUOTA_NL_A_MAX,
+-};
+-
+-/* Send warning to userspace about user which exceeded quota */
+-static void send_warning(const struct dquot *dquot, const char warntype)
+-{
+-	static atomic_t seq;
+-	struct sk_buff *skb;
+-	void *msg_head;
+-	int ret;
+-	int msg_size = 4 * nla_total_size(sizeof(u32)) +
+-		       2 * nla_total_size(sizeof(u64));
+-
+-	/* We have to allocate using GFP_NOFS as we are called from a
+-	 * filesystem performing write and thus further recursion into
+-	 * the fs to free some data could cause deadlocks. */
+-	skb = genlmsg_new(msg_size, GFP_NOFS);
+-	if (!skb) {
+-		printk(KERN_ERR
+-		  "VFS: Not enough memory to send quota warning.\n");
+-		return;
+-	}
+-	msg_head = genlmsg_put(skb, 0, atomic_add_return(1, &seq),
+-			&quota_genl_family, 0, QUOTA_NL_C_WARNING);
+-	if (!msg_head) {
+-		printk(KERN_ERR
+-		  "VFS: Cannot store netlink header in quota warning.\n");
+-		goto err_out;
+-	}
+-	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
+-	if (ret)
+-		goto attr_err_out;
+-	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
+-	if (ret)
+-		goto attr_err_out;
+-	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
+-	if (ret)
+-		goto attr_err_out;
+-	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
+-		MAJOR(dquot->dq_sb->s_dev));
+-	if (ret)
+-		goto attr_err_out;
+-	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
+-		MINOR(dquot->dq_sb->s_dev));
+-	if (ret)
+-		goto attr_err_out;
+-	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current_uid());
+-	if (ret)
+-		goto attr_err_out;
+-	genlmsg_end(skb, msg_head);
+-
+-	genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
+-	return;
+-attr_err_out:
+-	printk(KERN_ERR "VFS: Not enough space to compose quota message!\n");
+-err_out:
+-	kfree_skb(skb);
+-}
+-#endif
+ /*
+  * Write warnings to the console and send warning messages over netlink.
+  *
+@@ -1145,18 +1074,20 @@ err_out:
+  */
+ static void flush_warnings(struct dquot *const *dquots, char *warntype)
+ {
++	struct dquot *dq;
+ 	int i;
  
-+		gfs2_glock_dq_uninit(&i_gh);
- 		gfs2_glock_dq_uninit(q_gh);
- 		force_refresh = 0;
- 		goto restart;
-@@ -1409,9 +1446,118 @@ out:
- 	return error;
+-	for (i = 0; i < MAXQUOTAS; i++)
+-		if (dquots[i] && warntype[i] != QUOTA_NL_NOWARN &&
+-		    !warning_issued(dquots[i], warntype[i])) {
++	for (i = 0; i < MAXQUOTAS; i++) {
++		dq = dquots[i];
++		if (dq && warntype[i] != QUOTA_NL_NOWARN &&
++		    !warning_issued(dq, warntype[i])) {
+ #ifdef CONFIG_PRINT_QUOTA_WARNING
+-			print_warning(dquots[i], warntype[i]);
+-#endif
+-#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
+-			send_warning(dquots[i], warntype[i]);
++			print_warning(dq, warntype[i]);
+ #endif
++			quota_send_warning(dq->dq_type, dq->dq_id,
++					   dq->dq_sb->s_dev, warntype[i]);
+ 		}
++	}
  }
  
-+/* GFS2 only supports a subset of the XFS fields */
-+#define GFS2_FIELDMASK (FS_DQ_BSOFT|FS_DQ_BHARD)
-+
-+static int gfs2_xquota_set(struct super_block *sb, int type, qid_t id,
-+			   struct fs_disk_quota *fdq)
-+{
-+	struct gfs2_sbd *sdp = sb->s_fs_info;
-+	struct gfs2_inode *ip = GFS2_I(sdp->sd_quota_inode);
-+	struct gfs2_quota_data *qd;
-+	struct gfs2_holder q_gh, i_gh;
-+	unsigned int data_blocks, ind_blocks;
-+	unsigned int blocks = 0;
-+	int alloc_required;
-+	struct gfs2_alloc *al;
-+	loff_t offset;
-+	int error;
-+
-+	if (sdp->sd_args.ar_quota == GFS2_QUOTA_OFF)
-+		return -ESRCH; /* Crazy XFS error code */
-+
-+	switch(type) {
-+	case USRQUOTA:
-+		type = QUOTA_USER;
-+		if (fdq->d_flags != XFS_USER_QUOTA)
-+			return -EINVAL;
-+		break;
-+	case GRPQUOTA:
-+		type = QUOTA_GROUP;
-+		if (fdq->d_flags != XFS_GROUP_QUOTA)
-+			return -EINVAL;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (fdq->d_fieldmask & ~GFS2_FIELDMASK)
-+		return -EINVAL;
-+	if (fdq->d_id != id)
-+		return -EINVAL;
-+
-+	error = qd_get(sdp, type, id, &qd);
-+	if (error)
-+		return error;
-+
-+	mutex_lock(&ip->i_inode.i_mutex);
-+	error = gfs2_glock_nq_init(qd->qd_gl, LM_ST_EXCLUSIVE, 0, &q_gh);
-+	if (error)
-+		goto out_put;
-+	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &i_gh);
-+	if (error)
-+		goto out_q;
-+
-+	/* Check for existing entry, if none then alloc new blocks */
-+	error = update_qd(sdp, qd);
-+	if (error)
-+		goto out_i;
-+
-+	/* If nothing has changed, this is a no-op */
-+	if ((fdq->d_fieldmask & FS_DQ_BSOFT) &&
-+	    (fdq->d_blk_softlimit == be64_to_cpu(qd->qd_qb.qb_warn)))
-+		fdq->d_fieldmask ^= FS_DQ_BSOFT;
-+	if ((fdq->d_fieldmask & FS_DQ_BHARD) &&
-+	    (fdq->d_blk_hardlimit == be64_to_cpu(qd->qd_qb.qb_limit)))
-+		fdq->d_fieldmask ^= FS_DQ_BHARD;
-+	if (fdq->d_fieldmask == 0)
-+		goto out_i;
-+
-+	offset = qd2offset(qd);
-+	error = gfs2_write_alloc_required(ip, offset, sizeof(struct gfs2_quota),
-+					  &alloc_required);
-+	if (error)
-+		goto out_i;
-+	if (alloc_required) {
-+		al = gfs2_alloc_get(ip);
-+		if (al == NULL)
-+			goto out_i;
-+		gfs2_write_calc_reserv(ip, sizeof(struct gfs2_quota),
-+				       &data_blocks, &ind_blocks);
-+		blocks = al->al_requested = 1 + data_blocks + ind_blocks;
-+		error = gfs2_inplace_reserve(ip);
-+		if (error)
-+			goto out_alloc;
-+	}
-+
-+	error = gfs2_trans_begin(sdp, blocks + RES_DINODE + 1, 0);
-+	if (error)
-+		goto out_release;
-+
-+	/* Apply changes */
-+	error = gfs2_adjust_quota(ip, offset, 0, qd, fdq);
-+
-+	gfs2_trans_end(sdp);
-+out_release:
-+	if (alloc_required) {
-+		gfs2_inplace_release(ip);
-+out_alloc:
-+		gfs2_alloc_put(ip);
-+	}
-+out_i:
-+	gfs2_glock_dq_uninit(&i_gh);
-+out_q:
-+	gfs2_glock_dq_uninit(&q_gh);
-+out_put:
-+	mutex_unlock(&ip->i_inode.i_mutex);
-+	qd_put(qd);
-+	return error;
-+}
-+
- const struct quotactl_ops gfs2_quotactl_ops = {
- 	.quota_sync     = gfs2_quota_sync,
- 	.get_xstate     = gfs2_quota_get_xstate,
- 	.get_xquota	= gfs2_xquota_get,
-+	.set_xquota	= gfs2_xquota_set,
- };
+ static int ignore_hardlimit(struct dquot *dquot)
+@@ -2607,12 +2538,6 @@ static int __init dquot_init(void)
  
+ 	register_shrinker(&dqcache_shrinker);
+ 
+-#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
+-	if (genl_register_family(&quota_genl_family) != 0)
+-		printk(KERN_ERR
+-		       "VFS: Failed to create quota netlink interface.\n");
+-#endif
+-
+ 	return 0;
+ }
+ module_init(dquot_init);
+diff --git a/fs/quota/quota.c b/fs/quota/quota.c
+index 95c5b42..ee91e27 100644
+--- a/fs/quota/quota.c
++++ b/fs/quota/quota.c
+@@ -18,6 +18,8 @@
+ #include <linux/capability.h>
+ #include <linux/quotaops.h>
+ #include <linux/types.h>
++#include <net/netlink.h>
++#include <net/genetlink.h>
+ 
+ /* Check validity of generic quotactl commands */
+ static int generic_quotactl_valid(struct super_block *sb, int type, int cmd,
+@@ -525,3 +527,94 @@ asmlinkage long sys32_quotactl(unsigned int cmd, const char __user *special,
+ 	return ret;
+ }
+ #endif
++
++
++#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
++
++/* Netlink family structure for quota */
++static struct genl_family quota_genl_family = {
++	.id = GENL_ID_GENERATE,
++	.hdrsize = 0,
++	.name = "VFS_DQUOT",
++	.version = 1,
++	.maxattr = QUOTA_NL_A_MAX,
++};
++
++/**
++ * quota_send_warning - Send warning to userspace about exceeded quota
++ * @type: The quota type: USRQQUOTA, GRPQUOTA,...
++ * @id: The user or group id of the quota that was exceeded
++ * @dev: The device on which the fs is mounted (sb->s_dev)
++ * @warntype: The type of the warning: QUOTA_NL_...
++ *
++ * This can be used by filesystems (including those which don't use
++ * dquot) to send a message to userspace relating to quota limits.
++ *
++ */
++
++void quota_send_warning(short type, unsigned int id, dev_t dev,
++			const char warntype)
++{
++	static atomic_t seq;
++	struct sk_buff *skb;
++	void *msg_head;
++	int ret;
++	int msg_size = 4 * nla_total_size(sizeof(u32)) +
++		       2 * nla_total_size(sizeof(u64));
++
++	/* We have to allocate using GFP_NOFS as we are called from a
++	 * filesystem performing write and thus further recursion into
++	 * the fs to free some data could cause deadlocks. */
++	skb = genlmsg_new(msg_size, GFP_NOFS);
++	if (!skb) {
++		printk(KERN_ERR
++		  "VFS: Not enough memory to send quota warning.\n");
++		return;
++	}
++	msg_head = genlmsg_put(skb, 0, atomic_add_return(1, &seq),
++			&quota_genl_family, 0, QUOTA_NL_C_WARNING);
++	if (!msg_head) {
++		printk(KERN_ERR
++		  "VFS: Cannot store netlink header in quota warning.\n");
++		goto err_out;
++	}
++	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, type);
++	if (ret)
++		goto attr_err_out;
++	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, id);
++	if (ret)
++		goto attr_err_out;
++	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
++	if (ret)
++		goto attr_err_out;
++	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR, MAJOR(dev));
++	if (ret)
++		goto attr_err_out;
++	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR, MINOR(dev));
++	if (ret)
++		goto attr_err_out;
++	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current_uid());
++	if (ret)
++		goto attr_err_out;
++	genlmsg_end(skb, msg_head);
++
++	genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
++	return;
++attr_err_out:
++	printk(KERN_ERR "VFS: Not enough space to compose quota message!\n");
++err_out:
++	kfree_skb(skb);
++}
++EXPORT_SYMBOL(quota_send_warning);
++
++static int __init quota_init(void)
++{
++	if (genl_register_family(&quota_genl_family) != 0)
++		printk(KERN_ERR
++		       "VFS: Failed to create quota netlink interface.\n");
++	return 0;
++};
++
++module_init(quota_init);
++#endif
++
+diff --git a/include/linux/quota.h b/include/linux/quota.h
+index 78c4889..ce9a9b2 100644
+--- a/include/linux/quota.h
++++ b/include/linux/quota.h
+@@ -376,6 +376,17 @@ static inline unsigned int dquot_generic_flag(unsigned int flags, int type)
+ 	return flags >> _DQUOT_STATE_FLAGS;
+ }
+ 
++#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
++extern void quota_send_warning(short type, unsigned int id, dev_t dev,
++			       const char warntype);
++#else
++static inline void quota_send_warning(short type, unsigned int id, dev_t dev,
++				      const char warntype)
++{
++	return;
++}
++#endif /* CONFIG_QUOTA_NETLINK_INTERFACE */
++
+ struct quota_info {
+ 	unsigned int flags;			/* Flags for diskquotas on this device */
+ 	struct mutex dqio_mutex;		/* lock device while I/O in progress */
 -- 
 1.6.2.5
 
