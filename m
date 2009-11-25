@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759821AbZKYVBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935058AbZKYVIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759821AbZKYVBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 16:01:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbZKYVBu
+	id S935058AbZKYVIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 16:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbZKYVIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 16:01:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22976 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755515AbZKYVBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 16:01:50 -0500
-Message-ID: <4B0D9AF3.6000702@redhat.com>
-Date: Wed, 25 Nov 2009 21:00:35 +0000
-From: Andrew Haley <aph@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jakub Jelinek <jakub@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H.J. Lu" <hjl.tools@gmail.com>,
-       rostedt@goodmis.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, feng.tang@intel.com,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Richard Guenther <richard.guenther@gmail.com>, gcc <gcc@gcc.gnu.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL][v2.6.32] tracing/x86: Add check to detect GCC
- messing with mcount prologue
-References: <1258736456.22249.1032.camel@gandalf.stny.rr.com> <4B06EF6F.2050507@redhat.com> <6dc9ffc80911220138y15bfa91agccf5c29f1c30e09a@mail.gmail.com> <4B0972C9.302@redhat.com> <6dc9ffc80911221530t38d83cf6je739743c8d756667@mail.gmail.com> <4B0BF119.4070704@redhat.com> <alpine.LFD.2.00.0911241555170.24119@localhost.localdomain> <20091124150604.GJ22813@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.00.0911251604280.24119@localhost.localdomain> <20091125154452.GA9456@elte.hu> <20091125164434.GS22813@hs20-bc2-1.build.redhat.com> <4B0D8FC1.1010608@zytor.com>
-In-Reply-To: <4B0D8FC1.1010608@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Nov 2009 16:08:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65392 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932562AbZKYVIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 16:08:47 -0500
+Subject: Re: [PATCH -tip v5 03/10] kprobes: Introduce kprobes jump
+ optimization
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <4B0C492D.1060602@redhat.com>
+References: <20091123232115.22071.71558.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20091123232141.22071.53317.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20091124024417.GA6752@nowhere> <20091124033135.GE6752@nowhere>
+	 <4B0BFCF8.4060905@redhat.com> <20091124201357.GB5071@nowhere>
+	 <4B0C492D.1060602@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 25 Nov 2009 16:08:51 -0500
+Message-Id: <1259183331.21397.71.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 11/25/2009 08:44 AM, Jakub Jelinek wrote:
->> If you compile kernels 90%+ people out there run with -p on i?86/x86_64,
->> then certainly coming up with a new gcc switch and new profiling ABI is
->> desirable.  -p on i?86/x86_64 e.g. forces -fno-omit-frame-pointer, which
->> makes code on these register starved arches significantly worse.
->> Making GCC output profiling call before prologue instead of after prologue
->> is a 4 liner in generic code and a few lines in target specific code.
->> The important thing is that we shouldn't have 100 different profiling ABIs,
->> so it is desirable to agree on something that will be generally useful not
->> just for the kernel, but perhaps for other purposes.
-> 
-> There is really just one that makes sense, which is providing the
-> ABI-defined entry state, which means intercepting at the point of entry.
-> 
-> Anything else is/was a mistake.
+On Tue, 2009-11-24 at 15:59 -0500, Masami Hiramatsu wrote:
 
-Indeed.  The problem, though, is that the "naked call" approach, while attractive,
-requires the back end to be modified and so requires the help of the gcc maintainers
-for every Linux target.  Not that this is a terrible idea, but such co-ordination
-is going to take time.
+> > I see...so the non-preemptible kernel requirement looks
+> > hard to workaround :-s
+> 
+> It's the next challenge I think :-)
+> Even though, kprobes itself still work on preemptive kernel,
+> so we don't lose any functionality.
 
-Andrew.
+>From kstop_machine, we could search all tasks to see if any are about to
+resume in the modified location. If there is, we could either
+
+1) insert a normal kprobe
+2) modify the return address of the task to jump to some trampoline to 
+   finish the work and return to the code spot with a direct jump.
+
+#2 is kind of nasty but seems like a fun thing to implement ;-)
+
+-- Steve
+
+
