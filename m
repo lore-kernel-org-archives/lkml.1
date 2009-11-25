@@ -1,63 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbZKYS53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbZKYS5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759415AbZKYS53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 13:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZKYS52
+	id S1759475AbZKYS5p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 13:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbZKYS5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 13:57:28 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:54684 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbZKYS51 (ORCPT
+	Wed, 25 Nov 2009 13:57:44 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:40560 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759069AbZKYS5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 13:57:27 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=v4X0nIsU9jQA:10 a=dnsDqYgvY1eI8xxSV9Tekg==:17
- a=pGb0pc2owl8CynuoNskA:9 a=EZeF9Z3pA5YMV570NtO7Q7X-B08A:4
-From: graeme.smecher@mail.mcgill.ca
-To: monstr@monstr.eu
-Cc: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
-       Graeme Smecher <graeme.smecher@mail.mcgill.ca>
-Subject: [PATCH] microblaze: Add dev_archdata node accessors
-Date: Wed, 25 Nov 2009 10:57:02 -0800
-Message-Id: <1259175422-4628-1-git-send-email-graeme.smecher@mail.mcgill.ca>
-X-Mailer: git-send-email 1.6.5
+	Wed, 25 Nov 2009 13:57:43 -0500
+Date: Wed, 25 Nov 2009 10:57:45 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       serue@us.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, hpa@zytor.com,
+       Nathan Lynch <nathanl@austin.ibm.com>, haveblue@us.ibm.com,
+       Matt Helsley <matthltc@us.ibm.com>, arnd@arndb.de, roland@redhat.com,
+       mtk.manpages@googlemail.com, linux-api@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>
+Subject: [v13][PATCH 02/12] Have alloc_pidmap() return actual error code
+Message-ID: <20091125185745.GC30858@us.ibm.com>
+References: <20091125185543.GA30858@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125185543.GA30858@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
 
-This syncs microblaze with powerpc and sparc architectures, which gained the
-same accessors in Commit 3f3b1632022fcc8317fa3b3c1236471415b3a6b8.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [v13][PATCH 02/12] Have alloc_pidmap() return actual error code
 
-Signed-off-by: Graeme Smecher <graeme.smecher@mail.mcgill.ca>
+alloc_pidmap() can fail either because all pid numbers are in use or
+because memory allocation failed.  With support for setting a specific
+pid number, alloc_pidmap() would also fail if either the given pid
+number is invalid or in use.
+
+Rather than have callers assume -ENOMEM, have alloc_pidmap() return
+the actual error.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/microblaze/include/asm/device.h |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ kernel/fork.c |    5 +++--
+ kernel/pid.c  |   14 +++++++++-----
+ 2 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
-index 30286db..b8f654d 100644
---- a/arch/microblaze/include/asm/device.h
-+++ b/arch/microblaze/include/asm/device.h
-@@ -16,6 +16,18 @@ struct dev_archdata {
- 	struct device_node	*of_node;
- };
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 166b8c4..8053c10 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1156,10 +1156,11 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 		goto bad_fork_cleanup_io;
  
-+static inline void dev_archdata_set_node(struct dev_archdata *ad,
-+					 struct device_node *np)
-+{
-+	ad->of_node = np;
-+}
-+
-+static inline struct device_node *
-+dev_archdata_get_node(const struct dev_archdata *ad)
-+{
-+	return ad->of_node;
-+}
-+
- struct pdev_archdata {
- };
+ 	if (pid != &init_struct_pid) {
+-		retval = -ENOMEM;
+ 		pid = alloc_pid(p->nsproxy->pid_ns);
+-		if (!pid)
++		if (IS_ERR(pid)) {
++			retval = PTR_ERR(pid);
+ 			goto bad_fork_cleanup_io;
++		}
+ 
+ 		if (clone_flags & CLONE_NEWPID) {
+ 			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 7d4bb6e..c4d9914 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -150,7 +150,7 @@ static int alloc_pidmap_page(struct pidmap *map)
+ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ {
+ 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
+-	int rc;
++	int rc = -EAGAIN;
+ 	struct pidmap *map;
+ 
+ 	pid = last + 1;
+@@ -189,12 +189,14 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 		} else {
+ 			map = &pid_ns->pidmap[0];
+ 			offset = RESERVED_PIDS;
+-			if (unlikely(last == offset))
++			if (unlikely(last == offset)) {
++				rc = -EAGAIN;
+ 				break;
++			}
+ 		}
+ 		pid = mk_pid(pid_ns, map, offset);
+ 	}
+-	return -1;
++	return rc;
+ }
+ 
+ int next_pidmap(struct pid_namespace *pid_ns, int last)
+@@ -263,8 +265,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
+ 	struct upid *upid;
+ 
+ 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+-	if (!pid)
++	if (!pid) {
++		pid = ERR_PTR(-ENOMEM);
+ 		goto out;
++	}
+ 
+ 	tmp = ns;
+ 	for (i = ns->level; i >= 0; i--) {
+@@ -299,7 +303,7 @@ out_free:
+ 		free_pidmap(pid->numbers + i);
+ 
+ 	kmem_cache_free(ns->pid_cachep, pid);
+-	pid = NULL;
++	pid = ERR_PTR(nr);
+ 	goto out;
+ }
  
 -- 
-1.6.5
+1.6.0.4
 
