@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934834AbZKYRTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbZKYRX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934834AbZKYRTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbZKYRTx
+	id S932353AbZKYRX3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbZKYRX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:19:53 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:38282 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933735AbZKYRTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:19:50 -0500
-Message-ID: <4B0D6735.8000604@garzik.org>
-Date: Wed, 25 Nov 2009 12:19:49 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 25 Nov 2009 12:23:28 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:55436 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932340AbZKYRXN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 12:23:13 -0500
+Date: 25 Nov 2009 18:20:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: khc@pm.waw.pl
+Cc: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BDZb9P9ZjFB@christoph>
+In-Reply-To: <m3fx827dgi.fsf@intrepid.localdomain>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-References: <20091125170218.5446.13513.sendpatchset@localhost>
-In-Reply-To: <20091125170218.5446.13513.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+nKdFVEa+JUCYwIWqS6mFuSiuQRlBisqz9RYK
+ WVyMyIneBnDpbQq6TC4frPkDgToK+EhIP5MiKOlx0FxV16e9VN
+ EYHNo28HTH93w5YqplMV2czI0jdNiY/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/25/2009 12:02 PM, Bartlomiej Zolnierkiewicz wrote:
-> I've been going through PATA drivers for the last few days to make
-> sure that we offer similar level of hardware support in the new PATA
-> drivers as with the old IDE subsystem and the following patchset is
-> the end result of said audit.
+Hi,
 
-Thanks!
+on 25 Nov 09 at 17:53, Krzysztof Halasa wrote:
+> Jarod Wilson <jarod@wilsonet.com> writes:
+[...]
+>> nimble. If we can come up with a shiny new way that raw IR can be
+>> passed out through an input device, I'm pretty sure lirc userspace can
+>> be adapted to handle that.
 
-> - add 32-bit PIO support for more controllers
->
->    ( pata_artop, pata_atiixp, pata_efar, pata_cmd64x, pata_cs5520,
->      pata_cs5530, pata_cs5535, pata_cypress, pata_hpt366, pata_hpt37x,
->      pata_hpt3x2n, pata_it8213, pata_it821x, pata_jmicron, pata_ns87415,
->      pata_opti, pata_pdc2027x, pata_pdc202xx_old, pata_rz1000,
->      pata_sc1200, pata_scc, pata_sch, pata_serverworks, pata_sl82c105,
->      pata_sis, pata_triflex&  pata_via )
+As Trent already pointed out, adding support for raw IR through an input  
+device would require a new interface too. You just put the label "input  
+device" on it. This does not make much sense for me.
 
-This should be all in one patch.
+> Lirc can already handle input layer. Since both ways require userspace
+> changes,
 
-I'll let the comments from Alan and others trickle in before applying...
+I'm not sure what two ways you are talking about. With the patches posted  
+by Jarod, nothing has to be changed in userspace.
+Everything works, no code needs to be written and tested, everybody is  
+happy.
 
-> - add ->init_host method for abstracting host specific controller
->   initialization and then use it to cleanup Power Managment code
->   resulting in over 100 LOC gone
->
->   ( pata_ali, pata_amd, pata_artop, pata_cmd640, pata_cmd64x,
->     pata_cs5530, pata_hpt366, pata_hpt3x3, pata_it821x, pata_ninja32,
->     pata_ns87415, pata_pdc2027x & sata_sil )
+We had exactly the same discussion around one year ago. I've seen no new  
+arguements in the current discussion and nobody came up with this shiny  
+new way of integrating LIRC into the input layer since last year. Maybe  
+it's about time to just accept that the LIRC interface is the way to go.
 
-hmmmm....  will reserve comment until I review it thoroughly, but I am a 
-bit reluctant to move away from the current struct-driver style driver 
-init/setup model.
+Can we finally get the patch integrated, please?
 
-	Jeff
-
-
-
+Christoph
