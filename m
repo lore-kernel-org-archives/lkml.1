@@ -1,371 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbZKYHXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbZKYHrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbZKYHXY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 02:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZKYHXX
+	id S1758316AbZKYHrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 02:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZKYHrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 02:23:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43634 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752259AbZKYHXW (ORCPT
+	Wed, 25 Nov 2009 02:47:22 -0500
+Received: from fallback.mail.elte.hu ([157.181.151.13]:35244 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZKYHrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 02:23:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Fg3sYWDK2brcpRSCaD12NFWYeaA2SmICZ7unKgvVmAYb9kFoTrD7BgrT1bibOkh9Ex
-         +WK+THEnQVg4EXye3VSVVAt4MiIwKEeyA0SIupxKNqFXX62aoaDyUWsH8eVqpBC6AlL0
-         wG1Z+aHvpdpW/4Qy4bGbIHeE5f6biZw/ebQX0=
-Date: Wed, 25 Nov 2009 10:23:24 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] pnpbios: convert to seq_file
-Message-ID: <20091125072324.GG3459@x200.malnet.ru>
+	Wed, 25 Nov 2009 02:47:21 -0500
+Date: Wed, 25 Nov 2009 08:25:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: yinghai@kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix gart iommu using for amd 64 bit system
+Message-ID: <20091125072504.GA6568@elte.hu>
+References: <4B0BB892.9080401@kernel.org>
+ <20091124225000H.fujita.tomonori@lab.ntt.co.jp>
+ <20091124152645.GD21821@elte.hu>
+ <20091125085730S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091125085730S.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
 
- drivers/pnp/pnpbios/proc.c |  204 ++++++++++++++++++++++++++++-----------------
- 1 file changed, 129 insertions(+), 75 deletions(-)
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
---- a/drivers/pnp/pnpbios/proc.c
-+++ b/drivers/pnp/pnpbios/proc.c
-@@ -24,6 +24,7 @@
- #include <linux/types.h>
- #include <linux/proc_fs.h>
- #include <linux/pnp.h>
-+#include <linux/seq_file.h>
- #include <linux/init.h>
- 
- #include <asm/uaccess.h>
-@@ -33,42 +34,65 @@
- static struct proc_dir_entry *proc_pnp = NULL;
- static struct proc_dir_entry *proc_pnp_boot = NULL;
- 
--static int proc_read_pnpconfig(char *buf, char **start, off_t pos,
--			       int count, int *eof, void *data)
-+static int pnpconfig_proc_show(struct seq_file *m, void *v)
- {
- 	struct pnp_isa_config_struc pnps;
- 
- 	if (pnp_bios_isapnp_config(&pnps))
- 		return -EIO;
--	return snprintf(buf, count,
--			"structure_revision %d\n"
--			"number_of_CSNs %d\n"
--			"ISA_read_data_port 0x%x\n",
--			pnps.revision, pnps.no_csns, pnps.isa_rd_data_port);
-+	seq_printf(m, "structure_revision %d\n"
-+		      "number_of_CSNs %d\n"
-+		      "ISA_read_data_port 0x%x\n",
-+		   pnps.revision, pnps.no_csns, pnps.isa_rd_data_port);
-+	return 0;
- }
- 
--static int proc_read_escdinfo(char *buf, char **start, off_t pos,
--			      int count, int *eof, void *data)
-+static int pnpconfig_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pnpconfig_proc_show, NULL);
-+}
-+
-+static const struct file_operations pnpconfig_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= pnpconfig_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int escd_info_proc_show(struct seq_file *m, void *v)
- {
- 	struct escd_info_struc escd;
- 
- 	if (pnp_bios_escd_info(&escd))
- 		return -EIO;
--	return snprintf(buf, count,
--			"min_ESCD_write_size %d\n"
-+	seq_printf(m, "min_ESCD_write_size %d\n"
- 			"ESCD_size %d\n"
- 			"NVRAM_base 0x%x\n",
- 			escd.min_escd_write_size,
- 			escd.escd_size, escd.nv_storage_base);
-+	return 0;
- }
- 
-+static int escd_info_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, escd_info_proc_show, NULL);
-+}
-+
-+static const struct file_operations escd_info_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= escd_info_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- #define MAX_SANE_ESCD_SIZE (32*1024)
--static int proc_read_escd(char *buf, char **start, off_t pos,
--			  int count, int *eof, void *data)
-+static int escd_proc_show(struct seq_file *m, void *v)
- {
- 	struct escd_info_struc escd;
- 	char *tmpbuf;
--	int escd_size, escd_left_to_read, n;
-+	int escd_size;
- 
- 	if (pnp_bios_escd_info(&escd))
- 		return -EIO;
-@@ -76,7 +100,7 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
- 	/* sanity check */
- 	if (escd.escd_size > MAX_SANE_ESCD_SIZE) {
- 		printk(KERN_ERR
--		       "PnPBIOS: proc_read_escd: ESCD size reported by BIOS escd_info call is too great\n");
-+		       "PnPBIOS: %s: ESCD size reported by BIOS escd_info call is too great\n", __func__);
- 		return -EFBIG;
- 	}
- 
-@@ -94,56 +118,75 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
- 
- 	/* sanity check */
- 	if (escd_size > MAX_SANE_ESCD_SIZE) {
--		printk(KERN_ERR "PnPBIOS: proc_read_escd: ESCD size reported by"
--				" BIOS read_escd call is too great\n");
-+		printk(KERN_ERR "PnPBIOS: %s: ESCD size reported by"
-+				" BIOS read_escd call is too great\n", __func__);
- 		kfree(tmpbuf);
- 		return -EFBIG;
- 	}
- 
--	escd_left_to_read = escd_size - pos;
--	if (escd_left_to_read < 0)
--		escd_left_to_read = 0;
--	if (escd_left_to_read == 0)
--		*eof = 1;
--	n = min(count, escd_left_to_read);
--	memcpy(buf, tmpbuf + pos, n);
-+	seq_write(m, tmpbuf, escd_size);
- 	kfree(tmpbuf);
--	*start = buf;
--	return n;
-+	return 0;
- }
- 
--static int proc_read_legacyres(char *buf, char **start, off_t pos,
--			       int count, int *eof, void *data)
-+static int escd_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, escd_proc_show, NULL);
-+}
-+
-+static const struct file_operations escd_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= escd_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int pnp_legacyres_proc_show(struct seq_file *m, void *v)
- {
--	/* Assume that the following won't overflow the buffer */
--	if (pnp_bios_get_stat_res(buf))
-+	void *buf;
-+
-+	buf = kmalloc(65536, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	if (pnp_bios_get_stat_res(buf)) {
-+		kfree(buf);
- 		return -EIO;
-+	}
-+
-+	seq_write(m, buf, 65536);
-+	kfree(buf);
-+	return 0;
-+}
- 
--	return count;		// FIXME: Return actual length
-+static int pnp_legacyres_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pnp_legacyres_proc_show, NULL);
- }
- 
--static int proc_read_devices(char *buf, char **start, off_t pos,
--			     int count, int *eof, void *data)
-+static const struct file_operations pnp_legacyres_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= pnp_legacyres_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int pnp_devices_proc_show(struct seq_file *m, void *v)
- {
- 	struct pnp_bios_node *node;
- 	u8 nodenum;
--	char *p = buf;
--
--	if (pos >= 0xff)
--		return 0;
- 
- 	node = kzalloc(node_info.max_node_size, GFP_KERNEL);
- 	if (!node)
- 		return -ENOMEM;
- 
--	for (nodenum = pos; nodenum < 0xff;) {
-+	for (nodenum = 0; nodenum < 0xff;) {
- 		u8 thisnodenum = nodenum;
--		/* 26 = the number of characters per line sprintf'ed */
--		if ((p - buf + 26) > count)
--			break;
-+
- 		if (pnp_bios_get_dev_node(&nodenum, PNPMODE_DYNAMIC, node))
- 			break;
--		p += sprintf(p, "%02x\t%08x\t%02x:%02x:%02x\t%04x\n",
-+		seq_printf(m, "%02x\t%08x\t%02x:%02x:%02x\t%04x\n",
- 			     node->handle, node->eisa_id,
- 			     node->type_code[0], node->type_code[1],
- 			     node->type_code[2], node->flags);
-@@ -153,20 +196,29 @@ static int proc_read_devices(char *buf, char **start, off_t pos,
- 			       "PnPBIOS: proc_read_devices:",
- 			       (unsigned int)nodenum,
- 			       (unsigned int)thisnodenum);
--			*eof = 1;
- 			break;
- 		}
- 	}
- 	kfree(node);
--	if (nodenum == 0xff)
--		*eof = 1;
--	*start = (char *)((off_t) nodenum - pos);
--	return p - buf;
-+	return 0;
-+}
-+
-+static int pnp_devices_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pnp_devices_proc_show, NULL);
- }
- 
--static int proc_read_node(char *buf, char **start, off_t pos,
--			  int count, int *eof, void *data)
-+static const struct file_operations pnp_devices_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= pnp_devices_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int pnpbios_proc_show(struct seq_file *m, void *v)
- {
-+	void *data = m->private;
- 	struct pnp_bios_node *node;
- 	int boot = (long)data >> 8;
- 	u8 nodenum = (long)data;
-@@ -180,14 +232,20 @@ static int proc_read_node(char *buf, char **start, off_t pos,
- 		return -EIO;
- 	}
- 	len = node->size - sizeof(struct pnp_bios_node);
--	memcpy(buf, node->data, len);
-+	seq_write(m, node->data, len);
- 	kfree(node);
--	return len;
-+	return 0;
-+}
-+
-+static int pnpbios_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pnpbios_proc_show, PDE(inode)->data);
- }
- 
--static int proc_write_node(struct file *file, const char __user * buf,
--			   unsigned long count, void *data)
-+static ssize_t pnpbios_proc_write(struct file *file, const char __user *buf,
-+				  size_t count, loff_t *pos)
- {
-+	void *data = PDE(file->f_path.dentry->d_inode)->data;
- 	struct pnp_bios_node *node;
- 	int boot = (long)data >> 8;
- 	u8 nodenum = (long)data;
-@@ -218,34 +276,33 @@ out:
- 	return ret;
- }
- 
-+static const struct file_operations pnpbios_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= pnpbios_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= pnpbios_proc_write,
-+};
-+
- int pnpbios_interface_attach_device(struct pnp_bios_node *node)
- {
- 	char name[3];
--	struct proc_dir_entry *ent;
- 
- 	sprintf(name, "%02x", node->handle);
- 
- 	if (!proc_pnp)
- 		return -EIO;
- 	if (!pnpbios_dont_use_current_config) {
--		ent = create_proc_entry(name, 0, proc_pnp);
--		if (ent) {
--			ent->read_proc = proc_read_node;
--			ent->write_proc = proc_write_node;
--			ent->data = (void *)(long)(node->handle);
--		}
-+		proc_create_data(name, 0644, proc_pnp, &pnpbios_proc_fops,
-+				 (void *)(long)(node->handle));
- 	}
- 
- 	if (!proc_pnp_boot)
- 		return -EIO;
--	ent = create_proc_entry(name, 0, proc_pnp_boot);
--	if (ent) {
--		ent->read_proc = proc_read_node;
--		ent->write_proc = proc_write_node;
--		ent->data = (void *)(long)(node->handle + 0x100);
-+	if (proc_create_data(name, 0644, proc_pnp_boot, &pnpbios_proc_fops,
-+			     (void *)(long)(node->handle + 0x100)))
- 		return 0;
--	}
--
- 	return -EIO;
- }
- 
-@@ -262,14 +319,11 @@ int __init pnpbios_proc_init(void)
- 	proc_pnp_boot = proc_mkdir("boot", proc_pnp);
- 	if (!proc_pnp_boot)
- 		return -EIO;
--	create_proc_read_entry("devices", 0, proc_pnp, proc_read_devices, NULL);
--	create_proc_read_entry("configuration_info", 0, proc_pnp,
--			       proc_read_pnpconfig, NULL);
--	create_proc_read_entry("escd_info", 0, proc_pnp, proc_read_escdinfo,
--			       NULL);
--	create_proc_read_entry("escd", S_IRUSR, proc_pnp, proc_read_escd, NULL);
--	create_proc_read_entry("legacy_device_resources", 0, proc_pnp,
--			       proc_read_legacyres, NULL);
-+	proc_create("devices", 0, proc_pnp, &pnp_devices_proc_fops);
-+	proc_create("configuration_info", 0, proc_pnp, &pnpconfig_proc_fops);
-+	proc_create("escd_info", 0, proc_pnp, &escd_info_proc_fops);
-+	proc_create("escd", S_IRUSR, proc_pnp, &escd_proc_fops);
-+	proc_create("legacy_device_resources", 0, proc_pnp, &pnp_legacyres_proc_fops);
- 
- 	return 0;
- }
+> On Tue, 24 Nov 2009 16:26:45 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > 
+> > > > don't think user will like to use SWIOTLB instead of swiotlb.
+> > > 
+> > > I doubt that users care about a way to fix their problems.
+> > 
+> > As far as swiotlb vs. GART goes, arguably a non-bouncing hw based 
+> > solution (GART) is superior to a bouncing one (swiotlb), right?
+> 
+> Yeah, but GART is not a real IOMMU that always does address 
+> translation. If users want performance, they need 64bit DMA capable 
+> devices to skip GART. With such devices, GART and SWIOTLB are same.
+> 
+> So this hacky GART workaround is useful for only people who use non 
+> 64bit DMA devices and broken BIOS with GART. IMO, it's not worth 
+> having the workaround.
+
+Well, what Yinghai is saying that for that (nonzero) subset of people 
+this change is a regression, and his patch fixes that. We dont do 
+regressions so this needs to be addressed.
+
+Thanks,
+
+	Ingo
