@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbZKYK5C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZKYLEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758654AbZKYK5C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 05:57:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbZKYK5A
+	id S1758650AbZKYLEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 06:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZKYLEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 05:57:00 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:46675 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758527AbZKYK45 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 05:56:57 -0500
-Date: Wed, 25 Nov 2009 12:56:49 +0200
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: ALS subsystem (was Re: [PATCH 1/2] staging: iio: tsl2563 ambient
- light sensor driver)
-Message-ID: <20091125105649.GJ16444@smtp.gmail.com>
-Mail-Followup-To: Zhang Rui <rui.zhang@intel.com>,
-	Jonathan Cameron <jic23@cam.ac.uk>,
-	List Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1257772468-4004-1-git-send-email-amit.kucheria@verdurent.com>
- <4AF81FE5.5080102@cam.ac.uk>
- <20091109142430.GZ1773@smtp.gmail.com>
- <4AF85ABB.7060406@cam.ac.uk>
- <1257843493.4469.25.camel@rzhang-dt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1257843493.4469.25.camel@rzhang-dt>
-X-URL: http://www.verdurent.com/
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 25 Nov 2009 06:04:39 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39068 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751850AbZKYLEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 06:04:39 -0500
+Date: Wed, 25 Nov 2009 20:03:56 +0900
+To: yinghai@kernel.org
+Cc: mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B0CFCA6.5070708@kernel.org>
+References: <20091125180517P.fujita.tomonori@lab.ntt.co.jp>
+	<20091125091026.GA11117@elte.hu>
+	<4B0CFCA6.5070708@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091125200337I.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 25 Nov 2009 20:03:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09 Nov 10, Zhang Rui wrote:
-> On Tue, 2009-11-10 at 02:08 +0800, Jonathan Cameron wrote:
-> > Amit Kucheria wrote:
-> > > On 09 Nov 09, Jonathan Cameron wrote:
-> > >> Hi Amit,
-> > >>
-> > >> Normally I'd welcome this in IIO, except that all ambient light sensors are in the
-> > >> process of moving to the new ALS subsystem.  There are still some issues to resolve
-> > >> in that subsystem (mainly to do with naming conventions) but hopefully we will
-> > >> get them sorted out shortly.
-> > > 
-> > > Groan! :)
-> > You have my sympathies on this! Typical that the first other developer to put
-> > forward a patch for IIO picks the one type of device we are moving out.
-> > If you do have any comments on IIO as a result of using it please send them
-> > on.
-> > > Who will be the subsystem maintainer and is there already a public git
-> > > tree?
-> > No git tree as far as I know.  Maintainer is Zhang Rui (Cc'd)
-> > Zhang, what are your plans wrt to that?  I guess I can put one up with the current
-> > patches if it is helpful?  We really need to sort out the naming issue as the one
-> > thing that people have come out against. 
+On Wed, 25 Nov 2009 01:45:10 -0800
+Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Ingo Molnar wrote:
+> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > > 
-> well. I'd prefer a generic name alsX with an extra "name"/"desc" file.
+> >> On Wed, 25 Nov 2009 00:54:34 -0800
+> >> Yinghai Lu <yinghai@kernel.org> wrote:
+> >>
+> >>> only remember that SLES 9 SP3 (?) at some point has problem with AMD 
+> >>> 10h ( quad core version) when memory > 4 g (with USB controller ?) 
+> >>> because the gart code only check K8 device id, and didn't check 10h 
+> >>> device id. so gart iommu is not used. and happenly swiotlb code has 
+> >>> problem with that kernel version.
+> >>>
+> >>> thinking we should keep old behavior, until some day we can remove 
+> >>> them all.
+> >> Why? We are talking about changing 2.6.33 behavior. swiotlb in 2.6.33 
+> >> should be the safe option.
+> > 
+> > If that behavior was relied on for suspected (or real) bugs in the 
+> > swiotlb code then i agree that we should do this change. (and fix any 
+> > bugs if they still occur.)
 > 
-> > After that I'm guessing ping Andrew Morton to see if he is willing to handle the push
-> > to Linus? Or does Zhang want to try doing one directly?
-> > 
-> I'll refresh the patch and send to Andrew.
->
+> after look at gart_iommu_hole_init() closely,
+> 
+> should be
+> 
+> for AMD 64bit, MEM > 4g, no AGP, iommu=soft
+> 1. if BIOS have correct gart setting, Kernel will use swiotlb
+> 2. if BIOS does not have correct gart setting, Kernel will use swiotlb
+> 
+> and for the all the cases, the codes after that 
+> /* Fix up the north bridges */
+> ...
+> 
+> will disable the translation...
 
-Rui,
-
-Is there any progress on this? I haven't seen a patch refresh on LKML. 
-
-I can help if you need any.
-
-Regards,
-Amit
+What code are you talking about? GART translation is disabled at boot
+time (if not, we are dead because some GART hardware are broken so we
+need to fix things before enabling them).
 
 
--- 
--------------------------------------------------------------------------
-Amit Kucheria,				 Kernel Developer, Verdurent
--------------------------------------------------------------------------
+> so even swiotlb=soft is used, gart_iommu_hole_init() still need to
+> be called. to make sure aperture is disabled somehow.
+
+I don't think so.
