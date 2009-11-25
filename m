@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbZKYRZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbZKYRXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbZKYRZm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759292AbZKYRZk
+	id S1759318AbZKYRXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 12:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbZKYRXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:25:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:63760 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759113AbZKYRZi (ORCPT
+	Wed, 25 Nov 2009 12:23:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53891 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759165AbZKYRXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:25:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=imCd5dnc136rTEtBhpkEeUfo+ZP0rbouZBex0Wcj/+1sCL1uOJhRkYX29LL2qmQtIa
-         j0ylFxhJWh5rWswMz7QQyl8CH3+8m2cxIWLaYL945iFGDvtpO+ldRtpv5S26Rh8O8wVe
-         PyVMVUS5ORhaiQ6Be5WV9J4w67Db+oOGk5w8w=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 00/86] PATA fixes
-Date: Wed, 25 Nov 2009 18:24:13 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <4B0D6735.8000604@garzik.org>
-In-Reply-To: <4B0D6735.8000604@garzik.org>
-MIME-Version: 1.0
-Message-Id: <200911251824.13702.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 25 Nov 2009 12:23:36 -0500
+Date: Wed, 25 Nov 2009 17:25:41 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/86] pata_efar: fix register naming used in
+ efar_set_piomode()
+Message-ID: <20091125172541.1267490f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091125170422.5446.10637.sendpatchset@localhost>
+References: <20091125170218.5446.13513.sendpatchset@localhost>
+	<20091125170422.5446.10637.sendpatchset@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 November 2009 06:19:49 pm Jeff Garzik wrote:
-> On 11/25/2009 12:02 PM, Bartlomiej Zolnierkiewicz wrote:
-> > I've been going through PATA drivers for the last few days to make
-> > sure that we offer similar level of hardware support in the new PATA
-> > drivers as with the old IDE subsystem and the following patchset is
-> > the end result of said audit.
-> 
-> Thanks!
-> 
-> > - add 32-bit PIO support for more controllers
-> >
-> >    ( pata_artop, pata_atiixp, pata_efar, pata_cmd64x, pata_cs5520,
-> >      pata_cs5530, pata_cs5535, pata_cypress, pata_hpt366, pata_hpt37x,
-> >      pata_hpt3x2n, pata_it8213, pata_it821x, pata_jmicron, pata_ns87415,
-> >      pata_opti, pata_pdc2027x, pata_pdc202xx_old, pata_rz1000,
-> >      pata_sc1200, pata_scc, pata_sch, pata_serverworks, pata_sl82c105,
-> >      pata_sis, pata_triflex&  pata_via )
-> 
-> This should be all in one patch.
+> Rename 'idetm_port' and 'idetm_data' variables to 'master_port'
+> and 'master_data' respectively to match register naming used in
+> efar_set_dma_mode() and in ata_piix.c.
 
-For review & testing purposes it is better do it this way, I can merge
-individual patches easily later if desirable.
+Probably better to do the reverse to match the docs ?
 
-> I'll let the comments from Alan and others trickle in before applying...
+> -	u16 idetm_data;
+> +	u8 master_port		= ap->port_no ? 0x42 : 0x40;
+> +	u16 master_data;
 
-See comment above.
+Please don't drop undocumented type changes in. And btw it uses unsigned
+int here as all over the kernel because it produced better code in many
+cases
 
-> > - add ->init_host method for abstracting host specific controller
-> >   initialization and then use it to cleanup Power Managment code
-> >   resulting in over 100 LOC gone
-> >
-> >   ( pata_ali, pata_amd, pata_artop, pata_cmd640, pata_cmd64x,
-> >     pata_cs5530, pata_hpt366, pata_hpt3x3, pata_it821x, pata_ninja32,
-> >     pata_ns87415, pata_pdc2027x & sata_sil )
-> 
-> hmmmm....  will reserve comment until I review it thoroughly, but I am a 
-> bit reluctant to move away from the current struct-driver style driver 
-> init/setup model.
-
-This change is not moving away from it.  On the contrary -- it enhances
-the current model by adding another possibility of doing things as the new
-->init_host method is completely optional.
-
---
-Bartlomiej Zolnierkiewicz
+These patches seem to spend a lot of time renaming everything in drivers
+which is usually pointless churn (eg the atp grand renaming), but the bug
+fixes all look good
