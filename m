@@ -1,37 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZKZPrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbZKZPsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZKZPrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbZKZPrm
+	id S1760559AbZKZPsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbZKZPsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:47:42 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37779 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752690AbZKZPrl (ORCPT
+	Thu, 26 Nov 2009 10:48:22 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:52968 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZKZPsU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:47:41 -0500
-Date: Thu, 26 Nov 2009 15:47:46 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-Cc: alsa-devel@alsa-project.org, sfr@canb.auug.org.au, tj@kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de
-Subject: Re: [PATCH] ASoC: tlv320dac33: Change RT wq to singlethread wq
-Message-ID: <20091126154746.GA10674@rakim.wolfsonmicro.main>
-References: <1259236511-25805-1-git-send-email-peter.ujfalusi@nokia.com>
+	Thu, 26 Nov 2009 10:48:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ll+G/OakbWTD9HnFe9D10dcV4q7qNAYPP++qNd+rQabuygaqWFCaC8U61bflu7mcZC
+         TyEFR9welUgZsA1fqDRSI7T0k8YnnE143q0Kd8G4m6Cfo7XlIHgGCEivGFIvSWO53lWU
+         /U+WlPAZj5Pz5ejdCA143kLw4v6qKK3B7F6NM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259236511-25805-1-git-send-email-peter.ujfalusi@nokia.com>
-X-Cookie: Bus error -- driver executed.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B0E9493.1090200@redhat.com>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
+	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+	 <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
+	 <4B0DA885.7010601@redhat.com> <4B0E9493.1090200@redhat.com>
+Date: Thu, 26 Nov 2009 10:48:26 -0500
+Message-ID: <9e4733910911260748v454d3b0bvcc6bfc86823cdd39@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 01:55:11PM +0200, Peter Ujfalusi wrote:
-> RT workqueue is going away in the near future, replace it with
-> singlethread wq for now, which is still supported.
-> 
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+On Thu, Nov 26, 2009 at 9:45 AM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Gerd Hoffmann wrote:
+>> On 11/25/09 19:20, Devin Heitmueller wrote:
+>>> On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson<jarod@wilsonet.com>
+>>> wrote:
+>>>> Took me a minute to figure out exactly what you were talking
+>>>> about. You're referring to the current in-kernel decoding done on
+>>>> an ad-hoc basis for assorted remotes bundled with capture devices,
+>>>> correct?
+>>>>
+>>>> Admittedly, unifying those and the lirc driven devices hasn't
+>>>> really been on my radar.
+>>
+>> I think at the end of the day we'll want to have all IR drivers use the
+>> same interface.  The way the current in-kernel input layer drivers work
+>> obviously isn't perfect too, so we *must* consider both worlds to get a
+>> good solution for long-term ...
 
-Applied, thanks.
+I made an attempt at implementing all of this a year ago.
+http://lkml.org/lkml/2008/11/5/233
+
+All of this kernel code is tiny, about 20K including a driver.
+
+Basic flow works like this:
+
+Add a new IR data type to the input framework
+http://lkml.org/lkml/2008/11/5/234
+
+Example mceusb IR input driver
+http://lkml.org/lkml/2008/11/5/238
+
+In-kernel decoding of core IR protocols - RC5, RC6, etc
+http://lkml.org/lkml/2008/11/5/234
+
+Decoded core protocols pass through a translation map based on configfs
+When core protocol matches an entry in configfs it is turned into a
+keycode event.
+http://lkml.org/lkml/2008/11/5/235
+
+You make a directory in /configfs/remotes for each remote you have.
+Making the directory creates a new evdev device.  Under the directory
+make an entry for each command generated by the device. These entries
+cause the decoded IR data to be mapped into keycodes on the new evdev
+device. udev would load these configfs mappings at boot time...
+
+mkdir /config/remotes/sony
+ -- this creates a new evdev device
+mkdir remotes/sony/one
+echo 7 >remotes/sony/one/protocol
+echo 264 >remotes/sony/one/command
+echo 2 >remotes/sony/one/keycode
+
+This transforms a button push of 1 on my remote into a key stroke for KEY_1
+
+ *   configfs root
+ *   --remotes
+ *   ----specific remote
+ *   ------keymap
+ *   --------protocol
+ *   --------device
+ *   --------command
+ *   --------keycode
+ *   ------repeat keymaps
+ *   --------....
+ *   ----another remote
+ *   ------more keymaps
+
+You can map the 1 button from multiple remotes to KEY_1 if you want. Or
+you can use a single remote to create multiple virtual keyboards.
+
+-------------------------
+
+Raw IR pulse data is available in a FIFO via sysfs. You can use this
+to figure out new remote protocols.
+
+Two input events are generated
+1) an event for the decoded raw IR protocol
+2) a keycode event if thedecoded raw IR protocol matches an entry in
+the configfs
+
+You can also send pulses.
+
+------
+
+If you want to script this, you would have a user space task that
+watches for either the decoded IR codes or the mapped keycodes.
+
+This system also works with user space device drivers. They can inject
+input events into the early event flow and they will get processed as
+if the event originated in the kernel.
+
+---------------------
+
+Sure you could push the protocol decoding code (RC5, etc) into user
+space. Seems like a lot of hassle to move about 3KB of code out of the
+kernel.
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
