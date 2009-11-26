@@ -1,93 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZKZV2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZKZV3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbZKZV2N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 16:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZKZV2M
+	id S1752827AbZKZV3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 16:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZKZV3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 16:28:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61551 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbZKZV2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 16:28:11 -0500
-Message-ID: <4B0EF2E3.3020006@redhat.com>
-Date: Thu, 26 Nov 2009 19:28:03 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Thu, 26 Nov 2009 16:29:19 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:58058 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbZKZV3S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 16:29:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OF8Uxg/tZzw6gJCwKugR7gkfg2u9mno+gLfs55qQzw7DVRRPLGy3EZOiQjO7B0ZlF4
+         dohBaOd7dC/7239CRonOm6D7Ahy+KrbJ6kbsvgEYdlRNSozH63RL2OyMTawt06Ni8LrA
+         rG2OwTh6cLx67AKJtYNlhqc+MShaWDFOROIi4=
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Christoph Bartelmus <lirc@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDcbizrJjFB@christoph> <4B0EABF8.9000902@redhat.com>	<m3r5rlupcb.fsf@intrepid.localdomain> <4B0ECF1B.1090103@redhat.com> <m3tywhrpy9.fsf@intrepid.localdomain>
-In-Reply-To: <m3tywhrpy9.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091126115806.c53684f5.sfr@canb.auug.org.au>
+References: <20091126115806.c53684f5.sfr@canb.auug.org.au>
+Date: Thu, 26 Nov 2009 22:29:22 +0100
+X-Google-Sender-Auth: 6465889a7690d59c
+Message-ID: <10f740e80911261329s35f62au37e6b209c657e09@mail.gmail.com>
+Subject: Re: linux-next: manual merge of the m68knommu tree with the m68k tree
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Greg Ungerer <gerg@snapgear.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Schwab <schwab@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> 
->> The removal of the existing keymaps from kernel depends on having an
->> application
->> to be called from udev to load the proper keymaps when a device is probed.
->>
->> After having it for a while, we should deprecate the in-kernel keymaps
->> and move them to userspace.
-> 
-> Sounds like a plan.
-> 
->> I also think that it is important to remove the 7 bits limitation from
->> all drivers
->> and re-generate the keymaps, since they'll change after it.
-> 
-> I think the existing space/mark media drivers need to be reworked
-> completely.
+On Thu, Nov 26, 2009 at 01:58, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Today's linux-next merge of the m68knommu tree got a conflict in
+> arch/m68k/include/asm/ptrace.h between commit
+> 63c361b65f6540043c4baabf1a044a45c7465858 ("m68k: use generic code for
+> ptrace requests") from the m68k tree and commit
+> 03a03164e8084b810e9f92906a51232d63bac72c ("m68knommu: define
+> arch_has_single_step() and friends") from the m68knommu tree.
+>
+> These mostly add the same stuff but not quite :-(
 
-Nah. the changes aren't big. The first part of the change were already done
-for 2.6.32: instead of having a vector of 128 elements, where the element order
-used to be the masked scancode, we now have a table of scancode x keycode, defined
-as:
+Ah sorry, my bad. I'm not yet used to the uClinux guys touching "my"
+includes ;-)
+So we need better coordination between us.
 
-struct ir_scancode {
-        u16     scancode;
-        u32     keycode;
-};
+IIRC, Greg's changes were inspired by Andreas' patch.
 
-Changing scancode to u32 is as easy as edit a file - it is currently 16 just because
-all currently supported IR's and protocols have 16 bits only - there's no in-kernel
-implementation for RC6 mode 6 yet. However, increasing it above to 64 bits will break on
-32 bits kernels (and above 64 bits, on all architectures), due to the current API limits.
+> I have done a fixup (see below) and can carry it as necessary.  Please
+> check the result.
 
-this change is currently limited to the ir keytables, but I have a patch already done
-extending this change for the drivers to work directly with the new table.
+At first sight, it looks OK. Thanks for fixing it up!
 
-The next step is to replace the ir->mask_keycode at the drivers to a value that
-gets the entire scancode. We may still need a mask there, since not all drivers output
-a 32 bits scancode.
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+>
+> diff --cc arch/m68k/include/asm/ptrace.h
+> index eef9309,beb2091..0000000
+> --- a/arch/m68k/include/asm/ptrace.h
+> +++ b/arch/m68k/include/asm/ptrace.h
+> @@@ -86,14 -84,15 +86,18 @@@ struct switch_stack
+>  extern void show_regs(struct pt_regs *);
+>
+>  /*
+>  - * These are defined as per linux/ptrace.h.
+>  + * These are defined as per linux/ptrace.h, which see.
+>   */
+> + struct task_struct;
+> +
+>  -#ifndef CONFIG_MMU
+>  -#define       arch_has_single_step()  (1)
+>  +#define arch_has_single_step()        (1)
+>  extern void user_enable_single_step(struct task_struct *);
+>  extern void user_disable_single_step(struct task_struct *);
+>  +
+> ++#ifdef CONFIG_MMU
+>  +#define arch_has_block_step() (1)
+>  +extern void user_enable_block_step(struct task_struct *);
+> + #endif
+>
+>  #endif /* __KERNEL__ */
+>  #endif /* __ASSEMBLY__ */
 
-Also, there's no single "space/mark" media driver. All drivers that support 
-pulse/space also support in-hardware IR decoding, in order to support the 
-different types of devices. They generally support several ways to get keys:
-	- serial pulse/space decoding on one GPIO pin (most pci hardware have);
-	- serial pulse/space decoding via a IRQ enabled GPIO pin (several saa7134 IR's use this way);
-	- i2c IR's (common on several popular devices);
-	- parallel scancode output via gpio pins several cx88 IR's use this way);
-	- direct IR hardware decoding done by the video chipset 
-		(DibCom and newer em28xx hardware, for example).
+Gr{oetje,eeting}s,
 
-So, the driver input complexity is needed to support all those different ways. 
+						Geert
 
-So, rewriting it would likely cause regressions.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I agree that there are some cleanups that should be done for the serial pulse/space raw
-decoding. By adding a lirc interface, we'll need to have a common code for handling
-those events anyway.
-
-Cheers,
-Mauro.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
