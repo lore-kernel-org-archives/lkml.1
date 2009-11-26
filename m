@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZKZIS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZKZIz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbZKZIS2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbZKZIS1
+	id S1756091AbZKZIz6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZKZIz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:18:27 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:58729 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759453AbZKZIS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:18:26 -0500
-Date: Thu, 26 Nov 2009 09:18:29 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: linux-next: i2c tree build warning
-Message-ID: <20091126091829.74d3b7ce@hyperion.delvare>
-In-Reply-To: <20091126140600.2f55ab0e.sfr@canb.auug.org.au>
-References: <20091126140600.2f55ab0e.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Nov 2009 03:55:57 -0500
+Received: from av12-1-sn2.hy.skanova.net ([81.228.8.185]:54239 "EHLO
+	av12-1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZKZIz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:55:57 -0500
+X-Greylist: delayed 1945 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Nov 2009 03:55:57 EST
+Message-ID: <4B0E3B08.9050004@mocean-labs.com>
+Date: Thu, 26 Nov 2009 09:23:36 +0100
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors@mocean-labs.com>
+Organization: Pelagicore AB
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Subject: Re: [PATCH 29/38] move mc33880_remove to .devexit.text
+References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-26-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-27-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
-
-On Thu, 26 Nov 2009 14:06:00 +1100, Stephen Rothwell wrote:
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+Uwe Kleine-König wrote:
+> The function mc33880_remove is used only wrapped by __devexit_p so define
+> it using __devexit.
 > 
-> drivers/misc/eeprom/at24.c: In function 'at24_eeprom_read':
-> drivers/misc/eeprom/at24.c:230: warning: format '%zd' expects type 'signed size_t', but argument 6 has type 'int'
-> 
-> Introduced by commit 39bfab2519e6f148f2508d719f9fc5f4581aeefd ("at24: Use
-> timeout also for read").
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Thanks for reporting. The warning did not show on my 32-bit x86 system,
-and I guess it did not show on Wolfram's system either, otherwise we'd
-have fixed it.
-
-Does the following patch fix the warning for you?
-
---- linux-2.6.32-rc8.orig/drivers/misc/eeprom/at24.c	2009-11-26 09:14:45.000000000 +0100
-+++ linux-2.6.32-rc8/drivers/misc/eeprom/at24.c	2009-11-26 09:14:15.000000000 +0100
-@@ -227,7 +227,7 @@ static ssize_t at24_eeprom_read(struct a
- 			if (status == 2)
- 				status = count;
- 		}
--		dev_dbg(&client->dev, "read %zu@%d --> %zd (%ld)\n",
-+		dev_dbg(&client->dev, "read %zu@%d --> %d (%ld)\n",
- 				count, offset, status, jiffies);
- 
- 		if (status == count)
-
-If it does then I'll merge this into Wolfram's patch.
-
-Thanks,
--- 
-Jean Delvare
+Acked-by: Richard Röjfors <richard.rojfors@mocean-labs.com>
