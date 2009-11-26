@@ -1,84 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbZKZS2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbZKZS2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751801AbZKZS2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZKZS2E
+	id S1751868AbZKZS2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZKZS2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:28:04 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:59798 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbZKZS2C (ORCPT
+	Thu, 26 Nov 2009 13:28:16 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:12407 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751834AbZKZS2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:28:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=sBGDuUnabPhe+ZyJnagNyjGdHZww2C/0oHyxk/xoKHG0Vb6ymu4w32hIDB5d/R0wFb
-         dFlN0H3869Tvz6wGbwsNSHBZH006RLb/+pyfhAgwp3gpwXfX3ajOg9DcOLpr0+cXYe+S
-         HkmVN8Bf/YEIJulHKLYpUqxXSqLMVGjaeIV6Y=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
-Date: Thu, 26 Nov 2009 19:27:00 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200911261728.36433.bzolnier@gmail.com> <200911261903.01199.bzolnier@gmail.com> <4B0EC52B.2070805@ru.mvista.com>
-In-Reply-To: <4B0EC52B.2070805@ru.mvista.com>
+	Thu, 26 Nov 2009 13:28:12 -0500
+Message-ID: <4B0EC8F5.9040409@ru.mvista.com>
+Date: Thu, 26 Nov 2009 21:29:09 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Message-Id: <200911261927.00597.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 41/86] pata_efar: unify code for programming PIO and MWDMA
+ timings
+References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170712.5446.50300.sendpatchset@localhost>
+In-Reply-To: <20091125170712.5446.50300.sendpatchset@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 November 2009 07:12:59 pm Sergei Shtylyov wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> >>>>>MWDMA0 timings cannot be met with the PIIX based controller
-> >>>>>programming interface.
-> >>>
-> >>>>>This change should be safe as this is how we have been doing
-> >>>>>things in IDE it8213 host driver for years.
-> >>>
-> >>>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>>>>---
-> >>>>>Verified with the documentation (similar case as with pata_efar).
-> 
-> >>>>Uhhh, no...
-> 
-> >>>>Too many damn drivers.
-> 
-> >>>>Too much damn duplication.
-> 
-> >>>>Too much damn subtle differences here and there.
-> 
-> >>>>The hardware is probably fine for MWMDA0 when it comes to pata_{efar,it8213},
-> >>>>it just not documented properly in the data sheet.
-> 
-> >>>    How so with pata_efar? The active/recovery bitfields are still 2-bit 
-> >>>wide, no?
-> 
-> >>Yes but when TIMEx bit is disabled we are using XFER_PIO_SLOW timings.
-> 
->     600 ns cycle vs spec'ed 480 ns? Is it really worth it?
+Bartlomiej Zolnierkiewicz wrote:
 
-960 ns actually
+> It results in ~9% decrease in the driver LOC count and also ~6%
+> decrease in the driver binary size (as measured on x86-32).
 
-> >>All data sheets including original Intel ones are a complete crap when it
-> >>comes to explicitly documenting this behavior.
-> 
-> > OTOH all drivers set TIMEx for MWDMA0 currently.. ?
-> 
->     ... which would give a grossly overclocked timing.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ata/pata_it8213.c |   87 +++++++++++++++-------------------------------
+>  1 file changed, 29 insertions(+), 58 deletions(-)
 
-Except ata_piix which blacklists MWDMA0 for _all_ PATA controllers.. :)
+> Index: b/drivers/ata/pata_it8213.c
+> ===================================================================
+> --- a/drivers/ata/pata_it8213.c
+> +++ b/drivers/ata/pata_it8213.c
+> @@ -61,20 +61,9 @@ static int it8213_cable_detect(struct at
+>  	return ATA_CBL_PATA80;
+>  }
+>  
+> -/**
+> - *	it8213_set_piomode - Initialize host controller PATA PIO timings
+> - *	@ap: Port whose timings we are configuring
+> - *	@adev: Device whose timings we are configuring
+> - *
+> - *	Set PIO mode for device, in host controller PCI config space.
+> - *
+> - *	LOCKING:
+> - *	None (inherited from caller).
+> - */
+> -
+> -static void it8213_set_piomode (struct ata_port *ap, struct ata_device *adev)
+> +static void it8213_set_timings(struct ata_port *ap, struct ata_device *adev,
+> +			       u8 pio, bool use_mwdma)
 
-I'm leaving my patches as they were for now, unless somebody wants to
-untangle this mess this is a safest and quickest way forward..
+    Perhaps 'set_mwdma' would be a better name...
 
---
-Bartlomiej Zolnierkiewicz
+>  {
+> -	unsigned int pio	= adev->pio_mode - XFER_PIO_0;
+>  	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
+>  	u8 master_port		= ap->port_no ? 0x42 : 0x40;
+>  	u16 master_data;
+> @@ -92,13 +81,18 @@ static void it8213_set_piomode (struct a
+>  			    { 2, 1 },
+>  			    { 2, 3 }, };
+>  
+> -	if (pio > 1)
+> +	if (pio > 1 || use_mwdma)
+>  		control |= 1;	/* TIME */
+> -	if (ata_pio_need_iordy(adev))	/* PIO 3/4 require IORDY */
+> +	if (ata_pio_need_iordy(adev) || use_mwdma)
+
+    I believe this "IORDY for MWDMA" stupidity results from the table 35 in 
+ICH PRD which for some reason insists on setting IE bit with DMA, and I 
+believe this is wrong -- IORDY shouldn't have anything to with DMA.
+
+>  		control |= 2;	/* IE */
+>  	/* Bit 2 is set for ATAPI on the IT8213 - reverse of ICH/PIIX */
+>  	if (adev->class != ATA_DEV_ATA)
+>  		control |= 4;	/* PPE */
+> +	/* If the drive MWDMA is faster than it can do PIO then
+> +	   we must force PIO into PIO0 */
+> +	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
+
+    Parens not needed...
+
+> +		/* Enable DMA timing only */
+> +		control |= 8;	/* PIO cycles in PIO0 */
+>  
+>  	pci_read_config_word(dev, master_port, &master_data);
+
+MBR, Sergei
