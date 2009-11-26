@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbZKZO6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZKZO6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbZKZO6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760613AbZKZO6l
+	id S1760610AbZKZO6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:58:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbZKZO6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:58:41 -0500
-Received: from nox.protox.org ([88.191.38.29]:52575 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760270AbZKZO6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:58:40 -0500
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH] drm/radeon/kms: Don't overwrite crtc_gen_cntl or crtc_gen_cntl2
-Date: Thu, 26 Nov 2009 15:58:36 +0100
-Message-Id: <1259247516-6576-1-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.5.2
+	Thu, 26 Nov 2009 09:58:36 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46753 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753899AbZKZO6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 09:58:35 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/OOJ1S/9vOeCHBXmnYOcCwB8wdHeDly02hMGBMT9
+	MsaASz5Do0uAkG
+Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
+ runqueue variant
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259244563.31676.53.camel@laptop>
+References: <1258891781.14325.34.camel@marge.simson.net>
+	 <1259173672.4027.732.camel@laptop>
+	 <1259197270.6186.17.camel@marge.simson.net>
+	 <1259199068.6186.33.camel@marge.simson.net> <1259228139.4273.6.camel@twins>
+	 <1259230578.15079.12.camel@marge.simson.net>
+	 <1259244563.31676.53.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 26 Nov 2009 15:58:38 +0100
+Message-Id: <1259247518.6465.41.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't overwritte  crtc_gen_cntl or crtc_gen_cntl2 or we may loose the
-cursor. This especialy happen when changing video mode. Fix bugs:
-https://bugzilla.redhat.com/show_bug.cgi?id=529146
+On Thu, 2009-11-26 at 15:09 +0100, Peter Zijlstra wrote:
+> On Thu, 2009-11-26 at 11:16 +0100, Mike Galbraith wrote:
+> > > min_vruntime should only ever be poked at when holding the respective
+> > > rq->lock, even with a barrier a 64bit read on a 32bit machine can go all
+> > > funny.
+> > 
+> > Yeah, but we're looking at an unlocked runqueue.  But never mind...
+> 
+> The patch is also poking at rq->clock without rq->lock held... not very
+> nice.
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_legacy_crtc.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+To the users on the remote runqueue, it doesn't matter, they always
+update before using, so will always have accurate time.
 
-diff --git a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-index 8d0b7aa..8f6a8d1 100644
---- a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-+++ b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
-@@ -642,12 +642,8 @@ static bool radeon_set_crtc_timing(struct drm_crtc *crtc, struct drm_display_mod
- 		uint32_t crtc2_gen_cntl;
- 		uint32_t disp2_merge_cntl;
- 
--		/* check to see if TV DAC is enabled for another crtc and keep it enabled */
--		if (RREG32(RADEON_CRTC2_GEN_CNTL) & RADEON_CRTC2_CRT2_ON)
--			crtc2_gen_cntl = RADEON_CRTC2_CRT2_ON;
--		else
--			crtc2_gen_cntl = 0;
--
-+		/* if TV DAC is enabled for another crtc and keep it enabled */
-+		crtc2_gen_cntl = RREG32(RADEON_CRTC2_GEN_CNTL) & 0x00718080;
- 		crtc2_gen_cntl |= ((format << 8)
- 				   | RADEON_CRTC2_VSYNC_DIS
- 				   | RADEON_CRTC2_HSYNC_DIS
-@@ -676,7 +672,8 @@ static bool radeon_set_crtc_timing(struct drm_crtc *crtc, struct drm_display_mod
- 		uint32_t crtc_ext_cntl;
- 		uint32_t disp_merge_cntl;
- 
--		crtc_gen_cntl = (RADEON_CRTC_EXT_DISP_EN
-+		crtc_gen_cntl = RREG32(RADEON_CRTC_GEN_CNTL) & 0x00718000;
-+		crtc_gen_cntl |= (RADEON_CRTC_EXT_DISP_EN
- 				 | (format << 8)
- 				 | RADEON_CRTC_DISP_REQ_EN_B
- 				 | ((mode->flags & DRM_MODE_FLAG_DBLSCAN)
--- 
-1.6.5.2
+What bothers me is that I don't see what prevents a SCHED_IDLE task
+making a huge min_vruntime update on the remote CPU while you're
+queueing a sleeper here, who used to live over there, while you're
+reading.
+
+But, they're all instantaneous values anyway, so I suppose memory speed
+is fine.  It works... and I really doubt that the yet another paranoid
+barrier I just put in will make diddly spit difference, but I did just
+put an smp_rmb() there anyway to see with my own eyes ;-)
+
+> Gah, I hate that we're doing migration things without holding both rq's,
+> this is making live so very interesting ;-)
+
+Yes.
+
+	-Mike
 
