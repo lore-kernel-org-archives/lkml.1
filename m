@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750887AbZKZBa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbZKZBbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750887AbZKZBa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 20:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbZKZBa1
+	id S1751254AbZKZBbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 20:31:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbZKZBbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 20:30:27 -0500
-Received: from usul.overt.org ([204.11.33.43]:41347 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbZKZBa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 20:30:26 -0500
-Date: Wed, 25 Nov 2009 17:30:19 -0800
-From: Philip Langdale <philipl@overt.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Port ricoh_mmc from driver to pci quirk.
-Message-ID: <20091125173019.74d0ddb9@fido2.homeip.net>
-In-Reply-To: <1259192401.15916.48.camel@maxim-laptop>
-References: <1259021583.16650.9.camel@maxim-laptop>
-	<20091123162119.3777e14d@fido2.homeip.net>
-	<1259160947.10147.1.camel@maxim-laptop>
-	<1259161121.10147.4.camel@maxim-laptop>
-	<20091125085324.1ef9ae1f@fido2.homeip.net>
-	<20091125113501.1f4d42b9.akpm@linux-foundation.org>
-	<1259192401.15916.48.camel@maxim-laptop>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-slackware-linux-gnu)
+	Wed, 25 Nov 2009 20:31:06 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37905 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750767AbZKZBbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 20:31:05 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+UA8tloNeUAyjMDOmhqZ7dx2k1wdrVWovTAc8lOz
+	hfUd0CpCkZ6y/a
+Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
+ runqueue variant
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259197270.6186.17.camel@marge.simson.net>
+References: <1258891781.14325.34.camel@marge.simson.net>
+	 <1259173672.4027.732.camel@laptop>
+	 <1259197270.6186.17.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 26 Nov 2009 02:31:08 +0100
+Message-Id: <1259199068.6186.33.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-RunX1: Yes
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Nov 2009 01:40:01 +0200
-Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+On Thu, 2009-11-26 at 02:01 +0100, Mike Galbraith wrote:
+> On Wed, 2009-11-25 at 19:27 +0100, Peter Zijlstra wrote:
 
- 
-> Of course, I can put that under config condition, that users that are
-> sure that have no such device could save few hundreds of bytes.
-> However a distro probably will enable this option.
-
-Yeah, this is the only way I can think of to make it optional - and
-i guess we could actually reuse the current CONFIG value to make it
-transparent. I kind of like this, but there's no precedent for it
-in PCI quirks as far as I can tell.
- 
-> I also agree that I need to print some notice to user about device
-> being disabled.
+> > I've got to ask, what's that barrier for?
 > 
-> Aside from being almost an 1:1 copy of original driver, this patch was
-> sort of RFC, so I update it soon.
+> It's a leftover from frustrated bug hunting.
 
-Thanks!
+To be more specific, I put it there to ensure that min_vruntimes are
+stable.  I figured that if try_to_wake_up() needs a barrier to look at
+task->state, I had better do the same for the runqueues.
 
---phil
+	-Mike
+
