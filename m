@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbZKZQTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbZKZQUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbZKZQTp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbZKZQTo
+	id S1760772AbZKZQUN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760758AbZKZQUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:19:44 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:50143 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbZKZQTn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:19:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=v6PjgcebyJwCeMJdpr0xB5IMACXzI9OHTe1E6S9yuZ9cX7+0fmvoiEVzQPSDa740jG
-         NReA94s3dE6Nvq/rTLQ48ZHEB31mVD3NvFuMf5jiN+iP9dfv++aPCSoF+uidIXHi5u1D
-         rlz8VJ6HGvjy4TzCugkDL/EyQwJVOvetO1H1s=
-Message-ID: <4B0EAAA2.1080708@lwfinger.net>
-Date: Thu, 26 Nov 2009 10:19:46 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Thu, 26 Nov 2009 11:20:11 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44476 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755854AbZKZQUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 11:20:10 -0500
+Date: Thu, 26 Nov 2009 16:20:12 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 1/9] ksm: fix mlockfreed to munlocked
+Message-ID: <20091126162011.GG13095@csn.ul.ie>
+References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils> <Pine.LNX.4.64.0911241638130.25288@sister.anvils>
 MIME-Version: 1.0
-To: Stefan Bader <stefan.bader@canonical.com>
-CC: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] b43legacy: Port b43 rfkill fix to b43legacy
-References: <1259246955-24386-1-git-send-email-stefan.bader@canonical.com>
-In-Reply-To: <1259246955-24386-1-git-send-email-stefan.bader@canonical.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0911241638130.25288@sister.anvils>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/2009 08:49 AM, Stefan Bader wrote:
-> Resending this. I believe I messed up with the recipients the last time.
+On Tue, Nov 24, 2009 at 04:40:55PM +0000, Hugh Dickins wrote:
+> When KSM merges an mlocked page, it has been forgetting to munlock it:
+> that's been left to free_page_mlock(), which reports it in /proc/vmstat
+> as unevictable_pgs_mlockfreed instead of unevictable_pgs_munlocked (and
+> whinges "Page flag mlocked set for process" in mmotm, whereas mainline
+> is silently forgiving).  Call munlock_vma_page() to fix that.
 > 
-> -Stefan
-> 
->>From d800aef9db80ba1168f336791f4c5e8d4d0517c3 Mon Sep 17 00:00:00 2001
-> From: Stefan Bader <stefan.bader@canonical.com>
-> Date: Thu, 19 Nov 2009 14:52:22 -0600
-> Subject: [PATCH] b43legacy: Port b43 rfkill fix to b43legacy
-> 
-> BugLink: https://bugs.launchpad.net/bugs/476154
-> 
-> "b43: Fix Bugzilla #14181 and the bug from the previous 'fix'" fixed
-> a crash with the b43 driver, that happens if the radio switch is
-> turned off.
-> The same happens when using the b43legacy driver and it was verified,
-> that the same changes just work in that case too.
-> 
-> Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
 > ---
->  drivers/net/wireless/b43legacy/rfkill.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> Is this a fix that I ought to backport to 2.6.32?  It does rely on part of
+> an earlier patch (moved unlock_page down), so does not apply cleanly as is.
 > 
-> diff --git a/drivers/net/wireless/b43legacy/rfkill.c b/drivers/net/wireless/b43legacy/rfkill.c
-> index 8783022..ad7083e 100644
-> --- a/drivers/net/wireless/b43legacy/rfkill.c
-> +++ b/drivers/net/wireless/b43legacy/rfkill.c
-> @@ -34,7 +34,8 @@ bool b43legacy_is_hw_radio_enabled(struct b43legacy_wldev *dev)
->  		      & B43legacy_MMIO_RADIO_HWENABLED_HI_MASK))
->  			return 1;
->  	} else {
-> -		if (b43legacy_read16(dev, B43legacy_MMIO_RADIO_HWENABLED_LO)
-> +		if (b43legacy_status(dev) >= B43legacy_STAT_STARTED &&
-> +		    b43legacy_read16(dev, B43legacy_MMIO_RADIO_HWENABLED_LO)
->  		    & B43legacy_MMIO_RADIO_HWENABLED_LO_MASK)
->  			return 1;
->  	}
+>  mm/internal.h |    3 ++-
+>  mm/ksm.c      |    4 ++++
+>  mm/mlock.c    |    4 ++--
+>  3 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> --- ksm0/mm/internal.h	2009-11-14 10:17:02.000000000 +0000
+> +++ ksm1/mm/internal.h	2009-11-22 20:39:56.000000000 +0000
+> @@ -105,9 +105,10 @@ static inline int is_mlocked_vma(struct
+>  }
+>  
+>  /*
+> - * must be called with vma's mmap_sem held for read, and page locked.
+> + * must be called with vma's mmap_sem held for read or write, and page locked.
+>   */
+>  extern void mlock_vma_page(struct page *page);
+> +extern void munlock_vma_page(struct page *page);
+>  
+>  /*
+>   * Clear the page's PageMlocked().  This can be useful in a situation where
+> --- ksm0/mm/ksm.c	2009-11-14 10:17:02.000000000 +0000
+> +++ ksm1/mm/ksm.c	2009-11-22 20:39:56.000000000 +0000
+> @@ -34,6 +34,7 @@
+>  #include <linux/ksm.h>
+>  
+>  #include <asm/tlbflush.h>
+> +#include "internal.h"
+>  
+>  /*
+>   * A few notes about the KSM scanning process,
+> @@ -762,6 +763,9 @@ static int try_to_merge_one_page(struct
+>  	    pages_identical(page, kpage))
+>  		err = replace_page(vma, page, kpage, orig_pte);
+>  
+> +	if ((vma->vm_flags & VM_LOCKED) && !err)
+> +		munlock_vma_page(page);
+> +
+>  	unlock_page(page);
+>  out:
+>  	return err;
+> --- ksm0/mm/mlock.c	2009-11-14 10:17:02.000000000 +0000
+> +++ ksm1/mm/mlock.c	2009-11-22 20:39:56.000000000 +0000
+> @@ -99,14 +99,14 @@ void mlock_vma_page(struct page *page)
+>   * not get another chance to clear PageMlocked.  If we successfully
+>   * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
+>   * mapping the page, it will restore the PageMlocked state, unless the page
+> - * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
+> + * is mapped in a non-linear vma.  So, we go ahead and ClearPageMlocked(),
+>   * perhaps redundantly.
+>   * If we lose the isolation race, and the page is mapped by other VM_LOCKED
+>   * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
+>   * either of which will restore the PageMlocked state by calling
+>   * mlock_vma_page() above, if it can grab the vma's mmap sem.
+>   */
+> -static void munlock_vma_page(struct page *page)
+> +void munlock_vma_page(struct page *page)
+>  {
+>  	BUG_ON(!PageLocked(page));
+>  
+> 
 
-This issue is already addressed by the patch in
-http://marc.info/?l=linux-wireless&m=125902335810157&w=2.
-
-Larry
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
