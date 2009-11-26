@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbZKZSWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZKZSY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751658AbZKZSWt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZKZSWt
+	id S1751762AbZKZSY2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZKZSY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:22:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1659 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 13:24:27 -0500
+Received: from khc.piap.pl ([195.187.100.11]:48400 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbZKZSWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:22:48 -0500
-Date: Thu, 26 Nov 2009 19:22:26 +0100
-From: Veaceslav Falico <vfalico@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
-Message-ID: <20091126182226.GF12355@darkmag.usersys.redhat.com>
-References: <20091124200127.GA5751@redhat.com> <20091125080342.GD2660@in.ibm.com> <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com> <20091126172524.GA14768@redhat.com>
+	id S1750791AbZKZSY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:24:27 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
+	<4B0E765C.2080806@redhat.com>
+Date: Thu, 26 Nov 2009 19:24:30 +0100
+In-Reply-To: <4B0E765C.2080806@redhat.com> (Mauro Carvalho Chehab's message of
+	"Thu, 26 Nov 2009 10:36:44 -0200")
+Message-ID: <m3iqcxuotd.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091126172524.GA14768@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 06:25:24PM +0100, Oleg Nesterov wrote:
-> On 11/26, Oleg Nesterov wrote:
-> >
-> > On 11/26, Ananth N Mavinakayanahalli wrote:
-> > >
-> > > step-fork: step-fork.c:56: handler_fail: Assertion `0' failed.
-> > > /bin/sh: line 5: 17325 Aborted                 ${dir}$tst
-> > > FAIL: step-fork
-> >
-> > Good to know, thanks again Ananth.
-> >
-> > I'll take a look. Since I know nothing about powerpc, I can't
-> > promise the quick fix ;)
-> >
-> > The bug was found by code inspection, but the fix is not trivial
-> > because it depends on arch/, and it turns out the arch-independent
-> > fix in
-> >
-> > 	ptrace-copy_process-should-disable-stepping.patch
-> > 	http://marc.info/?l=linux-mm-commits&m=125789789322573
-> >
-> > doesn't work.
-> 
-> Just noticed the test-case fails in handler_fail(). Most probably
-> this means it is killed by SIGALRM because either parent or child
-> hang in wait(). Perhaps we have another (ppc specific?) bug, but
-> currently I do not understand how this is possible, this should
-> not be arch-dependent.
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-I can confirm that we have another bug on ppc arch. The test case below
-is spinning forever, 
+> The issue I see is to support at the same time NEC and RC5 protocols. While
+> this may work with some devices, for others, the hardware won't allow.
 
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#include <assert.h>
+Sure. We can handle it for the "simple" devices at least.
 
-int main(void)
-{
-        int pid, status;
+>> I think the mapping should be: key = proto + group + raw code, while
+>> key2 could be different_proto + different group (if any) + another code.
+>
+> This may work for protocols up to RC5, that uses either 8 or 16 bits.
+> However, RC6 mode 6 codes can be 32 bits, and we have "only" 32 bits
+> for a scancode. So, we don't have spare bits to represent a protocol, 
+> if we consider RC6 mode 6 codes as well.
 
-        if (!(pid = fork())) {
-                assert(ptrace(PTRACE_TRACEME) == 0);
-                kill(getpid(), SIGSTOP);
+I don't see this limitation. The number of bits should depend on the
+protocol.
 
-                if (!fork())
-                        return 0;
+> See above. Also, several protocols have a way to check if a keystroke were
+> properly received. When handling just one protocol, we can use this to double
+> check the key. However, on a multiprotocol mode, we'll need to disable this
+> feature.
 
-                printf("fork passed..\n");
-
-                return 0;
-        }
-
-        for (;;) {
-                assert(pid == wait(&status));
-                if (WIFEXITED(status))
-                        break;
-                assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-        }
-
-        printf("Parent exit.\n");
-
-        return 0;
-}
-
-it doesn't hang, the parent is spinning around for, the test case
-isn't printing anything. Seems like fork() can't complete under
-PTRACE_SINGLESTEP.
-
---
-Veaceslav 
+I don't think so. We can pass the space/mark data to all (configured,
+i.e. with active mapping) protocol handlers at once. Should a check
+fail, we ignore the data. Perhaps another protocol will make some sense
+out of it.
+-- 
+Krzysztof Halasa
