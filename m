@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbZKZIgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbZKZIjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759227AbZKZIgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZKZIgQ
+	id S1759845AbZKZIjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZKZIjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:36:16 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:56075 "EHLO kernel.dk"
+	Thu, 26 Nov 2009 03:39:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59926 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbZKZIgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:36:16 -0500
-Date: Thu, 26 Nov 2009 09:36:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/9] tracing: Convert some block events to DEFINE_EVENT
-Message-ID: <20091126083621.GM8742@kernel.dk>
-References: <4B0E2807.4060102@cn.fujitsu.com> <4B0E28E6.7060609@cn.fujitsu.com>
+	id S1753365AbZKZIjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:39:22 -0500
+Message-ID: <4B0E3EA4.7000003@redhat.com>
+Date: Thu, 26 Nov 2009 09:39:00 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0E28E6.7060609@cn.fujitsu.com>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: awalls@radix.net, dheitmueller@kernellabs.com, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDcbfiXJjFB@christoph>
+In-Reply-To: <BDcbfiXJjFB@christoph>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26 2009, Li Zefan wrote:
-> use TRACE_EVENT_TEMPLATE to remove duplicate code:
-> 
->    text    data     bss     dec     hex filename
->   53570    3284     184   57038    dece block/blk-core.o.old
->   43702    3284     144   47130    b81a block/blk-core.o
+On 11/26/09 08:28, Christoph Bartelmus wrote:
+> Hi Gerd,
+>
+> on 26 Nov 09 at 00:22, Gerd Hoffmann wrote:
+> [...]
+>>> To sum it up: I don't think this information will be useful at all for
+>>> lircd or anyone else.
+> [...]
+>> I know that lircd does matching instead of decoding, which allows to
+>> handle unknown encodings.  Thats why I think there will always be cases
+>> which only lircd will be able to handle (using raw samples).
+>>
+>> That doesn't make attempts to actually decode the IR samples a useless
+>> exercise though ;)
+>
+> Well, in my opinion it is kind of useless. I don't see any use case or any
+> demand for passing this kind of information to userspace, at least in the
+> LIRC context.
+> If there's no demand, why bother?
 
-Nice! When I played with the writeback tracing, I did notice that code
-bloat does get pretty severe quickly.
+There have been complains about this getting lost somewhere in this 
+thread, so it looks like there are people which do care.
 
-I have applied this to for-2.6.33, thanks a lot.
-
--- 
-Jens Axboe
-
+cheers,
+   Gerd
