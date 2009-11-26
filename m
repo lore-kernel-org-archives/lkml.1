@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbZKZJ4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759923AbZKZJ5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbZKZJ4z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbZKZJ4x
+	id S1759923AbZKZJ5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbZKZJ46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:56:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41445 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 04:56:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41455 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759124AbZKZJ4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:56:51 -0500
-Date: Thu, 26 Nov 2009 09:56:10 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
+	id S1759678AbZKZJ4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:56:55 -0500
+Date: Thu, 26 Nov 2009 09:56:23 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       brgerst@gmail.com, tglx@linutronix.de, mingo@elte.hu
+       fweisbec@gmail.com, peterz@infradead.org, sfr@canb.auug.org.au,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       brgerst@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1259176706-5908-1-git-send-email-brgerst@gmail.com>
-References: <1259176706-5908-1-git-send-email-brgerst@gmail.com>
+       fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+In-Reply-To: <1259180453-5813-1-git-send-email-fweisbec@gmail.com>
+References: <1259180453-5813-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86: Clean up the loadsegment() macro
-Message-ID: <tip-64b028b22616946a05bf9580f7f7f7ee2ac070b4@git.kernel.org>
-Git-Commit-ID: 64b028b22616946a05bf9580f7f7f7ee2ac070b4
+Subject: [tip:perf/core] hw-breakpoints: Fix unused function in off-case
+Message-ID: <tip-80bbf6b641c8843b9d751a1f299aa7ee073ab9d4@git.kernel.org>
+Git-Commit-ID: 80bbf6b641c8843b9d751a1f299aa7ee073ab9d4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,61 +31,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  64b028b22616946a05bf9580f7f7f7ee2ac070b4
-Gitweb:     http://git.kernel.org/tip/64b028b22616946a05bf9580f7f7f7ee2ac070b4
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 26 Nov 2009 10:37:55 +0100
+Commit-ID:  80bbf6b641c8843b9d751a1f299aa7ee073ab9d4
+Gitweb:     http://git.kernel.org/tip/80bbf6b641c8843b9d751a1f299aa7ee073ab9d4
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 25 Nov 2009 21:20:53 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 10:38:52 +0100
+CommitDate: Thu, 26 Nov 2009 10:40:51 +0100
 
-x86: Clean up the loadsegment() macro
+hw-breakpoints: Fix unused function in off-case
 
-Make it readable in the source too, not just in the assembly output.
-No change in functionality.
+bp_perf_event_destroy() is unused in its off-case version, let's
+remove it to fix the following warning reported by Stephen
+Rothwell in linux-next:
 
-Cc: Brian Gerst <brgerst@gmail.com>
-LKML-Reference: <1259176706-5908-1-git-send-email-brgerst@gmail.com>
+  kernel/perf_event.c:4306: warning: 'bp_perf_event_destroy' defined but not used
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1259180453-5813-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/system.h |   28 +++++++++++++++-------------
- 1 files changed, 15 insertions(+), 13 deletions(-)
+ kernel/perf_event.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index 537395a..022a843 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -155,19 +155,21 @@ extern void native_load_gs_index(unsigned);
-  * Load a segment. Fall back on loading the zero
-  * segment if something goes wrong..
-  */
--#define loadsegment(seg, value)			\
--do {						\
--	unsigned short __val = value;		\
--	asm volatile("\n"			\
--		     "1:\t"			\
--		     "movl %k0,%%" #seg "\n"	\
--		     ".section .fixup,\"ax\"\n"	\
--		     "2:\t"			\
--		     "xorl %k0,%k0\n\t"		\
--		     "jmp 1b\n"			\
--		     ".previous\n"		\
--		     _ASM_EXTABLE(1b, 2b)	\
--		     : "+r" (__val) : : "memory"); \
-+#define loadsegment(seg, value)						\
-+do {									\
-+	unsigned short __val = (value);					\
-+									\
-+	asm volatile("						\n"	\
-+		     "1:	movl %k0,%%" #seg "		\n"	\
-+									\
-+		     ".section .fixup,\"ax\"			\n"	\
-+		     "2:	xorl %k0,%k0			\n"	\
-+		     "		jmp 1b				\n"	\
-+		     ".previous					\n"	\
-+									\
-+		     _ASM_EXTABLE(1b, 2b)				\
-+									\
-+		     : "+r" (__val) : : "memory");			\
- } while (0)
- 
- /*
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 34a1b9d..f8c7939 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4303,10 +4303,6 @@ void perf_bp_event(struct perf_event *bp, void *data)
+ 		perf_swevent_add(bp, 1, 1, &sample, regs);
+ }
+ #else
+-static void bp_perf_event_destroy(struct perf_event *event)
+-{
+-}
+-
+ static const struct pmu *bp_perf_event_init(struct perf_event *bp)
+ {
+ 	return NULL;
