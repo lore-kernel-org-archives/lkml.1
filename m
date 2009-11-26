@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZKZOGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbZKZOJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbZKZOGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZKZOF7
+	id S1759512AbZKZOJU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZKZOJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:05:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44875 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753463AbZKZOF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:05:58 -0500
-Message-ID: <4B0E8B32.3020509@redhat.com>
-Date: Thu, 26 Nov 2009 12:05:38 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>	<1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain>
-In-Reply-To: <m3k4xe7dtz.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Nov 2009 09:09:19 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56523 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbZKZOJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 09:09:19 -0500
+Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
+ runqueue variant
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259230578.15079.12.camel@marge.simson.net>
+References: <1258891781.14325.34.camel@marge.simson.net>
+	 <1259173672.4027.732.camel@laptop>
+	 <1259197270.6186.17.camel@marge.simson.net>
+	 <1259199068.6186.33.camel@marge.simson.net> <1259228139.4273.6.camel@twins>
+	 <1259230578.15079.12.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 15:09:23 +0100
+Message-ID: <1259244563.31676.53.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Andy Walls <awalls@radix.net> writes:
+On Thu, 2009-11-26 at 11:16 +0100, Mike Galbraith wrote:
+> > min_vruntime should only ever be poked at when holding the respective
+> > rq->lock, even with a barrier a 64bit read on a 32bit machine can go all
+> > funny.
 > 
->> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
->> developed by Philips, but Microsoft has some sort of licensing interest
->> in it and it is almost surely encumbered somwhow:
-> 
-> I don't know about legal problems in some countries but from the
-> technical POV handling the protocol in the kernel is more efficient
-> or (/and) simpler.
+> Yeah, but we're looking at an unlocked runqueue.  But never mind...
 
-A software licensing from Microsoft won't apply to Linux kernel, so I'm
-assuming that you're referring to some patent that they could be filled
-about RC6 mode 6A.
+The patch is also poking at rq->clock without rq->lock held... not very
+nice.
 
-I don't know if is there any US patent pending about it (AFAIK, only US
-accepts software patents), but there are some prior-art for IR key
-decoding. So, I don't see what "innovation" RC6 would be adding. 
-If it is some new way to transmit waves, the patent issues
-aren't related to software, and the device manufacturer had already handled
-it when they made their devices. If it is just a new keytable, this issue 
-could be easily solved by loading the keytable via userspace.
+Gah, I hate that we're doing migration things without holding both rq's,
+this is making live so very interesting ;-)
 
-Also, assuming that you can use the driver only with a hardware that comes
-with a licensed software, the user has already the license for using it.
-
-Do you have any details on what patents they are claiming?
-
-Cheers,
-Mauro.
