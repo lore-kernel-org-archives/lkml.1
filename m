@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbZKZScT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781AbZKZSgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbZKZScT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZKZScS
+	id S1751781AbZKZSgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbZKZSgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:32:18 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:49958 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751512AbZKZScR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:32:17 -0500
-Message-ID: <4B0EC9EA.9000608@ru.mvista.com>
-Date: Thu, 26 Nov 2009 21:33:14 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 26 Nov 2009 13:36:16 -0500
+Received: from khc.piap.pl ([195.187.100.11]:32980 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750703AbZKZSgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:36:15 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Sean Young <sean@mess.org>, Trent Piepho <xyzzy@speakeasy.org>,
+       Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: IR raw input is not sutable for input system
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	<20091123173726.GE17813@core.coreip.homeip.net>
+	<4B0B6321.3050001@wilsonet.com>
+	<1259105571.28219.20.camel@maxim-laptop>
+	<Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
+	<1259155734.4875.23.camel@maxim-laptop>
+	<20091125213246.GA44831@atlantis.8hz.com>
+	<m3d43644q6.fsf@intrepid.localdomain>
+	<1259189522.15916.1.camel@maxim-laptop>
+Date: Thu, 26 Nov 2009 19:36:18 +0100
+In-Reply-To: <1259189522.15916.1.camel@maxim-laptop> (Maxim Levitsky's message
+	of "Thu, 26 Nov 2009 00:52:02 +0200")
+Message-ID: <m3bpipuo9p.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
-References: <200911261728.36433.bzolnier@gmail.com> <200911261903.01199.bzolnier@gmail.com> <4B0EC52B.2070805@ru.mvista.com> <200911261927.00597.bzolnier@gmail.com>
-In-Reply-To: <200911261927.00597.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
->>>>>>>MWDMA0 timings cannot be met with the PIIX based controller
->>>>>>>programming interface.
+> But devices that send raw pulse/space data should be handled in lirc
+> that will feed the data back to the kernel via uinput.
 
->>>>>>>This change should be safe as this is how we have been doing
->>>>>>>things in IDE it8213 host driver for years.
-
->>>>>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>>>>---
->>>>>>>Verified with the documentation (similar case as with pata_efar).
-
->>>>>>Uhhh, no...
-
->>>>>>Too many damn drivers.
-
->>>>>>Too much damn duplication.
-
->>>>>>Too much damn subtle differences here and there.
-
->>>>>>The hardware is probably fine for MWMDA0 when it comes to pata_{efar,it8213},
->>>>>>it just not documented properly in the data sheet.
-
->>>>>   How so with pata_efar? The active/recovery bitfields are still 2-bit 
->>>>>wide, no?
-
->>>>Yes but when TIMEx bit is disabled we are using XFER_PIO_SLOW timings.
-
->>    600 ns cycle vs spec'ed 480 ns? Is it really worth it?
-
-> 960 ns actually
-
-    That table you're looking at (probably in the SLC90E66 datasheet?) must 
-be screwed up. 960 ns is used for command cycles, according to Intel's docs, 
-data cycles run at 600 ns...
-
->>>>All data sheets including original Intel ones are a complete crap when it
->>>>comes to explicitly documenting this behavior.
-
->>>OTOH all drivers set TIMEx for MWDMA0 currently.. ?
->>
->>    ... which would give a grossly overclocked timing.
-
-> Except ata_piix which blacklists MWDMA0 for _all_ PATA controllers.. :)
-
-    :-)
-
-> I'm leaving my patches as they were for now, unless somebody wants to
-> untangle this mess this is a safest and quickest way forward..
-
-MBR, Sergei
+I still do want the in-kernel RCx decoding. And lirc pulse/space.
+-- 
+Krzysztof Halasa
