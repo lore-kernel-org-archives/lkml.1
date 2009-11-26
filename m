@@ -1,180 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbZKZRTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbZKZRW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760405AbZKZRTN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbZKZRTM
+	id S1760614AbZKZRW7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZKZRW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:19:12 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:60837 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755418AbZKZRTL (ORCPT
+	Thu, 26 Nov 2009 12:22:58 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43677 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758960AbZKZRW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:19:11 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4B0EB891.4010309@cam.ac.uk>
-Date: Thu, 26 Nov 2009 17:19:13 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Amit Kucheria <amit.kucheria@verdurent.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com,
-       alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH 2/2] als: add unique device-ids to the als device class
-References: <1259237081-4403-1-git-send-email-amit.kucheria@verdurent.com>	<1259237186-5459-1-git-send-email-amit.kucheria@verdurent.com> <20091126160713.5e19eb04@hyperion.delvare>
-In-Reply-To: <20091126160713.5e19eb04@hyperion.delvare>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Nov 2009 12:22:58 -0500
+Subject: RE: [regression bisect -next] BUG: using smp_processor_id() in
+ preemptible [00000000] code: rmmod
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Leyendecker, Robert" <Robert.Leyendecker@lsi.com>
+Cc: Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>, "efault@gmx.de" <efault@gmx.de>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "mingo@elte.hu" <mingo@elte.hu>
+In-Reply-To: <8C8865ED624BB94F8FE50259E2B5C5B304593DAB99@palmail03.lsi.com>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+	 <8C8865ED624BB94F8FE50259E2B5C5B304593DAB99@palmail03.lsi.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 18:22:41 +0100
+Message-ID: <1259256161.31676.292.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Amit,
+On Thu, 2009-11-26 at 12:09 -0500, Leyendecker, Robert wrote:
 > 
-> On Thu, 26 Nov 2009 14:06:26 +0200, Amit Kucheria wrote:
->> Other devices classes such as hwmon and input class handle assignment of
->> unique device-ids inside the core functions instead of pushing it out to
->> individual drivers. This reduces code duplication and resulting bugs.
->>
->> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> ---
->>  drivers/als/als_sys.c |   48 +++++++++++++++++++++++++++++++++++++++++++++---
->>  1 files changed, 45 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/als/als_sys.c b/drivers/als/als_sys.c
->> index e1d6395..aa15ad8 100644
->> --- a/drivers/als/als_sys.c
->> +++ b/drivers/als/als_sys.c
->> @@ -26,22 +26,55 @@
->>  #include <linux/device.h>
->>  #include <linux/err.h>
->>  #include <linux/kdev_t.h>
->> +#include <linux/idr.h>
->>  
->>  MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
->>  MODULE_DESCRIPTION("Ambient Light Sensor sysfs/class support");
->>  MODULE_LICENSE("GPL");
->>  
->> +#define ALS_ID_PREFIX "als"
->> +#define ALS_ID_FORMAT ALS_ID_PREFIX "%d"
->> +
->>  static struct class *als_class;
->>  
->> +static DEFINE_IDR(als_idr);
->> +static DEFINE_SPINLOCK(idr_lock);
->> +
->>  /**
->>   * als_device_register - register a new Ambient Light Sensor class device
->>   * @parent:	the device to register.
->>   *
->>   * Returns the pointer to the new device
->>   */
->> -struct device *als_device_register(struct device *dev, char *name)
->> +struct device *als_device_register(struct device *dev)
-> 
-> This is a public function but you forgot to update
-> include/linux/als_sys.h accordingly. This will let the build succeed
-> but crashes will happen at run time. Fix below.
-> 
->>  {
->> -	return device_create(als_class, dev, MKDEV(0, 0), NULL, name);
->> +	int id, err;
->> +	struct device *alsdev;
->> +
->> +again:
->> +	if (unlikely(idr_pre_get(&als_idr, GFP_KERNEL) == 0))
->> +		return ERR_PTR(-ENOMEM);
->> +
->> +	spin_lock(&idr_lock);
->> +	err = idr_get_new(&als_idr, NULL, &id);
->> +	spin_unlock(&idr_lock);
->> +
->> +	if (unlikely(err == -EAGAIN))
->> +		goto again;
->> +	else if (unlikely(err))
->> +		return ERR_PTR(err);
->> +
->> +	id = id & MAX_ID_MASK;
->> +	alsdev = device_create(als_class, dev, MKDEV(0, 0), NULL,
->> +			ALS_ID_FORMAT, id);
->> +
->> +	if (IS_ERR(alsdev)) {
->> +		spin_lock(&idr_lock);
->> +		idr_remove(&als_idr, id);
->> +		spin_unlock(&idr_lock);
->> +	}
->> +
->> +	return alsdev;
->>  }
->>  EXPORT_SYMBOL(als_device_register);
->>  
->> @@ -51,7 +84,16 @@ EXPORT_SYMBOL(als_device_register);
->>   */
->>  void als_device_unregister(struct device *dev)
->>  {
->> -	device_unregister(dev);
->> +	int id;
->> +
->> +	if (likely(sscanf(dev_name(dev), ALS_ID_FORMAT, &id) == 1)) {
->> +		device_unregister(dev);
->> +		spin_lock(&idr_lock);
->> +		idr_remove(&als_idr, id);
->> +		spin_unlock(&idr_lock);
->> +	} else
->> +		dev_dbg(dev->parent,
->> +			"als_device_unregister() failed: bad class ID!\n");
->>  }
->>  EXPORT_SYMBOL(als_device_unregister);
->>  
-> 
-> Other than that I am very happy with this change, which kills 46 lines
-> of code in the tsl2550 driver (and virtually the same in every other
-> light sensor driver.) Please merge the following fix:
-> 
-> --- linux-2.6.32-rc8.orig/include/linux/als_sys.h	2009-11-26 15:32:38.000000000 +0100
-> +++ linux-2.6.32-rc8/include/linux/als_sys.h	2009-11-26 15:44:08.000000000 +0100
-> @@ -29,7 +29,7 @@
->  #define ALS_ILLUMINANCE_MIN 0
->  #define ALS_ILLUMINANCE_MAX -1
->  
-> -struct device *als_device_register(struct device *dev, char *name);
-> +struct device *als_device_register(struct device *dev);
->  void als_device_unregister(struct device *dev);
->  
->  #endif /* __ALS_SYS_H__ */
-> 
-> 
-> And then you can add:
-> 
-> Acked-by: Jean Delvare <khali@linux-fr.org>
-> 
-> That being said... If we want user-space to know what device is there,
-> we may want to still let drivers pass a name string to
-> als_device_register() and let the ALS core create a "name" sysfs
-> attribute returning the string in question. This would be much lighter
-> (for individual drivers) than the previous situation, as the string in
-> question would be a constant (e.g. "TSL2550".) Opinions?
-> 
-Makes sense given we want all drivers to support some form of identification.
-We could do it by stating they will all have that attribute, but given it's constant
-will save repetition to put it in the driver. Conversely it might complicate the handling
-of subsequent attribute_groups so I'd probably favour adding relevant documentation lines
-and leaving it up to the drivers to implement this attribute.
+> I have same oops (different cause-vector). Details here
+> http://lkml.org/lkml/2009/11/23/548
 
-Thus we'd require (within reason) all drivers to have illuminance0 and name.
+Which is an -rt kernel and very likely totally unrelated.
 
-Hence,
-Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+> Can anyone tell me if they are related and/or recommend any
+> work-arounds or troubleshooting steps?
+> 
+> Could this be related to scheduler trying to reschedule a task/thread
+> on other proc
 
-Thanks for doing this!
+No, the warning says you try to get the current cpu number when the code
+in question is in no way tied to a particular cpu, therefore the cpu
+number obtained is totally useless.
 
-Jonathan
+>  and possibly a false alarm? 
+
+Most likely not.
+
+Look at your particular source-tree and try to fine the
+smp_processor_id() call that triggers this, then look what it needs the
+cpu number for and fix the code so that it makes sense ;-)
+
+> Nov 23 17:24:15 localhost kernel: BUG: using smp_processor_id() in preemptible [00000000] code: smash/3062
+> Nov 23 17:24:15 localhost kernel: caller is __schedule+0x93/0x7d4
+> Nov 23 17:24:15 localhost kernel: Pid: 3062, comm: smash Not tainted 2.6.31.6-rt19 #1
+> Nov 23 17:24:15 localhost kernel: Call Trace:
+> Nov 23 17:24:15 localhost kernel: [<c06dc3df>] ? printk+0xf/0x18
+> Nov 23 17:24:15 localhost kernel: [<c05499a6>] debug_smp_processor_id+0xa6/0xbc
+> Nov 23 17:24:15 localhost kernel: [<c06dc70e>] __schedule+0x93/0x7d4
+> Nov 23 17:24:15 localhost kernel: [<c046621f>] ? audit_syscall_exit+0xfa/0x10f
+> Nov 23 17:24:15 localhost kernel: [<c040a955>] ? syscall_trace_leave+0xc8/0xef
+> Nov 23 17:24:15 localhost kernel: [<c040338a>] work_resched+0x5/0x19
+> Nov 23 17:24:15 localhost kernel: __ratelimit: 6 callbacks suppressed
 
 
