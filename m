@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbZKZIpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZKZIpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759966AbZKZIpE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbZKZIpB
+	id S1760067AbZKZIpW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbZKZIpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:45:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58798 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 03:45:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58823 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759955AbZKZIpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:45:00 -0500
-Date: Thu, 26 Nov 2009 08:44:28 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+	id S1760026AbZKZIpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:45:14 -0500
+Date: Thu, 26 Nov 2009 08:44:42 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       tglx@linutronix.de, mingo@elte.hu
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4B0E2951.9050800@cn.fujitsu.com>
-References: <4B0E2951.9050800@cn.fujitsu.com>
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
+References: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] tracing: Restore original format of sched events
-Message-ID: <tip-470dda7417f284b9cfc96560b2acd98df63798a2@git.kernel.org>
-Git-Commit-ID: 470dda7417f284b9cfc96560b2acd98df63798a2
+Subject: [tip:perf/core] ksym_tracer: Fix breakpoint removal after modification
+Message-ID: <tip-d99be40aff88722ab03ee295e4f6c13a4cca9a3d@git.kernel.org>
+Git-Commit-ID: d99be40aff88722ab03ee295e4f6c13a4cca9a3d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,75 +31,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  470dda7417f284b9cfc96560b2acd98df63798a2
-Gitweb:     http://git.kernel.org/tip/470dda7417f284b9cfc96560b2acd98df63798a2
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 26 Nov 2009 15:08:01 +0800
+Commit-ID:  d99be40aff88722ab03ee295e4f6c13a4cca9a3d
+Gitweb:     http://git.kernel.org/tip/d99be40aff88722ab03ee295e4f6c13a4cca9a3d
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Thu, 26 Nov 2009 05:35:40 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 09:14:05 +0100
+CommitDate: Thu, 26 Nov 2009 09:29:20 +0100
 
-tracing: Restore original format of sched events
+ksym_tracer: Fix breakpoint removal after modification
 
-The original format for sched_stat_iowait and sched_stat_sleep:
+The error path of a breakpoint modification is broken in
+the ksym tracer. A modified breakpoint hlist node is immediately
+released after its removal. Also we leak a breakpoint in this
+case.
 
-  $ cat events/sched/sched_stat_iowait/format
-  ...
-  print fmt: "comm=%s pid=%d delay=%Lu [ns]", ...
-  $ cat events/sched/sched_stat_sleep/format
-  ...
-  print fmt: "comm=%s pid=%d delay=%Lu [ns]", ...
+Fix the path.
 
-But commit commit 75ec29ab848a7e92a41aaafaeb33d1afbc839be4
-("tracing: Convert some sched trace events to DEFINE_EVENT and
-_PRINT") broke the format:
-
-  $ cat events/sched/sched_stat_iowait/format
-  print fmt: "task: %s:%d iowait: %Lu [ns]", ...
-  $ cat events/sched/sched_stat_sleep/format
-  print fmt: "task: %s:%d sleep: %Lu [ns]", ...
-
-No change in functionality.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4B0E2951.9050800@cn.fujitsu.com>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+LKML-Reference: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/trace/events/sched.h |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ kernel/trace/trace_ksym.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index 5ce7950..9d316b2 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -355,23 +355,17 @@ DEFINE_EVENT(sched_stat_template, sched_stat_wait,
-  * Tracepoint for accounting sleep time (time the task is not runnable,
-  * including iowait, see below).
-  */
--DEFINE_EVENT_PRINT(sched_stat_template, sched_stat_sleep,
--		   TP_PROTO(struct task_struct *tsk, u64 delay),
--		   TP_ARGS(tsk, delay),
--		   TP_printk("task: %s:%d sleep: %Lu [ns]",
--			     __entry->comm, __entry->pid,
--			     (unsigned long long)__entry->delay));
-+DEFINE_EVENT(sched_stat_template, sched_stat_sleep,
-+	     TP_PROTO(struct task_struct *tsk, u64 delay),
-+	     TP_ARGS(tsk, delay));
- 
- /*
-  * Tracepoint for accounting iowait time (time the task is not runnable
-  * due to waiting on IO to complete).
-  */
--DEFINE_EVENT_PRINT(sched_stat_template, sched_stat_iowait,
--		   TP_PROTO(struct task_struct *tsk, u64 delay),
--		   TP_ARGS(tsk, delay),
--		   TP_printk("task: %s:%d iowait: %Lu [ns]",
--			     __entry->comm, __entry->pid,
--			     (unsigned long long)__entry->delay));
-+DEFINE_EVENT(sched_stat_template, sched_stat_iowait,
-+	     TP_PROTO(struct task_struct *tsk, u64 delay),
-+	     TP_ARGS(tsk, delay));
- 
- /*
-  * Tracepoint for accounting runtime (time the task is executing
+diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+index 11935b5..9f040e4 100644
+--- a/kernel/trace/trace_ksym.c
++++ b/kernel/trace/trace_ksym.c
+@@ -339,14 +339,20 @@ static ssize_t ksym_trace_filter_write(struct file *file,
+ 					ksym_hbp_handler, true);
+ 			if (IS_ERR(entry->ksym_hbp))
+ 				entry->ksym_hbp = NULL;
+-			if (!entry->ksym_hbp)
++
++			/* modified without problem */
++			if (entry->ksym_hbp) {
++				ret = 0;
+ 				goto out;
++			}
++		} else {
++			ret = 0;
+ 		}
++		/* Error or "symbol:---" case: drop it */
+ 		ksym_filter_entry_count--;
+ 		hlist_del_rcu(&(entry->ksym_hlist));
+ 		synchronize_rcu();
+ 		kfree(entry);
+-		ret = 0;
+ 		goto out;
+ 	} else {
+ 		/* Check for malformed request: (4) */
