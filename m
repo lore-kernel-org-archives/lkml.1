@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbZKZNZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759740AbZKZNZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbZKZNZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZKZNZD
+	id S1759740AbZKZNZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbZKZNZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:25:03 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:19662 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463AbZKZNZB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:25:01 -0500
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Andy Walls <awalls@radix.net>
-Subject: Re: linux-next: workqueues tree build failure
-Date: Thu, 26 Nov 2009 15:23:40 +0200
-User-Agent: KMail/1.12.3 (Linux/2.6.31-gentoo-r4; KDE/4.3.3; i686; ; )
-Cc: ext Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       ext Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <200911261344.32051.peter.ujfalusi@nokia.com> <1259239796.3062.20.camel@palomino.walls.org>
-In-Reply-To: <1259239796.3062.20.camel@palomino.walls.org>
+	Thu, 26 Nov 2009 08:25:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51936 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753901AbZKZNZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:25:56 -0500
+Message-ID: <4B0E81C8.7050203@redhat.com>
+Date: Thu, 26 Nov 2009 11:25:28 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911261523.40952.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 26 Nov 2009 13:23:45.0386 (UTC) FILETIME=[AE20ECA0:01CA6E9B]
-X-Nokia-AV: Clean
+To: Andy Walls <awalls@radix.net>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>  <m3einork1o.fsf@intrepid.localdomain> <1259025275.3871.55.camel@palomino.walls.org>
+In-Reply-To: <1259025275.3871.55.camel@palomino.walls.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 November 2009 14:49:56 ext Andy Walls wrote:
+Andy Walls wrote:
+> On Mon, 2009-11-23 at 22:46 +0100, Krzysztof Halasa wrote:
+>> lirc@bartelmus.de (Christoph Bartelmus) writes:
+>>
+>>>> I think we shouldn't at this time worry about IR transmitters.
+>>> Sorry, but I have to disagree strongly.
+>>> Any interface without transmitter support would be absolutely unacceptable
+>>> for many LIRC users, including myself.
+>> I don't say don't use a transmitter.
+>> I say the transmitter is not an input device, they are completely
+>> independent functions. I can't see any reason to try and fit both in the
+>> same interface - can you?
 > 
-> Peter,
+> The underlying hardware need not be completely independent.
 > 
-> I would suspect using a single-threaded workqueue is better than a
-> wake_up() of another thread.  IIRC, after queuing work, the workqueue's
-> single thread may run almost immediately on the same processor.  With
-> waking up sleeping threads, I've run into scheduler delays around 10 ms
-> on a dual core x86_64 desktop system.
-
-Hello Andy,
-
-I have sent the patch which changes from rt to singlethread, I hope it fixes the 
-breakage in linux-next.
-In short testing, when there is virtually no load on the system I can not see 
-any difference, which might change later.
-But I'll keep in mind that probably I'm not going to better off with the waking 
-up of a sleeping thread.
-
+> For example, the CX2584[0123], CX2388[578], CX23418, and CX2310[012]
+> chips have IR hardware that shares a common timing source, interrupt
+> line, interrupt status register, etc, between IR Rx and Tx.  They can
+> also do things like loopback of Tx to Rx.
 > 
-> Regards,
-> Andy
+> That said, an underlying hardware implementation can be split up to user
+> space with separate interfaces Tx and Rx.  The underlying driver module
+> would have to manage the dependencies.  I would guess that would be
+> easier for driver modules, if the userspace interfaces were designed
+> with such combined IR Tx/Rx hardware in mind.
 
-Thanks,
-Péter
+True, but, in the case of Rx, there are already API's for it. Tx case is
+simpler, as we don't have any API for it yet.
+
+I'm not sure if all the existing hardware for TX currently supports only
+raw pulse/code sequencies, but I still think that, even on the Tx case, 
+it is better to send scancodes to the driver, and let it do the conversion
+to raw pulse/code, if the hardware requires pulse/code instead of scancodes. 
+
+However, as we have green field,
+I would add the protocol explicitly for each scancode to be transmitted, like:
+
+struct ir_tx {
+	enum ir_protocol proto;
+	u32 scancode;
+};
+
+Eventually, we might have a protocol "raw" and some extra field to allow passing
+a raw pulse/code sequence instead of a scancode.
+
+Cheers,
+Mauro.
