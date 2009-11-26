@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759828AbZKZQoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbZKZQpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759828AbZKZQoN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZKZQoM
+	id S1760822AbZKZQpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZKZQpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:44:12 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58764 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758555AbZKZQoL (ORCPT
+	Thu, 26 Nov 2009 11:45:24 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37103 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759219AbZKZQpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:44:11 -0500
-Date: Thu, 26 Nov 2009 17:44:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
-       Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH 7/7] kfifo: add record handling functions
-Message-ID: <20091126164414.GK29096@one.firstfloor.org>
-References: <1258704942.4426.5.camel@wall-e> <1258705988.4426.22.camel@wall-e> <20091123141914.e320c341.akpm@linux-foundation.org> <1259251632.26705.17.camel@wall-e>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259251632.26705.17.camel@wall-e>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 26 Nov 2009 11:45:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HZy80sfEqAd9kClWGGT8QGi1wdujXGPQ36rI1eFXWbQHj7fMEpm2dMsaEZggfn2sSV
+         ToVvzkk6r5ibK+iUdOa0HMrOCO9682xueyjbE4JXQJaBO83kS10YvYM3FXwWC1GVK5lF
+         jAu+mKzb6nT3OT5yCkOSSlDsyguXViqGmjls4=
+Message-ID: <4B0EB0A1.90403@gmail.com>
+Date: Thu, 26 Nov 2009 18:45:21 +0200
+From: =?windows-1252?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Memset of length zero bugs
+References: <20091111215703.GA24390@redhat.com> <4B0E6189.6050708@gmail.com>
+In-Reply-To: <4B0E6189.6050708@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 05:07:12PM +0100, Stefani Seibold wrote:
-> I analyzed the code and most of them will be optimized away by the
-> compiler. The reason for this design decision was that i want no
-> performance regression against the old kfifo implementation.
-> 
-> But if the majority vote for an non inline version i will do it. It will
-> make the code more readable and slim down the footprint.
+On 2009-11-26 13:07, Török Edwin wrote:
+> On 2009-11-11 23:57, Dave Jones wrote:
+>   
+>> Nearly every invocation of memset in drivers/staging/hv/StorVsc.c
+>> has it's arguments the wrong way around.
+>>     
+> Hi,
+>
+> I found 2 more bugs like this in v2.6.32-rc8-11-ga8a8a66 by letting gcc
+> warn in such cases on an allyesconfig build.
+> I used the attached patch (meant to be used only to find bugs, linking
+> fails).
+>   
 
-I vote for smaller text size if possible. I doubt kfifo is used in any 
-circumstances where a function call or two is a big problem. But of course
-some inlines might be smaller than calls.
+Forgot to mention that this code is the one from glibc (2.10.1)'s memset.
 
-But then this code has been pending for a long time and I
-have some potential users. It would be good to merge ASAP and do such tweaks 
-later in tree.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Best regards,
+--Edwin
