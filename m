@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934867AbZKYRS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbZKZA6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934867AbZKYRS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 12:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbZKYRR6
+	id S1759803AbZKZA6G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 19:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbZKZA6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 12:17:58 -0500
-Received: from mga05.intel.com ([192.55.52.89]:55693 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758890AbZKYRK0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 12:10:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,287,1257148800"; 
-   d="scan'208";a="517314769"
-Date: Wed, 25 Nov 2009 19:46:33 -0500
-From: "Youquan,Song" <youquan.song@linux.intel.com>
-To: herbert@gondor.apana.org.au
-Cc: linux-kernel@vger.kernel.org, ying.huang@intel.com, kent.liu@intel.com,
-       youquan.song@intel.com
-Subject: [PATCH]crypto: Fix ghash pclmulqdqni algorithm without test
-Message-ID: <20091126004633.GB32230@youquan-linux.bj.intel.com>
+	Wed, 25 Nov 2009 19:58:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49967 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753404AbZKZA6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 19:58:03 -0500
+Date: Thu, 26 Nov 2009 11:58:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andreas Schwab <schwab@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: linux-next: manual merge of the m68knommu tree with the m68k tree
+Message-Id: <20091126115806.c53684f5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-when load ghash-clmulni-intel driver,kernel will report no test for some algorithm
-with PCLMULQDQ NI. The strange information as following:
+Hi Greg,
 
-alg: No test for __ghash (__ghash-pclmulqdqni)
-alg: No test for __ghash (cryptd(__ghash-pclmulqdqni))
+Today's linux-next merge of the m68knommu tree got a conflict in
+arch/m68k/include/asm/ptrace.h between commit
+63c361b65f6540043c4baabf1a044a45c7465858 ("m68k: use generic code for
+ptrace requests") from the m68k tree and commit
+03a03164e8084b810e9f92906a51232d63bac72c ("m68knommu: define
+arch_has_single_step() and friends") from the m68knommu tree.
 
-crypto_alg's cra_name is use to descript algorithm itself, do not care the 
-concrete implement. So this patch unify them and also can fix the algorithm
-implementation without test. 
+These mostly add the same stuff but not quite :-(
 
-Signed-off-by: Youquan, Song <youquan.song@intel.com>
----
+I have done a fixup (see below) and can carry it as necessary.  Please
+check the result.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/x86/crypto/ghash-clmulni-intel_glue.c b/arch/x86/crypto/ghash-clmulni-intel_glue.c
-index cbcc8d8..3fab6cb 100644
---- a/arch/x86/crypto/ghash-clmulni-intel_glue.c
-+++ b/arch/x86/crypto/ghash-clmulni-intel_glue.c
-@@ -141,7 +141,7 @@ static struct shash_alg ghash_alg = {
- 	.setkey		= ghash_setkey,
- 	.descsize	= sizeof(struct ghash_desc_ctx),
- 	.base		= {
--		.cra_name		= "__ghash",
-+		.cra_name		= "ghash",
- 		.cra_driver_name	= "__ghash-pclmulqdqni",
- 		.cra_priority		= 0,
- 		.cra_flags		= CRYPTO_ALG_TYPE_SHASH,
+diff --cc arch/m68k/include/asm/ptrace.h
+index eef9309,beb2091..0000000
+--- a/arch/m68k/include/asm/ptrace.h
++++ b/arch/m68k/include/asm/ptrace.h
+@@@ -86,14 -84,15 +86,18 @@@ struct switch_stack 
+  extern void show_regs(struct pt_regs *);
+  
+  /*
+ - * These are defined as per linux/ptrace.h.
+ + * These are defined as per linux/ptrace.h, which see.
+   */
++ struct task_struct;
++ 
+ -#ifndef CONFIG_MMU
+ -#define	arch_has_single_step()	(1)
+ +#define arch_has_single_step()	(1)
+  extern void user_enable_single_step(struct task_struct *);
+  extern void user_disable_single_step(struct task_struct *);
+ +
+++#ifdef CONFIG_MMU
+ +#define arch_has_block_step()	(1)
+ +extern void user_enable_block_step(struct task_struct *);
++ #endif
+  
+  #endif /* __KERNEL__ */
+  #endif /* __ASSEMBLY__ */
