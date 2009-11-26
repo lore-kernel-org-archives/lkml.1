@@ -1,106 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbZKZO2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbZKZOpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760550AbZKZO2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760325AbZKZO2S
+	id S1760144AbZKZOpL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZKZOpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:28:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48786 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760278AbZKZO2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:28:16 -0500
-Message-ID: <4B0E9071.60002@redhat.com>
-Date: Thu, 26 Nov 2009 12:28:01 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Thu, 26 Nov 2009 09:45:10 -0500
+Received: from james.oetiker.ch ([213.144.138.195]:54538 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZKZOpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 09:45:08 -0500
+Date: Thu, 26 Nov 2009 15:45:13 +0100 (CET)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH] vmscan: Stop kswapd waiting on congestion when the min
+ watermark is not being met V2
+In-Reply-To: <20091113200357.GO29804@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com>
+ <20091113200357.GO29804@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jarod Wilson <jarod@wilsonet.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain> <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
-In-Reply-To: <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> On Nov 25, 2009, at 12:40 PM, Krzysztof Halasa wrote:
-> 
->> lirc@bartelmus.de (Christoph Bartelmus) writes:
->>
->>> I'm not sure what two ways you are talking about. With the patches posted  
->>> by Jarod, nothing has to be changed in userspace.
->>> Everything works, no code needs to be written and tested, everybody is  
->>> happy.
->> The existing drivers use input layer. Do you want part of the tree to
->> use existing lirc interface while the other part uses their own
->> in-kernel (badly broken for example) code to do precisely the same
->> thing?
-> 
-> Took me a minute to figure out exactly what you were talking about. You're referring to the
-> current in-kernel decoding done on an ad-hoc basis for assorted remotes 
-> bundled with capture devices, correct?
+Hi Mel,
 
-They are not limited to the currently bundled IR's, since almost all drivers allow
-replacing the existing scancode/keycode table to a new onw.
+Nov 13 Mel Gorman wrote:
 
-> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
+> The last version has a stupid bug in it. Sorry.
+>
+> Changelog since V1
+>   o Fix incorrect negation
+>   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
+>     suggested by Rik
+>
+> If reclaim fails to make sufficient progress, the priority is raised.
+> Once the priority is higher, kswapd starts waiting on congestion.  However,
+> if the zone is below the min watermark then kswapd needs to continue working
+> without delay as there is a danger of an increased rate of GFP_ATOMIC
+> allocation failure.
+>
+> This patch changes the conditions under which kswapd waits on
+> congestion by only going to sleep if the min watermarks are being met.
 
-It should be done. Having two ways for doing the same thing is not an option. We'll
-need to unify them sooner or later. The sooner, the better.
+I finally got around to test this together with the whole series on
+2.6.31.6. after running it for a day I have not yet seen a single
+order:5 allocation problem ... (while I had several an hour before)
 
->> We can have a good code for both, or we can end up with "badly broken"
->> media drivers and incompatible, suboptimal existing lirc interface
->> (though most probably much better in terms of quality, especially after
->> Jarod's work).
-> 
-> Well, is there any reason most of those drivers with 
-> currently-in-kernel-but-badly-broken decoding can't be converted to
-> use the lirc interface if its merged into the kernel?
+for the record, my kernel is now running with the following
+patches:
 
-> And/or, everything
-> could converge on a new in-kernel decoding infra that wasn't badly broken.
-> Sure, there may be two separate ways of doing essentially the same thing
-> for a while, but meh. The lirc way works NOW for an incredibly wide
-> variety of receivers, transmitters, IR protocols, etc.
+patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
+patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
 
-Yes: the same drivers support both pulse/space and in-hardware scancode conversion.
-In order to use the raw pulse/space API, they'll need to generate pseudo pulse/space's.
-This would be a dirty solution, IMHO.
+patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
+patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
 
-Also, changing the drivers would not be that easy, since it will require lots of
-tests with IR's and devices that the developers won't have. This is a weaker argument,
-since no matter what decided, we'll need to change the drivers code (on lirc drivers
-or on the in-kernel drivers) even without having all hardware available.
+patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
+patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
 
-> I do concur that Just Works decoding for bundled remotes w/o having to 
-> configure anything would be nice, and one way to go about doing that 
-> certainly is via in-kernel IR decoding. But at the same time, the second
-> you want to use something other than a bundled remote, things fall down, 
-> and having to do a bunch of setkeycode ops seems less optimal than simply 
-> dropping an appropriate lircd.conf in place.
+patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
+patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
 
-I don't see this as an issue. We have by far too much work to be done in kernelspace
-than the changes that are needed on userspace.
+patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
+patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
 
-Replace the entire scancode table with setkeycode ops is very fast, and needs to be
-done only once, at lirc startup. Once you load the new IR code at the driver,
-the kernel will send the new keycodes to lirc.
+patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
+patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
 
-It doesn't seem hard to modify lirc to do read the lircd.conf table and replace the
-IR scancodes at the in-kernel driver. It took me half an hour to write my own keycode
-loader code, and you can use it as the basis for such feature:
-	http://linuxtv.org/hg/v4l-dvb/file/tip/v4l2-apps/util/keytable.c
+cheers
+tobi
 
-
-Cheers,
-Mauro.
-
-
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
