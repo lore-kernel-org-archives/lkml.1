@@ -1,132 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbZKZNC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbZKZNPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760500AbZKZNC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760440AbZKZNCz
+	id S1760374AbZKZNPd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZKZNPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:02:55 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:19240 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758329AbZKZNCy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:02:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ORwEYCqGD6SYi0rdKRDMykNCCsxTox+mN7dsu74CHCySH2dRX+KISM3CAXYECW3vAR
-         BMCyssEQ1L1abyCcCpo8T33niSPhmiVlpc//dk0INQO/rqAcpSCD3gq0EvqqmjhV2SNN
-         OtrSPwUvcxARr4EPQkbuGGivujpe61m2IBlHo=
-Subject: Re: Plan for adding XD support in mtd layer
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alex Dubov <oakad@yahoo.com>,
-       arnd@arndb.de, tglx@linutronix.de
-In-Reply-To: <20091126082715.GG10944@logfs.org>
-References: <1258763144.4997.12.camel@maxim-laptop>
-	 <20091121102542.GA21136@logfs.org> <1258894713.4127.4.camel@maxim-laptop>
-	 <1259106610.28219.34.camel@maxim-laptop> <20091125104027.GB10944@logfs.org>
-	 <1259155258.4875.17.camel@maxim-laptop> <20091125153458.GC10944@logfs.org>
-	 <1259165866.10147.35.camel@maxim-laptop> <20091125205942.GF10944@logfs.org>
-	 <1259191365.15916.31.camel@maxim-laptop> <20091126082715.GG10944@logfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 15:02:54 +0200
-Message-ID: <1259240574.19687.42.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 26 Nov 2009 08:15:32 -0500
+Received: from mail.is74.ru ([83.142.161.14]:50553 "EHLO relay.intersvyaz.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751148AbZKZNPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:15:32 -0500
+X-Greylist: delayed 532 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Nov 2009 08:15:32 EST
+Message-ID: <4B0E7D5E.3080906@chelcom.ru>
+Date: Thu, 26 Nov 2009 18:06:38 +0500
+From: "A. Porodko" <panda@chelcom.ru>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       Chaithrika U S <chaithrika@ti.com>,
+       Troy Kisky <troy.kisky@boundarydevices.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Kevin Hilman <khilman@deeprootsystems.com>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Sound support for Neuros OSD2 Davinci based board.
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/mixed;
+ boundary="------------050305050402010500000508"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 09:27 +0100, Jörn Engel wrote: 
-> On Thu, 26 November 2009 01:22:45 +0200, Maxim Levitsky wrote:
-> > > 
-> > > According to FMTP140E.PDF, CIS and IDI are stored in sector 0 or the
-> > > first non-defective block.  In other words, it can be read and written
-> > > normally, without any magic.  Certainly not the atrocities I tried not
-> > > to remember.
-> > I wish I had the spec.
-> 
-> It used to be semi-free.  You could download it for your name and
-> address.  But I believe I'm not legally able to forward it to you and
-> the official site seems to be down.  Most of the information can also
-> be found here:
-> http://www.win.tue.nl/~aeb/linux/smartmedia/SmartMedia_Format.pdf
-This one I have, and there is a brief description of the CIS format,
-which seems to indicate that its contents are predefined.
+This is a multi-part message in MIME format.
+--------------050305050402010500000508
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 
-> And there seems to be a copy available at pudn:
-> http://en.pudn.com/downloads137/doc/fileformat/detail585996_en.html
-> 
-> > I don't know the format of the CIS, and I know that special command is
-> > used to query the ID.
-> > CIS these days isn't used for anything and I hoped not to touch that
-> > thing.
-> 
-> :)
-> 
-> > I wont argue on that one with you, but why not to add the new field.
-> > It is quite generic, it could be card vendor information or so?
-> > Few bits of custom information to assign for each card no?
-> > 
-> > 
-> > I am taking about these:
-> > 
-> > struct xd_card_id1 {
-> > unsigned char maker_code;
-> > unsigned char device_code;
-> > unsigned char option_code1;
-> > unsigned char option_code2;
-> > } __attribute__((packed));
-> > 
-> > struct xd_card_id2 {
-> > unsigned char characteristics_code;
-> > #define XD_CARD_CELL_TYPE_MASK   0xc0
-> > #define XD_CARD_MULTI_BLOCK_MASK 0x30
-> > 
-> > unsigned char vendor_code1;
-> > unsigned char size_code;
-> > unsigned char vendor_code2;
-> > unsigned char vendor_code3;
-> > } __attribute__((packed));
-> > 
-> > struct xd_card_id3 {
-> > unsigned char vendor_code1;
-> > unsigned char vendor_code2;
-> > unsigned char id_code;
-> > unsigned char vendor_code3;
-> > } __attribute__((packed));
-> > 
-> > 
-> > Are these 32 bit values copied from CIF?
-> > 
-> > These values are read using commands:
-> > 
-> > XD_CARD_CMD_ID1         = 0x90,
-> > XD_CARD_CMD_ID2         = 0x91,
-> > XD_CARD_CMD_ID3         = 0x9a
-> > 
-> > 
-> > I need especially the xd_card_id1.device_code because this specifies the
-> > media type, but xd_card_id3.id_code is used to detemine if media is
-> > smartmedia or XD.
-> 
-> If you add this information to a struct xD_card and have mtd->priv point
-> to said structure, wouldn't that be enough for your purposes?
+Hello,
 
-I am afraid not.
+Here is a patch for Neuros OSD2 Davinci (DM6446) based board sound support.
+Patch made against 2.6.32-rc6 kernel.
+------------------------------------------
+
+-- 
+Best regards
+Andrey A. Porodko
+ 
 
 
-My plan is to create one 'meta' mtd driver for all XD controllers, and
-plug in small drivers.
+--------------050305050402010500000508
+Content-Type: text/x-patch;
+ name="0005-Davinci-sound-soc-driver-patch-for-Neuros-OSD2-board.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0005-Davinci-sound-soc-driver-patch-for-Neuros-OSD2-board.pa";
+ filename*1="tch"
 
-The meta driver and small driver will share the ->priv structure.
+>From 72b5b0efa71d0ca0bbe3a0c3ab577ee365385a28 Mon Sep 17 00:00:00 2001
+From: Andrey Porodko <panda@chelcom.ru>
+Date: Mon, 23 Nov 2009 13:56:53 +0500
+Subject: [PATCH] Davinci sound soc driver patch for Neuros OSD2 board support.
 
-I need a way to pass the ID from mtd driver to FTL, and to userspace via
-mtdchar.
+Signed-off-by: Andrey Porodko <panda@chelcom.ru>
+---
+ sound/soc/davinci/davinci-evm.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/sound/soc/davinci/davinci-evm.c b/sound/soc/davinci/davinci-evm.c
+index 67414f6..ffdd30e 100644
+--- a/sound/soc/davinci/davinci-evm.c
++++ b/sound/soc/davinci/davinci-evm.c
+@@ -55,6 +55,9 @@ static int evm_hw_params(struct snd_pcm_substream *substream,
+ 	else if (machine_is_davinci_evm())
+ 		sysclk = 12288000;
+ 
++	else if (machine_is_neuros_osd2())
++		sysclk = 27000000;
++
+ 	else if (machine_is_davinci_da830_evm() ||
+ 				machine_is_davinci_da850_evm())
+ 		sysclk = 24576000;
+@@ -246,6 +249,9 @@ static int __init evm_init(void)
+ 	if (machine_is_davinci_evm()) {
+ 		evm_snd_dev_data = &evm_snd_devdata;
+ 		index = 0;
++	} else if (machine_is_neuros_osd2()) {
++		evm_snd_dev_data = &evm_snd_devdata;
++		index = 0;
+ 	} else if (machine_is_davinci_dm355_evm()) {
+ 		evm_snd_dev_data = &evm_snd_devdata;
+ 		index = 1;
+-- 
+1.5.6.5
 
 
-Best regards,
-Maxim Levitsky
-
+--------------050305050402010500000508--
