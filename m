@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZKZXOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZKZXXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZKZXOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 18:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZKZXOf
+	id S1753411AbZKZXXN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 18:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZKZXXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 18:14:35 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57974 "EHLO
+	Thu, 26 Nov 2009 18:23:12 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:45146 "EHLO
 	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZKZXOe (ORCPT
+	with ESMTP id S1753364AbZKZXXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 18:14:34 -0500
+	Thu, 26 Nov 2009 18:23:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=qMfc8FUjJempXc3kerQMBpP7zjM1I1RnfYCs/8uLh0Xx0Ca0Le11GmNYd+uw5G3azq
-         u3neRRK98kkp971CNKfOovRnFndADhNIHZWaNtYrXWSZ3fT3Uq/bWtAXS1fzbm91AstG
-         N1nzYIlPWbK1X77I+yIDKdfs4NRk+JdYXhs/Y=
-Date: Thu, 26 Nov 2009 15:14:36 -0800
+        b=B6zHSH+VkBGkTYw6LanioKy+uZbbMkpg+1WBXtDtojrMrHunggml+2sWa72s4vRfEs
+         fdwvgcoHwEIM2zGLF1DHXyR2ihwU5JhE2h8EU3pCAeqPXXQJqmcS+TKmUeVaEDRLznri
+         fHIA3LNiUFLg4p68+yNdkQu0EH7rPuTGMg4DE=
+Date: Thu, 26 Nov 2009 15:23:11 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
        Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
        Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
        linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
        Christoph Bartelmus <lirc@bartelmus.de>
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091126231436.GC6936@core.coreip.homeip.net>
-References: <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain> <4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain> <4B0ED238.6060306@redhat.com> <m3pr75rpqa.fsf@intrepid.localdomain> <4B0EED7D.90204@redhat.com> <m3ljhtrn83.fsf@intrepid.localdomain>
+Message-ID: <20091126232311.GD6936@core.coreip.homeip.net>
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m3ljhtrn83.fsf@intrepid.localdomain>
+In-Reply-To: <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 10:27:08PM +0100, Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+On Thu, Nov 26, 2009 at 01:16:01AM -0500, Jarod Wilson wrote:
+> On Nov 26, 2009, at 12:31 AM, Dmitry Torokhov wrote:
 > 
-> > No. All the other API functions there work with 32 bits for scancodes.
+> > On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
+> >> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
+> >>> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
+> >>>> Mauro Carvalho Chehab<mchehab@redhat.com>  writes:
+> >>>> 
+> >>>>> Event input has the advantage that the keystrokes will provide an unique
+> >>>>> representation that is independent of the device.
+> >>>> 
+> >>>> This can hardly work as the only means, the remotes have different keys,
+> >>>> the user almost always has to provide customized key<>function mapping.
+> >>>> 
+> >>> 
+> >>> Is it true? I would expect the remotes to have most of the keys to have
+> >>> well-defined meanings (unless it is one of the programmable remotes)...
+> >> 
+> >> Its the cases like programmable universal remotes that really throw  
+> >> things for a loop. That, and people wanting to use random remote X that  
+> >> came with the amp or tv or set top box, with IR receiver Y.
+> > 
+> > Right, but still the keys usually do have the well-defined meaning,
 > 
-> We don't need them, do we? We need a new ioctl for changing key mappings
-> anyway (a single ioctl for setting the whole table I think), and we can
-> have arbitrary length of scan codes there.
+> Except when they don't. I have two very similar remotes, one that was bundled with a system from CaptiveWorks, and one that was bundled with an Antec Veris IR/LCD (SoundGraph iMON rebrand). Outside of the Antec remote having a mouse pad instead of up/down/left/right/enter, they have an identical layout, and the keys in the same locations on the remotes send the same IR signal. But the button names vary a LOT between the two. So on the DVD key on the Antec and the MUTE key on the CW send the same signal. Same with Audio vs. Eject, TV vs. History, etc. Moral of the story is that not all IR protocols spell things out particularly well for what a given code should actually mean.
 
-Unless we determine that we 100% need bigger size of scancode then the
-current ioctls are just fine. Why do we _need_ an ioctl to load the whole
-tabe? Are you concerned about speed with which the keymap is populated?
-I don't think it would be an issue.
+I guess we are talking about different things. While the 2 remotes may
+use different protocols to communicate and may use the same codes to
+mean different things they buttons have well-defined meaning and we
+could map that to input keycodes. Then what is left is to load the
+proper mapping for particular device into the kernel. This can be done
+either automatically (when we know the mapping) or with the help of the
+user (owner of the system).
+
+> 
+> > teh
+> > issue is in mapping raw code to the appropriate keycode. This can be
+> > done either by lirc config file (when lirc is used) or by some other
+> > means.
+> 
+> The desire to map a button press to multiple keystrokes isn't uncommon either, though I presume that's doable within the input layer context too.
+
+No, at present we expect 1:1 button->event mapping leaving macro
+expansion (i.e. KEY_PROG1 -> "do some multi-step sequence" to
+userspace).
 
 -- 
 Dmitry
