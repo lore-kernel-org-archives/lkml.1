@@ -1,96 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbZKZMfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbZKZMgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760480AbZKZMfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 07:35:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbZKZMfS
+	id S1760450AbZKZMgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 07:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760383AbZKZMgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 07:35:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57907 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 07:36:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4831 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760425AbZKZMfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 07:35:16 -0500
-Date: Thu, 26 Nov 2009 12:34:16 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, lizf@cn.fujitsu.com, mel@csn.ul.ie,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, penberg@cs.helsinki.fi, mel@csn.ul.ie,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4B0E286A.2000405@cn.fujitsu.com>
-References: <4B0E286A.2000405@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] tracing: Fix kmem event exports
-Message-ID: <tip-4d795fb17a02a87e35782773b88b7a63acfbeaae@git.kernel.org>
-Git-Commit-ID: 4d795fb17a02a87e35782773b88b7a63acfbeaae
-X-Mailer: tip-git-log-daemon
+	id S1760395AbZKZMgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 07:36:51 -0500
+Message-ID: <4B0E765C.2080806@redhat.com>
+Date: Thu, 26 Nov 2009 10:36:44 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
+In-Reply-To: <m3zl6dq8ig.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4d795fb17a02a87e35782773b88b7a63acfbeaae
-Gitweb:     http://git.kernel.org/tip/4d795fb17a02a87e35782773b88b7a63acfbeaae
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 26 Nov 2009 13:11:46 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 13:17:43 +0100
+Krzysztof Halasa wrote:
+> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+> 
+>> If you see patch 3/3, of the lirc submission series, you'll notice a driver
+>> that has hardware decoding, but, due to lirc interface, the driver generates
+>> pseudo pulse/space code for it to work via lirc interface.
+> 
+> IOW the driver generates artificial pulse code for lircd?
+> I think - pure bloat. lircd can get events from input layer without
+> problems. Perhaps I misunderstood?
 
-tracing: Fix kmem event exports
+lircd supports input layer interface. Yet, patch 3/3 exports both devices
+that support only pulse/space raw mode and devices that generate scan
+codes via the raw mode interface. It does it by generating artificial
+pulse codes.
+> 
+>> It is very bad to have two interfaces for the same thing, because people
+>> may do things like that.
+> 
+> I think having a "raw" scan code interface + the key code "cooked" mode
+> is beneficial. For remotes lacking the raw interface only the latter
+> could be used.
 
-Commit 53d0422 ("tracing: Convert some kmem events to DEFINE_EVENT")
-moved the kmem tracepoint creation from util.c to page_alloc.c,
-but forgot to move the exports.
+It sounds an interesting idea.
 
-Move them back.
+>> Are you meaning that we should do more than one RC per input event
+>> interface?
+> 
+> I think so. Why not?
+> 
+> For example, one of my remotes generates codes from at least two RC5
+> groups (in only one "mode"). Currently a remote is limited to only one
+> RC5 group.
 
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-LKML-Reference: <4B0E286A.2000405@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- mm/page_alloc.c |    4 +---
- mm/util.c       |    3 +++
- 2 files changed, 4 insertions(+), 3 deletions(-)
+Yet, both are RC5. This can already be handled by the input layer.
+See dvb-usb implementation.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index bdb22f5..2bc2ac6 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -48,14 +48,12 @@
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
-+#include <trace/events/kmem.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
- #include "internal.h"
- 
--#define CREATE_TRACE_POINTS
--#include <trace/events/kmem.h>
--
- /*
-  * Array of node states.
-  */
-diff --git a/mm/util.c b/mm/util.c
-index 15d1975..7c35ad9 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -6,6 +6,9 @@
- #include <linux/sched.h>
- #include <asm/uaccess.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/kmem.h>
-+
- /**
-  * kstrdup - allocate space for and copy an existing string
-  * @s: the string to duplicate
+The issue I see is to support at the same time NEC and RC5 protocols. While
+this may work with some devices, for others, the hardware won't allow.
+
+> 
+> I think the mapping should be: key = proto + group + raw code, while
+> key2 could be different_proto + different group (if any) + another code.
+
+This may work for protocols up to RC5, that uses either 8 or 16 bits.
+However, RC6 mode 6 codes can be 32 bits, and we have "only" 32 bits
+for a scancode. So, we don't have spare bits to represent a protocol, 
+if we consider RC6 mode 6 codes as well.
+
+>> If so, why do you think we need to handle more than one IR protocol at
+>> the same time?
+> 
+> Why not?
+> There are X-in-1 remotes on the market for years. They can "speak" many
+> protocols at once. One may want to have a protocol to handle DVD apps
+> while another for DVB etc.
+> And someone may want to use several different remotes, why not?
+> Personally I use two different remotes (both set to speak RC5 but what
+> if I couldn't set the protocol?). Sure, it requires a bit of hackery
+> (not with pulse code and lircd).
+> 
+>> I think this will just make the driver more complex without need.
+> 
+> Not much more, and there is a need.
+
+See above. Also, several protocols have a way to check if a keystroke were
+properly received. When handling just one protocol, we can use this to double
+check the key. However, on a multiprotocol mode, we'll need to disable this
+feature.
+
+PS.: For those following those discussions that want to know more about
+IR protocols, a good reference is at:
+	http://www.sbprojects.com/knowledge/ir/ir.htm
+
+Unfortunately, it doesn't describe RC6 mode 6.
+
+Cheers,
+Mauro.
