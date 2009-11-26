@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbZKZVOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbZKZVZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751903AbZKZVOW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 16:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZKZVOV
+	id S1752202AbZKZVZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 16:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZKZVZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 16:14:21 -0500
-Received: from stinky.trash.net ([213.144.137.162]:62981 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbZKZVOU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 16:14:20 -0500
-Message-ID: <4B0EEFB1.3080403@trash.net>
-Date: Thu, 26 Nov 2009 22:14:25 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Thu, 26 Nov 2009 16:25:39 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55599 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbZKZVZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 16:25:39 -0500
+Date: Thu, 26 Nov 2009 21:25:41 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Vivek Goyal <vgoyal@redhat.com>, efault@gmx.de
+Subject: Re: [RFC,PATCH] cfq-iosched: improve async queue ramp up formula
+Message-ID: <20091126212541.GJ13095@csn.ul.ie>
+References: <200911261710.40719.czoccolo@gmail.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: David Miller <davem@davemloft.net>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       virtualization@lists.linux-foundation.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
-References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <200911261621.28298.arnd@arndb.de> <4B0E9FD0.4040107@trash.net> <200911261844.59912.arnd@arndb.de>
-In-Reply-To: <200911261844.59912.arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200911261710.40719.czoccolo@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Thursday 26 November 2009, Patrick McHardy wrote:
->> In addition to those already handled, I'd say
->>
->> - priority: affects qdisc classification, may refer to classes of the
->>   old namespace
->> - ipvs_property: might cause packets to incorrectly skip netfilter hooks
->> - nf_trace: might trigger packet tracing
->> - nf_bridge: contains references to network devices in the old NS,
->>   also indicates packet was bridged
->> - iif: index is only valid in the originating namespace
->> - probably secmark.
+On Thu, Nov 26, 2009 at 05:10:39PM +0100, Corrado Zoccolo wrote:
+> The introduction of ramp-up formula for async queue depths has
+> slowed down dirty page reclaim, by reducing async write performance.
+> This patch improves the formula by considering the remaining slice.
 > 
-> ok
+> The new formula will allow more dispatches at the beginning of the
+> slice, reducing them at the end.
+> This will ensure that we achieve good throughput, without the risk of
+> overrunning the allotted timeslice.
 > 
->> - tc_index: classification result, should only be set in the namespace
->>   of the classifier
->> - tc_verd: RTTL etc. should begin at zero again
+> The threshold is automatically increased when sync I/O is not
+> intermingled with async, in accordance with the previous incarnation of
+> the formula.
 > 
-> Wouldn't that defeat the purpose of RTTL? If you create a loop
-> across two devices in different namespaces, it may no longer get
-> detected. Or is that a different problem again?
 
-Mhh good point, that would indeed be possible. OTOH using ingress
-filtering in one namespace currently might cause the packet to get
-dropped in a different namespace because the ttl runs out. For now
-I'd suggest to go the safe route and keep the TTL intact until we
-can come up with something better.
+Thanks.
 
-> +void skb_set_dev(struct sk_buff *skb, struct net_device *dev)
-> +{
-> +	if (skb->dev && !net_eq(dev_net(skb->dev), dev_net(dev))) {
-> +		secpath_reset(skb);
-> +		skb_dst_drop(skb);
-> +		nf_reset(skb);
-> +		skb_init_secmark(skb);
-> +		skb->mark = 0;
-> +		skb->priority = 0;
-> +		skb->nf_trace = 0;
-> +		skb->ipvs_property = 0;
-> +#ifdef CONFIG_NET_SCHED
-> +		skb->tc_index = 0;
-> +#ifdef CONFIG_NET_CLS_ACT
-> +		skb->tc_verd = SET_TC_VERD(skb->tc_verd, 0);
-> +		skb->tc_verd = SET_TC_RTTL(skb->tc_verd, 0);
-> +#endif
-> +#endif
+I don't quite get the patch but it certainly helps the situation for the
+tests I was running. It's not as good as disabling the low_latency switch
+but it's an improvement. The iozone figures are now comparable to disabling
+low_latency and for sysbench and the gitk stuff, I now have
 
-This makes we wonder which ones we actually should keep. Most of the
-others get reinitialized anyways, so maybe its better to simply clear
-the entire area up until ->tail like f.i. skb_recycle_check().
+SYSBENCH
+                 sysbench-with       low-latency  sysbench-without
+                   low-latency      async-rampup       low-latency
+           1  1266.02 ( 0.00%)  1265.15 (-0.07%)  1278.55 ( 0.98%)
+           2  1182.58 ( 0.00%)  1223.03 ( 3.31%)  1379.25 (14.26%)
+           3  1218.64 ( 0.00%)  1246.42 ( 2.23%)  1580.08 (22.87%)
+           4  1212.11 ( 0.00%)  1325.17 ( 8.53%)  1534.17 (20.99%)
+           5  1046.77 ( 0.00%)  1008.44 (-3.80%)  1552.48 (32.57%)
+           6  1187.14 ( 0.00%)  1147.18 (-3.48%)  1661.19 (28.54%)
+           7  1179.37 ( 0.00%)  1202.49 ( 1.92%)   790.26 (-49.24%)
+           8  1164.62 ( 0.00%)  1184.56 ( 1.68%)   854.10 (-36.36%)
+           9  1095.22 ( 0.00%)  1002.42 (-9.26%)  1655.04 (33.83%)
+          10  1147.52 ( 0.00%)  1151.73 ( 0.37%)  1653.89 (30.62%)
+          11   823.38 ( 0.00%)   754.15 (-9.18%)  1627.45 (49.41%)
+          12   813.73 ( 0.00%)   848.32 ( 4.08%)  1494.63 (45.56%)
+          13   898.22 ( 0.00%)   931.47 ( 3.57%)  1521.64 (40.97%)
+          14   873.50 ( 0.00%)   875.75 ( 0.26%)  1311.09 (33.38%)
+          15   808.32 ( 0.00%)   877.87 ( 7.92%)  1009.70 (19.94%)
+          16   758.17 ( 0.00%)   881.23 (13.96%)   725.17 (-4.55%)
 
-> +	}
-> +	skb->dev = dev;
-> +	skb->skb_iif = skb->dev->ifindex;
+Many gains there. Not as much as disabling the switch but an improvement
+nonetheless.
 
-This doesn't seem necessary, if the packet goes through
-netif_receive_skb, it will be set anyways.
+desktop-net-gitk
+                     gitk-with       low-latency      gitk-without
+                   low-latency      async-rampup       low-latency
+min            954.46 ( 0.00%)   796.22 (16.58%)   640.65 (32.88%)
+mean           964.79 ( 0.00%)   798.01 (17.29%)   655.57 (32.05%)
+stddev          10.01 ( 0.00%)     1.91 (80.95%)    13.33 (-33.18%)
+max            981.23 ( 0.00%)   800.91 (18.38%)   675.65 (31.14%)
+pgalloc-fail        0 ( 0.00%)        0 ( 0.00%)        0 ( 0.00%)
 
-> +}
-> +EXPORT_SYMBOL(skb_set_dev);
+Interesting to note how much more stable the results for the gitk tests are
+with the patch applied.
+
+The for-2.6.33 branch for linux-2.6-block are now in progress and I've
+queued up the high-order allocation tests but it'll take several hours
+to complete.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
