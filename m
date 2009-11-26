@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbZKZNXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbZKZNZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbZKZNXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZKZNXS
+	id S1759476AbZKZNZF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:25:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZKZNZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:23:18 -0500
-Received: from mail1.radix.net ([207.192.128.31]:44448 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbZKZNXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:23:17 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-In-Reply-To: <4B0E765C.2080806@redhat.com>
-References: <200910200956.33391.jarod@redhat.com>
-	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	 <4B0E765C.2080806@redhat.com>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 08:22:13 -0500
-Message-Id: <1259241733.3062.44.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Nov 2009 08:25:03 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:19662 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbZKZNZB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:25:01 -0500
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Andy Walls <awalls@radix.net>
+Subject: Re: linux-next: workqueues tree build failure
+Date: Thu, 26 Nov 2009 15:23:40 +0200
+User-Agent: KMail/1.12.3 (Linux/2.6.31-gentoo-r4; KDE/4.3.3; i686; ; )
+Cc: ext Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       ext Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <200911261344.32051.peter.ujfalusi@nokia.com> <1259239796.3062.20.camel@palomino.walls.org>
+In-Reply-To: <1259239796.3062.20.camel@palomino.walls.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911261523.40952.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 26 Nov 2009 13:23:45.0386 (UTC) FILETIME=[AE20ECA0:01CA6E9B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 10:36 -0200, Mauro Carvalho Chehab wrote:
-> Krzysztof Halasa wrote:
-> > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-
-
-> PS.: For those following those discussions that want to know more about
-> IR protocols, a good reference is at:
-> 	http://www.sbprojects.com/knowledge/ir/ir.htm
+On Thursday 26 November 2009 14:49:56 ext Andy Walls wrote:
 > 
-> Unfortunately, it doesn't describe RC6 mode 6.
+> Peter,
+> 
+> I would suspect using a single-threaded workqueue is better than a
+> wake_up() of another thread.  IIRC, after queuing work, the workqueue's
+> single thread may run almost immediately on the same processor.  With
+> waking up sleeping threads, I've run into scheduler delays around 10 ms
+> on a dual core x86_64 desktop system.
 
-RC-6 Mode 0 and Mode 6A is briefly describe here:
+Hello Andy,
 
-http://www.picbasic.nl/frameload_uk.htm?http://www.picbasic.nl/rc5-rc6_transceiver_uk.htm
+I have sent the patch which changes from rt to singlethread, I hope it fixes the 
+breakage in linux-next.
+In short testing, when there is virtually no load on the system I can not see 
+any difference, which might change later.
+But I'll keep in mind that probably I'm not going to better off with the waking 
+up of a sleeping thread.
 
-That page is slightly wrong, as there is some data coded in the header
-such as the RC-6 Mode.
+> 
+> Regards,
+> Andy
 
-This page is an older version of the sbprojects.com RC-6 page, before
-the information on RC-6 Mode 6A was removed:
-
-http://slycontrol.ru/scr/kb/rc6.htm
-
-
-My personal opinion is that, for non-technical reasons, RC-6 Mode 6A
-decoding should not be included in the kernel.  That's why I didn't do
-it for the HVR-1850/CX23888.
-
-
-Regards,
-Andy
-
-
+Thanks,
+Péter
