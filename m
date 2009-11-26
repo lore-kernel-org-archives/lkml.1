@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbZKZSxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbZKZSyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbZKZSxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZKZSxo
+	id S1751523AbZKZSyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZKZSyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:53:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51874 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZKZSxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:53:44 -0500
-Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
- add/remove
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Holger.Wolf@de.ibm.com, epasch@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <4B0ECB45.60906@linux.vnet.ibm.com>
-References: <4B0EA88E.3030205@linux.vnet.ibm.com>
-	 <1259252382.31676.207.camel@laptop>  <4B0EAC06.3010407@linux.vnet.ibm.com>
-	 <1259252892.31676.220.camel@laptop>  <4B0EAD7B.90601@linux.vnet.ibm.com>
-	 <1259253950.31676.249.camel@laptop>  <4B0ECB45.60906@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 19:53:34 +0100
-Message-ID: <1259261614.31676.386.camel@laptop>
+	Thu, 26 Nov 2009 13:54:36 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:57221 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750956AbZKZSyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:54:35 -0500
+Date: Thu, 26 Nov 2009 19:54:38 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com,
+       alan@linux.intel.com, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 2/2] als: add unique device-ids to the als device class
+Message-ID: <20091126195438.0ac66306@hyperion.delvare>
+In-Reply-To: <20091126180646.GA9059@suse.de>
+References: <1259237081-4403-1-git-send-email-amit.kucheria@verdurent.com>
+	<1259237186-5459-1-git-send-email-amit.kucheria@verdurent.com>
+	<20091126160713.5e19eb04@hyperion.delvare>
+	<4B0EB891.4010309@cam.ac.uk>
+	<20091126180646.GA9059@suse.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 19:39 +0100, Christian Ehrhardt wrote:
-> Looks very promising, I did not expect it would be so easy to hook up to 
-> the hotplug events, but you're absolutley right the scheduler already 
-> has hooks for that with rq_online/offline.
->  From looking at the patch alone I expect it will loose user updates to 
-> sysfs. Might just need adding some feedback from the sysctl writer 
-> functions to set the default values to setval/1+ilog2; that includes 
-> renaming default to "normalized" or somethng like that. But I'll test 
-> this patch in depth tomorrow morning anyway and give more detailed feedback.
+On Thu, 26 Nov 2009 10:06:46 -0800, Greg KH wrote:
+> On Thu, Nov 26, 2009 at 05:19:13PM +0000, Jonathan Cameron wrote:
+> > > That being said... If we want user-space to know what device is there,
+> > > we may want to still let drivers pass a name string to
+> > > als_device_register() and let the ALS core create a "name" sysfs
+> > > attribute returning the string in question. This would be much lighter
+> > > (for individual drivers) than the previous situation, as the string in
+> > > question would be a constant (e.g. "TSL2550".) Opinions?
+> > > 
+> > Makes sense given we want all drivers to support some form of identification.
+> > We could do it by stating they will all have that attribute, but given it's constant
+> > will save repetition to put it in the driver. Conversely it might complicate the handling
+> > of subsequent attribute_groups so I'd probably favour adding relevant documentation lines
+> > and leaving it up to the drivers to implement this attribute.
+> > 
+> > Thus we'd require (within reason) all drivers to have illuminance0 and name.
+> 
+> Why have a name attribute when you can just use the name of the device
+> itself instead?  Isn't that what it is there for?
 
-Yeah, its needs better integration with the sysctl bits and such, but it
-shows the general shape and form of things.
+Can you please clarify what you call "the name of the device"?
 
+Can you also please explain what problem you think we are trying to
+solve?
 
+> confused,
 
+Me even more ;)
+
+-- 
+Jean Delvare
