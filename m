@@ -1,103 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZKZMac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760443AbZKZMeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbZKZMac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 07:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760381AbZKZMab
+	id S1760443AbZKZMeb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 07:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760428AbZKZMeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 07:30:31 -0500
-Received: from mail1.radix.net ([207.192.128.31]:43410 "EHLO mail1.radix.net"
+	Thu, 26 Nov 2009 07:34:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57871 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759054AbZKZMaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 07:30:30 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Christoph Bartelmus <lirc@bartelmus.de>,
-       khc@pm.waw.pl, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
-References: <BDRae8rZjFB@christoph>
-	 <1259024037.3871.36.camel@palomino.walls.org>
-	 <20091126054938.GH23244@core.coreip.homeip.net>
-	 <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 07:28:20 -0500
-Message-Id: <1259238500.3062.10.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1760425AbZKZMe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 07:34:28 -0500
+Date: Thu, 26 Nov 2009 12:33:34 GMT
+From: tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, spencer@bluehost.com, hpa@zytor.com,
+       mingo@redhat.com, seto.hidetoshi@jp.fujitsu.com, peterz@infradead.org,
+       xiyou.wangcong@gmail.com, balbir@in.ibm.com, tglx@linutronix.de,
+       oleg@redhat.com, sgruszka@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, spencer@bluehost.com,
+       linux-kernel@vger.kernel.org, seto.hidetoshi@jp.fujitsu.com,
+       peterz@infradead.org, xiyou.wangcong@gmail.com, balbir@in.ibm.com,
+       oleg@redhat.com, tglx@linutronix.de, sgruszka@redhat.com, mingo@elte.hu
+In-Reply-To: <4B0E16AE.906@jp.fujitsu.com>
+References: <4B0E16AE.906@jp.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Introduce task_times() to replace task_{u,s}time() pair
+Message-ID: <tip-d180c5bccec02612256fd8076ff3c1fac3429553@git.kernel.org>
+Git-Commit-ID: d180c5bccec02612256fd8076ff3c1fac3429553
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 01:23 -0500, Jarod Wilson wrote:
-> On Nov 26, 2009, at 12:49 AM, Dmitry Torokhov wrote:
-> 
-> > On Mon, Nov 23, 2009 at 07:53:57PM -0500, Andy Walls wrote:
-> >> On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
-> >>> Czesc Krzysztof,
-> >>> 
-> >>> on 23 Nov 09 at 15:14, Krzysztof Halasa wrote:
-> >>> [...]
-> >>>> I think we shouldn't at this time worry about IR transmitters.
-> >>> 
-> >>> Sorry, but I have to disagree strongly.
-> >>> Any interface without transmitter support would be absolutely unacceptable  
-> >>> for many LIRC users, including myself.
-> >> 
-> >> I agree with Christoph.  
-> >> 
-> >> Is it that the input subsystem is better developed and seen as a
-> >> leverage point for development and thus an "easier" place to get results
-> >> earlier?  If so, then one should definitely deal with transmitters early
-> >> in the design, as that is where the most unknowns lie.
-> >> 
-> >> With the end of analog TV, people will have STBs feeding analog only
-> >> video cards.  Being able to change the channel on the STB with an IR
-> >> transmitter controlled by applications like MythTV is essential.
-> >> 
-> >> 
-> >> And on some different notes:
-> >> 
-> >> I generally don't understand the LIRC aversion I perceive in this thread
-> >> (maybe I just have a skewed perception).  Aside for a video card's
-> >> default remote setup, the suggestions so far don't strike me as any
-> >> simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
-> >> already works for both transmit and receive and has existing support in
-> >> applications such as MythTV and mplayer.
-> > 
-> > Is it that LIRC supports MythTV and mplayer or MythTV and mplayer are
-> > forced to support lirc because the remores are not available through
-> > other means? I believe it is the latter and applications writers would
-> > be happy to reduce number of ways they get button data.
-> 
-> Well, when mythtv was started, I don't know that there were many input layer remotes around... lirc was definitely around though. serial receivers and transmitters, both supported by lirc_serial, were the most frequently used devices outside of plain old keyboards. The lirc support in mythtv actually relies on mapping remote button names as defined in lircd.conf to keyboard key strokes. As mentioned elsewhere in this beast of a thread, mythtv doesn't currently support things like KEY_PLAY, KEY_VOLUMEUP, KEY_CHANNELUP, etc. just yet, but I intend on fixing that...
-> 
-> > I don't think there is LIRC aversion per se. We are just trying to
-> > decide whether multiple interfaces for the same data is needed. And
-> > I don't think that we will completely reject userspace components. Just
-> > as input subsystem allows for userspace drivers I do not think why we
-> > can't have the same for the LIRC. But I do think that the primary
-> > interface for regular userspace consumers (read mplayer and MythTV and
-> > the likes) should be input event interface (EV_KEY/KEY_*).
-> 
-> Works for me.
+Commit-ID:  d180c5bccec02612256fd8076ff3c1fac3429553
+Gitweb:     http://git.kernel.org/tip/d180c5bccec02612256fd8076ff3c1fac3429553
+Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+AuthorDate: Thu, 26 Nov 2009 14:48:30 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 26 Nov 2009 12:59:19 +0100
 
-Even though two interfaces is a bit of "extra" work, I'm not averse to
-Gerd's suggestions of a dual implementation: input layer for the simple,
-common use case, and lirc type interface for more sophisticated usage.
+sched: Introduce task_times() to replace task_{u,s}time() pair
 
-One thing I would like to be provided by the input layer is automatic
-key-up after a specified time.  Remote protocols send an initial button
-press and then after a certain amount of time (~115 ms for RC-5) send a
-repeated code or repeat sequence, if the button is still pressed.
-Currently, most of the V4L-DVB drivers have some code to perform a
-timeout just to send the key-up event.  That's a good bit of redundant
-code for key-up timeouts that I suspect makes sense for the input layer
-to handle.
+Functions task_{u,s}time() are called in pair in almost all
+cases.  However task_stime() is implemented to call task_utime()
+from its inside, so such paired calls run task_utime() twice.
 
-Regards,
-Andy
+It means we do heavy divisions (div_u64 + do_div) twice to get
+utime and stime which can be obtained at same time by one set
+of divisions.
 
+This patch introduces a function task_times(*tsk, *utime,
+*stime) to retrieve utime and stime at once in better, optimized
+way.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Stanislaw Gruszka <sgruszka@redhat.com>
+Cc: Spencer Candland <spencer@bluehost.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Balbir Singh <balbir@in.ibm.com>
+Cc: Americo Wang <xiyou.wangcong@gmail.com>
+LKML-Reference: <4B0E16AE.906@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/proc/array.c       |    3 +-
+ include/linux/sched.h |    1 +
+ kernel/exit.c         |    7 ++++-
+ kernel/sched.c        |   55 +++++++++++++++++++++++++++++++-----------------
+ kernel/sys.c          |    3 +-
+ 5 files changed, 43 insertions(+), 26 deletions(-)
+
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index e209f64..330deda 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -535,8 +535,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	if (!whole) {
+ 		min_flt = task->min_flt;
+ 		maj_flt = task->maj_flt;
+-		utime = task_utime(task);
+-		stime = task_stime(task);
++		task_times(task, &utime, &stime);
+ 		gtime = task_gtime(task);
+ 	}
+ 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 78ba664..fe6ae15 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1723,6 +1723,7 @@ static inline void put_task_struct(struct task_struct *t)
+ extern cputime_t task_utime(struct task_struct *p);
+ extern cputime_t task_stime(struct task_struct *p);
+ extern cputime_t task_gtime(struct task_struct *p);
++extern void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st);
+ 
+ /*
+  * Per process flags
+diff --git a/kernel/exit.c b/kernel/exit.c
+index f7864ac..29068ab 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -91,6 +91,8 @@ static void __exit_signal(struct task_struct *tsk)
+ 	if (atomic_dec_and_test(&sig->count))
+ 		posix_cpu_timers_exit_group(tsk);
+ 	else {
++		cputime_t utime, stime;
++
+ 		/*
+ 		 * If there is any task waiting for the group exit
+ 		 * then notify it:
+@@ -110,8 +112,9 @@ static void __exit_signal(struct task_struct *tsk)
+ 		 * We won't ever get here for the group leader, since it
+ 		 * will have been the last reference on the signal_struct.
+ 		 */
+-		sig->utime = cputime_add(sig->utime, task_utime(tsk));
+-		sig->stime = cputime_add(sig->stime, task_stime(tsk));
++		task_times(tsk, &utime, &stime);
++		sig->utime = cputime_add(sig->utime, utime);
++		sig->stime = cputime_add(sig->stime, stime);
+ 		sig->gtime = cputime_add(sig->gtime, task_gtime(tsk));
+ 		sig->min_flt += tsk->min_flt;
+ 		sig->maj_flt += tsk->maj_flt;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 315ba40..475a6f2 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5191,6 +5191,14 @@ cputime_t task_stime(struct task_struct *p)
+ {
+ 	return p->stime;
+ }
++
++void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
++{
++	if (ut)
++		*ut = task_utime(p);
++	if (st)
++		*st = task_stime(p);
++}
+ #else
+ 
+ #ifndef nsecs_to_cputime
+@@ -5198,41 +5206,48 @@ cputime_t task_stime(struct task_struct *p)
+ 	msecs_to_cputime(div_u64((__nsecs), NSEC_PER_MSEC))
+ #endif
+ 
+-cputime_t task_utime(struct task_struct *p)
++void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
+ {
+-	cputime_t utime = p->utime, total = utime + p->stime;
+-	u64 temp;
++	cputime_t rtime, utime = p->utime, total = utime + p->stime;
+ 
+ 	/*
+ 	 * Use CFS's precise accounting:
+ 	 */
+-	temp = (u64)nsecs_to_cputime(p->se.sum_exec_runtime);
++	rtime = nsecs_to_cputime(p->se.sum_exec_runtime);
+ 
+ 	if (total) {
+-		temp *= utime;
++		u64 temp;
++
++		temp = (u64)(rtime * utime);
+ 		do_div(temp, total);
+-	}
+-	utime = (cputime_t)temp;
++		utime = (cputime_t)temp;
++	} else
++		utime = rtime;
+ 
++	/*
++	 * Compare with previous values, to keep monotonicity:
++	 */
+ 	p->prev_utime = max(p->prev_utime, utime);
+-	return p->prev_utime;
++	p->prev_stime = max(p->prev_stime, rtime - p->prev_utime);
++
++	if (ut)
++		*ut = p->prev_utime;
++	if (st)
++		*st = p->prev_stime;
++}
++
++cputime_t task_utime(struct task_struct *p)
++{
++	cputime_t utime;
++	task_times(p, &utime, NULL);
++	return utime;
+ }
+ 
+ cputime_t task_stime(struct task_struct *p)
+ {
+ 	cputime_t stime;
+-
+-	/*
+-	 * Use CFS's precise accounting. (we subtract utime from
+-	 * the total, to make sure the total observed by userspace
+-	 * grows monotonically - apps rely on that):
+-	 */
+-	stime = nsecs_to_cputime(p->se.sum_exec_runtime) - task_utime(p);
+-
+-	if (stime >= 0)
+-		p->prev_stime = max(p->prev_stime, stime);
+-
+-	return p->prev_stime;
++	task_times(p, NULL, &stime);
++	return stime;
+ }
+ #endif
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index ce17760..bbdfce0 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1346,8 +1346,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 	utime = stime = cputime_zero;
+ 
+ 	if (who == RUSAGE_THREAD) {
+-		utime = task_utime(current);
+-		stime = task_stime(current);
++		task_times(current, &utime, &stime);
+ 		accumulate_thread_rusage(p, r);
+ 		maxrss = p->signal->maxrss;
+ 		goto out;
