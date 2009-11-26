@@ -1,90 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbZKZOpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760548AbZKZOpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760144AbZKZOpL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZKZOpK
+	id S1760548AbZKZOpc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbZKZOpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:45:10 -0500
-Received: from james.oetiker.ch ([213.144.138.195]:54538 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZKZOpI (ORCPT
+	Thu, 26 Nov 2009 09:45:30 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61628 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbZKZOp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:45:08 -0500
-Date: Thu, 26 Nov 2009 15:45:13 +0100 (CET)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] vmscan: Stop kswapd waiting on congestion when the min
- watermark is not being met V2
-In-Reply-To: <20091113200357.GO29804@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
-References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com>
- <20091113200357.GO29804@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Nov 2009 09:45:26 -0500
+Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
+ DECLARE_EVENT_CLASS()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091126084039.GA15919@elte.hu>
+References: <4B0E286A.2000405@cn.fujitsu.com>
+	 <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
+	 <1259224390.21397.87.camel@gandalf.stny.rr.com>
+	 <20091126084039.GA15919@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 26 Nov 2009 09:45:30 -0500
+Message-Id: <1259246730.21397.97.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+On Thu, 2009-11-26 at 09:40 +0100, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
 
-Nov 13 Mel Gorman wrote:
+> > I would like to hear what others think about this change before we go 
+> > ahead and implement it.
+> 
+> You mean TRACE_EVENT() -> DEFINE_SINGLE_EVENT()? Sure, we want todo it 
+> in a more quiet moment of the kernel cycle, not now.
+> 
+> (TRACE_EVENT_TEMPLATE OTOH has existed for just a few days so it's not a 
+> problem.)
 
-> The last version has a stupid bug in it. Sorry.
->
-> Changelog since V1
->   o Fix incorrect negation
->   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
->     suggested by Rik
->
-> If reclaim fails to make sufficient progress, the priority is raised.
-> Once the priority is higher, kswapd starts waiting on congestion.  However,
-> if the zone is below the min watermark then kswapd needs to continue working
-> without delay as there is a danger of an increased rate of GFP_ATOMIC
-> allocation failure.
->
-> This patch changes the conditions under which kswapd waits on
-> congestion by only going to sleep if the min watermarks are being met.
+Yes the template name is new, I'm not talking about that on
+particularly.
 
-I finally got around to test this together with the whole series on
-2.6.31.6. after running it for a day I have not yet seen a single
-order:5 allocation problem ... (while I had several an hour before)
+> 
+> > A lot of developers have just learned about TRACE_EVENT and now it 
+> > just disappeared. Well, not really, but in the sense of ' find 
+> > linux.git -name '*.[ch]' | xargs grep TRACE_EVENT' it no longer 
+> > exists.
+> 
+> A second problem with the TRACE_EVENT name is that it's not just for 
+> tracing - we dont necessarily 'trace' events here. We can use the event 
+> callbacks to collect pure counts:
 
-for the record, my kernel is now running with the following
-patches:
+Then we might as well rename the "trace_*" all over the kernel.
 
-patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
-patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+> 
+> | aldebaran> perf stat -e sched:sched_wakeup ./hackbench 10
+> | Time: 0.093
+> |
+> |  Performance counter stats for './hackbench 10':
+> |
+> |           15481  sched:sched_wakeup      
+> |
+> |     0.107390574  seconds time elapsed
+> 
+> etc.
 
-patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
-patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
+Right, because it hooked into a trace_point.
 
-patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
-patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
+> 
+> A third problem is that the name 'TRACE_EVENT' does not tell us what is 
+> being done. Do we declare it? Do we also define it?
 
-patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
-patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
+That's exactly the point. It does both. I actually tried to avoid the
+"DEFINE/DECLARE" because it becomes confusing to what it does. The
+TRACE_EVENT macros are obviously unique in the kernel. There are
+"DECLARE_*" and "DEFINE_*" all over the kernel. And they have an obvious
+meaning. DECLARE_* is used to set up a declaration for a header.
+DEFINE_* creates the instance.  But TRACE_EVENT will default declare
+event, but when CREATE_TRACE_POINTS is set, it defines the instances. Oh
+we should rename that to CREATE_EVENTS?
 
-patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
-patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
+> 
+> DEFINE_SINGLE_EVENT() solves all these problems:
+> 
+>  - It's obvious what it does
+> 
+>  - It suggests users of it that there's another non-single-event 
+>    facility, gently nudging them towards the use of the more efficient
+>    DEFINE_EVENT_CLASS() + DEFINE_EVENT() method.
+> 
+>  - It fits nicely into the rest of the naming scheme.
 
-patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
-patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
+Like I said earlier, I'm not really attached to the name. Except that
+there's already a lot of documentation (I've given tutorials about it)
+using the TRACE_EVENT name. But who am I to decide?
 
-cheers
-tobi
+-- Steve
 
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+
