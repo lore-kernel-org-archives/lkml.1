@@ -1,77 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZKZTIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZKZTMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752359AbZKZTIs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 14:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZKZTIr
+	id S1752392AbZKZTMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 14:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZKZTMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 14:08:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13477 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbZKZTIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 14:08:46 -0500
-Message-ID: <4B0ED238.6060306@redhat.com>
-Date: Thu, 26 Nov 2009 17:08:40 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
-In-Reply-To: <m3iqcxuotd.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Nov 2009 14:12:18 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47449 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbZKZTMQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 14:12:16 -0500
+Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
+ DECLARE_EVENT_CLASS()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20091126181205.GA18670@elte.hu>
+References: <4B0E286A.2000405@cn.fujitsu.com>
+	 <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
+	 <1259224390.21397.87.camel@gandalf.stny.rr.com>
+	 <20091126084039.GA15919@elte.hu>
+	 <1259246730.21397.97.camel@gandalf.stny.rr.com>
+	 <20091126175548.GC4997@nowhere>  <20091126181205.GA18670@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 26 Nov 2009 14:12:20 -0500
+Message-Id: <1259262740.21397.121.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> 
->> The issue I see is to support at the same time NEC and RC5 protocols. While
->> this may work with some devices, for others, the hardware won't allow.
-> 
-> Sure. We can handle it for the "simple" devices at least.
-> 
->>> I think the mapping should be: key = proto + group + raw code, while
->>> key2 could be different_proto + different group (if any) + another code.
->> This may work for protocols up to RC5, that uses either 8 or 16 bits.
->> However, RC6 mode 6 codes can be 32 bits, and we have "only" 32 bits
->> for a scancode. So, we don't have spare bits to represent a protocol, 
->> if we consider RC6 mode 6 codes as well.
-> 
-> I don't see this limitation. The number of bits should depend on the
-> protocol.
+(added Christoph since he was the one to recommend the template
+creation)
 
-see include/linux/input.h:
+On Thu, 2009-11-26 at 19:12 +0100, Ingo Molnar wrote:
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-struct input_event {
-        struct timeval time;
-        __u16 type;
-        __u16 code;
-        __s32 value;
-};
+> DECLARE_EVENT_CLASS() doesnt really define an event visible to the user 
+> yet though. It defines functions internally (to be used by the real 
+> definition of the event) - but not visible externally really.
+> 
+> So the real 'definition' of an event happens with DEFINE_EVENT() - in 
+> the logical model of this.
+> 
+> So the logical model is clear:
+> 
+>    DECLARE_EVENT_CLASS(class);
+> 
+>     DEFINE_EVENT(class, event1);
+>     DEFINE_EVENT(class, event2);
+>     DEFINE_EVENT(class, event3);
+>     ...
+> 
+>   # later:
+>   # DEFINE_STANDALONE_EVENT(event)
 
-extending the value to more than 32 bits require some changes at the input layer,
-probably breaking kernel API.
+I think that name sounds even uglier than DEFINE_SINGLE_EVENT :-/
+
+I'm fine with the DECLARE_EVENT_CLASS and DEFINE_EVENT, but I'm unsure
+what to rename TRACE_EVENT as. I know its still pretty new, but it's
+being used quite a bit. So it should take some extra thought.
+
+I guess DEFINE_EVENT_CLASS is probably not good, although this would be
+the combination of DECLARE_EVENT_CLASS and DEFINE_EVENT which it
+actually is.
+
+DECLARE_DEFINE_EVENT?  *naw*
+
+DEFINE_DECLARED_EVENT?
+
+Or we could go with DECLARE_EVENT(), DECLARE_EVENT_CLASS() and
+DEFINE_EVENT_CLASS_INSTANCE()?
+
 
 > 
->> See above. Also, several protocols have a way to check if a keystroke were
->> properly received. When handling just one protocol, we can use this to double
->> check the key. However, on a multiprotocol mode, we'll need to disable this
->> feature.
+> And the logical model is what matters: that's what developers will use. 
+> They'll use these constructs based on the logical model, nobody sane 
+> will look into the CPP magic ;-)
 > 
-> I don't think so. We can pass the space/mark data to all (configured,
-> i.e. with active mapping) protocol handlers at once. Should a check
-> fail, we ignore the data. Perhaps another protocol will make some sense
-> out of it.
+> And yes, we occasionally have to revisit our naming choices - especially 
+> when mistakes/misnomers become apparent.
 
-What happens if it succeeds on two protocol handlers?
+Agreed, but lets discuss it before we commit it to a non-rebase branch.
 
-Cheers,
-Mauro.
+-- Steve
+
+
