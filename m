@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZKZJ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbZKZJ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760206AbZKZJ0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760165AbZKZJ0p
+	id S1760214AbZKZJ1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760200AbZKZJ1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:26:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57097 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760162AbZKZJ0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:26:44 -0500
-Date: Thu, 26 Nov 2009 10:26:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: linux-next: manual merge of the workqueues tree with the tip tree
-Message-ID: <20091126092631.GA17253@elte.hu>
-References: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
- <20091126081237.GA31034@elte.hu>
- <4B0E4741.10509@kernel.org>
+	Thu, 26 Nov 2009 04:27:16 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:38794 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760163AbZKZJ1O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:27:14 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Junio C Hamano <gitster@pobox.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Teemu Likonen <tlikonen@iki.fi>, Jiri Kosina <jkosina@suse.cz>,
+       Dan Carpenter <error27@gmail.com>, Martin Olsson <martin@minimum.se>,
+       linux-doc@vger.kernel.org
+Subject: [PATCH RFC] Codingstyle: allow omitting braces for all single statement branches
+Date: Thu, 26 Nov 2009 10:26:58 +0100
+Message-Id: <1259227618-1466-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0E4741.10509@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Grepping for "} else$" in v2.6.32-rc8 yields 6440 hits.  So this seems
+to be common practice and should be allowed.  checkpatch doesn't warn
+about both variants.
 
-* Tejun Heo <tj@kernel.org> wrote:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Junio C Hamano <gitster@pobox.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Teemu Likonen <tlikonen@iki.fi>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Dan Carpenter <error27@gmail.com>
+Cc: Martin Olsson <martin@minimum.se>
+Cc: linux-doc@vger.kernel.org
+---
+ Documentation/CodingStyle |   26 +++++++++++++++++---------
+ 1 files changed, 17 insertions(+), 9 deletions(-)
 
-> 11/26/2009 05:12 PM, Ingo Molnar wrote:
-> > Please submit scheduler patches to the scheduler tree. Such level of 
-> > refactoring of a critical scheduler component needs to go through the 
-> > regular scheduler channels. This is a frequently modified piece of code 
-> > and conflicts are likely in the future.
-> 
-> Sure, which sched/* branch should I base these patches on?
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index 8bb3723..84563c6 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -168,15 +168,23 @@ Do not unnecessarily use braces where a single statement will do.
+ if (condition)
+ 	action();
+ 
+-This does not apply if one branch of a conditional statement is a single
+-statement. Use braces in both branches.
+-
+-if (condition) {
+-	do_this();
+-	do_that();
+-} else {
+-	otherwise();
+-}
++If not all branches of a conditional statement are single statements you might
++use braces for both branches.
++
++	if (condition) {
++		do_this();
++		do_that();
++	} else
++		otherwise();
++
++or
++
++	if (condition) {
++		do_this();
++		do_that();
++	} else {
++		otherwise();
++	}
+ 
+ 		3.1:  Spaces
+ 
+-- 
+1.6.5.2
 
-You could send the patch you rely on standalone (it seems to be a single 
-patch) and we can look at applying it to the scheduler tree. That 
-reduces the conflicts on an ongoing basis. Please Cc: PeterZ and Mike 
-Galbraith as well.
-
-Thanks,
-
-	Ingo
