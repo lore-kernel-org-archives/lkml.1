@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbZKZEqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750998AbZKZFEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932854AbZKZEqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 23:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZKZEqV
+	id S1750998AbZKZFEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZKZFEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 23:46:21 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:34819
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932306AbZKZEqU convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 00:04:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43628 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZKZFEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 23:46:20 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <m3638y5rrb.fsf@intrepid.localdomain>
-Date: Wed, 25 Nov 2009 23:46:21 -0500
-Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Content-Transfer-Encoding: 8BIT
-Message-Id: <E63F6C2B-71FD-440D-B659-DC7BB96BEDF6@wilsonet.com>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <m3fx827dgi.fsf@intrepid.localdomain> <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com> <m3638y5rrb.fsf@intrepid.localdomain>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-X-Mailer: Apple Mail (2.1077)
+	Thu, 26 Nov 2009 00:04:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=mFnIvc4VysgZIGbYbDDXPDoYXe1aoBn9I+4SuZsLMd+wOwQ8dbWDGa2vWsryq2Er51
+         9e3/XBooTxSRWIz+z5thjisjQzS9fKl8lmRRqtm8pnVivJdsAzwWuFSLmTwWEeyIcZoP
+         I1PehVFdp0m+vQArOV4S+KYlwGxrdc/bBZLGM=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Prasad <prasad@linux.vnet.ibm.com>
+Subject: [PATCH 4/3] x86/hw-breakpoints: Don't lose GE flag while disabling a breakpoint
+Date: Thu, 26 Nov 2009 06:04:38 +0100
+Message-Id: <1259211878-6013-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
+References: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 25, 2009, at 2:27 PM, Krzysztof Halasa wrote:
+When we schedule out a breakpoint from the cpu, we also incidentally
+remove the "Global exact breakpoint" flag from the breakpoint control
+register. It makes us losing the fine grained precision about the
+origin of the instructions that may trigger breakpoint exceptions for
+the other breakpoints running in this cpu.
 
-> Jarod Wilson <jarod@wilsonet.com> writes:
-> 
->> Ah, but the approach I'd take to converting to in-kernel decoding[*]
->> would be this:
->> 
->> 1) bring drivers in in their current state
->>   - users keep using lirc as they always have
->> 
->> 2) add in-kernel decoding infra that feeds input layer
-> 
-> Well. I think the above is fine enough.
-> 
->> 3) add option to use in-kernel decoding to existing lirc drivers
->>   - users can keep using lirc as they always have
->>   - users can optionally try out in-kernel decoding via a modparam
->> 
->> 4) switch the default mode from lirc decode to kernel decode for each lirc driver
->>   - modparam can be used to continue using lirc interface instead
->> 
->> 5) assuming users aren't coming at us with pitchforks, because things don't actually work reliably with in-kernel decoding, deprecate the lirc interface in driver
->> 
->> 6) remove lirc interface from driver, its now a pure input device
-> 
-> But 3-6 are IMHO not useful. We don't need lirc _or_ input. We need
-> both at the same time: input for the general, simple case and for
-> consistency with receivers decoding in firmware/hardware; input for
-> special cases such as mapping the keys, protocols not supported by the
-> kernel and so on (also for in-tree media drivers where applicable).
-> 
->> [*] assuming, of course, that it was actually agreed upon that
->> in-kernel decoding was the right way, the only way, all others will be
->> shot on sight. ;)
-> 
-> I think: in-kernel decoding only as the general, primary means. Not the
-> only one.
+Reported-by: Prasad <prasad@linux.vnet.ibm.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ arch/x86/kernel/hw_breakpoint.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-Okay, I read ya now. I got my wires crossed, thought you were advocating for dropping the lirc interface entirely. I think we're on the same page then. :)
-
+diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+index 92ea5aa..d42f65a 100644
+--- a/arch/x86/kernel/hw_breakpoint.c
++++ b/arch/x86/kernel/hw_breakpoint.c
+@@ -59,22 +59,28 @@ static DEFINE_PER_CPU(unsigned long, cpu_debugreg[HBP_NUM]);
+ static DEFINE_PER_CPU(struct perf_event *, bp_per_reg[HBP_NUM]);
+ 
+ 
+-/*
+- * Encode the length, type, Exact, and Enable bits for a particular breakpoint
+- * as stored in debug register 7.
+- */
+-unsigned long encode_dr7(int drnum, unsigned int len, unsigned int type)
++static inline unsigned long
++__encode_dr7(int drnum, unsigned int len, unsigned int type)
+ {
+ 	unsigned long bp_info;
+ 
+ 	bp_info = (len | type) & 0xf;
+ 	bp_info <<= (DR_CONTROL_SHIFT + drnum * DR_CONTROL_SIZE);
+-	bp_info |= (DR_GLOBAL_ENABLE << (drnum * DR_ENABLE_SIZE)) |
+-				DR_GLOBAL_SLOWDOWN;
++	bp_info |= (DR_GLOBAL_ENABLE << (drnum * DR_ENABLE_SIZE));
++
+ 	return bp_info;
+ }
+ 
+ /*
++ * Encode the length, type, Exact, and Enable bits for a particular breakpoint
++ * as stored in debug register 7.
++ */
++unsigned long encode_dr7(int drnum, unsigned int len, unsigned int type)
++{
++	return __encode_dr7(drnum, len, type) | DR_GLOBAL_SLOWDOWN;
++}
++
++/*
+  * Decode the length and type bits for a particular breakpoint as
+  * stored in debug register 7.  Return the "enabled" status.
+  */
+@@ -154,7 +160,7 @@ void arch_uninstall_hw_breakpoint(struct perf_event *bp)
+ 		return;
+ 
+ 	dr7 = &__get_cpu_var(cpu_dr7);
+-	*dr7 &= ~encode_dr7(i, info->len, info->type);
++	*dr7 &= ~__encode_dr7(i, info->len, info->type);
+ 
+ 	set_debugreg(*dr7, 7);
+ }
 -- 
-Jarod Wilson
-jarod@wilsonet.com
-
-
+1.6.2.3
 
