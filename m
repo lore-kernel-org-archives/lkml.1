@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbZKZHF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZKZHFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbZKZHF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 02:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757740AbZKZHF0
+	id S1758806AbZKZHFv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 02:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbZKZHFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 02:05:26 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63394 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756136AbZKZHFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 02:05:25 -0500
-Message-ID: <4B0E289F.5010104@cn.fujitsu.com>
-Date: Thu, 26 Nov 2009 15:05:03 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Thu, 26 Nov 2009 02:05:50 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:52967 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758584AbZKZHFt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 02:05:49 -0500
+Subject: Re: [PATCH] JFFS2: min/max confusion?
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/9] tracing: Convert some workqueue events to DEFINE_EVENT
-References: <4B0E2807.4060102@cn.fujitsu.com>
-In-Reply-To: <4B0E2807.4060102@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B08088C.8050305@gmail.com>
+References: <4B08088C.8050305@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 09:05:25 +0200
+Message-Id: <1259219125.29118.41.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 26 Nov 2009 07:05:30.0416 (UTC) FILETIME=[D6DF5300:01CA6E66]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use TRACE_EVENT_TEMPLATE to remove duplicate code:
+On Sat, 2009-11-21 at 16:34 +0100, Roel Kluin wrote:
+> MAX_SUMMARY_SIZE was meant as a limit, not as a minimum
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  fs/jffs2/summary.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> unless I am mistaken?
+> 
+> diff --git a/fs/jffs2/summary.c b/fs/jffs2/summary.c
+> index 6caf1e1..800171d 100644
+> --- a/fs/jffs2/summary.c
+> +++ b/fs/jffs2/summary.c
+> @@ -23,7 +23,7 @@
+>  
+>  int jffs2_sum_init(struct jffs2_sb_info *c)
+>  {
+> -	uint32_t sum_size = max_t(uint32_t, c->sector_size, MAX_SUMMARY_SIZE);
+> +	uint32_t sum_size = min_t(uint32_t, c->sector_size, MAX_SUMMARY_SIZE);
+>  
+>  	c->summary = kzalloc(sizeof(struct jffs2_summary), GFP_KERNEL);
 
-   text    data     bss     dec     hex filename
-  13171     800      72   14043    36db kernel/workqueue.o.old
-  12243     800      68   13111    3337 kernel/workqueue.o
+This looks right, I've pushed your patch to my l2-mtd tree, thanks.
 
-Two events are converted:
-
-  workqueue: workqueue_insertion, workqueue_execution
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/trace/events/workqueue.h |   22 +++++++---------------
- 1 files changed, 7 insertions(+), 15 deletions(-)
-
-diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
-index e4612db..6da8d1b 100644
---- a/include/trace/events/workqueue.h
-+++ b/include/trace/events/workqueue.h
-@@ -8,7 +8,7 @@
- #include <linux/sched.h>
- #include <linux/tracepoint.h>
- 
--TRACE_EVENT(workqueue_insertion,
-+TRACE_EVENT_TEMPLATE(workqueue,
- 
- 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
- 
-@@ -30,26 +30,18 @@ TRACE_EVENT(workqueue_insertion,
- 		__entry->thread_pid, __entry->func)
- );
- 
--TRACE_EVENT(workqueue_execution,
-+DEFINE_EVENT(workqueue, workqueue_insertion,
- 
- 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
- 
--	TP_ARGS(wq_thread, work),
-+	TP_ARGS(wq_thread, work)
-+);
- 
--	TP_STRUCT__entry(
--		__array(char,		thread_comm,	TASK_COMM_LEN)
--		__field(pid_t,		thread_pid)
--		__field(work_func_t,	func)
--	),
-+DEFINE_EVENT(workqueue, workqueue_execution,
- 
--	TP_fast_assign(
--		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
--		__entry->thread_pid	= wq_thread->pid;
--		__entry->func		= work->func;
--	),
-+	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
- 
--	TP_printk("thread=%s:%d func=%pf", __entry->thread_comm,
--		__entry->thread_pid, __entry->func)
-+	TP_ARGS(wq_thread, work)
- );
- 
- /* Trace the creation of one workqueue thread on a cpu */
 -- 
-1.6.3
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
