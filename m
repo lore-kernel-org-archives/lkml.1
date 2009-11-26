@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZKZQyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbZKZRCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbZKZQyD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759468AbZKZQyC
+	id S1760837AbZKZRCA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbZKZRB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:54:02 -0500
-Received: from na3sys009aog106.obsmtp.com ([74.125.149.77]:46134 "EHLO
-	na3sys009aog106.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755902AbZKZQyB (ORCPT
+	Thu, 26 Nov 2009 12:01:59 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:60854 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759955AbZKZRB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:54:01 -0500
-From: "Leyendecker, Robert" <Robert.Leyendecker@lsi.com>
-To: Tim Blechmann <tim@klingt.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Date: Thu, 26 Nov 2009 11:53:55 -0500
-Subject: RE: ext4: smp_processor_id() in preemptible
-Thread-Topic: ext4: smp_processor_id() in preemptible
-Thread-Index: AcpuKVl1Orcch/bkQvKX0HI96yXkrgAjkJnw
-Message-ID: <8C8865ED624BB94F8FE50259E2B5C5B304593DAB98@palmail03.lsi.com>
-References: <4AC9C4FD.7080606@klingt.org>
-In-Reply-To: <4AC9C4FD.7080606@klingt.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Thu, 26 Nov 2009 12:01:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=W9LUJntie6tz4u3v0/P4Ojr8eLIjrDQtZv8MklPnacPFXbQOvK0oGfLajvLzFxkQ2z
+         Vlx9tSyNV1NIwSgsnh5SfDjY+0rFdIOReWQNZ11Xh/1uMtEc24I0w+70Nm+VE3xALGlK
+         hrqHz7U0LiPKxxi8oDmjIH3Mp6amDq3otDIGk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
+Date: Thu, 26 Nov 2009 18:00:54 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200911261728.36433.bzolnier@gmail.com>
+In-Reply-To: <200911261728.36433.bzolnier@gmail.com>
 MIME-Version: 1.0
+Message-Id: <200911261800.55025.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nAQGsL16031158
 
-Tim,
-
-I have similar crash, but probably different cause-vector, posted on this list, fedora bugzilla, rt-users but no response so far from anyone. Did you find any work around?  I tried looking at smp code for hints on problem it looks like in my case it could be trying to reschedule work on different CPU at time of crash. However, I admit that I could be way, way off on that cause. In my case, if I hammer my network interface with packets while another app is reading packets, my host locks up and clients are reporting dest unreachables. 
-
-I don't think I have the problem in non-rt kernel. Have you tried booting without smp support?
-
-http://lkml.org/lkml/headers/2009/11/23/548
-
--Bob
-
-
-
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> owner@vger.kernel.org] On Behalf Of Tim Blechmann
-> Sent: Monday, October 05, 2009 5:06 AM
-> To: linux-kernel@vger.kernel.org; linux-ext4@vger.kernel.org
-> Subject: ext4: smp_processor_id() in preemptible
+On Thursday 26 November 2009 05:28:36 pm Bartlomiej Zolnierkiewicz wrote:
 > 
-> hi all,
+> MWDMA0 timings cannot be met with the PIIX based controller
+> programming interface.
 > 
-> using 2.6.31.1 with CONFIG_PREEMPT=y, i got the following call traces
-> from ext4 related code, when doing some io-heavy tasks:
+> This change should be safe as this is how we have been doing
+> things in IDE it8213 host driver for years.
 > 
-> [30477.126201] INFO: task gconfd-2:2296 blocked for more than 120
-> seconds.
-> [30477.126205] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-> disables this message.
-> [30477.126208] gconfd-2      D ffff8800280436e8     0  2296      1
-> 0x00000000
-> [30477.126214] BUG: using smp_processor_id() in preemptible [00000000]
-> code: khungtaskd/72 [30477.126221] caller is
-> show_stack_log_lvl+0x32/0x170
-> [30477.126224] Pid: 72, comm: khungtaskd Tainted: P           2.6.31.1
-> #29
-> [30477.126227] Call Trace:
-> [30477.126234]  [<ffffffff81266881>] debug_smp_processor_id+0xd1/0xf0
-> [30477.126238]  [<ffffffff81014b62>] show_stack_log_lvl+0x32/0x170
-> [30477.126242]  [<ffffffff814f57c0>] ? printk+0x3c/0x44 [30477.126246]
-> [<ffffffff81015e17>] show_stack+0x17/0x20 [30477.126251]
-> [<ffffffff81045b52>] sched_show_task+0x92/0x100 [30477.126256]
-> [<ffffffff810ab66d>] watchdog+0x1fd/0x240 [30477.126260]
-> [<ffffffff810ab470>] ? watchdog+0x0/0x240 [30477.126264]
-> [<ffffffff81071216>] kthread+0xa6/0xb0 [30477.126268]
-> [<ffffffff8101303a>] child_rip+0xa/0x20 [30477.126272]
-> [<ffffffff81071170>] ? kthread+0x0/0xb0 [30477.126275]
-> [<ffffffff81013030>] ? child_rip+0x0/0x20 [30477.126278]
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Verified with the documentation (similar case as with pata_efar).
+
+Uhhh, no...
+
+Too many damn drivers.
+
+Too much damn duplication.
+
+Too much damn subtle differences here and there.
+
+The hardware is probably fine for MWMDA0 when it comes to pata_{efar,it8213},
+it just not documented properly in the data sheet.
+
+I'll drop those two patches from my tree and take some break..
+
+> On top of patches from yesterday.
+> 
+>  drivers/ata/pata_it8213.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: b/drivers/ata/pata_it8213.c
+> ===================================================================
+> --- a/drivers/ata/pata_it8213.c
+> +++ b/drivers/ata/pata_it8213.c
+> @@ -227,7 +227,7 @@ static int it8213_init_one (struct pci_d
+>  	static const struct ata_port_info info = {
+>  		.flags		= ATA_FLAG_SLAVE_POSS,
+>  		.pio_mask	= ATA_PIO4,
+> -		.mwdma_mask	= ATA_MWDMA2,
+> +		.mwdma_mask	= ATA_MWDMA12_ONLY,
+>  		.udma_mask 	= ATA_UDMA6,
+>  		.port_ops	= &it8213_ops,
+>  	};
