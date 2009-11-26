@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965016AbZKYXvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759959AbZKZAKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965016AbZKYXvG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 18:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965005AbZKYXvF
+	id S1759959AbZKZAKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 19:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZKZAKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 18:51:05 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43945 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965004AbZKYXvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 18:51:04 -0500
-Date: Thu, 26 Nov 2009 10:51:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: =?UTF-8?B?IkrDtnJuIEVuZ2VsIg==?= <joern@logfs.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 0/17] [LogFS] New flash filesystem
-Message-Id: <20091126105103.4b2b4408.sfr@canb.auug.org.au>
-In-Reply-To: <20091125155510.GE10944@logfs.org>
-References: <20091120181113.GA2159@logfs.org>
-	<200911231318.39685.arnd@arndb.de>
-	<20091125155510.GE10944@logfs.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Nov_2009_10_51_03_+1100_mvK7wAz0.=Lx4JZ3"
+	Wed, 25 Nov 2009 19:10:11 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:60762 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbZKZAKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 19:10:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:reply-to:organization:user-agent
+         :mime-version:to:cc:subject:references:in-reply-to
+         :x-enigmail-version:x-age:x-location:x-os:x-face:content-type
+         :content-transfer-encoding;
+        b=L934s3dlHiBpao1L0kuNcd2FqWXKl2+vmidVVVPEX72BYlSYNHXYRjed+ECwjZS0Ph
+         oniaHMt1WSIE282Qawf49RySJIGyuuX+1Oet0VGlO/IMw7k5jwZbalWgjsFAD5q++8ma
+         FqrL7d5Pgwjl+d6nAY4D7soyiiTiey84r5lEo=
+Message-ID: <4B0DC764.8040205@gmail.com>
+Date: Thu, 26 Nov 2009 01:10:12 +0100
+From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedran.furac@gmail.com>
+Reply-To: vedran.furac@gmail.com
+Organization: Home
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20091109 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <20091125124433.GB27615@random.random>
+In-Reply-To: <20091125124433.GB27615@random.random>
+X-Enigmail-Version: 0.95.7
+X-Age: 25
+X-Location: Lovran, Croatia
+X-OS: Debian GNU/Linux
+X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Nov_2009_10_51_03_+1100_mvK7wAz0.=Lx4JZ3
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Andrea Arcangeli wrote:
 
-Hi J=C3=B6rn,
+> Hello,
 
-On Wed, 25 Nov 2009 16:55:11 +0100 J=C3=B6rn Engel <joern@logfs.org> wrote:
->
-> On Mon, 23 November 2009 13:18:39 +0100, Arnd Bergmann wrote:
-> >=20
-> > It should definitely be included in linux-next, and I guess it
-> > should have been in there for some time, to get better
-> > compile-time coverage across architectures, and some
-> > more testing.
-> >=20
-> > I can't find it in linux-next right now, but I could be
-> > looking at the wrong stuff again, as I have before.
->=20
-> do you have a reason not to add logfs to linux-next?
+Hi all!
 
-Apart from not having been asked to do so, no ;-)
+> lengthy discussion on something I think is quite obviously better and
+> I tried to change a couple of years back already (rss instead of
+> total_vm).
 
-i.e. send me a request with the git url and I will add it.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Now that 2.6.32 is almost out, is it possible to get OOMK fixed in
+2.6.33 so that I could turn overcommit on (overcommit_memory=0) again
+without fear of loosing my work?
 
---Signature=_Thu__26_Nov_2009_10_51_03_+1100_mvK7wAz0.=Lx4JZ3
-Content-Type: application/pgp-signature
+Regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Vedran
 
-iEYEARECAAYFAksNwucACgkQjjKRsyhoI8wySACfY7xsQV8+dibyJKsEr5cl4NWT
-3j0An3DBUGHzFEyGNp43It93lBTWyzWo
-=WJtC
------END PGP SIGNATURE-----
 
---Signature=_Thu__26_Nov_2009_10_51_03_+1100_mvK7wAz0.=Lx4JZ3--
+-- 
+http://vedranf.net | a8e7a7783ca0d460fee090cc584adc12
