@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZKZWHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZKZWOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbZKZWHx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 17:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZKZWHx
+	id S1753136AbZKZWOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 17:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZKZWOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 17:07:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33228 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 17:14:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38294 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbZKZWHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 17:07:52 -0500
-Message-ID: <4B0EFC30.80208@redhat.com>
-Date: Thu, 26 Nov 2009 20:07:44 -0200
+	id S1752069AbZKZWOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 17:14:25 -0500
+Message-ID: <4B0EFDBA.8000905@redhat.com>
+Date: Thu, 26 Nov 2009 20:14:18 -0200
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>	<4B0ED238.6060306@redhat.com> <m3pr75rpqa.fsf@intrepid.localdomain>	<4B0EED7D.90204@redhat.com> <m3ljhtrn83.fsf@intrepid.localdomain>
-In-Reply-To: <m3ljhtrn83.fsf@intrepid.localdomain>
+References: <BDccCqq3jFB@christoph>
+In-Reply-To: <BDccCqq3jFB@christoph>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+Christoph Bartelmus wrote:
+> Hi Mauro,
 > 
->> No. All the other API functions there work with 32 bits for scancodes.
+> on 26 Nov 09 at 18:59, Mauro Carvalho Chehab wrote:
+>> Christoph Bartelmus wrote:
+> [...]
+>>>> lircd supports input layer interface. Yet, patch 3/3 exports both devices
+>>>> that support only pulse/space raw mode and devices that generate scan
+>>>> codes via the raw mode interface. It does it by generating artificial
+>>>> pulse codes.
+>>> Nonsense! There's no generation of artificial pulse codes in the drivers.
+>>> The LIRC interface includes ways to pass decoded IR codes of arbitrary
+>>> length to userspace.
 > 
-> We don't need them, do we? We need a new ioctl for changing key mappings
-> anyway (a single ioctl for setting the whole table I think), and we can
-> have arbitrary length of scan codes there.
+>> I might have got wrong then a comment in the middle of the
+>> imon_incoming_packet() of the SoundGraph iMON IR patch:
+> 
+> Indeed, you got it wrong.
+> As I already explained before, this device samples the signal at a  
+> constant rate and delivers the current level in a bit-array. This data is  
+> then condensed to pulse/space data.
 
-Why do you want to replace everything into a single shot? Had you ever tried
-to replace a scancode table with the current API?
+Ah, ok. It is now clear to me. 
 
-$ wc ./keycodes/dib0700_rc_keys
- 216  432 3541 ./keycodes/dib0700_rc_keys
+IMHO, it would be better to explain this at the source code, since the 
+imon_incoming_packet() is a little complex. 
 
-This is the biggest table we have: 216 scancodes. It has codes for several 
-different IR's bound together into the same table.
+It would help the review process if those big routines could be broken into
+ a few functions. While this improves code readability, it shouldn't 
+affect performance, as gcc will handle the static functions used only once
+as inline.
 
-Let's replace the entire table (tested on a dib8076 reference design device):
-
-$ time ./keytable ./keycodes/dib0700_rc_keys
-
-real    0m0.029s
-user    0m0.000s
-sys     0m0.027s
-
-Don't you think that 29ms to replace 216 codes to be fast enough, especially since
-you only need to do it once after plugging a device?
-
-Also, if you want to control your device with two different IR controllers, the better
-is to allow adding new keycodes there, instead of just allowing the replacement
-of the entire table.
-
-Maybe we'll need some extensions there, for example to extend the size of the dynamic
-table, but I don't see any timing issue here.
+> Christoph
 
 Cheers,
-Mauro
+Mauro.
