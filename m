@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZKZTpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZKZTq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZKZTpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 14:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZKZTpl
+	id S1752502AbZKZTq5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 14:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbZKZTq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 14:45:41 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:46370 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751169AbZKZTpk (ORCPT
+	Thu, 26 Nov 2009 14:46:57 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65308 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbZKZTq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 14:45:40 -0500
-Message-ID: <4B0EDAF9.7080902@bluewatersys.com>
-Date: Fri, 27 Nov 2009 08:46:01 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
-       Joao Ramos <joao.ramos@inov.pt>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's EP93xx
- CPUs
-References: <200911261651.40928.bzolnier@gmail.com>
-In-Reply-To: <200911261651.40928.bzolnier@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Nov 2009 14:46:56 -0500
+Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
+ DECLARE_EVENT_CLASS()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+In-Reply-To: <1259264667.21397.131.camel@gandalf.stny.rr.com>
+References: <4B0E286A.2000405@cn.fujitsu.com>
+	 <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
+	 <1259224390.21397.87.camel@gandalf.stny.rr.com>
+	 <20091126084039.GA15919@elte.hu>
+	 <1259246730.21397.97.camel@gandalf.stny.rr.com>
+	 <20091126175548.GC4997@nowhere> <20091126181205.GA18670@elte.hu>
+	 <1259262740.21397.121.camel@gandalf.stny.rr.com>
+	 <20091126192019.GA11245@elte.hu>
+	 <1259264667.21397.131.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 26 Nov 2009 14:47:01 -0500
+Message-Id: <1259264821.21397.133.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> Based on the older IDE host driver by Joao Ramos and review comments
-> for it from Sergei Shtylyov.  Not yet tested with the real hardware.
+On Thu, 2009-11-26 at 14:44 -0500, Steven Rostedt wrote:
+
+> Come to think of it, since current TRACE_EVENT is now just:
+> 
+> #define TRACE_EVENT() \
+> 	TRACE_EVENT_TEMPLATE() \
+> 	DEFINE_EVENT
+> 
+> This may make the most sense. I haven't tried it, but I believe that you
+> could even base other events off of the TRACE_EVENT. That is:
+> 
+> TRACE_EVENT(x, ...);
+> 
+> DEFINE_EVENT(x, y, ...);
+> 
+> And y would use x as its class.
+> 
+> So going back to your scheme of DECLARE_EVENT_CLASS(), it may make sense
+> to have DECLARE_AND_DEFINE_EVENT().
+> 
+> 
+> DECLARE_EVENT_CLASS(class, ...);
+> DEFINE_EVENT(class, foo, ...);
+> 
+> DECLARE_AND_DEFINE_EVENT(bar, ...);
+
+Perhaps being the most descriptive to what it does:
+
+	DECLARE_CLASS_AND_DEFINE_EVENT() ?
+
+-- Steve
 
 > 
-> Sidenote:
+> DEFINE_EVENT(bar, zoo, ...);
 > 
-> I have neither the hardware nor much personal interest in adding support
-> for it so I did it mainly cause:
-> 
-> - IDE host driver wasn't merged due to policy change and I hate seeing fair
->   amount of review work from me & Sergei going into waste. :)
-> 
-> - I was curious about some claims I've been hearing recently so I decided to
->   verify them in practice (porting the driver to libata was relatively easy
->   but unfortunately in the process it gained almost 50% in the LOC count..).
-> 
-> so if somebody would like to take over this patch feel free to do it.
 
-Thanks for doing this. I'll see if I can dig out a hard-drive and give
-this a test. I had some comments, but I will fix them up myself if I get
-round to testing this.
 
-~Ryan
-
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-Fax:   +64 3 3779135			  USA 1800 261 2934
