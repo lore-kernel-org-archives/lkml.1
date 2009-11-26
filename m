@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbZKZEjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbZKZEqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932789AbZKZEjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 23:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZKZEjM
+	id S932854AbZKZEqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 23:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZKZEqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 23:39:12 -0500
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:46984 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932306AbZKZEjK (ORCPT
+	Wed, 25 Nov 2009 23:46:21 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:34819
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932306AbZKZEqU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 23:39:10 -0500
-Message-ID: <4B0E0670.2000309@in.ibm.com>
-Date: Thu, 26 Nov 2009 10:09:12 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: ego@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Gregory Haskins <ghaskins@novell.com>, maxk <maxk@qualcomm.com>
-Subject: Re: -next: Nov 12 - kernel BUG at kernel/sched.c:7359!
-References: <20091112195101.63263490.sfr@canb.auug.org.au> <4AFBF73B.5040500@in.ibm.com> <1258027820.4039.129.camel@laptop> <4AFBFE3D.80507@in.ibm.com> <1258028831.4039.152.camel@laptop> <1258045831.4039.736.camel@laptop>  <20091113095801.GA29977@in.ibm.com> <1258107368.4039.1149.camel@laptop> <1258108281.22655.5.camel@laptop> <4B0A5BA7.8020604@in.ibm.com> <1259156575.4027.514.camel@laptop>
-In-Reply-To: <1259156575.4027.514.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 23:46:20 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <m3638y5rrb.fsf@intrepid.localdomain>
+Date: Wed, 25 Nov 2009 23:46:21 -0500
+Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Content-Transfer-Encoding: 8BIT
+Message-Id: <E63F6C2B-71FD-440D-B659-DC7BB96BEDF6@wilsonet.com>
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <m3fx827dgi.fsf@intrepid.localdomain> <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com> <m3638y5rrb.fsf@intrepid.localdomain>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Correct, Ingo objected to the fastpath overhead.
->
-> Could you please try the below patch which tries to address the issue
-> differently.
->   
-Works great. Thanks
+On Nov 25, 2009, at 2:27 PM, Krzysztof Halasa wrote:
 
-Tested-by: Sachin Sant <sachinp@in.ibm.com>
+> Jarod Wilson <jarod@wilsonet.com> writes:
+> 
+>> Ah, but the approach I'd take to converting to in-kernel decoding[*]
+>> would be this:
+>> 
+>> 1) bring drivers in in their current state
+>>   - users keep using lirc as they always have
+>> 
+>> 2) add in-kernel decoding infra that feeds input layer
+> 
+> Well. I think the above is fine enough.
+> 
+>> 3) add option to use in-kernel decoding to existing lirc drivers
+>>   - users can keep using lirc as they always have
+>>   - users can optionally try out in-kernel decoding via a modparam
+>> 
+>> 4) switch the default mode from lirc decode to kernel decode for each lirc driver
+>>   - modparam can be used to continue using lirc interface instead
+>> 
+>> 5) assuming users aren't coming at us with pitchforks, because things don't actually work reliably with in-kernel decoding, deprecate the lirc interface in driver
+>> 
+>> 6) remove lirc interface from driver, its now a pure input device
+> 
+> But 3-6 are IMHO not useful. We don't need lirc _or_ input. We need
+> both at the same time: input for the general, simple case and for
+> consistency with receivers decoding in firmware/hardware; input for
+> special cases such as mapping the keys, protocols not supported by the
+> kernel and so on (also for in-tree media drivers where applicable).
+> 
+>> [*] assuming, of course, that it was actually agreed upon that
+>> in-kernel decoding was the right way, the only way, all others will be
+>> shot on sight. ;)
+> 
+> I think: in-kernel decoding only as the general, primary means. Not the
+> only one.
 
-Regards
--Sachin
-
-> ---
-> Subject: sched: Fix balance vs hotplug race
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Wed Nov 25 13:31:39 CET 2009
->
-> Since (e761b77: cpu hotplug, sched: Introduce cpu_active_map and redo
-> sched domain managment) we have cpu_active_mask which is suppose to
-> rule scheduler migration and load-balancing, except it never did.
->
-> The particular problem being solved here is a crash in
-> try_to_wake_up() where select_task_rq() ends up selecting an offline
-> cpu because select_task_rq_fair() trusts the sched_domain tree to reflect
-> the current state of affairs, similarly select_task_rq_rt() trusts the
-> root_domain.
->
-> However, the sched_domains are updated from CPU_DEAD, which is after
-> the cpu is taken offline and after stop_machine is done. Therefore it
-> can race perfectly well with code assuming the domains are right.
->
-> Cure this by building the domains from cpu_active_mask on
-> CPU_DOWN_PREPARE.
->
->   
-
+Okay, I read ya now. I got my wires crossed, thought you were advocating for dropping the lirc interface entirely. I think we're on the same page then. :)
 
 -- 
+Jarod Wilson
+jarod@wilsonet.com
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+
 
