@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751620AbZKZMlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbZKZMve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751620AbZKZMlI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 07:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZKZMlG
+	id S1758895AbZKZMve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 07:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZKZMvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 07:41:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36364 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbZKZMlF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 07:41:05 -0500
-Subject: Re: [PATCH 1/4 tip/sched/core] sched: rename preempt_notifier to
- sched_notifier and always enable it
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20091126115605.GA15189@elte.hu>
-References: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
-	 <20091126081237.GA31034@elte.hu> <4B0E4741.10509@kernel.org>
-	 <20091126092631.GA17253@elte.hu> <4B0E4EFB.2070705@kernel.org>
-	 <20091126095154.GE32275@elte.hu> <4B0E5458.30303@kernel.org>
-	 <20091126102936.GA1196@elte.hu> <1259231565.4273.31.camel@twins>
-	 <1259234619.4273.32.camel@twins>  <20091126115605.GA15189@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 26 Nov 2009 13:40:59 +0100
-Message-ID: <1259239259.4273.82.camel@twins>
+	Thu, 26 Nov 2009 07:51:33 -0500
+Received: from mail1.radix.net ([207.192.128.31]:43794 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751407AbZKZMvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 07:51:32 -0500
+Subject: Re: linux-next: workqueues tree build failure
+From: Andy Walls <awalls@radix.net>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: ext Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       ext Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <200911261344.32051.peter.ujfalusi@nokia.com>
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
+	 <200911261131.15155.peter.ujfalusi@nokia.com>
+	 <20091126101859.GA27562@rakim.wolfsonmicro.main>
+	 <200911261344.32051.peter.ujfalusi@nokia.com>
+Content-Type: text/plain
+Date: Thu, 26 Nov 2009 07:49:56 -0500
+Message-Id: <1259239796.3062.20.camel@palomino.walls.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 12:56 +0100, Ingo Molnar wrote:
+On Thu, 2009-11-26 at 13:44 +0200, Peter Ujfalusi wrote:
+> On Thursday 26 November 2009 12:18:59 ext Mark Brown wrote:
+> > On Thu, Nov 26, 2009 at 11:31:15AM +0200, Peter Ujfalusi wrote:
+> > > For a quick fix, I can convert the tlv320dac33 driver to use this, and
+> > > revisit later, if it does not fulfill the timing requirements for the HW.
+> > 
+> > If there are problems then creating a dedicated thread you can wake
+> > would probably do the job.
 > 
-> I wouldnt mind some form of TRACE_EVENT_CALLBACK() thing whose callback 
-> facility is always available, even if CONFIG_PERF_EVENTS and 
-> CONFIG_TRACING is disabled.
-
-CALLBACK_EVENT() would be my preferred name, and shouldn't live anywhere
-near the regular tracing bits, the tracing bits could simply add another
-callback in it when enabled.
-
-> It might grow out of notifier.h - albeit i suspect the shorter path 
-> would be to grow it from TRACE_EVENT().
+> For now I'm going to change the create_rt_workqueue to 
+> create_singlethread_workqueue, that is available at the wq.git of kernel.org.
 > 
-> ( The various pagefault notifiers in arch/x86/mm/fault.c could use this 
->   facility too. )
-> 
-> What we definitely dont want is the proliferation of callbacks.
+> If it is not sufficient, than I might use dedicated thread, which I woke up, but 
+> I would like to keep that as a backup plan, since it needs more work ;)
 
-Sure, a first approach would be to find something that can cover both
-these extended preempt notifiers and the mmu notifier stuff, clearly
-notifier.h isn't cutting it anymore, and rolling these things yourself
-has obvious disadvantages like not being to add generic bits without
-having to touch all of them.
+Peter,
 
-The big downside from TRACE_EVENT() like things is the implementation,
-its a horrid macro mess. They're nice enough when you don't have to
-touch the implementation, but rather painful when you do have to.
+I would suspect using a single-threaded workqueue is better than a
+wake_up() of another thread.  IIRC, after queuing work, the workqueue's
+single thread may run almost immediately on the same processor.  With
+waking up sleeping threads, I've run into scheduler delays around 10 ms
+on a dual core x86_64 desktop system.
 
-But I guess there's just no real alternative..
+Regards,
+Andy
+
+> I'll send the patch in a few minutes.
+
+
