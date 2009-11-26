@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZKZRqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbZKZRrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751910AbZKZRqg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZKZRqf
+	id S1752176AbZKZRrP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZKZRrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:46:35 -0500
-Received: from khc.piap.pl ([195.187.100.11]:42871 "EHLO khc.piap.pl"
+	Thu, 26 Nov 2009 12:47:15 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45343 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZKZRqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:46:34 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<20091123173726.GE17813@core.coreip.homeip.net>
-	<m3r5rpq818.fsf@intrepid.localdomain>
-	<20091126052155.GD23244@core.coreip.homeip.net>
-Date: Thu, 26 Nov 2009 18:46:38 +0100
-In-Reply-To: <20091126052155.GD23244@core.coreip.homeip.net> (Dmitry
-	Torokhov's message of "Wed, 25 Nov 2009 21:21:55 -0800")
-Message-ID: <m31vjlw54x.fsf@intrepid.localdomain>
+	id S1750848AbZKZRrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 12:47:14 -0500
+Date: Thu, 26 Nov 2009 09:47:15 -0800
+From: Greg KH <gregkh@suse.de>
+To: ??ric Piel <E.A.B.Piel@tudelft.nl>
+Cc: Alan Cox <alan@linux.intel.com>, mchehab@redhat.com,
+       linux-kernel@vger.kernel.org, Hank Janssen <hjanssen@microsoft.com>
+Subject: Re: [PATCH] Edwin T??r??k found the following, so fix it
+Message-ID: <20091126174715.GA8592@suse.de>
+References: <20091126152154.18281.24788.stgit@localhost.localdomain> <4B0EB0CB.9050006@tudelft.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0EB0CB.9050006@tudelft.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+On Thu, Nov 26, 2009 at 05:46:03PM +0100, ??ric Piel wrote:
+> Op 26-11-09 16:22, Alan Cox schreef:
+> > In function ???memset???,
+> > inlined from ???ir_input_init??? at drivers/media/common/ir-functions.c:67:
+> > /home/edwin/builds/linux-2.6/arch/x86/include/asm/string_64.h:61:
+> > warning: call to ???__warn_memset_zero_len??? declared with attribute
+> > warning: memset used with constant zero length parameter; this could be
+> > due to transposed parameters
+> > memset(ir->ir_codes, sizeof(ir->ir_codes), 0);
+> Hello,
+> A "grep -E "memset.*,.*, 0\\)" -r" also reports
+> drivers/staging/hv/StorVsc.c as a suspect:
+> memset(request, sizeof(struct storvsc_request_extension), 0);
+> memset(vstorPacket, sizeof(struct vstor_packet), 0);
+> memset(vstorPacket, sizeof(struct vstor_packet), 0);
+> memset(vstorPacket, sizeof(struct vstor_packet), 0);
+> 
+> Maybe someone cares about fixing it too?
 
-> In what way the key interface is unsufficient for delivering button
-> events?
+It's already fixed in linux-next and will be sent to Linus soon.
 
-At present: 128 different keys only (RC5: one group). One remote per
-device only.
+thanks,
 
-The protocol itself doesn't have the above limitations, but has others,
-with are acceptable for key input.
--- 
-Krzysztof Halasa
+greg k-h
