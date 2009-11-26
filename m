@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZKZV0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbZKZV1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752451AbZKZV0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 16:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZKZV0X
+	id S1752719AbZKZV1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 16:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZKZV1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 16:26:23 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39594 "EHLO smtp.gentoo.org"
+	Thu, 26 Nov 2009 16:27:06 -0500
+Received: from khc.piap.pl ([195.187.100.11]:40619 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbZKZV0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 16:26:22 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Pull request blackfin.git (for-linus branch)
-Date: Thu, 26 Nov 2009 16:26:24 -0500
-Message-Id: <1259270784-29793-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.3
+	id S1750919AbZKZV1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 16:27:04 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
+	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
+	<4B0ED238.6060306@redhat.com> <m3pr75rpqa.fsf@intrepid.localdomain>
+	<4B0EED7D.90204@redhat.com>
+Date: Thu, 26 Nov 2009 22:27:08 +0100
+In-Reply-To: <4B0EED7D.90204@redhat.com> (Mauro Carvalho Chehab's message of
+	"Thu, 26 Nov 2009 19:05:01 -0200")
+Message-ID: <m3ljhtrn83.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit a8a8a669ea13d792296737505adc43ccacf3a648:
-  Linus Torvalds (1):
-        Merge branch 'i2c-pnx-fixes' of git://git.fluff.org/bjdooks/linux
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-are available in the git repository at:
+> No. All the other API functions there work with 32 bits for scancodes.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
+We don't need them, do we? We need a new ioctl for changing key mappings
+anyway (a single ioctl for setting the whole table I think), and we can
+have arbitrary length of scan codes there.
 
-André Goddard Rosa (1):
-      Blackfin: fix cache Kconfig typo
+> (what's worse is that it is defined as "int" instead of "u32" - so the number
+> of bits is different on 32 and on 64 systems)
 
-Graf Yang (1):
-      Blackfin: fix SMP build error in start_thread()
+Most (all?) 64-bit systems use 32-bit ints (and 64-bit longs).
+u32 and similar are for sure better.
 
-Jie Zhang (1):
-      Blackfin: fix typo in ptrace poking
+>> We signal both and hope it isn't self-destruct button.
+>> We can't fix it no matter how hard we try.
+>
+> We can fix. Just let the userspace select what protocol(s) is(are) enabled.
 
-Michael Hennerich (1):
-      Blackfin: fix suspend/resume failure with some on-chip ROMs
-
-Mike Frysinger (3):
-      Blackfin: update anomaly lists
-      Blackfin: work around testset anomaly 05000477
-      Blackfin: check for anomaly 05000475
-
-Roel Kluin (1):
-      Blackfin: fix memset in smp_send_reschedule() and -stop()
-
- arch/blackfin/kernel/bfin_dma_5xx.c             |    9 ++++++-
- arch/blackfin/kernel/cplb-mpu/cplbinit.c        |    2 +-
- arch/blackfin/kernel/process.c                  |    2 +-
- arch/blackfin/kernel/ptrace.c                   |    2 +-
- arch/blackfin/mach-bf518/include/mach/anomaly.h |   18 ++++++++++++---
- arch/blackfin/mach-bf527/include/mach/anomaly.h |   20 +++++++++++++----
- arch/blackfin/mach-bf533/include/mach/anomaly.h |   18 ++++++++++++---
- arch/blackfin/mach-bf537/include/mach/anomaly.h |   18 ++++++++++++---
- arch/blackfin/mach-bf538/include/mach/anomaly.h |   18 ++++++++++++---
- arch/blackfin/mach-bf548/include/mach/anomaly.h |   23 ++++++++++++++++----
- arch/blackfin/mach-bf561/atomic.S               |   14 +++++++++++-
- arch/blackfin/mach-bf561/include/mach/anomaly.h |   25 ++++++++++++++++++----
- arch/blackfin/mach-common/arch_checks.c         |    5 ++++
- arch/blackfin/mach-common/smp.c                 |    6 +---
- 14 files changed, 138 insertions(+), 42 deletions(-)
+Sure, I meant the situation when both protocols (and scan codes) where
+enabled and configured. If we don't use RCx in the mapping table, we
+don't pass anything to RCx routine. If we have RCx but don't have the
+scan code in question, we don't find the key in the table and thus we
+ignore it again.
+-- 
+Krzysztof Halasa
