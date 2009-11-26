@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbZKZIu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZKZIuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760085AbZKZIu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760041AbZKZIuZ
+	id S1760096AbZKZIuy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbZKZIuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:50:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51242 "EHLO smtps.tip.net.au"
+	Thu, 26 Nov 2009 03:50:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53130 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760042AbZKZIuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:50:24 -0500
-Date: Thu, 26 Nov 2009 19:50:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: linux-next: i2c tree build warning
-Message-Id: <20091126195025.d8bf50d2.sfr@canb.auug.org.au>
-In-Reply-To: <20091126091829.74d3b7ce@hyperion.delvare>
-References: <20091126140600.2f55ab0e.sfr@canb.auug.org.au>
-	<20091126091829.74d3b7ce@hyperion.delvare>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Nov_2009_19_50_25_+1100_TJ.nCH47.7+WEr47"
+	id S1760041AbZKZIux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:50:53 -0500
+Date: Thu, 26 Nov 2009 09:50:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/9] tracing: Convert some block events to DEFINE_EVENT
+Message-ID: <20091126085052.GB1389@elte.hu>
+References: <4B0E2807.4060102@cn.fujitsu.com>
+ <4B0E28E6.7060609@cn.fujitsu.com>
+ <20091126083621.GM8742@kernel.dk>
+ <20091126084443.GA1389@elte.hu>
+ <20091126084752.GP8742@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091126084752.GP8742@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Nov_2009_19_50_25_+1100_TJ.nCH47.7+WEr47
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jean,
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-On Thu, 26 Nov 2009 09:18:29 +0100 Jean Delvare <khali@linux-fr.org> wrote:
->
-> Thanks for reporting. The warning did not show on my 32-bit x86 system,
-> and I guess it did not show on Wolfram's system either, otherwise we'd
-> have fixed it.
->=20
-> Does the following patch fix the warning for you?
+> On Thu, Nov 26 2009, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Thu, Nov 26 2009, Li Zefan wrote:
+> > > > use TRACE_EVENT_TEMPLATE to remove duplicate code:
+> > > > 
+> > > >    text    data     bss     dec     hex filename
+> > > >   53570    3284     184   57038    dece block/blk-core.o.old
+> > > >   43702    3284     144   47130    b81a block/blk-core.o
+> > > 
+> > > Nice! When I played with the writeback tracing, I did notice that code
+> > > bloat does get pretty severe quickly.
+> > > 
+> > > I have applied this to for-2.6.33, thanks a lot.
+> > 
+> > Note that it wont build in your tree, because the TRACE_EVENT_TEMPLATE / 
+> > DEFINE_EVENT facility this relies on is not upstream yet.
+> > 
+> > The events are not affected in any way (and block/* is not modified) - 
+> > it's just a more efficient representation of the same. I've applied them 
+> > to -tip, to keep the facility and dependent updates in a single place.
+> 
+> OK, lets merge them through -tip then. You can add my acked-by.
 
-Yes.
+Thanks Jens!
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Do you have any pending (or planned) changes to 
+include/trace/events/block.h in the block tree that might cause 
+problems?
 
---Signature=_Thu__26_Nov_2009_19_50_25_+1100_TJ.nCH47.7+WEr47
-Content-Type: application/pgp-signature
+We can pick those up too (and resolve any conflicts) to reduce the 
+surface of friction.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Thanks,
 
-iEYEARECAAYFAksOQVEACgkQjjKRsyhoI8xztgCfVq2lsLKNHEsPGsggBV7DRmPL
-KncAoJZQFGb/SBYNv+Pfv6E2jfng56zD
-=2v90
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Nov_2009_19_50_25_+1100_TJ.nCH47.7+WEr47--
+	Ingo
