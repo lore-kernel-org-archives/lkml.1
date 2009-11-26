@@ -1,115 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbZKZPcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZKZPcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbZKZPcm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZKZPcm
+	id S1755972AbZKZPcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbZKZPcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:32:42 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57576 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755838AbZKZPcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:32:41 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+5cQtBlQq5Zdw/FR3X3+5slTgMVycKnfWbNJ8bZw
-	cCW4pdvMkOe+CY
-Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
- runqueue variant
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259245261.31676.73.camel@laptop>
-References: <1258891781.14325.34.camel@marge.simson.net>
-	 <1259173672.4027.732.camel@laptop>
-	 <1259197270.6186.17.camel@marge.simson.net>
-	 <1259199068.6186.33.camel@marge.simson.net> <1259228139.4273.6.camel@twins>
-	 <1259230578.15079.12.camel@marge.simson.net>
-	 <1259244563.31676.53.camel@laptop>  <1259245261.31676.73.camel@laptop>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 16:32:44 +0100
-Message-Id: <1259249564.6465.75.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 26 Nov 2009 10:32:16 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:41666 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1752690AbZKZPcQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 10:32:16 -0500
+Message-ID: <4B0E9FB9.8050508@ru.mvista.com>
+Date: Thu, 26 Nov 2009 18:33:13 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 16/86] pata_efar: MWDMA0 is unsupported
+References: <20091125170218.5446.13513.sendpatchset@localhost>	<20091125170415.5446.15073.sendpatchset@localhost>	<20091125172552.6817e3da@lxorguk.ukuu.org.uk>	<200911261553.58941.bzolnier@gmail.com> <20091126151546.6c891014@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091126151546.6c891014@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 15:21 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-11-26 at 15:09 +0100, Peter Zijlstra wrote:
-> > On Thu, 2009-11-26 at 11:16 +0100, Mike Galbraith wrote:
-> > > > min_vruntime should only ever be poked at when holding the respective
-> > > > rq->lock, even with a barrier a 64bit read on a 32bit machine can go all
-> > > > funny.
-> > > 
-> > > Yeah, but we're looking at an unlocked runqueue.  But never mind...
-> > 
-> > The patch is also poking at rq->clock without rq->lock held... not very
-> > nice.
-> > 
-> > Gah, I hate that we're doing migration things without holding both rq's,
-> > this is making live so very interesting ;-)
-> 
-> so the problem is this bit in kernel/fork.c, which is ran with
-> tasklist_lock held for writing:
-> 
-> 	/*
-> 	 * The task hasn't been attached yet, so its cpus_allowed mask will
-> 	 * not be changed, nor will its assigned CPU.
-> 	 *
-> 	 * The cpus_allowed mask of the parent may have changed after it was
-> 	 * copied first time - so re-copy it here, then check the child's CPU
-> 	 * to ensure it is on a valid CPU (and if not, just force it back to
-> 	 * parent's CPU). This avoids alot of nasty races.
-> 	 */
-> 	p->cpus_allowed = current->cpus_allowed;
-> 	p->rt.nr_cpus_allowed = current->rt.nr_cpus_allowed;
-> 	if (unlikely(!cpu_isset(task_cpu(p), p->cpus_allowed) ||
-> 			!cpu_online(task_cpu(p))))
-> 		set_task_cpu(p, smp_processor_id());
-> 
-> 
-> The problem is that that doesn't close any races at all since
-> tasklist_lock doesn't fully serialize changes to ->cpus_allowed.
+Hello.
 
-Well, some stuff can't get at you if you're there, but yes, I was
-wondering how fixing it up there was going to guarantee a happy landing
-when we get to... wake_up_new_task(). 
+Alan Cox wrote:
 
-> In fact, there is nothing that protects that mask at all.
-> 
-> The second problem is that set_task_cpu() is accessing data from both
-> the old and the new rq, which basically requires is being ran with both
-> rq's locked, and the regular migration paths do so.
+>>On Wednesday 25 November 2009 06:25:52 pm Alan Cox wrote:
 
-Yes, and task_cpu() and task_rq() are racy as heck without the lock.  It
-all goes fuzzy.
+>>>On Wed, 25 Nov 2009 18:04:15 +0100
+>>>Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 
-sched_class can change out from under you the instant you release the
-runqueue lock afaikt, nice level, affinity... etc?
+>>>>From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>>Subject: [PATCH] pata_efar: MWDMA0 is unsupported
 
-> However things like ttwu() try to be cute and do not, opening the doors
-> to all kinds of funny.
+>>>>MWDMA0 timings cannot be met with the PIIX based controller
+>>>>programming interface.
 
-Yes, so all the raciness I've been imagining isn't _all_ imaginary.
-Yoohoo.  Um, I mean damn.
+>>>The efar documentation makes no reference to not being capable of MWDMA0,
+>>>so where does this come from ? No MWDMA0 is an Intel erratum it appears.
 
-> Clearly we don't really want to do double_rq_lock() in ttwu(), that's
-> one of the hotter paths around (and looking at it we ought to seriously
-> look at trimming some of it).
+>>No MWDMA0 support is a common issue on all 'PIIX-like' controllers.
 
-No, apparently not.  About an hour ago, paranoid little me merely did
-lock handoff in ttwu and... wunt (wunt?), and was rewarded with a
-deadlocked box a bit after X came up.
+>>In case of this chipset while the (preliminary) documentation claims MWDMA0
+>>support on the 'FEATURES' page the later 'programming guide' part describes
+>>only PIO0-4, SWDMA2, MWDMA1-2 and UDMA0-4 transfer modes as supported.
 
-WRT lard, yes, it is getting fat.  The cache misses of the prefer
-sibling thing are hurting very fast threads too.  Much reward if you
-find a sibling, ~4% pain for TCP_RR with the cache misses and whatnot
-you waste looking around for a spot for a pinned ultralight task.
+> Cool - I only have the original docs.
 
-Wish I could find an answer for the sibling thing.  Nearly doubles
-throughput for some things.
+    Hm, me too... perhaps worth putting in Jeff's documentation archive?
 
-	-Mike
-
+MBR, Sergei
