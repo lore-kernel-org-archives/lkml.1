@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbZKZU2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZKZUc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbZKZU2N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 15:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZKZU2M
+	id S1752772AbZKZUc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 15:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZKZUc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 15:28:12 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56765 "EHLO khc.piap.pl"
+	Thu, 26 Nov 2009 15:32:58 -0500
+Received: from khc.piap.pl ([195.187.100.11]:37319 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751662AbZKZU2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 15:28:11 -0500
+	id S1751742AbZKZUc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 15:32:57 -0500
 From: Krzysztof Halasa <khc@pm.waw.pl>
 To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
+Cc: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDcbizrJjFB@christoph> <4B0EABF8.9000902@redhat.com>
-	<m3r5rlupcb.fsf@intrepid.localdomain> <4B0ECF1B.1090103@redhat.com>
-Date: Thu, 26 Nov 2009 21:28:14 +0100
-In-Reply-To: <4B0ECF1B.1090103@redhat.com> (Mauro Carvalho Chehab's message of
-	"Thu, 26 Nov 2009 16:55:23 -0200")
-Message-ID: <m3tywhrpy9.fsf@intrepid.localdomain>
+References: <200910200956.33391.jarod@redhat.com>
+	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
+	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
+	<4B0ED238.6060306@redhat.com>
+Date: Thu, 26 Nov 2009 21:33:01 +0100
+In-Reply-To: <4B0ED238.6060306@redhat.com> (Mauro Carvalho Chehab's message of
+	"Thu, 26 Nov 2009 17:08:40 -0200")
+Message-ID: <m3pr75rpqa.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,20 +35,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> The removal of the existing keymaps from kernel depends on having an
-> application
-> to be called from udev to load the proper keymaps when a device is probed.
+> see include/linux/input.h:
 >
-> After having it for a while, we should deprecate the in-kernel keymaps
-> and move them to userspace.
+> struct input_event {
+>         struct timeval time;
+>         __u16 type;
+>         __u16 code;
+>         __s32 value;
+> };
+>
+> extending the value to more than 32 bits require some changes at the
+> input layer, probably breaking kernel API.
 
-Sounds like a plan.
+Yeah, but that's a "key" space, not "raw code" space.
+Keys via input and raw codes via lirc and there is no problem.
 
-> I also think that it is important to remove the 7 bits limitation from
-> all drivers
-> and re-generate the keymaps, since they'll change after it.
+The mapping tables for input layer need to have variable code widths,
+depending on the protocol, sure.
 
-I think the existing space/mark media drivers need to be reworked
-completely.
+>> I don't think so. We can pass the space/mark data to all (configured,
+>> i.e. with active mapping) protocol handlers at once. Should a check
+>> fail, we ignore the data. Perhaps another protocol will make some sense
+>> out of it.
+>
+> What happens if it succeeds on two protocol handlers?
+
+We signal both and hope it isn't self-destruct button.
+We can't fix it no matter how hard we try.
 -- 
 Krzysztof Halasa
