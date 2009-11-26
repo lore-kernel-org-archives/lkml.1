@@ -1,199 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbZKZDX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbZKZDdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbZKZDX2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 22:23:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbZKZDX1
+	id S932429AbZKZDdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 22:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932187AbZKZDdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 22:23:27 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37499 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758195AbZKZDX0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 22:23:26 -0500
-Message-ID: <4B0DF4AD.5090306@austin.ibm.com>
-Date: Wed, 25 Nov 2009 21:23:25 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-CC: gregkh@suse.de, paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v3 2/3] sysfs cpu probe/release files
-References: <4B0CD70F.6090600@austin.ibm.com> <4B0CD8D5.8050803@austin.ibm.com>
-In-Reply-To: <4B0CD8D5.8050803@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Nov 2009 22:33:40 -0500
+Received: from mail1.radix.net ([207.192.128.31]:35659 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757503AbZKZDdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 22:33:38 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Andy Walls <awalls@radix.net>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
+	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
+Content-Type: text/plain
+Date: Wed, 25 Nov 2009 22:31:30 -0500
+Message-Id: <1259206290.3060.50.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Version 3 of this patch is updated with documentation added to
-Documentation/ABI.  There are no changes to any of the C code from v2
-of the patch.
+On Wed, 2009-11-25 at 13:07 -0500, Jarod Wilson wrote:
+> On Nov 25, 2009, at 12:40 PM, Krzysztof Halasa wrote:
+> 
+> > lirc@bartelmus.de (Christoph Bartelmus) writes:
+> > 
+> >> I'm not sure what two ways you are talking about. With the patches posted  
+> >> by Jarod, nothing has to be changed in userspace.
+> >> Everything works, no code needs to be written and tested, everybody is  
+> >> happy.
+> > 
+> > The existing drivers use input layer. Do you want part of the tree to
+> > use existing lirc interface while the other part uses their own
+> > in-kernel (badly broken for example) code to do precisely the same
+> > thing?
+> 
+> Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
+> 
+> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
 
-In order to support kernel DLPAR of CPU resources we need to provide an
-interface to add (probe) and remove (release) the resource from the system.
-This patch Creates new generic probe and release sysfs files to facilitate
-cpu probe/release.  The probe/release interface provides for allowing each
-arch to supply their own routines for implementing the backend of adding
-and removing cpus to/from the system.
+It has been on mine.  I have been somewhat against the input subsystem
+route for unification because it neglects transmitters and appears to
+trade the userspace complexity we already have (i.e. LIRC configuration)
+for another new (and hence less documented) configuration complexity for
+end users.
 
-This also creates the powerpc specific stubs to handle the arch callouts 
-from writes to the sysfs files.
+My strategy for unification goes something like this:
 
-The creation and use of these files is regulated by the 
-CONFIG_ARCH_CPU_PROBE_RELEASE option so that only architectures that need the
-capability will have the files created.
+1. Get lirc_dev and the needed supporting headers in the kernel.  I will
+concede LIRC is not perfect or beautiful, but I'll assert it is feature
+complete for all the end user use cases that matter.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com> 
----
- Documentation/ABI/testing/sysfs-devices-system-cpu |   15 +++++++++
- arch/powerpc/Kconfig                               |    4 ++
- arch/powerpc/include/asm/machdep.h                 |    5 +++
- arch/powerpc/kernel/sysfs.c                        |   19 ++++++++++++
- drivers/base/cpu.c                                 |   32 +++++++++++++++++++++
- include/linux/cpu.h                                |    2 +
- 6 files changed, 77 insertions(+)
+2. Encapsulate all the various IR controller hardware handling in
+V4L-DVB into v4l_subdevice objects and provide a uniform interface to IR
+hardware internally via v4l2_subdev_ir_ops.  The exact nature of the IR
+hardware is then mostly abstracted away: I2C bus microcontroller,
+register block, GPIO line control of discretes devices, etc. can all be
+accessed in a somewhat unifrom manner.
 
-Index: powerpc/drivers/base/cpu.c
-===================================================================
---- powerpc.orig/drivers/base/cpu.c	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/drivers/base/cpu.c	2009-11-25 04:54:25.000000000 -0600
-@@ -72,6 +72,38 @@
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
- 	return;
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+static ssize_t cpu_probe_store(struct class *class, const char *buf,
-+			       size_t count)
-+{
-+	return arch_cpu_probe(buf, count);
-+}
-+
-+static ssize_t cpu_release_store(struct class *class, const char *buf,
-+				 size_t count)
-+{
-+	return arch_cpu_release(buf, count);
-+}
-+
-+static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
-+static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
-+
-+int __init cpu_probe_release_init(void)
-+{
-+	int rc;
-+
-+	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+			       &class_attr_probe.attr);
-+	if (!rc)
-+		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				       &class_attr_release.attr);
-+
-+	return rc;
-+}
-+device_initcall(cpu_probe_release_init);
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #else /* ... !CONFIG_HOTPLUG_CPU */
- static inline void register_cpu_control(struct cpu *cpu)
- {
-Index: powerpc/arch/powerpc/include/asm/machdep.h
-===================================================================
---- powerpc.orig/arch/powerpc/include/asm/machdep.h	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/include/asm/machdep.h	2009-11-25 04:54:25.000000000 -0600
-@@ -266,6 +266,11 @@
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	ssize_t (*cpu_probe)(const char *, size_t);
-+	ssize_t (*cpu_release)(const char *, size_t);
-+#endif
- };
- 
- extern void e500_idle(void);
-Index: powerpc/arch/powerpc/kernel/sysfs.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/sysfs.c	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/sysfs.c	2009-11-25 04:54:25.000000000 -0600
-@@ -461,6 +461,25 @@
- 
- 	cacheinfo_cpu_offline(cpu);
- }
-+
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+ssize_t arch_cpu_probe(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_probe)
-+		return ppc_md.cpu_probe(buf, count);
-+
-+	return -EINVAL;
-+}
-+
-+ssize_t arch_cpu_release(const char *buf, size_t count)
-+{
-+	if (ppc_md.cpu_release)
-+		return ppc_md.cpu_release(buf, count);
-+
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
-+
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- static int __cpuinit sysfs_cpu_notify(struct notifier_block *self,
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/arch/powerpc/Kconfig	2009-11-25 04:54:25.000000000 -0600
-@@ -320,6 +320,10 @@
- 
- 	  Say N if you are unsure.
- 
-+config ARCH_CPU_PROBE_RELEASE
-+	def_bool y
-+	depends on HOTPLUG_CPU
-+
- config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 
-Index: powerpc/include/linux/cpu.h
-===================================================================
---- powerpc.orig/include/linux/cpu.h	2009-11-25 04:52:37.000000000 -0600
-+++ powerpc/include/linux/cpu.h	2009-11-25 04:54:25.000000000 -0600
-@@ -43,6 +43,8 @@
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void unregister_cpu(struct cpu *cpu);
-+extern ssize_t arch_cpu_probe(const char *, size_t);
-+extern ssize_t arch_cpu_release(const char *, size_t);
- #endif
- struct notifier_block;
- 
-Index: powerpc/Documentation/ABI/testing/sysfs-devices-system-cpu
-===================================================================
---- powerpc.orig/Documentation/ABI/testing/sysfs-devices-system-cpu	2009-11-20 17:53:51.000000000 -0600
-+++ powerpc/Documentation/ABI/testing/sysfs-devices-system-cpu	2009-11-26 01:29:25.000000000 -0600
-@@ -62,6 +62,21 @@
- 		See Documentation/cputopology.txt for more information.
- 
- 
-+What:		/sys/devices/system/cpu/probe
-+		/sys/devices/system/cpu/release
-+Date:		November 2009
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:	Dynamic addition and removal of CPU's.  This is not hotplug
-+		removal, this is meant complete removal/addition of the CPU
-+		from the system.
-+
-+		probe: writes to this file will dynamically add a CPU to the
-+		system.  Information written to the file to add CPU's is
-+		architecture specific.
-+
-+		release: writes to this file dynamically remove a CPU from
-+		the system.  Information writtento the file to remove CPU's
-+		is architecture specific.
- 
- What:		/sys/devices/system/cpu/cpu#/node
- Date:		October 2009
+3. In conjunction with 2, common IR handling routines that exist in
+various drivers already can be broken out: RC-5 protocol handling, etc.
+
+4. Develop an internal interface so the v4l2_subdev object instance for
+the IR hardware is exposed through a bridge driver's v4l2_device object.
+
+5. Develop the needed layer between lirc_dev and the v4l2_device object
+to connect things up.
+
+
+That unifies all the IR cats and dogs in V4L-DVB at the low levels and
+glues them in a consistent manner to something up top (i.e. lirc_dev)
+that already handles Rx, Tx, protocols, keymapping, etc.
+
+My primary desire is to encapsulate or remove the complexity we
+currently have in kernel with all the ad-hoc IR hardware handling and
+get it unifrom and layered.  
+
+The upper level glue to userspace doesn't have to be lirc_dev, but why
+not?  It's there and the end users are familiair with it.  I have
+set-top boxes, I need IR Tx.
+
+
+
+> > We can have a good code for both, or we can end up with "badly broken"
+> > media drivers and incompatible, suboptimal existing lirc interface
+> > (though most probably much better in terms of quality, especially after
+> > Jarod's work).
+> 
+> Well, is there any reason most of those drivers with
+> currently-in-kernel-but-badly-broken decoding can't be converted to
+> use the lirc interface if its merged into the kernel? 
+
+I think all the V4L-DVB IR hardware can be.  I have not done sufficient
+research on the Serial, USB and other devices to say personally.
+
+
+> And/or, everything could converge on a new in-kernel decoding infra
+> that wasn't badly broken. Sure, there may be two separate ways of
+> doing essentially the same thing for a while, but meh. The lirc way
+> works NOW for an incredibly wide variety of receivers, transmitters,
+> IR protocols, etc.
+
+Also LIRC has had years of requirements collection and refinement of use
+cases.  Anything new implementation will likely end up converging to the
+feature set LIRC already has implemented.
+
+
+
+> I do concur that Just Works decoding for bundled remotes w/o having to
+> configure anything would be nice, and one way to go about doing that
+> certainly is via in-kernel IR decoding. But at the same time, the
+> second you want to use something other than a bundled remote, things
+> fall down, and having to do a bunch of setkeycode ops seems less
+> optimal than simply dropping an appropriate lircd.conf in place.
+
+
+>From a big picture perspective I would never see the OS kenrel as a good
+place to address usability issues.  It seems more logical to fix
+usability issues with a decent GUI application and good documentation.
+(LIRC needs a configuration GUI!).  Expecting IR usability problems to
+be eased by the kernel and command line utilties is - well -
+optimistic. 
+
+I'll add that there are too many factors that can be permuted by the end
+user and OEM -- protocols, remote layouts, button codes, PC IR Rx/Tx
+hardware, and Set top boxes feeding PC video capture devices -- that
+generating defaults that "Just Work" is a generally unsolvable problem.
+
+
+Regards,
+Andy
+
