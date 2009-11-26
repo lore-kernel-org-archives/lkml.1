@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbZKZJLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZKZJMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760137AbZKZJLB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:11:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbZKZJLA
+	id S1760150AbZKZJMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbZKZJMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:11:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36977 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Nov 2009 04:12:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43783 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760058AbZKZJK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:10:58 -0500
-Date: Thu, 26 Nov 2009 10:10:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [RFC,PATCH 0/14] utrace/ptrace
-Message-ID: <20091126091052.GF1389@elte.hu>
-References: <20091124200127.GA5751@redhat.com>
- <20091125214818.GA4916@infradead.org>
+	id S1760120AbZKZJMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:12:40 -0500
+Message-ID: <4B0E467A.8080201@kernel.org>
+Date: Thu, 26 Nov 2009 18:12:26 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125214818.GA4916@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: linux-next: workqueues tree build failure
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <4B0E3677.6000603@kernel.org> <200911261016.58810.peter.ujfalusi@nokia.com>
+In-Reply-To: <200911261016.58810.peter.ujfalusi@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+11/26/2009 05:16 PM, Peter Ujfalusi wrote:
+>> Takashi, RT workqueue is going away.  Do you really need it?
+> 
+> What can be used instead of RT workqueue?
+> The tlv320dac33 needs RT workqueue because I need to send the I2C
+> command with minimum delay to the codec. If this can not be done
+> (the workqueue is delayed), and the codec does not receive the
+> command in time, it will literally die.  What are the options to
+> replace the RT workqueue?
 
-> [...]  Given that's it's pretty much too later for the 2.6.33 cycle 
-> anyway I'd suggest you make sure the remaining two major architectures 
-> (arm and mips) get converted, and if the remaining minor architectures 
-> don't manage to get their homework done they're left without ptrace.
+The problem with RT workqueue is that RT and queue don't really mix
+well.  To act in real time, it requires all the resource pre-allocated
+and dedicated to it making queueing or pooling meaningless.  The
+original workqueue code created dedicated pool of threads for each
+workqueue so it could be used for RT but new implementation uses
+shared worker pool, so it can't be used as an interface to dedicated
+threads.
 
-I suspect the opinion of the ptrace maintainers matters heavily whether 
-it's appropriate for v2.6.33. You are not going to maintain this, they 
-are.
+I haven't read the code but,
 
-Regarding porting it to even more architectures - that's pretty much the 
-worst idea possible. It increases maintenance and testing overhead by 
-exploding the test matrix, while giving little to end result. Plus the 
-worst effect of it is that it becomes even more intrusive and even 
-harder (and riskier) to merge.
+* If you need to respond fast, wouldn't you be doing that from IRQ
+  handler or softirq?  Do you need task context?
 
-So dont do that.
+* Or is it that it's not triggered by IRQ but once the transfer
+  started it can't be interrupted?  But in this case preempt_disable()
+  or local_irq_disable() should suffice.
 
-The best strategy is to concentrate on just one or two well-tested 
-architectures, and then grow to other architectures gradually. Like 
-we've done it for basically all big kernel features in the past 10 years 
-(that had non-trivial arch dependencies), with no exception that i can 
-remember.
+Thanks.
 
-Thanks,
-
-	Ingo
+-- 
+tejun
