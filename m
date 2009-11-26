@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZKZJbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZKZJdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZKZJbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZKZJbZ
+	id S1758702AbZKZJdt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZKZJds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:31:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54194 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbZKZJbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:31:24 -0500
-Date: Thu, 26 Nov 2009 10:31:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: dimm <dmitry.adamushko@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [PATCH - 2/2] tip, x86-microcode: refactor microcode output
- messages
-Message-ID: <20091126093123.GA32275@elte.hu>
-References: <1259189772.7940.48.camel@dimm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259189772.7940.48.camel@dimm>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 26 Nov 2009 04:33:48 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:54245 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752341AbZKZJdr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:33:47 -0500
+Subject: Re: linux-next: manual merge of the net tree with the
+ wireless-current tree
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jean Tourrilhes <jt@hpl.hp.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <20091126141055.d8c67798.sfr@canb.auug.org.au>
+References: <20091126141055.d8c67798.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-VjD91kvNcXdG13szySEv"
+Date: Thu, 26 Nov 2009 10:33:09 +0100
+Message-ID: <1259227989.32372.32.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* dimm <dmitry.adamushko@gmail.com> wrote:
+--=-VjD91kvNcXdG13szySEv
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> +static int summarize_cpu_range(struct cpumask *range, struct cpu_signature *csig)
-> +{
-> +	char *cpu_str, *ver_str;
-> +	int ret = -1;
-> +
-> +	cpu_str = kmalloc(128, GFP_KERNEL);
-> +	ver_str = kmalloc(128, GFP_KERNEL);
-> +	if (!cpu_str || !ver_str)
-> +		goto out;
-> +
-> +	cpulist_scnprintf(cpu_str, 128, range);
-> +	microcode_ops->version_snprintf(ver_str, 128, csig);
-> +
-> +        printk(KERN_INFO "microcode: CPU%s: %s\n", cpu_str, ver_str);
-> +	ret = 0;
-> +out:
-> +	if (cpu_str)
-> +		kfree(cpu_str);
-> +	if (ver_str)
-> +		kfree(ver_str);
-> +
-> +	return ret;
-> +}
-> +
-> +static void summarize_cpu_info(void)
-> +{
-> +	struct cpu_info_array_ctx *ctx_array;
-> +	cpumask_var_t cpulist;
-> +	int base, cpu, ret;
-> +
-> +	if (!zalloc_cpumask_var(&cpulist, GFP_KERNEL))
-> +		return;
-> +
-> +	ctx_array = kmalloc(nr_cpu_ids * sizeof(*ctx_array), GFP_KERNEL);
-> +	if (!ctx_array)
-> +		goto out;
-> +
-> +	ret = on_each_cpu(collect_cpu_info_array, ctx_array, 1);
-> +	if (ret)
-> +		goto out;
-> +
-> +	base = cpumask_first(cpu_online_mask);
-> +	cpu  = base;
-> +	cpumask_set_cpu(cpu, cpulist);
-> +
-> +	while ((cpu = cpumask_next(cpu, cpu_online_mask)) < nr_cpu_ids) {
-> +		if (memcmp(&ctx_array[base].cpu_sig, &ctx_array[cpu].cpu_sig,
-> +				sizeof(ctx_array[base].cpu_sig)) != 0) {
-> +			summarize_cpu_range(cpulist, &ctx_array[base].cpu_sig);
-> +			cpumask_clear(cpulist);
-> +			base = cpu;
-> +		}
-> +		cpumask_set_cpu(cpu, cpulist);
-> +	}
-> +	summarize_cpu_range(cpulist, &ctx_array[base].cpu_sig);
-> +out:
-> +	free_cpumask_var(cpulist);
-> +	if (ctx_array)
-> +		kfree(ctx_array);
-> +}
+On Thu, 2009-11-26 at 14:10 +1100, Stephen Rothwell wrote:
+> Hi all,
+>=20
+> Today's linux-next merge of the net tree got a conflict in
+> net/wireless/wext.c between commit
+> 9fed059667d35fca9288460106e92dbb8ba35ea1 ("WE: Fix set events not
+> propagated") from the  tree and commit
+> 3d23e349d807177eaf519d444677cee86b1a04cf ("wext: refactor") from the net
+> tree.
+>=20
+> The latter deleted the file that the former modified.  I just ignored the
+> wireless-current change and removed the file (which seems to have been
+> done in the latter change anyway).
 
-Could we please leave out this summarizing logic (it's bloaty and 
-unnecessary), and just print a single line message when applying the 
-microcode?
+The fix should probably have gone to wext-core.c instead?
 
-Thanks,
+johannes
 
-	Ingo
+--=-VjD91kvNcXdG13szySEv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLDktSAAoJEODzc/N7+QmaqaAP/1io+IIIl1t6jXWPEldK8GbH
+T/AVLIHGqyDfX3HAGzC3hYcr+Ge12jTVB9B54OGq43Drvu0wE9JhIgcXhgVEEb+H
+KRN8LF/ECBy5k7xET6lDQXVQKViFbCQ4Y1Tbifc3H8oDm9pptAC5bOrIhDrNyyec
+rC2XJR3OSAz4fY6FkRWlNGLaciJs+o68/gAfGwlk6m70B+mXSPM4oKnmOYG5pHfL
+nYgbPEesJ4MfCowPEVPKTOAaoOYmAXrjQXdZNIFLXttpsusMt3R9tMJ2t+TZoMMz
+GN3cJUFSVV74WczhmSOX+Bfilqa446h+fzkoCMHrduFo2y3TBKsFp0Y+RxJDfwKF
+PXnhJnj2VFluBnOvewQyj5twSyrELX+RuBu14md15eObiGVejSsm7oT1E18aZJUc
+KX23r7wl/SyD1B5ZiZ8ABoU4ro5CTpsHATrc3K1OR11s349zEgcGWyoRh1eXy76u
+6LMs4Fm1c379tnLzI098i4rgS8vZJMRL+FE/c4zgt4iZgdmP4ngQq/r/zXXjUPR8
+FmJGFZH/ShdITys7SoszwIfq6PrJaJGp7/Ks63XZdTAucdlo9T1kGHJXqcdA2jJ4
+JfHrNzm+9RbKBe/ul9xBI+nEdH0M5a5pLdWVKGSTOLmYMImlfnl2bVY9U5C6Jknj
+O84Z733cwki11ozCty+1
+=aiyu
+-----END PGP SIGNATURE-----
+
+--=-VjD91kvNcXdG13szySEv--
+
