@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbZKZQ0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZKZQ0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760792AbZKZQ0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbZKZQ0S
+	id S1760804AbZKZQ0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760711AbZKZQ0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:26:18 -0500
-Received: from stinky.trash.net ([213.144.137.162]:58058 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760688AbZKZQ0R (ORCPT
+	Thu, 26 Nov 2009 11:26:23 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57041 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760796AbZKZQ0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:26:17 -0500
-Message-ID: <4B0EAC29.60601@trash.net>
-Date: Thu, 26 Nov 2009 17:26:17 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: netdev@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jens Osterkamp <jens@linux.vnet.ibm.com>,
-       Patrick Mullaney <pmullaney@novell.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCHv3 0/4] macvlan: add vepa and bridge mode
-References: <1259251631-11617-1-git-send-email-arnd@arndb.de>
-In-Reply-To: <1259251631-11617-1-git-send-email-arnd@arndb.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 26 Nov 2009 11:26:21 -0500
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1258891664.14325.30.camel@marge.simson.net>
+References: <1258891664.14325.30.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 17:26:25 +0100
+Message-ID: <1259252785.31676.216.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> Version 2 description:
-> The patch to iproute2 has not changed, so I'm not including
-> it this time. Patch 4/4 (the netlink interface) is basically
-> unchanged as well but included for completeness.
-> 
-> The other changes have moved forward a bit, to the point where
-> I find them a lot cleaner and am more confident in the code
-> being ready for inclusion. The implementation hardly resembles
-> Erics original patch now, so I've dropped his signed-off-by.
-> 
-> Please take a look and ack if you are happy so we can get it
-> into 2.6.33.
+On Sun, 2009-11-22 at 13:07 +0100, Mike Galbraith wrote:
+> @@ -2589,16 +2588,10 @@ void sched_fork(struct task_struct *p, i
+>          */
+>         p->prio = current->normal_prio;
+>  
+> -       if (!rt_prio(p->prio))
+> +       if (!task_has_rt_policy(p))
+>                 p->sched_class = &fair_sched_class;
+>  
+> -#ifdef CONFIG_SMP
+> -       cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+> -#endif
+> -       local_irq_save(flags);
+> -       update_rq_clock(cpu_rq(cpu));
+> -       set_task_cpu(p, cpu);
+> -       local_irq_restore(flags);
+> +       __set_task_cpu(p, cpu); 
 
-Looks good to me, nice work.
+OK, so I figured out why it was in sched_fork() and not in
+wake_up_new_task().
 
-Acked-by: Patrick McHardy <kaber@trash.net>
+It is because in sched_fork() the new task isn't in the tasklist yet and
+can therefore not race with any other migration logic.
 
-for the entire series.
+
