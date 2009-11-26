@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbZKZLpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbZKZLst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbZKZLpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 06:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZKZLpe
+	id S1759657AbZKZLst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 06:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758214AbZKZLss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 06:45:34 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:45546 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665AbZKZLpd convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 06:48:48 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:54623 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754926AbZKZLss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 06:45:33 -0500
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: workqueues tree build failure
-Date: Thu, 26 Nov 2009 13:44:31 +0200
-User-Agent: KMail/1.12.3 (Linux/2.6.31-gentoo-r4; KDE/4.3.3; i686; ; )
-Cc: ext Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <200911261131.15155.peter.ujfalusi@nokia.com> <20091126101859.GA27562@rakim.wolfsonmicro.main>
-In-Reply-To: <20091126101859.GA27562@rakim.wolfsonmicro.main>
+	Thu, 26 Nov 2009 06:48:48 -0500
+Message-ID: <4B0E6B02.8020705@collabora.co.uk>
+Date: Thu, 26 Nov 2009 11:48:18 +0000
+From: Ian Molton <ian.molton@collabora.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911261344.32051.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 26 Nov 2009 11:44:37.0602 (UTC) FILETIME=[D4F91C20:01CA6E8D]
-X-Nokia-AV: Clean
+To: Matt Mackall <mpm@selenic.com>
+CC: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jeff@garzik.org
+Subject: Re: 
+References: <1259197403.2858.88.camel@calx>	 <1259232570-11918-1-git-send-email-ian.molton@collabora.co.uk> <1259235525.9212.444.camel@calx>
+In-Reply-To: <1259235525.9212.444.camel@calx>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 November 2009 12:18:59 ext Mark Brown wrote:
-> On Thu, Nov 26, 2009 at 11:31:15AM +0200, Peter Ujfalusi wrote:
-> > For a quick fix, I can convert the tlv320dac33 driver to use this, and
-> > revisit later, if it does not fulfill the timing requirements for the HW.
+Matt Mackall wrote:
+> On Thu, 2009-11-26 at 10:49 +0000, Ian Molton wrote:
+>> Hi guys,
+>>
 > 
-> If there are problems then creating a dedicated thread you can wake
-> would probably do the job.
+> No need to pass rng_buffer to the helper as there's only one with global
+> scope.
 
-For now I'm going to change the create_rt_workqueue to 
-create_singlethread_workqueue, that is available at the wq.git of kernel.org.
+Ah, sorry, I see what you mean now. The logic behind that is that it
+matches the new API, whcih is all that will be left once the old drivers
+are patched to use it. I planned to drop the helper altogether at that
+point and though it'd make the patch more readable when that happens.
 
-If it is not sufficient, than I might use dedicated thread, which I woke up, but 
-I would like to keep that as a backup plan, since it needs more work ;)
+I can drop it if thats preferable, though.
 
-I'll send the patch in a few minutes.
+Is this enough to get an acked-by: ? If so, I'll do that and see about
+getting the change into linux-next.
 
--- 
-Péter
+Rusty: are you happy with the new version of virtio-rng ?
+
+Cheers guys,
+
+-Ian
+
