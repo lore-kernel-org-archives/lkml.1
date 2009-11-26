@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbZKZXN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZKZXPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbZKZXN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 18:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZKZXN2
+	id S1753380AbZKZXPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 18:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbZKZXPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 18:13:28 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:33656 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZKZXN2 (ORCPT
+	Thu, 26 Nov 2009 18:15:45 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:43062 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZKZXPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 18:13:28 -0500
+	Thu, 26 Nov 2009 18:15:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YCo/jptzAGPheb7A9d6L7rwTu4dAtiqdK3QgnCeFmdAXeNN3Pu9KE0WDoPntLcJavw
-         oOMfP1i6kIA3llcB5NkwUa2WThE/lz45FqS9uoHmGvIXrnLCScHk69yfU8OksUMSpT/m
-         C0ISMKIir+3y2x1HHijd2FDqH2dOCxJL5dyL0=
-Date: Fri, 27 Nov 2009 00:13:32 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
-	DECLARE_EVENT_CLASS()
-Message-ID: <20091126231329.GA8581@nowhere>
-References: <4B0E286A.2000405@cn.fujitsu.com> <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org> <1259224390.21397.87.camel@gandalf.stny.rr.com> <20091126084039.GA15919@elte.hu> <1259246730.21397.97.camel@gandalf.stny.rr.com> <20091126175548.GC4997@nowhere> <20091126181205.GA18670@elte.hu> <1259262740.21397.121.camel@gandalf.stny.rr.com> <20091126192019.GA11245@elte.hu> <1259264667.21397.131.camel@gandalf.stny.rr.com>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Hvs5rL2zJfLQopn1uxHYYt9XAYQ7sKPiXFyS3phZxDqP0+9DKZO+FGxwuE8B6RVA3U
+         nYxFAFMXgeAddob2DzbfUeSUCJchqAiApGGh/Usw8Et0wxtz9AxOhVzoNAotdxLsaJQy
+         c1keVX4ZiAbL1Cfsw9o+Fvtc3w139vw2N2xzY=
+Date: Thu, 26 Nov 2009 20:13:42 -0300
+From: Rudy Matela <rudy.matela@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] Coding style correction in HDLC/Frame Relay support
+ routines
+Message-ID: <20091126231342.GA25041@vacuum.larces.uece.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259264667.21397.131.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 02:44:27PM -0500, Steven Rostedt wrote:
-> On Thu, 2009-11-26 at 20:20 +0100, Ingo Molnar wrote:
-> > I think we generally want to encourage the creation of classes of 
-> > events, not myriads of standalone events, each with their own call 
-> > signature, record format and printouts.
-> > 
-> > In that sense making the TRACE_EVENT() one longer would achieve that 
-> > goal of discouraging its over-use: DEFINE_SINGLE_EVENT() tells the 
-> > developer that it's an event of it's kind.
-> 
-> But I do agree with Frederic that this can be a little confusing, since
-> it makes it sound like DEFINE_EVENT is for multiple events.
-> 
-> What about saying exactly what it does?
-> 
-> DECLARE_AND_DEFINE_EVENT()
+Coding style corrections on Frame Relay/DLCI support routines.
 
+Added a space separating some if keywords from the following parenthesis to
+conform to the CodingStyle.
 
-It tells so much that it is confusing :)
+Signed-off-by: Rudy Matela <rudy.matela@gmail.com>
+---
 
+diff --git a/drivers/net/wan/hdlc_fr.c b/drivers/net/wan/hdlc_fr.c
+index 840cff7..a7d4fc1 100644
+--- a/drivers/net/wan/hdlc_fr.c
++++ b/drivers/net/wan/hdlc_fr.c
+@@ -1214,10 +1214,10 @@ static int fr_ioctl(struct net_device *dev, struct ifreq *ifr)
+ 		return 0;
  
-> 
-> Come to think of it, since current TRACE_EVENT is now just:
-> 
-> #define TRACE_EVENT() \
-> 	TRACE_EVENT_TEMPLATE() \
-> 	DEFINE_EVENT
-> 
-> This may make the most sense. I haven't tried it, but I believe that you
-> could even base other events off of the TRACE_EVENT. That is:
-> 
-> TRACE_EVENT(x, ...);
-> 
-> DEFINE_EVENT(x, y, ...);
-> 
-> And y would use x as its class.
-> 
-> So going back to your scheme of DECLARE_EVENT_CLASS(), it may make sense
-> to have DECLARE_AND_DEFINE_EVENT().
-> 
-> 
-> DECLARE_EVENT_CLASS(class, ...);
-> DEFINE_EVENT(class, foo, ...);
-> 
-> DECLARE_AND_DEFINE_EVENT(bar, ...);
-
-
-
-Yep, or DEFINE_EVENT_NOCLASS.
-
-
-
-> DEFINE_EVENT(bar, zoo, ...);
-> 
-> 
-> May work.
-> 
-> -- Steve
-> 
-> 
-
+ 	case IF_PROTO_FR:
+-		if(!capable(CAP_NET_ADMIN))
++		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;
+ 
+-		if(dev->flags & IFF_UP)
++		if (dev->flags & IFF_UP)
+ 			return -EBUSY;
+ 
+ 		if (copy_from_user(&new_settings, fr_s, size))
+@@ -1263,7 +1263,7 @@ static int fr_ioctl(struct net_device *dev, struct ifreq *ifr)
+ 		if (dev_to_hdlc(dev)->proto != &proto) /* Different proto */
+ 			return -EINVAL;
+ 
+-		if(!capable(CAP_NET_ADMIN))
++		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;
+ 
+ 		if (copy_from_user(&pvc, ifr->ifr_settings.ifs_ifsu.fr_pvc,
