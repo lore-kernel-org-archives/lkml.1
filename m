@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbZKZLst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbZKZLyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759657AbZKZLst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 06:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758214AbZKZLss
+	id S1759724AbZKZLyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 06:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbZKZLyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 06:48:48 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:54623 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754926AbZKZLss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 06:48:48 -0500
-Message-ID: <4B0E6B02.8020705@collabora.co.uk>
-Date: Thu, 26 Nov 2009 11:48:18 +0000
-From: Ian Molton <ian.molton@collabora.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jeff@garzik.org
-Subject: Re: 
-References: <1259197403.2858.88.camel@calx>	 <1259232570-11918-1-git-send-email-ian.molton@collabora.co.uk> <1259235525.9212.444.camel@calx>
-In-Reply-To: <1259235525.9212.444.camel@calx>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Nov 2009 06:54:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37743 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758036AbZKZLyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 06:54:39 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: [PATCH -tip] x86/pat: trivial: don't create debugfs for memtype if pat is disabled
+Date: Thu, 26 Nov 2009 19:53:48 +0800
+Message-Id: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Thu, 2009-11-26 at 10:49 +0000, Ian Molton wrote:
->> Hi guys,
->>
-> 
-> No need to pass rng_buffer to the helper as there's only one with global
-> scope.
+If pat is disabled (boot with nopat), there's no need to create
+debugfs for it, it's empty all the time.
 
-Ah, sorry, I see what you mean now. The logic behind that is that it
-matches the new API, whcih is all that will be left once the old drivers
-are patched to use it. I planned to drop the helper altogether at that
-point and though it'd make the patch more readable when that happens.
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ arch/x86/mm/pat.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-I can drop it if thats preferable, though.
-
-Is this enough to get an acked-by: ? If so, I'll do that and see about
-getting the change into linux-next.
-
-Rusty: are you happy with the new version of virtio-rng ?
-
-Cheers guys,
-
--Ian
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 01fc043..c37fd51 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -1014,8 +1014,9 @@ static const struct file_operations memtype_fops = {
+ 
+ static int __init pat_memtype_list_init(void)
+ {
+-	debugfs_create_file("pat_memtype_list", S_IRUSR, arch_debugfs_dir,
+-				NULL, &memtype_fops);
++	if (pat_enabled)
++		debugfs_create_file("pat_memtype_list", S_IRUSR,
++					arch_debugfs_dir, NULL, &memtype_fops);
+ 	return 0;
+ }
+ 
+-- 
+1.6.5.2
 
