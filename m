@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759816AbZKZQD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbZKZQHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759816AbZKZQD0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZKZQDZ
+	id S1760692AbZKZQHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZKZQHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:03:25 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:39695 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbZKZQDX (ORCPT
+	Thu, 26 Nov 2009 11:07:16 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:54392 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755902AbZKZQHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:03:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=dAFzMKaVMx2Gvr8oemWZoHOTBc7JLYFoob8BlD9Rs2f5odThb/Bo8diSVNqz34+nKn
-         q087bhD4fQmAFOzUDaV6UVHZsSBcEi3ElQ5grrns+kwT9SzEPKidx66XGxJlK7fPAHMf
-         qsH0g+DIFpAoKCmB5cyxa5F18pGcvD312fT1s=
-MIME-Version: 1.0
-In-Reply-To: <9e4733910911260748v454d3b0bvcc6bfc86823cdd39@mail.gmail.com>
-References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
-	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
-	 <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
-	 <4B0DA885.7010601@redhat.com> <4B0E9493.1090200@redhat.com>
-	 <9e4733910911260748v454d3b0bvcc6bfc86823cdd39@mail.gmail.com>
-Date: Thu, 26 Nov 2009 11:03:25 -0500
-Message-ID: <9e4733910911260803q6f5cd6c0g5006e84f7733dc85@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Nov 2009 11:07:15 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: netdev@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>
+Subject: [PATCHv3 0/4] macvlan: add vepa and bridge mode
+Date: Thu, 26 Nov 2009 17:07:07 +0100
+Message-Id: <1259251631-11617-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.3.3
+X-Provags-ID: V01U2FsdGVkX1+CPJEnxn2VfwhHulhWJA8+V1kRvLlaRUtzced
+ 67UjqrhRYlyTqa3bSQ2SSYdrsGNMNwvNDenifeC8lvst2CWTFi
+ RIkRtrLyhzh83z0a1TcDw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW, we used to have device specific user space interfaces for mouse
-and keyboard. These caused all sort of problems. A lot of work went
-into unifying them under evdev.  It will be years until the old,
-messed up interfaces can be totally removed.
+Not many changes this time, just integrated a bug fix
+and all the coding style feedback from Eric Dumazet
+and Patrick McHardy.
 
-I'm not in favor of repeating the problems with a device specific user
-space interface for IR. I believe all new input devices should
-implement the evdev framework.
+I'll keep the patch for network namespaces on the tx
+path out of this series for now, because the discussion
+is still ongoing and it addresses an unrelated issue.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+---
+
+Version 2 description:
+The patch to iproute2 has not changed, so I'm not including
+it this time. Patch 4/4 (the netlink interface) is basically
+unchanged as well but included for completeness.
+
+The other changes have moved forward a bit, to the point where
+I find them a lot cleaner and am more confident in the code
+being ready for inclusion. The implementation hardly resembles
+Erics original patch now, so I've dropped his signed-off-by.
+
+Please take a look and ack if you are happy so we can get it
+into 2.6.33.
+
+---
+
+Version 1 description:
+This is based on an earlier patch from Eric Biederman adding
+forwarding between macvlans. I extended his approach to
+allow the administrator to choose the mode for each macvlan,
+and to implement a functional VEPA between macvlan.
+
+Still missing from this is support for communication between
+the lower device that the macvlans are based on. This would
+be extremely useful but as others have found out before me
+requires significant changes not only to macvlan but also
+to the common transmit path.
+
+I've tested VEPA operation with the hairpin support
+added to the bridge driver by Anna Fischer.
+
+---
+Arnd Bergmann (4):
+  veth: move loopback logic to common location
+  macvlan: cleanup rx statistics
+  macvlan: implement bridge, VEPA and private mode
+  macvlan: export macvlan mode through netlink
+
+ drivers/net/macvlan.c     |  188 +++++++++++++++++++++++++++++++++++++--------
+ drivers/net/veth.c        |   17 +----
+ include/linux/if_link.h   |   15 ++++
+ include/linux/netdevice.h |    2 +
+ net/core/dev.c            |   40 ++++++++++
+ 5 files changed, 214 insertions(+), 48 deletions(-)
+
