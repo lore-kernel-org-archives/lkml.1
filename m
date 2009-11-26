@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbZKZHEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbZKZHF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbZKZHEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 02:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbZKZHEy
+	id S1758700AbZKZHF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 02:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757740AbZKZHF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 02:04:54 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62454 "EHLO song.cn.fujitsu.com"
+	Thu, 26 Nov 2009 02:05:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63394 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758583AbZKZHEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 02:04:53 -0500
-Message-ID: <4B0E287F.4030708@cn.fujitsu.com>
-Date: Thu, 26 Nov 2009 15:04:31 +0800
+	id S1756136AbZKZHFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 02:05:25 -0500
+Message-ID: <4B0E289F.5010104@cn.fujitsu.com>
+Date: Thu, 26 Nov 2009 15:05:03 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/9] tracing: Convert softirq events to DEFINE_EVENT
+Subject: [PATCH 4/9] tracing: Convert some workqueue events to DEFINE_EVENT
 References: <4B0E2807.4060102@cn.fujitsu.com>
 In-Reply-To: <4B0E2807.4060102@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -30,92 +30,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Use TRACE_EVENT_TEMPLATE to remove duplicate code:
 
    text    data     bss     dec     hex filename
-  12781     952      36   13769    35c9 kernel/softirq.o.old
-  11981     952      32   12965    32a5 kernel/softirq.o
+  13171     800      72   14043    36db kernel/workqueue.o.old
+  12243     800      68   13111    3337 kernel/workqueue.o
 
 Two events are converted:
 
-  softirq: softirq_entry, softirq_exit
+  workqueue: workqueue_insertion, workqueue_execution
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- include/trace/events/irq.h |   46 ++++++++++++++++++++-----------------------
- 1 files changed, 21 insertions(+), 25 deletions(-)
+ include/trace/events/workqueue.h |   22 +++++++---------------
+ 1 files changed, 7 insertions(+), 15 deletions(-)
 
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index dcfcd44..f8a94d7 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -82,18 +82,7 @@ TRACE_EVENT(irq_handler_exit,
- 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
+index e4612db..6da8d1b 100644
+--- a/include/trace/events/workqueue.h
++++ b/include/trace/events/workqueue.h
+@@ -8,7 +8,7 @@
+ #include <linux/sched.h>
+ #include <linux/tracepoint.h>
+ 
+-TRACE_EVENT(workqueue_insertion,
++TRACE_EVENT_TEMPLATE(workqueue,
+ 
+ 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
+ 
+@@ -30,26 +30,18 @@ TRACE_EVENT(workqueue_insertion,
+ 		__entry->thread_pid, __entry->func)
  );
  
--/**
-- * softirq_entry - called immediately before the softirq handler
-- * @h: pointer to struct softirq_action
-- * @vec: pointer to first struct softirq_action in softirq_vec array
-- *
-- * The @h parameter, contains a pointer to the struct softirq_action
-- * which has a pointer to the action handler that is called. By subtracting
-- * the @vec pointer from the @h pointer, we can determine the softirq
-- * number. Also, when used in combination with the softirq_exit tracepoint
-- * we can determine the softirq latency.
-- */
--TRACE_EVENT(softirq_entry,
-+TRACE_EVENT_TEMPLATE(softirq,
+-TRACE_EVENT(workqueue_execution,
++DEFINE_EVENT(workqueue, workqueue_insertion,
  
- 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+ 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
  
-@@ -112,6 +101,24 @@ TRACE_EVENT(softirq_entry,
- );
- 
- /**
-+ * softirq_entry - called immediately before the softirq handler
-+ * @h: pointer to struct softirq_action
-+ * @vec: pointer to first struct softirq_action in softirq_vec array
-+ *
-+ * The @h parameter, contains a pointer to the struct softirq_action
-+ * which has a pointer to the action handler that is called. By subtracting
-+ * the @vec pointer from the @h pointer, we can determine the softirq
-+ * number. Also, when used in combination with the softirq_exit tracepoint
-+ * we can determine the softirq latency.
-+ */
-+DEFINE_EVENT(softirq, softirq_entry,
-+
-+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-+
-+	TP_ARGS(h, vec)
+-	TP_ARGS(wq_thread, work),
++	TP_ARGS(wq_thread, work)
 +);
-+
-+/**
-  * softirq_exit - called immediately after the softirq handler returns
-  * @h: pointer to struct softirq_action
-  * @vec: pointer to first struct softirq_action in softirq_vec array
-@@ -122,22 +129,11 @@ TRACE_EVENT(softirq_entry,
-  * combination with the softirq_entry tracepoint we can determine the softirq
-  * latency.
-  */
--TRACE_EVENT(softirq_exit,
-+DEFINE_EVENT(softirq, softirq_exit,
  
- 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
- 
--	TP_ARGS(h, vec),
--
 -	TP_STRUCT__entry(
--		__field(	int,	vec			)
+-		__array(char,		thread_comm,	TASK_COMM_LEN)
+-		__field(pid_t,		thread_pid)
+-		__field(work_func_t,	func)
 -	),
--
++DEFINE_EVENT(workqueue, workqueue_execution,
+ 
 -	TP_fast_assign(
--		__entry->vec = (int)(h - vec);
+-		memcpy(__entry->thread_comm, wq_thread->comm, TASK_COMM_LEN);
+-		__entry->thread_pid	= wq_thread->pid;
+-		__entry->func		= work->func;
 -	),
--
--	TP_printk("vec=%d [action=%s]", __entry->vec,
--		  show_softirq_name(__entry->vec))
-+	TP_ARGS(h, vec)
++	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
+ 
+-	TP_printk("thread=%s:%d func=%pf", __entry->thread_comm,
+-		__entry->thread_pid, __entry->func)
++	TP_ARGS(wq_thread, work)
  );
  
- #endif /*  _TRACE_IRQ_H */
+ /* Trace the creation of one workqueue thread on a cpu */
 -- 
 1.6.3
 
