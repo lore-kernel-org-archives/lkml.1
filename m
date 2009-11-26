@@ -1,90 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZKZGYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbZKZG1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbZKZGYB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 01:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZKZGYB
+	id S932709AbZKZG1A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 01:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbZKZG07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 01:24:01 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:51045
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755003AbZKZGYA convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 01:26:59 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:34079 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755188AbZKZG06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 01:24:00 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <20091126054938.GH23244@core.coreip.homeip.net>
-Date: Thu, 26 Nov 2009 01:23:50 -0500
-Cc: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       khc@pm.waw.pl, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Content-Transfer-Encoding: 8BIT
-Message-Id: <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <20091126054938.GH23244@core.coreip.homeip.net>
+	Thu, 26 Nov 2009 01:26:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=jWrBbLL/9AfJn/2Xb7x/0fgyWKAPnhibfwvT3wH0z6tI+mut/DHvkJbja+BpDdQGwX
+         PDsPoooxS1jyGbzkRqtJ33v0B3trlE6Njo/gcO5Di+84XLUy9PRbuF+gcobIQMpIHqj/
+         +5BTY0VDbBByQKgFnd1rOdfEQla83J0YAc1k8=
+Subject: Re: [PATCH v2] [loongson] yeeloong2f: add platform specific support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       Richard Purdie <rpurdie@rpsys.net>, lm-sensors@lm-sensors.org,
+       linux-input@vger.kernel.org, linux-laptop@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, sfr@linuxcare.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091126060854.GK23244@core.coreip.homeip.net>
+References: <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+	 <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+	 <20091126041047.GC23244@core.coreip.homeip.net>
+	 <1259215215.4989.38.camel@falcon.domain.org>
+	 <20091126060854.GK23244@core.coreip.homeip.net>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Thu, 26 Nov 2009 14:26:44 +0800
+Message-ID: <1259216804.4989.54.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 26, 2009, at 12:49 AM, Dmitry Torokhov wrote:
-
-> On Mon, Nov 23, 2009 at 07:53:57PM -0500, Andy Walls wrote:
->> On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
->>> Czesc Krzysztof,
->>> 
->>> on 23 Nov 09 at 15:14, Krzysztof Halasa wrote:
->>> [...]
->>>> I think we shouldn't at this time worry about IR transmitters.
->>> 
->>> Sorry, but I have to disagree strongly.
->>> Any interface without transmitter support would be absolutely unacceptable  
->>> for many LIRC users, including myself.
->> 
->> I agree with Christoph.  
->> 
->> Is it that the input subsystem is better developed and seen as a
->> leverage point for development and thus an "easier" place to get results
->> earlier?  If so, then one should definitely deal with transmitters early
->> in the design, as that is where the most unknowns lie.
->> 
->> With the end of analog TV, people will have STBs feeding analog only
->> video cards.  Being able to change the channel on the STB with an IR
->> transmitter controlled by applications like MythTV is essential.
->> 
->> 
->> And on some different notes:
->> 
->> I generally don't understand the LIRC aversion I perceive in this thread
->> (maybe I just have a skewed perception).  Aside for a video card's
->> default remote setup, the suggestions so far don't strike me as any
->> simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
->> already works for both transmit and receive and has existing support in
->> applications such as MythTV and mplayer.
+On Wed, 2009-11-25 at 22:08 -0800, Dmitry Torokhov wrote:
+[...]
+> > > > +	/* SW_VIDEOOUT_INSERT? not included in hald-addon-input! */
+> > > > +	{KE_KEY, EVENT_CRT_DETECT, KEY_PROG1},
+> > 
+> > any available event for reporting the inserted CRT in hald-addon-input?
 > 
-> Is it that LIRC supports MythTV and mplayer or MythTV and mplayer are
-> forced to support lirc because the remores are not available through
-> other means? I believe it is the latter and applications writers would
-> be happy to reduce number of ways they get button data.
+> Hmm.. not really. Again, does not seem to be related to input subsystem
+> but video one.
 
-Well, when mythtv was started, I don't know that there were many input layer remotes around... lirc was definitely around though. serial receivers and transmitters, both supported by lirc_serial, were the most frequently used devices outside of plain old keyboards. The lirc support in mythtv actually relies on mapping remote button names as defined in lircd.conf to keyboard key strokes. As mentioned elsewhere in this beast of a thread, mythtv doesn't currently support things like KEY_PLAY, KEY_VOLUMEUP, KEY_CHANNELUP, etc. just yet, but I intend on fixing that...
+It's time to remove it from keymap now, I have done some job in the
+video_output subdriver for this event ;)
 
-> I don't think there is LIRC aversion per se. We are just trying to
-> decide whether multiple interfaces for the same data is needed. And
-> I don't think that we will completely reject userspace components. Just
-> as input subsystem allows for userspace drivers I do not think why we
-> can't have the same for the LIRC. But I do think that the primary
-> interface for regular userspace consumers (read mplayer and MythTV and
-> the likes) should be input event interface (EV_KEY/KEY_*).
+> > > > +	/* Seems battery subdriver should report it */
+> > > > +	{KE_KEY, EVENT_OVERTEMP, KEY_PROG2},
+> > > 
+> > > Does not seem to be an input event?
+> > > 
+> > 
+> > It is not an input event, Will remove it from the keymap table.
+> >  
+> > BTW: how can we handle this stuff(overtemp...)? lm-sensors? Perhaps
+> > temp1_max_alarm or temp1_crit_alarm?
+> > 
+> 
+> Not really sure... HWMON list is a good place to ask I think.
 
-Works for me.
+okay, will split the hwmon driver out and send it to lm-sensors mailing
+list.
 
+> 
+> > > > +	/*{KE_KEY, EVENT_AC_BAT, KEY_BATTERY},*/
+> > > > +	{KE_KEY, EVENT_CAMERA, KEY_CAMERA},	/* Fn + ESC */
+> > > > +	{KE_KEY, EVENT_SLEEP, KEY_SLEEP},	/* Fn + F1 */
+> > > > +	/* Seems not clear? not included in hald-addon-input! */
+> > > > +	{KE_KEY, EVENT_BLACK_SCREEN, KEY_PROG3},	/* Fn + F2 */
+> > > 
+> > > Do you mean "lock screen"?
+> > 
+> > not lock, close the backlight of the display, any available event here?
+> 
+> What is it then? A switch that turns off backlight? What is the expected
+> reaction to it?
+> 
 
--- 
-Jarod Wilson
-jarod@wilsonet.com
+Yes, a switch for turning off/on the backlight, seems no need to report
+this key to the users, will remove it too.
 
+> > > > +	if (!yeeloong_hotkey_dev)
+> > > > +		return -ENOMEM;
+> > > 
+> > > Error unwinding?
+> > 
+> > Sorry, not clear what do you mean here?
+> 
+> If you just return you will have the SCI stuff that you did a few lines
+> above installed... I am concerned whether it is a good idea.
+> 
 
+get it, thanks!
+
+I have checked the return value in the module init function:
+
+[...]
+
+yeeloong_init()
+{
+	[...]
+        ret = yeeloong_hotkey_init(&yeeloong_pdev->dev);
+        if (ret) {
+                yeeloong_hotkey_exit();
+                printk(KERN_INFO "Fail init yeeloong hotkey driver.\n");
+                return ret;
+        }
+	[...]
+
+}
+
+[...]
+
+static void yeeloong_hotkey_exit(void)
+{
+        /* free irq */
+        remove_irq(SCI_IRQ_NUM, &sci_irqaction);
+	 ...
+}
+
+but as a standalone driver, It's better to do something as following:
+
+if (!yeeloong_hotkey_dev) {
+	yeeloong_hotkey_exit();
+	return -ENOMEM;
+}
+
+Thanks & Regards!
+	Wu Zhangjin
 
