@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752426AbZKZTUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbZKZThs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752426AbZKZTUY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 14:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZKZTUX
+	id S1752265AbZKZThs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 14:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZKZThr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 14:20:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45156 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbZKZTUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 14:20:22 -0500
-Date: Thu, 26 Nov 2009 20:20:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
- DECLARE_EVENT_CLASS()
-Message-ID: <20091126192019.GA11245@elte.hu>
-References: <4B0E286A.2000405@cn.fujitsu.com>
- <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
- <1259224390.21397.87.camel@gandalf.stny.rr.com>
- <20091126084039.GA15919@elte.hu>
- <1259246730.21397.97.camel@gandalf.stny.rr.com>
- <20091126175548.GC4997@nowhere>
- <20091126181205.GA18670@elte.hu>
- <1259262740.21397.121.camel@gandalf.stny.rr.com>
+	Thu, 26 Nov 2009 14:37:47 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59159 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbZKZThr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 14:37:47 -0500
+Date: Thu, 26 Nov 2009 20:37:50 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michal Marek <mmarek@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       An?bal Monsalve Salazar <anibal@debian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: linux-kbuild.git
+Message-ID: <20091126193750.GA15453@merkur.ravnborg.org>
+References: <4B0E73E1.50900@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259262740.21397.121.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4B0E73E1.50900@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> (added Christoph since he was the one to recommend the template 
-> creation)
->
-> On Thu, 2009-11-26 at 19:12 +0100, Ingo Molnar wrote:
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+On Thu, Nov 26, 2009 at 01:26:09PM +0100, Michal Marek wrote:
+> Hi Stephen,
 > 
-> > DECLARE_EVENT_CLASS() doesnt really define an event visible to the user 
-> > yet though. It defines functions internally (to be used by the real 
-> > definition of the event) - but not visible externally really.
-> > 
-> > So the real 'definition' of an event happens with DEFINE_EVENT() - in 
-> > the logical model of this.
-> > 
-> > So the logical model is clear:
-> > 
-> >    DECLARE_EVENT_CLASS(class);
-> > 
-> >     DEFINE_EVENT(class, event1);
-> >     DEFINE_EVENT(class, event2);
-> >     DEFINE_EVENT(class, event3);
-> >     ...
-> > 
-> >   # later:
-> >   # DEFINE_STANDALONE_EVENT(event)
+> I went through the patches posted to linux-kbuild and picked those that
+> were easy enough to review, looked safe and worked for me. I also took
+> Sam's series from kbuild-next.git, but I didn't really review it yet, so
+> there is no signoff from me (TBD). The repo is at
 > 
-> I think that name sounds even uglier than DEFINE_SINGLE_EVENT :-/
->
-> I'm fine with the DECLARE_EVENT_CLASS and DEFINE_EVENT, but I'm unsure 
-> what to rename TRACE_EVENT as. I know its still pretty new, but it's 
-> being used quite a bit. So it should take some extra thought.
+>   git://repo.or.cz/linux-kbuild.git for-next
 > 
-> I guess DEFINE_EVENT_CLASS is probably not good, although this would 
-> be the combination of DECLARE_EVENT_CLASS and DEFINE_EVENT which it 
-> actually is.
+> Please ignore the other branches. The shortlog is
 > 
-> DECLARE_DEFINE_EVENT?  *naw*
+> Jie Zhang (1):
+>       net: add net_tstamp.h to headers_install
 > 
-> DEFINE_DECLARED_EVENT?
+> Jonathan Nieder (2):
+>       scripts/package: add KBUILD_PKG_ROOTCMD variable
+>       scripts/package: deb-pkg: use fakeroot if available
 > 
-> Or we could go with DECLARE_EVENT(), DECLARE_EVENT_CLASS() and 
-> DEFINE_EVENT_CLASS_INSTANCE()?
+> Michael Tokarev (1):
+>       kbuild: fix bzImage build for x86
+> 
+> Michal Marek (2):
+>       scripts/package: tar-pkg: use tar --owner=root
+>       kbuild: create include/generated in silentoldconfig
+> 
+> Sam Ravnborg (14):
+>       kbuild: search arch/$ARCH/include before include/
+>       dontdiff: add generated
+>       kbuild: move bounds.h to include/generated
+>       kbuild: move asm-offsets.h to include/generated
+>       ia64: move nr-irqs.h to include/generated
+>       arm: move mach-types to include/generated
+>       sh: move machtypes.h to include/generated
+>       kbuild: drop include2/ used for O=... builds
+>       kbuild: do not check for include/asm-$ARCH
+>       kbuild: drop include/asm
+>       kbuild: move compile.h to include/generated
+>       drop explicit include of autoconf.h
+>       kbuild: move autoconf.h to include/generated
+>       kbuild: move utsrelease.h to include/generated
+> 
+> Wenji Huang (2):
+>       Kbuild: clear marker out of modpost
+>       Kbuild: clean up marker
+> 
+> There are some more patches on the mailing list and in -mm, which I'm
+> going to look at, but I think this should be a good start. What do you
+> think? Could this be added to linux-next?
 
-I think the most common one should be the shortest, and the most common 
-one will be DEFINE_EVENT() - that's short enough already IMO.
+Looks good.
+Good to see you picked up some of the patches that were pending.
 
-I think we generally want to encourage the creation of classes of 
-events, not myriads of standalone events, each with their own call 
-signature, record format and printouts.
+Stephen - please replace my kbuild trees with this.
 
-In that sense making the TRACE_EVENT() one longer would achieve that 
-goal of discouraging its over-use: DEFINE_SINGLE_EVENT() tells the 
-developer that it's an event of it's kind.
-
-	Ingo
+	Sam
