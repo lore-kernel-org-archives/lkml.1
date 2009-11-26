@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbZKZDNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbZKZDO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbZKZDNB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 22:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZKZDNA
+	id S1758280AbZKZDO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 22:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZKZDOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 22:13:00 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:39800 "EHLO mail.dvmed.net"
+	Wed, 25 Nov 2009 22:14:55 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:39810 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbZKZDNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 22:13:00 -0500
-Message-ID: <4B0DF23A.2080207@garzik.org>
-Date: Wed, 25 Nov 2009 22:12:58 -0500
+	id S1753076AbZKZDOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 22:14:55 -0500
+Message-ID: <4B0DF2B2.20605@garzik.org>
+Date: Wed, 25 Nov 2009 22:14:58 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Ian Molton <ian.molton@collabora.co.uk>
-CC: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, mpm@selenic.com
-Subject: Re: [PATCH 1/2] hw_random: core updates to allow more efficient drivers
-References: <1259177252.2858.17.camel@calx> <1259195127-20086-1-git-send-email-ian.molton@collabora.co.uk> <1259195127-20086-2-git-send-email-ian.molton@collabora.co.uk>
-In-Reply-To: <1259195127-20086-2-git-send-email-ian.molton@collabora.co.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 62/86] pata_pdc202xx_old: document known issues
+References: <20091125170218.5446.13513.sendpatchset@localhost> <200911251929.45897.bzolnier@gmail.com> <4B0D95C3.4020706@garzik.org> <200911252302.18213.bzolnier@gmail.com>
+In-Reply-To: <200911252302.18213.bzolnier@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -28,22 +29,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/25/2009 07:25 PM, Ian Molton wrote:
-> 	This patch implements a new method by which hw_random hardware drivers
-> can pass data to the core more efficiently, using a shared buffer.
+On 11/25/2009 05:02 PM, Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 25 November 2009 09:38:27 pm Jeff Garzik wrote:
+>> On 11/25/2009 01:29 PM, Bartlomiej Zolnierkiewicz wrote:
+>>> I think it is the best to leave up to the driver maintainer
+>>> (once we find out who this person is, MAINTAINERS file still
+>>> lacks info about PATA drivers in -rc8).
+>>
+>>
+>> The important thing is taking two minutes to write a relevant comment,
 >
-> The old methods have been retained as a compatability layer until all the
-> drivers have been updated.
->
-> Signed-off-by: Ian Molton<ian.molton@collabora.co.uk>
-> ---
->   drivers/char/hw_random/core.c |  120 ++++++++++++++++++++++++++---------------
->   include/linux/hw_random.h     |    9 ++-
->   2 files changed, 82 insertions(+), 47 deletions(-)
+> If you want something changed in the code of pata_pdc202xx_old feel free to
+> make said changes.  I'm neither the author nor the maintainer of this driver.
 
-Speaking as the original hw_random author...  very nice!  We have needed 
-a more efficient API for years.
+You don't need to be the author or maintainer of a driver to submit changes.
 
 	Jeff
+
 
 
