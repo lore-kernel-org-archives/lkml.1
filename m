@@ -1,165 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZKZF7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZKZGAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbZKZF7E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZKZF7D
+	id S1754214AbZKZGAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 01:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbZKZGAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:59:03 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39335 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbZKZF7B (ORCPT
+	Thu, 26 Nov 2009 01:00:36 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:53858 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbZKZGAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:59:01 -0500
+	Thu, 26 Nov 2009 01:00:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZPbS1jTDdMHRN/cN48DuLR0OWCi2X4/NGAQXCR9JmAEiuBbnPJrK9G2iqrXsbxBsFR
-         w6Tvcoy09V8ziEnfd3JTPSGcb76D9vtxANRZT84kXq80KLljnrtmLZ9axsRWZEXxBC8Q
-         TB87oF5W53u+ZvBPjc/wbegyrAQO/ZjoWi1F0=
-Date: Thu, 26 Nov 2009 06:59:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [GIT PULL v6] hw-breakpoints: Rewrite on top of perf events v6
-Message-ID: <20091126055903.GB5649@nowhere>
-References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <20091124094421.GA3468@in.ibm.com> <20091124101342.GB5570@elte.hu> <20091124132127.GA5355@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091124132127.GA5355@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=t2XtGQrXhQjykf+S3FqiffVSjgfz3Foz1qJyTltGYDGUx8HUpVo79ENuKJSmHJWGfW
+         c8PPTZ+6C9ACE9OWjzOnb9C7MVCeWg5P9+cUEfPKKBxCXnipI7BYyGF6Qhyoljakrail
+         d0d9+FR0jlotLjD42bBcJnphUYiGjaTLD9tgk=
+Subject: Re: [PATCH v2] [loongson] yeeloong2f: add platform specific support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       Richard Purdie <rpurdie@rpsys.net>, lm-sensors@lm-sensors.org,
+       linux-input@vger.kernel.org, linux-laptop@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, sfr@linuxcare.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091126041047.GC23244@core.coreip.homeip.net>
+References: <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+	 <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+	 <20091126041047.GC23244@core.coreip.homeip.net>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Thu, 26 Nov 2009 14:00:15 +0800
+Message-ID: <1259215215.4989.38.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 06:51:27PM +0530, K.Prasad wrote:
-> On Tue, Nov 24, 2009 at 11:13:42AM +0100, Ingo Molnar wrote:
-> > 
-> > * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
-> > 
-> > > 
-> > > Hi Frederic, Ingo,
-> > > 		Here are a few concerns (roughly in decreasing order of
-> > > priority) about the perf-events integrated hw-breakpoint feature.
-> > > 
-> > > - Freeze the breakpoint interfaces: Owing to the many 
-> > > current/potential users of hw-breakpoint feature it is important to 
-> > > provide a stable interface to the end-user. Changes underneath the 
-> > > interface can be done in due course in a manner that does not affect 
-> > > the end-user's behaviour or function signature. The present breakpoint 
-> > > interface requires parameters that are best embedded in a structure 
-> > > for extensibility.
-> > 
-> > Well we have PERF_TYPE_BREAKPOINT right now. I agree that it should be 
-> > finalized in some sort of extensible ABI real soon - we dont want (and 
-> > dont need to) add all features that might be possible in the future.
-> > 
+On Wed, 2009-11-25 at 20:10 -0800, Dmitry Torokhov wrote:
+> Hi Wu,
 > 
-> It is not about implementing futuristic features, but provide an
-> interface which we know isn't going to change in the near future and
-> will be flexible to accommodate arch-specific requirements. For
-> instance the register_wide_hw_breakpoint() has an interface as below:
+> Overall impression - several drivers crammed into one module, I wonder
+> if it could be split somewhat. 
+
+Yeah, I have put several drivers into one file, just like the folks did
+in drivers/platform/x86/ for their platforms. I hated it too, will split
+it later(as least, for review is necessary).
+
+> Some input-related concerns below.
+
+Thanks very much for your feedback.
+
 > 
-> struct perf_event **
-> register_wide_hw_breakpoint(unsigned long addr,
->                             int len,
->                             int type,
->                             perf_callback_t triggered,
->                             bool active)
+> On Sat, Nov 21, 2009 at 08:08:40PM +0800, Wu Zhangjin wrote:
+> > +
+> > +/* hotkey input subdriver */
+> > +
+> > +static struct input_dev *yeeloong_hotkey_dev;
+> > +static int event, status;
+> > +
+> > +struct key_entry {
+> > +	char type;		/* See KE_* below */
+> > +	int event;		/* event from SCI */
+> > +	u16 keycode;		/* KEY_* or SW_* */
+> > +};
+> > +
+> > +enum { KE_KEY, KE_SW, KE_END };
 > 
-> Given the diversity seen in debug registers across processors, it isn't
-> prudent to demand/limit the parameters required to those seen above.
-> It can be made a part of one of perf-events' structures (with some fields
-> in arch-specific structures) and the ABI can accept a pointer to one
-> such structure.
+> I am going to post the sparse keymap library shortly, this driver could
+> use it too...
 > 
-> In this way it would be easy to bring-in arch-specific quirks without
-> altering the interface's signature.
 
+when you posting your keymap library, could you please put me in the CC
+list? thanks ;)
 
+> > +
+> > +static struct key_entry yeeloong_keymap[] = {
+> > +	{KE_SW, EVENT_LID, SW_LID},
+> > +	/* SW_VIDEOOUT_INSERT? not included in hald-addon-input! */
+> > +	{KE_KEY, EVENT_CRT_DETECT, KEY_PROG1},
 
-Sure, I plan to convert all these parameters into a single one:
-perf_event_attr.
+any available event for reporting the inserted CRT in hald-addon-input?
 
+> > +	/* Seems battery subdriver should report it */
+> > +	{KE_KEY, EVENT_OVERTEMP, KEY_PROG2},
+> 
+> Does not seem to be an input event?
+> 
+
+It is not an input event, Will remove it from the keymap table.
  
-> > > - Proposed migration of register allocation logic to arch-specific 
-> > > files from kernel/hw_breakpoint.c. This is best done early to help 
-> > > easy porting of code to other architectures (we have an active 
-> > > interest in bringing support for PPC64 and S390). If done later, it 
-> > > will entail additional effort in porting for each architecture.
-> > 
-> > I think the general direction should be towards librarized common 
-> > frameworks.
-> > 
-> > If an architecture wants to do something special it should either extend 
-> > the core code, or, if it's too weird to be added to the core, override 
-> > it via its own implementation.
-> > 
+BTW: how can we handle this stuff(overtemp...)? lm-sensors? Perhaps
+temp1_max_alarm or temp1_crit_alarm?
+
+> > +	/*{KE_KEY, EVENT_AC_BAT, KEY_BATTERY},*/
+> > +	{KE_KEY, EVENT_CAMERA, KEY_CAMERA},	/* Fn + ESC */
+> > +	{KE_KEY, EVENT_SLEEP, KEY_SLEEP},	/* Fn + F1 */
+> > +	/* Seems not clear? not included in hald-addon-input! */
+> > +	{KE_KEY, EVENT_BLACK_SCREEN, KEY_PROG3},	/* Fn + F2 */
 > 
-> Given the feeling that the generic set of constraints in the re-written
-> kernel/hw_breakpoint.c cannot accommodate the needs of various
-> processors (LKML ref:20091117013959.GG5293@nowher) and that
-> the register allocation logic should move to arch-specific code, it is
-> best done early to help easy porting for other archs. For instance
-> there's already a port to PPC64 against the layered hw-breakpoint
-> (found here: 20090903183930.GA4590@in.ibm.com) and one from the
-> community for SH (20091018062558.GA20535@linux-sh.org).
+> Do you mean "lock screen"?
+
+not lock, close the backlight of the display, any available event here?
+
 > 
-> If such code migration is done while porting of a new architecture, then
-> it involves making changes to every other arch on which it is previously
-> implemented (or workaround using #ifdef).
-
-
-As I said, we can probably workaround it by keeping the most part
-in the generic code and delegate special arch things to arch
-constraints.
-
-
-> > > - Fix ptrace bugs that potentially alter the semantics of ptrace.
-> > 
-> > Is there a specific list of these bugs?
-> > 
+> > +	{KE_KEY, EVENT_DISPLAY_TOGGLE, KEY_SWITCHVIDEOMODE},	/* Fn + F3 */
+> > +	{KE_KEY, EVENT_AUDIO_MUTE, KEY_MUTE},	/* Fn + F4 */
+> > +	{KE_KEY, EVENT_WLAN, KEY_WLAN},	/* Fn + F5 */
+> > +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSUP},	/* Fn + up */
+> > +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSDOWN},	/* Fn + down */
+> > +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEUP},	/* Fn + right */
+> > +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEDOWN},	/* Fn + left */
+> > +	{KE_END, 0}
+> > +};
+> > +
 > 
-> As pointed out in 20091111130207.GA5676@in.ibm.com and
-> 20091112042502.GA3145@in.ibm.com, ptrace requests can a) lose register
-> slots when modifying the breakpoint addresses and b) new implementation
-> assumes that every DR7 write to be preceded by a write on DR0-DR3 which
-> need not be true.
-
-
-
-The a) case is going to be fixed.
-But the b) situation must be reported as a user mistake (which is what is
-done currently): -EINVAL, -EIO or whatever. Enabling a breakpoint without
-having given an address is a userland bug.
-
-
-
-> > > - Bring either true system_wide support or atleast workaround the 
-> > > side-effects of iterative per-cpu registration using single atomic 
-> > > enablement of all per-cpu breakpoints. This can avoid stray exceptions 
-> > > which would get delivered to the end-user even for failed breakpoint 
-> > > requests.
-> > 
-> > That can certainly be done when users of such facilities emerge. Right 
-> > now we have perf and ptrace as the two users - are they affected by 
-> > these problems?
-> > 
+> ...
 > 
-> ksym_tracer - the ftrace plugin (kernel/trace/trace_ksym.c) using
-> hw-breakpoints will be affected. Spurious exceptions due to partially
-> registered breakpoint requests can be dangerous here.
+> > +
+> > +static ssize_t
+> > +ignore_store(struct device *dev,
+> > +	     struct device_attribute *attr, const char *buf, size_t count)
+> > +{
+> > +	return count;
+> > +}
+> > +
+> > +static ssize_t
+> > +show_hotkeystate(struct device *dev, struct device_attribute *attr, char *buf)
+> > +{
+> > +	return sprintf(buf, "%d %d\n", event, status);
+> > +}
+> > +
+> > +static DEVICE_ATTR(state, 0444, show_hotkeystate, ignore_store);
+> 
+> Why do you need "ignore_store" and not just use NULL? Also why do you
+> need to export the state at all?
+> 
 
+Okay, Ignore_store() should be NULL here, show_hotkeystate() is only
+added for debugging when I write this driver and also, it is helpful to
+my own user-space hotkey manager. anyway, it is not needed for upstream,
+will remove it later.
 
-Will be fixed too.
+> > +
+> > +static struct attribute *hotkey_attributes[] = {
+> > +	&dev_attr_state.attr,
+> > +	NULL
+> > +};
+> > +
+> > +static struct attribute_group hotkey_attribute_group = {
+> > +	.attrs = hotkey_attributes
+> > +};
+> > +
+> > +static int camera_set(int status)
+> > +{
+> > +	int value;
+> > +	static int camera_status;
+> > +
+> > +	if (status == 2)
+> > +		/* resume the old camera status */
+> > +		camera_set(camera_status);
+> > +	else if (status == 3) {
+> > +		/* revert the camera status */
+> > +		value = ec_read(REG_CAMERA_CONTROL);
+> > +		ec_write(REG_CAMERA_CONTROL, value | (1 << 1));
+> > +	} else {/* status == 0 or status == 1 */
+> > +		status = !!status;
+> > +		camera_status = ec_read(REG_CAMERA_STATUS);
+> > +		if (status != camera_status)
+> > +			camera_set(3);
+> > +	}
+> > +	return ec_read(REG_CAMERA_STATUS);
+> > +}
+> > +
+> > +#define I8042_STATUS_REG	0x64
+> > +#define I8042_DATA_REG		0x60
+> > +#define i8042_read_status() inb(I8042_STATUS_REG)
+> > +#define i8042_read_data() inb(I8042_DATA_REG)
+> > +#define I8042_STR_OBF		0x01
+> > +#define I8042_BUFFER_SIZE	16
+> > +
+> > +static void i8042_flush(void)
+> > +{
+> > +	int i;
+> > +
+> > +	while ((i8042_read_status() & I8042_STR_OBF)
+> > +		&& (i < I8042_BUFFER_SIZE)) {
+> > +		udelay(50);
+> > +		i8042_read_data();
+> > +		i++;
+> > +	}
+> > +}
+> > +
+> > +static int yeeloong_hotkey_init(struct device *dev)
+> > +{
+> > +	int ret;
+> > +	struct key_entry *key;
+> > +
+> > +	/* flush the buffer of keyboard */
+> > +	i8042_flush();
+> 
+> Why??? Why does this driver tries to touch stuff that does not belong to
+> it?
+> 
+
+I doubted the keys in the buffer of keyboard will generate weird
+problems, so, added the above lines. and another guy just cleared this
+part to me that the Fnkey stuff not go to the buffer of keyboard, so,
+I'm doing stupid job here, will remove it later too.
+
+> > +
+> > +	/* setup the system control interface */
+> > +	setup_sci();
+> 
+> No failures?
+
+Need to check the return value here, and also, the setup_sci() itself.
+
+> 
+> > +
+> > +	yeeloong_hotkey_dev = input_allocate_device();
+> > +
+> > +	if (!yeeloong_hotkey_dev)
+> > +		return -ENOMEM;
+> 
+> Error unwinding?
+
+Sorry, not clear what do you mean here?
+
+Thanks & Regards,
+	Wu Zhangjin
 
