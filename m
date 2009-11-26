@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZKZJMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZKZJO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbZKZJMn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbZKZJMm
+	id S1760158AbZKZJO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbZKZJO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:12:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43783 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 04:14:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58616 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760120AbZKZJMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:12:40 -0500
-Message-ID: <4B0E467A.8080201@kernel.org>
-Date: Thu, 26 Nov 2009 18:12:26 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1760140AbZKZJOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:14:24 -0500
+Message-ID: <4B0E46E6.4030006@redhat.com>
+Date: Thu, 26 Nov 2009 10:14:14 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: workqueues tree build failure
-References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <4B0E3677.6000603@kernel.org> <200911261016.58810.peter.ujfalusi@nokia.com>
-In-Reply-To: <200911261016.58810.peter.ujfalusi@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jarod Wilson <jarod@wilsonet.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andy Walls <awalls@radix.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <20091126054938.GH23244@core.coreip.homeip.net> <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
+In-Reply-To: <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 11/26/09 07:23, Jarod Wilson wrote:
+> Well, when mythtv was started, I don't know that there were many
+> input layer remotes around... lirc was definitely around though.
 
-11/26/2009 05:16 PM, Peter Ujfalusi wrote:
->> Takashi, RT workqueue is going away.  Do you really need it?
-> 
-> What can be used instead of RT workqueue?
-> The tlv320dac33 needs RT workqueue because I need to send the I2C
-> command with minimum delay to the codec. If this can not be done
-> (the workqueue is delayed), and the codec does not receive the
-> command in time, it will literally die.  What are the options to
-> replace the RT workqueue?
+lirc predates the input layer IR drivers by years, maybe even the input 
+layer itself.
 
-The problem with RT workqueue is that RT and queue don't really mix
-well.  To act in real time, it requires all the resource pre-allocated
-and dedicated to it making queueing or pooling meaningless.  The
-original workqueue code created dedicated pool of threads for each
-workqueue so it could be used for RT but new implementation uses
-shared worker pool, so it can't be used as an interface to dedicated
-threads.
+The main reason for the input layer IR drivers appearing was lirc not 
+being mainline.  A in-kernel driver (bttv in that case) which depends on 
+a out-of-tree subsystem for IR support was simply a pain in the ass for 
+both maintainer (/me back then) and users.
 
-I haven't read the code but,
+At least for IR hardware which allows access to the raw samples it 
+certainly makes sense to support lirc, additional to the current (or 
+improved) input layer support.
 
-* If you need to respond fast, wouldn't you be doing that from IRQ
-  handler or softirq?  Do you need task context?
+> The lirc support in mythtv actually relies on mapping remote button
+> names as defined in lircd.conf to keyboard key strokes. As mentioned
+> elsewhere in this beast of a thread, mythtv doesn't currently support
+> things like KEY_PLAY, KEY_VOLUMEUP, KEY_CHANNELUP, etc. just yet, but
+> I intend on fixing that...
 
-* Or is it that it's not triggered by IRQ but once the transfer
-  started it can't be interrupted?  But in this case preempt_disable()
-  or local_irq_disable() should suffice.
+lircd can handle the input layer as input as well, so you actually can 
+remap things via lircd even for pure input layer drivers.  mythtv 
+handling KEY_VOLUMEUP directly would be more elegant though.
 
-Thanks.
+cheers,
+   Gerd
 
--- 
-tejun
