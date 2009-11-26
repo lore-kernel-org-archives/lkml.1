@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbZKZIDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbZKZIEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759360AbZKZIDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbZKZIDv
+	id S1759409AbZKZIEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759364AbZKZIET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:03:51 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:51940 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759320AbZKZIDu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:03:50 -0500
-Date: 26 Nov 2009 09:01:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jarod@wilsonet.com
-Cc: awalls@radix.net
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: khc@pm.waw.pl
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BDcbizrJjFB@christoph>
-In-Reply-To: <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Thu, 26 Nov 2009 03:04:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47015 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759279AbZKZIES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:04:18 -0500
+Message-ID: <4B0E3677.6000603@kernel.org>
+Date: Thu, 26 Nov 2009 17:04:07 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19tcsg/ujY+SGRd4kIAFDG7HvSyQOOgREtPwbX
- Yug28C5MVMtDyFkPj53B4WcGFHkmF7P1oJXlK+24+xd5ZKA96Q
- akk8UtL0HUoVALjWI1IXtszoZ3VLaNR
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>, Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: linux-next: workqueues tree build failure
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
+In-Reply-To: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+11/26/2009 05:00 PM, Stephen Rothwell wrote:
+> Hi Tejun,
+> 
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> sound/soc/codecs/tlv320dac33.c: In function 'dac33_i2c_probe':
+> sound/soc/codecs/tlv320dac33.c:1121: error: implicit declaration of function 'create_rt_workqueue'
+> sound/soc/codecs/tlv320dac33.c:1121: warning: assignment makes pointer from integer without a cast
+> 
+> Caused by commit 1b2d88bf4c63ed3a8c9033c358905d3463aa8bc2 ("stop_machine:
+> reimplement without using workqueue") (which removed create_rt_workqueue
+> ()) interacting with commit c8bf93f0fe8c5a509a29e30f3bac823fa0f6d96e
+> ("ASoC: Codec driver for Texas Instruments tlv320dac33 codec") from the
+> sound tree.
+> 
+> I have no idea how to fix this, so I have used the workqueues tree from
+> next-20091125 until someone can suggest a solution.
 
-on 25 Nov 09 at 12:44, Jarod Wilson wrote:
-[...]
-> Ah, but the approach I'd take to converting to in-kernel decoding[*] would
-> be this:
-[...]
-> [*] assuming, of course, that it was actually agreed upon that in-kernel
-> decoding was the right way, the only way, all others will be shot on sight.
+Takashi, RT workqueue is going away.  Do you really need it?
 
-I'm happy to see that the discussion is getting along.
-But I'm still a bit hesitant about the in-kernel decoding. Maybe it's just  
-because I'm not familiar at all with input layer toolset.
+Thanks.
 
-1. For sure in-kernel decoding will require some assistance from userspace  
-to load the mapping from IR codes to keys. So, if there needs to be a tool  
-in userspace that does some kind of autodetection, why not have a tool  
-that does some autodetection and autoconfigures lircd for the current  
-device. Lots of code duplication in kernel saved. What's the actual  
-benefit of in-kernel decoding?
-
-2. What would be the format of the key map? lircd.conf files already exist  
-for a lot of remote controls. Will we have a second incompatible format to  
-map the keys in-kernel? Where are the tools that create the key maps for  
-new remotes?
-
-Maybe someone can shed some light on this.
-
-Christoph
+-- 
+tejun
