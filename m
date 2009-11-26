@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZKZWab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZKZWby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbZKZWab (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 17:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZKZWaa
+	id S1753126AbZKZWby (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 17:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZKZWbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 17:30:30 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:33817 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZKZWa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 17:30:29 -0500
-References: <20091127083936.b9c125c6.sfr@canb.auug.org.au>
-Message-Id: <E8E998D0-13B9-4D54-AA55-FAF8EC72168B@fys.uio.no>
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20091127083936.b9c125c6.sfr@canb.auug.org.au>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7D11)
-Mime-Version: 1.0 (iPhone Mail 7D11)
-Subject: Re: linux-next: nfs/nfsd trees fetch failed
-Date: Thu, 26 Nov 2009 17:30:22 -0500
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 7 sum msgs/h 2 total rcpts 1960 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 79E50C2CB6EB87F25153C42F41AC98D3BC238A4D
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 18 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Thu, 26 Nov 2009 17:31:53 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:51803 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZKZWbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 17:31:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Xtv0jV+oj88tzZ54qeYDjfIBOf0g85cwECQlAY55JHMOdy3Oplkl9mefWSgylzWP8q
+         /Yl1XS/vy8aXl6F4KauoIexabx4gpP/ba4+gEAatcu2c37u6E5itrNBvK1hcX6SrIabc
+         lN0IbfZMvzgibbFQuD56+PYAyzR4VuH6qc96c=
+Date: Thu, 26 Nov 2009 23:31:56 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] trace_syscalls: add missed field
+Message-ID: <20091126223153.GA7177@nowhere>
+References: <4B0E330D.1070206@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0E330D.1070206@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 26, 2009, at 16:39, Stephen Rothwell <sfr@canb.auug.org.au>  
-wrote:
+On Thu, Nov 26, 2009 at 03:49:33PM +0800, Lai Jiangshan wrote:
+> 
+> Field syscall number is missed in syscall_enter_define_fields()/
+> syscall_exit_define_fields().
+> 
+> syscall number is also needed for event filter or other users.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-> Hi all,
->
-> Today's linux-next fetch of the nfs and nfsd trees produced this  
-> error:
->
-> git.linux-nfs.org[0: 141.212.112.37]: errno=Connection timed out
-> fatal: unable to connect a socket (Connection timed out)
->
-> This also happened yesterday.
->
-> I will use the version of these trees from next-20091125 for today.
 
-Hi Stephen,
 
-Yes, I'm aware of the problem, and I'm sorry. I'm hoping that I can  
-get Linux-nfs.org up and running again tomorrow (== Saturday your  
-time) after the Thanksgiving celebrations.
+Well, I don't think it's very useful for in-kernel filtering.
+Filtering a syscall event by its number would mean filtering all
+event for this syscall. This is the same as not tracing it.
 
-Cheers
-    Trond
+Or do you have other usecases in mind?
+
+Thanks.
+
