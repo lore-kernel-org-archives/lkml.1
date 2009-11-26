@@ -1,112 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZKZVr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZKZVxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbZKZVr4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 16:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZKZVrz
+	id S1752991AbZKZVxO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 16:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZKZVxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 16:47:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47256 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752903AbZKZVrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 16:47:53 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX1+7HgcqRXe7llssiurKkkjgvTsJ5ARDVpfo14fL5i
-	ELbUJTpQM/CRsO
-Message-ID: <4B0EF789.8060805@gmx.de>
-Date: Thu, 26 Nov 2009 22:47:53 +0100
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 26 Nov 2009 16:53:14 -0500
+Received: from ozlabs.org ([203.10.76.45]:57131 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZKZVxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 16:53:13 -0500
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       "James E.J. Bottomley" <jejb@parisc-linux.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] parsic: remove unused nfsd #includes
-References: <4B0C1EB7.50508@panasas.com> <4B0C1F1A.8070605@panasas.com> <4B0E94D4.5090800@panasas.com>
-In-Reply-To: <4B0E94D4.5090800@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Message-ID: <19214.63688.860929.962005@cargo.ozlabs.ibm.com>
+Date: Fri, 27 Nov 2009 08:53:12 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Veaceslav Falico <vfalico@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
+In-Reply-To: <20091126202312.GA21945@redhat.com>
+References: <20091124200127.GA5751@redhat.com>
+	<20091125080342.GD2660@in.ibm.com>
+	<20091125154052.GA6734@redhat.com>
+	<20091126075335.GA18508@in.ibm.com>
+	<20091126145051.GB4382@redhat.com>
+	<20091126172524.GA14768@redhat.com>
+	<20091126182226.GF12355@darkmag.usersys.redhat.com>
+	<20091126202312.GA21945@redhat.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/2009 03:46 PM, Boaz Harrosh wrote:
-> On 11/24/2009 11:27 PM, Grant Grundler wrote:
->> On Tue, Nov 24, 2009 at 07:58:15PM +0200, Boaz Harrosh wrote:
->>> Some arch files had unneeded #includes directives from linux/nfsd/*.
->>> Some vfs files had unneeded #includes directives from linux/nfsd/*.
->> ...
->>> patches:
->>> [PATCH 1/5] parsic: remove unused nfsd #includes
->>> 	Some kind soul, please compile with this patch? compile
->>> 	is all that's needed.
->>
->> Boaz,
->> linux-2.6 compiles for parisc with this patch. Please add:
->>      Tested-by: Grant Grundler<grundler@parisc-linux.org>
->>
->> thanks,
->> grant
->>
->
-> CCing registered parsic maintainers. Could we please get an ACK on
-> this patch, and cary this through the nfsd tree?
+Oleg Nesterov writes:
 
-Sure.
+> 	0xfeacd24
+> 	0xfeacd28
+> 	0xfeacd2c
+> 	0xfeacd30
+> 	0xfeacd34
+> 	...
+> 
+> and so on forever,
+...
+> beg->	0x0feacd24 <__GI__IO_list_lock+68>:	lwarx   r0,0,r31
+> 	0x0feacd28 <__GI__IO_list_lock+72>:	cmpw    r0,r11
+> 	0x0feacd2c <__GI__IO_list_lock+76>:	bne-    0xfeacd38 <__GI__IO_list_lock+88>
+> 	0x0feacd30 <__GI__IO_list_lock+80>:	stwcx.  r9,0,r31
+> end->	0x0feacd34 <__GI__IO_list_lock+84>:	bne+    0xfeacd24 <__GI__IO_list_lock+68>
+> 
+> I don't even know whether this is user-space bug or kernel bug,
+> the asm above is the black magic for me.
 
-Acked-by: Helge Deller <deller@gmx.de>
+The lwarx and stwcx. work together to do an atomic update to the word
+whose address is in r31.  They are like LL (load-linked) and SC
+(store-conditional) on other architectures such as alpha.  Basically
+the lwarx creates an internal "reservation" on the word pointed to by
+r31 and loads its value into r0.  The stwcx. stores into that word but
+only if the reservation still exists.  The reservation gets cleared
+(in hardware) if any other cpu writes to that word in the meantime.
+If the reservation did get cleared, the bne (branch if not equal)
+instruction will be taken and we loop around to try again.
 
-Helge
+There is a difficulty when single-stepping through such a sequence
+because the process of taking the single-step exception and returning
+will clear the reservation.  Thus if you single-step through that
+sequence it will never succeed.  I believe gdb has code to recognize
+this kind of sequence and run through it without stopping until after
+the bne, precisely to avoid this problem.
 
-
->
-> Thanks
-> Boaz
->
-> On 11/24/2009 07:59 PM, Boaz Harrosh wrote:
->>
->> Some unused includes removed.
->>
->> This patch is in an effort to cleanup nfsd headers and move
->> private definitions to source directory.
->>
->> Signed-off-by: Boaz Harrosh<bharrosh@panasas.com>
->> ---
->>   arch/parisc/kernel/sys_parisc32.c |    6 ------
->>   1 files changed, 0 insertions(+), 6 deletions(-)
->>
->> diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
->> index 561388b..4a8ca63 100644
->> --- a/arch/parisc/kernel/sys_parisc32.c
->> +++ b/arch/parisc/kernel/sys_parisc32.c
->> @@ -26,13 +26,7 @@
->>   #include<linux/shm.h>
->>   #include<linux/slab.h>
->>   #include<linux/uio.h>
->> -#include<linux/nfs_fs.h>
->>   #include<linux/ncp_fs.h>
->> -#include<linux/sunrpc/svc.h>
->> -#include<linux/nfsd/nfsd.h>
->> -#include<linux/nfsd/cache.h>
->> -#include<linux/nfsd/xdr.h>
->> -#include<linux/nfsd/syscall.h>
->>   #include<linux/poll.h>
->>   #include<linux/personality.h>
->>   #include<linux/stat.h>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Paul.
