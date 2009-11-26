@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZKZUc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZKZUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752772AbZKZUc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 15:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZKZUc6
+	id S1752795AbZKZUoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 15:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbZKZUoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 15:32:58 -0500
-Received: from khc.piap.pl ([195.187.100.11]:37319 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751742AbZKZUc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 15:32:57 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+	Thu, 26 Nov 2009 15:44:19 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:54330 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZKZUoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 15:44:18 -0500
+Date: 26 Nov 2009 21:37:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: mchehab@redhat.com
+Cc: dmitry.torokhov@gmail.com
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: khc@pm.waw.pl
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: superm1@ubuntu.com
+Message-ID: <BDcc3mfojFB@christoph>
+In-Reply-To: <4B0E765C.2080806@redhat.com>
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
-	<4B0ED238.6060306@redhat.com>
-Date: Thu, 26 Nov 2009 21:33:01 +0100
-In-Reply-To: <4B0ED238.6060306@redhat.com> (Mauro Carvalho Chehab's message of
-	"Thu, 26 Nov 2009 17:08:40 -0200")
-Message-ID: <m3pr75rpqa.fsf@intrepid.localdomain>
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+AzTYSKZXPaklhDHzKcjm9YgZaTl4nM77dFpD
+ 9iTP0KBv+yFJTar92BWi/YEtH69dzMLAEDA6Qs+Ed5vox/dF1L
+ hghiSCSoyjc11zGNzqVtvCA4PlOMmiG
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+Hi Mauro,
 
-> see include/linux/input.h:
->
-> struct input_event {
->         struct timeval time;
->         __u16 type;
->         __u16 code;
->         __s32 value;
-> };
->
-> extending the value to more than 32 bits require some changes at the
-> input layer, probably breaking kernel API.
+on 26 Nov 09 at 10:36, Mauro Carvalho Chehab wrote:
+[...]
+> lircd supports input layer interface. Yet, patch 3/3 exports both devices
+> that support only pulse/space raw mode and devices that generate scan
+> codes via the raw mode interface. It does it by generating artificial
+> pulse codes.
 
-Yeah, but that's a "key" space, not "raw code" space.
-Keys via input and raw codes via lirc and there is no problem.
+Nonsense! There's no generation of artificial pulse codes in the drivers.
+The LIRC interface includes ways to pass decoded IR codes of arbitrary  
+length to userspace.
 
-The mapping tables for input layer need to have variable code widths,
-depending on the protocol, sure.
-
->> I don't think so. We can pass the space/mark data to all (configured,
->> i.e. with active mapping) protocol handlers at once. Should a check
->> fail, we ignore the data. Perhaps another protocol will make some sense
->> out of it.
->
-> What happens if it succeeds on two protocol handlers?
-
-We signal both and hope it isn't self-destruct button.
-We can't fix it no matter how hard we try.
--- 
-Krzysztof Halasa
+Christoph
