@@ -1,76 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZKZPQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZKZPSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZKZPQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZKZPQz
+	id S1755675AbZKZPSO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZKZPSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:16:55 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:26718 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1754788AbZKZPQy (ORCPT
+	Thu, 26 Nov 2009 10:18:14 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:39520 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754851AbZKZPSN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:16:54 -0500
-Message-ID: <4B0E9C1F.4000104@ru.mvista.com>
-Date: Thu, 26 Nov 2009 18:17:51 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 26 Nov 2009 10:18:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rMlDwHYpQNB+++x4nSui2qbmXOuPRoyFdRP8Eu9Y+EdT2ySSstg2/DFaQMJQhaW2S5
+         ZTUm2/R3iu6QRKYP9zA+mUi8ZdAid1xieUTdM4/nkFbZAN6klzaBRonXQpCmVJgQfdEH
+         qui+dpb1ovtQWRzV4MSJFBYoS7vqJhewOpQ5Y=
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 36/86] pata_it8213: add UDMA100 and UDMA133 support
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170637.5446.77089.sendpatchset@localhost> <4B0E9928.2020809@ru.mvista.com>
-In-Reply-To: <4B0E9928.2020809@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091126141738.GE13095@csn.ul.ie>
+References: <20091126121945.GB13095@csn.ul.ie>
+	 <4e5e476b0911260547r33424098v456ed23203a61dd@mail.gmail.com>
+	 <20091126141738.GE13095@csn.ul.ie>
+Date: Thu, 26 Nov 2009 16:18:18 +0100
+Message-ID: <4e5e476b0911260718h35fab3b1hc63587b23c02d43f@mail.gmail.com>
+Subject: Re: [PATCH-RFC] cfq: Disable low_latency by default for 2.6.32
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Thu, Nov 26, 2009 at 3:17 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> On Thu, Nov 26, 2009 at 02:47:10PM +0100, Corrado Zoccolo wrote:
+>> On Thu, Nov 26, 2009 at 1:19 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+>> > (cc'ing the people from the page allocator failure thread as this might be
+>> > relevant to some of their problems)
+>> >
+>> > I know this is very last minute but I believe we should consider disabling
+>> > the "low_latency" tunable for block devices by default for 2.6.32.  There was
+>> > evidence that low_latency was a problem last week for page allocation failure
+>> > reports but the reproduction-case was unusual and involved high-order atomic
+>> > allocations in low-memory conditions. It took another few days to accurately
+>> > show the problem for more normal workloads and it's a bit more wide-spread
+>> > than just allocation failures.
+>> >
+>> > Basically, low_latency looks great as long as you have plenty of memory
+>> > but in low memory situations, it appears to cause problems that manifest
+>> > as reduced performance, desktop stalls and in some cases, page allocation
+>> > failures. I think most kernel developers are not seeing the problem as they
+>> > tend to test on beefier machines and without hitting swap or low-memory
+>> > situations for the most part. When they are hitting low-memory situations,
+>> > it tends to be for stress tests where stalls and low performance are expected.
+>>
+>> The low latency tunable controls various policies inside cfq.
+>> The one that could affect memory reclaim is:
+>>         /*
+>>          * Async queues must wait a bit before being allowed dispatch.
+>>          * We also ramp up the dispatch depth gradually for async IO,
+>>          * based on the last sync IO we serviced
+>>          */
+>>         if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
+>>                 unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
+>>                 unsigned int depth;
+>>
+>>                 depth = last_sync / cfqd->cfq_slice[1];
+>>                 if (!depth && !cfqq->dispatched)
+>>                         depth = 1;
+>>                 if (depth < max_dispatch)
+>>                         max_dispatch = depth;
+>>         }
+>>
+>> here the async queues max depth is limited to 1 for up to 200 ms after
+>> a sync I/O is completed.
+>> Note: dirty page writeback goes through an async queue, so it is
+>> penalized by this.
+>>
+>> This can affect both low and high end hardware. My non-NCQ sata disk
+>> can handle a depth of 2 when writing. NCQ sata disks can handle a
+>> depth up to 31, so limiting depth to 1 can cause write performance
+>> drop, and this in turn will slow down dirty page reclaim, and cause
+>> allocation failures.
+>>
+>> It would be good to re-test the OOM conditions with that code commented out.
+>>
+>
+> All of it or just the cfq_latency part?
+The whole if, that is enabled only with cfq_latency.
 
->> There shouldn't be any problems with it as IDE it8213 host driver
->> has been supporting UDMA100 and UDMA133 for years.
+>
+> As it turns out the test machine does report for the disk NCQ (depth 31/32)
+> and it's the same on the laptop so slowing down dirty page cleaning
+> could be impacting reclaim.
+Yes, I think so.
 
->> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>
+>> >
+>> > To show the problem, I used an x86-64 machine booting booted with 512MB of
+>> > memory. This is a small amount of RAM but the bug reports related to page
+>> > allocation failures were on smallish machines and the disks in the system
+>> > are not very high-performance.
+>> >
+>> > I used three tests. The first was sysbench on postgres running an IO-heavy
+>> > test against a large database with 10,000,000 rows. The second was IOZone
+>> > running most of the automatic tests with a record length of 4KB and the
+>> > last was a simulated launching of gitk with a music player running in the
+>> > background to act as a desktop-like scenario. The final test was similar
+>> > to the test described here http://lwn.net/Articles/362184/ except that
+>> > dm-crypt was not used as it has its own problems.
+>>
+>> low_latency was tested on other scenarios:
+>> http://lkml.indiana.edu/hypermail/linux/kernel/0910.0/01410.html
+>> http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-11/msg04855.html
+>> where it improved actual and perceived performance, so disabling it
+>> completely may not be good.
+>>
+>
+> It may not indeed.
+>
+> In case you mean a partial disabling of cfq_latency, I'm try the
+> following patch. The intention is to disable the low_latency logic if
+> kswapd is at work and presumably needs clean pages. Alternative
+> suggestions welcome.
+Yes, I meant exactly to disable that part, and doing it when kswapd is
+active is probably a good choice.
+I have a different idea for 2.6.33, though.
+If you have a reliable reproducer of the issue, can you test it on
+git://git.kernel.dk/linux-2.6-block.git branch for-2.6.33?
+It may already be unaffected, since we had various performance
+improvements there, but I think a better way to boost writeback is
+possible.
 
->> Index: b/drivers/ata/pata_it8213.c
->> ===================================================================
->> --- a/drivers/ata/pata_it8213.c
->> +++ b/drivers/ata/pata_it8213.c
->> @@ -164,7 +164,7 @@ static void it8213_set_dmamode (struct a
->>  
->>          /* Clocks follow the PIIX style */
->>          u_speed = min(2 - (udma & 1), udma);
->> -        if (udma == 5)
->> +        if (udma > 4)
->>              u_clock = 0x1000;    /* 100Mhz */
->>          else if (udma > 2)
->>              u_clock = 1;        /* 66Mhz */
->> @@ -264,7 +264,7 @@ static int it8213_init_one (struct pci_d
->>          .flags        = ATA_FLAG_SLAVE_POSS,
->>          .pio_mask    = ATA_PIO4,
->>          .mwdma_mask    = ATA_MWDMA2,
->> -        .udma_mask     = ATA_UDMA4, /* FIXME: want UDMA 100? */
->> +        .udma_mask     = ATA_UDMA6,
->>          .port_ops    = &it8213_ops,
->>      };
->>      /* Current IT8213 stuff is single port */
+Thanks,
+Corrado
 
->    Well, at 100 MHz it's probably not really UDMA6 but UDMA5 in 
-> disguise... though u_speed would be 2 instead of 1 which should 
-> correspond to either 3 clocks or 1 clock according to Intel's 
-> documentation (different Intel docs give different figures and even ICH 
-> PRM gives *both* clocks).
-
-    If we take 3 clocks as correct (1 clock doesn't seem correct anyways, as 
-with UDMA mode 5 UDMA cycle must be 20 ns and 1 clock gives only 10 ns). 
-Well, then UDMA5 doesn't seem different from UDMA4 with ICH controllers and 
-it's not clear why all the fuss about 100 MHz bit was necessary... :-/
-    Returning to IT8213, with UDMA6 we have 'u_speed' of 2 that should 
-correspond to 2 clocks which is 20 ns at 100 MHz and really is an UDMA5 
-speed. Well, given UDMA5's slowness, that's definitely a gain. The question 
-remains however, isn't this value reserved like on original ICH?
-
-MBR, Sergei
+>
+> ======
+> cfq: Do not limit the async queue depth while kswapd is awake
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index aa1e953..dcab74e 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1308,7 +1308,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>         * We also ramp up the dispatch depth gradually for async IO,
+>         * based on the last sync IO we serviced
+>         */
+> -       if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
+> +       if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency && !kswapd_awake()) {
+>                unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
+>                unsigned int depth;
+>
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 6f75617..b593aff 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -655,6 +655,7 @@ typedef struct pglist_data {
+>  void get_zone_counts(unsigned long *active, unsigned long *inactive,
+>                        unsigned long *free);
+>  void build_all_zonelists(void);
+> +int kswapd_awake(void);
+>  void wakeup_kswapd(struct zone *zone, int order);
+>  int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
+>                int classzone_idx, int alloc_flags);
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 777af57..75cdd9a 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2201,6 +2201,15 @@ static int kswapd(void *p)
+>        return 0;
+>  }
+>
+> +int kswapd_awake(void)
+> +{
+> +       pg_data_t *pgdat;
+> +       for_each_online_pgdat(pgdat)
+> +               if (!waitqueue_active(&pgdat->kswapd_wait))
+> +                       return 1;
+> +       return 0;
+> +}
+> +
+>  /*
+>  * A zone is low on free memory, so wake its kswapd task to service it.
+>  */
+>
