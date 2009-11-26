@@ -1,100 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbZKZRCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZKZRKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760865AbZKZRCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760849AbZKZRCO
+	id S1756334AbZKZRKi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbZKZRKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:02:14 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48885 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760840AbZKZRCJ (ORCPT
+	Thu, 26 Nov 2009 12:10:38 -0500
+Received: from na3sys009aog111.obsmtp.com ([74.125.149.205]:59103 "EHLO
+	na3sys009aog111.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755069AbZKZRKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:02:09 -0500
-Date: Thu, 26 Nov 2009 17:03:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
-       Joao Ramos <joao.ramos@inov.pt>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       Ryan Mallon <ryan@bluewatersys.com>
-Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's
- EP93xx CPUs
-Message-ID: <20091126170339.218f6674@lxorguk.ukuu.org.uk>
-In-Reply-To: <200911261651.40928.bzolnier@gmail.com>
-References: <200911261651.40928.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Nov 2009 12:10:37 -0500
+From: "Leyendecker, Robert" <Robert.Leyendecker@lsi.com>
+To: Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "hpa@zytor.com" <hpa@zytor.com>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "efault@gmx.de" <efault@gmx.de>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Date: Thu, 26 Nov 2009 12:09:25 -0500
+Subject: RE: [regression bisect -next] BUG: using smp_processor_id() in
+ preemptible [00000000] code: rmmod
+Thread-Topic: [regression bisect -next] BUG: using smp_processor_id() in
+ preemptible [00000000] code: rmmod
+Thread-Index: AcpuuZuDj8o1UPozRWifix5+kR1+OQAABmNQ
+Message-ID: <8C8865ED624BB94F8FE50259E2B5C5B304593DAB99@palmail03.lsi.com>
+References: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1256784158.2848.8.camel@dhcp231-106.rdu.redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nAQHAp16031261
 
 
-> +static void pata_ep93xx_set_piomode(struct ata_port *ap,
-> +				    struct ata_device *adev)
-> +{
-> +	void __iomem *base = ap->host->private_data;
-> +	struct ata_device *pair = ata_dev_pair(adev);
-> +	const struct ata_timing *t = ata_timing_find_mode(adev->pio_mode);
-> +	const struct ata_timing *cmd_t = t;
-> +	u32 reg = IDECFG_IDEEN | IDECFG_PIO;
-> +	u8 pio = adev->pio_mode - XFER_PIO_0;
-> +
-> +	if (pair && pair->pio_mode < adev->pio_mode)
-> +		cmd_t = ata_timing_find_mode(pair->pio_mode);
-> +
-> +	/*
-> +	 * store the adequate PIO mode timings, to be used later
-> +	 * by pata_ep93xx_{read,write}
-> +	 */
-> +	adev->private_data = (void *)t;
-> +	ap->private_data = (void *)cmd_t;
-> +
-> +	/* reconfigure IDE controller according to PIO mode (?) */
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> owner@vger.kernel.org] On Behalf Of Eric Paris
+> Sent: Wednesday, October 28, 2009 9:43 PM
+> To: linux-kernel@vger.kernel.org
+> Cc: hpa@zytor.com; a.p.zijlstra@chello.nl; efault@gmx.de;
+> tglx@linutronix.de; mingo@elte.hu
+> Subject: [regression bisect -next] BUG: using smp_processor_id() in
+> preemptible [00000000] code: rmmod
+> 
+> I get a slew of these on boot.
+> 
+> [    4.590699] BUG: using smp_processor_id() in preemptible [00000000]
+> code: rmmod/1314
+> [    4.593043] caller is task_hot+0x86/0xd0
+> [    4.593872] Pid: 1314, comm: rmmod Tainted: G        W  2.6.32-rc3-
+> fanotify #127
+> [    4.595443] Call Trace:
+> [    4.596177]  [<ffffffff812ad35b>] debug_smp_processor_id+0x11b/0x120
+> [    4.597337]  [<ffffffff81051d66>] task_hot+0x86/0xd0
+> [    4.598320]  [<ffffffff81066275>] set_task_cpu+0x115/0x270
+> [    4.599368]  [<ffffffff810985ab>] kthread_bind+0x6b/0x100
+> [    4.600354]  [<ffffffff810914f0>] start_workqueue_thread+0x30/0x60
+> [    4.601545]  [<ffffffff810941dd>] __create_workqueue_key+0x18d/0x2f0
+> [    4.602526]  [<ffffffff810d9bee>] stop_machine_create+0x4e/0xd0
+> [    4.603811]  [<ffffffff810c5818>] sys_delete_module+0x98/0x250
+> [    4.604922]  [<ffffffff810e2505>] ? audit_syscall_entry+0x205/0x290
+> [    4.606202]  [<ffffffff81013202>] system_call_fastpath+0x16/0x1b
+> 
+> f685ceacab07d3f6c236f04803e2f2f0dbcc5afb is first bad commit commit
+> f685ceacab07d3f6c236f04803e2f2f0dbcc5afb
+> Author: Mike Galbraith <efault@gmx.de>
+> Date:   Fri Oct 23 23:09:22 2009 +0200
+> 
+>     sched: Strengthen buddies and mitigate buddy induced latencies
+> 
+>     This patch restores the effectiveness of LAST_BUDDY in preventing
+>     pgsql+oltp from collapsing due to wakeup preemption. It also
+>     switches LAST_BUDDY to exclusively do what it does best, namely
+>     mitigate the effects of aggressive wakeup preemption, which
+>     improves vmark throughput markedly, and restores mysql+oltp
+>     scalability.
+> 
+> [snip]
 
-This would probably be better in both drivers as a simple table. It would
-then not be a switch but collapse the entire pile into a single
+Hi -
 
-	writel(pio_timing[pio], base + IDECFG);
+I have same oops (different cause-vector). Details here  http://lkml.org/lkml/2009/11/23/548
 
+Can anyone tell me if they are related and/or recommend any work-arounds or troubleshooting steps?
 
-> +static u16 __pata_ep93xx_read(void __iomem *base, void *addr,
-> +			      struct ata_timing *t)
-> +{
-> +	u32 reg;
-> +
-> +	reg = (unsigned long)addr | IDECTRL_DIORN | IDECTRL_DIOWN;
-> +	writel(reg, base + IDECTRL);
-> +	ndelay(t->setup);
+Could this be related to scheduler trying to reschedule a task/thread on other proc and possibly a false alarm? 
 
-This implies a bus with no posting, which seems to the case from the
-other driver code.
+Snip from trace is below.
 
-> +	while (!pata_ep93xx_check_iordy(base))
-> +		cpu_relax();
+-Bob
 
-And if the drive was hot unplugged this is doom incorporated (plus we
-might not be using an IORDY mode.
+Nov 23 17:24:15 localhost kernel: BUG: using smp_processor_id() in preemptible
+[00000000] code: smash/3062
+Nov 23 17:24:15 localhost kernel: caller is __schedule+0x93/0x7d4
+Nov 23 17:24:15 localhost kernel: Pid: 3062, comm: smash Not tainted
+2.6.31.6-rt19 #1
+Nov 23 17:24:15 localhost kernel: Call Trace:
+Nov 23 17:24:15 localhost kernel: [<c06dc3df>] ? printk+0xf/0x18
+Nov 23 17:24:15 localhost kernel: [<c05499a6>] debug_smp_processor_id+0xa6/0xbc
+Nov 23 17:24:15 localhost kernel: [<c06dc70e>] __schedule+0x93/0x7d4
+Nov 23 17:24:15 localhost kernel: [<c046621f>] ? audit_syscall_exit+0xfa/0x10f
+Nov 23 17:24:15 localhost kernel: [<c040a955>] ? syscall_trace_leave+0xc8/0xef
+Nov 23 17:24:15 localhost kernel: [<c040338a>] work_resched+0x5/0x19
+Nov 23 17:24:15 localhost kernel: __ratelimit: 6 callbacks suppressed
+Nov 23 17:24:15 localhost kernel: BUG: using smp_processor_id() in preemptible
+[00000000] code: smash/3062
 
->
-> +	while (!pata_ep93xx_check_iordy(base))
-> +		cpu_relax();
-
-Ditto
-
-
-I don't see anything wrong in the conversion. 
-
-The size thing is true - libata tried to abstract at a higher level which
-in turn avoids lots of computed branches to one liners and lets the
-compiler inline stuff better (eg all the private read/write methods into
-a single call free tf_* etc). It could I guess provide an "awkward
-case" skeleton tf_* and other sets of functions that were passed inb/outb
-ops. One for Jeff to ponder ?
-
-
-
-Alan
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
