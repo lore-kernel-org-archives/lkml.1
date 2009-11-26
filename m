@@ -1,96 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZKZFp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZKZFrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbZKZFp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZKZFpZ
+	id S1752398AbZKZFrh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZKZFrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:45:25 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:65067 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZKZFpZ convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 00:47:37 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:41760 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbZKZFrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:45:25 -0500
-Date: Thu, 26 Nov 2009 14:44:55 +0900 (JST)
-Message-Id: <20091126.144455.508149124281697063.mitake@dcl.info.waseda.ac.jp>
-To: dvhltc@us.ibm.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, walken@google.com,
-       a.p.zijlstra@chello.nl, paulus@samba.org, fweisbec@gmail.com
-Subject: Re: [PATCH 1/3] perf bench: Add wrappers for atomic operation of
- GCC
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <4B0C07C2.7090608@us.ibm.com>
-References: <20091118033741.GB23808@google.com>
-	<1259073555-7312-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	<4B0C07C2.7090608@us.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 26 Nov 2009 00:47:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uUx4cqyBFv+fapTIy7n2cnvd8vKksRkD/FVnO+6gEeqv8PGM6MIM+XlH094mz7Q+sj
+         8VD+EurKxQnY1pjl+111nHrNCDoTHarnChSyGoNEdWGozg2k0tnKYsbJciUIpkDTnJsH
+         K6UxzSWsy+1L8WHxFRX0wBc7ZJ7wkZRWPs3Tg=
+Date: Thu, 26 Nov 2009 06:47:38 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [GIT PULL v6] hw-breakpoints: Rewrite on top of perf events v6
+Message-ID: <20091126054735.GA5649@nowhere>
+References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <20091124094421.GA3468@in.ibm.com> <20091124101342.GB5570@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091124101342.GB5570@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [PATCH 1/3] perf bench: Add wrappers for atomic operation of GCC
-Date: Tue, 24 Nov 2009 08:20:18 -0800
-
-Hi Darren,
-
-> > It contains wrappers for atomic operation of GCC,
-> > I think this is useful not only for 'perf bench',
-> > but also for entire of perf command.
-> > 
-> > This patch adds new typedefed struct 'atomic_t'.
-> > I know new typedef is not a thing to welcome,
-> > but I believe that atomic_t is worth to typedef
-> > because it is much general.
-> > 
-> > I borrowed this file from Darren Hart's futextest.
-> > http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
+On Tue, Nov 24, 2009 at 11:13:42AM +0100, Ingo Molnar wrote:
 > 
-> Hi Hitoshi-san,
+> * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
 > 
-> I took the gcc built-ins approach for futextest.h because I didn't want 
-> the hassle of maintaining per-arch asm files. Since perf is already in 
-> the kernel source, I wonder if you could leverage the already existing 
-> kernel atomic code? See Documentation/atomic_ops.txt.
-
-Yes, kernel source has atomic operations for every architecture.
-But some architectures which has no 64bit atomic ops, like x86_32,
-uses lib/atomic64.c.
-
-And headers provided by arch depends on autoconf.h.
-So if I use kernel atomic code, 'make menuconfig' must be done
-before building perf. I think it's not good for users.
-
-So I borrowed your approach.
-
-> 
+> > On Sun, Nov 08, 2009 at 04:28:54PM +0100, Frederic Weisbecker wrote:
+> > > Ingo,
+> > > 
+> > > Please pull the tracing/hw-breakpoints branch that can be found at:
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> > > 	tracing/hw-breakpoints
+> > >
 > > 
-> > Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> > Cc: Michel Lespinasse <walken@google.com>
-> > Cc: Darren Hart <dvhltc@us.ibm.com>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  tools/perf/util/include/asm/atomic.h |   91 ++++++++++++++++++++++++++++++++++
-> >  1 files changed, 91 insertions(+), 0 deletions(-)
-> >  create mode 100644 tools/perf/util/include/asm/atomic.h
+> > Hi Frederic, Ingo,
+> > 		Here are a few concerns (roughly in decreasing order of
+> > priority) about the perf-events integrated hw-breakpoint feature.
 > > 
-> > diff --git a/tools/perf/util/include/asm/atomic.h b/tools/perf/util/include/asm/atomic.h
-> > new file mode 100644
-> > index 0000000..1cef451
-> > --- /dev/null
-> > +++ b/tools/perf/util/include/asm/atomic.h
-> > @@ -0,0 +1,91 @@
-> > +/******************************************************************************
-> > + *
-> > + *   Copyright B) International Business Machines  Corp., 2009
+> > - Freeze the breakpoint interfaces: Owing to the many 
+> > current/potential users of hw-breakpoint feature it is important to 
+> > provide a stable interface to the end-user. Changes underneath the 
+> > interface can be done in due course in a manner that does not affect 
+> > the end-user's behaviour or function signature. The present breakpoint 
+> > interface requires parameters that are best embedded in a structure 
+> > for extensibility.
 > 
-> B) should be © (or (C) at the very least), I'm guessing character set issue?
+> Well we have PERF_TYPE_BREAKPOINT right now. I agree that it should be 
+> finalized in some sort of extensible ABI real soon - we dont want (and 
+> dont need to) add all features that might be possible in the future.
 
-Sorry:( This must be character set issue. I'll fix.
 
-Thanks
-	Hitoshi
+Concerning in-kernel users, it's not a worry. The in-kernel api
+is not supposed to be stable and shouldn't, especially for such
+a very young facility like generic breakpoints.
+
+But you're right, I don't want it to be a pain to port in other
+architectures and the current breakpoint api function signatures
+are too tight to the x86 needs. I'm going to change the signature
+of the register_* functions so that they actually take a perf_event_attr
+struct (and this one must be generic for breakpoints across archs).
+
+But the emergency is really in the struct perf_event_attr structure
+interface.
+We need to define a generic interface for it soon as it will be
+exposed to userland and then fixed on the rock, although the current
+existing fields seem to be mandatory and if this interface needs
+to be changed, it should be about new fields to append, but still,
+and we never know...
+
+I would really appreciate any help in this regard as I don't
+know the implementation of breakpoints in other architectures.
+Obviously, I could parse the others $(ls arch/ | wc -l) archs
+documentations about debug registers. But that won't just scale
+as it is going to give me a global and erratic view of the whole
+needs, and I believe the archs maintainers would point me out
+the subtle things I'm going to miss, as Benjamin, Paul and you did lately
+concerning shared address registers among hardware threads in a
+single cpu, separate registers between watchpoints and exec-breakpoint...
+in ppc.
+
+First of all, I guess we should split out the address field into
+start and end (both should be equal in the x86 version) so
+that we can support breakpoints in address ranges.
+
+There is also a "compare" thing in power-pc.
+
+ 
+> > - Proposed migration of register allocation logic to arch-specific 
+> > files from kernel/hw_breakpoint.c. This is best done early to help 
+> > easy porting of code to other architectures (we have an active 
+> > interest in bringing support for PPC64 and S390). If done later, it 
+> > will entail additional effort in porting for each architecture.
+> 
+> I think the general direction should be towards librarized common 
+> frameworks.
+> 
+> If an architecture wants to do something special it should either extend 
+> the core code, or, if it's too weird to be added to the core, override 
+> it via its own implementation.
+
+
+The power pc implementation is really completely different from x86, to
+the point that it would be hard to gather a common library of constraints
+for both.
+
+In ppc, address registers are shared among hardware threads in a same
+cpu (which is seen as several cpus by the core), but can be enabled
+in the hardware threads of our choice. Exec and Read/write
+breakpoint registers are not the same, etc...
+
+Well, perhaps we can do something generic by putting a part
+of the constraints to the arch code.
+
+
+> 
+> > - Fix ptrace bugs that potentially alter the semantics of ptrace.
+> 
+> Is there a specific list of these bugs?
+
+
+Prasad, I still have your reviews in mind :)
+I will fix these soon.
+
+Thanks.
+
+
+> > - Bring either true system_wide support or atleast workaround the 
+> > side-effects of iterative per-cpu registration using single atomic 
+> > enablement of all per-cpu breakpoints. This can avoid stray exceptions 
+> > which would get delivered to the end-user even for failed breakpoint 
+> > requests.
+> 
+> That can certainly be done when users of such facilities emerge. Right 
+> now we have perf and ptrace as the two users - are they affected by 
+> these problems?
+
