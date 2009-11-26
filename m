@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbZKZRbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbZKZR2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751872AbZKZRbJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZKZRbI
+	id S1760826AbZKZR2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760819AbZKZR2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:31:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16660 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 12:28:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44993 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbZKZRbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:31:08 -0500
-Date: Thu, 26 Nov 2009 18:25:24 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
-Message-ID: <20091126172524.GA14768@redhat.com>
-References: <20091124200127.GA5751@redhat.com> <20091125080342.GD2660@in.ibm.com> <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com>
+	id S1760417AbZKZR2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 12:28:04 -0500
+Date: Thu, 26 Nov 2009 17:27:38 GMT
+From: tip-bot for Xiaotian Feng <dfeng@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
+In-Reply-To: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
+References: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/mm] x86/pat: Trivial: don't create debugfs for memtype if pat is disabled
+Message-ID: <tip-dd4377b02d9f028006beed1b7b1695ee5d1498b6@git.kernel.org>
+Git-Commit-ID: dd4377b02d9f028006beed1b7b1695ee5d1498b6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091126145051.GB4382@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26, Oleg Nesterov wrote:
->
-> On 11/26, Ananth N Mavinakayanahalli wrote:
-> >
-> > step-fork: step-fork.c:56: handler_fail: Assertion `0' failed.
-> > /bin/sh: line 5: 17325 Aborted                 ${dir}$tst
-> > FAIL: step-fork
->
-> Good to know, thanks again Ananth.
->
-> I'll take a look. Since I know nothing about powerpc, I can't
-> promise the quick fix ;)
->
-> The bug was found by code inspection, but the fix is not trivial
-> because it depends on arch/, and it turns out the arch-independent
-> fix in
->
-> 	ptrace-copy_process-should-disable-stepping.patch
-> 	http://marc.info/?l=linux-mm-commits&m=125789789322573
->
-> doesn't work.
+Commit-ID:  dd4377b02d9f028006beed1b7b1695ee5d1498b6
+Gitweb:     http://git.kernel.org/tip/dd4377b02d9f028006beed1b7b1695ee5d1498b6
+Author:     Xiaotian Feng <dfeng@redhat.com>
+AuthorDate: Thu, 26 Nov 2009 19:53:48 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 26 Nov 2009 15:05:03 +0100
 
-Just noticed the test-case fails in handler_fail(). Most probably
-this means it is killed by SIGALRM because either parent or child
-hang in wait(). Perhaps we have another (ppc specific?) bug, but
-currently I do not understand how this is possible, this should
-not be arch-dependent.
+x86/pat: Trivial: don't create debugfs for memtype if pat is disabled
 
-Oleg.
+If pat is disabled (boot with nopat), there's no need to create
+debugfs for it, it's empty all the time.
 
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/pat.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index ef71251..a81b7e7 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -1019,8 +1019,10 @@ static const struct file_operations memtype_fops = {
+ 
+ static int __init pat_memtype_list_init(void)
+ {
+-	debugfs_create_file("pat_memtype_list", S_IRUSR, arch_debugfs_dir,
+-				NULL, &memtype_fops);
++	if (pat_enabled) {
++		debugfs_create_file("pat_memtype_list", S_IRUSR,
++				    arch_debugfs_dir, NULL, &memtype_fops);
++	}
+ 	return 0;
+ }
+ 
