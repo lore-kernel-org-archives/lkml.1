@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbZKZGoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbZKZGnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932909AbZKZGoJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 01:44:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbZKZGoI
+	id S932800AbZKZGnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 01:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZKZGnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 01:44:08 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33413 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758544AbZKZGoH (ORCPT
+	Thu, 26 Nov 2009 01:43:49 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54550 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758486AbZKZGnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 01:44:07 -0500
-Date: Thu, 26 Nov 2009 15:43:16 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] spi: SuperH MSIOF SPI Master driver
-Message-ID: <20091126064315.GA6580@linux-sh.org>
-References: <20091124125531.14957.41264.sendpatchset@rxone.opensource.se> <20091125121152.4ccf03dc.akpm@linux-foundation.org>
+	Thu, 26 Nov 2009 01:43:47 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B0E2388.50302@jp.fujitsu.com>
+Date: Thu, 26 Nov 2009 15:43:20 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125121152.4ccf03dc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
+ big -v11
+References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D6CFE.4070804@kernel
+ .org>
+In-Reply-To: <4B0D6CFE.4070804@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 12:11:52PM -0800, Andrew Morton wrote:
-> On Tue, 24 Nov 2009 21:55:31 +0900
-> Magnus Damm <magnus.damm@gmail.com> wrote:
-> > +struct sh_msiof_spi_priv {
-> > +	struct spi_bitbang bitbang; /* must be first for spi_bitbang.c */
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> Hi Yinghai,
+>>
+>> I would like to reconfirm what is the problem you're trying to solve
+>> before reviewing and testing the additional patch. To be honest, your
+>> patch looks more and more complicated and it is becoming difficult
+>> for me to review and test it.
 > 
-> Well if that's the case then spi_bitbang.c needs smacking.  What causes
-> this requirement?
+> the real problem:
+> 1. boot time:
 > 
-spi_bitbang causes this requirement by being lazy with regards to
-private data stashing. Both the drivers and the bitbang code use
-spi_master_get_devdata() for getting their private data, which wraps
-in to a dev_get_drvdata().
+> BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to the bridge, but stop
+> assigning resource to the device under that bridge, because the device need big resource.
+> 
+> so patch1 is trying to 
+> a. pci assign unassign and record the failed device resource.
+> b. clear the BIOS assigned resource of the parent bridge of fail device
+> c. go back and call pci assign unsigned
+> d. if it still fail, will go up more bridges. and clear and try again.
+> 
+> 2. hotplug:
+> BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to every bridge. (8M)
+> but when insert one card that big resource, the card can not get resource. because kernel will not touch the 
+> bridge resource.
+> 
+> so patch2 is trying to
+> a. assign resource to devices with that slot. and record fail devices
+> b. if there is some failed, will clear sepcifically io port of bridge, or mmio of bridge, or mmio pref of bridge.
+> c. try to assign the parent bridge of the slot.
+> 
+> so it will keep original assigned resource by BIOS if possible.
+> 
+> and you have tested patch1 and patch2 in V11, but said patch1 may have shrinking resource problem.
+> the patch3 is addressing the patch1 that could shrinking resource for non-pcie hotplug bridge...
+>
 
-This needs to be reworked so that struct spi_master has its own private
-data pointer which helper code like spi_bitbang can use, while freeing up
-the struct device private data pointer so it can be freely used by
-drivers as normal.
+Thank you for the explanation. The patch3 seems to solve my concern.
 
-This is the same sort of private data through casting whimsy that the
-framebuffer drivers used to employ, only fortunately that behaviour never
-made it out of 2.3.x kernels -- until now!
+Your patch only touch the leaf bridge at the 2nd try of resource
+assignment. IIRC, this behavior is to prevent from shrinking bridge
+resources. Am I correct? I'm not sure but I think we don't need this
+behavior because now that we have another mechanism to prevent
+from shrinking bridge resource.
 
-> > +	void __iomem *mapbase;
-> > +	struct clk *clk;
-> > +	struct platform_device *pdev;
-> > +	struct sh_msiof_spi_info *info;
-> > +	struct completion done;
-> > +	unsigned long flags;
-> > +	int tx_fifo_size;
-> > +	int rx_fifo_size;
-> > +};
-> > +
-> >
-> > ...
-> >
-> > +static void sh_msiof_modify_ctr_wait(struct sh_msiof_spi_priv *p,
-> > +				     unsigned long clr, unsigned long set)
-> > +{
-> > +	unsigned long mask = clr | set;
-> > +	unsigned long data;
-> > +
-> > +	data = sh_msiof_read(p, CTR);
-> > +	data &= ~clr;
-> > +	data |= set;
-> > +	sh_msiof_write(p, CTR, data);
-> > +
-> > +	while ((sh_msiof_read(p, CTR) & mask) != set)
-> > +		;
+Thanks,
+Kenji Kaneshige
+
+
+ 
 > 
-> hm, confidence.  No timeout needed here?
+>> By the way, if your problem is that BIOS doesn't assign the resource
+>> to the parent bridge (root port or switch downstream port) of PCIe
+>> hotplug slots, I guess we can improve it with simpler way. I made a
+>> sample patches (no enough testing). Please take a look. Patches are
+>>
+>> - [PATCH 1/2] pciehp: remove redundancy in bridge resource allocation
+>> - [PATCH 2/2] pciehp: add support for bridge resource reallocation
 > 
-This definitely needs a timeout, nothing involving SPI inspires
-confidence. A cpu_relax() to prevent the compiler from optimizing the
-loop out would help, too.
+> like some earlier version of patch2 (release it them all at first) but have pciehp_realloc parameter.
+> could be useful in some case when current patch2 (try and increase) could use up all space.
+> i like to have that after patch2.
+> 
+> YH
+> 
+> 
+
+
