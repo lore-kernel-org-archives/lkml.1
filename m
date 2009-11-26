@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbZKZISb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZKZIS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759617AbZKZISb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759590AbZKZISa
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:18:30 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:38256 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759476AbZKZIS2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1759586AbZKZIS2 (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Nov 2009 03:18:28 -0500
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Tejun Heo <tj@kernel.org>
-Subject: Re: linux-next: workqueues tree build failure
-Date: Thu, 26 Nov 2009 10:16:58 +0200
-User-Agent: KMail/1.12.3 (Linux/2.6.31-gentoo-r4; KDE/4.3.3; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <4B0E3677.6000603@kernel.org>
-In-Reply-To: <4B0E3677.6000603@kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200911261016.58810.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 26 Nov 2009 08:17:03.0089 (UTC) FILETIME=[D5813E10:01CA6E70]
-X-Nokia-AV: Clean
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbZKZIS1
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Nov 2009 03:18:27 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:58729 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759453AbZKZIS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:18:26 -0500
+Date: Thu, 26 Nov 2009 09:18:29 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: linux-next: i2c tree build warning
+Message-ID: <20091126091829.74d3b7ce@hyperion.delvare>
+In-Reply-To: <20091126140600.2f55ab0e.sfr@canb.auug.org.au>
+References: <20091126140600.2f55ab0e.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Stephen,
 
-On Thursday 26 November 2009 10:04:07 ext Tejun Heo wrote:
-> 11/26/2009 05:00 PM, Stephen Rothwell wrote:
-> > Hi Tejun,
-> >
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> >
-> > sound/soc/codecs/tlv320dac33.c: In function 'dac33_i2c_probe':
-> > sound/soc/codecs/tlv320dac33.c:1121: error: implicit declaration of
-> > function 'create_rt_workqueue' sound/soc/codecs/tlv320dac33.c:1121:
-> > warning: assignment makes pointer from integer without a cast
-> >
-> > Caused by commit 1b2d88bf4c63ed3a8c9033c358905d3463aa8bc2 ("stop_machine:
-> > reimplement without using workqueue") (which removed create_rt_workqueue
-> > ()) interacting with commit c8bf93f0fe8c5a509a29e30f3bac823fa0f6d96e
-> > ("ASoC: Codec driver for Texas Instruments tlv320dac33 codec") from the
-> > sound tree.
-> >
-> > I have no idea how to fix this, so I have used the workqueues tree from
-> > next-20091125 until someone can suggest a solution.
+On Thu, 26 Nov 2009 14:06:00 +1100, Stephen Rothwell wrote:
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
 > 
-> Takashi, RT workqueue is going away.  Do you really need it?
-
-What can be used instead of RT workqueue?
-The tlv320dac33 needs RT workqueue because I need to send the I2C command with 
-minimum delay to the codec. If this can not be done (the workqueue is delayed), 
-and the codec does not receive the command in time, it will literally die.
-
-What are the options to replace the RT workqueue?
-
+> drivers/misc/eeprom/at24.c: In function 'at24_eeprom_read':
+> drivers/misc/eeprom/at24.c:230: warning: format '%zd' expects type 'signed size_t', but argument 6 has type 'int'
 > 
-> Thanks.
-> 
+> Introduced by commit 39bfab2519e6f148f2508d719f9fc5f4581aeefd ("at24: Use
+> timeout also for read").
 
+Thanks for reporting. The warning did not show on my 32-bit x86 system,
+and I guess it did not show on Wolfram's system either, otherwise we'd
+have fixed it.
+
+Does the following patch fix the warning for you?
+
+--- linux-2.6.32-rc8.orig/drivers/misc/eeprom/at24.c	2009-11-26 09:14:45.000000000 +0100
++++ linux-2.6.32-rc8/drivers/misc/eeprom/at24.c	2009-11-26 09:14:15.000000000 +0100
+@@ -227,7 +227,7 @@ static ssize_t at24_eeprom_read(struct a
+ 			if (status == 2)
+ 				status = count;
+ 		}
+-		dev_dbg(&client->dev, "read %zu@%d --> %zd (%ld)\n",
++		dev_dbg(&client->dev, "read %zu@%d --> %d (%ld)\n",
+ 				count, offset, status, jiffies);
+ 
+ 		if (status == count)
+
+If it does then I'll merge this into Wolfram's patch.
+
+Thanks,
 -- 
-Péter
+Jean Delvare
