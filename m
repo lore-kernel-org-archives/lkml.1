@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbZKZK3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZKZKcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760225AbZKZK3u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 05:29:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZKZK3t
+	id S1759658AbZKZKcN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 05:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZKZKcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 05:29:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51970 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Nov 2009 05:32:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38144 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759357AbZKZK3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 05:29:48 -0500
-Date: Thu, 26 Nov 2009 11:29:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/4 tip/sched/core] sched: rename preempt_notifier to
- sched_notifier and always enable it
-Message-ID: <20091126102936.GA1196@elte.hu>
-References: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
- <20091126081237.GA31034@elte.hu>
- <4B0E4741.10509@kernel.org>
- <20091126092631.GA17253@elte.hu>
- <4B0E4EFB.2070705@kernel.org>
- <20091126095154.GE32275@elte.hu>
- <4B0E5458.30303@kernel.org>
+	id S1751780AbZKZKcL (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 05:32:11 -0500
+Message-ID: <4B0E5901.5050203@redhat.com>
+Date: Thu, 26 Nov 2009 12:31:29 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0E5458.30303@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Theurer <habanero@linux.vnet.ibm.com>
+CC: Tejun Heo <tj@kernel.org>, kvm@vger.kernel.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: kernel bug in kvm_intel
+References: <4ACF9745.3050902@linux.vnet.ibm.com> <4AD16ACE.6040903@redhat.com> <1255372957.4883.49.camel@twinturbo.austin.ibm.com> <4AD4231F.6040608@redhat.com> <1255442640.4883.56.camel@twinturbo.austin.ibm.com> <4AD6061D.5070306@redhat.com> <1255637909.4883.129.camel@twinturbo.austin.ibm.com> <1256926052.4883.203.camel@twinturbo.austin.ibm.com> <4AEC5C24.9080506@redhat.com> <4AEC64FC.7070908@linux.vnet.ibm.com> <4AEC6699.6000202@redhat.com> <4AEC6821.7010801@redhat.com> <4AED5C3F.9050506@kernel.org> <4AED6100.6040804@redhat.com> <4AED66D0.20704@kernel.org> <4AED7178.2060906@redhat.com> <4B03BDCC.4080502@kernel.org> <4B0DDB5D.9030202@linux.vnet.ibm.com>
+In-Reply-To: <4B0DDB5D.9030202@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/26/2009 03:35 AM, Andrew Theurer wrote:
+>
+>> NMI backtrace for cpu 9
+>> CPU 9:
+>> Modules linked in: tun sunrpc af_packet bridge stp ipv6 binfmt_misc 
+>> dm_mirror dm_region_hash dm_log dm_multipath scsi_dh dm_mod kvm_intel 
+>> kvm uinput sr_mod cdrom ata_generic pata_acpi ata_piix joydev libata 
+>> ide_pci_generic usbhid ide_core hid serio_raw cdc_ether usbnet mii 
+>> matroxfb_base matroxfb_DAC1064 matroxfb_accel matroxfb_Ti3026 
+>> matroxfb_g450 g450_pll matroxfb_misc iTCO_wdt i2c_i801 i2c_core 
+>> pcspkr iTCO_vendor_support ioatdma thermal rtc_cmos rtc_core bnx2 
+>> rtc_lib dca thermal_sys hwmon sg button shpchp pci_hotplug qla2xxx 
+>> scsi_transport_fc scsi_tgt sd_mod scsi_mod crc_t10dif ext3 jbd 
+>> mbcache uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: processor]
+>> Pid: 5687, comm: qemu-system-x86 Not tainted 
+>> 2.6.32-rc7-5e8cb552cb8b48244b6d07bff984b3c4080d4bc9-autokern1 #1  
+>> -[7947AC1]-
+>> RIP: 0010:[<ffffffff810b802b>]  [<ffffffff810b802b>] 
+>> fire_user_return_notifiers+0x31/0x36
+>> RSP: 0018:ffff88095024df08  EFLAGS: 00000246
+>> RAX: 0000000000000000 RBX: 0000000000000800 RCX: ffff88095024c000
+>> RDX: ffff880028340000 RSI: 0000000000000000 RDI: ffff88095024df58
+>> RBP: ffff88095024df18 R08: 0000000000000000 R09: 0000000000000001
+>> R10: 000000caf1fff62d R11: ffff8805b584de40 R12: 00007fffae48e0f0
+>> R13: 0000000000000000 R14: 0000000000000001 R15: 0000000000000000
+>> FS:  00007f45c69d57c0(0000) GS:ffff880028340000(0000) 
+>> knlGS:0000000000000000
+>> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+>> CR2: fffff9800121056e CR3: 0000000953d36000 CR4: 00000000000026e0
+>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> Call Trace:
+>> <#DB[1]> <<EOE>> Pid: 5687, comm: qemu-system-x86 Not tainted 
+>> 2.6.32-rc7-5e8cb552cb8b48244b6d07bff984b3c4080d4bc9-autokern1 #1
+>> Call Trace:
+>> <NMI>  [<ffffffff8100af53>] ? show_regs+0x44/0x49
+>>  [<ffffffff812e57b2>] nmi_watchdog_tick+0xc2/0x1b9
+>>  [<ffffffff812e4e73>] do_nmi+0xb0/0x252
+>>  [<ffffffff812e48a0>] nmi+0x20/0x30
+>>  [<ffffffff810b802b>] ? fire_user_return_notifiers+0x31/0x36
+>> <<EOE>>  [<ffffffff8100b844>] do_notify_resume+0x62/0x69
+>>  [<ffffffff8100bf48>] ? int_check_syscall_exit_work+0x9/0x3d
+>>  [<ffffffff8100bf8e>] int_signal+0x12/0x17
+>
 
-* Tejun Heo <tj@kernel.org> wrote:
+That's a bug with the new user return notifiers.  Is your host kernel 
+preemptible?
 
-> Rename preempt_notifier to sched_notifier, move it from preempt.h to 
-> sched.h, drop sched_ prefixes from ops names and make sched_notifier 
-> always enabled.
-> 
-> This is to prepare for adding more notification hooks.  This patch 
-> doesn't make any functional changes.
+I think I saw this once but I'm not sure.  I can't reproduce with a host 
+kernel build, some silly guest workload, and 'perf top' to generate an 
+nmi load.
 
-The sched notifiers and the various event notifiers we have in the same 
-codepaths should really be unified into a single callback framework.
+-- 
+error compiling committee.c: too many arguments to function
 
-We have these _5_ callbacks:
-
-...
-        perf_event_task_sched_out(prev, next, cpu);
-...
-        fire_sched_out_notifiers(prev, next);
-...
-        trace_sched_switch(rq, prev, next);
-...
-        perf_event_task_sched_in(current, cpu_of(rq));
-	fire_sched_in_notifiers(current);
-...
-
-That could be done with just two callbacks - one for sched-out, one for 
-sched-in.
-
-The best way to do that would be to use two TRACE_EVENT() callbacks, 
-make them unconditional and register to them. (with wrappers to make it 
-all convenient to use)
-
-This requires some work but needs to be done.
-
-	Ingo
