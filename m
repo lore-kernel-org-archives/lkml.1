@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbZKZBbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751332AbZKZBfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbZKZBbH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 20:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbZKZBbG
+	id S1751332AbZKZBfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 20:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbZKZBfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 20:31:06 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37905 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750767AbZKZBbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 20:31:05 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+UA8tloNeUAyjMDOmhqZ7dx2k1wdrVWovTAc8lOz
-	hfUd0CpCkZ6y/a
-Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
- runqueue variant
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259197270.6186.17.camel@marge.simson.net>
-References: <1258891781.14325.34.camel@marge.simson.net>
-	 <1259173672.4027.732.camel@laptop>
-	 <1259197270.6186.17.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 02:31:08 +0100
-Message-Id: <1259199068.6186.33.camel@marge.simson.net>
+	Wed, 25 Nov 2009 20:35:19 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45270 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZKZBfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 20:35:18 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 26 Nov 2009 10:32:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: vedran.furac@gmail.com
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Message-Id: <20091126103234.806a4982.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B0DC764.8040205@gmail.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
+	<abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
+	<20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
+	<20091125124433.GB27615@random.random>
+	<4B0DC764.8040205@gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 02:01 +0100, Mike Galbraith wrote:
-> On Wed, 2009-11-25 at 19:27 +0100, Peter Zijlstra wrote:
+On Thu, 26 Nov 2009 01:10:12 +0100
+Vedran Furač <vedran.furac@gmail.com> wrote:
 
-> > I've got to ask, what's that barrier for?
+> Andrea Arcangeli wrote:
 > 
-> It's a leftover from frustrated bug hunting.
+> > Hello,
+> 
+> Hi all!
+> 
+> > lengthy discussion on something I think is quite obviously better and
+> > I tried to change a couple of years back already (rss instead of
+> > total_vm).
+> 
+> Now that 2.6.32 is almost out, is it possible to get OOMK fixed in
+> 2.6.33 so that I could turn overcommit on (overcommit_memory=0) again
+> without fear of loosing my work?
+> 
+I'll try fork-bomb detector again. That will finally help your X.org.
+But It may lose 2.6.33.
 
-To be more specific, I put it there to ensure that min_vruntimes are
-stable.  I figured that if try_to_wake_up() needs a barrier to look at
-task->state, I had better do the same for the runqueues.
+Adding new counter to mm_struct is now rejected because of scalability, so
+total work will need more time (than expected).
+I'm sorry I can't get enough time in these weeks.
 
-	-Mike
+Thanks,
+-Kame
 
