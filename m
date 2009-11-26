@@ -1,132 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZKZToV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbZKZToh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbZKZToV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 14:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZKZToU
+	id S1752498AbZKZToh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 14:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZKZTo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 14:44:20 -0500
-Received: from mail1.radix.net ([207.192.128.31]:51081 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZKZToT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 14:44:19 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-In-Reply-To: <4B0E8B32.3020509@redhat.com>
-References: <BDRae8rZjFB@christoph>
-	 <1259024037.3871.36.camel@palomino.walls.org>
-	 <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 14:43:34 -0500
-Message-Id: <1259264614.1781.47.camel@localhost>
+	Thu, 26 Nov 2009 14:44:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64867 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZKZToW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 14:44:22 -0500
+Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
+ DECLARE_EVENT_CLASS()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20091126192019.GA11245@elte.hu>
+References: <4B0E286A.2000405@cn.fujitsu.com>
+	 <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
+	 <1259224390.21397.87.camel@gandalf.stny.rr.com>
+	 <20091126084039.GA15919@elte.hu>
+	 <1259246730.21397.97.camel@gandalf.stny.rr.com>
+	 <20091126175548.GC4997@nowhere> <20091126181205.GA18670@elte.hu>
+	 <1259262740.21397.121.camel@gandalf.stny.rr.com>
+	 <20091126192019.GA11245@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 26 Nov 2009 14:44:27 -0500
+Message-Id: <1259264667.21397.131.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
-> Krzysztof Halasa wrote:
-> > Andy Walls <awalls@radix.net> writes:
+On Thu, 2009-11-26 at 20:20 +0100, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> > DECLARE_DEFINE_EVENT?  *naw*
 > > 
-> >> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
-> >> developed by Philips, but Microsoft has some sort of licensing interest
-> >> in it and it is almost surely encumbered somwhow:
+> > DEFINE_DECLARED_EVENT?
 > > 
-> > I don't know about legal problems in some countries but from the
-> > technical POV handling the protocol in the kernel is more efficient
-> > or (/and) simpler.
+> > Or we could go with DECLARE_EVENT(), DECLARE_EVENT_CLASS() and 
+> > DEFINE_EVENT_CLASS_INSTANCE()?
 > 
-> A software licensing from Microsoft won't apply to Linux kernel, so I'm
-> assuming that you're referring to some patent that they could be filled
-> about RC6 mode 6A.
+> I think the most common one should be the shortest, and the most common 
+> one will be DEFINE_EVENT() - that's short enough already IMO.
+
+The above were ideas for replacing TRACE_EVENT, not the current
+DEFINE_EVENT.
+
 > 
-> I don't know if is there any US patent pending about it (AFAIK, only US
-> accepts software patents), but there are some prior-art for IR key
-> decoding. So, I don't see what "innovation" RC6 would be adding. 
-> If it is some new way to transmit waves, the patent issues
-> aren't related to software, and the device manufacturer had already handled
-> it when they made their devices.
->
->  If it is just a new keytable, this issue 
-> could be easily solved by loading the keytable via userspace.
+> I think we generally want to encourage the creation of classes of 
+> events, not myriads of standalone events, each with their own call 
+> signature, record format and printouts.
 > 
-> Also, assuming that you can use the driver only with a hardware that comes
-> with a licensed software, the user has already the license for using it.
-> 
-> Do you have any details on what patents they are claiming?
+> In that sense making the TRACE_EVENT() one longer would achieve that 
+> goal of discouraging its over-use: DEFINE_SINGLE_EVENT() tells the 
+> developer that it's an event of it's kind.
 
-The US Philips RC-6 patent is US Patent 5,877,702
+But I do agree with Frederic that this can be a little confusing, since
+it makes it sound like DEFINE_EVENT is for multiple events.
 
-http://www.google.com/patents?vid=USPAT5877702
+What about saying exactly what it does?
 
-Click on download PDF to get a copy of the whole patent.
-
-I am not a lawyer.  Philips claims' all appear to tie to a transmitter
-or receiver as part of a system, but most of the claims are about
-information and bit positions and lengths.
+DECLARE_AND_DEFINE_EVENT()
 
 
-I don't know for sure what Microsoft claims to be licensing.  I think it
-is the protocol itself:
+Come to think of it, since current TRACE_EVENT is now just:
 
-http://www.microsoft.com/presspass/Press/2002/Apr02/04-16FreestylePhilipsPR.mspx
+#define TRACE_EVENT() \
+	TRACE_EVENT_TEMPLATE() \
+	DEFINE_EVENT
 
-"Under the terms of the agreement, Microsoft and Philips will license to
-OEMs an IR protocol based on Philips proprietary RC6 IR technology. The
-patented and globally adopted solution minimizes interference from other
-remote-control devices in the household. Use of this established
-protocol will help ensure uniform development of Windows infrared
-remote-control products, which include infrared remote-control units and
-remote-control receivers..."
+This may make the most sense. I haven't tried it, but I believe that you
+could even base other events off of the TRACE_EVENT. That is:
 
-http://download.microsoft.com/download/9/8/f/98f3fe47-dfc3-4e74-92a3-088782200fe7/TWEN05007_WinHEC05.ppt
+TRACE_EVENT(x, ...);
 
-See Slide 5, which has the bullet: "How to License RC6"
+DEFINE_EVENT(x, y, ...);
 
-Since the content of the information field in RC-6 Mode 6A is left up to
-OEMs, I would not be surprised by bogus "innovations" in OEM patents
-about RC-6 Mode 6A contents.  I would not be at all surprised by
-something like "a bit to indicate a toggled remote key press in the
-information field" since RC-6's T bits for mode 6 indicate Mode 6A or
-Mode 6B and not toggles.
+And y would use x as its class.
+
+So going back to your scheme of DECLARE_EVENT_CLASS(), it may make sense
+to have DECLARE_AND_DEFINE_EVENT().
 
 
-IMO, given
+DECLARE_EVENT_CLASS(class, ...);
+DEFINE_EVENT(class, foo, ...);
 
-a. the dearth of public information about RC-6, indicating someone
-thinks it's their trade secret or intellectual property
+DECLARE_AND_DEFINE_EVENT(bar, ...);
 
-b. Microsoft claiming to license something related to the MCE remote
-protocols (which are obviously RC-6 Mode 6A),
-
-c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
-encoding and decoding, as needed by MCE remotes, implemented in software
-doesn't violate anyone's government granted rights to exclusivity.
-
-I think it's much better to implement software RC-6 Mode 6A encoding and
-decoding in user space, doing only the minimum needed to get the
-hardware setup and going in the kernel.  
-
-Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
-worry me. 
+DEFINE_EVENT(bar, zoo, ...);
 
 
-Maybe I'm being too conservative here, but I have a personal interest in
-keeping Linux free and unencumbered even in the US which, I cannot deny,
-has a patent system that is screwed up.
+May work.
 
-Regards,
-Andy
-
-> Cheers,
-> Mauro.
-
+-- Steve
 
 
