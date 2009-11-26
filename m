@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZKZWby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZKZWeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbZKZWby (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 17:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZKZWbx
+	id S1753205AbZKZWeJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 17:34:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZKZWeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 17:31:53 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:51803 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZKZWbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 17:31:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Xtv0jV+oj88tzZ54qeYDjfIBOf0g85cwECQlAY55JHMOdy3Oplkl9mefWSgylzWP8q
-         /Yl1XS/vy8aXl6F4KauoIexabx4gpP/ba4+gEAatcu2c37u6E5itrNBvK1hcX6SrIabc
-         lN0IbfZMvzgibbFQuD56+PYAyzR4VuH6qc96c=
-Date: Thu, 26 Nov 2009 23:31:56 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trace_syscalls: add missed field
-Message-ID: <20091126223153.GA7177@nowhere>
-References: <4B0E330D.1070206@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0E330D.1070206@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Nov 2009 17:34:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41134 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZKZWeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 17:34:07 -0500
+Date: Fri, 27 Nov 2009 09:34:07 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>, alsa-devel@alsa-project.org,
+       tj@kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tiwai@suse.de
+Subject: Re: [PATCH] ASoC: tlv320dac33: Change RT wq to singlethread wq
+Message-Id: <20091127093407.4c58ee0b.sfr@canb.auug.org.au>
+In-Reply-To: <20091126154746.GA10674@rakim.wolfsonmicro.main>
+References: <1259236511-25805-1-git-send-email-peter.ujfalusi@nokia.com>
+	<20091126154746.GA10674@rakim.wolfsonmicro.main>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Nov_2009_09_34_07_+1100_90F3il4Pqwr6EKSy"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 03:49:33PM +0800, Lai Jiangshan wrote:
-> 
-> Field syscall number is missed in syscall_enter_define_fields()/
-> syscall_exit_define_fields().
-> 
-> syscall number is also needed for event filter or other users.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+--Signature=_Fri__27_Nov_2009_09_34_07_+1100_90F3il4Pqwr6EKSy
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Mark, Peter,
 
+On Thu, 26 Nov 2009 15:47:46 +0000 Mark Brown <broonie@opensource.wolfsonmi=
+cro.com> wrote:
+>
+> On Thu, Nov 26, 2009 at 01:55:11PM +0200, Peter Ujfalusi wrote:
+> > RT workqueue is going away in the near future, replace it with
+> > singlethread wq for now, which is still supported.
+> >=20
+> > Signed-off-by: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+>=20
+> Applied, thanks.
 
-Well, I don't think it's very useful for in-kernel filtering.
-Filtering a syscall event by its number would mean filtering all
-event for this syscall. This is the same as not tracing it.
+Thanks guys.
 
-Or do you have other usecases in mind?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks.
+--Signature=_Fri__27_Nov_2009_09_34_07_+1100_90F3il4Pqwr6EKSy
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksPAl8ACgkQjjKRsyhoI8yC6gCfU1/r5DS/rfuiTu4X0k13y6N9
+JVYAmQEBXhBwmbHnd4y5JX4QkWHHmnsC
+=xr7m
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Nov_2009_09_34_07_+1100_90F3il4Pqwr6EKSy--
