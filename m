@@ -1,146 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbZKZPsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZKZPru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbZKZPsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbZKZPsW
+	id S1760628AbZKZPru (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbZKZPrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:48:22 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:52968 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbZKZPsU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:48:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ll+G/OakbWTD9HnFe9D10dcV4q7qNAYPP++qNd+rQabuygaqWFCaC8U61bflu7mcZC
-         TyEFR9welUgZsA1fqDRSI7T0k8YnnE143q0Kd8G4m6Cfo7XlIHgGCEivGFIvSWO53lWU
-         /U+WlPAZj5Pz5ejdCA143kLw4v6qKK3B7F6NM=
+	Thu, 26 Nov 2009 10:47:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13608 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756432AbZKZPrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 10:47:45 -0500
+Message-ID: <4B0EA3AA.5070003@redhat.com>
+Date: Thu, 26 Nov 2009 10:50:02 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <4B0E9493.1090200@redhat.com>
-References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
-	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
-	 <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com>
-	 <4B0DA885.7010601@redhat.com> <4B0E9493.1090200@redhat.com>
-Date: Thu, 26 Nov 2009 10:48:26 -0500
-Message-ID: <9e4733910911260748v454d3b0bvcc6bfc86823cdd39@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org, mingo@elte.hu,
+       oleg@redhat.com, roland@redhat.com, vapier@gentoo.org,
+       Takahiro Yasui <tyasui@redhat.com>
+Subject: Re: + binfmt-introduce-coredump-parameter-structure.patch added to
+ -mm tree
+References: <200911202212.nAKMCF2v012068@imap1.linux-foundation.org> <20091126174835.5A73.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091126174835.5A73.A69D9226@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 9:45 AM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Gerd Hoffmann wrote:
->> On 11/25/09 19:20, Devin Heitmueller wrote:
->>> On Wed, Nov 25, 2009 at 1:07 PM, Jarod Wilson<jarod@wilsonet.com>
->>> wrote:
->>>> Took me a minute to figure out exactly what you were talking
->>>> about. You're referring to the current in-kernel decoding done on
->>>> an ad-hoc basis for assorted remotes bundled with capture devices,
->>>> correct?
->>>>
->>>> Admittedly, unifying those and the lirc driven devices hasn't
->>>> really been on my radar.
+Hi Kosaki-san,
+
+KOSAKI Motohiro wrote:
+> Hi Hiramatsu-san,
+> 
 >>
->> I think at the end of the day we'll want to have all IR drivers use the
->> same interface.  The way the current in-kernel input layer drivers work
->> obviously isn't perfect too, so we *must* consider both worlds to get a
->> good solution for long-term ...
+>> The patch titled
+>>      binfmt: introduce coredump parameter structure
+>> has been added to the -mm tree.  Its filename is
+>>      binfmt-introduce-coredump-parameter-structure.patch
+>>
+>> Before you just go and hit "reply", please:
+>>    a) Consider who else should be cc'ed
+>>    b) Prefer to cc a suitable mailing list as well
+>>    c) Ideally: find the original patch on the mailing list and do a
+>>       reply-to-all to that, adding suitable additional cc's
+>>
+>> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>>
+>> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+>> out what to do about this
+>>
+>> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> ------------------------------------------------------
+>> Subject: binfmt: introduce coredump parameter structure
+>> From: Masami Hiramatsu <mhiramat@redhat.com>
+>>
+>> These patches are for fixing coredump mm->flags consistency issue.
+>>
+>> ---
+>> 1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
+>> 1788                 up_write(&mm->mmap_sem);
+>> 1789                 put_cred(cred);
+>> 1790                 goto fail;
+>> 1791         }
+>> 1792
+>> [...]
+>> 1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
+>> 1799                 flag = O_EXCL;          /* Stop rewrite attacks */
+>> 1800                 cred->fsuid = 0;        /* Dump root private */
+>> 1801         }
+>> ---
+>>
+>> Since dumpable bits are not protected by lock, there is a chance to change
+>> these bits between (1) and (2).
+>>
+>> To solve this issue, this patch copies mm->flags to
+>> coredump_params.mm_flags at the beginning of do_coredump() and uses it
+>> instead of get_dumpable() while dumping core.  This series also introduce
+>> coredump parameter structure for simplify bimfmt->core_dump interface.
+>>
+>>
+>>
+>> This patch:
+>>
+>> Introduce coredump parameter data structure (struct coredump_params) for
+>> simplifying binfmt->core_dump() arguments.  This also cleanup DUMP_WRITE()
+>> in elf_core_dump() by style issue.
+> 
+> 
+> This patch break ia64 because arch specific ELF_CORE_EXTRA_PHDRS and 
+> ELF_CORE_WRITE_EXTRA_DATA still use DUMP_WRITE. I expect this patch 
+> break uml too.
 
-I made an attempt at implementing all of this a year ago.
-http://lkml.org/lkml/2008/11/5/233
+$ grep -r DUMP_WRITE arch/*/include
+arch/ia64/include/asm/elf.h:            DUMP_WRITE(&phdr, sizeof(phdr));       \
+arch/ia64/include/asm/elf.h:                    DUMP_WRITE((void *) gate_phdrs[\
 
-All of this kernel code is tiny, about 20K including a driver.
+Oops, certainly, that's a problem.
+IMHO, we should not do like that, all parameter required by a macro should be
+specified explicitly, since it reduces readability so much...
+I think we'd better make those macros inline function, check it's return value
+for error handling.
 
-Basic flow works like this:
+What would you think about it?
 
-Add a new IR data type to the input framework
-http://lkml.org/lkml/2008/11/5/234
-
-Example mceusb IR input driver
-http://lkml.org/lkml/2008/11/5/238
-
-In-kernel decoding of core IR protocols - RC5, RC6, etc
-http://lkml.org/lkml/2008/11/5/234
-
-Decoded core protocols pass through a translation map based on configfs
-When core protocol matches an entry in configfs it is turned into a
-keycode event.
-http://lkml.org/lkml/2008/11/5/235
-
-You make a directory in /configfs/remotes for each remote you have.
-Making the directory creates a new evdev device.  Under the directory
-make an entry for each command generated by the device. These entries
-cause the decoded IR data to be mapped into keycodes on the new evdev
-device. udev would load these configfs mappings at boot time...
-
-mkdir /config/remotes/sony
- -- this creates a new evdev device
-mkdir remotes/sony/one
-echo 7 >remotes/sony/one/protocol
-echo 264 >remotes/sony/one/command
-echo 2 >remotes/sony/one/keycode
-
-This transforms a button push of 1 on my remote into a key stroke for KEY_1
-
- *   configfs root
- *   --remotes
- *   ----specific remote
- *   ------keymap
- *   --------protocol
- *   --------device
- *   --------command
- *   --------keycode
- *   ------repeat keymaps
- *   --------....
- *   ----another remote
- *   ------more keymaps
-
-You can map the 1 button from multiple remotes to KEY_1 if you want. Or
-you can use a single remote to create multiple virtual keyboards.
-
--------------------------
-
-Raw IR pulse data is available in a FIFO via sysfs. You can use this
-to figure out new remote protocols.
-
-Two input events are generated
-1) an event for the decoded raw IR protocol
-2) a keycode event if thedecoded raw IR protocol matches an entry in
-the configfs
-
-You can also send pulses.
-
-------
-
-If you want to script this, you would have a user space task that
-watches for either the decoded IR codes or the mapped keycodes.
-
-This system also works with user space device drivers. They can inject
-input events into the early event flow and they will get processed as
-if the event originated in the kernel.
-
----------------------
-
-Sure you could push the protocol decoding code (RC5, etc) into user
-space. Seems like a lot of hassle to move about 3KB of code out of the
-kernel.
-
+Thank you,
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
