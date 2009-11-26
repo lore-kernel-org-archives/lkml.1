@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZKZJO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbZKZJQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbZKZJO1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbZKZJO0
+	id S1760168AbZKZJQI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbZKZJQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:14:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58616 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 04:16:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43885 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760140AbZKZJOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:14:24 -0500
-Message-ID: <4B0E46E6.4030006@redhat.com>
-Date: Thu, 26 Nov 2009 10:14:14 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	id S1760066AbZKZJQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:16:04 -0500
+Message-ID: <4B0E4741.10509@kernel.org>
+Date: Thu, 26 Nov 2009 18:15:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Jarod Wilson <jarod@wilsonet.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andy Walls <awalls@radix.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <20091126054938.GH23244@core.coreip.homeip.net> <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
-In-Reply-To: <6619F77F-446F-47ED-B9F5-6CFC00E3EA49@wilsonet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: manual merge of the workqueues tree with the tip
+ tree
+References: <20091126190018.88a6dd77.sfr@canb.auug.org.au> <20091126081237.GA31034@elte.hu>
+In-Reply-To: <20091126081237.GA31034@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/09 07:23, Jarod Wilson wrote:
-> Well, when mythtv was started, I don't know that there were many
-> input layer remotes around... lirc was definitely around though.
+11/26/2009 05:12 PM, Ingo Molnar wrote:
+> Please submit scheduler patches to the scheduler tree. Such level of 
+> refactoring of a critical scheduler component needs to go through the 
+> regular scheduler channels. This is a frequently modified piece of code 
+> and conflicts are likely in the future.
 
-lirc predates the input layer IR drivers by years, maybe even the input 
-layer itself.
+Sure, which sched/* branch should I base these patches on?
+Alternatively, pulling the following branch into one of sched/* should
+do the trick too.
 
-The main reason for the input layer IR drivers appearing was lirc not 
-being mainline.  A in-kernel driver (bttv in that case) which depends on 
-a out-of-tree subsystem for IR support was simply a pain in the ass for 
-both maintainer (/me back then) and users.
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-sched
 
-At least for IR hardware which allows access to the raw samples it 
-certainly makes sense to support lirc, additional to the current (or 
-improved) input layer support.
+Thanks.
 
-> The lirc support in mythtv actually relies on mapping remote button
-> names as defined in lircd.conf to keyboard key strokes. As mentioned
-> elsewhere in this beast of a thread, mythtv doesn't currently support
-> things like KEY_PLAY, KEY_VOLUMEUP, KEY_CHANNELUP, etc. just yet, but
-> I intend on fixing that...
-
-lircd can handle the input layer as input as well, so you actually can 
-remap things via lircd even for pure input layer drivers.  mythtv 
-handling KEY_VOLUMEUP directly would be more elegant though.
-
-cheers,
-   Gerd
-
+-- 
+tejun
