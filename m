@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZKZSqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbZKZSxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093AbZKZSqH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:46:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZKZSqH
+	id S1751254AbZKZSxp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZKZSxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:46:07 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:4748 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1750867AbZKZSqF (ORCPT
+	Thu, 26 Nov 2009 13:53:44 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51874 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbZKZSxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:46:05 -0500
-Message-ID: <4B0ECD27.7050302@ru.mvista.com>
-Date: Thu, 26 Nov 2009 21:47:03 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
-References: <200911261728.36433.bzolnier@gmail.com> <200911261903.01199.bzolnier@gmail.com> <4B0EC52B.2070805@ru.mvista.com> <200911261927.00597.bzolnier@gmail.com> <4B0EC9EA.9000608@ru.mvista.com>
-In-Reply-To: <4B0EC9EA.9000608@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 26 Nov 2009 13:53:44 -0500
+Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
+ add/remove
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Holger.Wolf@de.ibm.com, epasch@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <4B0ECB45.60906@linux.vnet.ibm.com>
+References: <4B0EA88E.3030205@linux.vnet.ibm.com>
+	 <1259252382.31676.207.camel@laptop>  <4B0EAC06.3010407@linux.vnet.ibm.com>
+	 <1259252892.31676.220.camel@laptop>  <4B0EAD7B.90601@linux.vnet.ibm.com>
+	 <1259253950.31676.249.camel@laptop>  <4B0ECB45.60906@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 19:53:34 +0100
+Message-ID: <1259261614.31676.386.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Thu, 2009-11-26 at 19:39 +0100, Christian Ehrhardt wrote:
+> Looks very promising, I did not expect it would be so easy to hook up to 
+> the hotplug events, but you're absolutley right the scheduler already 
+> has hooks for that with rq_online/offline.
+>  From looking at the patch alone I expect it will loose user updates to 
+> sysfs. Might just need adding some feedback from the sysctl writer 
+> functions to set the default values to setval/1+ilog2; that includes 
+> renaming default to "normalized" or somethng like that. But I'll test 
+> this patch in depth tomorrow morning anyway and give more detailed feedback.
 
->>>>>>>> MWDMA0 timings cannot be met with the PIIX based controller
->>>>>>>> programming interface.
+Yeah, its needs better integration with the sysctl bits and such, but it
+shows the general shape and form of things.
 
->>>>>>>> This change should be safe as this is how we have been doing
->>>>>>>> things in IDE it8213 host driver for years.
 
->>>>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>>>>> ---
->>>>>>>> Verified with the documentation (similar case as with pata_efar).
 
->>>>>>> Uhhh, no...
-
->>>>>>> Too many damn drivers.
-
->>>>>>> Too much damn duplication.
-
->>>>>>> Too much damn subtle differences here and there.
-
->>>>>>> The hardware is probably fine for MWMDA0 when it comes to 
->>>>>>> pata_{efar,it8213},
->>>>>>> it just not documented properly in the data sheet.
-
->>>>>>   How so with pata_efar? The active/recovery bitfields are still 
->>>>>> 2-bit wide, no?
-
->>>>> Yes but when TIMEx bit is disabled we are using XFER_PIO_SLOW timings.
-
->>>    600 ns cycle vs spec'ed 480 ns? Is it really worth it?
-
->> 960 ns actually
-
->    That table you're looking at (probably in the SLC90E66 datasheet?) 
-> must be screwed up. 960 ns is used for command cycles, according to 
-> Intel's docs, data cycles run at 600 ns...
-
-    Well, after doublke checking 82371AB datasheet has 660 ns, and ICH PRM 
-has 900 ns. Not sure where I got what I've cited now, perhaps in some older 
-version of PRM... what a mess indeed. :-/
-
-MBR, Sergei
