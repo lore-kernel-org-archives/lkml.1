@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZKZW7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZKZW7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbZKZW7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 17:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZKZW7R
+	id S1753318AbZKZW7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 17:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZKZW7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 17:59:17 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40351 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbZKZW7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 17:59:16 -0500
-Date: Fri, 27 Nov 2009 09:59:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: nfs/nfsd trees fetch failed
-Message-Id: <20091127095918.e066e2ef.sfr@canb.auug.org.au>
-In-Reply-To: <E8E998D0-13B9-4D54-AA55-FAF8EC72168B@fys.uio.no>
-References: <20091127083936.b9c125c6.sfr@canb.auug.org.au>
-	<E8E998D0-13B9-4D54-AA55-FAF8EC72168B@fys.uio.no>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__27_Nov_2009_09_59_18_+1100_Mi8YhCYjigjUiKut"
+	Thu, 26 Nov 2009 17:59:46 -0500
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:40656 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbZKZW7q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 17:59:46 -0500
+Date: Thu, 26 Nov 2009 14:59:50 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+cc: Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+In-Reply-To: <4B0ED238.6060306@redhat.com>
+Message-ID: <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com>
+ <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com>
+ <m36391tjj3.fsf@intrepid.localdomain> <4B0AC65C.806@redhat.com>
+ <m3zl6dq8ig.fsf@intrepid.localdomain> <4B0E765C.2080806@redhat.com>
+ <m3iqcxuotd.fsf@intrepid.localdomain> <4B0ED238.6060306@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__27_Nov_2009_09_59_18_+1100_Mi8YhCYjigjUiKut
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Trond,
-
-On Thu, 26 Nov 2009 17:30:22 -0500 Trond Myklebust <trond.myklebust@fys.uio=
-.no> wrote:
+On Thu, 26 Nov 2009, Mauro Carvalho Chehab wrote:
+> >> See above. Also, several protocols have a way to check if a keystroke were
+> >> properly received. When handling just one protocol, we can use this to double
+> >> check the key. However, on a multiprotocol mode, we'll need to disable this
+> >> feature.
+> >
+> > I don't think so. We can pass the space/mark data to all (configured,
+> > i.e. with active mapping) protocol handlers at once. Should a check
+> > fail, we ignore the data. Perhaps another protocol will make some sense
+> > out of it.
 >
-> Yes, I'm aware of the problem, and I'm sorry. I'm hoping that I can =20
-> get Linux-nfs.org up and running again tomorrow (=3D=3D Saturday your =20
-> time) after the Thanksgiving celebrations.
+> What happens if it succeeds on two protocol handlers?
 
-OK, thanks, no hurry.
+Then you use the protocol that fits best.  For instance decoding with one
+protocol might produce a scancode that isn't assigned to any key, while
+another protocol produces an assigned scancode.  Clearly then the latter is
+most likely to be correct.  It also possible to have a space/mark length
+that is within the allowable tolerances for one remote, but is even closer
+another remote.  You don't want to just find *a* match, you want to find
+the *best* match.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__27_Nov_2009_09_59_18_+1100_Mi8YhCYjigjUiKut
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksPCEYACgkQjjKRsyhoI8yxiACdGVHVQDechVmM3uOcuo7GhklP
-O5wAmwSP0vrRgKRsRbWKd2BRH4N4Z7dq
-=YV5w
------END PGP SIGNATURE-----
-
---Signature=_Fri__27_Nov_2009_09_59_18_+1100_Mi8YhCYjigjUiKut--
+The in kernel code in v4l is very simple in that it is only designed to
+work with one procotol and one remote.  Once you have multiple remotes of
+any type things become much more complicted.  Keep in mind that remotes
+that aren't even intended to be used with the computer but are used in the
+same room will still be received by the receiver.  It's not enough to
+decode the signals you expect to receive, you must also not get confused by
+random signals destined for somewhere else.
