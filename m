@@ -1,247 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZKZGI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZKZGQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZKZGI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 01:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbZKZGIz
+	id S1754607AbZKZGQE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 01:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZKZGQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 01:08:55 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:54310 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbZKZGIy (ORCPT
+	Thu, 26 Nov 2009 01:16:03 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:37537
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbZKZGQA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 01:08:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Raqfv1+nhEfmH1CQwNhQzxq9BwEdqNFfw0m84AveI3sagVwjX40GSzYcuJSpAplRA3
-         YGPX57+lHS9VgSsf9kzLZkq228wlWm1igUGxHFGxZOJrL1/3buOS/djTH2iE3w1DSQhx
-         jHgO03yIvkrIX9VhgkaD/NI99mxUOZHxooc84=
-Date: Wed, 25 Nov 2009 22:08:54 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       Richard Purdie <rpurdie@rpsys.net>, lm-sensors@lm-sensors.org,
-       linux-input@vger.kernel.org, linux-laptop@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, sfr@linuxcare.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] [loongson] yeeloong2f: add platform specific support
-Message-ID: <20091126060854.GK23244@core.coreip.homeip.net>
-References: <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com> <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com> <20091126041047.GC23244@core.coreip.homeip.net> <1259215215.4989.38.camel@falcon.domain.org>
-MIME-Version: 1.0
+	Thu, 26 Nov 2009 01:16:00 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259215215.4989.38.camel@falcon.domain.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <20091126053109.GE23244@core.coreip.homeip.net>
+Date: Thu, 26 Nov 2009 01:16:01 -0500
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 02:00:15PM +0800, Wu Zhangjin wrote:
-> On Wed, 2009-11-25 at 20:10 -0800, Dmitry Torokhov wrote:
-> > Hi Wu,
-> > 
-> > Overall impression - several drivers crammed into one module, I wonder
-> > if it could be split somewhat. 
-> 
-> Yeah, I have put several drivers into one file, just like the folks did
-> in drivers/platform/x86/ for their platforms. I hated it too, will split
-> it later(as least, for review is necessary).
-> 
-> > Some input-related concerns below.
-> 
-> Thanks very much for your feedback.
-> 
-> > 
-> > On Sat, Nov 21, 2009 at 08:08:40PM +0800, Wu Zhangjin wrote:
-> > > +
-> > > +/* hotkey input subdriver */
-> > > +
-> > > +static struct input_dev *yeeloong_hotkey_dev;
-> > > +static int event, status;
-> > > +
-> > > +struct key_entry {
-> > > +	char type;		/* See KE_* below */
-> > > +	int event;		/* event from SCI */
-> > > +	u16 keycode;		/* KEY_* or SW_* */
-> > > +};
-> > > +
-> > > +enum { KE_KEY, KE_SW, KE_END };
-> > 
-> > I am going to post the sparse keymap library shortly, this driver could
-> > use it too...
-> > 
-> 
-> when you posting your keymap library, could you please put me in the CC
-> list? thanks ;)
-> 
-> > > +
-> > > +static struct key_entry yeeloong_keymap[] = {
-> > > +	{KE_SW, EVENT_LID, SW_LID},
-> > > +	/* SW_VIDEOOUT_INSERT? not included in hald-addon-input! */
-> > > +	{KE_KEY, EVENT_CRT_DETECT, KEY_PROG1},
-> 
-> any available event for reporting the inserted CRT in hald-addon-input?
+On Nov 26, 2009, at 12:31 AM, Dmitry Torokhov wrote:
 
-Hmm.. not really. Again, does not seem to be related to input subsystem
-but video one.
+> On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
+>> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
+>>> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
+>>>> Mauro Carvalho Chehab<mchehab@redhat.com>  writes:
+>>>> 
+>>>>> Event input has the advantage that the keystrokes will provide an unique
+>>>>> representation that is independent of the device.
+>>>> 
+>>>> This can hardly work as the only means, the remotes have different keys,
+>>>> the user almost always has to provide customized key<>function mapping.
+>>>> 
+>>> 
+>>> Is it true? I would expect the remotes to have most of the keys to have
+>>> well-defined meanings (unless it is one of the programmable remotes)...
+>> 
+>> Its the cases like programmable universal remotes that really throw  
+>> things for a loop. That, and people wanting to use random remote X that  
+>> came with the amp or tv or set top box, with IR receiver Y.
+> 
+> Right, but still the keys usually do have the well-defined meaning,
 
-> 
-> > > +	/* Seems battery subdriver should report it */
-> > > +	{KE_KEY, EVENT_OVERTEMP, KEY_PROG2},
-> > 
-> > Does not seem to be an input event?
-> > 
-> 
-> It is not an input event, Will remove it from the keymap table.
->  
-> BTW: how can we handle this stuff(overtemp...)? lm-sensors? Perhaps
-> temp1_max_alarm or temp1_crit_alarm?
-> 
+Except when they don't. I have two very similar remotes, one that was bundled with a system from CaptiveWorks, and one that was bundled with an Antec Veris IR/LCD (SoundGraph iMON rebrand). Outside of the Antec remote having a mouse pad instead of up/down/left/right/enter, they have an identical layout, and the keys in the same locations on the remotes send the same IR signal. But the button names vary a LOT between the two. So on the DVD key on the Antec and the MUTE key on the CW send the same signal. Same with Audio vs. Eject, TV vs. History, etc. Moral of the story is that not all IR protocols spell things out particularly well for what a given code should actually mean.
 
-Not really sure... HWMON list is a good place to ask I think.
+> teh
+> issue is in mapping raw code to the appropriate keycode. This can be
+> done either by lirc config file (when lirc is used) or by some other
+> means.
 
-> > > +	/*{KE_KEY, EVENT_AC_BAT, KEY_BATTERY},*/
-> > > +	{KE_KEY, EVENT_CAMERA, KEY_CAMERA},	/* Fn + ESC */
-> > > +	{KE_KEY, EVENT_SLEEP, KEY_SLEEP},	/* Fn + F1 */
-> > > +	/* Seems not clear? not included in hald-addon-input! */
-> > > +	{KE_KEY, EVENT_BLACK_SCREEN, KEY_PROG3},	/* Fn + F2 */
-> > 
-> > Do you mean "lock screen"?
-> 
-> not lock, close the backlight of the display, any available event here?
+The desire to map a button press to multiple keystrokes isn't uncommon either, though I presume that's doable within the input layer context too.
 
-What is it then? A switch that turns off backlight? What is the expected
-reaction to it?
+>> ...
+>>>> We need to handle more than one RC at a time, of course.
+>>>> 
+>>>>> So, the basic question that should be decided is: should we create a new
+>>>>> userspace API for raw IR pulse/space
+>>>> 
+>>>> I think so, doing the RCx proto handling in the kernel (but without
+>>>> RCx raw code<>  key mapping in this case due to multiple controllers
+>>>> etc.). Though it could probably use the input layer as well(?).
+>>>> 
+>>> 
+>>> I think if the data is used to do the primary protocol decoding then it
+>>> should be a separate interface that is processed by someone and then fed
+>>> into input subsystem (either in-kernel or through uinput).
+>>> 
+>>> Again, I would prefer to keep EV_KEY/KEY_* as the primary event type for
+>>> keys and buttons on all devices.
+>> 
+>> Current lircd actually inter-operates with the input subsystem quite  
+>> well for any and all supported remotes if their keys are mapped in their  
+>> respective lircd.conf file using standard input subsystem key names, and  
+>> the lirc daemon started with the --uinput param. lircd decodes the raw  
+>> IR, finds the mapping in its config, and happily passes it along to 
+>> uinput.
+> 
+> Right.
+> 
+> I guess the question is what is the interface we want the regular
+> userspace (i.e. not lircd) to use. Right now programs has to use 2
+> intercfaces - one lirc for dealing with remotes that are not using
+> the standard event interface and evdev for remotes using it as well
+> as the rest of the input devices.
 
-> 
-> > 
-> > > +	{KE_KEY, EVENT_DISPLAY_TOGGLE, KEY_SWITCHVIDEOMODE},	/* Fn + F3 */
-> > > +	{KE_KEY, EVENT_AUDIO_MUTE, KEY_MUTE},	/* Fn + F4 */
-> > > +	{KE_KEY, EVENT_WLAN, KEY_WLAN},	/* Fn + F5 */
-> > > +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSUP},	/* Fn + up */
-> > > +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSDOWN},	/* Fn + down */
-> > > +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEUP},	/* Fn + right */
-> > > +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEDOWN},	/* Fn + left */
-> > > +	{KE_END, 0}
-> > > +};
-> > > +
-> > 
-> > ...
-> > 
-> > > +
-> > > +static ssize_t
-> > > +ignore_store(struct device *dev,
-> > > +	     struct device_attribute *attr, const char *buf, size_t count)
-> > > +{
-> > > +	return count;
-> > > +}
-> > > +
-> > > +static ssize_t
-> > > +show_hotkeystate(struct device *dev, struct device_attribute *attr, char *buf)
-> > > +{
-> > > +	return sprintf(buf, "%d %d\n", event, status);
-> > > +}
-> > > +
-> > > +static DEVICE_ATTR(state, 0444, show_hotkeystate, ignore_store);
-> > 
-> > Why do you need "ignore_store" and not just use NULL? Also why do you
-> > need to export the state at all?
-> > 
-> 
-> Okay, Ignore_store() should be NULL here, show_hotkeystate() is only
-> added for debugging when I write this driver and also, it is helpful to
-> my own user-space hotkey manager. anyway, it is not needed for upstream,
-> will remove it later.
-> 
-> > > +
-> > > +static struct attribute *hotkey_attributes[] = {
-> > > +	&dev_attr_state.attr,
-> > > +	NULL
-> > > +};
-> > > +
-> > > +static struct attribute_group hotkey_attribute_group = {
-> > > +	.attrs = hotkey_attributes
-> > > +};
-> > > +
-> > > +static int camera_set(int status)
-> > > +{
-> > > +	int value;
-> > > +	static int camera_status;
-> > > +
-> > > +	if (status == 2)
-> > > +		/* resume the old camera status */
-> > > +		camera_set(camera_status);
-> > > +	else if (status == 3) {
-> > > +		/* revert the camera status */
-> > > +		value = ec_read(REG_CAMERA_CONTROL);
-> > > +		ec_write(REG_CAMERA_CONTROL, value | (1 << 1));
-> > > +	} else {/* status == 0 or status == 1 */
-> > > +		status = !!status;
-> > > +		camera_status = ec_read(REG_CAMERA_STATUS);
-> > > +		if (status != camera_status)
-> > > +			camera_set(3);
-> > > +	}
-> > > +	return ec_read(REG_CAMERA_STATUS);
-> > > +}
-> > > +
-> > > +#define I8042_STATUS_REG	0x64
-> > > +#define I8042_DATA_REG		0x60
-> > > +#define i8042_read_status() inb(I8042_STATUS_REG)
-> > > +#define i8042_read_data() inb(I8042_DATA_REG)
-> > > +#define I8042_STR_OBF		0x01
-> > > +#define I8042_BUFFER_SIZE	16
-> > > +
-> > > +static void i8042_flush(void)
-> > > +{
-> > > +	int i;
-> > > +
-> > > +	while ((i8042_read_status() & I8042_STR_OBF)
-> > > +		&& (i < I8042_BUFFER_SIZE)) {
-> > > +		udelay(50);
-> > > +		i8042_read_data();
-> > > +		i++;
-> > > +	}
-> > > +}
-> > > +
-> > > +static int yeeloong_hotkey_init(struct device *dev)
-> > > +{
-> > > +	int ret;
-> > > +	struct key_entry *key;
-> > > +
-> > > +	/* flush the buffer of keyboard */
-> > > +	i8042_flush();
-> > 
-> > Why??? Why does this driver tries to touch stuff that does not belong to
-> > it?
-> > 
-> 
-> I doubted the keys in the buffer of keyboard will generate weird
-> problems, so, added the above lines. and another guy just cleared this
-> part to me that the Fnkey stuff not go to the buffer of keyboard, so,
-> I'm doing stupid job here, will remove it later too.
-> 
-> > > +
-> > > +	/* setup the system control interface */
-> > > +	setup_sci();
-> > 
-> > No failures?
-> 
-> Need to check the return value here, and also, the setup_sci() itself.
-> 
-> > 
-> > > +
-> > > +	yeeloong_hotkey_dev = input_allocate_device();
-> > > +
-> > > +	if (!yeeloong_hotkey_dev)
-> > > +		return -ENOMEM;
-> > 
-> > Error unwinding?
-> 
-> Sorry, not clear what do you mean here?
+>From the mythtv perspective, using the input layer could yield a better out-of-the-box experience -- users don't have to set up an lircrc mapping that converts key names as specified in lircd.conf into commands (key strokes, actually) that mythtv understands. For example, a button labeled "Play" in lircd.conf has to be mapped to 'p' in ~/.lircrc for mythtv to do the right thing with it. If everything came through the input layer, be that natively or via lircd's uinput reinjection, there would be no need to do that extra mapping step, mythtv would simply handle a KEY_PLAY event. So at worst, one manual mapping to do -- IR signal to standard button name in lircd.conf -- instead of two. But the lircrc approach does also allow more flexibility, in that you can only have a certain app respond to a certain key, if so desired, and remap a key to a different function (KEY_RED, KEY_GREEN, KEY_BLUE, KEY_YELLOW -- what should their default functionality be? I know some users map a pair of those to mythtv's "skip to next commflag point" and "skip to prior commflag point").
 
-If you just return you will have the SCI stuff that you did a few lines
-above installed... I am concerned whether it is a good idea.
+Unfortunately, mythtv currently doesn't handle KEY_PLAY, KEY_VOLUMEUP, etc., etc. at all right now, it operates purely on keys commonly found on a standard keyboard. Remedying that is on my TODO list for the next release, if I can carve out the time.
 
 -- 
-Dmitry
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
