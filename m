@@ -1,208 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbZKZLLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbZKZLPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759175AbZKZLLN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 06:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZKZLLN
+	id S1759555AbZKZLPU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 06:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbZKZLPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 06:11:13 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:51913 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbZKZLLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 06:11:12 -0500
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Michel Lespinasse <walken@google.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] futextest: Make locktest() in harness.h more general
-Date: Thu, 26 Nov 2009 20:10:36 +0900
-Message-Id: <1259233836-2028-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <8d20b11a0911260143g2f51f9fbw3341b8c44056f47a@mail.gmail.com>
-References: <8d20b11a0911260143g2f51f9fbw3341b8c44056f47a@mail.gmail.com>
+	Thu, 26 Nov 2009 06:15:19 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58525 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759203AbZKZLPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 06:15:18 -0500
+Message-ID: <4B0E634B.8070506@suse.cz>
+Date: Thu, 26 Nov 2009 12:15:23 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: display an error message when aborting
+References: <1259124522-26050-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1259124522-26050-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about this, Michel?
-In addition to phtread_create(),
-(in theory) pthread_join() can error.
-So I handled return value of pthread_join() too.
+On 25.11.2009 05:48, Mike Frysinger wrote:
+> If the Kconfig option causes an open() failure (like one that starts with
+> an underscore), there should be an error message shown since we're going
+> to be exiting with an error code.  Otherwise, the reason for the failure
+> can really only be diagnosed with strace or something similar.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  scripts/kconfig/confdata.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+> index b55e72f..e2644b4 100644
+> --- a/scripts/kconfig/confdata.c
+> +++ b/scripts/kconfig/confdata.c
+> @@ -640,6 +640,8 @@ static int conf_split_config(void)
+>  		fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+>  		if (fd == -1) {
+>  			if (errno != ENOENT) {
+> +				conf_warning("sym '%s' with path '%s': %s",
+> +					     sym->name, path, strerror(errno));
+>  				res = 1;
+>  				break;
+>  			}
 
-This patch adds new function locktest_preset() to harness.h,
-which is a wrapper for locktest().
-Current locktest() has array of threads number for test,
-but this makes usefulness of harness.h less.
-So preset arrays should go to outside of locktest().
-locktest_preset() has preset array now.
+I agree that there definitely needs to be some error reporting (and not
+only here but in many more places, look e.g. at conf_write() or
+conf_write_autoconf()), but why use conf_warning() for this? It will
+prefix the error message with "include/config/auto.conf:<last lineno>",
+which has nothing to do with the path that could not be opened.
 
-And every output has gone to locktest_preset() too.
-
-This patch is version 2.
-Error handlings are improved with perror().
-And too many creating threads is avoided with getrlimit().
-
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Michel Lespinasse <walken@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- performance/futex_wait.c |    2 +-
- performance/harness.h    |  112 +++++++++++++++++++++++++++++----------------
- 2 files changed, 73 insertions(+), 41 deletions(-)
-
-diff --git a/performance/futex_wait.c b/performance/futex_wait.c
-index bcbca77..62a7330 100644
---- a/performance/futex_wait.c
-+++ b/performance/futex_wait.c
-@@ -46,6 +46,6 @@ static void futex_wait_test(futex_t *futex, int loops)
- int main (void)
- {
- 	printf("FUTEX_WAIT test\n");
--	locktest(futex_wait_test, 100000000);
-+	locktest_preset(futex_wait_test, 100000000);
- 	return 0;
- }
-diff --git a/performance/harness.h b/performance/harness.h
-index 7b23bdc..9445b78 100644
---- a/performance/harness.h
-+++ b/performance/harness.h
-@@ -4,8 +4,12 @@
- #include <limits.h>
- #include <sys/times.h>
- #include <stdio.h>
-+#include <stdlib.h>
- #include <pthread.h>
--
-+#include <string.h>
-+#include <errno.h>
-+#include <sys/time.h>
-+#include <sys/resource.h>
- 
- struct thread_barrier {
- 	futex_t threads;
-@@ -64,54 +68,82 @@ static void * locktest_thread(void * dummy)
- 	return NULL;
- }
- 
--static void locktest(void locktest_function(futex_t * ptr, int loops),
--		     int iterations)
-+static int locktest(void locktest_function(futex_t * ptr, int loops),
-+			int num_threads, int iterations,
-+			struct tms *tms_before, struct tms *tms_after)
-+{
-+	struct locktest_shared shared;
-+	pthread_t thread[num_threads];
-+	int i;
-+	clock_t before, after;
-+
-+	barrier_init(&shared.barrier_before, num_threads);
-+	barrier_init(&shared.barrier_after, num_threads);
-+	shared.locktest_function = locktest_function;
-+	shared.loops = iterations / num_threads;
-+	shared.futex = 0;
-+
-+	for (i = 0; i < num_threads; i++) {
-+		if (pthread_create(thread + i, NULL, locktest_thread,
-+				   &shared)) {
-+			/* Could not create thread; abort */
-+			perror("pthread_create()");
-+			exit(1);
-+		}
-+	}
-+	barrier_wait(&shared.barrier_before);
-+	before = times(tms_before);
-+	barrier_unblock(&shared.barrier_before, 1);
-+	barrier_wait(&shared.barrier_after);
-+	after = times(tms_after);
-+	barrier_unblock(&shared.barrier_after, 1);
-+	for (i = 0; i < num_threads; i++) {
-+		if (pthread_join(thread[i], NULL)) {
-+			perror("pthread_join()");
-+			exit(1);
-+		}
-+	}
-+	return after - before;
-+}
-+
-+static void locktest_preset(void locktest_function(futex_t * ptr, int loops),
-+			    int iterations)
- {
- 	int threads[] = { 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32,
- 			  64, 128, 256, 512, 1024, 0 };
- 	int t;
-+	struct tms before, after;
-+	int wall, user, system;
-+	double tick;
-+	struct rlimit lim;
-+
-+	bzero(&lim, sizeof(struct rlimit));
-+	if (getrlimit(RLIMIT_NPROC, &lim)) {
-+		perror("getrlimit()");
-+		exit(1);
-+	}
-+
- 	for (t = 0; threads[t]; t++) {
--		int num_threads = threads[t];
--		struct locktest_shared shared;
--		pthread_t thread[num_threads];
--		int i;
--		clock_t before, after;
--		struct tms tms_before, tms_after;
--		int wall, user, system;
--		double tick;
--
--		barrier_init(&shared.barrier_before, num_threads);
--		barrier_init(&shared.barrier_after, num_threads);
--		shared.locktest_function = locktest_function;
--		shared.loops = iterations / num_threads;
--		shared.futex = 0;
--
--		for (i = 0; i < num_threads; i++)
--			if (pthread_create(thread + i, NULL, locktest_thread,
--					   &shared)) {
--				/* Could not create thread; abort */
--				barrier_unblock(&shared.barrier_before, -1);
--				while (--i >= 0)
--					pthread_join(thread[i], NULL);
--				return;
--			}
--		barrier_wait(&shared.barrier_before);
--		before = times(&tms_before);
--		barrier_unblock(&shared.barrier_before, 1);
--		barrier_wait(&shared.barrier_after);
--		after = times(&tms_after);
--		wall = after - before;
--		user = tms_after.tms_utime - tms_before.tms_utime;
--		system = tms_after.tms_stime - tms_before.tms_stime;
-+		if (lim.rlim_cur < threads[t]) {
-+			printf("WARNING: Number of thread creation "
-+			       "limit(%d) has come! Aborting.\n", lim.rlim_cur);
-+			break;
-+		}
-+
-+		bzero(&before, sizeof(struct tms));
-+		bzero(&after, sizeof(struct tms));
-+		wall = locktest(locktest_function, threads[t], iterations,
-+			 &before, &after);
-+
-+		user = after.tms_utime - before.tms_utime;
-+		system = after.tms_stime - before.tms_stime;
- 		tick = 1.0 / sysconf(_SC_CLK_TCK);
- 		printf("%d threads: %.0f Kiter/s "
- 		       "(%.2fs user %.2fs system %.2fs wall %.2f cores)\n",
--		       num_threads,
--		       (num_threads * shared.loops) / (wall * tick * 1000),
-+		       threads[t],
-+		       iterations / (wall * tick * 1000),
- 		       user * tick, system * tick, wall * tick,
- 		       wall ? (user + system) * 1. / wall : 1.);
--		barrier_unblock(&shared.barrier_after, 1);
--		for (i = 0; i < num_threads; i++)
--			pthread_join(thread[i], NULL);
-+
- 	}
- }
--- 
-1.6.5.2
-
+Michal
