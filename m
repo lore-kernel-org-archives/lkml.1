@@ -1,121 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZKZFiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbZKZFlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529AbZKZFiP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZKZFiO
+	id S1751726AbZKZFlP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZKZFlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:38:14 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40387 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZKZFiM (ORCPT
+	Thu, 26 Nov 2009 00:41:14 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:41570
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbZKZFlM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:38:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nao5BZeOIqUM4HZjFzk/FzfV0tr7B5IMv05zBBaolnYlbGjzpO99ReqTwmSKi871ar
-         IO3lX+T5bS9A2oxEd1WIRmgm6Jr4b1wrerdNckF23ukUNK4nnrN2n3V5e5yPa8qSKxrX
-         F5RqCuVvuDKbv1Mia9VxxnbfbmMG3aZQBfnIo=
-Date: Wed, 25 Nov 2009 21:38:13 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: IR raw input is not sutable for input system
-Message-ID: <20091126053813.GF23244@core.coreip.homeip.net>
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop>
-MIME-Version: 1.0
+	Thu, 26 Nov 2009 00:41:12 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259105571.28219.20.camel@maxim-laptop>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <1259206290.3060.50.camel@palomino.walls.org>
+Date: Thu, 26 Nov 2009 00:41:13 -0500
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Content-Transfer-Encoding: 8BIT
+Message-Id: <05C4F096-0EA6-448E-9C18-82868AB75F01@wilsonet.com>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain> <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com> <1259206290.3060.50.camel@palomino.walls.org>
+To: Andy Walls <awalls@radix.net>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 01:32:51AM +0200, Maxim Levitsky wrote:
-> Folks, I really want to tell everyone that doing all the mapping from
-> raw codes to keypresses in kernel is wrong.
+On Nov 25, 2009, at 10:31 PM, Andy Walls wrote:
 
-Why is this wrong? Doing simple translation is easy and it does not
-require having all the tables for all possible remotes in the kernel. We
-have appropriate interfaces to load keymaps at runtime (for the devices
-whose drivers support this feature).
-
-> This idea keeps showing up, because many users think that remotes send
-> some universal codes that you can just 'parse' and feed back to input
-> system.
->
-
-Well, they send some data that can be parsed and thus fed to whatever we
-want to feed it.
-
- 
-> Its not the case.
-> There are many protocols, I know that by experimenting with my universal
-> remote. There are many receivers, and all have different accuracy.
-> Most remotes aren't designed to be used with PC, thus user has to invent
-> mapping between buttons and actions.
-> Its is not possible to identify remotes accurately, many remotes send
-> just a 8 bit integer that specifies the 'model' thus many remotes can
-> share it.
-> Some don't send anything.
+> On Wed, 2009-11-25 at 13:07 -0500, Jarod Wilson wrote:
+>> On Nov 25, 2009, at 12:40 PM, Krzysztof Halasa wrote:
+>> 
+>>> lirc@bartelmus.de (Christoph Bartelmus) writes:
+>>> 
+>>>> I'm not sure what two ways you are talking about. With the patches posted  
+>>>> by Jarod, nothing has to be changed in userspace.
+>>>> Everything works, no code needs to be written and tested, everybody is  
+>>>> happy.
+>>> 
+>>> The existing drivers use input layer. Do you want part of the tree to
+>>> use existing lirc interface while the other part uses their own
+>>> in-kernel (badly broken for example) code to do precisely the same
+>>> thing?
+>> 
+>> Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
+>> 
+>> Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
 > 
-> There are some weird remotes that send whole packet of data will all
-> kind of states.
+> It has been on mine.  I have been somewhat against the input subsystem
+> route for unification because it neglects transmitters and appears to
+> trade the userspace complexity we already have (i.e. LIRC configuration)
+> for another new (and hence less documented) configuration complexity for
+> end users.
 > 
-> Think about it, video capture device is also an input device, a scanner
-> is an input device too, sound card can work as input device too.
-
-You are stretching. There are no button presses involved with sound (not
-unless you go all the way down to keys on a piano ;) )
-
-> But we aren't doing any parsing, even we don't support deflating of many
-> proprietary and standard video/image encoding formats.
-> We let userspace do it.
+> My strategy for unification goes something like this:
 > 
-> Kernel job is to take the information from device and present it to
-> userspace using uniform format, that is kernel does 1:1 translating, but
-> doesn't parse the data.
+> 1. Get lirc_dev and the needed supporting headers in the kernel.  I will
+> concede LIRC is not perfect or beautiful, but I'll assert it is feature
+> complete for all the end user use cases that matter.
 
-Should we return to the times where we had raw PS/2 data streams sent to
-userspace, separately from HID and other formats? I don't think it is a
-good idea.
+So... What I'd like to propose is that I address Mauro's review comments for my v2 patchset, and resubmit a v3 patchset. If there are no show-stoppers, lets get the thing merged. If people don't want to use it, they don't have to, I won't be offended. But it seems there are quite a few people that would be incredibly happy to see this finally get in. There are definitely worse things that could be merged. :)
 
-> Uniform format doesn't mean kernel always converts to one format, its
-> not like sound card always recording in 32 bit 96000 Khz format, even if
-> underlying device doesn't support that.
-> 
-> 
-> So, device that decode IR code are presented to userspace as pure input
-> devices. I agree that creating fake raw codes from that is bad.
-> 
-> But devices that send raw data pass it to lirc.
-> lirc is well capable to decode it, and its not hard to add
-> auto-detection based on existing configuration drivers, so IR devices
-> will work with absolutely no configuration.
-> All you will have to do is ensure that lirc is installed.
-> Then udev can even start it automatically.
-> Then as soon as you press a key, lirc can scan its config database, and
-> find a config file to use. combine that with a GUI for unknown remotes
-> and you get an awesome usability.
-> 
+And from what I've been able to surmise, the input layer would need so much new functionality to handle both raw IR output and IR transmit, that we'd simply be reinventing a hefty chunk of the lirc device interface under the guise of being an input device, to be used *only* by things that can already simply use the existing feature-complete lirc device interface, which seems... wasteful.
 
-Why can't the same be done in kernalspace though?
 
-> Also don't forget that there are pure userspace drivers. They won't have
-> access to in-kernel decoder so they will still have to parse protocols,
-> so will have code duplication, and will still need lirc thus.
+> 2. Encapsulate all the various IR controller hardware handling in
+> V4L-DVB into v4l_subdevice objects and provide a uniform interface to IR
+> hardware internally via v4l2_subdev_ir_ops.  The exact nature of the IR
+> hardware is then mostly abstracted away: I2C bus microcontroller,
+> register block, GPIO line control of discretes devices, etc. can all be
+> accessed in a somewhat unifrom manner.
+> 
+> 3. In conjunction with 2, common IR handling routines that exist in
+> various drivers already can be broken out: RC-5 protocol handling, etc.
+
+Once 1 happens, I'd be happy to work on adding code to currently pure lirc device drivers (like lirc_mceusb) to do in-kernel decoding for their bundled remotes. The vague plan in my head (shamelessly heisted from someone else in this thread, can't remember who atm) involves each lirc device registering two devices, one input device and one lirc device. Out of the box, without lircd, they would operate as a pure input device with their bundled remote -- out-of-the-box bliss. Once lircd opened the device's lirc device, we'd stop sending input data, and feed data out via the lirc interface.
+
+This hybrid approach gives those who want nothing to do with lircd and the lirc device interface what they want (hell, drivers might even be buildable w/o the lirc portion even enabled), and those that want more flexibility can use either/or.
+
+
+> 4. Develop an internal interface so the v4l2_subdev object instance for
+> the IR hardware is exposed through a bridge driver's v4l2_device object.
+> 
+> 5. Develop the needed layer between lirc_dev and the v4l2_device object
+> to connect things up.
 > 
 > 
-> So why to burden the kernel with protocols, etc..
+> That unifies all the IR cats and dogs in V4L-DVB at the low levels and
+> glues them in a consistent manner to something up top (i.e. lirc_dev)
+> that already handles Rx, Tx, protocols, keymapping, etc.
+> 
+> My primary desire is to encapsulate or remove the complexity we
+> currently have in kernel with all the ad-hoc IR hardware handling and
+> get it unifrom and layered.  
+> 
+> The upper level glue to userspace doesn't have to be lirc_dev, but why
+> not?  It's there and the end users are familiair with it.  I have
+> set-top boxes, I need IR Tx.
 
-We do burden it with TCP, shall we take it out?
+Yup, me too. :)
+
+
+>>> We can have a good code for both, or we can end up with "badly broken"
+>>> media drivers and incompatible, suboptimal existing lirc interface
+>>> (though most probably much better in terms of quality, especially after
+>>> Jarod's work).
+>> 
+>> Well, is there any reason most of those drivers with
+>> currently-in-kernel-but-badly-broken decoding can't be converted to
+>> use the lirc interface if its merged into the kernel? 
+> 
+> I think all the V4L-DVB IR hardware can be.  I have not done sufficient
+> research on the Serial, USB and other devices to say personally.
+
+Which serial and/or usb devices other than those already supported by lirc drivers did you have in mind? Damn near all the serial and usb IR devices I know of are already supported by either another lirc kernel driver I have laying in wait, or by a userspace driver (typically interfacing w/a usb receiver using libusb).
+
+
+>> And/or, everything could converge on a new in-kernel decoding infra
+>> that wasn't badly broken. Sure, there may be two separate ways of
+>> doing essentially the same thing for a while, but meh. The lirc way
+>> works NOW for an incredibly wide variety of receivers, transmitters,
+>> IR protocols, etc.
+> 
+> Also LIRC has had years of requirements collection and refinement of use
+> cases.  Anything new implementation will likely end up converging to the
+> feature set LIRC already has implemented.
+
+Yep, I suspect as much myself. The only major feature I'm aware of that lirc hasn't already implemented is zero-config, works-out-of-the-box, really.
+
+
+>> I do concur that Just Works decoding for bundled remotes w/o having to
+>> configure anything would be nice, and one way to go about doing that
+>> certainly is via in-kernel IR decoding. But at the same time, the
+>> second you want to use something other than a bundled remote, things
+>> fall down, and having to do a bunch of setkeycode ops seems less
+>> optimal than simply dropping an appropriate lircd.conf in place.
+> 
+> 
+>> From a big picture perspective I would never see the OS kenrel as a good
+> place to address usability issues.  It seems more logical to fix
+> usability issues with a decent GUI application and good documentation.
+> (LIRC needs a configuration GUI!).
+
+gnome-lirc-properties attempts to be that, but needs a lot more love, and isn't actually part of the lirc userspace source, its maintained by some gnome folks on freedesktop.org, iirc...
+
+
+> Expecting IR usability problems to
+> be eased by the kernel and command line utilties is - well -
+> optimistic. 
+> 
+> I'll add that there are too many factors that can be permuted by the end
+> user and OEM -- protocols, remote layouts, button codes, PC IR Rx/Tx
+> hardware, and Set top boxes feeding PC video capture devices -- that
+> generating defaults that "Just Work" is a generally unsolvable problem.
+
+Agreed. *Especially* with IR TX in the mix, which a LOT of DVR users rely heavily upon -- we have no way of divining what the hell IR codes a random set top box needs. And the bulk of bundled remotes we can make Just Work are flimsy, crappy, cheap plastic pieces of junk. No self-respecting HTPC user actually uses any of those things. ;)
 
 -- 
-Dmitry
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
