@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZKZIpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbZKZIot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760067AbZKZIpW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:45:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbZKZIpS
+	id S1760045AbZKZIot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbZKZIos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:45:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58823 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 03:44:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48997 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760026AbZKZIpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:45:14 -0500
-Date: Thu, 26 Nov 2009 08:44:42 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
-References: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] ksym_tracer: Fix breakpoint removal after modification
-Message-ID: <tip-d99be40aff88722ab03ee295e4f6c13a4cca9a3d@git.kernel.org>
-Git-Commit-ID: d99be40aff88722ab03ee295e4f6c13a4cca9a3d
-X-Mailer: tip-git-log-daemon
+	id S1759962AbZKZIor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:44:47 -0500
+Date: Thu, 26 Nov 2009 09:44:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/9] tracing: Convert some block events to DEFINE_EVENT
+Message-ID: <20091126084443.GA1389@elte.hu>
+References: <4B0E2807.4060102@cn.fujitsu.com>
+ <4B0E28E6.7060609@cn.fujitsu.com>
+ <20091126083621.GM8742@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091126083621.GM8742@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d99be40aff88722ab03ee295e4f6c13a4cca9a3d
-Gitweb:     http://git.kernel.org/tip/d99be40aff88722ab03ee295e4f6c13a4cca9a3d
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 26 Nov 2009 05:35:40 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 09:29:20 +0100
 
-ksym_tracer: Fix breakpoint removal after modification
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-The error path of a breakpoint modification is broken in
-the ksym tracer. A modified breakpoint hlist node is immediately
-released after its removal. Also we leak a breakpoint in this
-case.
+> On Thu, Nov 26 2009, Li Zefan wrote:
+> > use TRACE_EVENT_TEMPLATE to remove duplicate code:
+> > 
+> >    text    data     bss     dec     hex filename
+> >   53570    3284     184   57038    dece block/blk-core.o.old
+> >   43702    3284     144   47130    b81a block/blk-core.o
+> 
+> Nice! When I played with the writeback tracing, I did notice that code
+> bloat does get pretty severe quickly.
+> 
+> I have applied this to for-2.6.33, thanks a lot.
 
-Fix the path.
+Note that it wont build in your tree, because the TRACE_EVENT_TEMPLATE / 
+DEFINE_EVENT facility this relies on is not upstream yet.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <1259210142-5714-1-git-send-regression-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/trace_ksym.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+The events are not affected in any way (and block/* is not modified) - 
+it's just a more efficient representation of the same. I've applied them 
+to -tip, to keep the facility and dependent updates in a single place.
 
-diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index 11935b5..9f040e4 100644
---- a/kernel/trace/trace_ksym.c
-+++ b/kernel/trace/trace_ksym.c
-@@ -339,14 +339,20 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 					ksym_hbp_handler, true);
- 			if (IS_ERR(entry->ksym_hbp))
- 				entry->ksym_hbp = NULL;
--			if (!entry->ksym_hbp)
-+
-+			/* modified without problem */
-+			if (entry->ksym_hbp) {
-+				ret = 0;
- 				goto out;
-+			}
-+		} else {
-+			ret = 0;
- 		}
-+		/* Error or "symbol:---" case: drop it */
- 		ksym_filter_entry_count--;
- 		hlist_del_rcu(&(entry->ksym_hlist));
- 		synchronize_rcu();
- 		kfree(entry);
--		ret = 0;
- 		goto out;
- 	} else {
- 		/* Check for malformed request: (4) */
+	Ingo
