@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZKZIq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZKZIps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbZKZIq3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbZKZIq0
+	id S1760089AbZKZIps (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759839AbZKZIpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:46:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58885 "EHLO hera.kernel.org"
+	Thu, 26 Nov 2009 03:45:44 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:57570 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760025AbZKZIqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:46:24 -0500
-Date: Thu, 26 Nov 2009 08:45:39 GMT
-From: tip-bot for Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tj@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, prasad@linux.vnet.ibm.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tj@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, prasad@linux.vnet.ibm.com
-In-Reply-To: <200911260701.nAQ71owx016356@imap1.linux-foundation.org>
-References: <200911260701.nAQ71owx016356@imap1.linux-foundation.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] kernel/hw_breakpoint.c: Fix local/global shadowing
-Message-ID: <tip-11e6635763bdc0e24b39a38876574660755acffc@git.kernel.org>
-Git-Commit-ID: 11e6635763bdc0e24b39a38876574660755acffc
-X-Mailer: tip-git-log-daemon
+	id S1760025AbZKZIpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:45:42 -0500
+Date: Thu, 26 Nov 2009 09:45:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Moyer Jeff Moyer <jmoyer@redhat.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Corrado Zoccolo <czoccolo@gmail.com>
+Subject: Re: [PATCH] Fix regression in direct writes performance due to
+	WRITE_ODIRECT flag removal
+Message-ID: <20091126084548.GO8742@kernel.dk>
+References: <20091124212628.GC2803@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091124212628.GC2803@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  11e6635763bdc0e24b39a38876574660755acffc
-Gitweb:     http://git.kernel.org/tip/11e6635763bdc0e24b39a38876574660755acffc
-Author:     Andrew Morton <akpm@linux-foundation.org>
-AuthorDate: Wed, 25 Nov 2009 23:01:50 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 09:34:04 +0100
+On Tue, Nov 24 2009, Vivek Goyal wrote:
+> Hi Jens,
+> 
+> There seems to be a regression in direct write path due to following
+> commit in for-2.6.33 branch of block tree.
+> 
+> commit 1af60fbd759d31f565552fea315c2033947cfbe6
+> Author: Jeff Moyer <jmoyer@redhat.com>
+> Date:   Fri Oct 2 18:56:53 2009 -0400
+> 
+>     block: get rid of the WRITE_ODIRECT flag
+> 
+> 
+> Marking direct writes as WRITE_SYNC_PLUG instead of WRITE_ODIRECT, sets
+> the NOIDLE flag in bio and hence in request. This tells CFQ to not expect
+> more request from the queue and not idle on it (despite the fact that
+> queue's think time is less and it is not seeky).
+> 
+> So direct writers lose big time when competing with sequential readers.
+> 
+> Using fio, I have run one direct writer and two sequential readers and
+> following are the results with 2.6.32-rc7 kernel and with for-2.6.33
+> branch.
+> 
+> Test
+> ====
+> 1 direct writer and 2 sequential reader running simultaneously.
+> 
+> [global]
+> directory=/mnt/sdc/fio/
+> runtime=10
+> 
+> [seqwrite]
+> rw=write
+> size=4G
+> direct=1
+> 
+> [seqread]
+> rw=read
+> size=2G
+> numjobs=2
+> 
+> 2.6.32-rc7
+> ==========
+> direct writes: aggrb=2,968KB/s
+> readers	     : aggrb=101MB/s
+> 
+> for-2.6.33 branch
+> =================
+> direct write: aggrb=19KB/s
+> readers	      aggrb=137MB/s
 
-kernel/hw_breakpoint.c: Fix local/global shadowing
+Thanks, that shows pretty well the impact that idling can have :-).
+I have applied it.
 
-If the new percpu tree is combined with the perf events tree
-the following new warning triggers:
+-- 
+Jens Axboe
 
- kernel/hw_breakpoint.c: In function 'toggle_bp_task_slot':
- kernel/hw_breakpoint.c:151: warning: 'task_bp_pinned' is used uninitialized in this function
-
-Because it's not valid anymore to define a local variable
-and a percpu variable (even if it's file scope local) with
-the same name.
-
-Rename the local variable to resolve this.
-
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <200911260701.nAQ71owx016356@imap1.linux-foundation.org>
-[ v2: added changelog ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/hw_breakpoint.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index dd3fb4a..32e1018 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -121,7 +121,7 @@ static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
- 	int count = 0;
- 	struct perf_event *bp;
- 	struct perf_event_context *ctx = tsk->perf_event_ctxp;
--	unsigned int *task_bp_pinned;
-+	unsigned int *tsk_pinned;
- 	struct list_head *list;
- 	unsigned long flags;
- 
-@@ -146,15 +146,15 @@ static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
- 	if (WARN_ONCE(count < 0, "No breakpoint counter found in the counter list"))
- 		return;
- 
--	task_bp_pinned = per_cpu(task_bp_pinned, cpu);
-+	tsk_pinned = per_cpu(task_bp_pinned, cpu);
- 	if (enable) {
--		task_bp_pinned[count]++;
-+		tsk_pinned[count]++;
- 		if (count > 0)
--			task_bp_pinned[count-1]--;
-+			tsk_pinned[count-1]--;
- 	} else {
--		task_bp_pinned[count]--;
-+		tsk_pinned[count]--;
- 		if (count > 0)
--			task_bp_pinned[count-1]++;
-+			tsk_pinned[count-1]++;
- 	}
- }
- 
