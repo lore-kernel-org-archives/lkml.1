@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbZKZQ1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbZKZQ2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311AbZKZQ1w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZKZQ1w
+	id S932823AbZKZQ2D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:28:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbZKZQ2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:27:52 -0500
+	Thu, 26 Nov 2009 11:28:00 -0500
 Received: from mail-bw0-f227.google.com ([209.85.218.227]:55064 "EHLO
 	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755069AbZKZQ1v (ORCPT
+	with ESMTP id S932583AbZKZQ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:27:51 -0500
+	Thu, 26 Nov 2009 11:27:58 -0500
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
 To: containers@lists.linux-foundation.org, linux-mm@kvack.org
 Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
@@ -18,34 +18,35 @@ Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
        "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH RFC v0 0/3] cgroup notifications API and memory thresholds
-Date: Thu, 26 Nov 2009 18:27:35 +0200
-Message-Id: <cover.1259248846.git.kirill@shutemov.name>
+Subject: [PATCH RFC v0 1/3] cgroup: implement eventfd-based generic API for notifications
+Date: Thu, 26 Nov 2009 18:27:36 +0200
+Message-Id: <bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259248846.git.kirill@shutemov.name>
 X-Mailer: git-send-email 1.6.5.3
+In-Reply-To: <cover.1259248846.git.kirill@shutemov.name>
+References: <cover.1259248846.git.kirill@shutemov.name>
+In-Reply-To: <cover.1259248846.git.kirill@shutemov.name>
+References: <cover.1259248846.git.kirill@shutemov.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's my first attempt to implement cgroup notifications API and memory
-thresholds on top of it. The idea of API was proposed by Paul Menage.
+This patch introduces write-only file "cgroup.event_control" in every
+cgroup.
 
-It lacks some important features and need more testing, but I want publish
-it as soon as possible to get feedback from community.
+To register new notification handler you need:
+- create an eventfd;
+- open a control file to be monitored. Callbacks register_event() and
+  unregister_event() must be defined for the control file;
+- write "<event_fd> <control_fd> <args>" to cgroup.event_control.
+  Interpretation of args is defined by control file implementation;
 
-TODO:
- - memory thresholds on root cgroup;
- - memsw support;
- - documentation.
+eventfd will be woken up by control file implementation or when the
+cgroup is removed.
 
-Kirill A. Shutemov (3):
-  cgroup: implement eventfd-based generic API for notifications
-  res_counter: implement thresholds
-  memcg: implement memory thresholds
+To unregister notification handler just close eventfd.
 
- include/linux/cgroup.h      |    8 ++
- include/linux/res_counter.h |   44 +++++++++++
- kernel/cgroup.c             |  181 ++++++++++++++++++++++++++++++++++++++++++-
- kernel/res_counter.c        |    4 +
- mm/memcontrol.c             |  149 +++++++++++++++++++++++++++++++++++
- 5 files changed, 385 insertions(+), 1 deletions(-)
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+
+-- 
+1.6.5.3
 
