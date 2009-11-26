@@ -1,258 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965072AbZKZAos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965115AbZKZAp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965072AbZKZAos (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 19:44:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965078AbZKZAor
+	id S965115AbZKZAp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 19:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbZKZAos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 19:44:47 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:51031 "EHLO
+	Wed, 25 Nov 2009 19:44:48 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:51034 "EHLO
 	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965068AbZKZAop (ORCPT
+	with ESMTP id S965072AbZKZAop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Nov 2009 19:44:45 -0500
 From: Ian Molton <ian.molton@collabora.co.uk>
 Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, mpm@selenic.com,
        Ian Molton <ian.molton@collabora.co.uk>
-Subject: [PATCH 1/2] hw_random: core updates to allow more efficient drivers
-Date: Thu, 26 Nov 2009 00:44:09 +0000
-Message-Id: <1259196250-24182-2-git-send-email-ian.molton@collabora.co.uk>
+Subject: [PATCH 2/2] virtio: Convert virtio-rng to the new API
+Date: Thu, 26 Nov 2009 00:44:10 +0000
+Message-Id: <1259196250-24182-3-git-send-email-ian.molton@collabora.co.uk>
 X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1259196250-24182-1-git-send-email-ian.molton@collabora.co.uk>
+In-Reply-To: <1259196250-24182-2-git-send-email-ian.molton@collabora.co.uk>
 References: <1259177252.2858.17.camel@calx>
  <1259196250-24182-1-git-send-email-ian.molton@collabora.co.uk>
+ <1259196250-24182-2-git-send-email-ian.molton@collabora.co.uk>
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This patch implements a new method by which hw_random hardware drivers
-can pass data to the core more efficiently, using a shared buffer.
+	This patch converts virtio-rng to the new hw_rng API.
 
-The old methods have been retained as a compatability layer until all the
-drivers have been updated.
+In the process it fixes a previously untriggered buffering bug where the
+buffer is not drained correctly if it has a non-multiple-of-4 length.
+
+Performance has improved under qemu-kvm testing also.
 
 Signed-off-by: Ian Molton <ian.molton@collabora.co.uk>
 ---
- drivers/char/hw_random/core.c |  120 ++++++++++++++++++++++++++---------------
- include/linux/hw_random.h     |    7 ++-
- 2 files changed, 81 insertions(+), 46 deletions(-)
+ drivers/char/hw_random/virtio-rng.c |   79 ++++++++++++----------------------
+ 1 files changed, 28 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/char/hw_random/core.c b/drivers/char/hw_random/core.c
-index 1573aeb..e179afd 100644
---- a/drivers/char/hw_random/core.c
-+++ b/drivers/char/hw_random/core.c
-@@ -47,12 +47,14 @@
- #define RNG_MODULE_NAME		"hw_random"
- #define PFX			RNG_MODULE_NAME ": "
- #define RNG_MISCDEV_MINOR	183 /* official */
-+#define RNG_BUFFSIZE		64
+diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
+index 915157f..76d00c4 100644
+--- a/drivers/char/hw_random/virtio-rng.c
++++ b/drivers/char/hw_random/virtio-rng.c
+@@ -16,6 +16,7 @@
+  *  along with this program; if not, write to the Free Software
+  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+  */
++
+ #include <linux/err.h>
+ #include <linux/hw_random.h>
+ #include <linux/scatterlist.h>
+@@ -23,78 +24,65 @@
+ #include <linux/virtio.h>
+ #include <linux/virtio_rng.h>
  
- 
- static struct hwrng *current_rng;
- static LIST_HEAD(rng_list);
- static DEFINE_MUTEX(rng_mutex);
+-/* The host will fill any buffer we give it with sweet, sweet randomness.  We
+- * give it 64 bytes at a time, and the hwrng framework takes it 4 bytes at a
+- * time. */
+-#define RANDOM_DATA_SIZE 64
 -
-+static u8 *rng_buffer;
-+static int data_avail;
+ static struct virtqueue *vq;
+-static u32 *random_data;
+-static unsigned int data_left;
++static unsigned int data_avail;
+ static DECLARE_COMPLETION(have_data);
++static int busy;
++
++/* The host will fill any buffer we give it with sweet, sweet randomness. */
  
- static inline int hwrng_init(struct hwrng *rng)
+ static void random_recv_done(struct virtqueue *vq)
  {
-@@ -67,19 +69,6 @@ static inline void hwrng_cleanup(struct hwrng *rng)
- 		rng->cleanup(rng);
+-	unsigned int len;
+-
+ 	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
+-	if (!vq->vq_ops->get_buf(vq, &len))
++	if (!vq->vq_ops->get_buf(vq, &data_avail))
+ 		return;
+ 
+-	data_left += len;
+ 	complete(&have_data);
  }
  
--static inline int hwrng_data_present(struct hwrng *rng, int wait)
--{
--	if (!rng->data_present)
--		return 1;
--	return rng->data_present(rng, wait);
--}
--
--static inline int hwrng_data_read(struct hwrng *rng, u32 *data)
--{
--	return rng->data_read(rng, data);
--}
--
--
- static int rng_dev_open(struct inode *inode, struct file *filp)
+-static void register_buffer(void)
++static void register_buffer(u8 *buf, size_t size)
  {
- 	/* enforce read-only access to this chrdev */
-@@ -91,54 +80,86 @@ static int rng_dev_open(struct inode *inode, struct file *filp)
+ 	struct scatterlist sg;
+ 
+-	sg_init_one(&sg, random_data+data_left, RANDOM_DATA_SIZE-data_left);
++	sg_init_one(&sg, buf, size);
++
+ 	/* There should always be room for one buffer. */
+-	if (vq->vq_ops->add_buf(vq, &sg, 0, 1, random_data) < 0)
++	if (vq->vq_ops->add_buf(vq, &sg, 0, 1, buf) < 0)
+ 		BUG();
++
+ 	vq->vq_ops->kick(vq);
+ }
+ 
+-/* At least we don't udelay() in a loop like some other drivers. */
+-static int virtio_data_present(struct hwrng *rng, int wait)
++static int virtio_read(struct hwrng *rng, void *buf, size_t size, bool wait)
+ {
+-	if (data_left >= sizeof(u32))
+-		return 1;
+ 
+-again:
++	if (!busy) {
++		busy = 1;
++		init_completion(&have_data);
++		register_buffer(buf, size);
++	}
++
+ 	if (!wait)
+ 		return 0;
+ 
+ 	wait_for_completion(&have_data);
+ 
+-	/* Not enough?  Re-register. */
+-	if (unlikely(data_left < sizeof(u32))) {
+-		register_buffer();
+-		goto again;
+-	}
++	busy = 0;
+ 
+-	return 1;
++	return data_avail;
+ }
+ 
+-/* virtio_data_present() must have succeeded before this is called. */
+-static int virtio_data_read(struct hwrng *rng, u32 *data)
++static void virtio_cleanup(struct hwrng *rng)
+ {
+-	BUG_ON(data_left < sizeof(u32));
+-	data_left -= sizeof(u32);
+-	*data = random_data[data_left / 4];
+-
+-	if (data_left < sizeof(u32)) {
+-		init_completion(&have_data);
+-		register_buffer();
+-	}
+-	return sizeof(*data);
++	if (busy)
++		wait_for_completion(&have_data);
+ }
+ 
++
+ static struct hwrng virtio_hwrng = {
+-	.name = "virtio",
+-	.data_present = virtio_data_present,
+-	.data_read = virtio_data_read,
++	.name		= "virtio",
++	.cleanup	= virtio_cleanup,
++	.read		= virtio_read,
+ };
+ 
+ static int virtrng_probe(struct virtio_device *vdev)
+@@ -112,7 +100,6 @@ static int virtrng_probe(struct virtio_device *vdev)
+ 		return err;
+ 	}
+ 
+-	register_buffer();
  	return 0;
  }
  
-+static inline int rng_get_data(struct hwrng *rng, u8 *rng_buffer, size_t size,
-+			int wait) {
-+	int present;
-+
-+	if (rng->read)
-+		return rng->read(rng, (void *)rng_buffer, size, wait);
-+
-+	if (rng->data_present)
-+		present = rng->data_present(rng, wait);
-+	else
-+		present = 1;
-+
-+	if (present)
-+		return rng->data_read(rng, (u32 *)rng_buffer);
-+
-+	return 0;
-+}
-+
- static ssize_t rng_dev_read(struct file *filp, char __user *buf,
- 			    size_t size, loff_t *offp)
+@@ -138,21 +125,11 @@ static struct virtio_driver virtio_rng = {
+ 
+ static int __init init(void)
  {
--	u32 data;
- 	ssize_t ret = 0;
- 	int err = 0;
--	int bytes_read;
-+	int bytes_read, len;
- 
- 	while (size) {
--		err = -ERESTARTSYS;
--		if (mutex_lock_interruptible(&rng_mutex))
-+		if (mutex_lock_interruptible(&rng_mutex)) {
-+			err = -ERESTARTSYS;
- 			goto out;
-+		}
-+
- 		if (!current_rng) {
--			mutex_unlock(&rng_mutex);
- 			err = -ENODEV;
--			goto out;
-+			goto out_unlock;
- 		}
- 
--		bytes_read = 0;
--		if (hwrng_data_present(current_rng,
--				       !(filp->f_flags & O_NONBLOCK)))
--			bytes_read = hwrng_data_read(current_rng, &data);
--		mutex_unlock(&rng_mutex);
+-	int err;
 -
--		err = -EAGAIN;
--		if (!bytes_read && (filp->f_flags & O_NONBLOCK))
--			goto out;
--		if (bytes_read < 0) {
--			err = bytes_read;
--			goto out;
-+		if (!data_avail) {
-+			bytes_read = rng_get_data(current_rng, rng_buffer,
-+				RNG_BUFFSIZE, !(filp->f_flags & O_NONBLOCK));
-+			if (bytes_read < 0) {
-+				err = bytes_read;
-+				goto out_unlock;
-+			}
-+			data_avail = bytes_read;
- 		}
- 
--		err = -EFAULT;
--		while (bytes_read && size) {
--			if (put_user((u8)data, buf++))
--				goto out;
--			size--;
--			ret++;
--			bytes_read--;
--			data >>= 8;
-+		if (!data_avail) {
-+			if (filp->f_flags & O_NONBLOCK) {
-+				err = -EAGAIN;
-+				goto out_unlock;
-+			}
-+		} else {
-+			len = data_avail;
-+			if (len > size)
-+				len = size;
-+
-+			data_avail -= len;
-+
-+			if (copy_to_user(buf + ret, rng_buffer + data_avail,
-+								len)) {
-+				err = -EFAULT;
-+				goto out_unlock;
-+			}
-+
-+			size -= len;
-+			ret += len;
- 		}
- 
-+		mutex_unlock(&rng_mutex);
-+
- 		if (need_resched())
- 			schedule_timeout_interruptible(1);
--		err = -ERESTARTSYS;
--		if (signal_pending(current))
-+
-+		if (signal_pending(current)) {
-+			err = -ERESTARTSYS;
- 			goto out;
-+		}
- 	}
-+out_unlock:
-+	mutex_unlock(&rng_mutex);
- out:
- 	return ret ? : err;
+-	random_data = kmalloc(RANDOM_DATA_SIZE, GFP_KERNEL);
+-	if (!random_data)
+-		return -ENOMEM;
+-
+-	err = register_virtio_driver(&virtio_rng);
+-	if (err)
+-		kfree(random_data);
+-	return err;
++	return register_virtio_driver(&virtio_rng);
  }
-@@ -280,11 +301,19 @@ int hwrng_register(struct hwrng *rng)
- 	struct hwrng *old_rng, *tmp;
  
- 	if (rng->name == NULL ||
--	    rng->data_read == NULL)
-+	    (rng->data_read == NULL && rng->read == NULL))
- 		goto out;
- 
- 	mutex_lock(&rng_mutex);
- 
-+	if (!rng_buffer) {
-+		rng_buffer = kmalloc(RNG_BUFFSIZE, GFP_KERNEL);
-+		if (!rng_buffer) {
-+			err = -ENOMEM;
-+			goto out_unlock;
-+		}
-+	}
-+
- 	/* Must not register two RNGs with the same name. */
- 	err = -EEXIST;
- 	list_for_each_entry(tmp, &rng_list, list) {
-@@ -338,8 +367,11 @@ void hwrng_unregister(struct hwrng *rng)
- 				current_rng = NULL;
- 		}
- 	}
--	if (list_empty(&rng_list))
-+	if (list_empty(&rng_list)) {
- 		unregister_miscdev();
-+		kfree(rng_buffer);
-+		rng_buffer = NULL;
-+	}
- 
- 	mutex_unlock(&rng_mutex);
+ static void __exit fini(void)
+ {
+-	kfree(random_data);
+ 	unregister_virtio_driver(&virtio_rng);
  }
-diff --git a/include/linux/hw_random.h b/include/linux/hw_random.h
-index 7244456..9bede76 100644
---- a/include/linux/hw_random.h
-+++ b/include/linux/hw_random.h
-@@ -22,10 +22,12 @@
-  * @cleanup:		Cleanup callback (can be NULL).
-  * @data_present:	Callback to determine if data is available
-  *			on the RNG. If NULL, it is assumed that
-- *			there is always data available.
-+ *			there is always data available.  *OBSOLETE*
-  * @data_read:		Read data from the RNG device.
-  *			Returns the number of lower random bytes in "data".
-- *			Must not be NULL.
-+ *			Must not be NULL.    *OSOLETE*
-+ * @read:		New API. drivers can fill up to max bytes of data
-+ *			into the buffer. The buffer is aligned for any type.
-  * @priv:		Private data, for use by the RNG driver.
-  */
- struct hwrng {
-@@ -34,6 +36,7 @@ struct hwrng {
- 	void (*cleanup)(struct hwrng *rng);
- 	int (*data_present)(struct hwrng *rng, int wait);
- 	int (*data_read)(struct hwrng *rng, u32 *data);
-+	int (*read)(struct hwrng *rng, void *data, size_t max, bool wait);
- 	unsigned long priv;
- 
- 	/* internal. */
+ module_init(init);
 -- 
 1.6.5
 
