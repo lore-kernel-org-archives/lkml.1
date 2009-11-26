@@ -1,56 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbZKZIjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbZKZIku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759845AbZKZIjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZKZIjY
+	id S1759906AbZKZIku (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:40:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759806AbZKZIku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:39:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59926 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 03:40:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55472 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbZKZIjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:39:22 -0500
-Message-ID: <4B0E3EA4.7000003@redhat.com>
-Date: Thu, 26 Nov 2009 09:39:00 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	id S1759801AbZKZIkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:40:49 -0500
+Date: Thu, 26 Nov 2009 09:40:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] events: Rename TRACE_EVENT_TEMPLATE() to
+ DECLARE_EVENT_CLASS()
+Message-ID: <20091126084039.GA15919@elte.hu>
+References: <4B0E286A.2000405@cn.fujitsu.com>
+ <tip-091ad3658e3c76c5fb05f65bfb64a0246f8f31b5@git.kernel.org>
+ <1259224390.21397.87.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Christoph Bartelmus <lirc@bartelmus.de>
-CC: awalls@radix.net, dheitmueller@kernellabs.com, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDcbfiXJjFB@christoph>
-In-Reply-To: <BDcbfiXJjFB@christoph>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259224390.21397.87.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/09 08:28, Christoph Bartelmus wrote:
-> Hi Gerd,
->
-> on 26 Nov 09 at 00:22, Gerd Hoffmann wrote:
-> [...]
->>> To sum it up: I don't think this information will be useful at all for
->>> lircd or anyone else.
-> [...]
->> I know that lircd does matching instead of decoding, which allows to
->> handle unknown encodings.  Thats why I think there will always be cases
->> which only lircd will be able to handle (using raw samples).
->>
->> That doesn't make attempts to actually decode the IR samples a useless
->> exercise though ;)
->
-> Well, in my opinion it is kind of useless. I don't see any use case or any
-> demand for passing this kind of information to userspace, at least in the
-> LIRC context.
-> If there's no demand, why bother?
 
-There have been complains about this getting lost somewhere in this 
-thread, so it looks like there are people which do care.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-cheers,
-   Gerd
+> On Thu, 2009-11-26 at 08:16 +0000, tip-bot for Ingo Molnar wrote:
+> > Commit-ID:  091ad3658e3c76c5fb05f65bfb64a0246f8f31b5
+> > Gitweb:     http://git.kernel.org/tip/091ad3658e3c76c5fb05f65bfb64a0246f8f31b5
+> > Author:     Ingo Molnar <mingo@elte.hu>
+> > AuthorDate: Thu, 26 Nov 2009 09:04:55 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Thu, 26 Nov 2009 09:04:55 +0100
+> > 
+> > events: Rename TRACE_EVENT_TEMPLATE() to DECLARE_EVENT_CLASS()
+> > 
+> > It is not quite obvious at first sight what TRACE_EVENT_TEMPLATE
+> > does: does it define an event as well beyond defining a template?
+> > 
+> > To clarify this, rename it to DECLARE_EVENT_CLASS, which follows
+> > the various 'DECLARE_*()' idioms we already have in the kernel:
+> > 
+> >   DECLARE_EVENT_CLASS(class)
+> > 
+> >     DEFINE_EVENT(class, event1)
+> >     DEFINE_EVENT(class, event2)
+> >     DEFINE_EVENT(class, event3)
+> > 
+> > To complete this logic we should also rename TRACE_EVENT() to:
+> > 
+> >   DEFINE_SINGLE_EVENT(single_event)
+> > 
+> > ... but in a more quiet moment of the kernel cycle.
+> 
+> 
+> I would like to hear what others think about this change before we go 
+> ahead and implement it.
+
+You mean TRACE_EVENT() -> DEFINE_SINGLE_EVENT()? Sure, we want todo it 
+in a more quiet moment of the kernel cycle, not now.
+
+(TRACE_EVENT_TEMPLATE OTOH has existed for just a few days so it's not a 
+problem.)
+
+> A lot of developers have just learned about TRACE_EVENT and now it 
+> just disappeared. Well, not really, but in the sense of ' find 
+> linux.git -name '*.[ch]' | xargs grep TRACE_EVENT' it no longer 
+> exists.
+
+A second problem with the TRACE_EVENT name is that it's not just for 
+tracing - we dont necessarily 'trace' events here. We can use the event 
+callbacks to collect pure counts:
+
+| aldebaran> perf stat -e sched:sched_wakeup ./hackbench 10
+| Time: 0.093
+|
+|  Performance counter stats for './hackbench 10':
+|
+|           15481  sched:sched_wakeup      
+|
+|     0.107390574  seconds time elapsed
+
+etc.
+
+A third problem is that the name 'TRACE_EVENT' does not tell us what is 
+being done. Do we declare it? Do we also define it?
+
+DEFINE_SINGLE_EVENT() solves all these problems:
+
+ - It's obvious what it does
+
+ - It suggests users of it that there's another non-single-event 
+   facility, gently nudging them towards the use of the more efficient
+   DEFINE_EVENT_CLASS() + DEFINE_EVENT() method.
+
+ - It fits nicely into the rest of the naming scheme.
+
+	Ingo
