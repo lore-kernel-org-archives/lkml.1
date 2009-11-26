@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZKZHFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbZKZHGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbZKZHFv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 02:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbZKZHFu
+	id S1758837AbZKZHGD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 02:06:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758815AbZKZHGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 02:05:50 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:52967 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758584AbZKZHFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 02:05:49 -0500
-Subject: Re: [PATCH] JFFS2: min/max confusion?
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 26 Nov 2009 02:06:02 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64003 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758583AbZKZHGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 02:06:00 -0500
+Message-ID: <4B0E28C2.1090906@cn.fujitsu.com>
+Date: Thu, 26 Nov 2009 15:05:38 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B08088C.8050305@gmail.com>
-References: <4B08088C.8050305@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Nov 2009 09:05:25 +0200
-Message-Id: <1259219125.29118.41.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 26 Nov 2009 07:05:30.0416 (UTC) FILETIME=[D6DF5300:01CA6E66]
-X-Nokia-AV: Clean
+Subject: [PATCH 5/9] tracing: Convert some power events to DEFINE_EVENT
+References: <4B0E2807.4060102@cn.fujitsu.com>
+In-Reply-To: <4B0E2807.4060102@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-11-21 at 16:34 +0100, Roel Kluin wrote:
-> MAX_SUMMARY_SIZE was meant as a limit, not as a minimum
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  fs/jffs2/summary.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> unless I am mistaken?
-> 
-> diff --git a/fs/jffs2/summary.c b/fs/jffs2/summary.c
-> index 6caf1e1..800171d 100644
-> --- a/fs/jffs2/summary.c
-> +++ b/fs/jffs2/summary.c
-> @@ -23,7 +23,7 @@
->  
->  int jffs2_sum_init(struct jffs2_sb_info *c)
->  {
-> -	uint32_t sum_size = max_t(uint32_t, c->sector_size, MAX_SUMMARY_SIZE);
-> +	uint32_t sum_size = min_t(uint32_t, c->sector_size, MAX_SUMMARY_SIZE);
->  
->  	c->summary = kzalloc(sizeof(struct jffs2_summary), GFP_KERNEL);
+Use TRACE_EVENT_TEMPLATE to remove duplicate code:
 
-This looks right, I've pushed your patch to my l2-mtd tree, thanks.
+   text    data     bss     dec     hex filename
+   4312     524      12    4848    12f0 kernel/trace/power-traces.o.old
+   3455     524       8    3987     f93 kernel/trace/power-traces.o
 
+Two events are converted:
+
+  power: power_start, power_frequency
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/trace/events/power.h |   36 +++++++++++++++---------------------
+ 1 files changed, 15 insertions(+), 21 deletions(-)
+
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 9bb96e5..5cfa61a 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -16,7 +16,7 @@ enum {
+ };
+ #endif
+ 
+-TRACE_EVENT(power_start,
++TRACE_EVENT_TEMPLATE(power,
+ 
+ 	TP_PROTO(unsigned int type, unsigned int state),
+ 
+@@ -35,42 +35,36 @@ TRACE_EVENT(power_start,
+ 	TP_printk("type=%lu state=%lu", (unsigned long)__entry->type, (unsigned long)__entry->state)
+ );
+ 
+-TRACE_EVENT(power_end,
+-
+-	TP_PROTO(int dummy),
++DEFINE_EVENT(power, power_start,
+ 
+-	TP_ARGS(dummy),
++	TP_PROTO(unsigned int type, unsigned int state),
+ 
+-	TP_STRUCT__entry(
+-		__field(	u64,		dummy		)
+-	),
++	TP_ARGS(type, state)
++);
+ 
+-	TP_fast_assign(
+-		__entry->dummy = 0xffff;
+-	),
++DEFINE_EVENT(power, power_frequency,
+ 
+-	TP_printk("dummy=%lu", (unsigned long)__entry->dummy)
++	TP_PROTO(unsigned int type, unsigned int state),
+ 
++	TP_ARGS(type, state)
+ );
+ 
++TRACE_EVENT(power_end,
+ 
+-TRACE_EVENT(power_frequency,
+-
+-	TP_PROTO(unsigned int type, unsigned int state),
++	TP_PROTO(int dummy),
+ 
+-	TP_ARGS(type, state),
++	TP_ARGS(dummy),
+ 
+ 	TP_STRUCT__entry(
+-		__field(	u64,		type		)
+-		__field(	u64,		state		)
++		__field(	u64,		dummy		)
+ 	),
+ 
+ 	TP_fast_assign(
+-		__entry->type = type;
+-		__entry->state = state;
++		__entry->dummy = 0xffff;
+ 	),
+ 
+-	TP_printk("type=%lu state=%lu", (unsigned long)__entry->type, (unsigned long) __entry->state)
++	TP_printk("dummy=%lu", (unsigned long)__entry->dummy)
++
+ );
+ 
+ #endif /* _TRACE_POWER_H */
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+1.6.3
+
 
