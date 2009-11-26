@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZKZQZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbZKZQ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbZKZQZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932266AbZKZQZn
+	id S1760792AbZKZQ0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbZKZQ0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:25:43 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:51637 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755965AbZKZQZl (ORCPT
+	Thu, 26 Nov 2009 11:26:18 -0500
+Received: from stinky.trash.net ([213.144.137.162]:58058 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760688AbZKZQ0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:25:41 -0500
-Message-ID: <4B0EAC06.3010407@linux.vnet.ibm.com>
-Date: Thu, 26 Nov 2009 17:25:42 +0100
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 26 Nov 2009 11:26:17 -0500
+Message-ID: <4B0EAC29.60601@trash.net>
+Date: Thu, 26 Nov 2009 17:26:17 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Holger.Wolf@de.ibm.com, epasch@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
- add/remove
-References: <4B0EA88E.3030205@linux.vnet.ibm.com> <1259252382.31676.207.camel@laptop>
-In-Reply-To: <1259252382.31676.207.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Arnd Bergmann <arnd@arndb.de>
+CC: netdev@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, bridge@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCHv3 0/4] macvlan: add vepa and bridge mode
+References: <1259251631-11617-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1259251631-11617-1-git-send-email-arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-11-26 at 17:10 +0100, Christian Ehrhardt wrote:
->
->   
->> What I consider more important at the moment is that there is no hook to 
->> recalculate these values in case cpu hot add/remove takes place.
->> As an example someone could boot a machine with one online cpu and get 
->> the low non scaled defaults, later on driven by load the system 
->> activates more and more processors. Therefore the system could end up 
->> having  a large amount of cpus with non recalculated scheduler tunables.
->>     
->
-> This is virt junk that's playing dumb games with hotplug isn't it?
->   
-Some sort of, its on s390 which does that all the time. By default there 
-is a daemon that activates/deactivates cpus according to load to cover 
-load peaks but also save virtualization overhead.
-> Normal machines simply don't change their numbers of cpus, if they
-> hotplug its usually for things like suspend or actual replacement of a
-> faulty piece of kit, in which case there's little point in adjusting
-> things.
->
->   
-What is still "normal" today, you cant get s390 without virt so I would 
-consider it normal and a real use case for us :-)
-> Aside from that, we probably should put an upper limit in place, as I
-> guess large cpu count machines get silly large values
-I agree to that, but in the code is already an upper limit of 
-200.000.000 - well we might discuss if that is too low/high.
+Arnd Bergmann wrote:
+> Version 2 description:
+> The patch to iproute2 has not changed, so I'm not including
+> it this time. Patch 4/4 (the netlink interface) is basically
+> unchanged as well but included for completeness.
+> 
+> The other changes have moved forward a bit, to the point where
+> I find them a lot cleaner and am more confident in the code
+> being ready for inclusion. The implementation hardly resembles
+> Erics original patch now, so I've dropped his signed-off-by.
+> 
+> Please take a look and ack if you are happy so we can get it
+> into 2.6.33.
 
+Looks good to me, nice work.
 
--- 
+Acked-by: Patrick McHardy <kaber@trash.net>
 
-Grüsse / regards, Christian Ehrhardt
-IBM Linux Technology Center, Open Virtualization 
-
+for the entire series.
