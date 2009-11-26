@@ -1,105 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbZKZQHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbZKZQH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760708AbZKZQHd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760700AbZKZQHb
+	id S1760730AbZKZQH4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbZKZQHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:07:31 -0500
-Received: from www84.your-server.de ([213.133.104.84]:34670 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756271AbZKZQH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:07:29 -0500
-Subject: Re: [PATCH 7/7] kfifo: add record handling functions
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
-       Roger Quadros <quadros.roger@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <20091123141914.e320c341.akpm@linux-foundation.org>
-References: <1258704942.4426.5.camel@wall-e>
-	 <1258705988.4426.22.camel@wall-e>
-	 <20091123141914.e320c341.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Thu, 26 Nov 2009 17:07:12 +0100
-Message-ID: <1259251632.26705.17.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 26 Nov 2009 11:07:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61315 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760679AbZKZQHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 11:07:50 -0500
+Message-ID: <4B0EA7CC.9070309@redhat.com>
+Date: Thu, 26 Nov 2009 14:07:40 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Jarod Wilson <jarod@wilsonet.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+In-Reply-To: <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jarod Wilson wrote:
 
-> > +static inline unsigned int __kfifo_out_rec(struct kfifo *fifo,
-> > +	void *to, unsigned int n, unsigned int recsize,
-> > +	unsigned int *total)
-> > +{
-> > +	unsigned int l;
-> > +
-> > +	if (!recsize) {
-> > +		l = n;
-> > +		if (total)
-> > +			*total = l;
-> > +	} else {
-> > +		l = __kfifo_peek_n(fifo, recsize);
-> > +		if (total)
-> > +			*total = l;
-> > +		if (n < l)
-> > +			return l;
-> > +	}
-> > +
-> > +	return __kfifo_out_n(fifo, to, l, recsize);
-> > +}
+>> I guess the question is what is the interface we want the regular
+>> userspace (i.e. not lircd) to use. Right now programs has to use 2
+>> intercfaces - one lirc for dealing with remotes that are not using
+>> the standard event interface and evdev for remotes using it as well
+>> as the rest of the input devices.
 > 
-> The amount of inlining in this header is pretty wild.  These are large
-> functions!  Inlining them will create a large kernel and most likely a
-> slower one, due to the increased instruction cache footprint.
+> From the mythtv perspective, using the input layer could yield a better
+> out-of-the-box experience -- users don't have to set up an lircrc mapping
+> that converts key names as specified in lircd.conf into commands 
+> (key strokes, actually) that mythtv understands. For example, a button labeled "Play"
+> in lircd.conf has to be mapped to 'p' in ~/.lircrc for mythtv to do the right 
+> thing with it. If everything came through the input layer, be that natively
+> or via lircd's uinput reinjection, there would be no need to do that extra 
+> mapping step, mythtv would simply handle a KEY_PLAY event. So at worst, 
+> one manual mapping to do -- IR signal to standard button name in lircd.conf -- 
+> instead of two. But the lircrc approach does also allow more flexibility, 
+> in that you can only have a certain app respond to a certain key, if so desired, 
+> and remap a key to a different function (KEY_RED, KEY_GREEN, KEY_BLUE, KEY_YELLOW
+>  -- what should their default functionality be? I know some users map a pair
+> of those to mythtv's "skip to next commflag point" and "skip to prior commflag point").
 > 
-> So please, let's see a "kfifo: uninline everything" patch?  
-> 
-> but...
-> 
-> > +/**
-> > + * kfifo_out_rec - gets some record data from the FIFO
-> > + * @fifo: the fifo to be used.
-> > + * @to: where the data must be copied.
-> > + * @n: the size of the destination buffer.
-> > + * @recsize: size of record field
-> > + * @total: pointer where the total number of to copied bytes should stored
-> > + *
-> > + * This function copies at most @n bytes from the FIFO to @to and returns the
-> > + * number of bytes which cannot be copied.
-> > + * A returned value greater than the @n value means that the record doesn't
-> > + * fit into the @to buffer.
-> > + *
-> > + * Note that with only one concurrent reader and one concurrent
-> > + * writer, you don't need extra locking to use these functions.
-> > + */
-> > +static inline __must_check unsigned int kfifo_out_rec(struct kfifo *fifo,
-> > +	void *to, unsigned int n, unsigned int recsize,
-> > +	unsigned int *total)
-> > +
-> > +{
-> > +	if (!__builtin_constant_p(recsize))
-> > +		return __kfifo_out_generic(fifo, to, n, recsize, total);
-> > +	return __kfifo_out_rec(fifo, to, n, recsize, total);
-> > +}
-> 
-> OK, so I see that some attention has been paid to the text footprint issue.
-> 
-> But how much, and was it successful?
-> 
+> Unfortunately, mythtv currently doesn't handle KEY_PLAY, KEY_VOLUMEUP, etc., etc. at 
+> all right now, it operates purely on keys commonly found on a standard keyboard.
+> Remedying that is on my TODO list for the next release, if I can carve out the time.
 
-I analyzed the code and most of them will be optimized away by the
-compiler. The reason for this design decision was that i want no
-performance regression against the old kfifo implementation.
+This discussion is a little OT from the API discussions, since it affects both out-of-the
+box IR reception via input layer and lirc.
 
-But if the majority vote for an non inline version i will do it. It will
-make the code more readable and slim down the footprint.
+All media applications should be capable of handling the corresponding KEY_PLAY, KEY_VOLUMEUP ...
+keys without needing to do anything else than just handling the corresponding keycode.
+You shouldn't need to start a daemon or doing anything else for this to work out-of-the-box.
 
+They currently don't do it due to historic reasons (it is easier to let something else
+remap KEY_PLAY into 'p' than to add the proper code there).
 
+When using non-hot-pluggable devices where you're building a dedicated MCE hardware (this 
+is the common case of MythTV setups), things are not that bad, since, once you set your
+hardware, it is done.
+
+However, by looking on the number of different new devices, it seems that the most common 
+type of devices are the TV USB sticks. As they are hot pluggable, eventually users may 
+have more than one hardware and they expect that the IR layer will work equally on
+all your devices.
+
+The proper way for supporting it is to have a common application-agnostic keycode to indicate
+the received events. For example, all IR's should produce KEY_CHANNELUP/KEY_CHANNELDOWN events
+for changing the channels. Also, on a perfect world, lirc should send this event to the
+multimedia application that handles TV when such key is pressed, instead of converting into
+some other keycode. This prevents future problems if, for some reason, the application needs to
+do something else with that key, or if the key has a different meaning on some different contexts.
+
+For example, on some applications, KEY_UP/KEY_DOWN can mean to change a channel, but those keys
+are also used for menu navigation. However, KEY_CHANNELUP has a clear unique meaning: to change a channel. 
+The expected behavior, from users perspective, is to mimic a TV box, where if you press channel UP
+any open menu will be closed and the channel will be changed, but pressing UP key will
+navigate at the menu. Well, if you map KEY_CHANNELUP as KEY_UP, you'll produce a different behavior.
+
+Cheers,
+Mauro.
