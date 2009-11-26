@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbZKZCWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbZKZCXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbZKZCWf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 21:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZKZCWe
+	id S1754802AbZKZCXK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 21:23:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZKZCXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 21:22:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48617 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751532AbZKZCWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 21:22:33 -0500
-Date: Thu, 26 Nov 2009 13:22:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: linux-next: manual merge of the acpi tree with the pci tree
-Message-Id: <20091126132228.85a63dee.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Nov_2009_13_22_28_+1100_Cs5qTllUSoBF7ZAK"
+	Wed, 25 Nov 2009 21:23:09 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:44988 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754021AbZKZCXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Nov 2009 21:23:08 -0500
+X-Sasl-enc: c1Gdi1wHx2XWCjrxPiFP4PV8PGpPsjH34sX8wbpSmP+h 1259202193
+Date: Thu, 26 Nov 2009 00:23:11 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: regression: 2.6.32-rc8 shuts down after reaching critical
+ temperature
+Message-ID: <20091126022311.GB22613@khazad-dum.debian.net>
+References: <20091125102857.GA28310@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125102857.GA28310@lst.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Nov_2009_13_22_28_+1100_Cs5qTllUSoBF7ZAK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 25 Nov 2009, Christoph Hellwig wrote:
+> I recently upgraded my Thinkpad T500 from Linux 2.6.31 to Linux
+> 2.6.32-rc (first -rc7 but I've also tried with -rc6 and -rc8) and when
+> putting load on it, e.g. by building a kernel tree.  It shuts down soon
+> with the
+> 
+> 	Critical temperature reached (%ld C), shutting down.\n"
+> 
+> printk from drivers/thermal/thermal_sys.c, where the temperature is
+> usually 100C or slightly above.  The system is a Lenovo Thinkpad T500
+> with a Intel Core 2 Dueo T9600 running a 32 bit kernel.
 
-Hi Len,
+If you go back to the previous kernel, does the problem disappear?  Please
+test and report (don't go by past experiences).
 
-Today's linux-next merge of the acpi tree got a conflict in
-drivers/pci/hotplug/acpiphp_glue.c between commit
-204d49a5613a06eb2fa5c3b842a29b1336cc7995 ("PCI hotplug: move IOAPIC
-support from acpiphp to ioapic driver") from the pci tree and commit
-2263576cfc6e8f6ab038126c3254404b9fcb1c33 ("ACPICA: Add post-order
-callback to acpi_walk_namespace") from the acpi tree.
+If it does disappear, what are the highest temperatures your thinkpad hits?
 
-The former moved part of the code modified by the latter into another
-file.  All the calls to acpi_walk_namespace() seem to have been removed
-in this process.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+"sensors" from lm-sensors will tell you the current temperatures as long as
+the "thermal" and "thinkpad-acpi" modules are loaded (don't run
+sensors-detect).
 
---Signature=_Thu__26_Nov_2009_13_22_28_+1100_Cs5qTllUSoBF7ZAK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEUEARECAAYFAksN5mQACgkQjjKRsyhoI8xoggCeL/udiBiXy3SyGBowWqQ3IZbI
-ijYAljn0WNVzNIAUmy2a0Y90xwvysu8=
-=bjSp
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Nov_2009_13_22_28_+1100_Cs5qTllUSoBF7ZAK--
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
