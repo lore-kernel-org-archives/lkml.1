@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZKZFtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZKZFwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZKZFtj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZKZFti
+	id S1753244AbZKZFwI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:52:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbZKZFwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:49:38 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:64925 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753081AbZKZFtg (ORCPT
+	Thu, 26 Nov 2009 00:52:08 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:33082 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbZKZFwH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:49:36 -0500
+	Thu, 26 Nov 2009 00:52:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=L/PZGOhf8Jdye60sYmzxxUufzAWOkQBs6KJpHqYFhcGNtPIdjOR1TP1OSdAKMpooDh
-         +hxehBjgBbo5hS+byVgeAvi9wO3hk50oI6x3Kcg39c0nQmHBENd20+HVaRGanWxrDaQU
-         fQbvSCd+f5y1/tG4+ptqwxI733DqrIjawC8AM=
-Date: Wed, 25 Nov 2009 21:49:38 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091126054938.GH23244@core.coreip.homeip.net>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZzjEqRn2lOpWXL8eRB/ZzjnUdp1dWX3mx8egqs1HbvujYeIwEaK7WhxVwub+zkqovU
+         CPLnLbXs0rOW5o8Abi0XBrT0pzrAnRkDY+K5rTC/ZY/swo95AlVVjjpz55fIvskCoLJI
+         RjlovDlnSqbNW7+Y6n6pVJ4FITGULeIBwlvo8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259024037.3871.36.camel@palomino.walls.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <3877989d0911251943j6860e88ci93e237ba65835bc7@mail.gmail.com>
+References: <3877989d0911251943j6860e88ci93e237ba65835bc7@mail.gmail.com>
+Date: Thu, 26 Nov 2009 13:52:13 +0800
+Message-ID: <3877989d0911252152g6bd13a32oc387e282eceda3f1@mail.gmail.com>
+Subject: Re: ia64 lockdep: trying to register non-static key (mm->mmap_sem)
+From: Luming Yu <luming.yu@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 07:53:57PM -0500, Andy Walls wrote:
-> On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
-> > Czesc Krzysztof,
-> > 
-> > on 23 Nov 09 at 15:14, Krzysztof Halasa wrote:
-> > [...]
-> > > I think we shouldn't at this time worry about IR transmitters.
-> > 
-> > Sorry, but I have to disagree strongly.
-> > Any interface without transmitter support would be absolutely unacceptable  
-> > for many LIRC users, including myself.
-> 
-> I agree with Christoph.  
-> 
-> Is it that the input subsystem is better developed and seen as a
-> leverage point for development and thus an "easier" place to get results
-> earlier?  If so, then one should definitely deal with transmitters early
-> in the design, as that is where the most unknowns lie.
-> 
-> With the end of analog TV, people will have STBs feeding analog only
-> video cards.  Being able to change the channel on the STB with an IR
-> transmitter controlled by applications like MythTV is essential.
-> 
-> 
-> And on some different notes:
-> 
-> I generally don't understand the LIRC aversion I perceive in this thread
-> (maybe I just have a skewed perception).  Aside for a video card's
-> default remote setup, the suggestions so far don't strike me as any
-> simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
-> already works for both transmit and receive and has existing support in
-> applications such as MythTV and mplayer.
+sorry for noise, I've figured it out that locdep annoatation is missed in IA64
+__rwsem_initializer.
 
-Is it that LIRC supports MythTV and mplayer or MythTV and mplayer are
-forced to support lirc because the remores are not available through
-other means? I believe it is the latter and applications writers would
-be happy to reduce number of ways they get button data.
-
-I don't think there is LIRC aversion per se. We are just trying to
-decide whether multiple interfaces for the same data is needed. And
-I don't think that we will completely reject userspace components. Just
-as input subsystem allows for userspace drivers I do not think why we
-can't have the same for the LIRC. But I do think that the primary
-interface for regular userspace consumers (read mplayer and MythTV and
-the likes) should be input event interface (EV_KEY/KEY_*).
-
--- 
-Dmitry
+On Thu, Nov 26, 2009 at 11:43 AM, Luming Yu <luming.yu@gmail.com> wrote:
+> Anybody know how I should do to fix the lockdep
+> warning below, which is triggered in
+> ia64_brk doing "down_write(&mm->mmap_sem)"
+>
+> Any comments are appreciated.
+>
+>
+> INFO: trying to register non-static key.
+> the code is fine but needs lockdep annotation.
+> turning off the locking correctness validator.
+>
+> Call Trace:
+>  [<a000000100017330>] show_stack+0x70/0xc0
+>                                sp=e0000004807a7c50 bsp=e0000004807a1c78
+>  [<a0000001000173d0>] dump_stack+0x50/0x80
+>                                sp=e0000004807a7e20 bsp=e0000004807a1c58
+>  [<a0000001000f7ca0>] __lock_acquire+0x1a0/0x13e0
+>                                sp=e0000004807a7e20 bsp=e0000004807a1bc0
+>  [<a0000001000fc310>] lock_acquire+0x170/0x1e0
+>                                sp=e0000004807a7e20 bsp=e0000004807a1b60
+>  [<a0000001008338d0>] down_write+0x70/0x180
+>                                sp=e0000004807a7e20 bsp=e0000004807a1b28
+>  [<a00000010003b960>] ia64_brk+0x60/0x280
+>                                sp=e0000004807a7e20 bsp=e0000004807a1aa0
+>  [<a00000010000c620>] ia64_ret_from_syscall+0x0/0x20
+>
+>
+> Thanks,
+> Luming
+>
