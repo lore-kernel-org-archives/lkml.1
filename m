@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbZKZS2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbZKZScR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbZKZS2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZKZS2Q
+	id S1751856AbZKZScR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZKZScR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:28:16 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:12407 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751834AbZKZS2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:28:12 -0500
-Message-ID: <4B0EC8F5.9040409@ru.mvista.com>
-Date: Thu, 26 Nov 2009 21:29:09 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 41/86] pata_efar: unify code for programming PIO and MWDMA
- timings
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170712.5446.50300.sendpatchset@localhost>
-In-Reply-To: <20091125170712.5446.50300.sendpatchset@localhost>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 26 Nov 2009 13:32:17 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:43135 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbZKZScQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:32:16 -0500
+Date: Thu, 26 Nov 2009 19:32:21 +0100
+From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+To: linux-kernel@vger.kernel.org
+Cc: rol@witbe.net
+Subject: ACPI Exception...
+Message-ID: <20091126193221.3ed8cbf0@tux.DEF.witbe.net>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Hello,
 
-> It results in ~9% decrease in the driver LOC count and also ~6%
-> decrease in the driver binary size (as measured on x86-32).
+I'm seeing the following messages in my logs :
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ata/pata_it8213.c |   87 +++++++++++++++-------------------------------
->  1 file changed, 29 insertions(+), 58 deletions(-)
+Nov 26 19:26:27 tux kernel: ACPI Exception: AE_TIME, Returned by Handler for [EmbeddedControl] (20090903/evregion-424)
+Nov 26 19:26:27 tux kernel: ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.LPCB.BAT1._BST] (Node ffff88013f8182e0), AE_TIME
+Nov 26 19:26:27 tux kernel: ACPI Exception: AE_TIME, Evaluating _BST (20090903/battery-393)
 
-> Index: b/drivers/ata/pata_it8213.c
-> ===================================================================
-> --- a/drivers/ata/pata_it8213.c
-> +++ b/drivers/ata/pata_it8213.c
-> @@ -61,20 +61,9 @@ static int it8213_cable_detect(struct at
->  	return ATA_CBL_PATA80;
->  }
->  
-> -/**
-> - *	it8213_set_piomode - Initialize host controller PATA PIO timings
-> - *	@ap: Port whose timings we are configuring
-> - *	@adev: Device whose timings we are configuring
-> - *
-> - *	Set PIO mode for device, in host controller PCI config space.
-> - *
-> - *	LOCKING:
-> - *	None (inherited from caller).
-> - */
-> -
-> -static void it8213_set_piomode (struct ata_port *ap, struct ata_device *adev)
-> +static void it8213_set_timings(struct ata_port *ap, struct ata_device *adev,
-> +			       u8 pio, bool use_mwdma)
+Is there anything I can do to provide more informations ?
 
-    Perhaps 'set_mwdma' would be a better name...
+Regards,
+Paul
 
->  {
-> -	unsigned int pio	= adev->pio_mode - XFER_PIO_0;
->  	struct pci_dev *dev	= to_pci_dev(ap->host->dev);
->  	u8 master_port		= ap->port_no ? 0x42 : 0x40;
->  	u16 master_data;
-> @@ -92,13 +81,18 @@ static void it8213_set_piomode (struct a
->  			    { 2, 1 },
->  			    { 2, 3 }, };
->  
-> -	if (pio > 1)
-> +	if (pio > 1 || use_mwdma)
->  		control |= 1;	/* TIME */
-> -	if (ata_pio_need_iordy(adev))	/* PIO 3/4 require IORDY */
-> +	if (ata_pio_need_iordy(adev) || use_mwdma)
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+LinkedIn : http://www.linkedin.com/in/paulrolland
 
-    I believe this "IORDY for MWDMA" stupidity results from the table 35 in 
-ICH PRD which for some reason insists on setting IE bit with DMA, and I 
-believe this is wrong -- IORDY shouldn't have anything to with DMA.
+This is dedicated to all the ones who want to control Internet, its
+content or its usage :
 
->  		control |= 2;	/* IE */
->  	/* Bit 2 is set for ATAPI on the IT8213 - reverse of ICH/PIIX */
->  	if (adev->class != ATA_DEV_ATA)
->  		control |= 4;	/* PPE */
-> +	/* If the drive MWDMA is faster than it can do PIO then
-> +	   we must force PIO into PIO0 */
-> +	if (use_mwdma && adev->pio_mode < (XFER_PIO_0 + pio))
+"I worry about my child and the Internet all the time, even though she's
+too young to have logged on yet. Here's what I worry about. I worry that 10
+or 15 years from now, she will come to me and say 'Daddy, where were you
+when they took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
 
-    Parens not needed...
 
-> +		/* Enable DMA timing only */
-> +		control |= 8;	/* PIO cycles in PIO0 */
->  
->  	pci_read_config_word(dev, master_port, &master_data);
-
-MBR, Sergei
