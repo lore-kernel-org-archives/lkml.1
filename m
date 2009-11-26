@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZKZXXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZKZX2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZKZXXN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 18:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZKZXXM
+	id S1753458AbZKZX2O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 18:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZKZX2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 18:23:12 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45146 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbZKZXXJ (ORCPT
+	Thu, 26 Nov 2009 18:28:11 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:35349 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753422AbZKZX2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 18:23:09 -0500
+	Thu, 26 Nov 2009 18:28:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=B6zHSH+VkBGkTYw6LanioKy+uZbbMkpg+1WBXtDtojrMrHunggml+2sWa72s4vRfEs
-         fdwvgcoHwEIM2zGLF1DHXyR2ihwU5JhE2h8EU3pCAeqPXXQJqmcS+TKmUeVaEDRLznri
-         fHIA3LNiUFLg4p68+yNdkQu0EH7rPuTGMg4DE=
-Date: Thu, 26 Nov 2009 15:23:11 -0800
+        b=vXR1BNUOO/jaAxUlyVCtUdhmrzpootNAxGRkWL0qGyUUq1AlOpkz2UcBF2Lor3fiQr
+         GdGwZ1FBO5rRpqxkN7xKda08qZcYvTMiv+XYkGTPlZEVTkjb9teYl3RkGMwc+Aw27xrb
+         zmSw8ZU9Y0qRhJBvHkTIuwUREY85em8AJCxSw=
+Date: Thu, 26 Nov 2009 15:28:09 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091126232311.GD6936@core.coreip.homeip.net>
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jarod Wilson <jarod@wilsonet.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ?
+Message-ID: <20091126232809.GE6936@core.coreip.homeip.net>
+References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain> <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com> <829197380911251020y6f330f15mba32920ac63e97d3@mail.gmail.com> <E88E119C-BB86-4F01-8C2C-E514AC6BA5E2@wilsonet.com> <m3skc249ev.fsf@intrepid.localdomain> <20091126055302.GI23244@core.coreip.homeip.net> <m37htduo3i.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+In-Reply-To: <m37htduo3i.fsf@intrepid.localdomain>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 01:16:01AM -0500, Jarod Wilson wrote:
-> On Nov 26, 2009, at 12:31 AM, Dmitry Torokhov wrote:
+On Thu, Nov 26, 2009 at 07:40:01PM +0100, Krzysztof Halasa wrote:
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 > 
-> > On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
-> >> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
-> >>> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
-> >>>> Mauro Carvalho Chehab<mchehab@redhat.com>  writes:
-> >>>> 
-> >>>>> Event input has the advantage that the keystrokes will provide an unique
-> >>>>> representation that is independent of the device.
-> >>>> 
-> >>>> This can hardly work as the only means, the remotes have different keys,
-> >>>> the user almost always has to provide customized key<>function mapping.
-> >>>> 
-> >>> 
-> >>> Is it true? I would expect the remotes to have most of the keys to have
-> >>> well-defined meanings (unless it is one of the programmable remotes)...
-> >> 
-> >> Its the cases like programmable universal remotes that really throw  
-> >> things for a loop. That, and people wanting to use random remote X that  
-> >> came with the amp or tv or set top box, with IR receiver Y.
-> > 
-> > Right, but still the keys usually do have the well-defined meaning,
+> > Why would sysfs write be slower than ioctl?
 > 
-> Except when they don't. I have two very similar remotes, one that was bundled with a system from CaptiveWorks, and one that was bundled with an Antec Veris IR/LCD (SoundGraph iMON rebrand). Outside of the Antec remote having a mouse pad instead of up/down/left/right/enter, they have an identical layout, and the keys in the same locations on the remotes send the same IR signal. But the button names vary a LOT between the two. So on the DVD key on the Antec and the MUTE key on the CW send the same signal. Same with Audio vs. Eject, TV vs. History, etc. Moral of the story is that not all IR protocols spell things out particularly well for what a given code should actually mean.
+> Sysfs is generally one-value, one-file. open, read/write, close.
+> ioctl() OTOH does everything (e.g. a whole key table) in one syscall.
 
-I guess we are talking about different things. While the 2 remotes may
-use different protocols to communicate and may use the same codes to
-mean different things they buttons have well-defined meaning and we
-could map that to input keycodes. Then what is left is to load the
-proper mapping for particular device into the kernel. This can be done
-either automatically (when we know the mapping) or with the help of the
-user (owner of the system).
-
-> 
-> > teh
-> > issue is in mapping raw code to the appropriate keycode. This can be
-> > done either by lirc config file (when lirc is used) or by some other
-> > means.
-> 
-> The desire to map a button press to multiple keystrokes isn't uncommon either, though I presume that's doable within the input layer context too.
-
-No, at present we expect 1:1 button->event mapping leaving macro
-expansion (i.e. KEY_PROG1 -> "do some multi-step sequence" to
-userspace).
-
+There are binary sysfs attributes. For ioctl you also need to open and
+close the device. Plus, how often do you expect to perform this
+operation? Don't you think you are trying to optimize something that
+does not have any real performavnce impact here?
+ 
 -- 
 Dmitry
