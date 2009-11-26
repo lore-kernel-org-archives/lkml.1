@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbZKZNPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbZKZNI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760374AbZKZNPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZKZNPc
+	id S1760510AbZKZNI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760461AbZKZNI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:15:32 -0500
-Received: from mail.is74.ru ([83.142.161.14]:50553 "EHLO relay.intersvyaz.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751148AbZKZNPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:15:32 -0500
-X-Greylist: delayed 532 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Nov 2009 08:15:32 EST
-Message-ID: <4B0E7D5E.3080906@chelcom.ru>
-Date: Thu, 26 Nov 2009 18:06:38 +0500
-From: "A. Porodko" <panda@chelcom.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
-       Chaithrika U S <chaithrika@ti.com>,
-       Troy Kisky <troy.kisky@boundarydevices.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Kevin Hilman <khilman@deeprootsystems.com>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org
-Subject: Sound support for Neuros OSD2 Davinci based board.
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/mixed;
- boundary="------------050305050402010500000508"
+	Thu, 26 Nov 2009 08:08:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49709 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754235AbZKZNI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:08:56 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX192IYodcDx2WW8UPcLXfieFKw24kN70uVsHvc/3TI
+	Qa62OxXaRDT+iO
+Subject: Re: [PATCH-RFC] cfq: Disable low_latency by default for 2.6.32
+From: Mike Galbraith <efault@gmx.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20091126121945.GB13095@csn.ul.ie>
+References: <20091126121945.GB13095@csn.ul.ie>
+Content-Type: text/plain
+Date: Thu, 26 Nov 2009 14:08:57 +0100
+Message-Id: <1259240937.7371.15.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050305050402010500000508
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+On Thu, 2009-11-26 at 12:19 +0000, Mel Gorman wrote:
+> (cc'ing the people from the page allocator failure thread as this might be
+> relevant to some of their problems)
+> 
+> I know this is very last minute but I believe we should consider disabling
+> the "low_latency" tunable for block devices by default for 2.6.32.  There was
+> evidence that low_latency was a problem last week for page allocation failure
+> reports but the reproduction-case was unusual and involved high-order atomic
+> allocations in low-memory conditions. It took another few days to accurately
+> show the problem for more normal workloads and it's a bit more wide-spread
+> than just allocation failures.
+> 
+> Basically, low_latency looks great as long as you have plenty of memory
+> but in low memory situations, it appears to cause problems that manifest
+> as reduced performance, desktop stalls and in some cases, page allocation
+> failures. I think most kernel developers are not seeing the problem as they
+> tend to test on beefier machines and without hitting swap or low-memory
+> situations for the most part. When they are hitting low-memory situations,
+> it tends to be for stress tests where stalls and low performance are expected.
 
-Hello,
+Ouch.  It was bad desktop stalls under heavy write that kicked the whole
+thing off.
 
-Here is a patch for Neuros OSD2 Davinci (DM6446) based board sound support.
-Patch made against 2.6.32-rc6 kernel.
-------------------------------------------
+	-Mike
 
--- 
-Best regards
-Andrey A. Porodko
- 
-
-
---------------050305050402010500000508
-Content-Type: text/x-patch;
- name="0005-Davinci-sound-soc-driver-patch-for-Neuros-OSD2-board.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0005-Davinci-sound-soc-driver-patch-for-Neuros-OSD2-board.pa";
- filename*1="tch"
-
->From 72b5b0efa71d0ca0bbe3a0c3ab577ee365385a28 Mon Sep 17 00:00:00 2001
-From: Andrey Porodko <panda@chelcom.ru>
-Date: Mon, 23 Nov 2009 13:56:53 +0500
-Subject: [PATCH] Davinci sound soc driver patch for Neuros OSD2 board support.
-
-Signed-off-by: Andrey Porodko <panda@chelcom.ru>
----
- sound/soc/davinci/davinci-evm.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/sound/soc/davinci/davinci-evm.c b/sound/soc/davinci/davinci-evm.c
-index 67414f6..ffdd30e 100644
---- a/sound/soc/davinci/davinci-evm.c
-+++ b/sound/soc/davinci/davinci-evm.c
-@@ -55,6 +55,9 @@ static int evm_hw_params(struct snd_pcm_substream *substream,
- 	else if (machine_is_davinci_evm())
- 		sysclk = 12288000;
- 
-+	else if (machine_is_neuros_osd2())
-+		sysclk = 27000000;
-+
- 	else if (machine_is_davinci_da830_evm() ||
- 				machine_is_davinci_da850_evm())
- 		sysclk = 24576000;
-@@ -246,6 +249,9 @@ static int __init evm_init(void)
- 	if (machine_is_davinci_evm()) {
- 		evm_snd_dev_data = &evm_snd_devdata;
- 		index = 0;
-+	} else if (machine_is_neuros_osd2()) {
-+		evm_snd_dev_data = &evm_snd_devdata;
-+		index = 0;
- 	} else if (machine_is_davinci_dm355_evm()) {
- 		evm_snd_dev_data = &evm_snd_devdata;
- 		index = 1;
--- 
-1.5.6.5
-
-
---------------050305050402010500000508--
