@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbZKZRDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbZKZRCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760898AbZKZRDJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760886AbZKZRDG
+	id S1760865AbZKZRCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760849AbZKZRCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:03:06 -0500
-Received: from mail-px0-f180.google.com ([209.85.216.180]:35999 "EHLO
-	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760884AbZKZRDD convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 12:02:14 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48885 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760840AbZKZRCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:03:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=j73lZGW47CHE1hanbvu2v+x4gK54YOVcA5mqriMqHx3sxTZ1fobVreGFY3Nt7pgOWX
-         qVg3Wb5OrDshUcS3LsnkoRsTQZvRJ1/ii316kR03UginZ5M2Ey+Ocy6pJ/1idF4i5NlN
-         4FToYwLr1pIbZNjppmB/ChAuqoe7kZLh8K6Xg=
-MIME-Version: 1.0
-In-Reply-To: <d977350fcc9bc3e1fe484440c1fc3a7470a4e26b.1259248846.git.kirill@shutemov.name>
-References: <bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259248846.git.kirill@shutemov.name>
-	 <cover.1259248846.git.kirill@shutemov.name>
-	 <8524ba285f6dd59cda939c28da523f344cdab3da.1259248846.git.kirill@shutemov.name>
-	 <d977350fcc9bc3e1fe484440c1fc3a7470a4e26b.1259248846.git.kirill@shutemov.name>
-Date: Thu, 26 Nov 2009 22:33:08 +0530
-X-Google-Sender-Auth: 626adb6b9fd01e24
-Message-ID: <661de9470911260903h4996070emec678f09a7ba2c9e@mail.gmail.com>
-Subject: Re: [PATCH RFC v0 3/3] memcg: implement memory thresholds
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 26 Nov 2009 12:02:09 -0500
+Date: Thu, 26 Nov 2009 17:03:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
+       Joao Ramos <joao.ramos@inov.pt>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       Ryan Mallon <ryan@bluewatersys.com>
+Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's
+ EP93xx CPUs
+Message-ID: <20091126170339.218f6674@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911261651.40928.bzolnier@gmail.com>
+References: <200911261651.40928.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 9:57 PM, Kirill A. Shutemov
-<kirill@shutemov.name> wrote:
-> It allows to register multiple memory thresholds and gets notifications
-> when it crosses.
->
-> To register a threshold application need:
-> - create an eventfd;
-> - open file memory.usage_in_bytes of a cgroup
-> - write string "<event_fd> <memory.usage_in_bytes> <threshold>" to
->  cgroup.event_control.
->
-> Application will be notified through eventfd when memory usage crosses
-> threshold in any direction.
->
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
->
 
-I don't see the patches attached or inlined in the emails that follow
+> +static void pata_ep93xx_set_piomode(struct ata_port *ap,
+> +				    struct ata_device *adev)
+> +{
+> +	void __iomem *base = ap->host->private_data;
+> +	struct ata_device *pair = ata_dev_pair(adev);
+> +	const struct ata_timing *t = ata_timing_find_mode(adev->pio_mode);
+> +	const struct ata_timing *cmd_t = t;
+> +	u32 reg = IDECFG_IDEEN | IDECFG_PIO;
+> +	u8 pio = adev->pio_mode - XFER_PIO_0;
+> +
+> +	if (pair && pair->pio_mode < adev->pio_mode)
+> +		cmd_t = ata_timing_find_mode(pair->pio_mode);
+> +
+> +	/*
+> +	 * store the adequate PIO mode timings, to be used later
+> +	 * by pata_ep93xx_{read,write}
+> +	 */
+> +	adev->private_data = (void *)t;
+> +	ap->private_data = (void *)cmd_t;
+> +
+> +	/* reconfigure IDE controller according to PIO mode (?) */
 
-Balbir
+This would probably be better in both drivers as a simple table. It would
+then not be a switch but collapse the entire pile into a single
+
+	writel(pio_timing[pio], base + IDECFG);
+
+
+> +static u16 __pata_ep93xx_read(void __iomem *base, void *addr,
+> +			      struct ata_timing *t)
+> +{
+> +	u32 reg;
+> +
+> +	reg = (unsigned long)addr | IDECTRL_DIORN | IDECTRL_DIOWN;
+> +	writel(reg, base + IDECTRL);
+> +	ndelay(t->setup);
+
+This implies a bus with no posting, which seems to the case from the
+other driver code.
+
+> +	while (!pata_ep93xx_check_iordy(base))
+> +		cpu_relax();
+
+And if the drive was hot unplugged this is doom incorporated (plus we
+might not be using an IORDY mode.
+
+>
+> +	while (!pata_ep93xx_check_iordy(base))
+> +		cpu_relax();
+
+Ditto
+
+
+I don't see anything wrong in the conversion. 
+
+The size thing is true - libata tried to abstract at a higher level which
+in turn avoids lots of computed branches to one liners and lets the
+compiler inline stuff better (eg all the private read/write methods into
+a single call free tf_* etc). It could I guess provide an "awkward
+case" skeleton tf_* and other sets of functions that were passed inb/outb
+ops. One for Jeff to ponder ?
+
+
+
+Alan
