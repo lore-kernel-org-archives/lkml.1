@@ -1,110 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbZKZNtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbZKZNys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759703AbZKZNtf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:49:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZKZNte
+	id S1760156AbZKZNys (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZKZNys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:49:34 -0500
-Received: from mail1.radix.net ([207.192.128.31]:44882 "EHLO mail1.radix.net"
+	Thu, 26 Nov 2009 08:54:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24520 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754520AbZKZNte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:49:34 -0500
+	id S1754235AbZKZNyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:54:46 -0500
+Message-ID: <4B0E889C.9060405@redhat.com>
+Date: Thu, 26 Nov 2009 11:54:36 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Jarod Wilson <jarod@wilsonet.com>
+CC: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       khc@pm.waw.pl, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-In-Reply-To: <4B0E81C8.7050203@redhat.com>
-References: <BDRae8rZjFB@christoph>  <m3einork1o.fsf@intrepid.localdomain>
-	 <1259025275.3871.55.camel@palomino.walls.org> <4B0E81C8.7050203@redhat.com>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 08:48:20 -0500
-Message-Id: <1259243300.3062.61.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com>
+In-Reply-To: <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 11:25 -0200, Mauro Carvalho Chehab wrote:
-> Andy Walls wrote:
-> > On Mon, 2009-11-23 at 22:46 +0100, Krzysztof Halasa wrote:
-> >> lirc@bartelmus.de (Christoph Bartelmus) writes:
-> >>
-> >>>> I think we shouldn't at this time worry about IR transmitters.
-> >>> Sorry, but I have to disagree strongly.
-> >>> Any interface without transmitter support would be absolutely unacceptable
-> >>> for many LIRC users, including myself.
-> >> I don't say don't use a transmitter.
-> >> I say the transmitter is not an input device, they are completely
-> >> independent functions. I can't see any reason to try and fit both in the
-> >> same interface - can you?
-> > 
-> > The underlying hardware need not be completely independent.
-> > 
-> > For example, the CX2584[0123], CX2388[578], CX23418, and CX2310[012]
-> > chips have IR hardware that shares a common timing source, interrupt
-> > line, interrupt status register, etc, between IR Rx and Tx.  They can
-> > also do things like loopback of Tx to Rx.
-> > 
-> > That said, an underlying hardware implementation can be split up to user
-> > space with separate interfaces Tx and Rx.  The underlying driver module
-> > would have to manage the dependencies.  I would guess that would be
-> > easier for driver modules, if the userspace interfaces were designed
-> > with such combined IR Tx/Rx hardware in mind.
+Jarod Wilson wrote:
+> On Nov 23, 2009, at 7:53 PM, Andy Walls wrote:
 > 
-> True, but, in the case of Rx, there are already API's for it. Tx case is
-> simpler, as we don't have any API for it yet.
+>> On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
+> ...
+>> I generally don't understand the LIRC aversion I perceive in this thread
+>> (maybe I just have a skewed perception).  Aside for a video card's
+>> default remote setup, the suggestions so far don't strike me as any
+>> simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
+>> already works for both transmit and receive and has existing support in
+>> applications such as MythTV and mplayer.
 > 
-> I'm not sure if all the existing hardware for TX currently supports only
-> raw pulse/code sequencies, but I still think that, even on the Tx case, 
-> it is better to send scancodes to the driver, and let it do the conversion
-> to raw pulse/code, if the hardware requires pulse/code instead of scancodes. 
+> There's one gripe I agree with, and that is that its still not plug-n-play. 
+> Something where udev auto-loads a sane default remote config for say, 
+> mceusb transceivers, and the stock mce remote Just Works would be nice, 
+> but auto-config is mostly out the window the second you involve transmitters 
+> and universal remotes anyway. 
 
-That seems like a decision which will create a lots of duplicative code
-in the kernel.  Add it's just busy-work to write such code when a
-userspace application in common use already handles the protocols and
-sends raw pulses to hardware that expects raw pulses.
+For several devices, an udev rule that auto-loads a sane default keymap does work.
+Of course, this won't cover 100% of the usages, and I lirc is a very good way
+of covering the holes.
 
-> However, as we have green field,
-> I would add the protocol explicitly for each scancode to be transmitted, like:
+> But outside of that, I think objections are largely philosophical -- 
+> in a nutshell, the kernel has an input layer, remotes are input devices, 
+> and lirc doesn't conform to input layer standards. 
+
+Yes. I think this is mainly the issue. 
+
+The other issue is how to migrate the existing drivers to a new API without 
+causing regressions. If we decide that IR's that receive raw pulse/code
+should use the raw input interface, this means that a large task force will be
+needed to convert the existing drivers to use it.
+
+> I do understand that argument, I just don't currently agree that all IR must
+> go through the input layer before the drivers are acceptable for upstream -- 
+> especially since lircd can reinject decoded key presses into the input layer via uinput.
+
+IMHO, there are some scenarios for an upcoming kernel IR raw input interface:
+
+1) as a temporary solution for merging lirc drivers, knowing in advance that it will
+be later converted to the standard input API;
+
+2) as a raw interface for some weird usages, with its usage limited to just a
+few device drivers;
+
+3) as the solution for all IR's that produces pulse/code raw sequences;
+
+For (1), while it may make sense, we'll be creating an userspace API that is
+meant to be stable, knowing in advance that it will be removed in a close
+future.
+
+IMHO, we should avoid (2), since it will be hard to define what is the "limited
+usage", and I bet that it will evolute to (3) in a long term.
+
+For (3), we need to consider the migration of the existing drivers.
+
+By discarding scenario (2), this means that, in the long term, we'll need to either
+migrate all existing out-of-tree lirc drivers to the standard input API interface 
+(scenario 1) or to migrate the existing drivers to the raw input interface (scenario 3).
+
+For me, scenario (1) is fine if we add the lirc drivers at drivers/staging.
+
+>> I believe Jarod's intent is to have the LIRC components, that need to be
+>> in kernel modules, moved into kernel mainline to avoid the headaches of
+>> out of kernel driver maintenance.  I'm not sure it is time well spent
+>> for developers, or end users, to develop yet another IR receive
+>> implementation in addition to the ones we suffer with now.
 > 
-> struct ir_tx {
-> 	enum ir_protocol proto;
-> 	u32 scancode;
-> };
+> Yeah, a fairly relevant factor in all this is that, despite not being in the linux 
+> kernel source tree proper-like, the lirc drivers and lirc have been in use for many
+> years by lots of users. The likes of Fedora, Debian, Ubuntu, SUSE, Mandriva, etc. 
+> have all been shipping lirc drivers for years now. While lirc certainly isn't 
+> perfect (its not always the easiest thing for users to set up), it has actually 
+> proven itself pretty robust and useful in the field, once set up. The bulk of 
+> breakage in lirc I've personally had to deal with has mostly come in the 
+> form of kernel interface changes, which would definitely be mitigated by 
+> not having to maintain the drivers out-of-tree any longer.
 > 
-> Eventually, we might have a protocol "raw" and some extra field to allow passing
-> a raw pulse/code sequence instead of a scancode.
+> Now, I'm all for "improving" things and integrating better with the input 
+> subsystem, but what I don't really want to do is break compatibility with the 
+> existing setups on thousands (and thousands?) of MythTV boxes around the globe. 
+> The lirc userspace can be pretty nimble. If we can come up with a shiny new way 
+> that raw IR can be passed out through an input device, I'm pretty sure lirc 
+> userspace can be adapted to handle that. If a new input-layer-based transmit 
+> interface is developed, we can take advantage of that too. But there's already 
+> a very mature lirc interface for doing all of this. So why not start with adding 
+> things more or less as they exist right now and evolve the drivers into an 
+> idealized form? Getting *something* into the kernel in the first place is a 
+> huge step in that direction.
 
-I think you would have to.  32 bits is really not enough for all
-protocols, and it is already partial encoding of information anyway.
+I agree. We should really move forward and add it to kernel as soon as possible,
+and start to work on improving the IR support at the upstream kernel.
 
-If the Tx driver has to break them down into pulses anyway, why not have
-fields with more meaningful names
+Jarold,
 
-	mode
-	toggle
-	customer code (or system code or address),
-	information (or command)
+What do you think of adding lirc at staging while we discuss/improve the API's and lircd
+support for the input event interface? Do you think this would work?
 
-According to
-
-	http://slycontrol.ru/scr/kb/rc6.htm
-
-the "information" field could be up to 128 bits.
-
-(Not that I'm going to put any RC-6 Mode 6A decoding/encoding in the
-kernel.)		
-
-Regards,
-Andy
-
-> Cheers,
-> Mauro.
-
-
+Cheers,
+Mauro.
